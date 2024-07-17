@@ -109,6 +109,10 @@ export class PseudoFWC {
 
   private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
 
+  private readonly activeAbnormalSensedLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
+    Subject.create(''),
+  );
+
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
 
@@ -116,9 +120,7 @@ export class PseudoFWC {
 
   private readonly allCurrentFailures: string[] = [];
 
-  private readonly failuresLeft: string[] = [];
-
-  private readonly failuresRight: string[] = [];
+  private readonly failures: string[] = [];
 
   private recallFailures: string[] = [];
 
@@ -2275,13 +2277,13 @@ export class PseudoFWC {
     /* CLEAR AND RECALL */
     if (this.clrTriggerRisingEdge) {
       // delete the first failure
-      this.failuresLeft.splice(0, 1);
-      this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+      this.failures.splice(0, 1);
+      this.recallFailures = this.allCurrentFailures.filter((item) => !this.failures.includes(item));
     }
 
     if (this.recallTriggerRisingEdge) {
       if (this.recallFailures.length > 0) {
-        this.failuresLeft.push(this.recallFailures.shift());
+        this.failures.push(this.recallFailures.shift());
       }
     }
 
@@ -2313,20 +2315,18 @@ export class PseudoFWC {
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
-    let tempFailureArrayLeft: string[] = [];
-    let failureKeysLeft: string[] = this.failuresLeft;
+    let tempFailureArray: string[] = [];
+    let failureKeys: string[] = this.failures;
     let recallFailureKeys: string[] = this.recallFailures;
-    let tempFailureArrayRight: string[] = [];
-    const failureKeysRight: string[] = this.failuresRight;
-    let leftFailureSystemCount = 0;
-    let rightFailureSystemCount = 0;
+    let failureSystemCount = 0;
+    const rightFailureSystemCount = 0;
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
 
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMemos)) {
       if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
-        failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
+        failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
     }
@@ -2335,24 +2335,18 @@ export class PseudoFWC {
     this.recallFailures.push(...recallFailureKeys);
     this.nonCancellableWarningCount = 0;
 
-    // Failures first
-    for (const [key, value] of Object.entries(this.ewdMemos)) {
+    // Abnormal sensed procedures
+    for (const [key, value] of Object.entries(this.ewdAbnormalSensed)) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
       }
 
       // new warning?
-      const newWarning =
-        (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
-        (value.side === 'RIGHT' && !this.failuresRight.includes(key));
+      const newWarning = !this.failures.includes(key) && !recallFailureKeys.includes(key);
 
       if (value.simVarIsActive.get()) {
         if (newWarning) {
-          if (value.side === 'LEFT') {
-            failureKeysLeft.push(key);
-          } else {
-            failureKeysRight.push(key);
-          }
+          failureKeys.push(key);
 
           if (value.failure === 3) {
             this.masterWarning.set(true);
@@ -2380,9 +2374,7 @@ export class PseudoFWC {
           auralScKeys.push(key);
         }
 
-        if (value.side === 'LEFT') {
-          allFailureKeys.push(key);
-        }
+        allFailureKeys.push(key);
 
         const newCode: string[] = [];
         if (!recallFailureKeys.includes(key)) {
@@ -2393,17 +2385,11 @@ export class PseudoFWC {
           }
 
           if (value.sysPage > -1) {
-            if (value.side === 'LEFT') {
-              leftFailureSystemCount++;
-            } else {
-              rightFailureSystemCount++;
-            }
+            failureSystemCount++;
           }
         }
         if (value.side === 'LEFT') {
-          tempFailureArrayLeft = tempFailureArrayLeft.concat(newCode);
-        } else {
-          tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
+          tempFailureArray = tempFailureArray.concat(newCode);
         }
 
         if (value.sysPage > -1) {
@@ -2437,35 +2423,49 @@ export class PseudoFWC {
       this.auralSingleChimePending = false;
     }
 
-    const failLeft = tempFailureArrayLeft.length > 0;
+    const fail = tempFailureArray.length > 0;
 
-    const mesgFailOrderLeft: string[] = [];
-    const mesgFailOrderRight: string[] = [];
+    const failOrder: string[] = [];
 
     for (const [, value] of Object.entries(this.ewdMemos)) {
-      if (value.side === 'LEFT') {
-        mesgFailOrderLeft.push(...value.codesToReturn);
-      } else {
-        mesgFailOrderRight.push(...value.codesToReturn);
-      }
+      failOrder.push(...value.codesToReturn);
     }
 
-    const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft, mesgFailOrderLeft);
-    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight, mesgFailOrderRight);
+    const orderedFailureArray = this.mapOrder(tempFailureArray, failOrder);
 
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
 
-    this.failuresLeft.length = 0;
-    this.failuresLeft.push(...failureKeysLeft);
+    this.failures.length = 0;
+    this.failures.push(...failureKeys);
 
-    this.failuresRight.length = 0;
-    this.failuresRight.push(...failureKeysRight);
-
-    if (tempFailureArrayLeft.length > 0) {
-      this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
+    if (tempFailureArray.length > 0) {
+      this.activeAbnormalSensedLines.forEach((l, i) => l.set(orderedFailureArray[i]));
     }
 
+    // MEMOs (except T.O and LDG)
+    for (const [, value] of Object.entries(this.ewdMemos)) {
+      if (
+        value.simVarIsActive.get() &&
+        !value.memoInhibit() &&
+        !value.flightPhaseInhib.some((e) => e === flightPhase)
+      ) {
+        const newCode: string[] = [];
+
+        const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
+        codeIndex.forEach((e: number) => {
+          newCode.push(value.codesToReturn[e]);
+        });
+        const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
+        tempMemoArrayRight = tempArrayRight.concat(newCode);
+
+        if (value.sysPage > -1) {
+          SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
+        }
+      }
+    }
+
+    // T.O and LDG MEMOs
     for (const [, value] of Object.entries(this.ewdToLdgMemos)) {
       if (
         value.simVarIsActive.get() &&
@@ -2479,35 +2479,28 @@ export class PseudoFWC {
           newCode.push(value.codesToReturn[e]);
         });
 
-        if (value.side === 'LEFT' && !failLeft) {
-          tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
-        }
-        if (value.side === 'RIGHT') {
-          const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
-          tempMemoArrayRight = tempArrayRight.concat(newCode);
-        }
-
+        tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
         if (value.sysPage > -1) {
           SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
         }
       }
     }
 
-    const mesgOrderLeft: string[] = [];
-    const mesgOrderRight: string[] = [];
+    const memoOrderLeft: string[] = [];
+    const memoOrderRight: string[] = [];
 
     for (const [, value] of Object.entries(this.ewdToLdgMemos)) {
       if (value.side === 'LEFT') {
-        mesgOrderLeft.push(...value.codesToReturn);
+        memoOrderLeft.push(...value.codesToReturn);
       } else {
-        mesgOrderRight.push(...value.codesToReturn);
+        memoOrderRight.push(...value.codesToReturn);
       }
     }
 
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, mesgOrderLeft);
-    const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
+    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft);
+    const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight);
 
-    if (!failLeft) {
+    if (!fail) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
       this.masterCaution.set(false);
       if (this.nonCancellableWarningCount === 0) {
@@ -2515,7 +2508,7 @@ export class PseudoFWC {
       }
     }
 
-    if (leftFailureSystemCount + rightFailureSystemCount === 0) {
+    if (failureSystemCount + rightFailureSystemCount === 0) {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
     }
 
@@ -2577,22 +2570,6 @@ export class PseudoFWC {
 
   /** MEMOs on lower right side of EWD */
   ewdMemos: EwdMemoDict = {
-    3200050: {
-      // PK BRK ON
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake,
-        this.fwcFlightPhase,
-        this.parkBrake,
-      ),
-      // TODO no separate slats indication
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['320005001'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000030': {
       // IR IN ALIGN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
@@ -4293,6 +4270,22 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'LEFT',
+    },
+    3200050: {
+      // PK BRK ON
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake,
+        this.fwcFlightPhase,
+        this.parkBrake,
+      ),
+      // TODO no separate slats indication
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['320005001'],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: -1,
+      side: 'RIGHT',
     },
     3200060: {
       // NW ANTI SKID INACTIVE
