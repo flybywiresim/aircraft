@@ -161,6 +161,9 @@ export interface PFDSimvars {
   cgPercent: number;
   spoilersCommanded: number;
   spoilersArmed: boolean;
+  memoLine1: number;
+  memoLine2: number;
+  memoLine3: number;
 }
 
 export enum PFDVars {
@@ -322,6 +325,9 @@ export enum PFDVars {
   cgPercent = 'CG PERCENT',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
+  memoLine1 = 'L:A32NX_PFD_MEMO_LINE_1',
+  memoLine2 = 'L:A32NX_PFD_MEMO_LINE_2',
+  memoLine3 = 'L:A32NX_PFD_MEMO_LINE_3',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -485,6 +491,9 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['cgPercent', { name: PFDVars.cgPercent, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
+    ['memoLine1', { name: PFDVars.memoLine1, type: SimVarValueType.Number }],
+    ['memoLine2', { name: PFDVars.memoLine2, type: SimVarValueType.Number }],
+    ['memoLine3', { name: PFDVars.memoLine3, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {

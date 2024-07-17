@@ -436,6 +436,9 @@ export const EcamMemos: { [n: string]: string } = {
   '770064703': '\x1b<5m -THR LEVERS.....TO/GA',
 };
 
+/** These IDs won't be shown in the PFD MEMO section (seat belts, ...) */
+export const pfdMemoExclusion: string[] = ['000008001', '000008501', '000009001', '000009501'];
+
 interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
   name: string;

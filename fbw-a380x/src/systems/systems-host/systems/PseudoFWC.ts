@@ -30,7 +30,7 @@ import {
 import { VerticalMode } from '@shared/autopilot';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { EcamMemos } from '@instruments/common/EWDMessages';
+import { EcamMemos, pfdMemoExclusion } from '@instruments/common/EWDMessages';
 
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -100,6 +100,15 @@ export class PseudoFWC {
   );
 
   private readonly ewdMessageLinesRight = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
+    Subject.create(''),
+  );
+
+  private static readonly pfdMessageSimVars = Array.from(
+    { length: PseudoFWC.EWD_MESSAGE_LINES },
+    (_, i) => `L:A32NX_PFD_MEMO_LINE_${i + 1}`,
+  );
+
+  private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
     Subject.create(''),
   );
 
@@ -927,6 +936,12 @@ export class PseudoFWC {
     this.ewdMessageLinesRight.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsRight[i], 'string', l ?? '');
+      }),
+    );
+
+    this.pfdMessageLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.pfdMessageSimVars[i], 'string', l ?? '');
       }),
     );
 
@@ -2524,6 +2539,7 @@ export class PseudoFWC {
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
+    this.pfdMessageLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => !pfdMemoExclusion.includes(it))[i]));
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
     // We shall wait for the rust FWC for those nice things!
