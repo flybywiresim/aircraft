@@ -5,7 +5,7 @@ import { MathUtils } from '@shared/MathUtils';
 import { Common } from './common';
 
 export class AtmosphericConditions {
-    private ambientTemperatureFromSim: Celcius;
+    private ambientTemperatureFromSim: Celsius;
 
     private altitudeFromSim: Feet;
 
@@ -20,7 +20,7 @@ export class AtmosphericConditions {
 
     private windDirectionFromSim: DegreesTrue;
 
-    private computedIsaDeviation: Celcius;
+    private computedIsaDeviation: Celsius;
 
     constructor() {
         this.update();
@@ -38,7 +38,7 @@ export class AtmosphericConditions {
         this.computedIsaDeviation = this.ambientTemperatureFromSim - Common.getIsaTemp(this.altitudeFromSim);
     }
 
-    get currentStaticAirTemperature(): Celcius {
+    get currentStaticAirTemperature(): Celsius {
         return this.ambientTemperatureFromSim;
     }
 
@@ -66,7 +66,7 @@ export class AtmosphericConditions {
         return Math.cos(MathUtils.diffAngle(direction, this.currentWindDirection)) * this.currentWindSpeed;
     }
 
-    get isaDeviation(): Celcius {
+    get isaDeviation(): Celsius {
         return this.computedIsaDeviation;
     }
 
