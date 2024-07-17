@@ -196,6 +196,56 @@
             <SIMVAR>A32NX_BTN_RCL</SIMVAR>
         </UseTemplate>
 
+        <!-- ECAM ECL CAPT -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CHECK_LH</BASE_NAME>
+            <PART_ID>ECAM_CHECK_LH</PART_ID>
+            <TOOLTIPID>ECAM checklist CAPT</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CHECK_LH</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL F/O -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CHECK_RH</BASE_NAME>
+            <PART_ID>ECAM_CHECK_RH</PART_ID>
+            <TOOLTIPID>ECAM checklist F/O</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CHECK_RH</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL UP -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>UP</BASE_NAME>
+            <PART_ID>ECAM_UP</PART_ID>
+            <TOOLTIPID>ECAM checklist UP</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_UP</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL DOWN -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>DOWN</BASE_NAME>
+            <PART_ID>ECAM_DOWN</PART_ID>
+            <TOOLTIPID>ECAM checklist DOWN</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_DOWN</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ABN PROC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>ABNPROC</BASE_NAME>
+            <PART_ID>ECAM_ABNPROC</PART_ID>
+            <TOOLTIPID>ECAM checklist abnormal procedures</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_ABNPROC</SIMVAR>
+        </UseTemplate>
+
         <!-- SD ENG -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_ENG</NODE_ID>
@@ -262,7 +312,16 @@
             <TOOLTIPID>SELECT HYD PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
-        <!-- TODO CB REPSOL -->
+        <!-- SD CB -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_CB</NODE_ID>
+            <STATE_ID>14</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT CB PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
 
         <!-- SD APU -->
         <UseTemplate Name="FBW_Anim_Interactions">
@@ -341,13 +400,16 @@
             <TOOLTIPID>SELECT VIDEO PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
-        <!-- TODO ALL HOLLAND -->
-        <!-- TODO CLR HOLLAND -->
-        <!-- TODO RCL LAST REPSOL -->
-        <!-- TODO STS HOLLAND -->
-        <!-- TODO MORE REPSOL -->
-        <!-- TODO RCL HOLLAND -->
-        <!-- TODO CLEAR HOLLAND -->
+        <!-- SD STS -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_STS</NODE_ID>
+            <STATE_ID>15</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT STS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
 
         <!-- EWD POTENTIOMETER -->
         <UseTemplate Name="FBW_Stepless_Potentiometer">
