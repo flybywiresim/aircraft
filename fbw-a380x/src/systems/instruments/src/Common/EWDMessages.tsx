@@ -3101,6 +3101,471 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
       },
     ],
   },
+  // ATA 29 Hydraulics
+  290800001: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G ELEC PMP A FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'G ELEC PMP A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800002: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G ELEC PMP B FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'G ELEC PMP B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800003: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ELEC PMP A FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ELEC PMP A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800004: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ELEC PMP B FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ELEC PMP B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800005: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G ENG 1 PMP A PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 1 PMP A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800006: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G ENG 1 PMP B PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 1 PMP B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800007: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G ENG 2 PMP A PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 2 PMP A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800008: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G ENG 2 PMP B PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 2 PMP B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800009: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ENG 3 PMP A PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 3 PMP A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800010: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ENG 3 PMP B PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 3 PMP B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800011: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ENG 4 PMP A PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 4 PMP A',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800012: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ENG 4 PMP B PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 4 PMP B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        // if on ground and low pressure on 3 hydraulic pumps
+        name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+  },
+  290800013: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G FUEL HEAT EXCHANGER VLV FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800014: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y FUEL HEAT EXCHANGER VLV FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800015: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G HEAT EXCHANGER AIR LEAK',
+    sensed: true,
+    items: [],
+  },
+  290800016: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y HEAT EXCHANGER AIR LEAK',
+    sensed: true,
+    items: [],
+  },
+  290800017: {
+    title: '\x1b<4m\x1b4mHYD\x1bm G HEAT EXCHANGER AIR LEAK DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800018: {
+    title: '\x1b<4m\x1b4mHYD\x1bm Y HEAT EXCHANGER AIR LEAK DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800019: {
+    title: '\x1b<4m\x1b4mHYD\x1b G RSVR AIR PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 1 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'G ENG 2 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // if on ground and all engines off
+      {
+        name: 'G ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800020: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y RSVR AIR PRESS LO',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 3 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'Y ENG 4 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // if on ground and all engines off
+      {
+        name: 'Y ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800021: {
+    title: '\x1b<4m\x1b4mHYD\x1b G  RSVR LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 1 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'G ENG 2 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'G ENG 1 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'G ENG 2 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+
+      // if on ground and all engines off
+      {
+        name: 'G ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800022: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y  RSVR LEVEL LO',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 3 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'Y ENG 4 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'Y ENG 3 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'Y ENG 4 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+
+      // if on ground and all engines off
+      {
+        name: 'Y ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800023: {
+    title: '\x1b<4m\x1b4mHYD\x1b G SYS CHAN A OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800024: {
+    title: '\x1b<4m\x1b4mHYD\x1b G SYS CHAN  B OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800025: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS CHAN A OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800026: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS CHAN B OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800027: {
+    title: '\x1b<4m\x1b4mHYD\x1b G  SYS COOLING FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800028: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y  SYS COOLING FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800029: {
+    title: '\x1b<4m\x1b4mHYD\x1b G SYS MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800030: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS MONITORING FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800031: {
+    title: '\x1b<4m\x1b4mHYD\x1b G SYS OVERHEAT',
+    sensed: true,
+    items: [
+      {
+        name: 'G ENG 1 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'G ENG 2 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'G ENG 1 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'G ENG 2 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      // if on ground and all engines off
+      {
+        name: 'G ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800032: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS OVERHEAT',
+    sensed: true,
+    items: [
+      {
+        name: 'Y ENG 3 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'Y ENG 4 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'Y ENG 3 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'Y ENG 4 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      // if on ground and all engines off
+      {
+        name: 'Y ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  290800033: {
+    title: '\x1b<4m\x1b4mHYD\x1b G SYS OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800034: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS OVHT DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  290800035: {
+    title: '\x1b<4m\x1b4mHYD\x1b G SYS PRESS LO',
+    sensed: true,
+    items: [], // TODO
+  },
+  290800036: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS PRESS LO',
+    sensed: true,
+    items: [], //TODO
+  },
+  290800037: {
+    title: '\x1b<4m\x1b4mHYD\x1b  G SYS TEMP HI',
+    sensed: true,
+    items: [], // TODO
+  },
+  290800038: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y SYS TEMP HI',
+    sensed: true,
+    items: [], //TODO
+  },
+  290800039: {
+    title: '\x1b<4m\x1b4mHYD\x1b G+Y SYS PRESS LO',
+    sensed: true,
+    items: [], //TODO
+  },
+  290800040: {
+    title: '\x1b<4m\x1b4mHYD\x1b Y ELEC PMP A+B OFF',
+    sensed: true,
+    items: [], //TODO
+  },
   // 34 NAVIGATION
   340800001: {
     title: '\x1b<4m\x1b4mNAV\x1bm ADR 1 FAULT',
@@ -3453,6 +3918,26 @@ export const InopSys: { [n: number]: string } = {
   240300034: '\x1b<4mTR 1',
   240300035: '\x1b<4mTR 2',
   240300036: '\x1b<4mTR ESS',
+  290300001: '\x1b<4m G ELEC PMP A',
+  290300002: '\x1b<4m G ELEC PMP B',
+  290300003: '\x1b<4m Y ELEC PMP A',
+  290300004: '\x1b<4m Y ELEC PMP B',
+  290300005: '\x1b<4m G ENG 1 PMP A',
+  290300006: '\x1b<4m G ENG 1 PMP B',
+  290300007: '\x1b<4m G ENG 2 PMP A',
+  290300008: '\x1b<4m G ENG 2 PMP B',
+  290300009: '\x1b<4m Y ENG 3 PMP A',
+  290300010: '\x1b<4m Y ENG 3 PMP B',
+  290300011: '\x1b<4m Y ENG 4 PMP A',
+  290300012: '\x1b<4m Y ENG 4 PMP B',
+  290300013: '\x1b<4m G SYS CHAN A OVHT DET',
+  290300014: '\x1b<4m G SYS CHAN B OVHT DET',
+  290300015: '\x1b<4m Y SYS CHAN A OVHT DET',
+  290300016: '\x1b<4m Y SYS CHAN B OVHT DET',
+  290300017: '\x1b<4m G HSMU',
+  290300018: '\x1b<4m Y HSMU',
+  290300019: '\x1b<4m G SYS OVHT DET',
+  290300020: '\x1b<4m Y SYS OVHT DET',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
