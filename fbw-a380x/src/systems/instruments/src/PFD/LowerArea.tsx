@@ -382,11 +382,11 @@ const padMemoCode = (code: number) => code.toString().padStart(9, '0');
 class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memoLine1').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)]);
+  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memoLine1').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)] ?? '');
 
-  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memoLine2').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)]);
+  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memoLine2').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)] ?? '');
 
-  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memoLine3').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)]);
+  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memoLine3').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)] ?? '');
 
   render(): VNode {
     return (
