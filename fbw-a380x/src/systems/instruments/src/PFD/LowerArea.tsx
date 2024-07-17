@@ -1,6 +1,10 @@
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { EcamMemos } from '@instruments/common/EWDMessages';
+import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
+
 
 export class LowerArea extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
@@ -9,7 +13,7 @@ export class LowerArea extends DisplayComponent<{ bus: ArincEventBus }> {
         <path class="ThickStroke White" d="M 2.1 157.7 h 154.4" />
         <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
-        <Memos />
+        <Memos bus={this.props.bus} />
         <Limitations />
         <FlapsIndicator bus={this.props.bus} />
       </g>
@@ -374,13 +378,22 @@ class Limitations extends DisplayComponent<{}> {
   }
 }
 
-class Memos extends DisplayComponent<{}> {
+const padMemoCode = (code: number) => code.toString().padStart(9, '0');
+class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memoLine1').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)]);
+
+  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memoLine2').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)]);
+
+  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memoLine3').whenChanged(), 0).map((it) => EcamMemos[padMemoCode(it)]);
+
   render(): VNode {
     return (
       <g>
-        <text x={12} y={170} class="FontIntermediate Amber">
-          MEMO NOT AVAIL
-        </text>
+        <MemoFormatter x={4} y={165} message={this.memoLine1} />
+        <MemoFormatter x={4} y={172} message={this.memoLine2} />
+        <MemoFormatter x={4} y={179} message={this.memoLine3} />
       </g>
     );
   }
