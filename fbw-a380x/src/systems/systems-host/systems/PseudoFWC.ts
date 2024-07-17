@@ -2539,6 +2539,8 @@ export class PseudoFWC {
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
+
+    // TODO order by decreasing importance
     this.pfdMessageLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => !pfdMemoExclusion.includes(it))[i]));
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
