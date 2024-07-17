@@ -30,9 +30,9 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
 
-  private readonly fgBusProvider: FgBusProvider;
+  private readonly fgBusProvider = new FgBusProvider(this.bus);
 
-  private readonly fcuBusProvider: FcuBusProvider;
+  private readonly fcuBusProvider = new FcuBusProvider(this.bus);
 
   private readonly clock = new Clock(this.bus);
 
