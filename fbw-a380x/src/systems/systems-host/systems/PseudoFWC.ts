@@ -2399,7 +2399,6 @@ export class PseudoFWC {
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
-    const tempFailureArray: string[] = [];
     let failureKeys: string[] = this.presentedFailures;
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
@@ -2407,8 +2406,8 @@ export class PseudoFWC {
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
 
-    // Update failuresLeft list in case failure has been resolved
-    for (const [key, value] of Object.entries(this.ewdMemos)) {
+    // Update memos and failures list in case failure has been resolved
+    for (const [key, value] of Object.entries(this.ewdAbnormalSensed)) {
       if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
@@ -2435,9 +2434,11 @@ export class PseudoFWC {
         // Skip if other fault overrides this one
         let overridden = false;
         value.notActiveWhenFaults.forEach((val) => {
-          const otherFault = this.ewdAbnormalSensed[val] as EwdAbnormalItem;
-          if (otherFault.simVarIsActive.get()) {
-            overridden = true;
+          if (val && this.ewdAbnormalSensed[val]) {
+            const otherFault = this.ewdAbnormalSensed[val] as EwdAbnormalItem;
+            if (otherFault.simVarIsActive.get()) {
+              overridden = true;
+            }
           }
         });
         if (overridden) {
@@ -2547,6 +2548,29 @@ export class PseudoFWC {
       }
     });
 
+    this.auralCrcKeys = auralCrcKeys;
+    this.auralScKeys = auralScKeys;
+
+    if (this.auralCrcKeys.length === 0) {
+      this.auralCrcActive.set(false);
+    }
+
+    if (this.auralScKeys.length === 0) {
+      this.auralSingleChimePending = false;
+    }
+
+    const failOrder: string[] = [];
+
+    for (const [key] of Object.entries(this.ewdAbnormalSensed)) {
+      failOrder.push(...key);
+    }
+
+    this.allCurrentFailures.length = 0;
+    this.allCurrentFailures.push(...allFailureKeys);
+
+    this.presentedFailures.length = 0;
+    this.presentedFailures.push(...failureKeys);
+
     if (stateWasChanged) {
       console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
       // Debug output for ABN sensed procedures
@@ -2569,37 +2593,6 @@ export class PseudoFWC {
       });
 
       console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
-    }
-
-    this.auralCrcKeys = auralCrcKeys;
-    this.auralScKeys = auralScKeys;
-
-    if (this.auralCrcKeys.length === 0) {
-      this.auralCrcActive.set(false);
-    }
-
-    if (this.auralScKeys.length === 0) {
-      this.auralSingleChimePending = false;
-    }
-
-    const fail = tempFailureArray.length > 0;
-
-    const failOrder: string[] = [];
-
-    for (const [, value] of Object.entries(this.ewdMemos)) {
-      failOrder.push(...value.codesToReturn);
-    }
-
-    const orderedFailureArray = this.mapOrder(tempFailureArray, failOrder);
-
-    this.allCurrentFailures.length = 0;
-    this.allCurrentFailures.push(...allFailureKeys);
-
-    this.presentedFailures.length = 0;
-    this.presentedFailures.push(...failureKeys);
-
-    if (orderedFailureArray.length > 0) {
-      console.warn(orderedFailureArray);
     }
 
     // MEMOs (except T.O and LDG)
@@ -2659,8 +2652,7 @@ export class PseudoFWC {
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft);
     const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight);
 
-    if (!fail) {
-      this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
+    if (this.allCurrentFailures.length === 0) {
       this.masterCaution.set(false);
       if (this.nonCancellableWarningCount === 0) {
         this.masterWarning.set(false);
@@ -2671,6 +2663,7 @@ export class PseudoFWC {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
     }
 
+    this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
     // TODO order by decreasing importance
@@ -3495,7 +3488,7 @@ export class PseudoFWC {
       // FMS 1+2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fms1Fault, this.fms2Fault),
-      notActiveWhenFaults: [''],
+      notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true], // simplified, update when improved FMS swtchg logic
       whichItemsCompleted: () => [true, this.fmsSwitchingKnob.get() === 1, false, false, this.gpwsFlapMode.get() === 1],
       failure: 2,
@@ -3505,7 +3498,7 @@ export class PseudoFWC {
       // TO SPEEDS NOT INSERTED
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: this.toSpeedsNotInsertedWarning,
-      notActiveWhenFaults: [''],
+      notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
       failure: 2,
@@ -3581,7 +3574,7 @@ export class PseudoFWC {
         this.rmp2Fault,
         this.rmp3Fault,
       ),
-      notActiveWhenFaults: [''],
+      notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, false, false, true],
       whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp2Off.get(), this.rmp3Off.get(), false, false, false],
       failure: 2,
