@@ -875,6 +875,8 @@ export class FmcAircraftInterface {
     return Number.isFinite(landingWeight) ? landingWeight : NaN;
   }
 
+  private filteredAoA: number = 0;
+
   /**
    * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
    */
@@ -921,7 +923,7 @@ export class FmcAircraftInterface {
     const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
     const gearPos = Math.round(SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum'));
     const speeds = new A380OperatingSpeeds(gw / 1000, flaps, gearPos);
-    speeds.compensateForMachEffect(Math.round(Simplane.getAltitude() ?? 0));
+    // speeds.compensateForMachEffect(Math.round(Simplane.getAltitude() ?? 0));
 
     if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
       const f = Math.max(speeds.f2, Vmcl + 5);
@@ -990,14 +992,51 @@ export class FmcAircraftInterface {
       cas = cass[0].value;
     }
 
-    const v_a_max = cas * Math.sqrt((aoa - alpha_0) / (alpha_max - alpha_0));
-    const v_a_prot = cas * Math.sqrt((aoa - alpha_0) / (alpha_prot - alpha_0));
-    const v_a_sw = cas * Math.sqrt((aoa - alpha_0) / (sim_stall_alpha - alpha_0));
-    const vs_1_g = cas * Math.sqrt((aoa - alpha_0) / (sim_stall_alpha - alpha_0));
-    const vls = 1.23 * vs_1_g;
+    if (this.filteredAoA === 0) {
+      this.filteredAoA = aoa;
+    } else {
+      this.filteredAoA = this.filteredAoA + 0.1 * (aoa - this.filteredAoA);
+    }
 
-    // console.log('FCOM lookup: ', `a prot: ${speeds.vs * 1.1}`, `a max: ${speeds.vs * 1.03}`, `vls: ${speeds.vls}`);
-    // console.log('AOA based: ', `a prot: ${v_a_prot}`, `a max: ${v_a_max}`, `vls: ${vls}`);
+    const stallSpeedFudgeFactor = flaps === 0 ? 1.22 : 1.5; // Flight model not yet tuned
+    const v_a_max = Math.max(
+      Vmcl,
+      stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (alpha_max - alpha_0)),
+    );
+    const v_a_prot = Math.max(
+      0,
+      stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (alpha_prot - alpha_0)),
+    );
+    const v_a_sw = Math.max(
+      Vmcl,
+      stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (sim_stall_alpha - alpha_0)),
+    );
+    const vs_1_g = stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (sim_stall_alpha - alpha_0));
+    let vls = Math.max(1.23 * vs_1_g, Vmcl);
+    if (this.fmgc.getFlightPhase() <= FmgcFlightPhase.Takeoff) {
+      vls = Math.max(1.15 * vs_1_g, 1.05 * Math.min(this.fmgc.getV2Speed(), Vmcl));
+    } else if (flaps === 1 && cas > 212) {
+      vls = Math.max(1.18 * vs_1_g, Vmcl);
+    }
+
+    // Speed brake effect
+    const spoilers = SimVar.GetSimVarValue('L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION', 'number');
+    const maxSpoilerExtension = [20, 20, 12, 9, 8, 6];
+    const spoilerVlsIncrease = [25, 25, 7, 10, 10, 8];
+    if (spoilers > 0) {
+      let conf = flaps + 1;
+      switch (flaps) {
+        case 1:
+          conf = cas > 212 ? 1 : 2;
+          break;
+        case 0:
+          conf = 0;
+          break;
+        default:
+          break;
+      }
+      vls = vls + spoilerVlsIncrease[conf] * (spoilers / maxSpoilerExtension[conf]);
+    }
 
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', v_a_prot);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', v_a_max);
@@ -1005,7 +1044,7 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', vs_1_g);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', vls);
 
-    // Put out alt. computation for comparison
+    // Put out alt. computation for comparison, debug output TODO delete me
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC_FCOM', 'number', speeds.vs * 1.1);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC_FCOM', 'number', speeds.vs * 1.03);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN_FCOM', 'number', speeds.vs * 1.03);

@@ -79,6 +79,13 @@ export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
     this.tab1lineValues[7].set(
       (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC_FCOM', 'number') as number).toFixed(2) ?? '',
     );
+
+    this.tab1lineLabels[9].set('GD SPEED (FCOM)');
+    this.tab1lineValues[9].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number') as number).toFixed(2) ?? '');
+    this.tab1lineLabels[10].set('F SPEED (FCOM)');
+    this.tab1lineValues[10].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number') as number).toFixed(2) ?? '');
+    this.tab1lineLabels[11].set('S SPEED (FCOM)');
+    this.tab1lineValues[11].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number') as number).toFixed(2) ?? '');
   }
 
   public onAfterRender(node: VNode): void {
