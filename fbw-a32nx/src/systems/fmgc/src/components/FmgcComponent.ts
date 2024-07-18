@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 
 export interface FmgcComponent {
   init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
