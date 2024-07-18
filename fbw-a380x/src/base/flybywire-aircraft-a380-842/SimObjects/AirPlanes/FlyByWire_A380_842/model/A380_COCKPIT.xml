@@ -5056,8 +5056,8 @@
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <ID>3</ID>
-                    <TYPE>EIS_DMC</TYPE>
-                    <TIP_TEXT>EIS DMC</TIP_TEXT>
+                    <TYPE>FMS</TYPE>
+                    <TIP_TEXT>FMS</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <ID>4</ID>
