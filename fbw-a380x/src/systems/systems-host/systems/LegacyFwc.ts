@@ -164,31 +164,9 @@ export class LegacyFwc {
 
   update(_deltaTime: number) {
     this._updateFlightPhase(_deltaTime);
-    this._updateButtons(_deltaTime);
     this._updateTakeoffMemo(_deltaTime);
     this._updateLandingMemo(_deltaTime);
     this._updateAltitudeWarning();
-  }
-
-  _updateButtons(_deltaTime: number) {
-    this.toConfigTest = SimVar.GetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean');
-
-    if (
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool')
-    ) {
-      this.warningPressed = true;
-    } else {
-      this.warningPressed = false;
-    }
-    if (
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'Bool') ||
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'Bool')
-    ) {
-      this.cautionPressed = true;
-    } else {
-      this.cautionPressed = false;
-    }
   }
 
   _updateFlightPhase(_deltaTime: number) {
