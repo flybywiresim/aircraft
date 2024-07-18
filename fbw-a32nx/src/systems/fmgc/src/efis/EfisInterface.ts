@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide } from '@flybywiresim/fbw-sdk';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 
 type PlanCentre = {
   fpIndex: number;
