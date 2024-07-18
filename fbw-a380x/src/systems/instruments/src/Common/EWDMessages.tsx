@@ -3539,32 +3539,200 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   290800035: {
     title: '\x1b<4m\x1b4mHYD\x1b G SYS PRESS LO',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        // During taxi-in, if the FLAPS lever is set to 0 for more than one minute
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'FLAPS SLOW',
+        sensed: false,
+      },
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+      {
+        // if prim3 also failed
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      {
+        name: 'FOR TAXI : STEER ENDURANCE LIMITED',
+        sensed: false,
+      },
+    ],
   },
   290800036: {
     title: '\x1b<4m\x1b4mHYD\x1b Y SYS PRESS LO',
     sensed: true,
-    items: [], //TODO
+    items: [
+      {
+        // During taxi-in, if the FLAPS lever is set to 0 for more than one minute
+        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        sensed: false,
+      },
+      {
+        name: 'FLAPS SLOW',
+        sensed: false,
+      },
+      {
+        // if prim2 also failed
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+    ],
   },
   290800037: {
     title: '\x1b<4m\x1b4mHYD\x1b  G SYS TEMP HI',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'G ENG 1 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'G ENG 2 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // if on ground and all engines off
+      {
+        name: 'G ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+
+      // if not succesfull
+      {
+        name: 'G ENG 1 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'G ENG 2 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+    ],
   },
   290800038: {
     title: '\x1b<4m\x1b4mHYD\x1b Y SYS TEMP HI',
     sensed: true,
-    items: [], //TODO
+    items: [
+      {
+        name: 'Y ENG 3 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'Y ENG 4 PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // if on ground and all engines off
+      {
+        name: 'Y ELEC PMP A AND B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // if not succesfull
+      {
+        name: 'Y ENG 1 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+      {
+        name: 'Y ENG 2 PMP A+B',
+        sensed: true,
+        labelNotCompleted: 'DISC',
+      },
+    ],
   },
   290800039: {
     title: '\x1b<4m\x1b4mHYD\x1b G+Y SYS PRESS LO',
     sensed: true,
-    items: [], //TODO
+    items: [
+      {
+        name: 'ALL ENG PMPs',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // if flaps less than 3
+      {
+        name: '[MFD SURV] TAWS FLAP MODE',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+
+      {
+        name: 'FOR LDG : FLAP LVR 3',
+        sensed: false,
+      },
+
+      {
+        name: 'L/G GRVTY EXTN ONLY',
+        sensed: false,
+      },
+
+      {
+        name: 'NO AUTOLAND',
+        sensed: false,
+      },
+
+      {
+        name: 'FOR GA : KEEP S/F CONF',
+        sensed: false,
+      },
+      {
+        // if prim3 also failed
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        color: 'green',
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      {
+        name: 'FOR TAXI : STEER ENDURANCE LIMITED',
+        sensed: false,
+      },
+    ],
   },
   290800040: {
     title: '\x1b<4m\x1b4mHYD\x1b Y ELEC PMP A+B OFF',
     sensed: true,
-    items: [], //TODO
+    items: [],
   },
   // 34 NAVIGATION
   340800001: {
@@ -3938,6 +4106,8 @@ export const InopSys: { [n: number]: string } = {
   290300018: '\x1b<4m Y HSMU',
   290300019: '\x1b<4m G SYS OVHT DET',
   290300020: '\x1b<4m Y SYS OVHT DET',
+  290300021: '\x1b<4m G HYD SYS',
+  290300022: '\x1b<4m Y HYD SYS',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
