@@ -436,8 +436,19 @@ export const EcamMemos: { [n: string]: string } = {
   '770064703': '\x1b<5m -THR LEVERS.....TO/GA',
 };
 
-/** These IDs won't be shown in the PFD MEMO section (seat belts, ...) */
-export const pfdMemoExclusion: string[] = ['000008001', '000008501', '000009001', '000009501'];
+/** Only these IDs will be shown in the PFD MEMO section */
+export const pfdMemoDisplay: string[] = [
+  '000004002',
+  '000006002',
+  '000026001',
+  '000027001',
+  '000032501',
+  '000035001',
+  '000036001',
+  '000054502',
+  '220000001',
+  '220000002',
+];
 
 interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
@@ -449,24 +460,28 @@ interface AbstractChecklistItem {
   /** Manually define color. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   color?: 'standard' | 'cyan' | 'green' | 'amber';
 }
-interface ChecklistAction {
+interface ChecklistAction extends AbstractChecklistItem {
   /** Label at the end of the line if action is not completed. */
   labelNotCompleted: string;
   /** Label after "name" if action is completed. Optional, only fill if different from "labelNotCompleted". */
   labelCompleted?: string;
 }
 
-interface ChecklistCondition {}
+interface ChecklistCondition extends AbstractChecklistItem {}
 
-interface AbnormalProcedure {
+export interface AbnormalProcedure {
   /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
   title: string;
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. Key represents the message ID, which should be unique. */
-  items: ((ChecklistAction | ChecklistCondition) & AbstractChecklistItem)[];
+  items: (ChecklistAction | ChecklistCondition)[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
+}
+
+export function isChecklistAction(element: ChecklistAction | ChecklistCondition): element is ChecklistAction {
+  return 'labelNotCompleted' in element;
 }
 
 /** All normal procedures (checklists, via ECL) should be here. */
@@ -676,17 +691,17 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     items: [
       {
         name: 'FMC A+C FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {
         name: 'FMC A+B FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {
         name: 'FMC A FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {
@@ -702,17 +717,17 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     items: [
       {
         name: 'FMC A+B FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {
         name: 'FMC B+C FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {
         name: 'FMC B FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {
@@ -728,7 +743,7 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     items: [
       {
         name: 'ALL FMCs FAULT',
-        sensed: true,
+        sensed: false,
         color: 'amber',
       },
       {

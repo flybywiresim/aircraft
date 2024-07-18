@@ -20,6 +20,7 @@ import {
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
   Arinc429Word,
+  FrequencyMode,
   NXDataStore,
   NXLogicClockNode,
   NXLogicConfirmNode,
@@ -28,9 +29,16 @@ import {
   NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
+import { VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { EcamMemos, pfdMemoExclusion } from '@instruments/common/EWDMessages';
+import {
+  AbnormalProcedure,
+  EcamAbnormalSensedProcedures,
+  EcamMemos,
+  isChecklistAction,
+  pfdMemoDisplay,
+} from '@instruments/common/EWDMessages';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -45,24 +53,44 @@ function countTrue(...args: boolean[]): number {
   return args.reduce((accu, b) => (b ? accu + 1 : accu), 0);
 }
 
-interface EwdItem {
+interface EwdMemoItem {
   flightPhaseInhib: number[];
   /** warning is active */
   simVarIsActive: Subscribable<boolean>;
-  /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
-  auralWarning?: Subscribable<FwcAuralWarning>;
   whichCodeToReturn: () => any[];
   codesToReturn: string[];
   memoInhibit: () => boolean;
   failure: number;
   sysPage: number;
   side: string;
+}
+
+interface EwdMemoDict {
+  [key: keyof typeof EcamMemos]: EwdMemoItem;
+}
+
+interface EwdAbnormalItem {
+  flightPhaseInhib: number[];
+  /** warning is active */
+  simVarIsActive: Subscribable<boolean>;
+  /** This alert won't be shown if the following alert(s) are active */
+  notActiveWhenFaults: string[];
+  /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
+  auralWarning?: Subscribable<FwcAuralWarning>;
+  /** Returns a boolean vector (same length as number of items). If true, item is shown in ECAM actions */
+  whichItemsToShow: () => boolean[];
+  /** Returns a boolean vector (same length as number of items). If true, item is marked as completed */
+  whichItemsCompleted: () => boolean[];
+  /** Returns a boolean vector (same length as number of items). Optional, defaults to true. If true, item is shown as activated */
+  whichItemsActive?: () => boolean[];
+  failure: number;
+  sysPage: number;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
 }
 
-interface EwdMemoDict {
-  [key: keyof typeof EcamMemos]: EwdItem;
+interface EwdAbnormalDict {
+  [key: keyof typeof EcamAbnormalSensedProcedures]: EwdAbnormalItem;
 }
 
 enum FwcAuralWarning {
@@ -71,8 +99,21 @@ enum FwcAuralWarning {
   Crc,
 }
 
+interface FwsCdsAbnormalSensedEntry {
+  id: string;
+  itemsToShow: boolean[];
+  itemsCompleted: boolean[];
+  itemsActive: boolean[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type FwsCdsAbnormalSensedList = FwsCdsAbnormalSensedEntry[];
+
+type InternalAbnormalSensedList = Map<string, FwsCdsAbnormalSensedEntry>;
+
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents>();
+  private readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
 
@@ -109,18 +150,19 @@ export class PseudoFWC {
 
   private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
 
-  private readonly activeAbnormalSensedLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) =>
-    Subject.create(''),
-  );
-
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
 
   private readonly startupCompleted = Subject.create(false);
 
+  /** Keys/IDs of all failures currently active, irrespective they are already cleared or not */
   private readonly allCurrentFailures: string[] = [];
 
-  private readonly failures: string[] = [];
+  /** Keys/IDs of only the failures which are currently presented on the EWD */
+  private readonly presentedFailures: string[] = [];
+
+  /** Map to hold all failures which are currently active */
+  private readonly activeAbnormalSensedList: InternalAbnormalSensedList = new Map();
 
   private recallFailures: string[] = [];
 
@@ -298,6 +340,31 @@ export class PseudoFWC {
   private toSpeedsTooLowWarning = Subject.create(false);
 
   private toV2VRV2DisagreeWarning = Subject.create(false);
+
+  private readonly fmcAFault = Subject.create(false);
+
+  private readonly fmcBFault = Subject.create(false);
+
+  private readonly fmcCFault = Subject.create(false);
+
+  private readonly fms1Fault = Subject.create(false);
+
+  private readonly fms2Fault = Subject.create(false);
+
+  /* 23 - COMMUNICATION */
+  private readonly rmp1Fault = Subject.create(false);
+
+  private readonly rmp2Fault = Subject.create(false);
+
+  private readonly rmp3Fault = Subject.create(false);
+
+  private readonly rmp1Off = Subject.create(false);
+
+  private readonly rmp2Off = Subject.create(false);
+
+  private readonly rmp3Off = Subject.create(false);
+
+  private readonly rmp3ActiveMode = ConsumerSubject.create(this.vhfSub.on(`vhf_com_active_mode_3`), FrequencyMode.Data);
 
   /* 24 - ELECTRICAL */
 
@@ -706,6 +773,13 @@ export class PseudoFWC {
 
   private stallWarningRaw = ConsumerValue.create(this.sub.on('stall_warning_on'), false);
 
+  /* SURVEILLANCE */
+  private readonly gpwsFlaps3 = Subject.create(false);
+
+  private readonly gpwsFlapMode = Subject.create(0);
+
+  private readonly gpwsTerrOff = Subject.create(false);
+
   /** ENGINE AND THROTTLE */
 
   private readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
@@ -884,13 +958,7 @@ export class PseudoFWC {
 
   private readonly compMesgCount = Subject.create(0);
 
-  private readonly dmcSwitchingKnob = Subject.create(0);
-
-  private readonly gpwsFlaps3 = Subject.create(false);
-
-  private readonly gpwsFlapMode = Subject.create(0);
-
-  private readonly gpwsTerrOff = Subject.create(false);
+  private readonly fmsSwitchingKnob = Subject.create(0);
 
   private readonly landAsapRed = Subject.create(false);
 
@@ -916,7 +984,7 @@ export class PseudoFWC {
 
   private readonly wingAntiIce = Subject.create(false);
 
-  private readonly voiceVhf3 = Subject.create(0);
+  private readonly voiceVhf3 = Subject.create(false);
 
   /* SETTINGS */
 
@@ -1490,6 +1558,12 @@ export class PseudoFWC {
     /** MCDU TO CONF 3 selected */
     const mcduToFlapPos3 = fm1DiscreteWord2.getBitValueOr(16, false) || fm2DiscreteWord2.getBitValueOr(16, false);
 
+    this.fmcAFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
+    this.fmcBFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
+    this.fmcCFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
+    this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
+    this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
+
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
     this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
@@ -1656,12 +1730,22 @@ export class PseudoFWC {
       ),
     );
 
+    /* 23 - COMMUNICATION */
+    this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal
+    this.rmp1Off.set(SimVar.GetSimVarValue('L:A380X_RMP_1_BRIGHTNESS_KNOB', 'number') === 0);
+
+    this.rmp2Fault.set(false);
+    this.rmp2Off.set(SimVar.GetSimVarValue('L:A380X_RMP_2_BRIGHTNESS_KNOB', 'number') === 0);
+
+    this.rmp3Fault.set(false);
+    this.rmp3Off.set(SimVar.GetSimVarValue('L:A380X_RMP_3_BRIGHTNESS_KNOB', 'number') === 0);
+
     /* OTHER STUFF */
 
     this.airKnob.set(SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum'));
     this.attKnob.set(SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum'));
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
-    this.dmcSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum'));
+    this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.manLandingElevation.set(activeCpc.bitValueOr(17, false));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
@@ -1675,7 +1759,7 @@ export class PseudoFWC {
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
     this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
-    this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
+    this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
 
     /* FUEL */
     const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
@@ -2277,13 +2361,13 @@ export class PseudoFWC {
     /* CLEAR AND RECALL */
     if (this.clrTriggerRisingEdge) {
       // delete the first failure
-      this.failures.splice(0, 1);
-      this.recallFailures = this.allCurrentFailures.filter((item) => !this.failures.includes(item));
+      this.presentedFailures.splice(0, 1);
+      this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
     }
 
     if (this.recallTriggerRisingEdge) {
       if (this.recallFailures.length > 0) {
-        this.failures.push(this.recallFailures.shift());
+        this.presentedFailures.push(this.recallFailures.shift());
       }
     }
 
@@ -2315,8 +2399,8 @@ export class PseudoFWC {
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
-    let tempFailureArray: string[] = [];
-    let failureKeys: string[] = this.failures;
+    const tempFailureArray: string[] = [];
+    let failureKeys: string[] = this.presentedFailures;
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
     const rightFailureSystemCount = 0;
@@ -2334,17 +2418,35 @@ export class PseudoFWC {
     this.recallFailures.length = 0;
     this.recallFailures.push(...recallFailureKeys);
     this.nonCancellableWarningCount = 0;
+    let stateWasChanged = false;
 
     // Abnormal sensed procedures
-    for (const [key, value] of Object.entries(this.ewdAbnormalSensed)) {
+    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.ewdAbnormalSensed);
+    for (const [key, value] of ewdAbnormalEntries) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
       }
 
       // new warning?
-      const newWarning = !this.failures.includes(key) && !recallFailureKeys.includes(key);
+      const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
+      const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
 
       if (value.simVarIsActive.get()) {
+        // Skip if other fault overrides this one
+        let overridden = false;
+        value.notActiveWhenFaults.forEach((val) => {
+          const otherFault = this.ewdAbnormalSensed[val] as EwdAbnormalItem;
+          if (otherFault.simVarIsActive.get()) {
+            overridden = true;
+          }
+        });
+        if (overridden) {
+          continue;
+        }
+
+        const itemsCompleted = value.whichItemsCompleted();
+        const itemsToShow = value.whichItemsToShow();
+
         if (newWarning) {
           failureKeys.push(key);
 
@@ -2354,6 +2456,40 @@ export class PseudoFWC {
           if (value.failure === 2) {
             this.masterCaution.set(true);
           }
+        }
+
+        if (!this.activeAbnormalSensedList.has(key)) {
+          // Insert into internal map
+          let activeItems = new Array(proc.items.length).fill(true);
+          if (value.whichItemsActive) {
+            activeItems = value.whichItemsActive();
+
+            if (proc.items.length !== activeItems.length) {
+              console.warn(
+                'ECAM alert definition error: whichItemsActive() not the same size as number of procedure items',
+              );
+            }
+          }
+          this.activeAbnormalSensedList.set(key, {
+            id: key,
+            itemsActive: activeItems,
+            itemsCompleted: itemsCompleted,
+            itemsToShow: itemsToShow,
+          });
+          stateWasChanged = true;
+        } else {
+          // Update internal map
+          const prevEl = this.activeAbnormalSensedList.get(key);
+          prevEl.itemsToShow = itemsToShow;
+          // Update only sensed items
+          proc.items.forEach((item, idx) => {
+            if (item.sensed === true) {
+              if (prevEl.itemsCompleted[idx] !== itemsCompleted[idx]) {
+                stateWasChanged = true;
+              }
+              prevEl.itemsCompleted[idx] = itemsCompleted[idx];
+            }
+          });
         }
 
         if (value.cancel === false && value.failure === 3) {
@@ -2370,26 +2506,17 @@ export class PseudoFWC {
         if (value.auralWarning === undefined && value.failure === 2) {
           if (newWarning) {
             this.auralSingleChimePending = true;
+            console.log('single chime pending');
           }
           auralScKeys.push(key);
         }
 
         allFailureKeys.push(key);
 
-        const newCode: string[] = [];
         if (!recallFailureKeys.includes(key)) {
-          const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-
-          for (const e of codeIndex) {
-            newCode.push(value.codesToReturn[e]);
-          }
-
           if (value.sysPage > -1) {
             failureSystemCount++;
           }
-        }
-        if (value.side === 'LEFT') {
-          tempFailureArray = tempFailureArray.concat(newCode);
         }
 
         if (value.sysPage > -1) {
@@ -2410,6 +2537,38 @@ export class PseudoFWC {
         }
         auralScKeys.push(key);
       }
+    }
+
+    // Delete inactive failures from internal map
+    this.activeAbnormalSensedList.forEach((_, key) => {
+      if (!allFailureKeys.includes(key)) {
+        this.activeAbnormalSensedList.delete(key);
+        stateWasChanged = true;
+      }
+    });
+
+    if (stateWasChanged) {
+      console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
+      // Debug output for ABN sensed procedures
+      this.activeAbnormalSensedList.forEach((val, key) => {
+        const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
+        console.log('%c' + proc.title, 'font-family:monospace; font-weight: bold');
+        proc.items.forEach((it, itemIdx) => {
+          if (val.itemsToShow[itemIdx]) {
+            const cpl = isChecklistAction(it)
+              ? val.itemsCompleted[itemIdx]
+                ? it.labelNotCompleted
+                : ` .......... ${it.labelNotCompleted}`
+              : '';
+            console.log(
+              `%c${'  '.repeat(it.level ?? 0)} ${it.sensed ? (val.itemsCompleted[itemIdx] ? 'X' : 'O') : ' '} ${it.name} ${cpl} ${it.color ? `(${it.color})` : ''}`,
+              'font-family:monospace; font-weight: bold',
+            );
+          }
+        });
+      });
+
+      console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
     }
 
     this.auralCrcKeys = auralCrcKeys;
@@ -2436,11 +2595,11 @@ export class PseudoFWC {
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
 
-    this.failures.length = 0;
-    this.failures.push(...failureKeys);
+    this.presentedFailures.length = 0;
+    this.presentedFailures.push(...failureKeys);
 
-    if (tempFailureArray.length > 0) {
-      this.activeAbnormalSensedLines.forEach((l, i) => l.set(orderedFailureArray[i]));
+    if (orderedFailureArray.length > 0) {
+      console.warn(orderedFailureArray);
     }
 
     // MEMOs (except T.O and LDG)
@@ -2515,9 +2674,7 @@ export class PseudoFWC {
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
     // TODO order by decreasing importance
-    this.pfdMessageLines.forEach((l, i) =>
-      l.set(orderedMemoArrayRight.filter((it) => !pfdMemoExclusion.includes(it))[i]),
-    );
+    this.pfdMessageLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => pfdMemoDisplay.includes(it))[i]));
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
     // We shall wait for the rust FWC for those nice things!
@@ -3047,11 +3204,7 @@ export class PseudoFWC {
     '0000290': {
       // SWITCHING PNL
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([ndXfrKnob, dmcSwitchingKnob]) => ndXfrKnob !== 1 || dmcSwitchingKnob !== 1,
-        this.ndXfrKnob,
-        this.dmcSwitchingKnob,
-      ),
+      simVarIsActive: MappedSubject.create(([ndXfrKnob]) => ndXfrKnob !== 1, this.ndXfrKnob),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000029001'],
       memoInhibit: () => false,
@@ -3118,10 +3271,87 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
+    '230000001': {
+      // CAPT ON RMP 3
+      flightPhaseInhib: [],
+      simVarIsActive: this.rmp1Off,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '230000002': {
+      // F/O ON RMP 3
+      flightPhaseInhib: [],
+      simVarIsActive: this.rmp2Off,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '230000003': {
+      // CAPT+F/O ON RMP 3
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp1Off, this.rmp2Off),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000003'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '230000009': {
+      // RMP 1+2+3 OFF
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp1Off, this.rmp2Off, this.rmp3Off),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000009'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '230000010': {
+      // RMP 1+3 OFF
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp1Off, this.rmp3Off),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000010'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '230000011': {
+      // RMP 2+3 OFF
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp2Off, this.rmp3Off),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000011'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '230000012': {
+      // RMP 3 OFF
+      flightPhaseInhib: [],
+      simVarIsActive: this.rmp3Off,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['230000012'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     '230000015': {
       // VHF3 VOICE
       flightPhaseInhib: [3, 4, 5, 7, 8],
-      simVarIsActive: this.voiceVhf3.map((v) => v !== 0),
+      simVarIsActive: this.voiceVhf3,
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000015'],
       memoInhibit: () => false,
@@ -3209,23 +3439,161 @@ export class PseudoFWC {
     },
   };
 
-  /**
-   * Contains the activation checks for each of the abnormal sensed procedures (formerly left column of A32NX EWD memos).
-   * Legacy, just for looking up the A32NX implementation. Will be moved to new structure (ID for checklist, array of bools for state of lines).
-   */
-  ewdAbnormalSensed: EwdMemoDict = {
+  ewdAbnormalSensed: EwdAbnormalDict = {
     // 22 - AUTOFLIGHT
+    221800001: {
+      // FMC-A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fmcAFault,
+      notActiveWhenFaults: ['221800004', '221800005', '221800006'],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [this.fmsSwitchingKnob.get() === 1],
+      failure: 1,
+      sysPage: -1,
+    },
+    221800002: {
+      // FMC-B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fmcBFault,
+      notActiveWhenFaults: ['221800004', '221800005', '221800006'],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [this.fmsSwitchingKnob.get() === 1],
+      failure: 1,
+      sysPage: -1,
+    },
+    221800003: {
+      // FMC-C FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fmcCFault,
+      notActiveWhenFaults: ['221800004', '221800005', '221800006'],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [this.fmsSwitchingKnob.get() === 1],
+      failure: 1,
+      sysPage: -1,
+    },
+    221800004: {
+      // FMS 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fms1Fault,
+      notActiveWhenFaults: ['221800006'],
+      whichItemsToShow: () => [true, false, false, true], // simplified, update when improved FMS swtchg logic
+      whichItemsCompleted: () => [true, true, true, this.fmsSwitchingKnob.get() === 0],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800005: {
+      // FMS 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fms2Fault,
+      notActiveWhenFaults: ['221800006'],
+      whichItemsToShow: () => [true, false, false, true], // simplified, update when improved FMS swtchg logic
+      whichItemsCompleted: () => [true, true, true, this.fmsSwitchingKnob.get() === 2],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800006: {
+      // FMS 1+2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fms1Fault, this.fms2Fault),
+      notActiveWhenFaults: [''],
+      whichItemsToShow: () => [true, true, true, true, true], // simplified, update when improved FMS swtchg logic
+      whichItemsCompleted: () => [true, this.fmsSwitchingKnob.get() === 1, false, false, this.gpwsFlapMode.get() === 1],
+      failure: 2,
+      sysPage: -1,
+    },
     221800007: {
       // TO SPEEDS NOT INSERTED
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: this.toSpeedsNotInsertedWarning,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['221800007'],
-      memoInhibit: () => false,
+      notActiveWhenFaults: [''],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
+    // 23 - COMMUNICATION
+    230800012: {
+      // RMP 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.rmp1Fault,
+      notActiveWhenFaults: ['230800015', '230800016', '230800018'],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [this.rmp1Off.get()],
+      failure: 2,
+      sysPage: -1,
+    },
+    230800013: {
+      // RMP 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.rmp2Fault,
+      notActiveWhenFaults: ['230800015', '230800017', '230800018'],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [this.rmp2Off.get()],
+      failure: 2,
+      sysPage: -1,
+    },
+    230800014: {
+      // RMP 3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.rmp3Fault,
+      notActiveWhenFaults: ['230800016', '230800017', '230800018'],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [this.rmp3Off.get()],
+      failure: 2,
+      sysPage: -1,
+    },
+    230800015: {
+      // RMP 1+2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp1Fault, this.rmp2Fault),
+      notActiveWhenFaults: ['230800018'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp2Off.get()],
+      failure: 2,
+      sysPage: -1,
+    },
+    230800016: {
+      // RMP 1+3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp1Fault, this.rmp3Fault),
+      notActiveWhenFaults: ['230800018'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp3Off.get()],
+      failure: 2,
+      sysPage: -1,
+    },
+    230800017: {
+      // RMP 2+3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.rmp2Fault, this.rmp3Fault),
+      notActiveWhenFaults: ['230800018'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [this.rmp2Off.get(), this.rmp3Off.get()],
+      failure: 2,
+      sysPage: -1,
+    },
+    230800018: {
+      // RMP 1+2+3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.rmp1Fault,
+        this.rmp2Fault,
+        this.rmp3Fault,
+      ),
+      notActiveWhenFaults: [''],
+      whichItemsToShow: () => [true, true, true, false, false, true],
+      whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp2Off.get(), this.rmp3Off.get(), false, false, false],
+      failure: 2,
+      sysPage: -1,
+    },
+  };
+
+  /**
+   * Contains the activation checks for each of the abnormal sensed procedures (formerly left column of A32NX EWD memos).
+   * Legacy, just for looking up the A32NX implementation. Will be moved to new structure (ID for checklist, array of bools for state of lines).
+   */
+  ewdAbnormalSensedLegacy: any = {
     2900310: {
       // *HYD  - Blue
       flightPhaseInhib: [1, 4, 5, 10],
@@ -3243,12 +3611,11 @@ export class PseudoFWC {
         this.blueLP,
         this.emergencyGeneratorOn,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['290031001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['290031001'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 4,
-      side: 'RIGHT',
     },
     2900312: {
       // *HYD  - Green Engine 1 //
@@ -3263,24 +3630,22 @@ export class PseudoFWC {
         this.eng1pumpPBisAuto,
         this.emergencyGeneratorOn,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['290031201'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['290031201'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 4,
-      side: 'RIGHT',
     },
     // 34 - NAVIGATION & SURVEILLANCE
     3400170: {
       // OVER SPEED VMO/MMO
       flightPhaseInhib: [2, 3, 4, 8, 9, 10],
       simVarIsActive: this.overspeedWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['340017001', '340017002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['340017001', '340017002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     3400210: {
@@ -3291,12 +3656,11 @@ export class PseudoFWC {
         this.flapsIndex,
         this.computedAirSpeedToNearest2,
       ),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['340021001', '340021002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['340021001', '340021002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     3400220: {
@@ -3307,12 +3671,11 @@ export class PseudoFWC {
         this.flapsIndex,
         this.computedAirSpeedToNearest2,
       ),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['340022001', '340022002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['340022001', '340022002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     3400230: {
@@ -3323,12 +3686,11 @@ export class PseudoFWC {
         this.flapsIndex,
         this.computedAirSpeedToNearest2,
       ),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['340023001', '340023002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['340023001', '340023002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     3400235: {
@@ -3339,12 +3701,11 @@ export class PseudoFWC {
         this.flapsIndex,
         this.computedAirSpeedToNearest2,
       ),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['340023501', '340023502'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['340023501', '340023502'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     3400240: {
@@ -3355,19 +3716,18 @@ export class PseudoFWC {
         this.flapsIndex,
         this.computedAirSpeedToNearest2,
       ),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['340024001', '340024002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['340024001', '340024002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     7700027: {
       // DUAL ENGINE FAILURE
       flightPhaseInhib: [],
       simVarIsActive: this.engDualFault,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         !this.emergencyGeneratorOn.get() ? 1 : null,
         5,
@@ -3378,7 +3738,7 @@ export class PseudoFWC {
         10,
         11,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '770002701',
         '770002702',
         '770002703',
@@ -3395,7 +3755,6 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 0,
-      side: 'LEFT',
     },
     2600010: {
       // ENG 1 FIRE
@@ -3405,7 +3764,7 @@ export class PseudoFWC {
         this.eng1FireTest,
         this.fireButton1,
       ),
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.throttle1Position.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
         (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get()
@@ -3429,7 +3788,7 @@ export class PseudoFWC {
           ? 16
           : null,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '260001001',
         '260001002',
         '260001003',
@@ -3451,7 +3810,6 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 0,
-      side: 'LEFT',
     },
     2600020: {
       // ENG 2 FIRE
@@ -3461,7 +3819,7 @@ export class PseudoFWC {
         this.eng2FireTest,
         this.fireButton2,
       ),
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.throttle2Position.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
         (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get()
@@ -3485,7 +3843,7 @@ export class PseudoFWC {
           ? 16
           : null,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '260002001',
         '260002002',
         '260002003',
@@ -3506,7 +3864,6 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 0,
-      side: 'LEFT',
     },
     2600030: {
       // APU FIRE
@@ -3516,59 +3873,55 @@ export class PseudoFWC {
         this.apuFireTest,
         this.fireButtonAPU,
       ),
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         !this.fireButtonAPU.get() ? 1 : null,
         this.agentAPUDischarge.get() === 1 && !this.apuAgentPB.get() ? 2 : null,
         this.agentAPUDischarge.get() === 2 && !this.apuAgentPB.get() ? 3 : null,
         this.apuMasterSwitch.get() === 1 ? 4 : null,
       ],
-      codesToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
+      codeToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: 6,
-      side: 'LEFT',
     },
     2700052: {
       // FLAP LVR NOT ZERO
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.flapsLeverNotZeroWarning,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270005201'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270005201'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700085: {
       // SLATS NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8],
       auralWarning: this.slatConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.slatConfigWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['270008501', '270008502'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['270008501', '270008502'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700090: {
       // FLAPS NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8],
       auralWarning: this.flapConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.flapConfigWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['270009001', '270009002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['270009001', '270009002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700110: {
       // ELAC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.elac1FaultConfirmNodeOutput,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.elac1FaultLine123Display.get() ? 1 : null,
         this.elac1FaultLine123Display.get() ? 2 : null,
@@ -3576,17 +3929,16 @@ export class PseudoFWC {
         this.elac1FaultLine45Display.get() ? 4 : null,
         this.elac1FaultLine45Display.get() ? 5 : null,
       ],
-      codesToReturn: ['270011001', '270011002', '270011003', '270011004', '270011005', '270011006'],
+      codeToReturn: ['270011001', '270011002', '270011003', '270011004', '270011005', '270011006'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700120: {
       // ELAC 2 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.elac2FaultConfirmNodeOutput,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.elac2FaultLine123Display.get() ? 1 : null,
         this.elac2FaultLine123Display.get() ? 2 : null,
@@ -3594,102 +3946,95 @@ export class PseudoFWC {
         this.elac2FaultLine45Display.get() ? 4 : null,
         this.elac2FaultLine45Display.get() ? 5 : null,
       ],
-      codesToReturn: ['270012001', '270012002', '270012003', '270012004', '270012005', '270012006'],
+      codeToReturn: ['270012001', '270012002', '270012003', '270012004', '270012005', '270012006'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700210: {
       // SEC 1 FAULT
       flightPhaseInhib: [3, 4, 5],
       simVarIsActive: this.sec1FaultCondition,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.sec1FaultLine123Display.get() ? 1 : null,
         this.sec1FaultLine123Display.get() ? 2 : null,
         this.sec1FaultLine123Display.get() ? 3 : null,
         this.sec1FaultLine45Display.get() ? 4 : null,
       ],
-      codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
+      codeToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700220: {
       // SEC 2 FAULT
       flightPhaseInhib: [3, 4, 5],
       simVarIsActive: this.sec2FaultCondition,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.sec2FaultLine123Display.get() ? 1 : null,
         this.sec2FaultLine123Display.get() ? 2 : null,
         this.sec2FaultLine123Display.get() ? 3 : null,
       ],
-      codesToReturn: ['270022001', '270022002', '270022003', '270022004'],
+      codeToReturn: ['270022001', '270022002', '270022003', '270022004'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700230: {
       // SEC 3 FAULT
       flightPhaseInhib: [3, 4, 5],
       simVarIsActive: this.sec3FaultCondition,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.sec3FaultLine123Display.get() ? 1 : null,
         this.sec3FaultLine123Display.get() ? 2 : null,
         this.sec3FaultLine123Display.get() ? 3 : null,
       ],
-      codesToReturn: ['270023001', '270023002', '270023003', '270023004'],
+      codeToReturn: ['270023001', '270023002', '270023003', '270023004'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700240: {
       // PITCH TRIM CONFIG
       flightPhaseInhib: [5, 6, 7, 8],
       auralWarning: this.pitchTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.pitchTrimNotToWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['270024001', '270024002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['270024001', '270024002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700340: {
       // SPD BRK NOT RETRACTED
       flightPhaseInhib: [5, 6, 7, 8],
       auralWarning: this.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.speedbrakesConfigWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['270034001', '270034002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['270034001', '270034002'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700360: {
       // FCDC 1+2 FAULT
       flightPhaseInhib: [3, 4, 5, 7],
       simVarIsActive: this.fcdc12FaultCondition,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['270036001', '270036002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['270036001', '270036002'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700365: {
       // DIRECT LAW
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.directLawCondition,
-      whichCodeToReturn: () => [0, 1, 2, 3, 4, null, 6, 7],
-      codesToReturn: [
+      whichItemToReturn: () => [0, 1, 2, 3, 4, null, 6, 7],
+      codeToReturn: [
         '270036501',
         '270036502',
         '270036503',
@@ -3702,52 +4047,47 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700373: {
       // RUDDER TRIM CONFIG
       flightPhaseInhib: [5, 6, 7, 8],
       auralWarning: this.rudderTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.rudderTrimNotToWarning,
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['270037301', '270037302'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['270037301', '270037302'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700375: {
       // ALTN 2
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.altn2LawConfirmNodeOutput,
-      whichCodeToReturn: () => [0, 1, null, 3, 4, null, 6],
-      codesToReturn: ['270037501', '270037502', '270037503', '270037504', '270037505', '270037506', '270037507'],
+      whichItemToReturn: () => [0, 1, null, 3, 4, null, 6],
+      codeToReturn: ['270037501', '270037502', '270037503', '270037504', '270037505', '270037506', '270037507'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700390: {
       // ALTN 1
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.altn1LawConfirmNodeOutput,
-      whichCodeToReturn: () => [0, 1, null, 3, 4, null, 6],
-      codesToReturn: ['270039001', '270039002', '270039003', '270039004', '270039005', '270039006', '270039007'],
+      whichItemToReturn: () => [0, 1, null, 3, 4, null, 6],
+      codeToReturn: ['270039001', '270039002', '270039003', '270039004', '270039005', '270039006', '270039007'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700400: {
       // L+R ELEV FAULT
       flightPhaseInhib: [],
       simVarIsActive: this.lrElevFaultCondition,
-      whichCodeToReturn: () => [0, 1, 2, null, null, 5],
-      codesToReturn: ['270040001', '270040002', '270040003', '270040004', '270040005', '270040006'],
+      whichItemToReturn: () => [0, 1, 2, null, null, 5],
+      codeToReturn: ['270040001', '270040002', '270040003', '270040004', '270040005', '270040006'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: 10,
-      side: 'LEFT',
     },
     2700460: {
       // PITCH TRIM/MCDU/CG DISAGREE
@@ -3758,12 +4098,11 @@ export class PseudoFWC {
         this.pitchTrimMcduCgDisagree,
         this.flapsAndPitchMcduDisagreeEnable,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270046001', '270046002'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270046001', '270046002'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700466: {
       // FLAPS/MCDU DISGREE
@@ -3775,56 +4114,51 @@ export class PseudoFWC {
         this.flapsNotToMemo,
         this.flapsAndPitchMcduDisagreeEnable,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270046501'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270046501'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700502: {
       // SPD BRK STILL OUT
       flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
       simVarIsActive: this.speedBrakeStillOutWarning,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270050201'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270050201'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700555: {
       // FCDC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.fcdc1FaultCondition,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270055501'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270055501'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700557: {
       // FCDC 2 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.fcdc2FaultCondition,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270055701'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270055701'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2700870: {
       // GND SPLR NOT ARMED
       flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
       simVarIsActive: this.groundSpoilerNotArmedWarning,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['270087001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['270087001'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     2131221: {
       // EXCESS CAB ALT
@@ -3835,7 +4169,7 @@ export class PseudoFWC {
         this.excessPressure,
       ),
       // TODO no separate slats indication
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.cabAltSetResetState1.get() ? 1 : null,
         this.cabAltSetResetState2.get() && this.seatBelt.get() !== 1 ? 2 : null,
@@ -3858,7 +4192,7 @@ export class PseudoFWC {
         15,
         16,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '213122101',
         '213122102',
         '213122103',
@@ -3879,7 +4213,6 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131222: {
       // SYS 1 FAULT
@@ -3889,12 +4222,11 @@ export class PseudoFWC {
         this.cpc1Fault,
         this.cpc2Fault,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['213122201'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['213122201'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131223: {
       // SYS 2 FAULT
@@ -3904,40 +4236,37 @@ export class PseudoFWC {
         this.cpc1Fault,
         this.cpc2Fault,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['213122301'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['213122301'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131224: {
       // SYS 1+2 FAULT
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.bothCpcFaultOutput,
-      whichCodeToReturn: () => [0, this.pressurizationAuto.get() ? 1 : null, 2],
-      codesToReturn: ['213122401', '213122402', '213122403'],
+      whichItemToReturn: () => [0, this.pressurizationAuto.get() ? 1 : null, 2],
+      codeToReturn: ['213122401', '213122402', '213122403'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131231: {
       // LO DIFF PR
       flightPhaseInhib: [2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.lowDiffPress,
-      whichCodeToReturn: () => [0, 1, 2],
-      codesToReturn: ['213123101', '213123102', '213123103'],
+      whichItemToReturn: () => [0, 1, 2],
+      codeToReturn: ['213123101', '213123102', '213123103'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131232: {
       // OFV NOT OPEN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8],
       simVarIsActive: this.outflowValveNotOpenOutput,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.pressurizationAuto.get() ? 1 : null,
         this.outflowValveOpenAmount.get() < 95 ? 2 : null,
@@ -3945,17 +4274,16 @@ export class PseudoFWC {
         this.pack1On.get() ? 4 : null,
         this.pack2On.get() ? 5 : null,
       ],
-      codesToReturn: ['213123201', '213123202', '213123203', '213123204', '213123205', '213123206'],
+      codeToReturn: ['213123201', '213123202', '213123203', '213123204', '213123205', '213123206'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131233: {
       // SAFETY VALVE OPEN
       flightPhaseInhib: [4, 5, 7, 8, 9, 10],
       simVarIsActive: this.safetyValveNotClosedOutput,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.cabinDeltaPressure.get() < 1 ? 1 : null,
         this.cabinDeltaPressure.get() < 1 ? 2 : null,
@@ -3966,7 +4294,7 @@ export class PseudoFWC {
         this.cabinDeltaPressure.get() > 4 ? 7 : null,
         this.cabinDeltaPressure.get() > 4 ? 8 : null,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '213123301',
         '213123302',
         '213123303',
@@ -3980,24 +4308,22 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: 2,
-      side: 'LEFT',
     },
     2131235: {
       // EXCES RESIDUAL PR
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       simVarIsActive: this.excessResidualPr,
-      whichCodeToReturn: () => [0, this.pack1On.get() ? 1 : null, this.pack2On.get() ? 2 : null, 3],
-      codesToReturn: ['213123501', '213123502', '213123503', '213123504'],
+      whichItemToReturn: () => [0, this.pack1On.get() ? 1 : null, this.pack2On.get() ? 2 : null, 3],
+      codeToReturn: ['213123501', '213123502', '213123503', '213123504'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: 2,
-      side: 'LEFT',
     },
     2161206: {
       // PACK 1+2 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.pack1And2Fault,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.pack1On.get() ? 1 : null,
         this.pack2On.get() ? 2 : null,
@@ -4007,7 +4333,7 @@ export class PseudoFWC {
         !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 6 : null,
         !this.aircraftOnGround.get() ? 7 : null,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '216120601',
         '216120602',
         '216120603',
@@ -4020,51 +4346,46 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: 1,
-      side: 'LEFT',
     },
     2161202: {
       // PACK 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.acsc1Fault,
-      whichCodeToReturn: () => [0, this.pack1On.get() ? 1 : null],
-      codesToReturn: ['216120201', '216120202'],
+      whichItemToReturn: () => [0, this.pack1On.get() ? 1 : null],
+      codeToReturn: ['216120201', '216120202'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 1,
-      side: 'LEFT',
     },
     2161203: {
       // PACK 2 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.acsc2Fault,
-      whichCodeToReturn: () => [0, this.pack2On.get() ? 1 : null],
-      codesToReturn: ['216120301', '216120302'],
+      whichItemToReturn: () => [0, this.pack2On.get() ? 1 : null],
+      codeToReturn: ['216120301', '216120302'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 1,
-      side: 'LEFT',
     },
     2161207: {
       // PACK 1 ABNORMALLY OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.packOffNotFailed1Status,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216120701'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216120701'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 1,
-      side: 'LEFT',
     },
     2161208: {
       // PACK 2 ABNORMALLY OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.packOffNotFailed2Status,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216120801'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216120801'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 1,
-      side: 'LEFT',
     },
     2161291: {
       // COND CTL 1-A FAULT
@@ -4074,12 +4395,11 @@ export class PseudoFWC {
         this.acsc1Lane1Fault,
         this.acsc1Lane2Fault,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216129101'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216129101'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2161297: {
       // COND CTL 1-B FAULT
@@ -4089,12 +4409,11 @@ export class PseudoFWC {
         this.acsc1Lane1Fault,
         this.acsc1Lane2Fault,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216129701'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216129701'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2161294: {
       // COND CTL 2-A FAULT
@@ -4104,12 +4423,11 @@ export class PseudoFWC {
         this.acsc2Lane1Fault,
         this.acsc2Lane2Fault,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216129401'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216129401'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2161298: {
       // COND CTL 2-B FAULT
@@ -4119,45 +4437,41 @@ export class PseudoFWC {
         this.acsc2Lane1Fault,
         this.acsc2Lane2Fault,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216129801'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216129801'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2163210: {
       // CKPT DUCT OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.ckptDuctOvht,
-      whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
-      codesToReturn: ['216321001', '216321002', '216321003', '216321004'],
+      whichItemToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+      codeToReturn: ['216321001', '216321002', '216321003', '216321004'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 7,
-      side: 'LEFT',
     },
     2163211: {
       // FWD DUCT OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.fwdDuctOvht,
-      whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
-      codesToReturn: ['216321101', '216321102', '216321103', '216321104'],
+      whichItemToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+      codeToReturn: ['216321101', '216321102', '216321103', '216321104'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 7,
-      side: 'LEFT',
     },
     2163212: {
       // AFT DUCT OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.aftDuctOvht,
-      whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
-      codesToReturn: ['216321201', '216321202', '216321203', '216321204'],
+      whichItemToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+      codeToReturn: ['216321201', '216321202', '216321203', '216321204'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 7,
-      side: 'LEFT',
     },
     2163218: {
       // L+R CAB FAN FAULT
@@ -4167,64 +4481,60 @@ export class PseudoFWC {
         this.cabFanHasFault1,
         this.cabFanHasFault2,
       ),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['216321801', '216321802'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['216321801', '216321802'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 7,
-      side: 'LEFT',
     },
     2163260: {
       // LAV+GALLEY FAN FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8, 9],
       simVarIsActive: this.lavGalleyFanFault,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['216326001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['216326001'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2163290: {
       // HOT AIR FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.hotAirDisagrees,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.hotAirPbOn.get() ? 1 : null,
         this.anyDuctOvht.get() && this.hotAirPbOn.get() ? 2 : null,
         this.anyDuctOvht.get() && this.pack1On.get() ? 3 : null,
         this.anyDuctOvht.get() && this.pack2On.get() ? 4 : null,
       ],
-      codesToReturn: ['216329001', '216329002', '216329003', '216329004', '216329005'],
+      codeToReturn: ['216329001', '216329002', '216329003', '216329004', '216329005'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 7,
-      side: 'LEFT',
     },
     2163305: {
       // TRIM AIR SYS FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.trimAirFault,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.ckptTrimFault.get() ? 1 : null,
         this.fwdTrimFault.get() ? 2 : null,
         this.aftTrimFault.get() ? 3 : null,
         this.trimAirHighPressure.get() ? 4 : null,
       ],
-      codesToReturn: ['216330501', '216330502', '216330503', '216330504', '216330505'],
+      codeToReturn: ['216330501', '216330502', '216330503', '216330504', '216330505'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     2600150: {
       // SMOKE FWD CARGO SMOKE
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.cargoFireTest,
       // TODO no separate slats indication
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         SimVar.GetSimVarValue('L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON', 'bool') === 1 ? 2 : null,
         [1, 10].includes(this.fwcFlightPhase.get()) && !this.cargoFireAgentDisch.get() ? 3 : null,
@@ -4234,7 +4544,7 @@ export class PseudoFWC {
         this.aircraftOnGround.get() ? 7 : null,
         this.aircraftOnGround.get() ? 8 : null,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '260015001',
         '260015002',
         '260015003',
@@ -4248,7 +4558,6 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
     },
     7700647: {
       // THR LEVERS NOT SET  (on ground)
@@ -4260,16 +4569,15 @@ export class PseudoFWC {
         this.throttle2Position,
         this.thrustLeverNotSet,
       ),
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.autothrustLeverWarningFlex.get() ? 1 : null,
         this.autothrustLeverWarningToga.get() ? 2 : null,
       ],
-      codesToReturn: ['770064701', '770064702', '770064703'],
+      codeToReturn: ['770064701', '770064702', '770064703'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     3200050: {
       // PK BRK ON
@@ -4280,34 +4588,31 @@ export class PseudoFWC {
         this.parkBrake,
       ),
       // TODO no separate slats indication
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['320005001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['320005001'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'RIGHT',
     },
     3200060: {
       // NW ANTI SKID INACTIVE
       flightPhaseInhib: [4, 5],
       simVarIsActive: this.antiskidActive.map((v) => !v),
-      whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['320006001', '320006002'],
+      whichItemToReturn: () => [0, 1],
+      codeToReturn: ['320006001', '320006002'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
-      side: 'LEFT',
     },
     3200150: {
       // GEAR NOT DOWN
       flightPhaseInhib: [3, 4, 5],
       simVarIsActive: this.lgNotDownNoCancel,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['320015001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['320015001'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: false,
     },
     3200155: {
@@ -4318,12 +4623,11 @@ export class PseudoFWC {
         this.lgNotDownNoCancel,
         this.lgNotDown,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['320015501'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['320015501'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
-      side: 'LEFT',
       cancel: true,
     },
     3200180: {
@@ -4336,12 +4640,11 @@ export class PseudoFWC {
         this.lgciu2Fault,
         this.dcESSBusPowered,
       ),
-      whichCodeToReturn: () => [0, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 1 : null],
-      codesToReturn: ['320018001', '320018002'],
+      whichItemToReturn: () => [0, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 1 : null],
+      codeToReturn: ['320018001', '320018002'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     3200190: {
       // LGCIU 2 FAULT
@@ -4352,12 +4655,11 @@ export class PseudoFWC {
         this.lgciu2Fault,
         this.dc2BusPowered,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['320019001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['320019001'],
       memoInhibit: () => false,
       failure: 1,
       sysPage: -1,
-      side: 'LEFT',
     },
     3200195: {
       // LGCIU 1+2 FAULT
@@ -4370,12 +4672,11 @@ export class PseudoFWC {
         this.dc2BusPowered,
         this.dcESSBusPowered,
       ),
-      whichCodeToReturn: () => [0, 1, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 2 : null],
-      codesToReturn: ['320019501', '320019502', '320019503'],
+      whichItemToReturn: () => [0, 1, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 2 : null],
+      codeToReturn: ['320019501', '320019502', '320019503'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
-      side: 'LEFT',
     },
     3400140: {
       // RA 1 FAULT
@@ -4385,12 +4686,11 @@ export class PseudoFWC {
         this.height1Failed,
         this.ac1BusPowered,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['340014001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['340014001'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     3400150: {
       // RA 2 FAULT
@@ -4400,34 +4700,31 @@ export class PseudoFWC {
         this.height2Failed,
         this.ac2BusPowered,
       ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['340015001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['340015001'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     3400500: {
       // TCAS FAULT
       flightPhaseInhib: [1, 3, 4, 5, 7, 8, 10],
       simVarIsActive: this.tcasFault,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['340050001'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['340050001'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     3400507: {
       // NAV TCAS STBY (in flight)
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.tcasSensitivity.map((v) => v === 1),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['340050701'],
+      whichItemToReturn: () => [0],
+      codeToReturn: ['340050701'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     3200010: {
       // L/G-BRAKES OVHT
@@ -4438,7 +4735,7 @@ export class PseudoFWC {
         this.fwcFlightPhase,
         this.brakesHot,
       ),
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         !this.aircraftOnGround.get() ? 1 : null,
         [1, 10].includes(this.fwcFlightPhase.get()) ? 2 : null,
@@ -4449,7 +4746,7 @@ export class PseudoFWC {
         !this.aircraftOnGround.get() ? 7 : null,
         !this.aircraftOnGround.get() ? 8 : null,
       ],
-      codesToReturn: [
+      codeToReturn: [
         '320001001',
         '320001002',
         '320001003',
@@ -4463,73 +4760,67 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
-      side: 'LEFT',
     },
     3081186: {
       // SEVERE ICE DETECTED
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.iceSevereDetectedTimerStatus,
-      whichCodeToReturn: () => [0, !this.wingAntiIce.get() ? 1 : null, this.engSelectorPosition.get() !== 2 ? 2 : null],
-      codesToReturn: ['308128001', '308128002', '308128003'],
+      whichItemToReturn: () => [0, !this.wingAntiIce.get() ? 1 : null, this.engSelectorPosition.get() !== 2 ? 2 : null],
+      codeToReturn: ['308128001', '308128002', '308128003'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     3081280: {
       // ICE DETECTED
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.iceDetectedTimer2Status,
-      whichCodeToReturn: () => [0, !this.eng1AntiIce.get() ? 1 : null, !this.eng2AntiIce.get() ? 2 : null],
-      codesToReturn: ['308128001', '308128002', '308128003'],
+      whichItemToReturn: () => [0, !this.eng1AntiIce.get() ? 1 : null, !this.eng2AntiIce.get() ? 2 : null],
+      codeToReturn: ['308128001', '308128002', '308128003'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
-      side: 'LEFT',
     },
     2900126: {
       // *HYD  - Blue reservoir overheat
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.blueRvrOvht,
-      whichCodeToReturn: () => [0, this.blueElecPumpPBAuto.get() ? 1 : null],
-      codesToReturn: ['290012601', '290012602'],
+      whichItemToReturn: () => [0, this.blueElecPumpPBAuto.get() ? 1 : null],
+      codeToReturn: ['290012601', '290012602'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 4,
-      side: 'LEFT',
     },
     2900127: {
       // *HYD  - Yellow reservoir overheat
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.yellowRvrOvht,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         this.ptuAuto.get() ? 1 : null,
         this.eng2pumpPBisAuto.get() ? 2 : null,
         !this.yepumpPBisAuto.get() ? 3 : null,
       ],
-      codesToReturn: ['290012701', '290012702', '290012703', '290012704'],
+      codeToReturn: ['290012701', '290012702', '290012703', '290012704'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 4,
-      side: 'LEFT',
     },
     2900128: {
       // *HYD  - Green reservoir overheat
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.greenRvrOvht,
-      whichCodeToReturn: () => [0, this.ptuAuto.get() ? 1 : null, this.eng1pumpPBisAuto.get() ? 2 : null],
-      codesToReturn: ['290012801', '290012802', '290012803'],
+      whichItemToReturn: () => [0, this.ptuAuto.get() ? 1 : null, this.eng1pumpPBisAuto.get() ? 2 : null],
+      codeToReturn: ['290012801', '290012802', '290012803'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 4,
-      side: 'LEFT',
     },
     2800145: {
       // L+R WING TK LO LVL
       flightPhaseInhib: [3, 4, 5, 7, 8, 9],
       simVarIsActive: this.lrTankLow,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         1,
         !this.leftFuelPump1Auto.get() ? 2 : null,
@@ -4545,7 +4836,7 @@ export class PseudoFWC {
         this.fuelXFeedPBOn.get() ? 12 : null, // TODO: Gravity feed signals
         this.fuelXFeedPBOn.get() ? 13 : null, // TODO: Gravity feed signals
       ],
-      codesToReturn: [
+      codeToReturn: [
         '280014501',
         '280014502',
         '280014503',
@@ -4564,13 +4855,12 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: 5,
-      side: 'LEFT',
     },
     2800130: {
       // L WING TK LO LVL
       flightPhaseInhib: [3, 4, 5, 7, 8, 9],
       simVarIsActive: this.leftFuelLow,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         !this.fuelCtrTankModeSelMan.get() ? 1 : null,
         !this.fuelXFeedPBOn.get() ? 2 : null,
@@ -4579,17 +4869,16 @@ export class PseudoFWC {
         this.leftFuelPump1Auto.get() ? 5 : null,
         this.leftFuelPump2Auto.get() ? 6 : null,
       ],
-      codesToReturn: ['280013001', '280013002', '280013003', '280013004', '280013005', '280013006', '280013007'],
+      codeToReturn: ['280013001', '280013002', '280013003', '280013004', '280013005', '280013006', '280013007'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 5,
-      side: 'LEFT',
     },
     2800140: {
       // R WING TK LO LVL
       flightPhaseInhib: [3, 4, 5, 7, 8, 9],
       simVarIsActive: this.rightFuelLow,
-      whichCodeToReturn: () => [
+      whichItemToReturn: () => [
         0,
         !this.fuelCtrTankModeSelMan.get() ? 1 : null,
         !this.fuelXFeedPBOn.get() ? 2 : null,
@@ -4598,11 +4887,10 @@ export class PseudoFWC {
         this.rightFuelPump1Auto.get() ? 5 : null,
         this.rightFuelPump2Auto.get() ? 6 : null,
       ],
-      codesToReturn: ['280014001', '280014002', '280014003', '280014004', '280014005', '280014006', '280014007'],
+      codeToReturn: ['280014001', '280014002', '280014003', '280014004', '280014005', '280014006', '280014007'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 5,
-      side: 'LEFT',
     },
   };
 }
