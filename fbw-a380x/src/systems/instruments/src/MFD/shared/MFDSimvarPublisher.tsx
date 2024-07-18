@@ -41,7 +41,7 @@ export enum MfdVars {
   elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
   potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
   potentiometerFo = 'LIGHT POTENTIOMETER:90',
-  fmsDataKnob = 'L:A32NX_EIS_DMC_SWITCHING_KNOB',
+  fmsDataKnob = 'L:A32NX_FMS_SWITCHING_KNOB',
   flightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
   flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
   adirs1MaintWord = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
