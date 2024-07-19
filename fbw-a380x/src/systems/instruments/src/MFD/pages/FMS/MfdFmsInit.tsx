@@ -18,7 +18,7 @@ import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief/simbriefInterface';
-import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
+import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';

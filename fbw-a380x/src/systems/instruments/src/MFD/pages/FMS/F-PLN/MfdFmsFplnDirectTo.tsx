@@ -6,7 +6,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex, WaypointEntryUtils } from '@fmgc/index';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';

@@ -3,7 +3,7 @@ import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 

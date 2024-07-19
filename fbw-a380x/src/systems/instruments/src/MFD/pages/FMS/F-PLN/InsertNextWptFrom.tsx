@@ -12,10 +12,10 @@ import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FlightPlanIndex } from '@fmgc/index';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 
 export type NextWptInfo = {

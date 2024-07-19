@@ -1,4 +1,4 @@
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import {
   A320FlightPlanPerformanceData,
@@ -9,7 +9,7 @@ import {
   Navigation,
   getFlightPhaseManager,
 } from '@fmgc/index';
-import { A380AircraftConfig } from '@fmgc/flightplanning/new/A380AircraftConfig';
+import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import {
   ArraySubject,
   ClockEvents,
@@ -45,9 +45,9 @@ import {
   TypeIIMessage,
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
+import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { distanceTo, Coordinates } from 'msfs-geo';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';

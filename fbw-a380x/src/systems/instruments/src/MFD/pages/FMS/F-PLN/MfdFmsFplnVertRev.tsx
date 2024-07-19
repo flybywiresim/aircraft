@@ -17,11 +17,11 @@ import {
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { Vmo } from '@shared/PerformanceConstants';
-import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}

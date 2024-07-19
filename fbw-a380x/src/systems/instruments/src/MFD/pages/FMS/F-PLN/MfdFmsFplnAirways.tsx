@@ -5,16 +5,16 @@ import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/M
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
+import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 

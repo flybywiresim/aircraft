@@ -1,6 +1,6 @@
 import { FmsErrorType } from '@fmgc/FmsError';
-import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { DataManager, FlightPlanIndex, FlightPlanService, GuidanceController } from '@fmgc/index';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';

@@ -1,5 +1,5 @@
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { ConsumerSubject, EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { FlightManagementComputer } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';

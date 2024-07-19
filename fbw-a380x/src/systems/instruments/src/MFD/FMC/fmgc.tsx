@@ -1,4 +1,4 @@
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
 
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -6,7 +6,7 @@ import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';

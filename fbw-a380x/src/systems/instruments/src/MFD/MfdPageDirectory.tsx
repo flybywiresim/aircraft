@@ -22,7 +22,7 @@ import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';

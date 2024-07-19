@@ -1,18 +1,18 @@
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { FlightPlanEvents } from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
+import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected subs = [] as Subscription[];
 
-  private newDataIntervalId: number = 0;
+  private newDataIntervalId: ReturnType<typeof setTimeout> | undefined = undefined;
 
   protected activePageTitle = Subject.create<string>('');
 
@@ -196,6 +196,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     this.subs.forEach((x) => x.destroy());
 
     clearInterval(this.newDataIntervalId);
+    this.newDataIntervalId = undefined;
 
     super.destroy();
   }

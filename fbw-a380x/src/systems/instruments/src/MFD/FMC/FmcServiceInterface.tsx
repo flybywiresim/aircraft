@@ -1,4 +1,4 @@
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 

@@ -23,8 +23,8 @@ import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pag
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
