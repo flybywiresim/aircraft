@@ -9,7 +9,7 @@ import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { LegCalculations } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { LegCalculations } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export abstract class Leg extends Guidable {
   segment: SegmentType;

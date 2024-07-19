@@ -17,7 +17,7 @@ import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/component
 import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { StepAhead } from '@fmgc/components/fms-messages/StepAhead';
 import { StepDeleted } from '@fmgc/components/fms-messages/StepDeleted';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';

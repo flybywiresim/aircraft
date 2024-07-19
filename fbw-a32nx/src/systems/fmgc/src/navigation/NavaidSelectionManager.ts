@@ -10,8 +10,8 @@ import {
   VhfNavaid,
   VhfNavaidType,
 } from '@flybywiresim/fbw-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';

@@ -16,8 +16,8 @@ import { CourseCaptureTransition } from '@fmgc/guidance/lnav/transitions/CourseC
 import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
