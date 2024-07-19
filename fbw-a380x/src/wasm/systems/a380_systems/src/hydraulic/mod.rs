@@ -6192,6 +6192,8 @@ struct SpoilerGroup {
     spoiler_positions: [f64; 8],
 }
 impl SpoilerGroup {
+    const PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO: f64 = 0.55;
+
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
         Self {
             spoilers,
@@ -6277,8 +6279,15 @@ impl SpoilerGroup {
     }
 
     fn ground_spoilers_are_requested(&self) -> bool {
-        self.hydraulic_controllers[0].requested_position() > Ratio::new::<ratio>(0.1)
-            && self.hydraulic_controllers[1].requested_position() > Ratio::new::<ratio>(0.1)
+        // Placeholder to decide if ground spoilers are requested. TODO use actual signal from flight controls
+        self.hydraulic_controllers[0].requested_position()
+            > Ratio::new::<ratio>(
+                Self::PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO,
+            )
+            && self.hydraulic_controllers[1].requested_position()
+                > Ratio::new::<ratio>(
+                    Self::PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO,
+                )
     }
 }
 impl SimulationElement for SpoilerGroup {
