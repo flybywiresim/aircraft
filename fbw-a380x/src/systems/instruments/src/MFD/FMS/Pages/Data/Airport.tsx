@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { useNavDatabase } from '@instruments/common/flightplan';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Airport, Runway } from 'msfs-navdata';
 import { Layer } from '../../../Components/Layer';
 import { Tab, TabSet } from '../../../Components/tabs';

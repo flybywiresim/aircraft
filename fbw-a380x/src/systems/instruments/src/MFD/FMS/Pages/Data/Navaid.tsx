@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavDatabase } from '@instruments/common/flightplan';
 import { VhfNavaid, VhfNavaidType } from 'msfs-navdata';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../../Components/Layer';
 import { Tab, TabSet } from '../../../Components/tabs';
 import { Button } from '../../../Components/Button';
