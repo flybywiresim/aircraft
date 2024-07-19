@@ -4,7 +4,7 @@
 
 import { FcuSync } from '@fmgc/components/FcuSync';
 import { ReadySignal } from '@fmgc/components/ReadySignal';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 import { FmsMessages } from './fms-messages';
 

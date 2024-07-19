@@ -72,6 +72,8 @@ enum FwcAuralWarning {
 
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<EwdSimvars & StallWarningEvents>();
+  /** Time to inhibit master warnings and cautions during startup in ms */
+  private static readonly FWC_STARTUP_TIME = 5000;
 
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
@@ -100,6 +102,9 @@ export class PseudoFWC {
   );
 
   /* PSEUDO FWC VARIABLES */
+  private readonly startupTimer = new DebounceTimer();
+
+  private readonly startupCompleted = Subject.create(false);
 
   private readonly allCurrentFailures: string[] = [];
 
@@ -175,6 +180,10 @@ export class PseudoFWC {
   private readonly cabFanHasFault2 = Subject.create(false);
 
   private readonly excessPressure = Subject.create(false);
+
+  private readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
+
+  private readonly excessResidualPrConfirm = new NXLogicConfirmNode(5);
 
   private readonly excessResidualPr = Subject.create(false);
 
@@ -929,11 +938,13 @@ export class PseudoFWC {
     this.auralCrcOutput.sub((crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', crc));
 
     this.masterCaution.sub((caution) => {
-      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
+      // Inhibit master warning/cautions until FWC startup has been completed
+      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.startupCompleted.get() ? caution : false);
     }, true);
 
     this.masterWarningOutput.sub((warning) => {
-      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
+      // Inhibit master warning/cautions until FWC startup has been completed
+      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', this.startupCompleted.get() ? warning : false);
     }, true);
 
     // L/G lever red arrow sinking outputs
@@ -948,7 +959,7 @@ export class PseudoFWC {
       // set the sound on/off
       SimVar.SetSimVarValue('L:A32NX_AUDIO_STALL_WARNING', 'bool', v);
     }, true);
-    this.aircraftOnGround.sub((v) => this.fwcOut126.get().setBitValue(28, v));
+    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v));
 
     this.fwcOut126.sub((v) => {
       Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
@@ -977,6 +988,19 @@ export class PseudoFWC {
       () => (this.auralSingleChimePending = false),
       PseudoFWC.AURAL_SC_INHIBIT_TIME,
     );
+
+    this.acESSBusPowered.sub((v) => {
+      if (v) {
+        this.startupTimer.schedule(() => {
+          this.startupCompleted.set(true);
+          console.log('PseudoFWC startup completed.');
+        }, PseudoFWC.FWC_STARTUP_TIME);
+      } else {
+        this.startupTimer.clear();
+        this.startupCompleted.set(false);
+        console.log('PseudoFWC shut down.');
+      }
+    });
   }
 
   mapOrder(array, order): [] {
@@ -1491,7 +1515,14 @@ export class PseudoFWC {
 
     const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
     this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
-    this.excessResidualPr.set(activeCpc.bitValueOr(13, false));
+
+    const eng1And2NotRunning = !this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get();
+    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && eng1And2NotRunning, deltaTime);
+    const residualPressureSignal = SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_RESIDUAL_PR', 'bool');
+    this.excessResidualPr.set(
+      this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),
+    );
+
     this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
 
     this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));

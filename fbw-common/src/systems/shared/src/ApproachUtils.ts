@@ -86,8 +86,9 @@ export class ApproachUtils {
       case ApproachType.Lda:
         return 'LDA';
       case ApproachType.Loc:
-      case ApproachType.LocBackcourse:
         return 'LOC';
+      case ApproachType.LocBackcourse:
+        return 'BAC';
       case ApproachType.Ndb:
       case ApproachType.NdbDme:
         return 'NDB';
