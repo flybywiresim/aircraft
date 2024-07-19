@@ -8,7 +8,7 @@ import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { EngineModel } from '../EngineModel';
 import { Predictions, StepResults } from '../Predictions';
 import { AtmosphericConditions } from '../AtmosphericConditions';
