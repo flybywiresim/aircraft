@@ -5,7 +5,14 @@
 // Convention for IDs:
 // First two digits: ATA chapter
 // Third digit: Sub chapter, if needed
-// Fourth digit: 0 for MEMO, 1 for checklists, 2 for infos, 3 for INOP sys, 8 for ABN sensed, 9 for ABN non-sensed
+// Fourth digit:
+//    0 for MEMOs,
+//    1 for normal checklists,
+//    2 for infos,
+//    3 for INOP SYS,
+//    4 for limitations (not populated yet here),
+//    8 for ABN sensed procedures,
+//    9 for ABN non-sensed procedures
 
 /** All MEMOs should be here, EWD and PFD. */
 export const EcamMemos: { [n: string]: string } = {
@@ -1090,8 +1097,14 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 export const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure } = {};
 
-/** All possible INFOs (e.g. CAT 3 SINLE ONLY), with special formatting characters. */
-export const Infos: { [n: number]: string } = {};
+/** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
+export const Infos: { [n: number]: string } = {
+  220200001: '\x1b<3mFMS 1 ON FMC-C',
+  220200002: '\x1b<3mFMS 2 ON FMC-C',
+  220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
+  230200001: '\x1b<3mSATCOM DATALINK AVAIL',
+  340200001: '\x1b<3mCAT 3 SINGLE ONLY',
+};
 
 /** All possible INOP sys, with special formatting characters. */
 export const InopSys: { [n: number]: string } = {
@@ -1118,11 +1131,9 @@ export const InopSys: { [n: number]: string } = {
   221300001: '\x1b<4mFMC-A',
   221300002: '\x1b<4mFMC-B',
   221300003: '\x1b<4mFMC-C',
-  221300004: '\x1b<3mFMS 1 ON FMC-C',
-  221300005: '\x1b<3mFMS 2 ON FMC-C',
-  221300006: '\x1b<4mFMS 1',
-  221300007: '\x1b<4mFMS 2',
-  221300008: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
+  221300004: '\x1b<4mFMS 1',
+  221300005: '\x1b<4mFMS 2',
+  221300006: '\x1b<4mFMS 1+2',
   230300001: '\x1b<4mCIDS 1+2+3',
   230300002: '\x1b<4mUPPER DECK PA',
   230300003: '\x1b<4mMAIN DECK PA',

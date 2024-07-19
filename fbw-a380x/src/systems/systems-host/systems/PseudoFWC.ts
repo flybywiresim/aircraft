@@ -83,10 +83,20 @@ interface EwdAbnormalItem {
   whichItemsCompleted: () => boolean[];
   /** Returns a boolean vector (same length as number of items). Optional, defaults to true. If true, item is shown as activated */
   whichItemsActive?: () => boolean[];
+  /** 3 = master warning, 2 = master caution */
   failure: number;
+  /** Index of ECAM page to be displayed on SD */
   sysPage: number;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
+  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES */
+  inopSysAllPhases?: () => string[];
+  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG */
+  inopSysApprLdg?: () => string[];
+  /** Optional for now: Message IDs of INFO to be displayed on STS page */
+  info?: () => string[];
+  /** Optional for now: Message IDs of REDUND LOSS systems to be displayed on STS page */
+  redundLoss?: () => string[];
 }
 
 interface EwdAbnormalDict {
@@ -3443,6 +3453,8 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.fmsSwitchingKnob.get() === 1],
       failure: 1,
       sysPage: -1,
+      info: () => ['220200001'],
+      redundLoss: () => ['221300001'],
     },
     221800002: {
       // FMC-B FAULT
@@ -3453,6 +3465,8 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.fmsSwitchingKnob.get() === 1],
       failure: 1,
       sysPage: -1,
+      info: () => ['220200002'],
+      redundLoss: () => ['221300002'],
     },
     221800003: {
       // FMC-C FAULT
@@ -3463,6 +3477,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.fmsSwitchingKnob.get() === 1],
       failure: 1,
       sysPage: -1,
+      redundLoss: () => ['221300003'],
     },
     221800004: {
       // FMS 1 FAULT
@@ -3473,6 +3488,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [true, true, true, this.fmsSwitchingKnob.get() === 0],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['221300004'],
     },
     221800005: {
       // FMS 2 FAULT
@@ -3483,6 +3499,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [true, true, true, this.fmsSwitchingKnob.get() === 2],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['221300005'],
     },
     221800006: {
       // FMS 1+2 FAULT
@@ -3493,6 +3510,8 @@ export class PseudoFWC {
       whichItemsCompleted: () => [true, this.fmsSwitchingKnob.get() === 1, false, false, this.gpwsFlapMode.get() === 1],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['221300006', '340300003'],
+      info: () => ['220200003'],
     },
     221800007: {
       // TO SPEEDS NOT INSERTED
@@ -3514,6 +3533,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp1Off.get()],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300009'],
     },
     230800013: {
       // RMP 2 FAULT
@@ -3524,6 +3544,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp2Off.get()],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300010'],
     },
     230800014: {
       // RMP 3 FAULT
@@ -3534,6 +3555,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300011'],
     },
     230800015: {
       // RMP 1+2 FAULT
@@ -3544,6 +3566,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp2Off.get()],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300012', '230300015'],
     },
     230800016: {
       // RMP 1+3 FAULT
@@ -3554,6 +3577,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300013'],
     },
     230800017: {
       // RMP 2+3 FAULT
@@ -3564,6 +3588,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp2Off.get(), this.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300014'],
     },
     230800018: {
       // RMP 1+2+3 FAULT
@@ -3579,6 +3604,7 @@ export class PseudoFWC {
       whichItemsCompleted: () => [this.rmp1Off.get(), this.rmp2Off.get(), this.rmp3Off.get(), false, false, false],
       failure: 2,
       sysPage: -1,
+      inopSysAllPhases: () => ['230300016', '230300017', '230300018', '230300019', '230300006', '230300015'],
     },
   };
 
