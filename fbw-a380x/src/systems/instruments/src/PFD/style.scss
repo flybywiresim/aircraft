@@ -310,12 +310,19 @@ tspan.Red {
   }
 }
 
-/* .BacklightBleed {
-  width: 100%;
-  height: 100%;
+.TrimIndicatorSvg {
   position: absolute;
-  z-index: 998;
-  opacity: 0.75;
-  background-color: rgba(0, 0, 255, 0.025);
-  box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
-} */
+  top: 765px;
+  left: 326px;
+  width: 433px;
+  height: 252px;
+  font-family: "Ecam", monospace !important;
+}
+
+.TrimIndicatorImage {
+  position: absolute;
+  top: 765px;
+  left: 580px;
+  width: 100px;
+  height: 257px;
+}
