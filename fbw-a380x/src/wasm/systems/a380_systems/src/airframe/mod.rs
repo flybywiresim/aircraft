@@ -20,7 +20,7 @@ impl A380Airframe {
         operating_empty_position: (6.47, 0., 0.),
         per_pax_weight_kg: 84.,
         mean_aerodynamic_chord_size: 39.9475,
-        leading_edge_mean_aerodynamic_chord: 19.99,
+        leading_edge_mean_aerodynamic_chord: 20.99,
     };
 
     pub fn new(context: &mut InitContext) -> Self {
