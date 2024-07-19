@@ -3,7 +3,7 @@ import { Layer } from '@instruments/common/utils';
 import { useHistory } from 'react-router-dom';
 import { useActiveOrTemporaryFlightPlan } from '@instruments/common/flightplan';
 import { useSimVar } from '@instruments/common/simVars';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { TextBox } from '../../../Components/Textbox';
 import { Button } from '../../../Components/Button';
 

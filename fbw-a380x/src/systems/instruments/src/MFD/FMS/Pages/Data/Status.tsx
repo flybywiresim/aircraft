@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { useActiveNavDatabase } from '@instruments/common/flightplan';
 import { Button } from '../../../Components/Button';
 import { Tab, TabSet } from '../../../Components/tabs';

@@ -3,7 +3,7 @@ import { Layer } from '@instruments/common/utils';
 import { useActiveOrTemporaryFlightPlan, useNavDatabase } from '@instruments/common/flightplan';
 import { useHistory } from 'react-router-dom';
 import { Runway, Departure, IlsNavaid } from 'msfs-navdata';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { Dropdown, DropdownItem } from '../../../../Components/Dropdown';
 import { Button } from '../../../../Components/Button';
 
