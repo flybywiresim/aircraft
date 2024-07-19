@@ -903,15 +903,22 @@ export class FlightManagementComputer implements FmcInterface {
       this.flightPhaseManager.phase >= FmgcFlightPhase.Descent ||
       (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && destPred && destPred.distanceFromAircraft < 180)
     ) {
-      this.addMessageToQueue(
-        NXSystemMessages.enterDestData,
-        () =>
-          Number.isFinite(this.fmgc.getApproachQnh()) &&
-          Number.isFinite(this.fmgc.getApproachTemperature()) &&
-          Number.isFinite(this.fmgc.getApproachWind().direction) &&
-          Number.isFinite(this.fmgc.getApproachWind().speed),
-        () => {},
-      );
+      if (
+        !Number.isFinite(this.fmgc.data.approachQnh.get()) ||
+        !Number.isFinite(this.fmgc.data.approachTemperature.get()) ||
+        !Number.isFinite(this.fmgc.data.approachWind.get()?.direction) ||
+        !Number.isFinite(this.fmgc.data.approachWind.get()?.speed)
+      ) {
+        this.addMessageToQueue(
+          NXSystemMessages.enterDestData,
+          () =>
+            Number.isFinite(this.fmgc.data.approachQnh.get()) &&
+            Number.isFinite(this.fmgc.data.approachTemperature.get()) &&
+            Number.isFinite(this.fmgc.data.approachWind.get()?.direction) &&
+            Number.isFinite(this.fmgc.data.approachWind.get()?.speed),
+          () => {},
+        );
+      }
     }
   }
 
