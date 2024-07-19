@@ -40,6 +40,15 @@ pub struct A380ReverserController {
     tertiary_lock_from_prim_should_unlock: bool,
 }
 impl A380ReverserController {
+    const FIRST_LINE_OF_DEFENCE_TLA_ANGLE_DEGREE: f64 = -3.;
+    const SECOND_LINE_OF_DEFENCE_TLA_ANGLE_DEGREE: f64 = -3.5;
+    const THIRD_LINE_OF_DEFENCE_TLA_ANGLE_DEGREE: f64 = -4.;
+
+    const OPENING_AUTHORIZATION_TLA_ANGLE_DEGREE: f64 = -4.3;
+    const MIN_N2_ENGINE_TO_ALLOW_OPENING_PCT: f64 = 50.;
+
+    const POSITION_FEEDBACK_THRESHOLD_FOR_REPORTING_STOWED: f64 = 0.1;
+
     pub fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
             throttle_lever_angle_id: context
@@ -58,7 +67,7 @@ impl A380ReverserController {
         &self,
         lgciu: &impl LgciuWeightOnWheels,
     ) -> bool {
-        self.throttle_lever_angle.get::<degree>() <= -3.
+        self.throttle_lever_angle.get::<degree>() <= Self::FIRST_LINE_OF_DEFENCE_TLA_ANGLE_DEGREE
             && lgciu.left_and_right_gear_compressed(false)
     }
 
@@ -66,14 +75,14 @@ impl A380ReverserController {
         &self,
         lgciu: &impl LgciuWeightOnWheels,
     ) -> bool {
-        // TODO Should be a switch info from throttle assembly, using a -3.5 value as placeholder
-        self.throttle_lever_angle.get::<degree>() <= -3.5
+        // TODO Should be a switch info from throttle assembly, using a TLA angle value as placeholder
+        self.throttle_lever_angle.get::<degree>() <= Self::SECOND_LINE_OF_DEFENCE_TLA_ANGLE_DEGREE
             && lgciu.left_and_right_gear_compressed(false)
     }
 
     fn third_line_of_defense_condition_should_unlock(&self) -> bool {
         // TODO This should come from PRIM independant data
-        self.throttle_lever_angle.get::<degree>() <= -4.
+        self.throttle_lever_angle.get::<degree>() <= Self::THIRD_LINE_OF_DEFENCE_TLA_ANGLE_DEGREE
     }
 
     pub fn update(
@@ -83,13 +92,16 @@ impl A380ReverserController {
         reverser_feedback: &impl ReverserFeedback,
     ) {
         let is_confirmed_stowed_available_for_deploy =
-            reverser_feedback.position_sensor().get::<ratio>() <= 0.1
+            reverser_feedback.position_sensor().get::<ratio>()
+                <= Self::POSITION_FEEDBACK_THRESHOLD_FOR_REPORTING_STOWED
                 && reverser_feedback.proximity_sensor_all_stowed();
 
-        let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
+        let deploy_authorized = engine.corrected_n2().get::<percent>()
+            > Self::MIN_N2_ENGINE_TO_ALLOW_OPENING_PCT
             && lgciu.left_and_right_gear_compressed(false);
 
-        let command_opening = self.throttle_lever_angle.get::<degree>() <= -4.3;
+        let command_opening = self.throttle_lever_angle.get::<degree>()
+            <= Self::OPENING_AUTHORIZATION_TLA_ANGLE_DEGREE;
 
         self.primary_lock_from_prim_should_unlock =
             self.first_line_of_defense_condition_should_unlock(lgciu);
