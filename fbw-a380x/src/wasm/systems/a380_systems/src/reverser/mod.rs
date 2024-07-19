@@ -1,42 +1,22 @@
-use std::{fmt::Debug, fmt::Display, time::Duration};
+use std::fmt::Debug;
 
 use systems::{
     accept_iterable,
-    apu::{
-        AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory, AuxiliaryPowerUnitFireOverheadPanel,
-        AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
-    },
-    electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{
         reverser::{A380ReverserAssembly, ElecReverserInterface, ReverserFeedback},
-        trent_engine::TrentEngine,
-        Engine, EngineFireOverheadPanel,
+        Engine,
     },
-    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
-    landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
-    navigation::adirs::{
-        AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
-    },
-    shared::{DelayedFalseLogicGate, ElectricalBusType, LgciuWeightOnWheels, ReverserPosition},
+    shared::{ElectricalBusType, LgciuWeightOnWheels, ReverserPosition},
     simulation::{
-        Aircraft, InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
 use uom::si::{
-    acceleration::meter_per_second_squared,
     angle::degree,
-    angular_velocity::{radian_per_second, revolution_per_minute},
-    electric_current::ampere,
     f64::*,
-    length::meter,
-    mass::kilogram,
-    pressure::psi,
     ratio::{percent, ratio},
-    velocity::knot,
-    volume::{cubic_inch, gallon, liter},
-    volume_rate::gallon_per_second,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -98,7 +78,6 @@ impl A380ReverserController {
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
         engine: &impl Engine,
         lgciu: &impl LgciuWeightOnWheels,
         reverser_feedback: &impl ReverserFeedback,
@@ -212,10 +191,11 @@ pub struct A380Reversers {
     reversers_deployed: [bool; 2],
 }
 impl A380Reversers {
+    // TODO use correct electrical scheme
     const REVERSER_2_ETRAC_SUPPLY_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrent(1);
+        ElectricalBusType::AlternatingCurrent(2);
     const REVERSER_3_ETRAC_SUPPLY_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrent(2);
+        ElectricalBusType::AlternatingCurrent(4);
 
     const REVERSER_2_TERTIARY_LOCK_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrent(2);

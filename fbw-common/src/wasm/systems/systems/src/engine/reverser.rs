@@ -1,5 +1,5 @@
 use std::time::Duration;
-use uom::si::{f64::*, power::watt, ratio::ratio, volume::gallon};
+use uom::si::{f64::*, power::watt, ratio::ratio};
 
 use crate::{
     shared::{

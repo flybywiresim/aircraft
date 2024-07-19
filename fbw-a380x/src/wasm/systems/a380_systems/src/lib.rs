@@ -331,13 +331,11 @@ impl Aircraft for A380 {
         self.fuel.update(context);
 
         self.engine_reverser_control[0].update(
-            context,
             &self.engine_2,
             self.lgcius.lgciu1(),
             self.reversers_assembly.reverser_feedback(0),
         );
         self.engine_reverser_control[1].update(
-            context,
             &self.engine_3,
             self.lgcius.lgciu2(),
             self.reversers_assembly.reverser_feedback(1),
