@@ -5,14 +5,14 @@
 /* eslint-disable no-await-in-loop */
 
 import { NXDataStore, RunwayDesignatorChar, Waypoint, WaypointArea } from '@flybywiresim/fbw-sdk';
-import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { FlightPlanRpcClient } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcClient';
+import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 
 import {
   FlightPlanEvents,
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
-} from '@fmgc/flightplanning/new/sync/FlightPlanEvents';
+} from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import {
   A320FlightPlanPerformanceData,
   FlightPlanIndex,
