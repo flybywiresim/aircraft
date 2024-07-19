@@ -106,6 +106,7 @@
 1. [EFB] Added a takeoff performance calculator - @donstim (donbikes), @tracernz (Mike)
 1. [MCDU] Removed V-speed auto-fill function - @tracernz (Mike)
 1. [PFD] Implement alerts within artificial horizon (ROP, ROW, OANS, stall, windshear) @flogross89 (Flo)
+1. [GPWS] Fixed behaviour and trigger conditions for GPWS Mode 4 submodes - @LeechCZ (Leech)
 
 ## 0.11.0
 
