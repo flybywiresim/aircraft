@@ -460,12 +460,24 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
   211800009: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   211800010: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 FAULT  ',
     sensed: true,
-    items: [],
+    items: [
+      {
+      name: 'PACK 2',
+      sensed: true,
+      labelNotCompleted: 'OFF',
+      },
+  ],
   },
   211800011: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 OFF ',
@@ -473,29 +485,87 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
     items: [],
   },
   211800012: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 OFF ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 OFF',
     sensed: true,
     items: [],
   },
   211800013: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 OVHT  ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 OVHT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   211800014: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 OVHT ',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   211800015: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 REGUL FAULT  ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 REGUL FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1 IN BYPASS MODE',
+        sensed: false,
+      },
+      {
+        name: 'PACK 1 AVAIL ABOVE FL 290', // ONLY IF BYPASS MODE OR EXTRACT FAULT
+        sensed: false,
+      },
+      {
+        name: 'PACK 1 WATER EXTRACT FAULT',
+        sensed: false,
+      },
+      {
+        name: 'PACK 1 RAM AIR DOOR CLOSED',
+        sensed: false,
+      },
+      { // Message auto-rcl'd when below fl290
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 2,
+      },
+    ],
   },
   211800016: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 REGUL FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 2 IN BYPASS MODE',
+        sensed: false,
+      },
+      {
+        name: 'PACK 2 AVAIL ABOVE FL 290',
+        sensed: false,
+      },
+      {
+        name: 'PACK 2 WATER EXTRACT FAULT',
+        sensed: false,
+      },
+      {
+        name: 'PACK 2 RAM AIR DOOR CLOSED',
+        sensed: false,
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 2,
+      },
+    ],
   },
   211800017: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 VLV 1 FAULT ',
