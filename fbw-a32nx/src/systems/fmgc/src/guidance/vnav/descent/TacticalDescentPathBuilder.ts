@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 
 export class ReadySignal implements FmgcComponent {

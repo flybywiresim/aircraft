@@ -5,10 +5,10 @@
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { LegType } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
