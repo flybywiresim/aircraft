@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EngineModelParameters } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { EngineModelParameters } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { Common } from './common';
 
 export class EngineModel {

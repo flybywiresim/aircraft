@@ -5,7 +5,7 @@
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 
 interface CourseAtDistance {
   distanceFromStart: NauticalMiles;

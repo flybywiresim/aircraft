@@ -19,8 +19,8 @@ import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory'
 import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import {

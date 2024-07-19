@@ -23,7 +23,7 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { BisectionMethod, NonTerminationStrategy } from '@fmgc/guidance/vnav/BisectionMethod';
 import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 
 class FlapConfigurationProfile {
   static getBySpeed(speed: Knots, parameters: VerticalProfileComputationParameters): FlapConf {
