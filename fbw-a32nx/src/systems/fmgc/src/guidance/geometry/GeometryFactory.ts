@@ -5,10 +5,10 @@
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { LegType } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
@@ -55,6 +55,7 @@ export namespace GeometryFactory {
       const prevElement = planElements[i - 1];
       const element = planElements[i];
       const nextElement = planElements[i + 1];
+      const nextNextElement = planElements[i + 2];
 
       if (element.isDiscontinuity === true) {
         continue;
@@ -67,21 +68,26 @@ export namespace GeometryFactory {
         runningMagvar = getFacilities().getMagVar(fixLocation.lat, fixLocation.long);
       }
 
-      let nextGeometryLeg;
+      let nextGeometryLeg: Leg;
       if (
         nextElement?.isDiscontinuity === false &&
         nextElement.type !== LegType.CI &&
         nextElement.type !== LegType.VI
       ) {
-        nextGeometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
+        nextGeometryLeg = isXiIfXf(element, nextElement, nextNextElement)
+          ? geometryLegFromFlightPlanLeg(runningMagvar, nextElement, nextNextElement)
+          : geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
       }
 
       const geometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, prevElement, element, nextGeometryLeg);
 
-      const previousGeometryLwg = legs.get(i - 1);
+      if (isXiIfXf(prevElement, element, nextElement)) {
+        geometryLeg.isNull = true;
+      }
 
-      if (previousGeometryLwg && doGenerateTransitions && doGenerateTransitionsForLeg(geometryLeg, i, plan)) {
-        const transition = TransitionPicker.forLegs(previousGeometryLwg, geometryLeg);
+      const previousGeometryLeg = legs.get(i - 1);
+      if (previousGeometryLeg && doGenerateTransitions && doGenerateTransitionsForLeg(geometryLeg, i, plan)) {
+        const transition = TransitionPicker.forLegs(previousGeometryLeg, geometryLeg);
 
         transitions.set(i - 1, transition);
       }
@@ -104,8 +110,9 @@ export namespace GeometryFactory {
     for (let i = 0; i < flightPlan.legCount; i++) {
       const oldLeg = geometry.legs.get(i);
 
-      const previousPlanLeg = flightPlan.allLegs[i - 1];
+      const prevPlanLeg = flightPlan.allLegs[i - 1];
       const nextPlanLeg = flightPlan.allLegs[i + 1];
+      const nextNextPlanLeg = flightPlan.allLegs[i + 2];
 
       const planLeg = flightPlan.allLegs[i];
 
@@ -122,20 +129,21 @@ export namespace GeometryFactory {
         continue;
       }
 
-      let nextLeg: Leg;
-      if (
-        nextPlanLeg?.isDiscontinuity === false &&
-        nextPlanLeg.type !== LegType.CI &&
-        nextPlanLeg.type !== LegType.VI &&
-        nextPlanLeg.type !== LegType.PI
-      ) {
-        nextLeg = geometryLegFromFlightPlanLeg(runningMagvar, planLeg, nextPlanLeg);
+      let nextLeg: Leg = undefined;
+      if (nextPlanLeg?.isDiscontinuity === false && !nextPlanLeg.isXI()) {
+        nextLeg = isXiIfXf(planLeg, nextPlanLeg, nextNextPlanLeg)
+          ? geometryLegFromFlightPlanLeg(runningMagvar, nextPlanLeg, nextNextPlanLeg)
+          : geometryLegFromFlightPlanLeg(runningMagvar, planLeg, nextPlanLeg);
       }
 
       const newLeg =
         planLeg?.isDiscontinuity === false
-          ? geometryLegFromFlightPlanLeg(runningMagvar, previousPlanLeg, planLeg, nextLeg)
+          ? geometryLegFromFlightPlanLeg(runningMagvar, prevPlanLeg, planLeg, nextLeg)
           : undefined;
+
+      if (isXiIfXf(prevPlanLeg, planLeg, nextPlanLeg)) {
+        newLeg.isNull = true;
+      }
 
       if (LnavConfig.DEBUG_GEOMETRY) {
         console.log(`[FMS/Geometry/Update] Old leg #${i} = ${oldLeg?.repr ?? '<none>'}`);
@@ -363,4 +371,19 @@ function doGenerateTransitionsForLeg(leg: Leg, legIndex: number, plan: BaseFligh
   }
 
   return true;
+}
+
+function isXiIfXf(
+  prev: FlightPlanElement | undefined,
+  current: FlightPlanElement | undefined,
+  next: FlightPlanElement | undefined,
+): next is FlightPlanLeg {
+  return (
+    prev?.isDiscontinuity === false &&
+    prev?.isXI() &&
+    current?.isDiscontinuity === false &&
+    current?.type === LegType.IF &&
+    next?.isDiscontinuity === false &&
+    next?.isXF()
+  );
 }

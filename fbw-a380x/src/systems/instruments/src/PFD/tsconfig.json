@@ -21,7 +21,9 @@
       "@flybywiresim/failures": ["failures"],
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../typings"],
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"]
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],
+      "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"],
+      "@flybywiresim/msfs-avionics-common": ["../../../fbw-common/src/systems/instruments/src/MsfsAvionicsCommon/index.ts"]
     }
   }
 }

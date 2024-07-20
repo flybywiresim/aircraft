@@ -38,8 +38,8 @@ import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileI
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import {
   isApproachCheckpoint,
   isSpeedChangePoint,
