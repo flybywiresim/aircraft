@@ -2682,7 +2682,7 @@ class FMCMainDisplay extends BaseAirliners {
     getToSpeedsTooLow() {
         const grossWeight = this.getGrossWeight();
 
-        if (this.flaps === null || grossWeight === null) {
+        if (this.flaps === null || grossWeight === null || this.v1Speed === null || this.vRSpeed === null || this.v2Speed === null) {
             return false;
         }
 
