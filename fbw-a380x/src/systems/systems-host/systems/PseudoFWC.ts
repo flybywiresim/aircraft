@@ -135,6 +135,10 @@ export class PseudoFWC {
 
   private static readonly EWD_MESSAGE_LINES = 7;
 
+  private static readonly SD_STATUS_INFO_MAX_LINES = 5;
+
+  private static readonly SD_STATUS_INOP_SYS_MAX_LINES = 10;
+
   private static readonly ewdMessageSimVarsLeft = Array.from(
     { length: PseudoFWC.EWD_MESSAGE_LINES },
     (_, i) => `L:A32NX_EWD_LOWER_LEFT_LINE_${i + 1}`,
@@ -159,6 +163,33 @@ export class PseudoFWC {
   );
 
   private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
+
+  private static readonly sdStatusInfoSimVars = Array.from(
+    { length: PseudoFWC.SD_STATUS_INFO_MAX_LINES },
+    (_, i) => `L:A32NX_SD_STATUS_INFO_LINE_${i + 1}`,
+  );
+
+  private readonly sdStatusInfoLines = Array.from({ length: PseudoFWC.SD_STATUS_INFO_MAX_LINES }, (_, _i) =>
+    Subject.create(''),
+  );
+
+  private static readonly sdStatusInopAllPhasesSimVars = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, i) => `L:A32NX_SD_STATUS_INOP_ALL_LINE_${i + 1}`,
+  );
+
+  private readonly sdStatusInopAllPhasesLines = Array.from({ length: PseudoFWC.SD_STATUS_INFO_MAX_LINES }, (_, _i) =>
+    Subject.create(''),
+  );
+
+  private static readonly sdStatusInopApprLdgSimVars = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, i) => `L:A32NX_SD_STATUS_INOP_LDG_LINE_${i + 1}`,
+  );
+
+  private readonly sdStatusInopApprLdgLines = Array.from({ length: PseudoFWC.SD_STATUS_INFO_MAX_LINES }, (_, _i) =>
+    Subject.create(''),
+  );
 
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
@@ -1019,6 +1050,24 @@ export class PseudoFWC {
     this.pfdMessageLines.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(PseudoFWC.pfdMessageSimVars[i], 'string', l ?? '');
+      }),
+    );
+
+    this.sdStatusInfoLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.sdStatusInfoSimVars[i], 'string', l ?? '');
+      }),
+    );
+
+    this.sdStatusInopAllPhasesLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
+      }),
+    );
+
+    this.sdStatusInopApprLdgLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
       }),
     );
 
@@ -2409,6 +2458,9 @@ export class PseudoFWC {
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
+    const stsInfoKeys: string[] = [];
+    const stsInopAllPhasesKeys: string[] = [];
+    const stsInopApprLdgKeys: string[] = [];
     let failureKeys: string[] = this.presentedFailures;
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
@@ -2523,6 +2575,17 @@ export class PseudoFWC {
         }
 
         allFailureKeys.push(key);
+
+        // Add keys for STS page
+        if (value.info) {
+          stsInfoKeys.push(...[...new Set(value.info())]); // Only unique keys
+        }
+        if (value.inopSysAllPhases) {
+          stsInopAllPhasesKeys.push(...[...new Set(value.inopSysAllPhases())]); // Only unique keys
+        }
+        if (value.inopSysApprLdg) {
+          stsInopApprLdgKeys.push(...[...new Set(value.inopSysApprLdg())]); // Only unique keys
+        }
 
         if (!recallFailureKeys.includes(key)) {
           if (value.sysPage > -1) {
@@ -2678,6 +2741,11 @@ export class PseudoFWC {
 
     // TODO order by decreasing importance
     this.pfdMessageLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => pfdMemoDisplay.includes(it))[i]));
+
+    // TODO order by decreasing importance
+    this.sdStatusInfoLines.forEach((l, i) => l.set(stsInfoKeys[i]));
+    this.sdStatusInopAllPhasesLines.forEach((l, i) => l.set(stsInopAllPhasesKeys[i]));
+    this.sdStatusInopApprLdgLines.forEach((l, i) => l.set(stsInopApprLdgKeys[i]));
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
     // We shall wait for the rust FWC for those nice things!
