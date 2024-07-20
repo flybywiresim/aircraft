@@ -404,7 +404,7 @@ export const EcamMemos: { [n: string]: string } = {
 
 /** Only these IDs will be shown in the PFD MEMO section */
 export const pfdMemoDisplay: string[] = [
-  '000004002',
+  '322000001',
   '000006002',
   '000026001',
   '000027001',
