@@ -814,6 +814,8 @@ export class PseudoFWC {
 
   private stallWarningRaw = ConsumerValue.create(this.sub.on('stall_warning_on'), false);
 
+  private readonly trueNorthRef = Subject.create(false);
+
   /* SURVEILLANCE */
   private readonly gpwsFlaps3 = Subject.create(false);
 
@@ -830,6 +832,10 @@ export class PseudoFWC {
   private readonly engine1State = Subject.create(0);
 
   private readonly engine2State = Subject.create(0);
+
+  private readonly engine3State = Subject.create(0);
+
+  private readonly engine4State = Subject.create(0);
 
   private readonly N1Eng1 = Subject.create(0);
 
@@ -1349,6 +1355,8 @@ export class PseudoFWC {
 
     this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum'));
     this.engine2State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
+    this.engine3State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Enum'));
+    this.engine4State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:4', 'Enum'));
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
@@ -1409,6 +1417,7 @@ export class PseudoFWC {
     const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
 
     /* ADIRS acquisition */
+    /* NAVIGATION */
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
@@ -1429,6 +1438,8 @@ export class PseudoFWC {
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
     const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
+
+    this.trueNorthRef.set(SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'number'));
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
@@ -2798,81 +2809,6 @@ export class PseudoFWC {
 
   /** MEMOs on lower right side of EWD */
   ewdMemos: EwdMemoDict = {
-    '0000030': {
-      // IR IN ALIGN
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
-          const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
-
-          return remainingTimeAbove240 && allInState1;
-        },
-        this.adirsRemainingAlignTime,
-        this.adiru1State,
-        this.adiru2State,
-        this.adiru3State,
-      ),
-      whichCodeToReturn: () => [
-        this.adirsMessage1(
-          this.adirsRemainingAlignTime.get(),
-          (this.engine1State.get() > 0 && this.engine1State.get() < 4) ||
-            (this.engine2State.get() > 0 && this.engine2State.get() < 4),
-        ),
-      ],
-      codesToReturn: [
-        '000003001',
-        '000003002',
-        '000003003',
-        '000003004',
-        '000003005',
-        '000003006',
-        '000003007',
-        '000003008',
-      ],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000031': {
-      // IR IN ALIGN
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
-          const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
-          const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
-
-          return remainingTimeAbove0 && remainingTimeBelow240 && allInState1;
-        },
-        this.adirsRemainingAlignTime,
-        this.adiru1State,
-        this.adiru2State,
-        this.adiru3State,
-      ),
-      whichCodeToReturn: () => [
-        this.adirsMessage2(
-          this.adirsRemainingAlignTime.get(),
-          (this.engine1State.get() > 0 && this.engine1State.get() < 4) ||
-            (this.engine2State.get() > 0 && this.engine2State.get() < 4),
-        ),
-      ],
-      codesToReturn: [
-        '000003101',
-        '000003102',
-        '000003103',
-        '000003104',
-        '000003105',
-        '000003106',
-        '000003107',
-        '000003108',
-      ],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000050': {
       // REFUELING
       flightPhaseInhib: [],
@@ -3327,21 +3263,6 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000680': {
-      // ADIRS SWTG
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([airKnob, attKnob]) => attKnob !== 1 || airKnob !== 1,
-        this.airKnob,
-        this.attKnob,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000068001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '230000001': {
       // CAPT ON RMP 3
       flightPhaseInhib: [],
@@ -3425,6 +3346,111 @@ export class PseudoFWC {
       simVarIsActive: this.voiceVhf3,
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000015'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '340000001': {
+      // TRUE NORTH REF
+      flightPhaseInhib: [],
+      simVarIsActive: this.trueNorthRef,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['340000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '340003001': {
+      // IR IN ALIGN
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+          const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
+          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
+
+          return remainingTimeAbove240 && allInState1;
+        },
+        this.adirsRemainingAlignTime,
+        this.adiru1State,
+        this.adiru2State,
+        this.adiru3State,
+      ),
+      whichCodeToReturn: () => [
+        this.adirsMessage1(
+          this.adirsRemainingAlignTime.get(),
+          (this.engine1State.get() > 0 && this.engine1State.get() < 4) ||
+            (this.engine2State.get() > 0 && this.engine2State.get() < 4) ||
+            (this.engine3State.get() > 0 && this.engine3State.get() < 4) ||
+            (this.engine4State.get() > 0 && this.engine4State.get() < 4),
+        ),
+      ],
+      codesToReturn: [
+        '340003001',
+        '340003002',
+        '340003003',
+        '340003004',
+        '340003005',
+        '340003006',
+        '340003007',
+        '340003008',
+      ],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '340003101': {
+      // IR IN ALIGN
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+          const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
+          const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
+          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
+
+          return remainingTimeAbove0 && remainingTimeBelow240 && allInState1;
+        },
+        this.adirsRemainingAlignTime,
+        this.adiru1State,
+        this.adiru2State,
+        this.adiru3State,
+      ),
+      whichCodeToReturn: () => [
+        this.adirsMessage2(
+          this.adirsRemainingAlignTime.get(),
+          (this.engine1State.get() > 0 && this.engine1State.get() < 4) ||
+            (this.engine2State.get() > 0 && this.engine2State.get() < 4) ||
+            (this.engine3State.get() > 0 && this.engine3State.get() < 4) ||
+            (this.engine4State.get() > 0 && this.engine4State.get() < 4),
+        ),
+      ],
+      codesToReturn: [
+        '340003101',
+        '340003102',
+        '340003103',
+        '340003104',
+        '340003105',
+        '340003106',
+        '340003107',
+        '340003108',
+      ],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '340068001': {
+      // ADIRS SWTG
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        ([airKnob, attKnob]) => attKnob !== 1 || airKnob !== 1,
+        this.airKnob,
+        this.attKnob,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['340068001'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
