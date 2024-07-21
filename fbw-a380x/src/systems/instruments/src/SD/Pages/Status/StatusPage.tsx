@@ -1,6 +1,6 @@
 import React from 'react';
-import FormattedFwcText from '../../../Common/EWDMessageParser';
-import { Infos, InopSys } from '../../../Common/EWDMessages';
+import FormattedFwcText from '../../../Common/EcamMessages/EWDMessageParser';
+import { Infos, InopSys } from '../../../Common/EcamMessages';
 import { PageTitle } from '../Generic/PageTitle';
 import { StatusTitle } from 'instruments/src/SD/Pages/Status/elements/StatusTitle';
 import { useSimVarList } from '@flybywiresim/fbw-sdk';

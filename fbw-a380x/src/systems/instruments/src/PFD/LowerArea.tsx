@@ -11,7 +11,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
-import { EcamMemos } from '@instruments/common/EWDMessages';
+import { EcamMemos } from '@instruments/common/EcamMessages';
 import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
 
 export class LowerArea extends DisplayComponent<{

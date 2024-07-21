@@ -1,5 +1,5 @@
-import { EcamMemos } from '@instruments/common/EWDMessages';
-import FormattedFwcText from '../../Common/EWDMessageParser';
+import { EcamMemos } from '@instruments/common/EcamMessages';
+import FormattedFwcText from '../../Common/EcamMessages/EWDMessageParser';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 

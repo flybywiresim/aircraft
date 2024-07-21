@@ -38,7 +38,7 @@ import {
   EcamMemos,
   isChecklistAction,
   pfdMemoDisplay,
-} from '@instruments/common/EWDMessages';
+} from '@instruments/common/EcamMessages';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
