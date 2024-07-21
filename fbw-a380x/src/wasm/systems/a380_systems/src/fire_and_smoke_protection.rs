@@ -1,12 +1,12 @@
-use std::{fmt::Display, time::Duration};
+use std::time::Duration;
 
 use systems::{
     accept_iterable,
-    failures::Failure,
+    failures::{Failure, FailureType},
     overhead::{FirePushButton, MomentaryPushButton},
     shared::{
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons,
-        LgciuWeightOnWheels,
+        arinc429::SignStatus, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EngineFirePushButtons, FireDetectionLoopID, FireDetectionZone, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -14,32 +14,20 @@ use systems::{
     },
 };
 
-#[derive(Clone, Copy, Eq, PartialEq)]
-enum FireDetectionZone {
-    Engine(usize),
-    Apu,
-    Mlg,
-}
-
-impl Display for FireDetectionZone {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            FireDetectionZone::Apu => write!(f, "APU"),
-            FireDetectionZone::Mlg => write!(f, "MLG"),
-            FireDetectionZone::Engine(number) => write!(f, "{}", number),
-        }
-    }
-}
+use std::iter::zip;
 
 pub(super) struct A380FireAndSmokeProtection {
     a380_fire_protection_system: FireProtectionSystem,
     // a380_smoke_detection_function
+    set_zone_on_fire: SetOnFireModule,
 }
 
 impl A380FireAndSmokeProtection {
     pub(super) fn new(context: &mut InitContext) -> Self {
         Self {
             a380_fire_protection_system: FireProtectionSystem::new(context),
+
+            set_zone_on_fire: SetOnFireModule::new(context),
         }
     }
 
@@ -51,6 +39,9 @@ impl A380FireAndSmokeProtection {
     ) {
         self.a380_fire_protection_system
             .update(context, engine_fire_push_buttons, lgciu);
+
+        self.set_zone_on_fire
+            .update(self.a380_fire_protection_system.bottle_discharge());
     }
 
     pub fn apu_fire_on_ground(&self) -> bool {
@@ -61,6 +52,7 @@ impl A380FireAndSmokeProtection {
 impl SimulationElement for A380FireAndSmokeProtection {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.a380_fire_protection_system.accept(visitor);
+        self.set_zone_on_fire.accept(visitor);
 
         visitor.visit(self);
     }
@@ -111,6 +103,10 @@ impl FireProtectionSystem {
     fn apu_fire_on_ground(&self) -> bool {
         self.fire_detection_unit.should_extinguish_apu_fire()
     }
+
+    fn bottle_discharge(&self) -> [bool; 9] {
+        self.fire_extinguishing_system.bottle_discharge()
+    }
 }
 
 impl SimulationElement for FireProtectionSystem {
@@ -129,10 +125,12 @@ impl SimulationElement for FireProtectionSystem {
 struct FireDetectionUnit {
     fire_detection_loop: [FireDetectionLoop; 2],
 
+    // The FDU sends discrete signals to the overhead panel and arinc signals to the FWS
     fire_detected_id: [VariableIdentifier; 6],
+    fire_detected_arinc_id: [VariableIdentifier; 6],
     fire_detected: [bool; 6],
     fire_detection_zones: [FireDetectionZone; 6],
-    interval_between_loop_failures: Duration,
+    interval_between_loop_failures: [Duration; 6],
     should_extinguish_apu_fire: bool,
 }
 
@@ -151,20 +149,25 @@ impl FireDetectionUnit {
             fire_detection_loop: [
                 FireDetectionLoop::new(
                     context,
+                    FireDetectionLoopID::A,
                     &fire_detection_zones,
                     ElectricalBusType::DirectCurrentEssential,
                 ),
                 FireDetectionLoop::new(
                     context,
+                    FireDetectionLoopID::B,
                     &fire_detection_zones,
                     ElectricalBusType::DirectCurrent(2),
                 ),
             ],
 
-            fire_detected_id: fire_detection_zones.map(|zone| Self::init_identifier(context, zone)),
+            fire_detected_id: fire_detection_zones
+                .map(|zone| Self::init_identifier(context, zone, false)),
+            fire_detected_arinc_id: fire_detection_zones
+                .map(|zone| Self::init_identifier(context, zone, true)),
             fire_detected: [false; 6],
             fire_detection_zones,
-            interval_between_loop_failures: Duration::ZERO,
+            interval_between_loop_failures: [Duration::ZERO; 6],
             should_extinguish_apu_fire: false,
         }
     }
@@ -172,12 +175,21 @@ impl FireDetectionUnit {
     fn init_identifier(
         context: &mut InitContext,
         zone_id: FireDetectionZone,
+        arinc: bool,
     ) -> VariableIdentifier {
+        let mut identifier: String;
+
         if matches!(zone_id, FireDetectionZone::Engine(_)) {
-            context.get_identifier(format!("FIRE_DETECTED_ENG{}", zone_id))
+            identifier = format!("FIRE_DETECTED_ENG{}", zone_id);
         } else {
-            context.get_identifier(format!("FIRE_DETECTED_{}", zone_id))
+            identifier = format!("FIRE_DETECTED_{}", zone_id);
         }
+
+        if arinc {
+            identifier.push_str("_ARINC")
+        }
+
+        context.get_identifier(identifier)
     }
 
     fn update(
@@ -200,36 +212,50 @@ impl FireDetectionUnit {
             && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true));
     }
 
-    fn fire_detection_determination(&self, fire_test_pushbutton_is_pressed: bool) -> [bool; 6] {
+    fn fire_detection_determination(&self, fire_test_pb: bool) -> [bool; 6] {
         let mut fire_detected: [bool; 6] = [false; 6];
         for (id, &zone) in self.fire_detection_zones.iter().enumerate() {
-            fire_detected[id] = fire_test_pushbutton_is_pressed
-                || (self.fire_detection_loop[0].fire_detected_in_loop(zone)
-                    && self.fire_detection_loop[1].fire_detected_in_loop(zone))
+            fire_detected[id] = (self.fire_detection_loop[0]
+                .fire_detected_in_loop(zone, fire_test_pb)
+                && self.fire_detection_loop[1].fire_detected_in_loop(zone, fire_test_pb))
                 || (self
                     .fire_detection_loop
                     .iter()
-                    .any(|l| l.fire_detected_in_loop(zone))
-                    && self.fire_detection_loop.iter().any(|l| l.loop_has_failed()))
-                || (self.fire_detection_loop.iter().all(|l| l.loop_has_failed())
-                    && self.interval_between_loop_failures < Duration::from_secs(5)
+                    .any(|l| l.fire_detected_in_loop(zone, fire_test_pb))
+                    && self
+                        .fire_detection_loop
+                        .iter()
+                        .any(|l| l.loop_has_failed(zone)))
+                || (self
+                    .fire_detection_loop
+                    .iter()
+                    .all(|l| l.loop_has_failed(zone))
+                    && self.interval_between_loop_failures[id] < Duration::from_secs(5)
                     && zone != FireDetectionZone::Mlg);
         }
         fire_detected
     }
 
-    fn calculate_interval_between_failures(&self, context: &UpdateContext) -> Duration {
-        if self
-            .fire_detection_loop
-            .iter()
-            .all(|l| !l.loop_has_failed())
-        {
-            Duration::ZERO
-        } else if self.fire_detection_loop.iter().any(|l| l.loop_has_failed()) {
-            self.interval_between_loop_failures + context.delta()
-        } else {
-            self.interval_between_loop_failures
+    fn calculate_interval_between_failures(&self, context: &UpdateContext) -> [Duration; 6] {
+        let mut interval: [Duration; 6] = [Duration::ZERO; 6];
+        for (id, &zone) in self.fire_detection_zones.iter().enumerate() {
+            interval[id] = if self
+                .fire_detection_loop
+                .iter()
+                .all(|l| !l.loop_has_failed(zone))
+            {
+                Duration::ZERO
+            } else if self
+                .fire_detection_loop
+                .iter()
+                .all(|l| l.loop_has_failed(zone))
+            {
+                self.interval_between_loop_failures[id]
+            } else {
+                self.interval_between_loop_failures[id] + context.delta()
+            }
         }
+        interval
     }
 
     fn should_extinguish_apu_fire(&self) -> bool {
@@ -242,6 +268,14 @@ impl SimulationElement for FireDetectionUnit {
         for (id, fire_detected) in self.fire_detected_id.iter().zip(self.fire_detected) {
             writer.write(id, fire_detected);
         }
+
+        // TODO: Add electrical supply for FDU, when not powered it should return NCD
+        let ssm = SignStatus::NormalOperation;
+
+        for (id, fire_detected) in self.fire_detected_arinc_id.iter().zip(self.fire_detected) {
+            writer.write(id, fire_detected);
+            writer.write_arinc429(id, fire_detected, ssm);
+        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -252,10 +286,11 @@ impl SimulationElement for FireDetectionUnit {
 }
 
 struct FireDetectionLoop {
+    loop_id: FireDetectionLoopID,
     powered_by: ElectricalBusType,
     is_powered: bool,
     was_powered_before: bool,
-    failure: Option<Failure>,
+    failures: [Failure; 6],
 
     fire_detectors: [FireDetector; 6],
 }
@@ -263,40 +298,58 @@ struct FireDetectionLoop {
 impl FireDetectionLoop {
     fn new(
         context: &mut InitContext,
+        loop_id: FireDetectionLoopID,
         fire_detection_zones: &[FireDetectionZone; 6],
         powered_by: ElectricalBusType,
     ) -> Self {
         Self {
+            loop_id,
             powered_by,
             is_powered: false,
             was_powered_before: false,
-            failure: None, // TODO: Add failures
+            failures: fire_detection_zones
+                .map(|zone| Failure::new(FailureType::FireDetectionLoop(loop_id, zone))), // TODO: Add failures
 
             fire_detectors: fire_detection_zones.map(|zone| FireDetector::new(context, zone)),
         }
     }
 
-    fn fire_detected_in_loop(&self, fire_detection_zone: FireDetectionZone) -> bool {
-        let failure_is_active = self
-            .failure
-            .as_ref()
-            .map_or(false, |failure| failure.is_active());
+    fn fire_detected_in_loop(
+        &self,
+        fire_detection_zone: FireDetectionZone,
+        fire_test_pushbutton_is_pressed: bool,
+    ) -> bool {
+        let failure = self
+            .failures
+            .iter()
+            .find(|&f| {
+                f.failure_type()
+                    == FailureType::FireDetectionLoop(self.loop_id, fire_detection_zone)
+            })
+            .unwrap();
 
-        !failure_is_active
+        !failure.is_active()
             && self.is_powered
-            && self
+            && (self
                 .fire_detectors
                 .iter()
                 .find(|detector| fire_detection_zone == detector.zone_id())
                 .unwrap()
                 .fire_detected()
+                || fire_test_pushbutton_is_pressed)
     }
 
-    fn loop_has_failed(&self) -> bool {
-        self.failure
-            .as_ref()
-            .map_or(false, |failure| failure.is_active())
-            || (!self.is_powered && self.was_powered_before)
+    fn loop_has_failed(&self, fire_detection_zone: FireDetectionZone) -> bool {
+        let failure = self
+            .failures
+            .iter()
+            .find(|&f| {
+                f.failure_type()
+                    == FailureType::FireDetectionLoop(self.loop_id, fire_detection_zone)
+            })
+            .unwrap();
+
+        failure.is_active() || (!self.is_powered && self.was_powered_before)
     }
 
     /// This is to avoid a fire detection on initial load
@@ -307,9 +360,7 @@ impl FireDetectionLoop {
 
 impl SimulationElement for FireDetectionLoop {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        if let Some(failure) = &mut self.failure {
-            failure.accept(visitor);
-        }
+        accept_iterable!(self.failures, visitor);
         accept_iterable!(self.fire_detectors, visitor);
         visitor.visit(self);
     }
@@ -449,6 +500,18 @@ impl FireExtinguishingSystem {
             Some(should_extinguish_apu_fire),
         );
     }
+
+    /// The array of 9 bottles represents two bottles for ENG1-4 and one for the APU
+    fn bottle_discharge(&self) -> [bool; 9] {
+        self.fire_extinguishing_bottles
+            .iter()
+            .map(|bottle| bottle.bottle_discharge())
+            .collect::<Vec<bool>>()
+            .try_into()
+            .unwrap_or_else(|v: Vec<bool>| {
+                panic!("Expected a Vec of length {} but it was {}", 9, v.len())
+            })
+    }
 }
 
 impl SimulationElement for FireExtinguishingSystem {
@@ -501,7 +564,7 @@ impl ExtinguishingAgentBottle {
         fire_test_pushbutton_is_pressed: bool,
         should_extinguish_fire: Option<bool>,
     ) {
-        self.system_test = fire_test_pushbutton_is_pressed;
+        self.system_test = fire_test_pushbutton_is_pressed && self.is_powered;
         self.squib_is_armed = self.is_powered && engine_fire_push_button_is_pressed;
         if self.is_powered
             && ((self.squib_is_armed || should_extinguish_fire.unwrap_or(false))
@@ -519,6 +582,10 @@ impl ExtinguishingAgentBottle {
         } else {
             self.timer = Duration::ZERO
         };
+    }
+
+    fn bottle_discharge(&self) -> bool {
+        self.bottle_is_discharged
     }
 }
 
@@ -542,6 +609,124 @@ impl SimulationElement for ExtinguishingAgentBottle {
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = self.powered_by.iter().any(|&p| buses.is_powered(p));
+    }
+}
+
+/// Small module that sets each zone on fire when the failure is triggered. This is independent to the system implementation.
+struct SetOnFireModule {
+    fire_id: [VariableIdentifier; 6],
+
+    fire: [Failure; 6],
+    should_set_zone_on_fire: [bool; 6],
+    should_extinguish_zone: [bool; 6],
+    // We use this to avoid having a previously discharged bottle extinguish a fire
+    bottle_already_discharged: [bool; 9],
+    // We use this to know when to cancel the fire command when the failure is resolved
+    was_on_fire: [bool; 6],
+}
+
+impl SetOnFireModule {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            fire_id: [
+                context.get_identifier(format!("ENG_{}_ON_FIRE", 1)),
+                context.get_identifier(format!("ENG_{}_ON_FIRE", 2)),
+                context.get_identifier(format!("ENG_{}_ON_FIRE", 3)),
+                context.get_identifier(format!("ENG_{}_ON_FIRE", 4)),
+                context.get_identifier("APU_ON_FIRE".to_owned()),
+                context.get_identifier("MLG_ON_FIRE".to_owned()),
+            ],
+
+            fire: [
+                Failure::new(FailureType::SetOnFire(FireDetectionZone::Engine(1))),
+                Failure::new(FailureType::SetOnFire(FireDetectionZone::Engine(2))),
+                Failure::new(FailureType::SetOnFire(FireDetectionZone::Engine(3))),
+                Failure::new(FailureType::SetOnFire(FireDetectionZone::Engine(4))),
+                Failure::new(FailureType::SetOnFire(FireDetectionZone::Apu)),
+                Failure::new(FailureType::SetOnFire(FireDetectionZone::Mlg)),
+            ],
+            should_set_zone_on_fire: [false; 6],
+            should_extinguish_zone: [false; 6],
+            bottle_already_discharged: [false; 9],
+            was_on_fire: [false; 6],
+        }
+    }
+
+    fn update(&mut self, bottle_discharge: [bool; 9]) {
+        for id in 0..6 {
+            self.should_set_zone_on_fire[id] = self.fire[id].is_active()
+                && !self.should_set_zone_on_fire[id]
+                && !self.was_on_fire[id]
+        }
+
+        self.should_extinguish_zone = self.zone_extinguishing_determination(bottle_discharge);
+        self.bottle_already_discharged = bottle_discharge;
+        self.was_on_fire = self
+            .fire
+            .iter()
+            .map(|f| f.is_active())
+            .collect::<Vec<bool>>()
+            .try_into()
+            .unwrap_or_else(|v: Vec<bool>| {
+                panic!("Expected a Vec of length {} but it was {}", 6, v.len())
+            });
+    }
+
+    /// We check any "new" bottle discharges and then add a random factor on whether it should extinguish a fire
+    /// We also use this function to "extinguish" a fire if the user deselects the failure
+    fn zone_extinguishing_determination(&self, bottle_discharge: [bool; 9]) -> [bool; 6] {
+        [
+            (zip(
+                bottle_discharge[..2].iter(),
+                self.bottle_already_discharged[..2].iter(),
+            )
+            .any(|(discharge, already_discharged)| *discharge && !already_discharged)
+                && rand::random())
+                || (self.was_on_fire[0] && !self.fire[0].is_active()),
+            (zip(
+                bottle_discharge[2..4].iter(),
+                self.bottle_already_discharged[2..4].iter(),
+            )
+            .any(|(discharge, already_discharged)| *discharge && !already_discharged)
+                && rand::random())
+                || (self.was_on_fire[1] && !self.fire[1].is_active()),
+            (zip(
+                bottle_discharge[4..6].iter(),
+                self.bottle_already_discharged[4..6].iter(),
+            )
+            .any(|(discharge, already_discharged)| *discharge && !already_discharged)
+                && rand::random())
+                || (self.was_on_fire[2] && !self.fire[2].is_active()),
+            (zip(
+                bottle_discharge[6..8].iter(),
+                self.bottle_already_discharged[6..8].iter(),
+            )
+            .any(|(discharge, already_discharged)| *discharge && !already_discharged)
+                && rand::random())
+                || (self.was_on_fire[3] && !self.fire[3].is_active()),
+            (bottle_discharge[8] && !self.bottle_already_discharged[8] && rand::random())
+                || (self.was_on_fire[4] && !self.fire[4].is_active()),
+            // MLG does not have a fire extinguishing system
+            false,
+        ]
+    }
+}
+
+impl SimulationElement for SetOnFireModule {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.fire, visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        for (id, zone) in self.fire_id.iter().enumerate() {
+            if self.should_set_zone_on_fire[id] {
+                writer.write(zone, true)
+            } else if self.should_extinguish_zone[id] {
+                writer.write(zone, false)
+            }
+        }
     }
 }
 
@@ -721,6 +906,12 @@ mod a380_fire_and_smoke_protection_tests {
             self
         }
 
+        fn and_double_run(mut self) -> Self {
+            self.run();
+            self.run();
+            self
+        }
+
         fn run_with_delta_of(mut self, delta: Duration) -> Self {
             self.run_with_delta(delta);
             self
@@ -738,6 +929,24 @@ mod a380_fire_and_smoke_protection_tests {
 
         fn set_engine_on_fire(mut self, engine_number: usize) -> Self {
             self.write_by_name(&format!("ENG ON FIRE:{}", engine_number), true);
+            self
+        }
+
+        fn set_engine_on_fire_through_failure(mut self, engine_number: usize) -> Self {
+            self.fail(FailureType::SetOnFire(FireDetectionZone::Engine(
+                engine_number,
+            )));
+            // Because tests don't write to the Aircraft Vars we write this manually here
+            self.write_by_name(&format!("ENG ON FIRE:{}", engine_number), true);
+            self
+        }
+
+        fn resolve_engine_on_fire_through_failure(mut self, engine_number: usize) -> Self {
+            self.unfail(FailureType::SetOnFire(FireDetectionZone::Engine(
+                engine_number,
+            )));
+            // Because tests don't write to the Aircraft Vars we write this manually here
+            self.write_by_name(&format!("ENG ON FIRE:{}", engine_number), false);
             self
         }
 
@@ -771,6 +980,14 @@ mod a380_fire_and_smoke_protection_tests {
                 &format!("OVHD_FIRE_AGENT_1_ENG_{}_IS_PRESSED", engine_number),
                 released,
             );
+            self
+        }
+
+        fn set_loop_failure(mut self, engine_number: usize, loop_id: FireDetectionLoopID) -> Self {
+            self.fail(FailureType::FireDetectionLoop(
+                loop_id,
+                FireDetectionZone::Engine(engine_number),
+            ));
             self
         }
 
@@ -973,6 +1190,72 @@ mod a380_fire_and_smoke_protection_tests {
 
             assert!(!test_bed.engine_on_fire_detected(1));
         }
+
+        #[test]
+        fn fire_is_detected_when_triggered_through_failures() {
+            let mut test_bed = test_bed()
+                .with()
+                .set_engine_on_fire_through_failure(1)
+                .and_double_run();
+
+            assert!(test_bed.engine_on_fire_detected(1));
+        }
+
+        #[test]
+        fn fire_is_not_detected_when_failure_resolved() {
+            let mut test_bed = test_bed()
+                .with()
+                .set_engine_on_fire_through_failure(1)
+                .and_double_run();
+
+            assert!(test_bed.engine_on_fire_detected(1));
+
+            test_bed = test_bed
+                .resolve_engine_on_fire_through_failure(1)
+                .and_double_run();
+
+            assert!(!test_bed.engine_on_fire_detected(1));
+        }
+
+        #[test]
+        fn when_an_engine_is_on_fire_the_detection_works_if_only_one_loop_has_failed() {
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .set_loop_failure(1, FireDetectionLoopID::A)
+                .set_engine_on_fire(1)
+                .and_run();
+
+            assert!(test_bed.engine_on_fire_detected(1));
+        }
+
+        #[test]
+        fn when_an_engine_is_on_fire_the_detection_system_does_not_work_if_both_loops_failed() {
+            // If both loops fail at the same time the fire warning will trigger
+            // We need to add a delay between the two failing systems
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .set_loop_failure(1, FireDetectionLoopID::A)
+                .run_with_delta_of(Duration::from_secs(6))
+                .set_loop_failure(1, FireDetectionLoopID::B)
+                .set_engine_on_fire(1)
+                .and_run();
+
+            assert!(!test_bed.engine_on_fire_detected(1));
+        }
+
+        #[test]
+        fn failing_both_loops_simultaneously_triggers_fire_detection() {
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .set_loop_failure(1, FireDetectionLoopID::A)
+                .set_loop_failure(1, FireDetectionLoopID::B)
+                .and_run();
+
+            assert!(test_bed.engine_on_fire_detected(1));
+        }
     }
 
     mod a380_fire_extinguishing_tests {
@@ -1038,8 +1321,7 @@ mod a380_fire_and_smoke_protection_tests {
                 .and_run()
                 .then()
                 .set_agent_pb(1, true)
-                .and_run()
-                .and_run();
+                .and_double_run();
 
             assert!(test_bed.squib_engine_is_armed(1));
             assert!(test_bed.squib_engine_is_discharged(1));
@@ -1086,8 +1368,7 @@ mod a380_fire_and_smoke_protection_tests {
                 .set_on_ground(true)
                 .with()
                 .set_apu_on_fire()
-                .and_run()
-                .and_run();
+                .and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());
             assert!(test_bed.squib_apu_is_discharged());
@@ -1098,12 +1379,10 @@ mod a380_fire_and_smoke_protection_tests {
             let mut test_bed = test_bed()
                 .set_on_ground(true)
                 .set_test_pushbutton(true)
-                .and_run()
-                .and_run()
+                .and_double_run()
                 .then()
                 .set_test_pushbutton(false)
-                .and_run()
-                .and_run();
+                .and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());
             assert!(!test_bed.squib_apu_is_discharged());
@@ -1111,7 +1390,7 @@ mod a380_fire_and_smoke_protection_tests {
 
         #[test]
         fn apu_bottle_starts_charged_on_ground() {
-            let mut test_bed = test_bed().set_on_ground(true).and_run().and_run();
+            let mut test_bed = test_bed().set_on_ground(true).and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());
             assert!(!test_bed.squib_apu_is_discharged());
@@ -1119,7 +1398,7 @@ mod a380_fire_and_smoke_protection_tests {
 
         #[test]
         fn apu_bottle_starts_charged_in_flight() {
-            let mut test_bed = test_bed().set_on_ground(false).and_run().and_run();
+            let mut test_bed = test_bed().set_on_ground(false).and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());
             assert!(!test_bed.squib_apu_is_discharged());
@@ -1131,8 +1410,7 @@ mod a380_fire_and_smoke_protection_tests {
                 .set_on_ground(false)
                 .with()
                 .set_apu_on_fire()
-                .and_run()
-                .and_run();
+                .and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());
             assert!(!test_bed.squib_apu_is_discharged());
@@ -1167,6 +1445,40 @@ mod a380_fire_and_smoke_protection_tests {
 
             assert!(test_bed.squib_engine_is_armed(1));
             assert!(test_bed.squib_engine_is_discharged(1));
+        }
+
+        #[test]
+        fn squibs_dont_show_armed_and_discharged_when_test_if_unpowered() {
+            let mut test_bed = test_bed()
+                .with()
+                .unpowered_dc_hot_bus()
+                .unpowered_dc_ess_bus()
+                .set_test_pushbutton(true)
+                .and_run();
+
+            assert!(!test_bed.squib_engine_is_armed(1));
+            assert!(!test_bed.squib_engine_is_discharged(1));
+        }
+
+        #[test]
+        fn discharging_bottle_when_fire_active_has_the_chance_to_put_it_out() {
+            let mut test_bed = test_bed()
+                .with()
+                .set_engine_on_fire(1)
+                .and_double_run()
+                .set_engine_fire_pb_released(1, true)
+                .and_run()
+                .then()
+                .set_agent_pb(1, true)
+                .and_double_run()
+                .and_double_run();
+
+            assert!(test_bed.squib_engine_is_armed(1));
+            assert!(test_bed.squib_engine_is_discharged(1));
+            print!(
+                "Engine fire was put out: {}",
+                !test_bed.engine_on_fire_detected(1)
+            );
         }
     }
 }

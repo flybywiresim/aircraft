@@ -3,6 +3,7 @@ mod autobrakes;
 mod brakes;
 mod cargo_doors;
 mod elevators;
+mod fire;
 mod flaps;
 mod fuel;
 mod gear;
@@ -19,6 +20,7 @@ use autobrakes::autobrakes;
 use brakes::brakes;
 use cargo_doors::cargo_doors;
 use elevators::elevators;
+use fire::fire;
 use flaps::flaps;
 use fuel::fuel;
 use gear::gear;
@@ -30,7 +32,8 @@ use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
 use systems::shared::{
-    ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+    ElectricalBusType, FireDetectionLoopID, FireDetectionZone, GearActuatorId, HydraulicColor,
+    LgciuId, ProximityDetectorId,
 };
 
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -149,6 +152,60 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (
             24_117,
             FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
+        ),
+        (26_001, FailureType::SetOnFire(FireDetectionZone::Engine(1))),
+        (26_002, FailureType::SetOnFire(FireDetectionZone::Engine(2))),
+        (26_003, FailureType::SetOnFire(FireDetectionZone::Engine(3))),
+        (26_004, FailureType::SetOnFire(FireDetectionZone::Engine(4))),
+        (26_005, FailureType::SetOnFire(FireDetectionZone::Apu)),
+        (26_006, FailureType::SetOnFire(FireDetectionZone::Mlg)),
+        (
+            26_007,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(1)),
+        ),
+        (
+            26_008,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(1)),
+        ),
+        (
+            26_009,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(2)),
+        ),
+        (
+            26_010,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(2)),
+        ),
+        (
+            26_011,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(3)),
+        ),
+        (
+            26_012,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(3)),
+        ),
+        (
+            26_013,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(4)),
+        ),
+        (
+            26_014,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(4)),
+        ),
+        (
+            26_015,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Apu),
+        ),
+        (
+            26_016,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Apu),
+        ),
+        (
+            26_017,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Mlg),
+        ),
+        (
+            26_018,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Mlg),
         ),
         (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
         (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
@@ -432,6 +489,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(cargo_doors)?
     .with_aspect(autobrakes)?
     .with_aspect(nose_wheel_steering)?
+    .with_aspect(fire)?
     .with_aspect(flaps)?
     .with_aspect(spoilers)?
     .with_aspect(ailerons)?

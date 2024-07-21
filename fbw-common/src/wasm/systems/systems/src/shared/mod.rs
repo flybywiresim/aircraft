@@ -1031,6 +1031,29 @@ impl Resolution for f64 {
     }
 }
 
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub enum FireDetectionZone {
+    Engine(usize),
+    Apu,
+    Mlg,
+}
+
+impl Display for FireDetectionZone {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FireDetectionZone::Apu => write!(f, "APU"),
+            FireDetectionZone::Mlg => write!(f, "MLG"),
+            FireDetectionZone::Engine(number) => write!(f, "{}", number),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub enum FireDetectionLoopID {
+    A,
+    B,
+}
+
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
