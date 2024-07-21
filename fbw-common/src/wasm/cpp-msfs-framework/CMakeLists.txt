@@ -27,7 +27,7 @@ set(INCLUDE_FILES
     lib/Callback.h
     lib/IDGenerator.h
     lib/fingerprint.hpp
-    lib/inih/ini.h
+    lib/inih/ini_fbw.h
     lib/inih/ini_type_conversion.h
     lib/logging.h
     lib/lvar_encoder.hpp
