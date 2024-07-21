@@ -76,7 +76,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) (L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE) ||</Condition>
             <Action>1 (>L:A32NX_FIRE_TEST_APU)</Action>
         </Step>
-        <Step Name="APU Fire Test Off" Type="PROC" Delay="2000">
+        <Step Name="APU Fire Test Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) (L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE) ||</Condition>
             <Action>0 (>L:A32NX_FIRE_TEST_APU) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)</Action>
         </Step>
@@ -165,7 +165,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)</Condition>
             <Action>1 (>L:A32NX_FIRE_TEST_APU)</Action>
         </Step>
-        <Step Name="APU Fire Test Off" Type="PROC" Delay="2000">
+        <Step Name="APU Fire Test Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)</Condition>
             <Action>0 (>L:A32NX_FIRE_TEST_APU) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)</Action>
         </Step>
@@ -186,7 +186,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
             <Action>1 (>L:A32NX_FIRE_TEST_ENG1)</Action>
         </Step>
-        <Step Name="ENG 1 Fire Test Off" Type="PROC" Delay="2000">
+        <Step Name="ENG 1 Fire Test Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
             <Action>0 (>L:A32NX_FIRE_TEST_ENG1) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
         </Step>
@@ -194,7 +194,7 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)</Condition>
             <Action>1 (>L:A32NX_FIRE_TEST_ENG2)</Action>
         </Step>
-        <Step Name="ENG 2 Fire Test Off" Type="PROC" Delay="2000">
+        <Step Name="ENG 2 Fire Test Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)</Condition>
             <Action>0 (>L:A32NX_FIRE_TEST_ENG2) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)</Action>
         </Step>
