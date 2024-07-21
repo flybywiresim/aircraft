@@ -419,6 +419,16 @@ export class PseudoFWC {
 
   private readonly dc2BusPowered = Subject.create(false);
 
+  private readonly extPwrConnected = Subject.create(false);
+
+  private readonly engine1Running = Subject.create(false);
+
+  private readonly engine2Running = Subject.create(false);
+
+  private readonly engine3Running = Subject.create(false);
+
+  private readonly engine4Running = Subject.create(false);
+
   /* 27 - FLIGHT CONTROLS */
 
   private readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
@@ -662,6 +672,14 @@ export class PseudoFWC {
   private readonly yellowRvrOvht = Subject.create(false);
 
   private readonly yepumpPBisAuto = Subject.create(false);
+
+  private readonly greenAPumpOn = Subject.create(false);
+
+  private readonly greenBPumpOn = Subject.create(false);
+
+  private readonly yellowAPumpOn = Subject.create(false);
+
+  private readonly yellowBPumpOn = Subject.create(false);
 
   /* 31 - FWS */
 
@@ -1353,15 +1371,27 @@ export class PseudoFWC {
 
     /* ENGINE AND THROTTLE acquisition */
 
-    this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum'));
-    this.engine2State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
-    this.engine3State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Enum'));
-    this.engine4State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:4', 'Enum'));
+    const engine1StatesimVar = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum');
+    const engine2StateSimVar = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum');
+    const engine3StateSiMVar = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Enum');
+    const engine4StateSiMVar = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:4', 'Enum');
+
+    this.engine1State.set(engine1StatesimVar);
+    this.engine2State.set(engine2StateSimVar);
+    this.engine3State.set(engine3StateSiMVar);
+    this.engine4State.set(engine4StateSiMVar);
+
+    this.engine1Running.set(engine1StatesimVar == 1);
+    this.engine2Running.set(engine2StateSimVar == 1);
+    this.engine3Running.set(engine3StateSiMVar == 1);
+    this.engine4Running.set(engine4StateSiMVar == 1);
+
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
+
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
 
@@ -1396,6 +1426,11 @@ export class PseudoFWC {
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
 
     /* HYDRAULICS acquisition */
+
+    this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool'));
+    this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool'));
+    this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
+    this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
 
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
     this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
@@ -1809,6 +1844,14 @@ export class PseudoFWC {
 
     this.rmp3Fault.set(false);
     this.rmp3Off.set(SimVar.GetSimVarValue('L:A380X_RMP_3_BRIGHTNESS_KNOB', 'number') === 0);
+
+    /* 24 - Electrical */
+    this.extPwrConnected.set(
+      SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG1_IS_CLOSED', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED', 'bool'),
+    );
 
     /* OTHER STUFF */
 
@@ -2984,50 +3027,7 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000200': {
-      // PARK BRK
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8],
-      simVarIsActive: this.parkBrake,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000020001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000040': {
-      // NW STRG DISC
-      flightPhaseInhib: [],
-      simVarIsActive: this.nwSteeringDisc,
-      whichCodeToReturn: () => [this.engine1State.get() > 0 || this.engine2State.get() > 0 ? 1 : 0],
-      codesToReturn: ['000004001', '000004002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000160': {
-      // PTU ON
-      flightPhaseInhib: [],
-      simVarIsActive: this.hydPTU,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000016001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000210': {
-      // RAT OUT
-      flightPhaseInhib: [],
-      simVarIsActive: this.ratDeployed.map((v) => v > 0),
-      whichCodeToReturn: () => [[1, 2].includes(this.fwcFlightPhase.get()) ? 1 : 0],
-      codesToReturn: ['000021001', '000021002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
+
     '0000070': {
       // IGNITION
       flightPhaseInhib: [],
@@ -3197,17 +3197,6 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000220': {
-      // BRAKE FAN
-      flightPhaseInhib: [],
-      simVarIsActive: this.brakeFan,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000022001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000290': {
       // SWITCHING PNL
       flightPhaseInhib: [],
@@ -3346,6 +3335,117 @@ export class PseudoFWC {
       simVarIsActive: this.voiceVhf3,
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000015'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+
+    // ATA 24
+    '241000001': {
+      // ELEC EXT PWR
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+      simVarIsActive: this.extPwrConnected,
+      whichCodeToReturn: () => [
+        [
+          this.engine1Running.get(),
+          this.engine2Running.get(),
+          this.engine3Running.get(),
+          this.engine4Running.get(),
+        ].filter(Boolean).length > 1
+          ? 0
+          : 1,
+      ],
+      codesToReturn: ['241000001', '241000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '242000001': {
+      // RAT OUT
+      flightPhaseInhib: [],
+      simVarIsActive: this.ratDeployed.map((v) => v > 0),
+      whichCodeToReturn: () => [[1, 2].includes(this.fwcFlightPhase.get()) ? 0 : 1],
+      codesToReturn: ['242000001', '242000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    // ATA 29
+    '290000001': {
+      // G ELEC PMP A CTL
+      flightPhaseInhib: [],
+      simVarIsActive: this.greenAPumpOn,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '290000002': {
+      // G ELEC PMP B CTL
+      flightPhaseInhib: [],
+      simVarIsActive: this.greenBPumpOn,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '290000003': {
+      // Y ELEC PMP A CTL
+      flightPhaseInhib: [],
+      simVarIsActive: this.yellowAPumpOn,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290000003'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '290000004': {
+      // Y ELEC PMP A CTL
+      flightPhaseInhib: [],
+      simVarIsActive: this.yellowBPumpOn,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290000004'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    // ATA 32
+    '322000001': {
+      // N/W STEER DISC
+      flightPhaseInhib: [3, 4, 5, 7, 8, 9, 9, 10],
+      simVarIsActive: this.nwSteeringDisc,
+      whichCodeToReturn: () => [
+        [
+          this.engine1Running.get(),
+          this.engine2Running.get(),
+          this.engine3Running.get(),
+          this.engine4Running.get(),
+        ].filter(Boolean).length > 1
+          ? 0
+          : 1,
+      ],
+      codesToReturn: ['322000001', '322000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+
+    '320000002': {
+      // PARK BRK ON
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.parkBrake,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['320000002'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
