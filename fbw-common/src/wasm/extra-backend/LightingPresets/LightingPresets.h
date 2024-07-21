@@ -8,20 +8,21 @@
 
 #include "DataManager.h"
 #include "Module.h"
-#include "inih/ini.h"
+#include "inih/ini_fbw.h"
 
 class LightingPresets : public Module {
  public:
   LightingPresets() = delete;
 
  protected:
-  const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
-  static constexpr SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
+  const std::string                                 CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
+  static constexpr SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1   = 1;
   // dynamic step size for convergence
-  static constexpr FLOAT64 MIN_STEP_SIZE = 1.05; // needs to be >=1 as otherwise the value will never converge due to the sim cutting off the decimals
-  static constexpr FLOAT64 MAX_STEP_SIZE = 10.0; // first step is always large therefore we need to limit the max step size
+  static constexpr FLOAT64 MIN_STEP_SIZE =
+      1.05;  // needs to be >=1 as otherwise the value will never converge due to the sim cutting off the decimals
+  static constexpr FLOAT64 MAX_STEP_SIZE      = 10.0;  // first step is always large therefore we need to limit the max step size
   static constexpr FLOAT64 TOTAL_LOADING_TIME = 2.0;
-  static constexpr FLOAT64 UPDATE_DELAY_TIME = 0.15; // delay between updates in seconds - too long would make the animation choppy
+  static constexpr FLOAT64 UPDATE_DELAY_TIME  = 0.15;  // delay between updates in seconds - too long would make the animation choppy
 
   // to throttle loading so animation can keep up we use time stamps
   FLOAT64 lastUpdate = 0.0;
@@ -36,11 +37,11 @@ class LightingPresets : public Module {
   NamedVariablePtr elecAC1Powered;
   NamedVariablePtr loadLightingPresetRequest;
   NamedVariablePtr saveLightingPresetRequest;
-  NamedVariablePtr presetLoadTime; // how long shall the preset loading take
+  NamedVariablePtr presetLoadTime;  // how long shall the preset loading take
 
   // create ini file and data structure
   mINI::INIStructure ini;
-  mINI::INIFile iniFile;
+  mINI::INIFile      iniFile;
   // Flag to indicate if the ini file should be read - only read it when loading a new preset
   // but don't read it again during the loading process of one preset
   // This way we avoid reading the ini file multiple times when loading a single preset but still read it
@@ -51,16 +52,16 @@ class LightingPresets : public Module {
   LightingPresets(MsfsHandler& handler) : Module(handler), iniFile(CONFIGURATION_FILEPATH) {}
 
   bool initialize() override;
-  bool preUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; }; // not required for this module
+  bool preUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; };  // not required for this module
   bool update(sGaugeDrawData* pData) override;
-  bool postUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; }; // not required for this module
+  bool postUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; };  // not required for this module
   bool shutdown() override;
 
   /**
    * Initializes the aircraft specific variables.
    * @return true if successful, false otherwise.
    */
-  virtual bool initialize_aircraft() = 0; // this needs to be implemented by the derived class (aircraft)
+  virtual bool initialize_aircraft() = 0;  // this needs to be implemented by the derived class (aircraft)
 
   /**
    * Loads a specified preset
