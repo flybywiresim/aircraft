@@ -17,6 +17,10 @@ function aircraftEfbSetup(): void {
 render(
   <AircraftContext.Provider
     value={{
+      performanceCalculators: {
+        takeoff: null,
+        landing: null,
+      },
       settingsPages: {
         autoCalloutsPage: AutomaticCallOutsPage,
       }

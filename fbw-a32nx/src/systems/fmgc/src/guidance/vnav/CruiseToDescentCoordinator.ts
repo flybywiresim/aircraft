@@ -14,6 +14,7 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 
 export class CruiseToDescentCoordinator {
   private lastEstimatedFuelAtDestination: Pounds = 4000;
@@ -25,6 +26,7 @@ export class CruiseToDescentCoordinator {
     private cruisePathBuilder: CruisePathBuilder,
     private descentPathBuilder: DescentPathBuilder,
     private approachPathBuilder: ApproachPathBuilder,
+    private readonly acConfig: AircraftConfig,
   ) {}
 
   resetEstimations() {
@@ -120,6 +122,7 @@ export class CruiseToDescentCoordinator {
           if (index < 0) {
             cruisePath = this.cruisePathBuilder.computeCruisePath(
               profile,
+              this.acConfig,
               startingPoint,
               descentPath.at(0).distanceFromStart,
               stepClimbStrategy,
@@ -157,6 +160,7 @@ export class CruiseToDescentCoordinator {
 
       cruisePath = this.cruisePathBuilder.computeCruisePath(
         profile,
+        this.acConfig,
         startingPoint,
         descentPath.lastCheckpoint.distanceFromStart,
         stepClimbStrategy,
