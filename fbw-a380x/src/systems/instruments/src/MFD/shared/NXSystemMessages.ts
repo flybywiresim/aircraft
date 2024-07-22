@@ -72,6 +72,7 @@ export const NXSystemMessages = {
   checkSpeedMode: new TypeIIMessage('CHECK SPEED MODE'),
   checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
   comUnavailable: new TypeIMessage('COM UNAVAILABLE'),
+  cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   dcduFileFull: new TypeIMessage('DCDU FILE FULL'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),

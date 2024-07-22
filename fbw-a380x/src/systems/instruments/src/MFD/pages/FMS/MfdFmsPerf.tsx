@@ -74,7 +74,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private showNoiseFields(visible: boolean) {
     // Only check for one, if one is instantiated the rest also is
     if (this.toNoiseButtonRef.getOrDefault()) {
-      if (visible === true) {
+      if (visible) {
         // TO page
         this.toNoiseButtonRef.instance.style.display = 'none';
         this.toNoiseEndLabelRef.instance.style.display = 'flex';
@@ -523,7 +523,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
 
     if (fm.approachFlapConfig) {
-      this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() - 3);
+      this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
     }
 
     if (pd.transitionLevelIsFromDatabase) {
@@ -534,11 +534,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFl.set(pd.transitionLevel);
     }
 
-    if (
-      this.activeFlightPhase.get() >= FmgcFlightPhase.Descent &&
-      this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation()
-    ) {
-      const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation() ?? 0;
+    const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
+    if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent && vDev != null) {
       this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `-${vDev.toFixed(0)}FT`);
     } else {
       this.apprVerticalDeviation.set('+-----');

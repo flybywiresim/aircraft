@@ -230,7 +230,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
               }
 
               const success = this.props.pendingAirways.thenAirway(airways[0]);
-              if (success === true) {
+              if (success) {
                 this.viaFieldDisabled.set(true);
                 this.toFieldDisabled.set(false);
               } else {
@@ -276,7 +276,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
               }
 
               const success = this.props.pendingAirways.thenTo(chosenFix);
-              if (success === true) {
+              if (success) {
                 this.toFieldDisabled.set(true);
                 this.props.nextLineCallback(chosenFix);
               } else {

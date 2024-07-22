@@ -130,7 +130,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private xpdrStatusChanged() {
     const state = this.xpdrState.get();
-    const isOnGround = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', SimVarValueType.Bool);
+    const isOnGround = this.props.fmcService.master?.fmgc.isOnGround();
 
     this.xpdrStatusSelectedIndex.set(
       state === TransponderState.ModeA || state === TransponderState.ModeC || state === TransponderState.ModeS ? 0 : 1,
@@ -148,7 +148,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   }
 
   private setDefaultSettings() {
-    if (this.xpdrFailed.get() === false) {
+    if (!this.xpdrFailed.get()) {
       this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', true, true);
       this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', true, true);
     }

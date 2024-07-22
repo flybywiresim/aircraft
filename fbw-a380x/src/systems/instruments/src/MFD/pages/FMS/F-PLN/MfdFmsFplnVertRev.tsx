@@ -93,7 +93,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         (this.props.fmcService.master?.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex ?? 0) + 1,
       )
       .map((el) => {
-        if (el instanceof FlightPlanLeg) {
+        if (el.isDiscontinuity === false) {
           return el.ident;
         }
         return null;
@@ -141,18 +141,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private updateConstraints() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+    const selectedWaypointIndex = this.selectedWaypointIndex.get();
+    if (!this.props.fmcService.master || !this.loadedFlightPlan || selectedWaypointIndex == null) {
       return;
     }
 
     const wptIdx =
       this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex +
-      (this.selectedWaypointIndex.get() ?? 0) +
+      selectedWaypointIndex +
       1;
     if (wptIdx !== undefined) {
       const leg = this.loadedFlightPlan.legElementAt(wptIdx);
 
-      if (MfdFmsFplnVertRev.isEligibleForVerticalRevision(wptIdx, leg, this.loadedFlightPlan) === false) {
+      if (!MfdFmsFplnVertRev.isEligibleForVerticalRevision(wptIdx, leg, this.loadedFlightPlan)) {
         this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
         this.spdConstraintDisabled.set(true);
         this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
@@ -231,7 +232,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private async tryUpdateAltitudeConstraint(newAlt?: number) {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+    const selectedWaypointIndex = this.selectedWaypointIndex.get();
+    if (!this.props.fmcService.master || !this.loadedFlightPlan || selectedWaypointIndex == null) {
       return;
     }
 
@@ -239,7 +241,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (alt && this.selectedAltitudeConstraintOption.get() !== null) {
       const index =
         this.props.fmcService.master?.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex +
-        (this.selectedWaypointIndex.get() ?? 0) +
+        selectedWaypointIndex +
         1;
       const fpln = this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get());
       const leg = fpln.legElementAt(index);
@@ -379,11 +381,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     <InputField<number>
                       dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                       dataHandlerDuringValidation={async (val) => {
-                        if (this.props.fmcService.master) {
+                        const selectedWaypointIndex = this.selectedWaypointIndex.get();
+                        if (this.props.fmcService.master && selectedWaypointIndex != null) {
                           const index =
                             this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get())
                               .activeLegIndex +
-                            (this.selectedWaypointIndex.get() ?? 0) +
+                            selectedWaypointIndex +
                             1;
                           const fpln = this.props.fmcService.master.flightPlanService.get(
                             this.loadedFlightPlanIndex.get(),
@@ -419,11 +422,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         </div>,
                       )}
                       onClick={() => {
-                        if (this.props.fmcService.master) {
+                        const selectedWaypointIndex = this.selectedWaypointIndex.get();
+                        if (this.props.fmcService.master && selectedWaypointIndex != null) {
                           const index =
                             this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get())
                               .activeLegIndex +
-                            (this.selectedWaypointIndex.get() ?? 0) +
+                            selectedWaypointIndex +
                             1;
                           const fpln = this.props.fmcService.master.flightPlanService.get(
                             this.loadedFlightPlanIndex.get(),
@@ -521,11 +525,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         </div>,
                       )}
                       onClick={() => {
-                        if (this.props.fmcService.master) {
+                        const selectedWaypointIndex = this.selectedWaypointIndex.get();
+                        if (this.props.fmcService.master && selectedWaypointIndex != null) {
                           const index =
                             this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get())
                               .activeLegIndex +
-                            (this.selectedWaypointIndex.get() ?? 0) +
+                            selectedWaypointIndex +
                             1;
                           const fpln = this.props.fmcService.master.flightPlanService.get(
                             this.loadedFlightPlanIndex.get(),

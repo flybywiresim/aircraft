@@ -405,24 +405,24 @@ export class A380OperatingSpeeds {
 
     // AOA based speeds
     // Calculate alpha speeds according to https://safetyfirst.airbus.com/control-your-speed-in-cruise/
-    const sim_stall_alpha = SimVar.GetSimVarValue('STALL ALPHA', SimVarValueType.Degree);
-    const sim_zero_lift_alpha = SimVar.GetSimVarValue('ZERO LIFT ALPHA', SimVarValueType.Degree);
-    const alpha_0 = sim_zero_lift_alpha; // AOA for lift coefficient of zero
-    const alpha_prot = sim_zero_lift_alpha + 0.85 * (sim_stall_alpha - sim_zero_lift_alpha); // AOA where alpha prot. becomes active
-    const alpha_max = sim_zero_lift_alpha + 0.95 * (sim_stall_alpha - sim_zero_lift_alpha); // Max. AOA which can be flown in normal law
+    const simStallAlpha = SimVar.GetSimVarValue('STALL ALPHA', SimVarValueType.Degree);
+    const simZeroLiftAlpha = SimVar.GetSimVarValue('ZERO LIFT ALPHA', SimVarValueType.Degree);
+    const alpha0 = simZeroLiftAlpha; // AOA for lift coefficient of zero
+    const alphaProt = simZeroLiftAlpha + 0.85 * (simStallAlpha - simZeroLiftAlpha); // AOA where alpha prot. becomes active
+    const alphaMax = simZeroLiftAlpha + 0.95 * (simStallAlpha - simZeroLiftAlpha); // Max. AOA which can be flown in normal law
 
     const stallSpeedFudgeFactor = fPos === 0 ? 1.22 : 1.5; // Flight model not yet tuned
     this.alphaMax = Math.max(
       Vmcl,
-      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha_0) / (alpha_max - alpha_0)),
+      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (alphaMax - alpha0)),
     );
     this.alphaProt = Math.max(
       0,
-      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha_0) / (alpha_prot - alpha_0)),
+      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (alphaProt - alpha0)),
     );
     this.alphaStallWarn = Math.max(
       Vmcl,
-      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha_0) / (sim_stall_alpha - alpha_0)),
+      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (simStallAlpha - alpha0)),
     );
   }
 }

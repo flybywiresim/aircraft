@@ -16,9 +16,13 @@ export enum FplnRevisionsMenuType {
 }
 
 export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType): ContextMenuElement[] {
-  const legIndex = fpln.props.fmcService.master?.revisedWaypointIndex.get() ?? 0;
-  const planIndex = fpln.props.fmcService.master?.revisedWaypointPlanIndex.get() ?? FlightPlanIndex.Active;
-  const altnFlightPlan = fpln.props.fmcService.master?.revisedWaypointIsAltn.get() ?? false;
+  const legIndex = fpln.props.fmcService.master?.revisedWaypointIndex.get();
+  const planIndex = fpln.props.fmcService.master?.revisedWaypointPlanIndex.get();
+  const altnFlightPlan = fpln.props.fmcService.master?.revisedWaypointIsAltn.get();
+
+  if (legIndex == null || planIndex == null || altnFlightPlan == null) {
+    return [];
+  }
 
   return [
     {
@@ -30,14 +34,19 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
         !fpln.loadedFlightPlan?.legElementAt(legIndex).isXF(),
       onPressed: () => {
-        fpln.props.fmcService.master?.flightPlanService.directToLeg(
-          fpln.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
-          SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-          legIndex,
-          true,
-          planIndex,
-        );
-        fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`);
+        const ppos = fpln.props.fmcService.master?.navigation.getPpos();
+        if (ppos) {
+          fpln.props.fmcService.master?.flightPlanService.directToLeg(
+            ppos,
+            SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+            legIndex,
+            true,
+            planIndex,
+          );
+          fpln.props.mfd.uiService.navigateTo(
+            `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
+          );
+        }
       },
     },
     {

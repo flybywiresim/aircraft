@@ -487,6 +487,11 @@
   align-items: baseline;
 }
 
+.mfd-input-field-root.overflow {
+  position: relative;
+  top: 0px;
+}
+
 .mfd-input-field-container {
   display: flex;
   flex-direction: row;
@@ -510,6 +515,13 @@
 
 .mfd-input-field-container:hover {
   border: 2px inset $display-cyan;
+}
+
+.mfd-input-field-container.overflow {
+  position: absolute;
+  top: -18px;
+  z-index: 5;
+  border: 1px solid $display-grey;
 }
 
 .mfd-input-field-text-input {

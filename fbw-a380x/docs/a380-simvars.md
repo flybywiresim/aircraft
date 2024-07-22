@@ -297,6 +297,7 @@
     - True if the overhead manual extract vent override pushbutton is on (illuminated)
 
 ## Auto Flight System ATA 22
+
 - A380X_MFD_{side}_ACTIVE_PAGE
     - String
     - URI of activate page on respective MFD (e.g. fms/active/init)

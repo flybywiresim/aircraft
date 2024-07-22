@@ -170,11 +170,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
    */
   async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
     if (items.length > 1) {
-      this.duplicateNamesOpened.set(true);
-      const result = await this.duplicateNamesRef.instance.deduplicateFacilities(items);
-      this.duplicateNamesOpened.set(false);
-
-      return result;
+      return new Promise((resolve) => {
+        this.duplicateNamesRef.instance.deduplicateFacilities(items, resolve);
+      });
     }
     return items[0];
   }

@@ -166,7 +166,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.blockLineRef.instance.style.visibility = 'visible';
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+            const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
             this.grossWeight.set(gw);
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC

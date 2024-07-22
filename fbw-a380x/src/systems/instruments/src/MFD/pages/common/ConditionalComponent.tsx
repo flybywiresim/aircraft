@@ -10,7 +10,7 @@ interface ConditionalComponentProps extends ComponentProps {
 }
 
 /*
- * Displays the title bar, with optional markers for lateral offsets, engine out and temporary flight plan
+ * Renders components based on the prop's condition (either componentIfTrue or componentIfFalse is rendered)
  */
 export class ConditionalComponent extends DisplayComponent<ConditionalComponentProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.

@@ -9,6 +9,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
+import { NavigationDatabaseService } from '@fmgc/index';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 
@@ -37,9 +38,14 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
   protected onNewData() {
     console.time('DATA/STATUS:onNewData');
 
+    NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((db) => {
+      const from = new Date(db.effectiveFrom);
+      const to = new Date(db.effectiveTo);
+      this.activeDatabase.set(`${from.getDay()}${months[from.getMonth()]}-${to.getDay()}${months[to.getMonth()]}`);
+    });
+
     const date = this.props.fmcService.master?.fmgc.getNavDataDateRange();
     if (date) {
-      this.activeDatabase.set(this.calculateActiveDate(date));
       this.secondDatabase.set(this.calculateSecDate(date));
     }
 

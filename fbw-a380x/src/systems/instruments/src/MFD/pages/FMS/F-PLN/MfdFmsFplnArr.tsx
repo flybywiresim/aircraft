@@ -148,7 +148,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         ];
 
         // Sort approaches by runway
-        // eslint-disable-next-line max-len
         const sortedApproaches = flightPlan.availableApproaches.sort(
           (a, b) =>
             a.runwayIdent?.localeCompare(b.runwayIdent ?? '') || ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type],
@@ -176,11 +175,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             },
           });
 
-          if (
-            isFirstMatch === true &&
-            flightPlan.approach === undefined &&
-            el.runwayIdent === flightPlan?.destinationRunway?.ident
-          ) {
+          if (isFirstMatch && el.runwayIdent === flightPlan?.destinationRunway?.ident) {
             this.apprButtonScrollTo.set(idx + 1); // Account for NONE, add 1
             isFirstMatch = false;
           }
@@ -211,24 +206,21 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
           // Only show VIAs matching to approach (and STAR, if available)
           flightPlan.availableApproachVias
-            .filter((it) => {
+            .filter((via) => {
               if (flightPlan.arrival?.runwayTransitions?.length && flightPlan.arrival?.runwayTransitions?.length > 0) {
-                let oneStarIsMatching = false;
-                flightPlan.arrival.runwayTransitions.forEach((ii) => {
-                  if (ii.legs[ii.legs.length - 1]?.waypoint?.databaseId === it.legs[0]?.waypoint?.databaseId) {
-                    oneStarIsMatching = true;
-                  }
-                });
-                return oneStarIsMatching;
+                return flightPlan.arrival.runwayTransitions.some(
+                  (trans) =>
+                    trans.legs[trans.legs.length - 1]?.waypoint?.databaseId === via.legs[0]?.waypoint?.databaseId,
+                );
               }
               return true;
             })
-            .forEach((el) => {
+            .forEach((via) => {
               vias.push({
-                label: el.ident,
+                label: via.ident,
                 action: async () => {
                   await this.props.fmcService.master?.flightPlanService.setApproachVia(
-                    el.databaseId,
+                    via.databaseId,
                     this.loadedFlightPlanIndex.get(),
                     isAltn,
                   );

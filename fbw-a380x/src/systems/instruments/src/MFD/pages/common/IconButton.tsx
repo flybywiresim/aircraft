@@ -50,7 +50,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
 
     this.subs.push(
       this.props.disabled.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.updateSvgColor('grey');
         } else {
           this.updateSvgColor('white');

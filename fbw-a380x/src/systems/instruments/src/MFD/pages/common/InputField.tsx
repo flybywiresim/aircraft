@@ -93,7 +93,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   private onNewValue() {
     // Don't update if field is being edited
-    if (this.isFocused.get() === true || this.isValidating.get() === true) {
+    if (this.isFocused.get() || this.isValidating.get()) {
       return;
     }
 
@@ -101,10 +101,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     if (this.modifiedFieldValue.get() !== null) {
       this.modifiedFieldValue.set(null);
     }
-    if (this.props.value.get() !== undefined) {
-      if (this.props.canOverflow === true) {
-        // If item was overflowed, check whether overflow is still needed
-        this.overflow(!((this.props.value.get()?.toString().length ?? 0) <= this.props.dataEntryFormat.maxDigits));
+    if (this.props.value.get() != null) {
+      if (this.props.canOverflow) {
+        // If item was overflowing, check whether overflow is still needed
+        this.overflow((this.props.value.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
       if (this.props.mandatory?.get() === true) {
@@ -116,8 +116,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   private updateDisplayElement() {
     // If input was not modified, render props' value
-    if (this.modifiedFieldValue.get() === null) {
-      if (this.props.value.get() === null || this.props.value.get() === undefined) {
+    if (this.modifiedFieldValue.get() == null) {
+      if (this.props.value.get() == null) {
         this.populatePlaceholders();
       } else {
         const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
@@ -128,11 +128,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     } else {
       // Else, render modifiedFieldValue
       const numDigits = this.props.dataEntryFormat.maxDigits;
-      if (
-        (this.modifiedFieldValue.get()?.length ?? 0) < numDigits ||
-        this.isFocused.get() === false ||
-        this.props.canOverflow === true
-      ) {
+      if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || !this.isFocused.get() || this.props.canOverflow) {
         this.textInputRef.instance.innerText = this.modifiedFieldValue.get() ?? '';
         this.caretRef.instance.innerText = '';
       } else {
@@ -144,10 +140,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   // Called when the input field changes
   private onInput() {
-    if (
-      this.props.canOverflow === true &&
-      this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits
-    ) {
+    if (this.props.canOverflow && this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits) {
       this.overflow(true);
     }
 
@@ -158,23 +151,17 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   public overflow(overflow: boolean) {
     if (this.topRef.getOrDefault() && this.containerRef.getOrDefault()) {
-      if (overflow === true) {
-        this.topRef.instance.style.position = 'relative';
-        this.topRef.instance.style.top = '0px';
-        this.containerRef.instance.style.position = 'absolute';
-        this.containerRef.instance.style.top = '-18px';
-        this.containerRef.instance.style.zIndex = '5';
+      if (overflow) {
+        this.topRef.instance.classList.add('overflow');
+        this.containerRef.instance.classList.add('overflow');
+
         const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
         this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
-        this.containerRef.instance.style.border = '1px solid grey';
       } else {
-        this.topRef.instance.style.position = '';
-        this.topRef.instance.style.top = '';
-        this.containerRef.instance.style.position = '';
-        this.containerRef.instance.style.top = '';
-        this.containerRef.instance.style.zIndex = '';
+        this.topRef.instance.classList.remove('overflow');
+        this.topRef.instance.classList.remove('overflow');
+
         this.containerRef.instance.style.width = '';
-        this.containerRef.instance.style.border = '';
 
         if (this.props.containerStyle) {
           this.containerRef.instance.setAttribute('style', this.props.containerStyle);
@@ -220,10 +207,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.spanningDivRef.instance.style.justifyContent = 'flex-start';
     }
 
-    if (
-      (this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits ||
-      this.props.canOverflow === true
-    ) {
+    if ((this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits || this.props.canOverflow) {
       this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
       this.caretRef.instance.style.display = 'inline';
     }
@@ -232,7 +216,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private handleEnter() {
-    if (this.props.handleFocusBlurExternally === true) {
+    if (this.props.handleFocusBlurExternally) {
       this.onBlur(true);
     } else {
       this.textInputRef.instance.blur();
@@ -241,10 +225,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   public onFocus() {
     if (
-      this.isFocused.get() === false &&
-      this.isValidating.get() === false &&
-      this.props.disabled?.get() === false &&
-      this.props.inactive?.get() === false
+      !this.isFocused.get() &&
+      !this.isValidating.get() &&
+      !this.props.disabled?.get() &&
+      !this.props.inactive?.get()
     ) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
@@ -253,13 +237,13 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
       // After 30s, unfocus field, if some other weird focus error happens
       setTimeout(() => {
-        if (this.isFocused.get() === true) {
+        if (this.isFocused.get()) {
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
         }
       }, 30_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
-      if (this.props.mandatory?.get() === true) {
+      if (this.props.mandatory?.get()) {
         this.textInputRef.instance.classList.remove('mandatory');
       }
       this.modifiedFieldValue.set(null);
@@ -269,7 +253,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   public async onBlur(validateAndUpdate: boolean = true) {
-    if (this.props.disabled?.get() === false && this.props.inactive?.get() === false && this.isFocused.get() === true) {
+    if (!this.props.disabled?.get() && !this.props.inactive?.get() && !this.isFocused.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
       }
@@ -279,7 +263,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.updateDisplayElement();
 
       if (validateAndUpdate) {
-        if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
+        if (this.modifiedFieldValue.get() == null && this.props.value.get() != null) {
           console.log('Enter pressed after no modification');
           // Enter is pressed after no modification
           const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
@@ -290,7 +274,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (!this.props.value.get() && this.props.mandatory?.get() === true) {
+      if (!this.props.value.get() && this.props.mandatory?.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -304,11 +288,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.leadingUnit.set(unitLeading ?? '');
     this.trailingUnit.set(unitTrailing ?? '');
 
-    if (
-      this.props.mandatory?.get() === true &&
-      this.props.inactive?.get() === false &&
-      this.props.disabled?.get() === false
-    ) {
+    if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
       this.textInputRef.instance.innerHTML =
         formatted?.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get())) ?? '';
     } else {
@@ -336,7 +316,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.props.value.get());
         const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
-        if (validation === false) {
+        if (!validation) {
           updateWasSuccessful = false;
         }
       } catch {
@@ -406,7 +386,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
       this.isValidating.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.textInputRef.instance.classList.add('validating');
         } else {
           this.textInputRef.instance.classList.remove('validating');
@@ -416,7 +396,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.mandatory.sub((val) => {
-        if (val === true && !this.props.value.get()) {
+        if (val && !this.props.value.get()) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
@@ -427,7 +407,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.inactive.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.containerRef.instance.classList.add('inactive');
           this.textInputRef.instance.classList.add('inactive');
 
@@ -436,7 +416,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
           this.containerRef.instance.classList.remove('inactive');
           this.textInputRef.instance.classList.remove('inactive');
 
-          if (this.props.disabled?.get() === false) {
+          if (!this.props.disabled?.get()) {
             this.textInputRef.instance.tabIndex = -1;
           }
         }
@@ -446,13 +426,13 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.disabled.sub((val) => {
-        if (this.props.inactive?.get() !== true) {
-          if (val === true) {
+        if (!this.props.inactive?.get()) {
+          if (val) {
             this.textInputRef.instance.tabIndex = 0;
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
-            if (this.props.mandatory?.get() === true && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && !this.props.value.get()) {
               this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
@@ -460,7 +440,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.remove('disabled');
             this.textInputRef.instance.classList.remove('disabled');
 
-            if (this.props.mandatory?.get() === true && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && !this.props.value.get()) {
               this.textInputRef.instance.classList.add('mandatory');
             }
           }
@@ -471,7 +451,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.enteredByPilot.sub((val) => {
-        if (val === false) {
+        if (!val) {
           this.textInputRef.instance.classList.add('computedByFms');
         } else {
           this.textInputRef.instance.classList.remove('computedByFms');
@@ -481,7 +461,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.tmpyActive.sub((v) => {
-        if (v === true) {
+        if (v) {
           this.textInputRef.instance.classList.add('tmpy');
         } else {
           this.textInputRef.instance.classList.remove('tmpy');
@@ -566,6 +546,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
     });
 
+    // preparation for automatic un-focusing if the node isn't in view anymore. Model changes needed FIXME
     /* if (this.props.inViewEvent) {
             this.subs.push(this.props.inViewEvent.whenChanged().handle((inView) =>
             {

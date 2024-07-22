@@ -48,10 +48,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     if (flightPlan?.originAirport) {
       this.fromIcao.set(flightPlan.originAirport.ident);
 
-      const runways: ButtonMenuItem[] = [];
       const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
-      sortedRunways.forEach((rw) => {
-        runways.push({
+      const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
+        return {
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M ${rw.lsIdent ? 'ILS' : ''}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setOriginRunway(
@@ -70,7 +69,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
               isAltn ?? false,
             );
           },
-        });
+        };
       });
       this.rwyOptions.set(runways);
 

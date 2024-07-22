@@ -1,4 +1,4 @@
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, UnitType } from '@microsoft/msfs-sdk';
 import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -83,14 +83,23 @@ export class FmcAircraftInterface {
   ];
 
   thrustReductionAccelerationChecks() {
-    // TODO port over (fms-v2)
-    // const activePlan = this.flightPlanService.active;
-    // if (activePlan.reconcileAccelerationWithConstraints()) {
-    //     this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
-    // }
-    // if (activePlan.reconcileThrustReductionWithConstraints()) {
-    //     this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
-    // }
+    const activePlan = this.flightPlanService.active;
+
+    if (activePlan.reconcileAccelerationWithConstraints() && activePlan.performanceData.accelerationAltitude) {
+      this.fmc.addMessageToQueue(
+        NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.performanceData.accelerationAltitude.toFixed(0)),
+        undefined,
+        undefined,
+      );
+    }
+
+    if (activePlan.reconcileThrustReductionWithConstraints() && activePlan.performanceData.thrustReductionAltitude) {
+      this.fmc.addMessageToQueue(
+        NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.performanceData.thrustReductionAltitude.toFixed(0)),
+        undefined,
+        undefined,
+      );
+    }
   }
 
   public updateThrustReductionAcceleration() {
@@ -169,35 +178,31 @@ export class FmcAircraftInterface {
     const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude; // as altitude
     const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel ?? 18_000; // as FL
 
-    if (Number.isFinite(originTransitionAltitude)) {
-      this.arincTransitionAltitude.setBnrValue(
-        originTransitionAltitude !== null ? originTransitionAltitude : 0,
-        originTransitionAltitude !== null
-          ? Arinc429SignStatusMatrix.NormalOperation
-          : Arinc429SignStatusMatrix.NoComputedData,
-        17,
-        131072,
-        0,
-      );
+    this.arincTransitionAltitude.setBnrValue(
+      originTransitionAltitude !== null ? originTransitionAltitude : 0,
+      originTransitionAltitude !== null
+        ? Arinc429SignStatusMatrix.NormalOperation
+        : Arinc429SignStatusMatrix.NoComputedData,
+      17,
+      131072,
+      0,
+    );
 
-      // Delete once new PFD is integrated
-      SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', originTransitionAltitude ?? 0);
-    }
+    // Delete once new PFD is integrated
+    SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', originTransitionAltitude ?? 0);
 
-    if (Number.isFinite(destinationTransitionLevel)) {
-      this.arincTransitionLevel.setBnrValue(
-        destinationTransitionLevel !== undefined ? destinationTransitionLevel : 0,
-        destinationTransitionLevel !== undefined
-          ? Arinc429SignStatusMatrix.NormalOperation
-          : Arinc429SignStatusMatrix.NoComputedData,
-        9,
-        512,
-        0,
-      );
+    this.arincTransitionLevel.setBnrValue(
+      destinationTransitionLevel !== undefined ? destinationTransitionLevel : 0,
+      destinationTransitionLevel !== undefined
+        ? Arinc429SignStatusMatrix.NormalOperation
+        : Arinc429SignStatusMatrix.NoComputedData,
+      9,
+      512,
+      0,
+    );
 
-      // Delete once new PFD is integrated
-      SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel * 100 ?? 0);
-    }
+    // Delete once new PFD is integrated
+    SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel * 100 ?? 0);
   }
 
   public updatePerformanceData() {
@@ -497,7 +502,7 @@ export class FmcAircraftInterface {
     let vPfd: number = 0;
     let isMach = false;
 
-    /* TODO port over
+    /* FIXME hold port over and fix holds
         this.updateHoldingSpeed();
         this.clearCheckSpeedModeMessage(); */
 
@@ -891,7 +896,8 @@ export class FmcAircraftInterface {
       weight = gw;
     } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
       weight =
-        (this.fmgc.data.zeroFuelWeight.get() ?? maxZfw) + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934);
+        (this.fmgc.data.zeroFuelWeight.get() ?? maxZfw) +
+        Math.max(0, UnitType.POUND.convertTo(vnavPrediction.estimatedFuelOnBoard, UnitType.KILOGRAM));
     }
 
     if (!weight) {
@@ -1547,33 +1553,6 @@ export class FmcAircraftInterface {
       profilePoint.climbAltitude = currentClbConstraint;
       profilePoint.descentAltitude = Math.max(destinationElevation, currentDesConstraint);
       previousSpeedConstraint = currentSpeedConstraint;
-
-      // TODO to be replaced with bbk vnav
-      // set some data for LNAV to use for coarse predictions while we lack vnav
-      // if (wp.additionalData.constraintType === 1 /* CLB */) {
-      //     wp.additionalData.predictedSpeed = Math.min(profilePoint.climbSpeed, this.managedSpeedClimb);
-      //     if (this.climbSpeedLimitAlt && profilePoint.climbAltitude < this.climbSpeedLimitAlt) {
-      //         wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.climbSpeedLimit);
-      //     }
-      //     wp.additionalData.predictedAltitude = Math.min(profilePoint.climbAltitude, this._cruiseFlightLevel * 100);
-      // } else if (wp.additionalData.constraintType === 2 /* DES */) {
-      //     wp.additionalData.predictedSpeed = Math.min(profilePoint.descentSpeed, this.getManagedDescentSpeed());
-      //     if (this.descentSpeedLimitAlt && profilePoint.climbAltitude < this.descentSpeedLimitAlt) {
-      //         wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.descentSpeedLimit);
-      //     }
-      //     wp.additionalData.predictedAltitude = Math.min(profilePoint.descentAltitude, this._cruiseFlightLevel * 100); ;
-      // } else {
-      //     wp.additionalData.predictedSpeed = this.managedSpeedCruise;
-      //     wp.additionalData.predictedAltitude = this._cruiseFlightLevel * 100;
-      // }
-      // // small hack to ensure the terminal procedures and transitions to/from enroute look nice despite lack of altitude predictions
-      // if (index <= this.flightPlanManager.getEnRouteWaypointsFirstIndex(FlightPlans.Active)) {
-      //     wp.additionalData.predictedAltitude = Math.min(originElevation + 10000, wp.additionalData.predictedAltitude);
-      //     wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
-      // } else if (index >= this.flightPlanManager.getEnRouteWaypointsLastIndex(FlightPlans.Active)) {
-      //     wp.additionalData.predictedAltitude = Math.min(destinationElevation + 10000, wp.additionalData.predictedAltitude);
-      //     wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
-      // }
     }
   }
 
