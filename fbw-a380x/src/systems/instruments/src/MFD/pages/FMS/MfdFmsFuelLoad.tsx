@@ -87,13 +87,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
     }
 
-    if (this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered.get() === false) {
+    if (!this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered.get()) {
       // Calculate Rte Rsv fuel for 5.0% reserve
       this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(null);
       this.props.fmcService.master.fmgc.data.routeReserveFuelPercentagePilotEntry.set(null);
     }
 
-    if (this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get() === false) {
+    if (!this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get()) {
       // Calculate Rte Rsv fuel for 00:30 time
       this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(6_000); // TODO
     }
@@ -159,7 +159,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           this.landingWeight.set(this.props.fmcService.master.getLandingWeight());
           this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight());
 
-          if (this.props.fmcService.master.enginesWereStarted.get() === false) {
+          if (!this.props.fmcService.master.enginesWereStarted.get()) {
             this.grossWeight.set(null);
             this.centerOfGravity.set(null);
             this.fuelOnBoard.set(null);
@@ -191,7 +191,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             );
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
             this.extraFuelWeight.set(
-              (this.enginesWereStarted.get() === true ? fob : block) -
+              (this.enginesWereStarted.get() ? fob : block) -
                 (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0) -
                 (this.tripFuelWeight.get() ?? 0) -
                 (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
@@ -212,7 +212,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     this.subs.push(
       this.enginesWereStarted.sub((val) => {
-        if (val === true && this.blockLineRef.getOrDefault()) {
+        if (val && this.blockLineRef.getOrDefault()) {
           this.blockLineRef.instance.style.visibility = 'hidden';
         }
       }, true),

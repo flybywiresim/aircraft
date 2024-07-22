@@ -61,7 +61,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         // Delete click handler, delete contextMenuRef children, render contextMenuRef children,
         this.renderedMenuItems?.forEach((val, i) => {
           document.getElementById(`${this.props.idPrefix}_${i}`)?.removeEventListener('click', () => {
-            if (val.disabled === false) {
+            if (!val.disabled) {
               this.hideMenu();
               val.onPressed();
             }
@@ -96,7 +96,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         // Add click event listener
         items?.forEach((val, i) => {
           document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
-            if (val.disabled === false) {
+            if (!val.disabled) {
               this.hideMenu();
               val.onPressed();
             }

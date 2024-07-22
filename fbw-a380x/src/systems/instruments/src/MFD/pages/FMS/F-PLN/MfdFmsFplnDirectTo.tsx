@@ -53,7 +53,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       const wpt = activeFpln.allLegs
         .slice(activeFpln.activeLegIndex, activeFpln.firstMissedApproachLegIndex)
         .map((el, idx) => {
-          if (el instanceof FlightPlanLeg && el.isXF() === true) {
+          if (el instanceof FlightPlanLeg && el.isXF()) {
             this.availableWaypointsToLegIndex.push(idx + activeFpln.activeLegIndex);
             return el.ident;
           }

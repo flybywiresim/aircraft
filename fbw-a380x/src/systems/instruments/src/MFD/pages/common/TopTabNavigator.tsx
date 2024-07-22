@@ -24,9 +24,9 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
     this.divRef.instance.addEventListener('click', this.props.onClick);
 
-    if (this.props.isActiveFlightPhase === true) {
+    if (this.props.isActiveFlightPhase) {
       this.textRef.instance.style.color = '#00ff00';
-    } else if (this.props.isSelected === true) {
+    } else if (this.props.isSelected) {
       this.textRef.instance.style.color = this.props.selectedTextColor;
     } else {
       this.textRef.instance.style.color = 'white;';
@@ -35,14 +35,11 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
   render(): VNode {
     return (
-      <div
-        ref={this.divRef}
-        class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected === true ? ' active' : ''}`}
-      >
+      <div ref={this.divRef} class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected ? ' active' : ''}`}>
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
-            style={`fill:${this.props.isSelected === true ? '#000000' : '#3c3c3c'};`}
+            style={`fill:${this.props.isSelected ? '#000000' : '#3c3c3c'};`}
           />
           <line
             x1="0"
@@ -51,7 +48,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
             y2="0"
             style="stroke: lightgrey; stroke-width:2"
           />
-          {this.props.isSelected === false && (
+          {!this.props.isSelected && (
             <line
               x1="0"
               y1={this.props.height - 1}
@@ -63,7 +60,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
         </svg>
         <span
           ref={this.textRef}
-          class={`mfd-top-tab-navigator-bar-element-label${this.props.isSelected === true ? ' active' : ''}`}
+          class={`mfd-top-tab-navigator-bar-element-label${this.props.isSelected ? ' active' : ''}`}
           // eslint-disable-next-line max-len
           style={`font-size: ${Math.floor(this.props.height * 0.55)}px;`}
         >
@@ -72,7 +69,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,0 ${this.triangleWidth},${this.props.height} 0,${this.props.height}`}
-            style={`fill:${this.props.isSelected === true ? '#000000' : '#3c3c3c'};`}
+            style={`fill:${this.props.isSelected ? '#000000' : '#3c3c3c'};`}
           />
           <line
             x1="0"
@@ -81,7 +78,8 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
             y2={this.props.height}
             style="stroke: lightgrey; stroke-width:2"
           />
-          {this.props.isSelected === false && (
+          !
+          {this.props.isSelected && (
             <line
               x1="0"
               y1={this.props.height - 1}
@@ -114,7 +112,7 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
     this.isVisible = value;
 
     if (this.topDivRef.instance !== undefined) {
-      this.topDivRef.instance.style.display = value === true ? 'flex' : 'none';
+      this.topDivRef.instance.style.display = value ? 'flex' : 'none';
     }
   }
 

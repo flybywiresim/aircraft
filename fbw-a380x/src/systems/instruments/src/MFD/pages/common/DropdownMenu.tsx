@@ -72,7 +72,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   );
 
   clickHandler(i: number, thisArg: DropdownMenu) {
-    if (this.props.inactive?.get() === false) {
+    if (!this.props.inactive?.get()) {
       this.freeTextEntered = false;
       if (thisArg.props.onModified) {
         thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
@@ -85,7 +85,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   }
 
   private onFieldSubmit(text: string) {
-    if (this.props.freeTextAllowed && this.props.onModified && this.props.inactive?.get() === false) {
+    if (this.props.freeTextAllowed && this.props.onModified && !this.props.inactive?.get()) {
       // selected index of -1 marks free text entry
       this.props.onModified(-1, text);
 
@@ -185,14 +185,14 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     );
 
     this.dropdownSelectorRef.instance.addEventListener('click', () => {
-      if (this.props.inactive?.get() === false) {
+      if (!this.props.inactive?.get()) {
         this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
       }
     });
 
     // Close dropdown menu if clicked outside
     document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
         this.dropdownIsOpened.set(false);
       }
     });
@@ -205,7 +205,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         this.onDropdownOpenedCallback = undefined;
 
         if (!this.freeTextEntered) {
-          if (val === true) {
+          if (val) {
             this.inputFieldRef.instance.textInputRef.instance.focus();
             this.inputFieldRef.instance.onFocus();
           } else {
@@ -218,7 +218,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     this.subs.push(
       this.props.inactive.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.dropdownSelectorRef.getOrDefault()?.classList.add('inactive');
           this.dropdownArrowRef.getOrDefault()?.classList.add('inactive');
         } else {

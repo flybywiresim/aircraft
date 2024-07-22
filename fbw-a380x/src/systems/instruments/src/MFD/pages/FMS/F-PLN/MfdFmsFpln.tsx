@@ -413,7 +413,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     // Delete all lines only if re-render is neccessary.
-    if (shouldOnlyUpdatePredictions === false && this.linesDivRef.getOrDefault()) {
+    if (!shouldOnlyUpdatePredictions && this.linesDivRef.getOrDefault()) {
       this.renderedFplnLines.forEach((line) => {
         line.instance.destroy();
       });
@@ -427,7 +427,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     for (let drawIndex = startAtIndexChecked; drawIndex < untilLegIndex; drawIndex++) {
       if (drawIndex > this.lineData.length - 1) {
         // Insert empty line
-        if (shouldOnlyUpdatePredictions === false && this.linesDivRef.getOrDefault()) {
+        if (!shouldOnlyUpdatePredictions && this.linesDivRef.getOrDefault()) {
           FSComponent.render(<div />, this.linesDivRef.instance);
         }
       } else {
@@ -442,7 +442,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (lineIndex === 0) {
           flags |= FplnLineFlags.FirstLine;
         }
-        if (previousIsSpecial === true) {
+        if (previousIsSpecial) {
           flags |= FplnLineFlags.AfterSpecial;
         }
         if (lineIndex === (this.tmpyActive.get() ? 7 : 8)) {
@@ -463,7 +463,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.renderedLineData[lineIndex].set(clonedLineData);
 
         if (
-          shouldOnlyUpdatePredictions === false &&
+          !shouldOnlyUpdatePredictions &&
           this?.renderedLineData[lineIndex]?.get() !== null &&
           this.linesDivRef.getOrDefault()
         ) {
@@ -484,10 +484,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               trueTrack={this.trueTrackEnabled}
               globalLineColor={MappedSubject.create(
                 ([tmpy, sec]) => {
-                  if (sec === true) {
+                  if (sec) {
                     return FplnLineColor.Secondary;
                   }
-                  if (tmpy === true) {
+                  if (tmpy) {
                     return FplnLineColor.Temporary;
                   }
                   return FplnLineColor.Active;
@@ -515,15 +515,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       // If pseudo-waypoint, find last actual waypoint
       let planCentreLineDataIndex = startAtIndexChecked;
       const isNoPseudoWpt = (data: FplnLineDisplayData) => {
-        if (data && isWaypoint(data) && data.isPseudoWaypoint === false) {
+        if (data && isWaypoint(data) && !data.isPseudoWaypoint) {
           return true;
         }
         return false;
       };
-      while (
-        this.lineData[planCentreLineDataIndex] &&
-        isNoPseudoWpt(this.lineData[planCentreLineDataIndex]) === false
-      ) {
+      while (this.lineData[planCentreLineDataIndex] && !isNoPseudoWpt(this.lineData[planCentreLineDataIndex])) {
         planCentreLineDataIndex--;
       }
 
@@ -540,7 +537,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   }
 
   private openRevisionsMenu(legIndex: number, altnFlightPlan: boolean) {
-    if (this.revisionsMenuOpened.get() === false) {
+    if (!this.revisionsMenuOpened.get()) {
       const flightPlan = altnFlightPlan ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
       const leg = flightPlan?.elementAt(legIndex);
       this.props.fmcService.master?.setRevisedWaypoint(legIndex, this.loadedFlightPlanIndex.get(), altnFlightPlan);
@@ -573,7 +570,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     const wpt: NextWptInfo[] = flightPlan?.allLegs
       .map((el, idx) => {
         const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
-        if (el instanceof FlightPlanLeg && el.isXF() === true && revWptIdx && idx >= revWptIdx + 1) {
+        if (el instanceof FlightPlanLeg && el.isXF() && revWptIdx && idx >= revWptIdx + 1) {
           return { ident: el.ident, originalLegIndex: idx };
         }
         return null;
@@ -592,14 +589,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     this.subs.push(
       this.displayEfobAndWind.sub((val) => {
-        this.efobAndWindButtonDynamicContent.set(val === true ? this.efobWindButton() : this.spdAltButton());
+        this.efobAndWindButtonDynamicContent.set(val ? this.efobWindButton() : this.spdAltButton());
         this.efobAndWindButtonMenuItems.set([
           {
             action: () => this.displayEfobAndWind.set(!this.displayEfobAndWind.get()),
-            label:
-              this.displayEfobAndWind.get() === true
-                ? 'SPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALT'
-                : 'EFOB&nbsp;&nbsp;&nbsp;&nbsp;T.WIND',
+            label: this.displayEfobAndWind.get()
+              ? 'SPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALT'
+              : 'EFOB&nbsp;&nbsp;&nbsp;&nbsp;T.WIND',
           },
         ]);
       }, true),
@@ -615,7 +611,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.subs.push(
       this.tmpyActive.sub((val) => {
         if (this.tmpyLineRef.getOrDefault()) {
-          if (val === true) {
+          if (val) {
             this.lineColor.set(FplnLineColor.Temporary);
             this.tmpyLineRef.instance.style.display = 'flex';
           } else {
@@ -1119,11 +1115,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
   private lineColor = MappedSubject.create(
     ([color, data]) => {
-      if (
-        data &&
-        (isWaypoint(data) || isHold(data)) &&
-        (data.isAltnWaypoint === true || data.isMissedAppchWaypoint === true)
-      ) {
+      if (data && (isWaypoint(data) || isHold(data)) && (data.isAltnWaypoint || data.isMissedAppchWaypoint)) {
         return FplnLineColor.Alternate;
       }
       return color;
@@ -1194,7 +1186,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
     this.subs.push(
       this.selectedForRevision.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.identRef.getOrDefault()?.classList.add('selected');
         } else {
           this.identRef.getOrDefault()?.classList.remove('selected');
@@ -1204,7 +1196,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
     this.subs.push(
       this.props.revisionsMenuIsOpened.sub((val) => {
-        if (val === false) {
+        if (!val) {
           this.selectedForRevision.set(false);
           this.identRef.getOrDefault()?.classList.remove('selected');
         }
@@ -1238,7 +1230,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }
 
       if (this.identRef.getOrDefault()) {
-        if (data.overfly === true) {
+        if (data.overfly) {
           this.identRef.instance.innerHTML = `<span>${data.ident}<span style="font-size: 24px; vertical-align: baseline;">@</span></span>`;
         } else {
           this.identRef.instance.innerText = data.ident;
@@ -1340,7 +1332,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     FSComponent.render(this.efobOrSpeed(data), this.speedRef.instance);
     FSComponent.render(this.windOrAlt(data), this.altRef.instance);
 
-    if (this.props.displayEfobAndWind.get() === true) {
+    if (this.props.displayEfobAndWind.get()) {
       this.altRef.instance.style.alignSelf = 'flex-end';
       this.altRef.instance.style.paddingRight = '20px';
       this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.wind());
@@ -1522,7 +1514,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   }
 
   private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
-    if (this.props.displayEfobAndWind.get() === true) {
+    if (this.props.displayEfobAndWind.get()) {
       return data.efobPrediction && this.props.globalLineColor.get() === FplnLineColor.Active ? (
         <span>{(data.efobPrediction / 1000).toFixed(1)}</span>
       ) : (
@@ -1533,7 +1525,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   }
 
   private windOrAlt(data: FplnLineWaypointDisplayData): VNode {
-    if (this.props.displayEfobAndWind.get() === true) {
+    if (this.props.displayEfobAndWind.get()) {
       return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatWind(data) : <span>---°/---</span>;
     }
     return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatAltitude(data) : <span>-----</span>;

@@ -153,7 +153,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   }
 
   private showConfirmVSpeeds(visible: boolean) {
-    if (visible === true) {
+    if (visible) {
       this.flapSpeedsRef.forEach((ref) => {
         if (ref.getOrDefault()) {
           ref.instance.style.display = 'none';
@@ -651,7 +651,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               `.${this.props.fmcService.master?.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`,
             );
             this.clbTablePredLine3.set(null);
-          } else if (this.managedSpeedActive.get() === true) {
+          } else if (this.managedSpeedActive.get()) {
             this.clbTableModeLine1.set('MANAGED');
             // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
             if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
@@ -784,7 +784,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               `.${this.props.fmcService.master?.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`,
             );
             this.crzTablePredLine2.set('--:--   ----');
-          } else if (this.managedSpeedActive.get() === true) {
+          } else if (this.managedSpeedActive.get()) {
             this.crzTableModeLine1.set('MANAGED');
             // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
             this.crzTableSpdLine1.set(
@@ -842,7 +842,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTableSpdLine2.set(null);
             this.desTableMachLine2.set(null);
             this.desTablePredLine2.set(null);
-          } else if (this.managedSpeedActive.get() === true) {
+          } else if (this.managedSpeedActive.get()) {
             this.desTableModeLine1.set('MANAGED');
             this.desTableSpdLine1.set(this.props.fmcService.master?.fmgc.getManagedDescentSpeed().toFixed(0) ?? null);
             this.desTableMachLine1.set(

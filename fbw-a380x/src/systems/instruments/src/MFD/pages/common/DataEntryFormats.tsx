@@ -88,7 +88,7 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
     if (nbr > Mmo && !input.search('.')) {
       nbr = Number(`0.${input}`);
     }
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -146,7 +146,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     if (nbr < 430) {
       nbr = Number(input) * 100;
     }
-    if (Number.isNaN(nbr) === false && nbr >= this.minValue && nbr <= this.maxValue) {
+    if (!Number.isNaN(nbr) && nbr >= this.minValue && nbr <= this.maxValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -187,7 +187,7 @@ export class AltitudeFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -232,7 +232,7 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -265,7 +265,7 @@ export class TropoFormat implements DataEntryFormat<number> {
     }
 
     const nbr = input.length <= 3 ? Number(input) * 100 : Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -306,7 +306,7 @@ export class LengthFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -347,7 +347,7 @@ export class WeightFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input) * 1000;
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -390,7 +390,7 @@ export class PercentageFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -434,7 +434,7 @@ export class TemperatureFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -475,7 +475,7 @@ export class CrzTempFormat implements DataEntryFormat<number> {
       nbr *= -1;
     }
 
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -508,7 +508,7 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -541,7 +541,7 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -593,7 +593,7 @@ export class TripWindFormat implements DataEntryFormat<number> {
       } else if (input.substring(0, 1) === '+' || input.substring(0, 1) === 'T') {
         sign = +1;
         number = Number(input.substring(1));
-      } else if (Number.isNaN(Number(input)) === false) {
+      } else if (!Number.isNaN(Number(input))) {
         sign = +1;
         number = Number(input);
       } else {
@@ -604,7 +604,7 @@ export class TripWindFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(sign * number);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -642,12 +642,12 @@ export class QnhFormat implements DataEntryFormat<number> {
 
     const nbr = Number(input);
     if (
-      (Number.isNaN(nbr) === false && nbr >= this.minHpaValue && nbr <= this.maxHpaValue) ||
+      (!Number.isNaN(nbr) && nbr >= this.minHpaValue && nbr <= this.maxHpaValue) ||
       (nbr >= this.minInHgValue && nbr <= this.maxInHgValue)
     ) {
       return nbr;
     }
-    if (Number.isNaN(nbr) === false && nbr > this.minInHgValue * 100 && nbr <= this.maxInHgValue * 100) {
+    if (!Number.isNaN(nbr) && nbr > this.minInHgValue * 100 && nbr <= this.maxInHgValue * 100) {
       return nbr / 100;
     }
     throw new FmsError(FmsErrorType.EntryOutOfRange);
@@ -676,7 +676,7 @@ export class CostIndexFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -717,7 +717,7 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -763,7 +763,7 @@ export class DescentRateFormat implements DataEntryFormat<number> {
       nbr *= -1;
     }
 
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -927,7 +927,7 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -978,7 +978,7 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     }
 
     const nbr = minutes + hours * 60;
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1040,7 +1040,7 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
     }
 
     const nbr = seconds + minutes * 60 + hours * 3600;
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1073,7 +1073,7 @@ export class LatitudeFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1114,7 +1114,7 @@ export class HeadingFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1156,7 +1156,7 @@ export class InboundCourseFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1197,7 +1197,7 @@ export class HoldDistFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1238,7 +1238,7 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1271,7 +1271,7 @@ export class FrequencyILSFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1304,7 +1304,7 @@ export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1337,7 +1337,7 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1379,7 +1379,7 @@ export class LsCourseFormat implements DataEntryFormat<number> {
       }
     }
     const nbr = Number(numberPart);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
@@ -1412,7 +1412,7 @@ export class SquawkFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {

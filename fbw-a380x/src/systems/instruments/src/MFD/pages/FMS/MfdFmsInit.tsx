@@ -30,7 +30,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
-        if (it === false) {
+        if (!it) {
           return (
             <span>
               CPNY F-PLN

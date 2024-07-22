@@ -32,31 +32,31 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
   private topRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly upperLabelGreen = MappedSubject.create(
-    ([state, disabled]) => state === true && !disabled,
+    ([state, disabled]) => state && !disabled,
     this.props.state,
     this.props.disabled ?? Subject.create(false),
   );
 
   private readonly upperLabelHidden = MappedSubject.create(
-    ([state, disabled]) => state === false && disabled,
+    ([state, disabled]) => !state && disabled,
     this.props.state,
     this.props.disabled ?? Subject.create(false),
   );
 
   private readonly lowerLabelGreen = MappedSubject.create(
-    ([state, disabled]) => state === false && !disabled,
+    ([state, disabled]) => !state && !disabled,
     this.props.state,
     this.props.disabled ?? Subject.create(false),
   );
 
   private readonly lowerLabelHidden = MappedSubject.create(
-    ([state, disabled]) => state === true && disabled,
+    ([state, disabled]) => state && disabled,
     this.props.state,
     this.props.disabled ?? Subject.create(false),
   );
 
   private clickHandler(): void {
-    if (this.props.disabled?.get() === false) {
+    if (!this.props.disabled?.get()) {
       this.props.onChanged(!this.props.state.get());
     }
   }
@@ -71,7 +71,7 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
 
     this.subs.push(
       this.props.disabled.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.topRef.getOrDefault()?.classList.add('disabled');
         } else {
           this.topRef.getOrDefault()?.classList.remove('disabled');

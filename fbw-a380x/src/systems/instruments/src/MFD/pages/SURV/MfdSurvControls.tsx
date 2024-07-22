@@ -153,13 +153,13 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_alt_reporting', true, true);
     }
 
-    if (this.tcasFailed.get() === false) {
+    if (!this.tcasFailed.get()) {
       // FIXME replace with appropriate events
       this.tcasTaraSelectedIndex.set(0);
       this.tcasNormAbvBlwSelectedIndex.set(0);
     }
 
-    if (this.wxrFailed.get() === false) {
+    if (!this.wxrFailed.get()) {
       // FIXME replace with appropriate events
       this.wxrElevnTiltSelectedIndex.set(0);
       this.wxrAuto.set(true);
@@ -170,7 +170,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.wxrOnVd.set(true);
     }
 
-    if (this.tawsFailed.get() === false) {
+    if (!this.tawsFailed.get()) {
       SimVar.SetSimVarValue('L:A32NX_GPWS_TERR_OFF', SimVarValueType.Bool, false);
       SimVar.SetSimVarValue('L:A32NX_GPWS_SYS_OFF', SimVarValueType.Bool, false);
       SimVar.SetSimVarValue('L:A32NX_GPWS_GS_OFF', SimVarValueType.Bool, false);

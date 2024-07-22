@@ -935,16 +935,16 @@ export class FmcAircraftInterface {
       aoa = aoaSorted[1];
       cas = casSorted[1];
     } else if (adrOp.filter(Boolean).length === 2) {
-      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i] === true);
+      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i]);
       aoa = (aoas[0].value + aoas[1].value) / 2;
 
-      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i] === true);
+      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i]);
       cas = (cass[0].value + cass[1].value) / 2;
     } else if (adrOp.filter(Boolean).length === 1) {
-      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i] === true);
+      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i]);
       aoa = aoas[0].value;
 
-      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i] === true);
+      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i]);
       cas = cass[0].value;
     }
 
@@ -1019,7 +1019,7 @@ export class FmcAircraftInterface {
     const gw = this.fmc.getGrossWeight();
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
 
-    if (this.fmc.enginesWereStarted.get() === true) {
+    if (this.fmc.enginesWereStarted.get()) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
     }
   }

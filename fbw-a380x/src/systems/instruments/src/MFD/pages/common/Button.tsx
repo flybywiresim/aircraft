@@ -47,7 +47,7 @@ export class Button extends DisplayComponent<ButtonProps> {
   private renderedMenuItems: ButtonMenuItem[] = [];
 
   private clickHandler(): void {
-    if (this.props.disabled?.get() === false) {
+    if (!this.props.disabled?.get()) {
       this.props.onClick();
     }
   }
@@ -82,7 +82,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     this.subs.push(
       this.props.disabled.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.buttonRef.getOrDefault()?.classList.add('disabled');
         } else {
           this.buttonRef.getOrDefault()?.classList.remove('disabled');
@@ -92,7 +92,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     this.subs.push(
       this.props.selected.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.buttonRef.getOrDefault()?.classList.add('selected');
         } else {
           this.buttonRef.getOrDefault()?.classList.remove('selected');
@@ -152,7 +152,7 @@ export class Button extends DisplayComponent<ButtonProps> {
           const overflowsVertically = boundingRect.top + boundingRect.height > 1024;
           this.menuOpensUpwards.set(overflowsVertically);
 
-          if (overflowsVertically === true) {
+          if (overflowsVertically) {
             this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
           }
 
@@ -170,7 +170,7 @@ export class Button extends DisplayComponent<ButtonProps> {
         }
 
         // If menuItems is defined, render as button with arrow on the right side
-        if (this.props.menuItems !== undefined && this.props.showArrow === true) {
+        if (this.props.menuItems !== undefined && this.props.showArrow) {
           const n: VNode = (
             <div class="mfd-fms-fpln-button-dropdown">
               <span class="mfd-fms-fpln-button-dropdown-label">{val}</span>
@@ -192,7 +192,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     // Close dropdown menu if clicked outside
     document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
         this.dropdownIsOpened.set(false);
       }
     });
@@ -207,7 +207,7 @@ export class Button extends DisplayComponent<ButtonProps> {
       this.dropdownIsOpened.sub((val) => {
         this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
 
-        if (val === true) {
+        if (val) {
           this.buttonRef.instance.classList.add('opened');
         } else {
           this.buttonRef.instance.classList.remove('opened');
@@ -222,7 +222,7 @@ export class Button extends DisplayComponent<ButtonProps> {
     if (this.props.scrollToMenuItem !== undefined) {
       this.subs.push(
         this.props.scrollToMenuItem.sub((val) => {
-          if (this.dropdownIsOpened.get() === true) {
+          if (this.dropdownIsOpened.get()) {
             this.scrollMenuTo(val);
           }
         }),

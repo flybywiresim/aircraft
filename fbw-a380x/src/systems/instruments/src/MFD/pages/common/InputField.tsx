@@ -107,7 +107,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.overflow((this.props.value.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
-      if (this.props.mandatory?.get() === true) {
+      if (this.props.mandatory?.get()) {
         this.textInputRef.getOrDefault()?.classList.remove('mandatory');
       }
     }
@@ -177,7 +177,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private handleBackspace() {
-    if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get() === true) {
+    if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get()) {
       this.modifiedFieldValue.set('');
     } else if (this.modifiedFieldValue.get()?.length === 0) {
       // Do nothing

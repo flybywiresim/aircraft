@@ -51,7 +51,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
     // Close dropdown menu if clicked outside
     document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
         this.dropdownIsOpened.set(false);
       }
     });
@@ -73,7 +73,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
     this.subs.push(
       this.props.isActive.sub((val) => {
-        if (val === true) {
+        if (val) {
           this.dropdownSelectorLabelRef.instance.classList.add('active');
         } else {
           this.dropdownSelectorLabelRef.instance.classList.remove('active');

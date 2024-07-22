@@ -205,7 +205,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.subs.push(
         this.enginesWereStarted.sub((val) => {
           if (
-            val === true &&
+            val &&
             this.flightPlanService.hasActive &&
             !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
           ) {
@@ -284,7 +284,7 @@ export class FlightManagementComputer implements FmcInterface {
     const tow = this.getTakeoffWeight();
     const tf = this.getTripFuel();
 
-    if (this.enginesWereStarted.get() === false) {
+    if (!this.enginesWereStarted.get()) {
       // On ground, engines off
       // LW = TOW - TRIP
       return tow && tf ? tow - tf : null;
@@ -319,7 +319,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTakeoffWeight(): number | null {
-    if (this.enginesWereStarted.get() === false) {
+    if (!this.enginesWereStarted.get()) {
       // On ground, engines off
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
       const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
@@ -514,9 +514,7 @@ export class FlightManagementComputer implements FmcInterface {
       isResolvedOverride: _message instanceof TypeIIMessage ? _message.isResolved : () => false,
     };
 
-    const exists = this.fmsErrors
-      .getArray()
-      .findIndex((el) => el.messageText === msg.messageText && el.cleared === true);
+    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared);
     if (exists !== -1) {
       this.fmsErrors.removeAt(exists);
     }
@@ -902,7 +900,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
 
-        if (this.enginesWereStarted.get() === false) {
+        if (!this.enginesWereStarted.get()) {
           const flightPhase = this.fmgc.getFlightPhase();
           const oneEngineWasStarted =
             SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20 ||

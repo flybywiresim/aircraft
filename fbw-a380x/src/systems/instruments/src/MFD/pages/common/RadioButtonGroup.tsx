@@ -60,7 +60,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     this.subs.push(
       this.props.valuesDisabled.sub((val) => {
         for (let i = 0; i < this.props.values.length; i++) {
-          if (val[i] === true) {
+          if (val[i]) {
             document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('disabled', 'disabled');
           } else {
             document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('disabled');

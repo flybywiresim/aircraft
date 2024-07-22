@@ -26,7 +26,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
     if (this.props.fmcService.master) {
       this.subs.push(
         this.props.fmcService.master.fmsErrors.sub((index, type, item, arr) => {
-          const ind = arr.findIndex((el) => el.cleared === false);
+          const ind = arr.findIndex((el) => !el.cleared);
 
           if (ind > -1 && this.messageRef.getOrDefault()) {
             this.messageToBeCleared.set(true);
@@ -78,7 +78,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
           buttonStyle="width: 100px;"
           label={this.buttonText}
           onClick={() => {
-            if (this.messageToBeCleared.get() === true) {
+            if (this.messageToBeCleared.get()) {
               this.props.fmcService.master?.clearLatestFmsErrorMessage();
             } else {
               this.props.mfd.openMessageList();

@@ -128,8 +128,8 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
 
     this.subs.push(
       this.irsAreAligned.sub((v) => {
-        if (v === true) {
-          if (this.irsAreAlignedOnRefPos.get() === true) {
+        if (v) {
+          if (this.irsAreAlignedOnRefPos.get()) {
             this.alignmentLabel.set('IRS ALIGNED ON REF POS:');
           } else {
             this.alignmentLabel.set('IRS ALIGNED ON GPS POS:');
@@ -138,7 +138,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
           );
         } else {
-          if (this.irsAreAlignedOnRefPos.get() === true) {
+          if (this.irsAreAlignedOnRefPos.get()) {
             this.alignmentLabel.set('IRS ALIGNING ON REF POS:');
           } else {
             this.alignmentLabel.set('IRS ALIGNING ON GPS POS:');

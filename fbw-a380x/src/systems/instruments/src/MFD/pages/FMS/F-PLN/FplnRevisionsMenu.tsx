@@ -132,7 +132,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name:
         !altnFlightPlan &&
         ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) &&
-        fpln.loadedFlightPlan?.legElementAt(legIndex).definition.overfly === true
+        fpln.loadedFlightPlan?.legElementAt(legIndex).definition.overfly
           ? 'DELETE OVERFLY *'
           : 'OVERFLY *',
       disabled:

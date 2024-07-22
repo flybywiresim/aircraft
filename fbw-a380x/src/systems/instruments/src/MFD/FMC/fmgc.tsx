@@ -506,7 +506,7 @@ export class FmgcDataService implements Fmgc {
   getDestEFOB(useFob: boolean): number {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
-    if (useFob === true && efob !== undefined) {
+    if (useFob && efob !== undefined) {
       return Units.poundToKilogram(efob) / 1000.0;
     }
     return 0;

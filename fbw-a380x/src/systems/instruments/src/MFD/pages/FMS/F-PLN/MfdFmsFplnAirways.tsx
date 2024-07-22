@@ -205,7 +205,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              if (v === 'DCT' && this.props.isFirstLine === false) {
+              if (v === 'DCT' && !this.props.isFirstLine) {
                 this.viaFieldDisabled.set(true);
                 return true;
               }
