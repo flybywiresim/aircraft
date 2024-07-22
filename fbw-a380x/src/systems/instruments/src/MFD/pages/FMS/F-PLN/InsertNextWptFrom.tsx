@@ -47,7 +47,8 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
   private availableWaypointsString = ArraySubject.create<string>([]);
 
   private async onModified(idx: number | null, text: string): Promise<void> {
-    if (!this.props.fmcService.master) {
+    const revWptPlanIndex = this.props.fmcService.master?.revisedWaypointPlanIndex.get();
+    if (!this.props.fmcService.master || revWptPlanIndex == null) {
       return;
     }
 
@@ -55,12 +56,8 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       const wptInfo = this.props.availableWaypoints.get(idx);
       const revWpt = this.props.fmcService.master.revisedWaypointIndex.get();
       const fpln = this.props.fmcService.master.revisedWaypointIsAltn.get()
-        ? this.props.fmcService.master.flightPlanService.get(
-            this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? 0,
-          ).alternateFlightPlan
-        : this.props.fmcService.master.flightPlanService.get(
-            this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? 0,
-          );
+        ? this.props.fmcService.master.flightPlanService.get(revWptPlanIndex).alternateFlightPlan
+        : this.props.fmcService.master.flightPlanService.get(revWptPlanIndex);
       const wptToInsert = fpln?.legElementAt(wptInfo.originalLegIndex).definition.waypoint;
       if (
         this.props.availableWaypoints.get(idx) &&

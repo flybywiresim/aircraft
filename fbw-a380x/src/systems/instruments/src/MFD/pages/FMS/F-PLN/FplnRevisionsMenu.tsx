@@ -29,7 +29,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'FROM P.POS DIR TO',
       disabled:
         altnFlightPlan ||
-        legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? 0) ||
+        legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity) ||
         planIndex === FlightPlanIndex.Temporary ||
         [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
         !fpln.loadedFlightPlan?.legElementAt(legIndex).isXF(),

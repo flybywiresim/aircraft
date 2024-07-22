@@ -88,28 +88,27 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.transitionAltitude.set(pd.transitionAltitude);
     }
 
-    const wpt = this.loadedFlightPlan?.allLegs
-      .slice(
-        (this.props.fmcService.master?.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex ?? 0) + 1,
-      )
-      .map((el) => {
-        if (el.isDiscontinuity === false) {
-          return el.ident;
-        }
-        return null;
-      })
-      .filter((el) => el !== null) as string[] | undefined;
-    if (wpt) {
-      this.availableWaypoints.set(wpt);
-    }
+    const activeLegIndex = this.props.fmcService.master?.flightPlanService.get(
+      this.loadedFlightPlanIndex.get(),
+    ).activeLegIndex;
+    if (activeLegIndex) {
+      const wpt = this.loadedFlightPlan?.allLegs
+        .slice(activeLegIndex + 1)
+        .map((el) => {
+          if (el.isDiscontinuity === false) {
+            return el.ident;
+          }
+          return null;
+        })
+        .filter((el) => el !== null) as string[] | undefined;
+      if (wpt) {
+        this.availableWaypoints.set(wpt);
+      }
 
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
-    if (revWptIdx && this.props.fmcService.master?.revisedWaypointIndex.get() !== undefined) {
-      this.selectedWaypointIndex.set(
-        revWptIdx -
-          this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex -
-          1,
-      );
+      const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+      if (revWptIdx && this.props.fmcService.master?.revisedWaypointIndex.get() !== undefined) {
+        this.selectedWaypointIndex.set(revWptIdx - activeLegIndex - 1);
+      }
     }
 
     this.updateConstraints();

@@ -935,7 +935,7 @@ export class FlightManagementComputer implements FmcInterface {
           this.mfdReference?.uiService.captOrFo === 'FO' ? 'R' : 'L',
           FlightPlanIndex.Active,
           this.#flightPlanService.active.activeLegIndex,
-          this.#flightPlanService.active.activeLegIndex >= (this.#flightPlanService.active.allLegs.length ?? 0),
+          this.#flightPlanService.active.activeLegIndex >= this.#flightPlanService.active.allLegs.length,
         );
       }
 

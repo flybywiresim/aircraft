@@ -528,7 +528,9 @@ export class FmcAircraftInterface {
             ? Math.min(340, SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', 0.8))
             : SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number') - 10;
       }
-      vPfd = this.managedSpeedTarget ?? 0;
+      if (this.managedSpeedTarget != null) {
+        vPfd = this.managedSpeedTarget;
+      }
     } else if (this.holdDecelReached) {
       vPfd = this.holdSpeedTarget;
       this.managedSpeedTarget = this.holdSpeedTarget;
@@ -608,10 +610,10 @@ export class FmcAircraftInterface {
           // the displayed target is Vapp (with GSmini)
           // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
           // constraints are not considered
-          const speed = this.getAppManagedSpeed() ?? 0;
+          const speed = this.getAppManagedSpeed();
           vPfd = this.getVAppGsMini() ?? speed;
 
-          this.managedSpeedTarget = Math.max(speed, vPfd);
+          this.managedSpeedTarget = Math.max(speed ?? 0, vPfd);
           break;
         }
         case FmgcFlightPhase.GoAround: {
@@ -1422,8 +1424,12 @@ export class FmcAircraftInterface {
   }
 
   getNavModeSpeedConstraint() {
-    const transIndex = this.fmgc.guidanceController?.activeTransIndex ?? 0;
-    const activeLegIndex = (transIndex >= 0 ? transIndex : this.fmgc.guidanceController?.activeLegIndex) ?? 0;
+    const transIndex = this.fmgc.guidanceController?.activeTransIndex;
+    if (transIndex == null) {
+      return;
+    }
+
+    const activeLegIndex = transIndex >= 0 ? transIndex : this.fmgc.guidanceController?.activeLegIndex;
     const constraints = this.managedProfile.get(activeLegIndex);
     if (constraints) {
       if (
@@ -1438,13 +1444,13 @@ export class FmcAircraftInterface {
         this.fmgc.getFlightPhase() < FmgcFlightPhase.GoAround
       ) {
         // FIXME proper decel calc
-        // eslint-disable-next-line max-len
         if (
-          (this.fmgc.guidanceController?.activeLegDtg ?? 0) <
-          this.calculateDecelDist(
-            Math.min(constraints.previousDescentSpeed, this.fmgc.getManagedDescentSpeed()),
-            constraints.descentSpeed,
-          )
+          this.fmgc.guidanceController?.activeLegDtg &&
+          this.fmgc.guidanceController?.activeLegDtg <
+            this.calculateDecelDist(
+              Math.min(constraints.previousDescentSpeed, this.fmgc.getManagedDescentSpeed()),
+              constraints.descentSpeed,
+            )
         ) {
           return constraints.descentSpeed;
         }
