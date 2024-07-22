@@ -1,4 +1,4 @@
-import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -9,7 +9,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } from '@shared/OperatingSpeeds';
+import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 
 /**
@@ -910,56 +910,6 @@ export class FmcAircraftInterface {
         );
       }
     }
-    const approachSpeeds = new A380OperatingSpeedsApproach(
-      weight / 1000,
-      this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3,
-      towerHeadwind,
-    );
-    this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
-    this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
-    this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', approachSpeeds.vapp); // Needed for ROP/BTV
-
-    const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
-    const gearPos = Math.round(SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum'));
-    const speeds = new A380OperatingSpeeds(gw / 1000, flaps, gearPos);
-    // speeds.compensateForMachEffect(Math.round(Simplane.getAltitude() ?? 0));
-
-    if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
-      const f = Math.max(speeds.f2, Vmcl + 5);
-      SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-      this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
-    } else {
-      if (flaps === 2) {
-        const f = Math.max(speeds.f2, Vmcl + 15);
-        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
-      } else if (flaps === 3) {
-        const f = Math.max(speeds.f3, Vmcl + 10);
-        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
-      }
-    }
-
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', speeds.s);
-    this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', speeds.gd);
-    this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.gd));
-    SimVar.SetSimVarValue(
-      'L:A32NX_SPEEDS_LANDING_CONF3',
-      'boolean',
-      this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3,
-    );
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', speeds.vmax);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', speeds.vfeN);
-
-    // Calculate alpha speeds according to https://safetyfirst.airbus.com/control-your-speed-in-cruise/
-    // FIXME delete when PRIM FE implemented
-    const sim_stall_alpha = SimVar.GetSimVarValue('STALL ALPHA', SimVarValueType.Degree);
-    const sim_zero_lift_alpha = SimVar.GetSimVarValue('ZERO LIFT ALPHA', SimVarValueType.Degree);
-    const alpha_0 = sim_zero_lift_alpha; // AOA for lift coefficient of zero
-    const alpha_prot = sim_zero_lift_alpha + 0.85 * (sim_stall_alpha - sim_zero_lift_alpha); // AOA where alpha prot. becomes active
-    const alpha_max = sim_zero_lift_alpha + 0.95 * (sim_stall_alpha - sim_zero_lift_alpha); // Max. AOA which can be flown in normal law
 
     // Retrieve AOA from ADRs
     const aoa1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ANGLE_OF_ATTACK');
@@ -998,58 +948,64 @@ export class FmcAircraftInterface {
       this.filteredAoA = this.filteredAoA + 0.1 * (aoa - this.filteredAoA);
     }
 
-    const stallSpeedFudgeFactor = flaps === 0 ? 1.22 : 1.5; // Flight model not yet tuned
-    const v_a_max = Math.max(
-      Vmcl,
-      stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (alpha_max - alpha_0)),
+    const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
+    const speeds = new A380OperatingSpeeds(
+      gw / 1000,
+      cas,
+      flaps,
+      this.fmgc.getFlightPhase(),
+      this.filteredAoA,
+      towerHeadwind,
     );
-    const v_a_prot = Math.max(
-      0,
-      stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (alpha_prot - alpha_0)),
-    );
-    const v_a_sw = Math.max(
-      Vmcl,
-      stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (sim_stall_alpha - alpha_0)),
-    );
-    const vs_1_g = stallSpeedFudgeFactor * cas * Math.sqrt((this.filteredAoA - alpha_0) / (sim_stall_alpha - alpha_0));
-    let vls = Math.max(1.23 * vs_1_g, Vmcl);
-    if (this.fmgc.getFlightPhase() <= FmgcFlightPhase.Takeoff) {
-      vls = Math.max(1.15 * vs_1_g, 1.05 * Math.min(this.fmgc.getV2Speed(), Vmcl));
-    } else if (flaps === 1 && cas > 212) {
-      vls = Math.max(1.18 * vs_1_g, Vmcl);
-    }
 
-    // Speed brake effect
-    const spoilers = SimVar.GetSimVarValue('L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION', 'number');
-    const maxSpoilerExtension = [20, 20, 12, 9, 8, 6];
-    const spoilerVlsIncrease = [25, 25, 7, 10, 10, 8];
-    if (spoilers > 0) {
-      let conf = flaps + 1;
-      switch (flaps) {
-        case 1:
-          conf = cas > 212 ? 1 : 2;
-          break;
-        case 0:
-          conf = 0;
-          break;
-        default:
-          break;
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', speeds.alphaProt);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', speeds.alphaMax);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', speeds.alphaStallWarn);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', speeds.vs1g);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', speeds.vls);
+
+    if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
+      const f = Math.max(speeds.f2, Vmcl + 5);
+      SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
+      this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+    } else {
+      if (flaps === 2) {
+        const f = Math.max(speeds.f2, Vmcl + 15);
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
+        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+      } else if (flaps === 3) {
+        const f = Math.max(speeds.f3, Vmcl + 10);
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
+        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
       }
-      vls = vls + spoilerVlsIncrease[conf] * (spoilers / maxSpoilerExtension[conf]);
     }
 
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', v_a_prot);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', v_a_max);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', v_a_sw);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', vs_1_g);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', vls);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', speeds.s);
+    this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', speeds.gd);
+    this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.gd));
 
-    // Put out alt. computation for comparison, debug output TODO delete me
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC_FCOM', 'number', speeds.vs * 1.1);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC_FCOM', 'number', speeds.vs * 1.03);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN_FCOM', 'number', speeds.vs * 1.03);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS_FCOM', 'number', speeds.vs);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS_FCOM', 'number', speeds.vls);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', speeds.vmax);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', speeds.vfeN);
+
+    const approachSpeeds = new A380OperatingSpeeds(
+      weight / 1000,
+      cas,
+      this.fmgc.data.approachFlapConfig.get(),
+      FmgcFlightPhase.Approach,
+      this.filteredAoA,
+      towerHeadwind,
+    );
+    this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
+    this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
+    this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', approachSpeeds.vapp); // Needed for ROP/BTV
+
+    SimVar.SetSimVarValue(
+      'L:A32NX_SPEEDS_LANDING_CONF3',
+      'boolean',
+      this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3,
+    );
   }
 
   /** Write gross weight to SimVar */
