@@ -9,7 +9,7 @@
   margin-top: 50px;
   padding-left: 10px;
   padding-bottom: 50px;
-  border-bottom: 2px solid lightgrey;
+  border-bottom: 2px solid $display-light-grey;
 }
 
 .mfd-vert-rev-alt-cstr-line {
@@ -20,13 +20,13 @@
   align-items: center;
   margin-top: 50px;
   padding-left: 10px;
-  border-bottom: 2px solid lightgrey;
+  border-bottom: 2px solid $display-light-grey;
 }
 
 .mfd-vert-rev-alt-cstr-rb {
   padding-bottom: 20px;
   padding-right: 25px;
-  border-right: 2px solid lightgrey;
+  border-right: 2px solid $display-light-grey;
 }
 
 .mfd-vert-rev-alt-window-label {

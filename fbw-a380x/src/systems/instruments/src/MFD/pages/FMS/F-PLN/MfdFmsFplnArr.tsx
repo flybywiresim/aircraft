@@ -393,8 +393,8 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         {/* begin page content */}
         <div class="mfd-fms-fpln-labeled-box-container">
           <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">SELECTED ARRIVAL</span>
-          <div class="mfd-fms-fpln-label-bottom-space" style="display: flex; flex-direction: row; align-items: center;">
-            <div style="flex: 0.2; display: flex; flex-direction: row; align-items: center;">
+          <div class="mfd-fms-fpln-label-bottom-space fr aic">
+            <div class="fr aic" style="flex: 0.2;">
               <span class="mfd-label mfd-spacing-right">TO</span>
               <span
                 class={{
@@ -406,7 +406,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 {this.toIcao}
               </span>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">LS</span>
               <span
                 class={{
@@ -418,7 +418,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 {this.rwyLs}
               </span>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">RWY</span>
               <div>
                 <span
@@ -432,7 +432,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 </span>
               </div>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">LENGTH</span>
               <div>
                 <span
@@ -447,7 +447,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 <span class="mfd-label-unit mfd-unit-trailing">M</span>
               </div>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">CRS</span>
               <div>
                 <span
@@ -463,8 +463,8 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
               </div>
             </div>
           </div>
-          <div style="display: flex; flex-direction: row; align-items: center;">
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+          <div class="fr aic">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">APPR</span>
               <span
                 class={{
@@ -476,7 +476,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 {this.appr}
               </span>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">FREQ/CHAN</span>
               <span
                 class={{
@@ -488,7 +488,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 {this.rwyFreq}
               </span>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">VIA</span>
               <div>
                 <span
@@ -502,7 +502,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 </span>
               </div>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">STAR</span>
               <div>
                 <span
@@ -516,7 +516,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 </span>
               </div>
             </div>
-            <div style="flex: 0.2; display: flex; flex-direction: column;">
+            <div class="fc" style="flex: 0.2;">
               <span class="mfd-label mfd-fms-fpln-label-bottom-space">TRANS</span>
               <div>
                 <span
@@ -532,7 +532,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             </div>
           </div>
         </div>
-        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+        <div class="fr" style="justify-content: space-between;">
           <Button
             label="RWY"
             onClick={() => {}}
@@ -575,7 +575,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           />
         </div>
         <div style="flex-grow: 1;" />
-        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+        <div class="fr" style="justify-content: space-between;">
           <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
             <Button
               label="RETURN"

@@ -1,7 +1,7 @@
 ﻿@import "../../../MsfsAvionicsCommon/definitions";
 
 .mfd-fms-perf-speed-table-cell {
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,16 +9,16 @@
 }
 
 .mfd-fms-perf-speed-table-cell.br {
-  border-right: 1px solid lightgrey;
+  border-right: 1px solid $display-light-grey;
 }
 
 .mfd-fms-perf-speed-table-cell.bb {
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
 }
 
 .mfd-fms-perf-speed-presel-managed-table-cell {
-  border-bottom: 1px solid lightgrey;
-  border-right: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
+  border-right: 1px solid $display-light-grey;
   display: flex;
   align-items: center;
   padding: 20px 10px 20px 10px;
@@ -30,13 +30,13 @@
   flex: 1;
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
 }
 
 .mfd-fms-perf-to-second {
   display: flex;
   flex-direction: row;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
   padding-bottom: 10px;
 }
 
@@ -45,7 +45,7 @@
   display: grid;
   grid-template-columns: auto auto auto;
   justify-content: space-between;
-  border-right: 1px solid lightgrey;
+  border-right: 1px solid $display-light-grey;
   padding-top: 10px;
   margin-top: 5px;
   padding-right: 10px;
@@ -64,7 +64,7 @@
   grid-template-columns: auto auto 15px auto auto;
   margin-top: 10px;
   padding-bottom: 15px;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
 }
 
 .mfd-fms-perf-to-thrred-noise-grid {
@@ -87,7 +87,7 @@
   flex-direction: row;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid lightgrey;
+  border-top: 1px solid $display-light-grey;
 }
 
 .mfd-fms-perf-clb-grid {
@@ -118,7 +118,7 @@
 
 .mfd-fms-perf-appr-min-container {
   position: relative;
-  border: 1px solid lightgrey;
+  border: 1px solid $display-light-grey;
   display: flex;
   flex-direction: column;
   margin: 20px 40px 20px 0px;
@@ -144,7 +144,7 @@
 .mfd-fms-perf-appr-conf-box {
   width: 200px;
   margin-top: 20px;
-  border: 1px solid lightgrey;
+  border: 1px solid $display-light-grey;
   display: flex;
   flex-direction: column;
   align-self: center;

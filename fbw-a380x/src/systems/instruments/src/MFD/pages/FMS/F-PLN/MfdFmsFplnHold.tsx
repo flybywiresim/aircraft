@@ -1,6 +1,7 @@
 ﻿import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFpln.scss';
+import './MfdFmsFplnHold.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
@@ -154,7 +155,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
       <>
         {super.render()}
         {/* begin page content */}
-        <div style="display: flex; flex-direction: row;">
+        <div class="fr">
           <div class="mfd-fms-fpln-labeled-box-container" style="flex-grow: 1;">
             <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">
               {this.holdType} <span class="mfd-label green bigger">{this.waypointIdent}</span>
@@ -193,7 +194,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 values={['TIME', 'DIST']}
                 color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
               />
-              <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-left: 30px;">
+              <div class="mfd-fpln-hold-timedist-box">
                 <div ref={this.legTimeRef}>
                   <InputField<number>
                     dataEntryFormat={new HoldTimeFormat()}
@@ -216,13 +217,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 </div>
               </div>
             </div>
-            <span
-              class="mfd-label"
-              style="width: 100%; margin-top: 50px; padding-top: 50px; margin-bottom: 30px; border-top: 1px solid lightgrey;"
-            >
-              LAST EXIT (FOR EXTRA FUEL 0 AT ALTN)
-            </span>
-            <div style="display: grid; grid-template-columns: 20% 30% 30%; justify-content: center; align-items: center">
+            <span class="mfd-label mfd-fpln-hold-last-exit-label">LAST EXIT (FOR EXTRA FUEL 0 AT ALTN)</span>
+            <div class="mfd-fpln-hold-grid">
               <div class="mfd-label">AT</div>
               <div class="mfd-label" style="align-self: center;">
                 UTC
@@ -236,7 +232,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               </div>
             </div>
           </div>
-          <div style="display: flex; flex-direction: column; margin-top: 40px;">
+          <div class="fc" style="margin-top: 40px;">
             <Button
               label="DATABASE"
               onClick={() => console.warn('DATABASE HOLD NOT IMPLEMENTED')}
@@ -260,8 +256,11 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
           </div>
         </div>
         <div style="flex-grow: 1;" />
-        <div style="display: flex; flex-direction: row; justify-content: space-between;">
-          <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+        <div class="fr" style="justify-content: space-between;">
+          <div
+            ref={this.returnButtonDiv}
+            class="mfd-fpln-hold-button-with-creative-class-name-which-is-as-long-as-style-attribute"
+          >
             <Button
               label="RETURN"
               onClick={() => {
@@ -270,7 +269,10 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               }}
             />
           </div>
-          <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+          <div
+            ref={this.tmpyInsertButtonDiv}
+            class="mfd-fpln-hold-button-with-creative-class-name-which-is-as-long-as-style-attribute"
+          >
             <Button
               label="TMPY F-PLN"
               onClick={() => {

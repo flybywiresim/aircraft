@@ -15,7 +15,7 @@
   flex-direction: row;
   margin-bottom: 15px;
   padding-bottom: 5px;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
   align-items: center;
 }
 
@@ -26,12 +26,12 @@
   margin-bottom: 25px;
   padding-bottom: 5px;
   align-items: center;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
 }
 
 .mfd-fms-fuel-load-dest-grid-top-cell {
   text-align: center;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid $display-light-grey;
   padding-bottom: 10px;
   margin-bottom: 15px;
 }

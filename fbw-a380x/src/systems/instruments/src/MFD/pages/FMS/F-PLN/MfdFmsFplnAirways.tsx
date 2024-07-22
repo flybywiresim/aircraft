@@ -1,6 +1,7 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFplnAirways.scss';
+import '../../common/style.scss';
 import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
@@ -106,7 +107,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         {super.render()}
         {/* begin page content */}
         <div class="fc" style="margin-top: 15px;">
-          <div class="fr" style="align-items: center;">
+          <div class="fr aic">
             <span class="mfd-label" style="margin-left: 15px;">
               AIRWAYS FROM
             </span>
@@ -121,12 +122,9 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               {this.revisedFixIdent}
             </span>
           </div>
-          <div
-            ref={this.airwayLinesRef}
-            style="height: 630px; margin: 10px 30px 5px 30px; border: 2px outset lightgrey; padding: 15px;"
-          />
+          <div ref={this.airwayLinesRef} class="mfd-fms-fpln-awy-awy-container" />
         </div>
-        <div style="display: flex; flex-direction: row; justify-content: center">
+        <div class="fr jcc">
           <IconButton
             icon="double-down"
             onClick={() => this.displayFromLine.set(this.displayFromLine.get() + 1)}
@@ -193,8 +191,8 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
   render(): VNode {
     return (
-      <div class="fr" style="justify-content: space-between; margin-top: 15px; margin-bottom: 15px;">
-        <div class="fr" style="align-items: center;">
+      <div class="fr mfd-fms-awy-line-container">
+        <div class="fr aic">
           <div class="mfd-label" style="margin-right: 5px;">
             VIA
           </div>
@@ -247,7 +245,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             interactionMode={this.props.mfd.interactionMode}
           />
         </div>
-        <div class="fr" style="align-items: center;">
+        <div class="fr aic">
           <div class="mfd-label" style="margin-right: 5px;">
             TO
           </div>

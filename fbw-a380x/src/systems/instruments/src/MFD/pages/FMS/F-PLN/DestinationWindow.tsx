@@ -72,12 +72,8 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
   render(): VNode {
     return (
       <div ref={this.topRef} style="position: relative;">
-        <div
-          class="mfd-dialog"
-          style={`${this.props.contentContainerStyle ?? ''}; left: 195px; top: 225px; width: 500px; height: 300px;
-                    display: flex; flex-direction: column; justify-content: space-between;`}
-        >
-          <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-top: 40px; padding-left: 15px;">
+        <div class="mfd-dialog mfd-fms-new-dest-box" style={`${this.props.contentContainerStyle ?? ''}`}>
+          <div class="mfd-fms-new-dest-box-inner">
             <span class="mfd-label">
               NEW DEST FROM{' '}
               <span ref={this.identRef} class="mfd-value bigger">
@@ -98,7 +94,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
               />
             </div>
           </div>
-          <div style="display: flex; flex-direction: row; justify-content: space-between">
+          <div class="fr" style="justify-content: space-between">
             <Button
               label="CANCEL"
               onClick={() => {

@@ -380,7 +380,7 @@
   background-color: $display-background;
   width: 30px;
   height: 30px;
-  border: 2px inset lightgray;
+  border: 2px inset $display-light-grey;
   border-radius: 50%;
   margin-right: 15px;
   display: grid;
@@ -393,7 +393,7 @@
 
 
 .mfd-radio-button input[type="radio"]:checked {
-  box-shadow: inset 0 0 0px 4px black;
+  box-shadow: inset 0 0 0px 4px $display-background;
 }
 
 .mfd-radio-button.yellow input[type="radio"]:checked {
@@ -419,7 +419,7 @@
 
 .mfd-radio-button input[type="radio"]:checked {
   background: $display-cyan;
-  box-shadow: inset 0 0 0px 4px black;
+  box-shadow: inset 0 0 0px 4px $display-background;
 }
 
 .mfd-radio-button input[type="radio"]:checked ~ * {
@@ -733,6 +733,14 @@
   flex-direction: column;
 }
 
+.aic {
+  align-items: center;
+}
+
+.jcc {
+  justify-content: center;
+}
+
 .mfd-surv-heading {
   font-size: 28px;
   color: $display-white;
@@ -744,7 +752,7 @@
 }
 
 .mfd-surv-button {
-  border: 4px inset lightgrey;
+  border: 4px inset $display-light-grey;
   display: flex;
   flex-direction: column;
   width: 100px;

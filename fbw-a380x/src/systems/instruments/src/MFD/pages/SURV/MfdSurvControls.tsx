@@ -192,10 +192,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
           <div class="mfd-surv-controls-first-section">
             <div class="mfd-surv-controls-xpdr-section">
               <div class="mfd-surv-controls-xpdr-left">
-                <div
-                  class={{ 'mfd-surv-heading': true, failed: this.xpdrFailed }}
-                  style="position: relative; left: 100px; top: 3px;"
-                >
+                <div class={{ 'mfd-surv-heading': true, 'mfd-surv-xpdr-label': true, failed: this.xpdrFailed }}>
                   XPDR
                 </div>
                 <div class="mfd-label bigger" style="margin-top: 30px;">
@@ -249,12 +246,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
               </div>
             </div>
             <div class="mfd-surv-controls-tcas-section">
-              <div
-                class={{ 'mfd-surv-heading': true, failed: this.tcasFailed }}
-                style="position: relative; left: 150px; top: -70px;"
-              >
-                TCAS
-              </div>
+              <div class={{ 'mfd-surv-heading': true, 'mfd-surv-tcas-label': true, failed: this.tcasFailed }}>TCAS</div>
               <div class="mfd-surv-controls-tcas-left">
                 <RadioButtonGroup
                   values={['TA/RA', 'TA ONLY', 'STBY']}
@@ -279,12 +271,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
           </div>
           <div class="mfd-surv-controls-second-section">
             <div class="mfd-surv-controls-wxr-left">
-              <div
-                class={{ 'mfd-surv-heading': true, failed: this.wxrFailed }}
-                style="position: relative; left: 100px; top: 0px;"
-              >
-                WXR
-              </div>
+              <div class={{ 'mfd-surv-heading': true, 'mfd-surv-wxr-label': true, failed: this.wxrFailed }}>WXR</div>
               <div class="mfd-label bigger" style="margin-top: 80px;">
                 ELEVN/TILT
               </div>
@@ -363,12 +350,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
             </div>
           </div>
           <div class="mfd-surv-controls-third-section">
-            <div
-              class={{ 'mfd-surv-heading': true, failed: this.tawsFailed }}
-              style="position: relative; left: 100px; top: 5px;"
-            >
-              TAWS
-            </div>
+            <div class={{ 'mfd-surv-heading': true, 'mfd-surv-taws-label': true, failed: this.tawsFailed }}>TAWS</div>
             <div class="mfd-surv-controls-taws-section">
               <div class="mfd-surv-controls-taws-element" style="padding-right: 50px;">
                 <div class="mfd-surv-label">TERR SYS</div>

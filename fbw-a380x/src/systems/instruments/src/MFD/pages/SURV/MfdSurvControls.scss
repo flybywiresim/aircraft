@@ -34,8 +34,13 @@
   width: 40%;
   display: flex;
   flex-direction: row;
-  border-right: 2px solid lightgrey;
+  border-right: 2px solid $display-light-grey;
   margin-left: 5px;
+}
+
+.mfd-surv-xpdr-label {
+  position: relative;
+  left: 100px; top: 3px;
 }
 
 .mfd-surv-controls-xpdr-left {
@@ -59,9 +64,14 @@
   width: 60%;
   display: flex;
   flex-direction: row;
-  border-right: 2px solid lightgrey;
+  border-right: 2px solid $display-light-grey;
   margin-left: 5px;
   padding-top: 75px;
+}
+
+.mfd-surv-tcas-label {
+  position: relative;
+  left: 150px; top: -70px;
 }
 
 .mfd-surv-controls-tcas-left {
@@ -71,7 +81,7 @@
   justify-content: center;
   padding-right: 40px;
   margin-right: 5px;
-  border-right: 2px solid lightgrey;
+  border-right: 2px solid $display-light-grey;
 }
 
 .mfd-surv-controls-tcas-right {
@@ -88,6 +98,11 @@
   flex-direction: column;
   flex: 1;
   align-items: center;
+}
+
+.mfd-surv-wxr-label {
+  position: relative;
+  left: 100px; top: 0px;
 }
 
 .mfd-surv-controls-wxr-right {
@@ -112,13 +127,18 @@
   margin: 20px;
 }
 
+.mfd-surv-taws-label {
+  position: relative;
+  left: 100px; top: 5px;
+}
+
 .mfd-surv-controls-taws-section {
   display: flex;
   height: 205px;
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
-  border-right: 2px solid lightgrey;
+  border-right: 2px solid $display-light-grey;
 }
 
 .mfd-surv-controls-taws-element {
