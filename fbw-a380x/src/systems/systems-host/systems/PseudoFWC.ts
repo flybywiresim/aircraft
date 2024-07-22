@@ -2868,73 +2868,18 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000055': {
+    271000001: {
       // GND SPLRs ARMED
       flightPhaseInhib: [2, 9, 10],
       simVarIsActive: this.spoilersArmed,
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000005501'],
+      codesToReturn: ['271000001'],
       memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000080': {
-      // SEAT BELTS
-      flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: this.seatBelt.map((v) => !!v),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000008001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000090': {
-      // NO SMOKING
-      flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([noSmoking, configPortableDevices]) => noSmoking === 1 && !configPortableDevices,
-        this.noSmoking,
-        this.configPortableDevices,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000009001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000095': {
-      // NO MOBILE
-      flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([noSmoking, configPortableDevices]) => noSmoking === 1 && !!configPortableDevices,
-        this.noSmoking,
-        this.configPortableDevices,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000009501'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000100': {
-      // STROBE LIGHT OFF
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([aircraftOnGround, strobeLightsOn]) => !!(!aircraftOnGround && strobeLightsOn === 2),
-        this.aircraftOnGround,
-        this.strobeLightsOn,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000010001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
+
     '0000105': {
       // OUTR TK FUEL XFRD
       flightPhaseInhib: [], // Plus check that outer tanks not empty
@@ -2957,28 +2902,6 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['000030501'], // Not inhibited
       memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000140': {
-      // T.O. INHIBIT
-      flightPhaseInhib: [],
-      simVarIsActive: this.showTakeoffInhibit,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000014001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000150': {
-      // LDG INHIBIT
-      flightPhaseInhib: [],
-      simVarIsActive: this.showLandingInhibit,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000015001'],
-      memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
@@ -3022,18 +2945,6 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [this.amberSpeedBrake.get() ? 1 : 0],
       codesToReturn: ['000006001', '000006002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-
-    '0000070': {
-      // IGNITION
-      flightPhaseInhib: [],
-      simVarIsActive: this.engSelectorPosition.map((v) => v === 2),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000007001'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -3214,17 +3125,6 @@ export class PseudoFWC {
       simVarIsActive: this.gpwsFlaps3,
       whichCodeToReturn: () => [0],
       codesToReturn: ['000030001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000022': {
-      // AUTOBRAKE
-      flightPhaseInhib: [],
-      simVarIsActive: this.fwcFlightPhase.map((v) => v === 7 || v === 8),
-      whichCodeToReturn: () => [this.autoBrake.get() - 1],
-      codesToReturn: ['000002201', '000002202', '000002203', '000002204'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -3418,6 +3318,41 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
+    // 31 INDICATING RECORDING
+    314000001: {
+      // T.O. INHIBIT
+      flightPhaseInhib: [],
+      simVarIsActive: this.showTakeoffInhibit,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['314000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    314000002: {
+      // LDG INHIBIT
+      flightPhaseInhib: [],
+      simVarIsActive: this.showLandingInhibit,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['314000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    // 32 LANDING GEAR
+    320000001: {
+      // AUTO BRK OFF
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
+      simVarIsActive: this.autoBrake.map((abrk) => abrk === 0),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['320000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     // ATA 32
     '322000001': {
       // N/W STEER DISC
@@ -3439,7 +3374,6 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-
     '320000002': {
       // PARK BRK ON
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
@@ -3447,6 +3381,62 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000002'],
       memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '333000001': {
+      // STROBE LIGHT OFF
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, strobeLightsOn]) => !!(!aircraftOnGround && strobeLightsOn === 2),
+        this.aircraftOnGround,
+        this.strobeLightsOn,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['333000001'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '335000001': {
+      // SEAT BELTS
+      flightPhaseInhib: [2, 9, 10],
+      simVarIsActive: this.seatBelt.map((v) => !!v),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['335000001'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '335000002': {
+      // NO SMOKING
+      flightPhaseInhib: [2, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([noSmoking, configPortableDevices]) => noSmoking === 1 && !configPortableDevices,
+        this.noSmoking,
+        this.configPortableDevices,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['335000002'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '335000003': {
+      // NO MOBILE
+      flightPhaseInhib: [2, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([noSmoking, configPortableDevices]) => noSmoking === 1 && !!configPortableDevices,
+        this.noSmoking,
+        this.configPortableDevices,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['335000003'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
@@ -3551,6 +3541,17 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['340068001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '709000001': {
+      // IGNITION
+      flightPhaseInhib: [],
+      simVarIsActive: this.engSelectorPosition.map((v) => v === 2),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['709000001'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
