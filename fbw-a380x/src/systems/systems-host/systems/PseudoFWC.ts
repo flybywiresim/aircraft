@@ -39,6 +39,11 @@ import {
   pfdMemoDisplay,
 } from '@instruments/common/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
+import {
+  FwsCdsAbnormalSensedEntry,
+  FwsCdsAbnormalSensedList,
+  FwsCdsEvents,
+} from '../../instruments/src/MsfsAvionicsCommon/providers/FwsCdsPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -108,16 +113,6 @@ enum FwcAuralWarning {
   SingleChime,
   Crc,
 }
-
-interface FwsCdsAbnormalSensedEntry {
-  id: string;
-  itemsToShow: boolean[];
-  itemsCompleted: boolean[];
-  itemsActive: boolean[];
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type FwsCdsAbnormalSensedList = FwsCdsAbnormalSensedEntry[];
 
 type InternalAbnormalSensedList = Map<string, FwsCdsAbnormalSensedEntry>;
 
@@ -2134,7 +2129,7 @@ export class PseudoFWC {
 
     // pitch trim not takeoff
     const stabPos = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', 'degree');
-    const cgPercent = SimVar.GetSimVarValue('CG PERCENT', 'number');
+    const cgPercent = SimVar.GetSimVarValue('CG PERCENT', 'number') * 100;
 
     // A320neo config
     const pitchConfig = !PitchTrimUtils.pitchTrimInGreenBand(stabPos);
@@ -2682,6 +2677,12 @@ export class PseudoFWC {
 
       console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
     }
+
+    const fwsCdsProcedures: FwsCdsAbnormalSensedList = Array.from(this.activeAbnormalSensedList.keys()).map((abn) => {
+      return { id: abn, itemsActive: [], itemsCompleted: [], itemsToShow: [] };
+    });
+    this.bus.getPublisher<FwsCdsEvents>().pub('fws_abnormal_sensed_procedures', fwsCdsProcedures);
+    SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', fwsCdsProcedures[0].id);
 
     // MEMOs (except T.O and LDG)
     for (const [, value] of Object.entries(this.ewdMemos)) {
