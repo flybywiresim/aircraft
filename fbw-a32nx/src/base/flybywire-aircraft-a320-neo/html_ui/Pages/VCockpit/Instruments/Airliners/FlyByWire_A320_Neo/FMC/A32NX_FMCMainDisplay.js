@@ -2682,7 +2682,7 @@ class FMCMainDisplay extends BaseAirliners {
     getToSpeedsTooLow() {
         const grossWeight = this.getGrossWeight();
 
-        if (this.flaps === null || grossWeight === null || this.v1Speed === null || this.vRSpeed === null || this.v2Speed === null) {
+        if (this.flaps === null || grossWeight === null) {
             return false;
         }
 
@@ -2695,10 +2695,10 @@ class FMCMainDisplay extends BaseAirliners {
 
         const tow = grossWeight - (this.isAnEngineOn() || this.taxiFuelWeight === undefined ? 0 : this.taxiFuelWeight);
 
-        return this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
-            || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
-            || this.v2Speed < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && this.v2Speed < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, this.flaps, true)));
+        return (this.v1Speed ?? Infinity) < Math.trunc(NXSpeedsUtils.getVmcg(zp))
+            || (this.vRSpeed ?? Infinity) < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
+            || (this.v2Speed ?? Infinity) < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
+            || (isFinite(tow) && (this.v2Speed ?? Infinity) < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, this.flaps, true)));
     }
 
     toSpeedsChecks() {
