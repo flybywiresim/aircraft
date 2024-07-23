@@ -38,6 +38,7 @@ import {
   isChecklistAction,
   pfdMemoDisplay,
 } from '@instruments/common/EcamMessages';
+import PitchTrimUtils from '@shared/PitchTrimUtils';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -560,9 +561,7 @@ export class PseudoFWC {
 
   private readonly pitchTrimMcduCgDisagree = Subject.create(false);
 
-  private readonly trimDisagreeMcduStab1Conf = new NXLogicConfirmNode(1, true);
-
-  private readonly trimDisagreeMcduStab2Conf = new NXLogicConfirmNode(1, true);
+  private readonly trimDisagreeMcduStabConf = new NXLogicConfirmNode(1, true);
 
   private readonly rudderTrimConfigInPhase3or4Sr = new NXLogicMemoryNode(true);
 
@@ -2134,30 +2133,11 @@ export class PseudoFWC {
     );
 
     // pitch trim not takeoff
-    const fcdc1Stab1Pos = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_ELEVATOR_TRIM_POS');
-    const fcdc2Stab1Pos = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_ELEVATOR_TRIM_POS');
-    const fcdc1Stab2Pos = fcdc1Stab1Pos;
-    const fcdc2Stab2Pos = fcdc2Stab1Pos;
-
-    // TODO stab1Pos proper logic
-    const stab1Pos = fcdc1Stab1Pos.value;
-    const stab1PosInvalid = !fcdc1Stab1Pos.isNormalOperation();
-    const stab2Pos = fcdc2Stab2Pos.value;
-    const stab2PosInvalid = !fcdc2Stab2Pos.isNormalOperation();
+    const stabPos = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', 'degree');
+    const cgPercent = SimVar.GetSimVarValue('CG PERCENT', 'number');
 
     // A320neo config
-    const pitchConfig1 =
-      fcdc1Stab1Pos.valueOr(0) > 2.6 ||
-      fcdc1Stab1Pos.valueOr(0) < -3.9 ||
-      fcdc2Stab1Pos.valueOr(0) > 2.6 ||
-      fcdc2Stab1Pos.valueOr(0) < -3.9;
-    const pitchConfig2 =
-      fcdc1Stab2Pos.valueOr(0) > 2.6 ||
-      fcdc1Stab2Pos.valueOr(0) < -3.9 ||
-      fcdc2Stab2Pos.valueOr(0) > 2.6 ||
-      fcdc2Stab2Pos.valueOr(0) < -3.9;
-    const pitchConfig = pitchConfig1 || pitchConfig2;
-
+    const pitchConfig = !PitchTrimUtils.pitchTrimInGreenBand(stabPos);
     this.pitchTrimNotTo.set(this.flightPhase129.get() && pitchConfig);
     const pitchConfigTestInPhase129 =
       pitchConfig && this.toConfigTestHeldMin1s5Pulse.get() && this.flightPhase129.get();
@@ -2167,23 +2147,16 @@ export class PseudoFWC {
     this.pitchTrimNotToWarning.set(pitchConfigTestInPhase129 || this.pitchConfigInPhase3or4Sr.read());
 
     // pitch trim/mcdu disagree
-    // we don't check the trim calculated from CG as it's not available yet
+    // we don't check the trim calculated from CG as it's not available yet. Need FQMS implementation for that
     const fm1PitchTrim = Arinc429Word.fromSimVarValue('L:A32NX_FM1_TO_PITCH_TRIM');
     const fm2PitchTrim = Arinc429Word.fromSimVarValue('L:A32NX_FM2_TO_PITCH_TRIM');
     const fmPitchTrim =
       !fm1PitchTrim.isNormalOperation() && fm2PitchTrim.isNormalOperation() ? fm2PitchTrim : fm1PitchTrim;
-    this.trimDisagreeMcduStab1Conf.write(
-      !stab1PosInvalid && fmPitchTrim.isNormalOperation() && Math.abs(fmPitchTrim.value - stab1Pos) > 1.2,
+    this.trimDisagreeMcduStabConf.write(
+      !PitchTrimUtils.pitchTrimInCyanBand(cgPercent, stabPos) || !(Math.abs(fmPitchTrim.valueOr(0) - cgPercent) < 0.5),
       deltaTime,
     );
-    this.trimDisagreeMcduStab2Conf.write(
-      !stab2PosInvalid && fmPitchTrim.isNormalOperation() && Math.abs(fmPitchTrim.value - stab2Pos) > 1.2,
-      deltaTime,
-    );
-    this.pitchTrimMcduCgDisagree.set(
-      !this.pitchTrimNotToWarning.get() &&
-        (this.trimDisagreeMcduStab1Conf.read() || this.trimDisagreeMcduStab2Conf.read()),
-    );
+    this.pitchTrimMcduCgDisagree.set(!this.pitchTrimNotToWarning.get() && this.trimDisagreeMcduStabConf.read());
 
     // rudder trim not takeoff
     const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
@@ -2890,35 +2863,6 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['000030501'], // Not inhibited
       memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000350': {
-      // LAND ASAP RED
-      flightPhaseInhib: [],
-      simVarIsActive: this.landAsapRed,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000035001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000360': {
-      // LAND ASAP AMBER
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([landAsapRed, aircraftOnGround, engine1State, engine2State]) =>
-          !landAsapRed && !aircraftOnGround && (engine1State === 0 || engine2State === 0),
-        this.landAsapRed,
-        this.aircraftOnGround,
-        this.engine1State,
-        this.engine2State,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000036001'],
-      memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
@@ -3769,6 +3713,77 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300016', '230300017', '230300018', '230300019', '230300006', '230300015'],
+    },
+    // ATA 27 FLIGHT CONTROLS
+    271800003: {
+      // PITCH TRIM NOT IN TO RANGE
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.pitchTrimNotToWarning,
+      auralWarning: this.pitchTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    271800032: {
+      // PITCH TRIM FMS DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.pitchTrimMcduCgDisagree,
+      notActiveWhenFaults: ['271800003'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
+    271800005: {
+      // SPD BRK NOT RETRACTED
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    272800001: {
+      // SLAT NOT IN TO CONFIG
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
+      auralWarning: this.slatConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.slatConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    272800002: {
+      // FLAPS NOT IN TO CONFIG
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
+      auralWarning: this.flapConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.flapConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    272800028: {
+      // TO FLAPS FMS DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.flapsMcduDisagree,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
     },
   };
 
