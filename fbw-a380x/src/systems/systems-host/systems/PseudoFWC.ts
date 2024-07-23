@@ -2148,7 +2148,9 @@ export class PseudoFWC {
     const fmPitchTrim =
       !fm1PitchTrim.isNormalOperation() && fm2PitchTrim.isNormalOperation() ? fm2PitchTrim : fm1PitchTrim;
     this.trimDisagreeMcduStabConf.write(
-      !PitchTrimUtils.pitchTrimInCyanBand(cgPercent, stabPos) || !(Math.abs(fmPitchTrim.valueOr(0) - cgPercent) < 0.5),
+      fmPitchTrim.isNormalOperation() &&
+        (!PitchTrimUtils.pitchTrimInCyanBand(cgPercent, stabPos) ||
+          !(Math.abs(fmPitchTrim.valueOr(0) - cgPercent) < 1)),
       deltaTime,
     );
     this.pitchTrimMcduCgDisagree.set(!this.pitchTrimNotToWarning.get() && this.trimDisagreeMcduStabConf.read());
@@ -2682,7 +2684,7 @@ export class PseudoFWC {
       return { id: abn, itemsActive: [], itemsCompleted: [], itemsToShow: [] };
     });
     this.bus.getPublisher<FwsCdsEvents>().pub('fws_abnormal_sensed_procedures', fwsCdsProcedures);
-    SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', fwsCdsProcedures[0].id);
+    SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', fwsCdsProcedures[0] ? fwsCdsProcedures[0].id : '');
 
     // MEMOs (except T.O and LDG)
     for (const [, value] of Object.entries(this.ewdMemos)) {
@@ -3779,7 +3781,7 @@ export class PseudoFWC {
       // TO FLAPS FMS DISAGREE
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
       simVarIsActive: this.flapsMcduDisagree,
-      notActiveWhenFaults: [],
+      notActiveWhenFaults: ['272800002'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
       failure: 2,

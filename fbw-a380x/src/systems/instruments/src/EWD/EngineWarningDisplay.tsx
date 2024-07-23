@@ -60,7 +60,7 @@ export const EngineWarningDisplay: React.FC = () => {
             <EWDMemo x={25} y={414} active={displayMemo} side='LEFT' />
             <EWDMemo x={395} y={414} active={displayMemo} side='RIGHT' />
 
-            <FormattedFwcText x={25} y={1000} message={EcamAbnormalSensedProcedures[abnormalDebug].title} />
+            <FormattedFwcText x={25} y={1000} message={EcamAbnormalSensedProcedures[abnormalDebug] ? EcamAbnormalSensedProcedures[abnormalDebug].title : ''} />
         </LegacyCdsDisplayUnit>
     );
 };

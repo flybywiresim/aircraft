@@ -29,12 +29,12 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800003: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm PITCH TRIM NOT IN T.O RANGE',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm PITCH TRIM NOT IN T.O RANGE',
     sensed: true,
     items: [],
   },
   271800004: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm RUDDER TRIM NOT IN T.O RANGE',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm RUDDER TRIM NOT IN T.O RANGE',
     sensed: true,
     items: [],
   },
@@ -360,12 +360,12 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   },
   // ATA 27: FLAPS/SLATS
   272800001: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm SLATS NOT IN T.O CONFIG',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm SLATS NOT IN T.O CONFIG',
     sensed: true,
     items: [],
   },
   272800002: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm FLAPS NOT IN T.O CONFIG',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm FLAPS NOT IN T.O CONFIG',
     sensed: true,
     items: [],
   },
