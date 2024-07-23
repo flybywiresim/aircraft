@@ -227,7 +227,7 @@ function interpolateForCgAndWeight(
   if (cg > 43) {
     return weightFn(cg43Value, m);
   }
-  const cgSpeed = cg29Value + ((cg43Value - cg29Value) / 14) * cg;
+  const cgSpeed = cg29Value + ((cg43Value - cg29Value) / 14) * (cg - 29);
   return weightFn(cgSpeed, m);
 }
 
@@ -411,13 +411,13 @@ export class A380OperatingSpeeds {
     const alphaProt = simZeroLiftAlpha + 0.85 * (simStallAlpha - simZeroLiftAlpha); // AOA where alpha prot. becomes active
     const alphaMax = simZeroLiftAlpha + 0.95 * (simStallAlpha - simZeroLiftAlpha); // Max. AOA which can be flown in normal law
 
-    const stallSpeedFudgeFactor = fPos === 0 ? 1.22 : 1.5; // Flight model not yet tuned
+    const stallSpeedFudgeFactor = 1; // Flight model not yet tuned
     this.alphaMax = Math.max(
       Vmcl,
       stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (alphaMax - alpha0)),
     );
     this.alphaProt = Math.max(
-      0,
+      Vmcl,
       stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (alphaProt - alpha0)),
     );
     this.alphaStallWarn = Math.max(

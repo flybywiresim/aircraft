@@ -302,19 +302,12 @@ export class FlightManagementComputer implements FmcInterface {
   /** in kg */
   public getGrossWeight(): Kilograms {
     // Value received from FQMS, or falls back to ZFW + FOB
-    const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
+    const zfw = this.fmgc.data.zeroFuelWeight.get();
 
-    let fmGW = 0;
-    if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
+    let fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
+    if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get()) && zfw) {
       fmGW = this.fmgc.getFOB() * 1_000 + zfw;
-    } else if (
-      Number.isFinite(this.fmgc.data.blockFuel.get()) &&
-      Number.isFinite(this.fmgc.data.zeroFuelWeight.get())
-    ) {
-      fmGW = this.fmgc.data.blockFuel.get() ?? 0 + zfw;
-    } else {
-      fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
-    }
+    } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && zfw) fmGW = this.fmgc.data.blockFuel.get() ?? 0 + zfw;
     return fmGW;
   }
 

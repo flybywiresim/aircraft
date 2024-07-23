@@ -253,7 +253,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   public async onBlur(validateAndUpdate: boolean = true) {
-    if (!this.props.disabled?.get() && !this.props.inactive?.get() && !this.isFocused.get()) {
+    if (!this.props.disabled?.get() && !this.props.inactive?.get() && this.isFocused.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
       }

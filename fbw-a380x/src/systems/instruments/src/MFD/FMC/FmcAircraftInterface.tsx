@@ -877,7 +877,7 @@ export class FmcAircraftInterface {
     const altActive = false;
     const landingWeight =
       this.fmgc.data.zeroFuelWeight.get() ??
-      maxZfw + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
+      NaN + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
 
     return Number.isFinite(landingWeight) ? landingWeight : NaN;
   }
@@ -889,21 +889,17 @@ export class FmcAircraftInterface {
    */
   updatePerfSpeeds() {
     /** in kg */
-    let weight: number | null = this.tryEstimateLandingWeight();
-    const gw = this.fmc.getGrossWeight() ?? maxGw;
+    const estLdgWeight = this.tryEstimateLandingWeight();
+    let ldgWeight = estLdgWeight;
+    const grossWeight = this.fmc.getGrossWeight();
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
-    // Fallback gross weight set to MZFW, which is replaced by FMGW once input in FMS to avoid function returning undefined results.
-    if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Approach || !Number.isFinite(weight)) {
-      weight = gw;
+    if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Approach || !Number.isFinite(estLdgWeight)) {
+      ldgWeight = grossWeight;
     } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
-      weight =
+      ldgWeight =
         (this.fmgc.data.zeroFuelWeight.get() ?? maxZfw) +
         Math.max(0, UnitType.POUND.convertTo(vnavPrediction.estimatedFuelOnBoard, UnitType.KILOGRAM));
-    }
-
-    if (!weight) {
-      weight = maxGw;
     }
 
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
@@ -958,10 +954,11 @@ export class FmcAircraftInterface {
 
     const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
     const speeds = new A380OperatingSpeeds(
-      gw / 1000,
+      grossWeight / 1000,
       cas,
       flaps,
       this.fmgc.getFlightPhase(),
+      this.fmgc.getV2Speed(),
       this.filteredAoA,
       towerHeadwind,
     );
@@ -997,7 +994,7 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', speeds.vfeN);
 
     const approachSpeeds = new A380OperatingSpeeds(
-      weight / 1000,
+      ldgWeight / 1000,
       cas,
       this.fmgc.data.approachFlapConfig.get(),
       FmgcFlightPhase.Approach,
