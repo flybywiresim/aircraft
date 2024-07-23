@@ -193,7 +193,70 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   211800021: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1+2 FAULT  ',
     sensed: true,
-    items: [],
+    // If at least one door is not closed or is not locked, and at least one engine is running:
+    items: [
+      {
+        name: 'PACK 1+2 INHIBITED BY DOORS',
+        sensed: false,
+      },
+      {
+        name: 'MAX FL : 100/MEA',
+        sensed: false,
+      },
+      //Otherwise
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // If there is pack overheat
+      {
+        name: 'IF PACK OVHT OUT',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      // In flight, if above FL 100
+      {
+        name: 'DESCENT TO FL 100/MEA',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+        level: 1,
+      },
+      {
+        name: 'WHEN DIFF PRESS < 1 PSI & FL < 100/MEA :',
+        sensed: false,
+        level: 2,
+      },
+      {
+        name: 'RAM AIR:',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 2,
+      },
+      {
+        name: 'CABIN AIR EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+        level: 2,
+      },
+    ],
   },
   211800022: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1+2 REGUL REDUNDANCY FAULT  ',
