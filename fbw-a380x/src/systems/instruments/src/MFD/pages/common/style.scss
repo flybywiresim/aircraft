@@ -521,7 +521,7 @@
   position: absolute;
   top: -18px;
   z-index: 5;
-  border: 1px solid $display-grey;
+  border: 1px solid $display-grey !important;
 }
 
 .mfd-input-field-text-input {

@@ -11,7 +11,6 @@ interface DestinationWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
   mfd: DisplayInterface & MfdDisplayInterface;
   visible: Subject<boolean>;
-  contentContainerStyle?: string;
 }
 export class DestinationWindow extends DisplayComponent<DestinationWindowProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -23,16 +22,18 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
   private newDest = Subject.create<string>('');
 
-  private onModified(newDest: string): void {
-    const revWpt = this.props.fmcService.master?.revisedWaypointIndex.get();
-    if (newDest.length === 4 && revWpt) {
-      this.props.fmcService.master?.flightPlanService.newDest(
-        revWpt,
-        newDest,
-        this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-        this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
-      );
-      this.props.fmcService.master?.acInterface.updateOansAirports();
+  private onModified(newDest: string | null): void {
+    if (newDest) {
+      const revWpt = this.props.fmcService.master?.revisedWaypointIndex.get();
+      if (newDest.length === 4 && revWpt) {
+        this.props.fmcService.master?.flightPlanService.newDest(
+          revWpt,
+          newDest,
+          this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
+          this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+        );
+        this.props.fmcService.master?.acInterface.updateOansAirports();
+      }
       this.props.visible.set(false);
       this.newDest.set('');
       this.props.fmcService.master?.resetRevisedWaypoint();
@@ -72,7 +73,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
   render(): VNode {
     return (
       <div ref={this.topRef} style="position: relative;">
-        <div class="mfd-dialog mfd-fms-new-dest-box" style={`${this.props.contentContainerStyle ?? ''}`}>
+        <div class="mfd-dialog mfd-fms-new-dest-box">
           <div class="mfd-fms-new-dest-box-inner">
             <span class="mfd-label">
               NEW DEST FROM{' '}
@@ -85,7 +86,8 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                 dataEntryFormat={new AirportFormat()}
                 mandatory={Subject.create(false)}
                 canBeCleared={Subject.create(true)}
-                onModified={(val) => this.onModified(val ?? '')}
+                inactive={Subject.create(false)}
+                onModified={(val) => this.onModified(val)}
                 value={this.newDest}
                 alignText="center"
                 errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}

@@ -78,8 +78,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
             y2={this.props.height}
             style="stroke: lightgrey; stroke-width:2"
           />
-          !
-          {this.props.isSelected && (
+          {!this.props.isSelected && (
             <line
               x1="0"
               y1={this.props.height - 1}

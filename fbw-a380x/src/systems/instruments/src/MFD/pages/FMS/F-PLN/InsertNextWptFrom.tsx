@@ -17,6 +17,7 @@ import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface
 import { FlightPlanIndex } from '@fmgc/index';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
+import { FmsError } from '@fmgc/FmsError';
 
 export type NextWptInfo = {
   ident: string;
@@ -76,15 +77,21 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         );
       }
     } else {
-      const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
-      const revWpt = this.props.fmcService.master.revisedWaypointIndex.get();
-      if (wpt && revWpt) {
-        await this.props.fmcService.master.flightPlanService.nextWaypoint(
-          revWpt,
-          wpt,
-          this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-          this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
-        );
+      try {
+        const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
+        const revWpt = this.props.fmcService.master.revisedWaypointIndex.get();
+        if (wpt && revWpt) {
+          await this.props.fmcService.master.flightPlanService.nextWaypoint(
+            revWpt,
+            wpt,
+            this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
+            this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+          );
+        }
+      } catch (msg: unknown) {
+        if (msg instanceof FmsError) {
+          this.props.fmcService.master?.showFmsErrorMessage(msg.type);
+        }
       }
       this.props.visible.set(false);
     }

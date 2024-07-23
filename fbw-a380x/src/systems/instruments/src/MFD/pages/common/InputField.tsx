@@ -561,7 +561,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   render(): VNode {
     return (
       <div ref={this.topRef} class="mfd-input-field-root">
-        <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle}`}>
+        <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle ?? ''}`}>
           <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading mfd-input-field-unit">
             {this.leadingUnit}
           </span>
