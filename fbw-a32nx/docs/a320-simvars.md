@@ -1238,12 +1238,28 @@
     - Number (0.0..1.0)
     - While loading a preset this will contain the percentage of the total progress of loading
 
+- A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE
+  - Bool
+  - When set to true the loading process will be expedited and the loading will be done as fast as possible
+
 - A32NX_PUSHBACK_SYSTEM_ENABLED
     - Bool
     - Read/Write
     - 0 when pushback system is completely disabled, 1 when system is enabled
     - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
     - This prevents conflicts with other pushback add-ons
+
+- A32NX_PUSHBACK_SPD_FACTOR
+  - Number -1.0..1.0
+  - Read/Write
+  - Speed factor for pushback
+  - 0.0 is stopped, 1.0 is full speed forward, -1.0 is full speed backward
+
+- A32NX_PUSHBACK_HDG_FACTOR
+  - Number -1.0..1.0
+  - Read/Write
+  - Turn factor for pushback
+  - -1.0 is full left, 0.0 is straight, 1.0 is full right
 
 - A32NX_DEVELOPER_STATE
     - Bool
@@ -1277,6 +1293,16 @@
     - {ID}
         - 2 | LEFT
         - 3 | RIGHT
+
+- A32NX_AIRLINER_CRUISE_ALTITUDE
+  - Number (feet)
+  - Current cruise altitude of the aircraft
+  - note: this LVar was named incorrectly before missing the prefix:`AIRLINER_CRUISE_ALTITUDE`
+
+- A32NX_AIRLINER_TO_FLEX_TEMP
+  - Number (degrees Celsius)
+  - Current takeoff flex temperature of the aircraft
+  - note: this LVar was named incorrectly before missing the prefix:`AIRLINER_TO_FLEX_TEMP`
 
 ## Model/XML Interface
 
@@ -2636,17 +2662,19 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Sets a timer to control engine {index} start-up/shutdown events
 
 - A32NX_ENGINE_IMBALANCE
-    - Number (2-bit coded decimal)
-    - Defines random engine imbalance of parameters
-      Bits (from Left) | Parameter
-      --- | ---
-      0-1 | Engine affected (01 or 02)
-      2-3 | EGT (max 20º imbalance)
-      4-5 | FF (max 36 Kg/h imbalance)
-      6-7 | N2 (max 0.3% imbalance)
-      8-9 | Oil Qty (max 2 Qt imbalance)
-      10-11 | Oil Pressure (max 3 psi imbalance)
-      12-13 | Idle Oil Pressure (+/- 6 psi imbalance)
+  - Number (encoded)
+  - Encoded engine imbalance values. Use the algorithm in the code `LVarEncoder::extract8Int8FromDouble` to decode
+  - `fbw-common/src/wasm/cpp-msfs-framework/lib/lvar_encoder.hpp`
+  - Parameters for encoding are:
+    - 1 = Engine Number of the engine which is imbalanced
+    - 2 = Engine EGT imbalance
+    - 3 = Engine FF imbalance
+    - 4 = Engine N2 imbalance
+    - 5 = Engine Oil Quantity imbalance
+    - 6 = Engine Oil Pressure imbalance
+    - 7 = Engine Oil Idle Pressure imbalance
+    - 8 = Engine Oil Temperature imbalance
+
 
 - A32NX_ENGINE_N1:{index}
     - Number (% N1)

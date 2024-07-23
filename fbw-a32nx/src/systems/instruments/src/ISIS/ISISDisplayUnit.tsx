@@ -27,11 +27,20 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
   const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool');
   const [dcHotLive] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'bool');
 
+  // This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
+  // In the context of ISIS, this means quick startup (skipping self-test)
+  const [aircraftPresetQuickMode] = useSimVar('L:A32NX_AIRCRAFT_PRESET_QUICK_MODE', 'Bool', 200);
+
   const hasElectricity = (indicatedAirspeed > 50 && dcHotLive) || dcEssLive;
 
   useUpdate((deltaTime) => {
     if (timer !== null) {
       if (timer > 0) {
+        // aircraft preset quick mode skips self-test
+        if (aircraftPresetQuickMode) {
+          setTimer(0);
+          return;
+        }
         setTimer(timer - deltaTime / 1000);
       } else if (state === DisplayUnitState.Standby) {
         setState(DisplayUnitState.Off);

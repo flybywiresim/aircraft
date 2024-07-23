@@ -257,7 +257,7 @@ export enum PFDVars {
   radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
   crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
   tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
-  flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+  flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
   autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
