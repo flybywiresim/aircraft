@@ -315,8 +315,6 @@ export class FmcAircraftInterface {
    * @param {0 | 1 | 2 | 3 | null} flaps
    */
   setTakeoffFlaps(flaps: FlapConf) {
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number', flaps !== null ? flaps : -1);
-
     this.arincDiscreteWord2.setBitValue(13, flaps === 0);
     this.arincDiscreteWord2.setBitValue(14, flaps === 1);
     this.arincDiscreteWord2.setBitValue(15, flaps === 2);
@@ -329,13 +327,9 @@ export class FmcAircraftInterface {
    * @param ths trimmable horizontal stabilizer
    */
   setTakeoffTrim(ths: number) {
-    // legacy vars
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_THS', 'degree', ths || 0);
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_THS_ENTERED', 'bool', ths !== null);
-
     const ssm = ths !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
-    this.arincTakeoffPitchTrim.setBnrValue(ths ? -ths : 0, ssm, 12, 180, -180);
+    this.arincTakeoffPitchTrim.setBnrValue(ths, ssm, 12, 180, -180);
   }
 
   private landingElevation: number | null = null;
