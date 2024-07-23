@@ -11,7 +11,6 @@ import {
   InstrumentBackplane,
   Clock,
   ClockEvents,
-  Subject,
   ConsumerSubject,
   MappedSubject,
   SubscribableMapFunctions,

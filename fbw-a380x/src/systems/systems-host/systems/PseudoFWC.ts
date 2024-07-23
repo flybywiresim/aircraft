@@ -21,7 +21,6 @@ import {
   Arinc429SignStatusMatrix,
   Arinc429Word,
   FrequencyMode,
-  NXDataStore,
   NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
@@ -1031,9 +1030,7 @@ export class PseudoFWC {
 
   private readonly manLandingElevation = Subject.create(false);
 
-  private readonly noSmoking = Subject.create(0);
-
-  private readonly noSmokingSwitchPosition = Subject.create(0);
+  private readonly noMobileSwitchPosition = Subject.create(0);
 
   private readonly predWSOn = Subject.create(false);
 
@@ -1050,10 +1047,6 @@ export class PseudoFWC {
   private readonly wingAntiIce = Subject.create(false);
 
   private readonly voiceVhf3 = Subject.create(false);
-
-  /* SETTINGS */
-
-  private readonly configPortableDevices = Subject.create(false);
 
   constructor(
     private readonly bus: EventBus,
@@ -1862,8 +1855,7 @@ export class PseudoFWC {
     this.manLandingElevation.set(activeCpc.bitValueOr(17, false));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
-    this.noSmoking.set(SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool'));
-    this.noSmokingSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Enum'));
+    this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
     this.gpwsFlaps3.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool'));
     this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
@@ -2408,10 +2400,6 @@ export class PseudoFWC {
     this.iceNotDetTimer2Status.set(
       this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime),
     );
-
-    /* SETTINGS */
-
-    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0') !== '0');
 
     /* CABIN READY */
 
@@ -3411,29 +3399,10 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '335000002': {
-      // NO SMOKING
-      flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([noSmoking, configPortableDevices]) => noSmoking === 1 && !configPortableDevices,
-        this.noSmoking,
-        this.configPortableDevices,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['335000002'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '335000003': {
       // NO MOBILE
       flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([noSmoking, configPortableDevices]) => noSmoking === 1 && !!configPortableDevices,
-        this.noSmoking,
-        this.configPortableDevices,
-      ),
+      simVarIsActive: this.noMobileSwitchPosition.map((pos) => pos === 0),
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000003'],
       memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
@@ -3807,7 +3776,7 @@ export class PseudoFWC {
    * Contains the activation checks for each of the abnormal sensed procedures (formerly left column of A32NX EWD memos).
    * Legacy, just for looking up the A32NX implementation. Will be moved to new structure (ID for checklist, array of bools for state of lines).
    */
-  ewdAbnormalSensedLegacy: any = {
+  /* ewdAbnormalSensedLegacy: any = {
     2900310: {
       // *HYD  - Blue
       flightPhaseInhib: [1, 4, 5, 10],
@@ -5106,5 +5075,5 @@ export class PseudoFWC {
       failure: 2,
       sysPage: 5,
     },
-  };
+  };*/
 }
