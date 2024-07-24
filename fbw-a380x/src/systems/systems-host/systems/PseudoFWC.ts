@@ -44,6 +44,7 @@ import {
   FwsCdsAbnormalSensedList,
   FwsCdsEvents,
 } from '../../instruments/src/MsfsAvionicsCommon/providers/FwsCdsPublisher';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -117,7 +118,7 @@ enum FwcAuralWarning {
 type InternalAbnormalSensedList = Map<string, FwsCdsAbnormalSensedEntry>;
 
 export class PseudoFWC {
-  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents>();
+  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents>();
   private readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
@@ -861,11 +862,18 @@ export class PseudoFWC {
   private readonly trueNorthRef = Subject.create(false);
 
   /* SURVEILLANCE */
-  private readonly gpwsFlaps3 = Subject.create(false);
 
-  private readonly gpwsFlapMode = Subject.create(0);
+  private readonly gpwsFlapModeOff = Subject.create(false);
+
+  private readonly gpwsSysOff = Subject.create(false);
+
+  private readonly gpwsGsOff = Subject.create(false);
 
   private readonly gpwsTerrOff = Subject.create(false);
+
+  private readonly xpdrAltReporting = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
+
+  private readonly xpdrStby = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
 
@@ -1057,8 +1065,6 @@ export class PseudoFWC {
   private readonly manLandingElevation = Subject.create(false);
 
   private readonly noMobileSwitchPosition = Subject.create(0);
-
-  private readonly predWSOn = Subject.create(false);
 
   private readonly seatBelt = Subject.create(0);
 
@@ -1924,10 +1930,6 @@ export class PseudoFWC {
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
-    this.gpwsFlaps3.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool'));
-    this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
-    this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
-    this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
     this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
@@ -2386,6 +2388,14 @@ export class PseudoFWC {
     this.lgLeverRedArrow.set(redArrow);
 
     // 32 - Surveillance Logic
+    this.gpwsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
+    this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
+    this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
+    this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
+    this.xpdrStby.set(
+      SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum') == 1 ||
+        SimVar.GetSimVarValue('TRANSPONDER STATE:2', 'Enum') == 1,
+    );
     const isNormalLaw = fcdc1DiscreteWord1.getBitValue(11) || fcdc2DiscreteWord1.getBitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
@@ -2962,13 +2972,32 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000305': {
-      // GPWS FLAP MODE OFF
+
+    '0000350': {
+      // LAND ASAP RED
       flightPhaseInhib: [],
-      simVarIsActive: this.gpwsFlapMode.map((v) => !!v),
+      simVarIsActive: this.landAsapRed,
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000030501'], // Not inhibited
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      codesToReturn: ['000035001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '0000360': {
+      // LAND ASAP AMBER
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        ([landAsapRed, aircraftOnGround, engine1State, engine2State]) =>
+          !landAsapRed && !aircraftOnGround && (engine1State === 0 || engine2State === 0),
+        this.landAsapRed,
+        this.aircraftOnGround,
+        this.engine1State,
+        this.engine2State,
+      ),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['000036001'],
+      memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
@@ -2983,66 +3012,6 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [this.amberSpeedBrake.get() ? 1 : 0],
       codesToReturn: ['000006001', '000006002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000540': {
-      // PRED W/S OFF
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([predWSOn, fwcFlightPhase]) => !predWSOn && ![1, 10].includes(fwcFlightPhase),
-        this.predWSOn,
-        this.fwcFlightPhase,
-      ),
-      whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0,
-      ],
-      codesToReturn: ['000054001', '000054002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000545': {
-      // TERR OFF
-      flightPhaseInhib: [1, 10],
-      simVarIsActive: this.gpwsTerrOff,
-      whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0,
-      ],
-      codesToReturn: ['000054501', '000054502'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000320': {
-      // TCAS STBY
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase !== 6,
-        this.tcasSensitivity,
-        this.fwcFlightPhase,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000032001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000325': {
-      // TCAS STBY in flight
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase === 6,
-        this.tcasSensitivity,
-        this.fwcFlightPhase,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000032501'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -3152,17 +3121,6 @@ export class PseudoFWC {
       simVarIsActive: MappedSubject.create(([ndXfrKnob]) => ndXfrKnob !== 1, this.ndXfrKnob),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000029001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000300': {
-      // GPWS FLAPS 3
-      flightPhaseInhib: [],
-      simVarIsActive: this.gpwsFlaps3,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000030001'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -3565,6 +3523,113 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
+    '341000001': {
+      // GPWS OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.gpwsSysOff,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000001'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '341000002': {
+      // TAWS FLAP MODE OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.gpwsFlapModeOff,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000002'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '341000003': {
+      // TAWS G/S MODE OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.gpwsGsOff,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000003'],
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    /*
+    '341000004': {
+      // TERR SYS OFF
+      flightPhaseInhib: [],
+      simVarIsActive: false,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000002'], // Not inhibited
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '341000005': {
+      // TERR STBY
+      flightPhaseInhib: [],
+      simVarIsActive: true,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000005'], // Not inhibited
+      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '342000001': {
+      // PRED W/S OFF
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        ([predWSOn, fwcFlightPhase]) => !predWSOn && ![1, 10].includes(fwcFlightPhase),
+        this.predWSOn,
+        this.fwcFlightPhase,
+      ),
+      whichCodeToReturn: () => [
+        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 0 : 1,
+      ],
+      codesToReturn: ['342000001', '342000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    */
+    '343000001': {
+      // TCAS STBY
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: MappedSubject.create(([tcasSensitivity]) => tcasSensitivity === 1, this.tcasSensitivity),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['343000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '343000002': {
+      // ALT RPTG OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.xpdrAltReporting.map((v) => !v),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['343000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '343000003': {
+      // XPDR STBY
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.xpdrStby,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['343000003'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     '709000001': {
       // IGNITION
       flightPhaseInhib: [],
@@ -3721,7 +3786,7 @@ export class PseudoFWC {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fms1Fault, this.fms2Fault),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true], // simplified, update when improved FMS swtchg logic
-      whichItemsCompleted: () => [true, this.fmsSwitchingKnob.get() === 1, false, false, this.gpwsFlapMode.get() === 1],
+      whichItemsCompleted: () => [true, this.fmsSwitchingKnob.get() === 1, false, false, this.gpwsFlapModeOff.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['221300006', '340300003'],
