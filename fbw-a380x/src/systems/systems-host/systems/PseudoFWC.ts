@@ -819,7 +819,19 @@ export class PseudoFWC {
 
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
 
-  private readonly overspeedWarning = Subject.create(false);
+  private readonly overspeedVmo = Subject.create(false);
+
+  private readonly overspeedVle = Subject.create(false);
+
+  private readonly overspeedVfeConf1 = Subject.create(false);
+
+  private readonly overspeedVfeConf1F = Subject.create(false);
+
+  private readonly overspeedVfeConf2 = Subject.create(false);
+
+  private readonly overspeedVfeConf3 = Subject.create(false);
+
+  private readonly overspeedVfeConfFull = Subject.create(false);
 
   private readonly flapsIndex = Subject.create(0);
 
@@ -1379,6 +1391,11 @@ export class PseudoFWC {
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
+    // Flaps
+    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
+    this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
+    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
 
@@ -1596,7 +1613,14 @@ export class PseudoFWC {
       overspeedWarning ||= adr3Discrete1.getBitValueOr(9, false);
     }
     overspeedWarning ||= adr1Discrete1.getBitValueOr(9, false) || adr2Discrete1.getBitValueOr(9, false);
-    this.overspeedWarning.set(overspeedWarning);
+    const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
+    this.overspeedVmo.set(!gearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(340));
+    this.overspeedVle.set(gearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(250));
+    this.overspeedVfeConf1.set(this.flapsHandle.get() === 1 && isOverspeed(263)); // FIXME
+    // this.overspeedVfeConf1F.set(this.flapsHandle.get() === 1 && isOverspeed(222));
+    this.overspeedVfeConf2.set(this.flapsHandle.get() === 2 && isOverspeed(220));
+    this.overspeedVfeConf3.set(this.flapsHandle.get() === 3 && isOverspeed(196));
+    this.overspeedVfeConfFull.set(this.flapsHandle.get() === 4 && isOverspeed(182));
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted =
@@ -2041,9 +2065,6 @@ export class PseudoFWC {
     this.speedBrakeCommand.set(
       fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false),
     );
-    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
-    this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
-    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
 
     // FIXME these should be split between the two systems and the two sides
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
@@ -2520,7 +2541,8 @@ export class PseudoFWC {
         }
 
         const itemsCompleted = value.whichItemsCompleted();
-        const itemsToShow = value.whichItemsToShow();
+        const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsCompleted.length).fill(true);
+        const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsCompleted.length).fill(true);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -2535,19 +2557,31 @@ export class PseudoFWC {
 
         if (!this.activeAbnormalSensedList.has(key)) {
           // Insert into internal map
-          let activeItems = new Array(proc.items.length).fill(true);
           if (value.whichItemsActive) {
-            activeItems = value.whichItemsActive();
-
-            if (proc.items.length !== activeItems.length) {
+            if (proc.items.length !== value.whichItemsActive().length) {
               console.warn(
+                proc.title,
                 'ECAM alert definition error: whichItemsActive() not the same size as number of procedure items',
               );
             }
           }
+          if (value.whichItemsToShow) {
+            if (proc.items.length !== value.whichItemsToShow().length) {
+              console.warn(
+                proc.title,
+                'ECAM alert definition error: whichItemsToShow() not the same size as number of procedure items',
+              );
+            }
+          }
+          if (proc.items.length !== value.whichItemsCompleted().length) {
+            console.warn(
+              proc.title,
+              'ECAM alert definition error: whichItemsCompleted() not the same size as number of procedure items',
+            );
+          }
           this.activeAbnormalSensedList.set(key, {
             id: key,
-            itemsActive: activeItems,
+            itemsActive: itemsActive,
             itemsCompleted: itemsCompleted,
             itemsToShow: itemsToShow,
           });
@@ -2555,13 +2589,18 @@ export class PseudoFWC {
         } else {
           // Update internal map
           const prevEl = this.activeAbnormalSensedList.get(key);
-          prevEl.itemsToShow = itemsToShow;
           // Update only sensed items
           proc.items.forEach((item, idx) => {
             if (item.sensed === true) {
-              if (prevEl.itemsCompleted[idx] !== itemsCompleted[idx]) {
+              if (
+                prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+                prevEl.itemsActive[idx] !== itemsActive[idx] ||
+                prevEl.itemsCompleted[idx] !== itemsCompleted[idx]
+              ) {
                 stateWasChanged = true;
               }
+              prevEl.itemsToShow[idx] = itemsToShow[idx];
+              prevEl.itemsActive[idx] = itemsActive[idx];
               prevEl.itemsCompleted[idx] = itemsCompleted[idx];
             }
           });
@@ -3788,6 +3827,34 @@ export class PseudoFWC {
       sysPage: 12,
       inopSysAllPhases: () => [],
     },
+    271800069: {
+      // OVERSPEED
+      flightPhaseInhib: [2, 3, 4, 5, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.overspeedVmo,
+        this.overspeedVle,
+        this.overspeedVfeConf1,
+        this.overspeedVfeConf1F,
+        this.overspeedVfeConf2,
+        this.overspeedVfeConf3,
+        this.overspeedVfeConfFull,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.overspeedVmo.get(),
+        this.overspeedVle.get(),
+        this.overspeedVfeConf1.get(),
+        this.overspeedVfeConf1F.get(),
+        this.overspeedVfeConf2.get(),
+        this.overspeedVfeConf3.get(),
+        this.overspeedVfeConfFull.get(),
+      ],
+      whichItemsCompleted: () => [false, false, false, false, false, false, false],
+      failure: 3,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
   };
 
   /**
@@ -3838,92 +3905,7 @@ export class PseudoFWC {
       sysPage: 4,
     },
     // 34 - NAVIGATION & SURVEILLANCE
-    3400170: {
-      // OVER SPEED VMO/MMO
-      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-      simVarIsActive: this.overspeedWarning,
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['340017001', '340017002'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      cancel: false,
-    },
-    3400210: {
-      // OVERSPEED FLAPS FULL
-      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 5 && computedAirSpeedToNearest2 > 182,
-        this.flapsIndex,
-        this.computedAirSpeedToNearest2,
-      ),
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['340021001', '340021002'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      cancel: false,
-    },
-    3400220: {
-      // OVERSPEED FLAPS 3
-      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 4 && computedAirSpeedToNearest2 > 196,
-        this.flapsIndex,
-        this.computedAirSpeedToNearest2,
-      ),
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['340022001', '340022002'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      cancel: false,
-    },
-    3400230: {
-      // OVERSPEED FLAPS 2
-      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 3 && computedAirSpeedToNearest2 > 220,
-        this.flapsIndex,
-        this.computedAirSpeedToNearest2,
-      ),
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['340023001', '340023002'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      cancel: false,
-    },
-    3400235: {
-      // OVERSPEED FLAPS 1+F
-      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 2 && computedAirSpeedToNearest2 > 222,
-        this.flapsIndex,
-        this.computedAirSpeedToNearest2,
-      ),
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['340023501', '340023502'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      cancel: false,
-    },
-    3400240: {
-      // OVERSPEED FLAPS 1
-      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 1 && computedAirSpeedToNearest2 > 263,
-        this.flapsIndex,
-        this.computedAirSpeedToNearest2,
-      ),
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['340024001', '340024002'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-      cancel: false,
-    },
+
     7700027: {
       // DUAL ENGINE FAILURE
       flightPhaseInhib: [],
@@ -4096,28 +4078,6 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
     },
-    2700085: {
-      // SLATS NOT IN TO CONFIG
-      flightPhaseInhib: [5, 6, 7, 8],
-      auralWarning: this.slatConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.slatConfigWarning,
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['270008501', '270008502'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-    },
-    2700090: {
-      // FLAPS NOT IN TO CONFIG
-      flightPhaseInhib: [5, 6, 7, 8],
-      auralWarning: this.flapConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.flapConfigWarning,
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['270009001', '270009002'],
-      memoInhibit: () => false,
-      failure: 3,
-      sysPage: -1,
-    },
     2700110: {
       // ELAC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
@@ -4196,17 +4156,6 @@ export class PseudoFWC {
       codeToReturn: ['270023001', '270023002', '270023003', '270023004'],
       memoInhibit: () => false,
       failure: 2,
-      sysPage: 10,
-    },
-    2700240: {
-      // PITCH TRIM CONFIG
-      flightPhaseInhib: [5, 6, 7, 8],
-      auralWarning: this.pitchTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.pitchTrimNotToWarning,
-      whichItemToReturn: () => [0, 1],
-      codeToReturn: ['270024001', '270024002'],
-      memoInhibit: () => false,
-      failure: 3,
       sysPage: 10,
     },
     2700340: {
@@ -4289,37 +4238,6 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 10,
-    },
-    2700460: {
-      // PITCH TRIM/MCDU/CG DISAGREE
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([pitchTrimMcduCgDisagree, flapsAndPitchMcduDisagreeEnable]) =>
-          pitchTrimMcduCgDisagree && flapsAndPitchMcduDisagreeEnable,
-        this.pitchTrimMcduCgDisagree,
-        this.flapsAndPitchMcduDisagreeEnable,
-      ),
-      whichItemToReturn: () => [0],
-      codeToReturn: ['270046001', '270046002'],
-      memoInhibit: () => false,
-      failure: 2,
-      sysPage: -1,
-    },
-    2700466: {
-      // FLAPS/MCDU DISGREE
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([flapsMcduDisagree, flapsNotToMemo, flapsAndPitchMcduDisagreeEnable]) =>
-          flapsMcduDisagree && !flapsNotToMemo && flapsAndPitchMcduDisagreeEnable,
-        this.flapsMcduDisagree,
-        this.flapsNotToMemo,
-        this.flapsAndPitchMcduDisagreeEnable,
-      ),
-      whichItemToReturn: () => [0],
-      codeToReturn: ['270046501'],
-      memoInhibit: () => false,
-      failure: 2,
-      sysPage: -1,
     },
     2700502: {
       // SPD BRK STILL OUT
