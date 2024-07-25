@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "inih/ini.h"
+#include "inih/ini_fbw.h"
 #include "inih/ini_type_conversion.h"
 
 #include "logging.h"
@@ -15,7 +15,7 @@ void FuelConfiguration_A380X::loadConfigurationFromIni() {
   LOG_INFO("Fadec::FuelConfiguration: loading configuration file " + configFilename);
 
   mINI::INIStructure ini;
-  mINI::INIFile iniFile(configFilename);
+  mINI::INIFile      iniFile(configFilename);
 
   if (!iniFile.read(ini)) {
     LOG_ERROR("Fadec::FuelConfiguration_A380X: failed to read configuration file " + configFilename + " due to error \"" + strerror(errno) +
@@ -27,13 +27,15 @@ void FuelConfiguration_A380X::loadConfigurationFromIni() {
   fuelFeedOneGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_ONE_QTY, fuelFeedOneDefault);
   fuelLeftMidGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_MID_QTY, fuelLeftMidDefault);
   fuelLeftInnerGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_LEFT_INNER_QTY, fuelLeftInnerDefault);
-  fuelFeedTwoGallons    = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_TWO_QTY, fuelFeedTwoDefault);
-  fuelFeedThreeGallons  = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_THREE_QTY, fuelFeedThreeDefault);
-  fuelRightInnerGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_INNER_QTY, fuelRightInnerDefault);
-  fuelRightMidGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_MID_QTY, fuelRightMidDefault);
-  fuelFeedFourGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_FOUR_QTY, fuelFeedFourDefault);
-  fuelRightOuterGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_OUTER_QTY, fuelRightOuterDefault);
-  fuelTrimGallons       = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_TRIM_QTY, fuelTrimDefault);
+  fuelFeedTwoGallons   = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_TWO_QTY, fuelFeedTwoDefault);
+  fuelFeedThreeGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_THREE_QTY, fuelFeedThreeDefault);
+  fuelRightInnerGallons =
+      mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_INNER_QTY, fuelRightInnerDefault);
+  fuelRightMidGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_MID_QTY, fuelRightMidDefault);
+  fuelFeedFourGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_FEED_FOUR_QTY, fuelFeedFourDefault);
+  fuelRightOuterGallons =
+      mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_RIGHT_OUTER_QTY, fuelRightOuterDefault);
+  fuelTrimGallons = mINI::INITypeConversion::getDouble(ini, INI_SECTION_FUEL, INI_SECTION_FUEL_TRIM_QTY, fuelTrimDefault);
 
   LOG_DEBUG("Fadec::FuelConfiguration_A380X: loaded fuel configuration from " + configFilename + " with the following values:");
   LOG_DEBUG("Fadec::FuelConfiguration_A380X: " + this->toString());
@@ -43,7 +45,7 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
   LOG_DEBUG("Fadec::FuelConfiguration_A380X: saving configuration file " + configFilename);
 
   mINI::INIStructure ini;
-  mINI::INIFile iniFile(configFilename);
+  mINI::INIFile      iniFile(configFilename);
 
   // Do not check a possible error since the file may not exist yet
   iniFile.read(ini);
@@ -61,7 +63,8 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
   ini[INI_SECTION_FUEL][INI_SECTION_FUEL_TRIM_QTY]        = std::to_string(this->fuelTrimGallons);
 
   if (!iniFile.write(ini, true)) {
-    LOG_ERROR("Fadec::FuelConfiguration_A380X: failed to write engine conf " + configFilename + " due to error \"" + strerror(errno) + "\"");
+    LOG_ERROR("Fadec::FuelConfiguration_A380X: failed to write engine conf " + configFilename + " due to error \"" + strerror(errno) +
+              "\"");
     return;
   }
 
@@ -71,7 +74,8 @@ void FuelConfiguration_A380X::saveConfigurationToIni() {
 
 std::string FuelConfiguration_A380X::toString() const {
   std::ostringstream oss;
-  oss << "FuelConfiguration_A380X { " << "\n"
+  oss << "FuelConfiguration_A380X { "
+      << "\n"
       << "  fuelLeftOuter: " << fuelLeftOuterGallons << "\n"
       << "  fuelFeedOne: " << fuelFeedOneGallons << "\n"
       << "  fuelLeftMid: " << fuelLeftMidGallons << "\n"

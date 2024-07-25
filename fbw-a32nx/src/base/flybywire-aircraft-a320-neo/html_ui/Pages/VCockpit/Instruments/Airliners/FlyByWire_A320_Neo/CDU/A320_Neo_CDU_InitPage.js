@@ -391,7 +391,7 @@ class CDUInitPage {
                 const a32nxBoarding = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool");
                 const gsxBoarding = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "number");
                 if (a32nxBoarding || (gsxBoarding >= 4 && gsxBoarding < 6)) {
-                    zfw = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_DESIRED", "number");
+                    zfw = NXUnits.kgToUser(SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_DESIRED", "number"));
                     zfwCg = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", "number");
                 } else if (isFinite(getZfw()) && isFinite(getZfwcg())) {
                     zfw = getZfw();

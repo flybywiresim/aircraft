@@ -12,7 +12,7 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils, ApproachType, ApproachWaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 
 /**
  * This entire class essentially represents an interface to the flightplan.
