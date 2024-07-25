@@ -3,30 +3,11 @@ import { GaugeComponent, GaugeMarkerComponent, GaugeMaxEGTComponent } from '@ins
 import { useSimVar } from '@instruments/common/simVars';
 import { EGTProps } from '@instruments/common/types';
 
-const getModeEGTMax = () => {
-    const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number', 500);
-    const [togaWarning] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'boolean', 500);
-
-    switch (throttleMode) {
-    case 4:
-        return togaWarning ? 1060 : 1025;
-
-    case 1:
-    case 2:
-    case 3:
-    case 5:
-        return 1025;
-
-    default:
-        return 750;
-    }
-};
-
-const warningEGTColor = (EGTemperature: number) => {
-    if (EGTemperature > 1060) {
+const warningEGTColor = (EGTemperature: number, throttleMode: number) => {
+    if (EGTemperature > 900) {
         return 'Red';
     }
-    if (EGTemperature > getModeEGTMax()) {
+    if (EGTemperature > 850 && throttleMode < 4) {
         return 'Amber';
     }
     return 'Green';
@@ -34,14 +15,15 @@ const warningEGTColor = (EGTemperature: number) => {
 
 const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
     const [EGTemperature] = useSimVar(`L:A32NX_ENGINE_EGT:${engine}`, 'number');
+    const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number', 500);
     const radius = 68;
     const startAngle = 270;
     const endAngle = 90;
     const min = 0;
-    const max = 1200;
+    const max = 1000;
 
-    const modeEGTMax = getModeEGTMax();
-    const EGTColour = warningEGTColor(EGTemperature);
+    const amberVisible = throttleMode < 4;
+    const EGTColour = warningEGTColor(EGTemperature, throttleMode);
 
     return (
         <>
@@ -71,8 +53,8 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className='GaugeText Gauge' />
                             <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className='GaugeText Gauge RedLine' />
-                            <GaugeMaxEGTComponent
-                                value={modeEGTMax}
+                            {amberVisible && <GaugeMaxEGTComponent
+                                value={850}
                                 x={x}
                                 y={y}
                                 min={min}
@@ -81,7 +63,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                                 startAngle={startAngle}
                                 endAngle={endAngle}
                                 className='GaugeThrustLimitIndicatorFill Gauge'
-                            />
+                            />}
                             <rect x={x - 36} y={y - 11} width={72} height={26} className='DarkGreyBox' />
                             <GaugeMarkerComponent
                                 value={EGTemperature}
@@ -92,7 +74,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className={`GaugeIndicator Gauge ${EGTColour}`}
+                                className={`${EGTColour}GaugeIndicator Gauge`}
                                 multiplierInner={0.75}
                                 indicator
                                 halfIndicator

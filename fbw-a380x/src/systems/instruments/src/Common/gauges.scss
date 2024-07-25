@@ -34,6 +34,20 @@
         stroke-linecap: round;
     }
 
+    .GreenGaugeIndicator {
+        stroke: $display-green;
+        stroke-width: 3;
+        fill: none;
+        stroke-linecap: round;
+    }
+
+    .AmberGaugeIndicator {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: none;
+        stroke-linecap: round;
+    }
+
     .RedGaugeIndicator {
         stroke: $display-red;
         stroke-width: 3;
