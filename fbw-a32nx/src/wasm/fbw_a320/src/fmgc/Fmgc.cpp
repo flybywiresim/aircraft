@@ -106,3 +106,7 @@ base_fmgc_bus_outputs Fmgc::getBusOutputs() {
 
   return output;
 }
+
+const fmgc_outputs& Fmgc::getDebugOutputs() const {
+  return fmgcComputer.getExternalOutputs().out;
+}

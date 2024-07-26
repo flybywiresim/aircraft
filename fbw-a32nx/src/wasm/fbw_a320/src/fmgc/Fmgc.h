@@ -13,6 +13,8 @@ class Fmgc {
 
   base_fmgc_discrete_outputs getDiscreteOutputs();
 
+  const fmgc_outputs& getDebugOutputs() const;
+
   FmgcComputer::ExternalInputs_FmgcComputer_T modelInputs = {};
 
  private:
