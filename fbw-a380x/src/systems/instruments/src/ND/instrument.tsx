@@ -35,7 +35,6 @@ import {
   ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';
 
-import { VerticalDisplayDummy } from './VerticalDisplay';
 import { ContextMenu, ContextMenuElement } from './UI/ContextMenu';
 import { OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
@@ -180,8 +179,6 @@ class NDInstrument implements FsInstrument {
 
   private topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private ndContainerRef = FSComponent.createRef<HTMLDivElement>();
-
   private efisNdMode = EfisNdMode.ARC;
 
   private efisCpRange: A380EfisNdRangeValue = 10;
@@ -276,16 +273,13 @@ class NDInstrument implements FsInstrument {
               zoomValues={a380EfisZoomRangeSettings}
             />
           </div>
-          <div ref={this.ndContainerRef}>
-            <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a380EfisRangeSettings} />
-          </div>
+          <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a380EfisRangeSettings} />
           <ContextMenu
             ref={this.contextMenuRef}
             opened={this.contextMenuOpened}
             idPrefix="contextMenu"
             values={this.oansContextMenuItems}
           />
-          <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
           <div ref={this.oansControlPanelContainerRef}>
             <OansControlPanel
               ref={this.controlPanelRef}
