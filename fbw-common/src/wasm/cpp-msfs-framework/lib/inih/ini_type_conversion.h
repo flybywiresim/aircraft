@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "ini.h"
+#include "ini_fbw.h"
 
 namespace mINI {
 class INITypeConversion {
@@ -25,7 +25,7 @@ class INITypeConversion {
     }
 
     // exceptions are not supported -> need to convert it without
-    double value;
+    double            value;
     std::stringstream stream(structure.get(section).get(key));
     stream >> value;
 
@@ -42,7 +42,7 @@ class INITypeConversion {
     }
 
     // exceptions are not supported -> need to convert it without
-    int value;
+    int               value;
     std::stringstream stream(structure.get(section).get(key));
     stream >> value;
 
