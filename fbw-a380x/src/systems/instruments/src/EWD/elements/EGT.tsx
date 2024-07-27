@@ -4,10 +4,10 @@ import { useSimVar } from '@instruments/common/simVars';
 import { EGTProps } from '@instruments/common/types';
 
 const warningEGTColor = (EGTemperature: number, throttleMode: number) => {
-    if (EGTemperature > 900) {
+    if (EGTemperature >= 900) {
         return 'Red';
     }
-    if (EGTemperature > 850 && throttleMode < 4) {
+    if (EGTemperature > 850 && throttleMode < 3) {
         return 'Amber';
     }
     return 'Green';
@@ -25,6 +25,9 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
     const amberVisible = throttleMode < 4;
     const EGTColour = warningEGTColor(EGTemperature, throttleMode);
 
+    // EEC trims EGT to a max value
+    const trimmedEGT = Math.min([3, 4].includes(throttleMode) ? 900 : 850, EGTemperature);
+
     return (
         <>
             <g id={`EGT-indicator-${engine}`}>
@@ -37,7 +40,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                     )}
                 {active && (
                     <>
-                        <text className={`Large End ${EGTColour}`} x={x + 33} y={y + 11.7}>{Math.round(EGTemperature)}</text>
+                        <text className={`Large End ${EGTColour}`} x={x + 33} y={y + 11.7}>{Math.round(trimmedEGT)}</text>
                         <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
                             <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 20} endAngle={endAngle} visible className='GaugeComponent Gauge ThickRedLine' />
                             <GaugeMarkerComponent
@@ -66,7 +69,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                             />}
                             <rect x={x - 36} y={y - 11} width={72} height={26} className='DarkGreyBox' />
                             <GaugeMarkerComponent
-                                value={EGTemperature}
+                                value={trimmedEGT}
                                 x={x}
                                 y={y}
                                 min={min}

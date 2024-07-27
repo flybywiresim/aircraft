@@ -70,6 +70,13 @@
     .GaugeThrustFill {
         fill: $display-grey;
     }
+
+    .TransientIndicator {
+        stroke: $display-green;
+        stroke-width: 1;
+        fill: none;
+        stroke-linecap: round;
+    }
 }
 
 .DonutThrottleIndicator {

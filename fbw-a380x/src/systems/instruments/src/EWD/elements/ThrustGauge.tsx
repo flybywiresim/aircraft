@@ -1,6 +1,7 @@
 import {
     GaugeComponent,
     GaugeMarkerComponent, GaugeThrustComponent, splitDecimals, ThrottlePositionDonutComponent,
+    ThrustTransientComponent,
 } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position, EngineNumber, FadecActive, n1Degraded } from '@instruments/common/types';
@@ -9,14 +10,17 @@ import React from 'react';
 const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y, engine, active, n1Degraded }) => {
     const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'number', 100);
     const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'number', 1000);
-    const [Thrust] = useSimVar(`TURB ENG JET THRUST:${engine}`, 'pounds');
-    const ThrustPercent = Math.round(((Thrust / 30000) * 100) * 2.8125 * 10) / 100; // Hack for now until real thrust values available
-    const ThrustPercentSplit = splitDecimals(ThrustPercent);
 
     const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
     const [throttlePosition] = useSimVar(`L:A32NX_AUTOTHRUST_TLA:${engine}`, 'number', 100);
-    // const [thrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT', 'number', 100);
-    // const [thrustLimitIdle] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE', 'number', 100);
+    const [throttlePositionN1] = useSimVar(`L:A32NX_AUTOTHRUST_TLA_N1:${engine}`, 'number', 100);
+    const [thrustLimitIdle] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE', 'number', 100);
+    const [thrustLimitToga] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'number', 100);
+    // No ACUTE yet, so we assume thrust = currentN1 / togaLimit
+    const throttleTarget = (throttlePositionN1 - thrustLimitIdle) / (thrustLimitToga - thrustLimitIdle);
+
+    const ThrustPercent = Math.min(1, Math.max(0, (N1Percent - thrustLimitIdle)/(thrustLimitToga - thrustLimitIdle))) * 100;
+    const ThrustPercentSplit = splitDecimals(ThrustPercent);
 
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
@@ -74,7 +78,7 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                             />
                             <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpened} />
                             <ThrottlePositionDonutComponent
-                                value={throttlePosition < 3 ? 3 / 10 : throttlePosition / 10}
+                                value={throttleTarget * 10}
                                 x={x}
                                 y={y}
                                 min={min}
@@ -83,6 +87,17 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                                 startAngle={startAngle}
                                 endAngle={endAngle}
                                 className='DonutThrottleIndicator'
+                            />
+                            <ThrustTransientComponent
+                                x={x}
+                                y={y}
+                                thrustActual={ThrustPercent / 100}
+                                thrustTarget={throttleTarget}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                visible
+                                className='TransientIndicator'
                             />
                         </>
                     )}
@@ -178,7 +193,6 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
                         </>
                     )}
                         </GaugeComponent>
-
                     </>
                 )}
                 {active && revVisible && [2, 3].includes(engine)

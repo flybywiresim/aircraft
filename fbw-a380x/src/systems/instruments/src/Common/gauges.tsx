@@ -285,3 +285,54 @@ export const GaugeThrustComponent: FC<GaugeThrustComponentProps> = memo(({ x, y,
         </>
     );
 });
+
+type ThrustTransientComponentType = {
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+    visible: boolean,
+    thrustActual: number,
+    thrustTarget: number;
+};
+
+export const ThrustTransientComponent: FC<ThrustTransientComponentType> = memo(({ x, y, radius, startAngle, endAngle, className, visible, thrustActual, thrustTarget }) => {
+    const targetSmaller = thrustTarget < thrustActual;
+    const sweepHorizontal = (radius: number): string => {
+        const valueIdleDir = valueRadianAngleConverter({ value: thrustActual, min: 0, max: 1, endAngle, startAngle });
+        const valueIdleEnd = {
+            x: x + (valueIdleDir.x * radius),
+            y: y + (valueIdleDir.y * radius),
+        };
+        const valueMaxDir = valueRadianAngleConverter({ value: thrustTarget, min: 0, max: 1, endAngle, startAngle });
+        const valueMaxEnd = {
+            x: x + (valueMaxDir.x * radius),
+            y: y + (valueMaxDir.y * radius),
+        };
+
+        const diffAngle = valueMaxDir.angle - valueIdleDir.angle;
+
+        return [
+            `M ${valueIdleEnd.x},${valueIdleEnd.y}`,
+            `A ${radius} ${radius} 0 ${diffAngle > 180 ? '1' : '0'} ${diffAngle < 0 ? '0' : '1'} ${valueMaxEnd.x} ${valueMaxEnd.y}`,
+        ].join(' ');
+    }
+
+    const thrustEnd = valueRadianAngleConverter({ value: thrustTarget, min: 0, max: 1, endAngle, startAngle });
+
+    return (
+        <>
+            <g className='GaugeComponent'>
+                <g className={visible ? 'Show' : 'Hide'}>
+                    <path d={sweepHorizontal(0.8*radius)} className={className} />
+                    <path d={sweepHorizontal(0.65*radius)} className={className} />
+                    <path d={sweepHorizontal(0.5*radius)} className={className} />
+                    <path d={sweepHorizontal(0.35*radius)} className={className} />
+                    <path d={`M ${x} ${y} L ${x + thrustEnd.x * 0.8*radius} ${y + thrustEnd.y * 0.8*radius}`} className={className} />
+                </g>
+            </g>
+        </>
+    );
+});
