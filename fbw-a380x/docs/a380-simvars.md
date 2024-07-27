@@ -506,13 +506,37 @@
 
 ## Fire and Smoke Protection ATA 26
 
+- A32NX_FIRE_FDU_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the Fire Detection Unit (assumed)
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Fire detected ENG 1                                  |
+      | 12  | Fire detected ENG 2                                  |
+      | 13  | Fire detected ENG 3                                  |
+      | 14  | Fire detected ENG 4                                  |
+      | 15  | Fire detected APU                                    |
+      | 16  | Fire detected MLG                                    |
+      | 17  | Not used                                             |
+      | 18  | ENG 1 LOOP A fault                                   |
+      | 19  | ENG 1 LOOP B fault                                   |
+      | 20  | ENG 2 LOOP A fault                                   |
+      | 21  | ENG 2 LOOP B fault                                   |
+      | 22  | ENG 3 LOOP A fault                                   |
+      | 23  | ENG 3 LOOP B fault                                   |
+      | 24  | ENG 4 LOOP A fault                                   |
+      | 25  | ENG 4 LOOP B fault                                   |
+      | 26  | APU LOOP A fault                                     |
+      | 27  | APU LOOP B fault                                     |
+      | 28  | MLG LOOP A fault                                     |
+      | 29  | MLG LOOP B fault                                     |
+
 - A32NX_{zone}_ON_FIRE
     - Bool
     - True when a fire is present in the APU or MLG
     - {zone}
         - APU
         - MLG
-
 
 - A32NX_FIRE_DETECTED_ENG{number}
     - Bool

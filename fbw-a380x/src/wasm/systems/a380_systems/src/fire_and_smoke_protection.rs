@@ -5,8 +5,9 @@ use systems::{
     failures::{Failure, FailureType},
     overhead::{FirePushButton, MomentaryPushButton},
     shared::{
-        arinc429::SignStatus, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, FireDetectionLoopID, FireDetectionZone, LgciuWeightOnWheels,
+        arinc429::{Arinc429Word, SignStatus},
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons,
+        FireDetectionLoopID, FireDetectionZone, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -125,13 +126,17 @@ impl SimulationElement for FireProtectionSystem {
 struct FireDetectionUnit {
     fire_detection_loop: [FireDetectionLoop; 2],
 
-    // The FDU sends discrete signals to the overhead panel and arinc signals to the FWS
     fire_detected_id: [VariableIdentifier; 6],
-    fire_detected_arinc_id: [VariableIdentifier; 6],
+
     fire_detected: [bool; 6],
     fire_detection_zones: [FireDetectionZone; 6],
     interval_between_loop_failures: [Duration; 6],
     should_extinguish_apu_fire: bool,
+
+    // The FDU sends discrete signals to the overhead panel and arinc signals to the FWS
+    // Fixme: We assume a discrete word is sent, validate with references
+    discrete_word_id: VariableIdentifier,
+    discrete_word: Arinc429Word<u32>,
 }
 
 impl FireDetectionUnit {
@@ -161,35 +166,27 @@ impl FireDetectionUnit {
                 ),
             ],
 
-            fire_detected_id: fire_detection_zones
-                .map(|zone| Self::init_identifier(context, zone, false)),
-            fire_detected_arinc_id: fire_detection_zones
-                .map(|zone| Self::init_identifier(context, zone, true)),
+            fire_detected_id: fire_detection_zones.map(|zone| Self::init_identifier(context, zone)),
+
             fire_detected: [false; 6],
             fire_detection_zones,
             interval_between_loop_failures: [Duration::ZERO; 6],
             should_extinguish_apu_fire: false,
+
+            discrete_word_id: context.get_identifier("FIRE_FDU_DISCRETE_WORD".to_owned()),
+            discrete_word: Arinc429Word::new(0, SignStatus::NoComputedData),
         }
     }
 
     fn init_identifier(
         context: &mut InitContext,
         zone_id: FireDetectionZone,
-        arinc: bool,
     ) -> VariableIdentifier {
-        let mut identifier: String;
-
         if matches!(zone_id, FireDetectionZone::Engine(_)) {
-            identifier = format!("FIRE_DETECTED_ENG{}", zone_id);
+            context.get_identifier(format!("FIRE_DETECTED_ENG{}", zone_id))
         } else {
-            identifier = format!("FIRE_DETECTED_{}", zone_id);
+            context.get_identifier(format!("FIRE_DETECTED_{}", zone_id))
         }
-
-        if arinc {
-            identifier.push_str("_ARINC")
-        }
-
-        context.get_identifier(identifier)
     }
 
     fn update(
@@ -210,6 +207,8 @@ impl FireDetectionUnit {
         self.should_extinguish_apu_fire = self.fire_detected[4]
             && !fire_test_pushbutton_is_pressed
             && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true));
+
+        self.update_discrete_word();
     }
 
     fn fire_detection_determination(&self, fire_test_pb: bool) -> [bool; 6] {
@@ -261,6 +260,67 @@ impl FireDetectionUnit {
     fn should_extinguish_apu_fire(&self) -> bool {
         self.should_extinguish_apu_fire
     }
+
+    fn update_discrete_word(&mut self) {
+        // TODO: Add electrical supply for FDU, when not powered it should return NCD
+        self.discrete_word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        // Fixme: The bit order is assumed as no references
+        self.discrete_word.set_bit(11, self.fire_detected[0]); // FIRE ENG 1
+        self.discrete_word.set_bit(12, self.fire_detected[1]); // FIRE ENG 2
+        self.discrete_word.set_bit(13, self.fire_detected[2]); // FIRE ENG 3
+        self.discrete_word.set_bit(14, self.fire_detected[3]); // FIRE ENG 4
+        self.discrete_word.set_bit(15, self.fire_detected[4]); // FIRE APU
+        self.discrete_word.set_bit(16, self.fire_detected[5]); // FIRE MLG
+        self.discrete_word.set_bit(
+            18,
+            self.fire_detection_loop[0].loop_has_failed(FireDetectionZone::Engine(1)),
+        ); // ENG 1 LOOP A has failed
+        self.discrete_word.set_bit(
+            19,
+            self.fire_detection_loop[1].loop_has_failed(FireDetectionZone::Engine(1)),
+        ); // ENG 1 LOOP B has failed
+        self.discrete_word.set_bit(
+            20,
+            self.fire_detection_loop[0].loop_has_failed(FireDetectionZone::Engine(2)),
+        ); // ENG 2 LOOP A has failed
+        self.discrete_word.set_bit(
+            21,
+            self.fire_detection_loop[1].loop_has_failed(FireDetectionZone::Engine(2)),
+        ); // ENG 2 LOOP B has failed
+        self.discrete_word.set_bit(
+            22,
+            self.fire_detection_loop[0].loop_has_failed(FireDetectionZone::Engine(3)),
+        ); // ENG 3 LOOP A has failed
+        self.discrete_word.set_bit(
+            23,
+            self.fire_detection_loop[1].loop_has_failed(FireDetectionZone::Engine(3)),
+        ); // ENG 3 LOOP B has failed
+        self.discrete_word.set_bit(
+            24,
+            self.fire_detection_loop[0].loop_has_failed(FireDetectionZone::Engine(4)),
+        ); // ENG 4 LOOP A has failed
+        self.discrete_word.set_bit(
+            25,
+            self.fire_detection_loop[1].loop_has_failed(FireDetectionZone::Engine(4)),
+        ); // ENG 4 LOOP B has failed
+        self.discrete_word.set_bit(
+            26,
+            self.fire_detection_loop[0].loop_has_failed(FireDetectionZone::Apu),
+        ); // APU LOOP A has failed
+        self.discrete_word.set_bit(
+            27,
+            self.fire_detection_loop[1].loop_has_failed(FireDetectionZone::Apu),
+        ); // APU LOOP B has failed
+        self.discrete_word.set_bit(
+            28,
+            self.fire_detection_loop[0].loop_has_failed(FireDetectionZone::Mlg),
+        ); // MLG LOOP A has failed
+        self.discrete_word.set_bit(
+            29,
+            self.fire_detection_loop[1].loop_has_failed(FireDetectionZone::Mlg),
+        ); // MLG LOOP B has failed
+    }
 }
 
 impl SimulationElement for FireDetectionUnit {
@@ -268,14 +328,7 @@ impl SimulationElement for FireDetectionUnit {
         for (id, fire_detected) in self.fire_detected_id.iter().zip(self.fire_detected) {
             writer.write(id, fire_detected);
         }
-
-        // TODO: Add electrical supply for FDU, when not powered it should return NCD
-        let ssm = SignStatus::NormalOperation;
-
-        for (id, fire_detected) in self.fire_detected_arinc_id.iter().zip(self.fire_detected) {
-            writer.write(id, fire_detected);
-            writer.write_arinc429(id, fire_detected, ssm);
-        }
+        writer.write(&self.discrete_word_id, self.discrete_word);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
