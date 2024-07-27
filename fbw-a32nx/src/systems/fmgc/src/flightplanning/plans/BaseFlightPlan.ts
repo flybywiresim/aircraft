@@ -230,6 +230,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return -1;
   }
 
+  get isDepartureProcedureActive(): boolean {
+    return this.departureSegment.procedure !== undefined && this.activeLegIndex < this.findLastDepartureLeg()[2];
+  }
+
   get isApproachActive(): boolean {
     // `this.approach` can be undefined for runway-by-itself approaches
     return (
