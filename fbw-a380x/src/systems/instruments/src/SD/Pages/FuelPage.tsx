@@ -175,27 +175,27 @@ export const FuelPage = () => {
         { x: 626, y: 452, running: isRightMidTankPumpAftActive },
     ]
 
-    const fwdIntoTankTransferValves: TransferValveProps[] = [
+    const fwdIntoTankTransferValves: FuelLineProps[] = [
         // Left outer
-        { x: 64, y: 362, isOpen: leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, doesLinePointDown: true, doesTrianglePointDown: true },
+        { x1: 34, y1: 362, x2: 34, y2: 382, active: true || leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
         // Feed 1
-        { x: 140, y: 362, isOpen: isAnyFeedTank1FwdTransferValveOpen },
+        { x1: 140, y1: 362, x2: 140, y2: 342, active: true || isAnyFeedTank1FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
         // Left mid
-        { x: 160, y: 362, isOpen: leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, doesLinePointDown: true, doesTrianglePointDown: true },
+        { x1: 188, y1: 346, x2: 188, y2: 366, active: true || leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
         // Feed 2
-        { x: 520, y: 346, isOpen: isAnyFeedTank3FwdTransferValveOpen },
+        { x1: 520, y1: 346, x2: 520, y2: 326, active: true || isAnyFeedTank3FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
         // Left inner
-        { x: 284, y: 346, isOpen: leftInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, doesLinePointDown: true, doesTrianglePointDown: true },
+        { x1: 284, y1: 346, x2: 284, y2: 366, active: true || leftInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
         // Feed 3
-        { x: 520, y: 346, isOpen: isAnyFeedTank3FwdTransferValveOpen },
+        { x1: 520, y1: 346, x2: 520, y2: 326, active: true || isAnyFeedTank3FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
         // Right inner
-        { x: 520, y: 346, isOpen: rightInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, doesLinePointDown: true, doesTrianglePointDown: true },
+        { x1: 520, y1: 346, x2: 520, y2: 366, active: true || rightInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
         // Feed 4
-        { x: 622, y: 362, isOpen: isAnyFeedTank4FwdTransferValveOpen },
+        { x1: 622, y1: 362, x2: 622, y2: 342, active: true || isAnyFeedTank4FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
         // Right mid
-        { x: 628, y: 362, isOpen: rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, doesLinePointDown: true, doesTrianglePointDown: true },
+        { x1: 638, y1: 362, x2: 638, y2: 382, active: true || rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
         // Right outer
-        { x: 690, y: 362, isOpen: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, doesLinePointDown: true, doesTrianglePointDown: true },
+        { x1: 724, y1: 362, x2: 724, y2: 382, active: true || rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
     ];
 
     const fwdGalleyOtherLines: FuelLineProps[] = [
@@ -386,7 +386,7 @@ export const FuelPage = () => {
 interface GalleryProps {
     y: number,
     pumps: PumpProps[],
-    intoTankTransferValves: TransferValveProps[],
+    intoTankTransferValves: FuelLineProps[],
     otherLines: FuelLineProps[],
     showMore: boolean,
 }
@@ -402,17 +402,19 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, intoTankTransferValves, otherLine
             i++;
             continue;
         }
-        if (j < intoTankTransferValves.length && !intoTankTransferValves[j].isOpen) {
+        if (j < intoTankTransferValves.length && !intoTankTransferValves[j].active) {
             j++;
             continue;
         }
 
         // Check if next element is a pump or valve
-        const nextElementIsPump = (j >= intoTankTransferValves.length) || (i < pumps.length && pumps[i].x < intoTankTransferValves[j].x)
+        const nextElementIsPump = (j >= intoTankTransferValves.length) || (i < pumps.length && pumps[i].x < intoTankTransferValves[j].x1)
         const nextElement = nextElementIsPump ? pumps[i++] : intoTankTransferValves[j++];
+        const x = "x" in nextElement ? nextElement.x : nextElement.x1;
+        const y = "y" in nextElement ? nextElement.y : nextElement.y2;
 
         // Check if there's actually a line segment before the next element
-        if (k < otherLines.length && otherLines[k].x1 < nextElement.x) {
+        if (k < otherLines.length && otherLines[k].x1 < x) {
             const otherLine = otherLines[k++];
 
             // Add connecting line if we have a starting point
@@ -427,21 +429,22 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, intoTankTransferValves, otherLine
             prevLineEnd.y = otherLine.y2;
         }
 
+
         // Add connecting line if we have a starting point and are not staying at the same position
-        if (prevLineEnd.x > Number.NEGATIVE_INFINITY && nextElement.x > prevLineEnd.x) {
+        if (prevLineEnd.x > Number.NEGATIVE_INFINITY && x > prevLineEnd.x) {
             fuelLineSegments.push(
-                <FuelLine x1={prevLineEnd.x} y1={prevLineEnd.y} x2={nextElement.x} y2={prevLineEnd.y} active displayWhenInactive={showMore} />,
+                <FuelLine x1={prevLineEnd.x} y1={prevLineEnd.y} x2={x} y2={prevLineEnd.y} active displayWhenInactive={showMore} />,
             );
 
         }
 
         if (nextElementIsPump) {
             fuelLineSegments.push(
-                <FuelLine x1={nextElement.x} y1={nextElement.y + PUMP_SIZE / 2} x2={nextElement.x} y2={prevLineEnd.y} active displayWhenInactive={showMore} />
+                <FuelLine x1={x} y1={(nextElement as PumpProps).y + PUMP_SIZE / 2} x2={(nextElement as PumpProps).x} y2={prevLineEnd.y} active displayWhenInactive={showMore} />
             )
         }
 
-        prevLineEnd.x = nextElement.x;
+        prevLineEnd.x = x;
     }
 
     return (
@@ -453,7 +456,7 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, intoTankTransferValves, otherLine
             {fuelLineSegments}
 
             {/* Valves */}
-            {intoTankTransferValves.map((valve) => <TransferValve {...valve} displayWhenInactive={showMore} />)}
+            {intoTankTransferValves.map((valve) => <FuelLine {...valve} displayWhenInactive={showMore} />)}
         </g>
     );
 };
@@ -470,6 +473,9 @@ interface FuelLineProps {
 }
 
 const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, active, displayWhenInactive }) => {
+    const arrowWidth = 10;
+    const arrowHeight = 10;
+
     let color: string;
     if (active) {
         color = 'Green';
@@ -477,9 +483,28 @@ const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, act
         color = displayWhenInactive ? 'White' : 'Transparent';
     }
 
+    let startRotation = Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
+    let endRotation = Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
+    if (startArrow === "out") {
+        startRotation = (startRotation + 180) % 360;
+    }
+    if (endArrow === "in") {
+        endRotation = (endRotation + 180) % 360;
+    }
+
     return (
         <g className={`${color} LineJoinRound`} strokeWidth={3}>
+            {(startArrow === "in" || startArrow === "out") && <polygon
+                className="T4 LineJoinRound"
+                transform={`rotate(${startRotation} ${x1} ${y1}) translate(0 ${startArrow === "in" ? arrowHeight : 0})`}
+                strokeWidth={3} points={`${x1 - arrowWidth / 2},${y1} ${x1 + arrowWidth / 2},${y1} ${x1},${y1 - arrowHeight}`}
+            />}
             <line x1={x1} y1={y1} x2={x2} y2={y2} />
+            {(endArrow === "in" || endArrow === "out") && <polygon
+                className="T4 LineJoinRound"
+                transform={`rotate(${endRotation} ${x2} ${y2}) translate(0 ${endArrow === "in" ? arrowHeight : 0})`}
+                strokeWidth={3} points={`${x2 - arrowWidth / 2},${y2} ${x2 + arrowWidth / 2},${y2} ${x2},${y2 - arrowHeight}`}
+            />}
         </g>
     );
 };
@@ -567,36 +592,5 @@ interface TriangleProps extends Position, TwoDimensionalSize {
 const Triangle: FC<TriangleProps> = ({ x, y, width, height, fill }) => {
     return (
         <polygon className={`T4 ${fill ? "Fill" : "NoFill"} LineJoinRound`} strokeWidth={3} points={`${x - width / 2},${y} ${x + width / 2},${y} ${x},${y - height}`} />
-    );
-}
-
-interface TransferValveProps extends Position {
-    isOpen?: boolean,
-    isManual?: boolean,
-    isAbnormal?: boolean,
-    displayWhenInactive?: boolean,
-    doesTrianglePointDown?: boolean,
-    doesLinePointDown?: boolean,
-}
-
-const TransferValve: FC<TransferValveProps> = ({ x, y, isOpen, isManual, isAbnormal, displayWhenInactive, doesLinePointDown, doesTrianglePointDown }) => {
-    const width = 10;
-    const height = doesLinePointDown ? -10 : 10;
-    const lineLength = doesLinePointDown ? -20 : 20;
-
-    let color = displayWhenInactive ? "White" : "Transparent";
-    if (isOpen) {
-        if (isAbnormal) {
-            color = "Amber";
-        } else {
-            color = "Green";
-        }
-    }
-
-    return (
-        <g strokeWidth={3} className={color}>
-            <Triangle x={x} y={y - lineLength} width={width} height={height} fill={isManual} />
-            <line x1={x} y1={y} x2={x} y2={y - lineLength} />
-        </g>
     );
 }
