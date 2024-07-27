@@ -72,13 +72,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
     );
 
     this.subs.push(
-      this.props.isActive.sub((val) => {
-        if (val) {
-          this.dropdownSelectorLabelRef.instance.classList.add('active');
-        } else {
-          this.dropdownSelectorLabelRef.instance.classList.remove('active');
-        }
-      }, true),
+      this.props.isActive.sub((val) => this.dropdownSelectorLabelRef.instance.classList.toggle('active', val), true),
     );
   }
 

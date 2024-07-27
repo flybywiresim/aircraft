@@ -9,8 +9,7 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { HeadingFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Arinc429Register, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
-import { Arinc429RegisterSubject } from '../../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPositionIrsProps extends AbstractMfdPageProps {}
 
