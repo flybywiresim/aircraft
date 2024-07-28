@@ -17,9 +17,10 @@ const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> 
     const [thrustLimitIdle] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE', 'number', 100);
     const [thrustLimitToga] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'number', 100);
     // No ACUTE yet, so we assume thrust = currentN1 / togaLimit
-    const throttleTarget = (throttlePositionN1 - thrustLimitIdle) / (thrustLimitToga - thrustLimitIdle);
+    // 3% THR = IDLE thrust, 100% THR = TOGA thrust with bleed
+    const throttleTarget = (throttlePositionN1 - thrustLimitIdle) / (thrustLimitToga - thrustLimitIdle) * 0.97 + 0.03;
 
-    const ThrustPercent = Math.min(1, Math.max(0, (N1Percent - thrustLimitIdle)/(thrustLimitToga - thrustLimitIdle))) * 100;
+    const ThrustPercent = Math.min(1, Math.max(0, (N1Percent - thrustLimitIdle)/(thrustLimitToga - thrustLimitIdle)) * 0.97 + 0.03) * 100;
     const ThrustPercentSplit = splitDecimals(ThrustPercent);
 
 
