@@ -789,6 +789,8 @@ export class PseudoFWC {
 
   private readonly ra2OnGroundMem = new NXLogicMemoryNode(true);
 
+  private readonly ra3OnGroundMem = new NXLogicMemoryNode(true);
+
   private readonly ignoreRaOnGroundTrigger = new NXLogicTriggeredMonostableNode(10, true);
 
   private readonly onGroundConf = new NXLogicConfirmNode(1, true);
@@ -909,12 +911,15 @@ export class PseudoFWC {
 
   private readonly apuAvail = Subject.create(0);
 
-  /** @deprecated use radioHeight vars */
-  private readonly radioAlt = Subject.create(0);
-
   private readonly radioHeight1 = Arinc429Register.empty();
 
   private readonly radioHeight2 = Arinc429Register.empty();
+
+  private readonly radioHeight3 = Arinc429Register.empty();
+
+  private readonly raSysAFailed = Subject.create(false);
+  private readonly raSysBFailed = Subject.create(false);
+  private readonly raSysCFailed = Subject.create(false);
 
   private readonly fac1Failed = Subject.create(0);
 
@@ -1360,6 +1365,11 @@ export class PseudoFWC {
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
+    this.radioHeight3.setFromSimVar('L:A32NX_RA_3_RADIO_ALTITUDE');
+
+    this.raSysAFailed.set(this.radioHeight1.isFailureWarning());
+    this.raSysBFailed.set(this.radioHeight2.isFailureWarning());
+    this.raSysCFailed.set(this.radioHeight3.isFailureWarning());
 
     /* ELECTRICAL acquisition */
     this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
@@ -1407,8 +1417,6 @@ export class PseudoFWC {
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
-
-    this.radioAlt.set(SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet'));
 
     this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
@@ -1538,7 +1546,10 @@ export class PseudoFWC {
 
     // TODO some renaming
     this.ignoreRaOnGroundTrigger.write(
-      this.radioHeight1.isNoComputedData() && this.radioHeight2.isNoComputedData() && !lgciuOnGroundDisagree,
+      this.radioHeight1.isNoComputedData() &&
+        this.radioHeight2.isNoComputedData() &&
+        this.radioHeight3.isNoComputedData() &&
+        !lgciuOnGroundDisagree,
       deltaTime,
     );
     this.ra1OnGroundMem.write(
@@ -1549,19 +1560,30 @@ export class PseudoFWC {
       this.radioHeight2.value < 5,
       !leftCompressedHardwireLgciu1 || !leftCompressedHardwireLgciu2,
     );
+    this.ra3OnGroundMem.write(
+      this.radioHeight3.value < 5,
+      !leftCompressedHardwireLgciu1 || !leftCompressedHardwireLgciu2,
+    );
     const ra1OnGround =
       (this.radioHeight1.isNormalOperation() || this.radioHeight1.isFunctionalTest()) &&
       (this.radioHeight1.value < 5 || this.ra1OnGroundMem.read());
     const ra2OnGround =
       (this.radioHeight2.isNormalOperation() || this.radioHeight2.isFunctionalTest()) &&
       (this.radioHeight2.value < 5 || this.ra2OnGroundMem.read());
+    const ra3OnGround =
+      (this.radioHeight3.isNormalOperation() || this.radioHeight3.isFunctionalTest()) &&
+      (this.radioHeight3.value < 5 || this.ra3OnGroundMem.read());
     const onGroundCount = countTrue(
       leftCompressedHardwireLgciu1,
       leftCompressedHardwireLgciu2,
       ra1OnGround,
       ra2OnGround,
+      ra3OnGround,
     );
-    const raInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
+    const raInvalid =
+      this.radioHeight1.isFailureWarning() ||
+      this.radioHeight2.isFailureWarning() ||
+      this.radioHeight3.isFailureWarning();
     this.onGroundImmediate =
       (onGroundA && this.ignoreRaOnGroundTrigger.read()) ||
       (onGroundCount > 2 && !raInvalid) ||
@@ -1578,7 +1600,8 @@ export class PseudoFWC {
       this.throttle2Position.get() >= 45 ||
       (this.throttle2Position.get() >= 35 && flexThrustLimit);
     this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
-    const raAbove1500 = this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500;
+    const raAbove1500 =
+      this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500 || this.radioHeight3.valueOr(0) > 1500;
     this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
 
     this.engDualFault.set(
@@ -2255,7 +2278,10 @@ export class PseudoFWC {
     );
 
     // gnd splr not armed
-    const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
+    const raBelow500 =
+      this.radioHeight1.valueOr(Infinity) < 500 ||
+      this.radioHeight2.valueOr(Infinity) < 500 ||
+      this.radioHeight3.valueOr(Infinity) < 500;
 
     const lgDown =
       this.lgciu1DiscreteWord1.bitValueOr(29, false) ||
@@ -2285,26 +2311,37 @@ export class PseudoFWC {
     const fwcFlightPhase = this.fwcFlightPhase.get();
     const flightPhase45 = fwcFlightPhase === 4 || fwcFlightPhase === 5;
     const flightPhase6 = fwcFlightPhase === 6;
-    const below750Ra = Math.min(this.radioHeight1.valueOr(Infinity), this.radioHeight2.valueOr(Infinity)) < 750;
+    const below750Ra =
+      Math.min(
+        this.radioHeight1.valueOr(Infinity),
+        this.radioHeight2.valueOr(Infinity),
+        this.radioHeight3.valueOr(Infinity),
+      ) < 750;
     const altInhibit =
       (pressureAltitude ?? 0) > 18500 &&
       !this.radioHeight1.isNoComputedData() &&
       !this.radioHeight1.isNormalOperation() &&
       !this.radioHeight2.isNoComputedData() &&
-      !this.radioHeight2.isNormalOperation();
+      !this.radioHeight2.isNormalOperation() &&
+      !this.radioHeight3.isNoComputedData() &&
+      !this.radioHeight3.isNormalOperation();
     const gearNotDownlocked = !mainGearDownlocked && (!this.lgciu1Fault.get() || !this.lgciu2Fault.get());
     const below750Condition =
       this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.get() &&
       !this.eng1Or2TakeoffPower.get() &&
       below750Ra &&
       gearNotDownlocked;
-    const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
-    const bothRaInvalidOrNcd =
+    const allRaInvalid =
+      this.radioHeight1.isFailureWarning() &&
+      this.radioHeight2.isFailureWarning() &&
+      this.radioHeight3.isFailureWarning();
+    const allRaInvalidOrNcd =
       (this.radioHeight1.isNoComputedData || this.radioHeight1.isFailureWarning()) &&
-      (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning());
+      (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning()) &&
+      (this.radioHeight3.isNoComputedData() || this.radioHeight3.isFailureWarning());
     const flapsApprCondition =
-      ((this.flapsSuperiorToPositionD.get() && !this.flapsSuperiorToPositionF.get() && bothRaInvalid) ||
-        (this.flapsSuperiorToPositionF.get() && bothRaInvalidOrNcd)) &&
+      ((this.flapsSuperiorToPositionD.get() && !this.flapsSuperiorToPositionF.get() && allRaInvalid) ||
+        (this.flapsSuperiorToPositionF.get() && allRaInvalidOrNcd)) &&
       flightPhase6 &&
       gearNotDownlocked;
     const lgNotDownResetPulse =
@@ -2319,7 +2356,7 @@ export class PseudoFWC {
     this.lgNotDown.set(gearNotDownlocked && !altInhibit && !this.eng1Or2TakeoffPower.get() && apprN1 && below750Ra);
     // goes to discrete out (RMP02B) and out word 126-11/25
     const redArrow =
-      !((flightPhase6 && !bothRaInvalid) || flightPhase45) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
+      !((flightPhase6 && !allRaInvalid) || flightPhase45) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
     this.lgLeverRedArrow.set(redArrow);
 
     // 32 - Surveillance Logic
@@ -2333,7 +2370,8 @@ export class PseudoFWC {
         this.stallWarningRaw.get() &&
         flightPhase567 &&
         this.radioHeight1.valueOr(Infinity) > 1500 &&
-        this.radioHeight2.valueOr(Infinity) > 1500,
+        this.radioHeight2.valueOr(Infinity) > 1500 &&
+        this.radioHeight3.valueOr(Infinity) > 1500,
     );
 
     /* FIRE */
@@ -3854,6 +3892,105 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [],
+    },
+    340800053: {
+      // RA SYS A FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.raSysAFailed,
+      notActiveWhenFaults: ['340800059', '340800060', '340800062'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => [''],
+      redundLoss: () => ['340300022'],
+      info: () => [''],
+    },
+    340800054: {
+      // RA SYS B FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.raSysBFailed,
+      notActiveWhenFaults: ['340800059', '340800061', '340800062'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => ['220300008'],
+      redundLoss: () => ['340300023'],
+      info: () => ['220200005'],
+    },
+    340800055: {
+      // RA SYS C FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.raSysCFailed,
+      notActiveWhenFaults: ['340800060', '340800061', '340800062'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => [''],
+      redundLoss: () => ['340300024'],
+      info: () => [''],
+    },
+    340800059: {
+      // RA SYS A+B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.raSysAFailed, this.raSysBFailed),
+      notActiveWhenFaults: ['340800062'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => ['340300025', '220300002'],
+      info: () => ['220200004'],
+    },
+    340800060: {
+      // RA SYS A+C FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.raSysAFailed, this.raSysCFailed),
+      notActiveWhenFaults: ['340800062'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => ['340300026', '220300002'],
+      info: () => ['220200004'],
+    },
+    340800061: {
+      // RA SYS B+C FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.raSysBFailed, this.raSysCFailed),
+      notActiveWhenFaults: ['340800062'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => ['340300027', '220300002'],
+      info: () => ['220200004'],
+    },
+    340800062: {
+      // RA SYS A+B+C FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.raSysAFailed,
+        this.raSysBFailed,
+        this.raSysCFailed,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['340300029', '340300003', '341300003'],
+      inopSysApprLdg: () => ['320300001', '320300002', '340300028', '310300001', '220300009', '220300010', '220300021'],
+      info: () => ['220200007', '220200008', '220200009'],
     },
   };
 
