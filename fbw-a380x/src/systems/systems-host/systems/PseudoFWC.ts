@@ -871,9 +871,11 @@ export class PseudoFWC {
 
   private readonly gpwsTerrOff = Subject.create(false);
 
-  private readonly xpdrAltReporting = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
+  private readonly xpdrAltReportingRequest = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
 
   private readonly xpdrStby = Subject.create(false);
+
+  private readonly xpdrAltReporting = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
 
@@ -2392,10 +2394,16 @@ export class PseudoFWC {
     this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
     this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
     this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
-    this.xpdrStby.set(
-      SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum') == 1 ||
-        SimVar.GetSimVarValue('TRANSPONDER STATE:2', 'Enum') == 1,
-    );
+
+    // fix me use active transponder
+    const transponder1State = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum');
+    const transponder2State = SimVar.GetSimVarValue('TRANSPONDER STATE:2', 'Enum');
+    this.xpdrStby.set(transponder1State === 1 || transponder2State === 1);
+    this.xpdrAltReporting.set(
+      this.aircraftOnGround.get()
+        ? this.xpdrAltReportingRequest.get()
+        : transponder1State === 5 || transponder1State === 4,
+    ); // mode S or mode C
     const isNormalLaw = fcdc1DiscreteWord1.getBitValue(11) || fcdc2DiscreteWord1.getBitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
