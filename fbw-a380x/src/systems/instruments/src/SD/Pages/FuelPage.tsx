@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { Position, TwoDimensionalSize } from '@instruments/common/types';
+import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';
 import { MoreLabel, PageTitle } from './Generic/PageTitle';
 
@@ -157,103 +157,103 @@ export const FuelPage = () => {
 
     const fwdGalleryPumps: PumpProps[] = [
         // Pump.9
-        { x: 84, y: 384, running: isLeftOuterTankPumpActive, normallyOff: true, },
+        { x: 84, y: 384, running: isLeftOuterTankPumpActive, displayWhenInactive: showMore, },
         // Pump.10
-        { x: 140, y: 384, running: isLeftMidTankPumpFwdActive, normallyOff: true, },
+        { x: 140, y: 384, running: isLeftMidTankPumpFwdActive, displayWhenInactive: showMore, },
         // Pump.12
-        { x: 232, y: 384, running: isLeftInnerTankPumpFwdActive, normallyOff: true, },
+        { x: 232, y: 384, running: isLeftInnerTankPumpFwdActive, displayWhenInactive: showMore, },
         // Pump.13
-        { x: 482, y: 384, running: isRightInnerTankPumpFwdActive, normallyOff: true, },
+        { x: 482, y: 384, running: isRightInnerTankPumpFwdActive, displayWhenInactive: showMore, },
         // Pump.15
-        { x: 584, y: 384, running: isRightMidTankPumpFwdActive, normallyOff: true, },
+        { x: 584, y: 384, running: isRightMidTankPumpFwdActive, displayWhenInactive: showMore, },
         // Pump.14
-        { x: 680, y: 384, running: isRightOuterTankPumpActive, normallyOff: true, },
+        { x: 680, y: 384, running: isRightOuterTankPumpActive, displayWhenInactive: showMore, },
     ]
 
     const aftGalleryPumps: PumpProps[] = [
         // Pump.11
-        { x: 182, y: 452, running: isLeftMidTankPumpAftActive, normallyOff: true, },
+        { x: 182, y: 452, running: isLeftMidTankPumpAftActive, displayWhenInactive: showMore, },
         // Pump.16
-        { x: 274, y: 452, running: isLeftInnerTankPumpAftActive, normallyOff: true, },
+        { x: 274, y: 452, running: isLeftInnerTankPumpAftActive, displayWhenInactive: showMore, },
         // Pump.17
-        { x: 524, y: 452, running: isRightInnerTankPumpAftActive, normallyOff: true, },
+        { x: 524, y: 452, running: isRightInnerTankPumpAftActive, displayWhenInactive: showMore, },
         // Pump.18
-        { x: 626, y: 452, running: isRightMidTankPumpAftActive, normallyOff: true, },
+        { x: 626, y: 452, running: isRightMidTankPumpAftActive, displayWhenInactive: showMore, },
     ]
 
     const fwdGalleryTransferValves: FuelLineProps[] = [
         // Left outer into tank
-        { x1: 34, y1: 362, x2: 34, y2: 382, active: leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 34, y1: 362, x2: 34, y2: 382, active: leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
         // Left outer into gallery
-        { x1: 54, y1: 382, x2: 54, y2: 362, active: leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 54, y1: 382, x2: 54, y2: 362, active: leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: 'in', displayWhenInactive: showMore },
         // Feed 1
-        { x1: 140, y1: 362, x2: 140, y2: 342, active: isAnyFeedTank1FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 140, y1: 362, x2: 140, y2: 342, active: isAnyFeedTank1FwdTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Left mid into gallery
-        { x1: 180, y1: 366, x2: 180, y2: 346, active: leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 180, y1: 366, x2: 180, y2: 346, active: leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: 'in', displayWhenInactive: showMore },
         // Left mid into tank
-        { x1: 192, y1: 346, x2: 192, y2: 366, active: leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 192, y1: 346, x2: 192, y2: 366, active: leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
         // Feed 2
-        { x1: 284, y1: 346, x2: 284, y2: 326, active: isAnyFeedTank2FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 284, y1: 346, x2: 284, y2: 326, active: isAnyFeedTank2FwdTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Left inner
-        { x1: 284, y1: 346, x2: 284, y2: 366, active: leftInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 284, y1: 346, x2: 284, y2: 366, active: leftInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
         // Feed 3
-        { x1: 520, y1: 346, x2: 520, y2: 326, active: isAnyFeedTank3FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 520, y1: 346, x2: 520, y2: 326, active: isAnyFeedTank3FwdTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Right inner
-        { x1: 520, y1: 346, x2: 520, y2: 366, active: rightInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 520, y1: 346, x2: 520, y2: 366, active: rightInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
         // Feed 4
-        { x1: 622, y1: 362, x2: 622, y2: 342, active: isAnyFeedTank4FwdTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 622, y1: 362, x2: 622, y2: 342, active: isAnyFeedTank4FwdTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Right mid into gallery
-        { x1: 622, y1: 382, x2: 622, y2: 362, active: rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 622, y1: 382, x2: 622, y2: 362, active: rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: 'in', displayWhenInactive: showMore },
         // Right mid into tank
-        { x1: 638, y1: 362, x2: 638, y2: 382, active: rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 638, y1: 362, x2: 638, y2: 382, active: rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
         // Right outer into gallery
-        { x1: 712, y1: 382, x2: 712, y2: 362, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 712, y1: 382, x2: 712, y2: 362, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: 'in', displayWhenInactive: showMore },
         // Right outer into tank
-        { x1: 724, y1: 362, x2: 724, y2: 382, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 724, y1: 362, x2: 724, y2: 382, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
     ];
 
     const aftGalleryTransferValves: FuelLineProps[] = [
         // Left outer into tank
-        { x1: 70, y1: 472, x2: 70, y2: 452, active: isAnyLeftOuterAftTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 70, y1: 472, x2: 70, y2: 452, active: isAnyLeftOuterAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Left outer into gallery
-        { x1: 84, y1: 452, x2: 84, y2: 472, active: isAnyLeftOuterAftTransferValveOpen, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 84, y1: 452, x2: 84, y2: 472, active: isAnyLeftOuterAftTransferValveOpen, startArrow: 'in', displayWhenInactive: showMore },
 
         // Feed tank 1 into tank
-        { x1: 111, y1: 472, x2: 111, y2: 376, active: isAnyFeedTank1AftTransferValveOpen, endArrow: "break", displayWhenInactive: showMore },
-        { x1: 111, y1: 350, x2: 111, y2: 342, active: isAnyFeedTank1AftTransferValveOpen, startArrow: "break", endArrow: "out", displayWhenInactive: showMore },
+        { x1: 111, y1: 472, x2: 111, y2: 376, active: isAnyFeedTank1AftTransferValveOpen, endArrow: 'break', displayWhenInactive: showMore },
+        { x1: 111, y1: 350, x2: 111, y2: 342, active: isAnyFeedTank1AftTransferValveOpen, startArrow: 'break', endArrow: 'out', displayWhenInactive: showMore },
 
         // Left mid into tank
-        { x1: 132, y1: 472, x2: 132, y2: 452, active: isAnyLeftMidAftTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 132, y1: 472, x2: 132, y2: 452, active: isAnyLeftMidAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Left mid into gallery
-        { x1: 154, y1: 452, x2: 154, y2: 472, active: isAnyLeftMidAftTransferValveOpen, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 154, y1: 452, x2: 154, y2: 472, active: isAnyLeftMidAftTransferValveOpen, startArrow: 'in', displayWhenInactive: showMore },
 
         // Left inner into tank
-        { x1: 232, y1: 472, x2: 232, y2: 452, active: isAnyLeftInnerAftTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 232, y1: 472, x2: 232, y2: 452, active: isAnyLeftInnerAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
 
         // Feed tank 2 into tank
-        { x1: 316, y1: 472, x2: 316, y2: 360, active: isAnyFeedTank2AftTransferValveOpen, endArrow: "break", displayWhenInactive: showMore },
-        { x1: 316, y1: 332, x2: 316, y2: 322, active: isAnyFeedTank2AftTransferValveOpen, startArrow: "break", endArrow: "out", displayWhenInactive: showMore },
+        { x1: 316, y1: 472, x2: 316, y2: 360, active: isAnyFeedTank2AftTransferValveOpen, endArrow: 'break', displayWhenInactive: showMore },
+        { x1: 316, y1: 332, x2: 316, y2: 322, active: isAnyFeedTank2AftTransferValveOpen, startArrow: 'break', endArrow: 'out', displayWhenInactive: showMore },
 
         // Feed tank 3 into tank
-        { x1: 448, y1: 472, x2: 448, y2: 360, active: isAnyFeedTank3AftTransferValveOpen, endArrow: "break", displayWhenInactive: showMore },
-        { x1: 448, y1: 332, x2: 448, y2: 322, active: isAnyFeedTank3AftTransferValveOpen, startArrow: "break", endArrow: "out", displayWhenInactive: showMore },
+        { x1: 448, y1: 472, x2: 448, y2: 360, active: isAnyFeedTank3AftTransferValveOpen, endArrow: 'break', displayWhenInactive: showMore },
+        { x1: 448, y1: 332, x2: 448, y2: 322, active: isAnyFeedTank3AftTransferValveOpen, startArrow: 'break', endArrow: 'out', displayWhenInactive: showMore },
 
         // Right inner into tank
-        { x1: 482, y1: 472, x2: 482, y2: 452, active: isAnyRightInnerAftTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 482, y1: 472, x2: 482, y2: 452, active: isAnyRightInnerAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
 
         // Right mid into tank
-        { x1: 578, y1: 472, x2: 578, y2: 452, active: isAnyRightMidAftTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 578, y1: 472, x2: 578, y2: 452, active: isAnyRightMidAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
         // Right mid into gallery
-        { x1: 600, y1: 452, x2: 600, y2: 472, active: isAnyRightMidAftTransferValveOpen, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 600, y1: 452, x2: 600, y2: 472, active: isAnyRightMidAftTransferValveOpen, startArrow: 'in', displayWhenInactive: showMore },
 
         // Feed tank 4 into tank
-        { x1: 654, y1: 472, x2: 654, y2: 376, active: isAnyFeedTank4AftTransferValveOpen, endArrow: "break", displayWhenInactive: showMore },
-        { x1: 654, y1: 350, x2: 654, y2: 342, active: isAnyFeedTank4AftTransferValveOpen, startArrow: "break", endArrow: "out", displayWhenInactive: showMore },
+        { x1: 654, y1: 472, x2: 654, y2: 376, active: isAnyFeedTank4AftTransferValveOpen, endArrow: 'break', displayWhenInactive: showMore },
+        { x1: 654, y1: 350, x2: 654, y2: 342, active: isAnyFeedTank4AftTransferValveOpen, startArrow: 'break', endArrow: 'out', displayWhenInactive: showMore },
 
         // Right outer into gallery
-        { x1: 680, y1: 452, x2: 680, y2: 472, active: isAnyRightOuterAftTransferValveOpen, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 680, y1: 452, x2: 680, y2: 472, active: isAnyRightOuterAftTransferValveOpen, startArrow: 'in', displayWhenInactive: showMore },
         // Right outer into tank
-        { x1: 694, y1: 472, x2: 694, y2: 452, active: isAnyRightOuterAftTransferValveOpen, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 694, y1: 472, x2: 694, y2: 452, active: isAnyRightOuterAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
     ];
 
     const fwdGalleyOtherLines: FuelLineProps[] = [
@@ -262,17 +262,17 @@ export const FuelPage = () => {
     ];
 
     const trimTankPumps: PumpProps[] = [
-        { x: 298, y: 610, running: isLeftTrimTankPumpActive, normallyOff: true },
-        { x: 468, y: 610, running: isRightTrimTankPumpActive, normallyOff: true },
+        { x: 298, y: 610, running: isLeftTrimTankPumpActive, displayWhenInactive: showMore },
+        { x: 468, y: 610, running: isRightTrimTankPumpActive, displayWhenInactive: showMore },
     ]
 
     const trimTankTransferValves: FuelLineProps[] = [
         // Left into gallery
-        { x1: 330, y1: 590, x2: 330, y2: 568, active: true, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 330, y1: 590, x2: 330, y2: 568, active: true, startArrow: 'in', displayWhenInactive: showMore },
         // Center into tank
-        { x1: 386, y1: 568, x2: 386, y2: 590, active: true, endArrow: "out", displayWhenInactive: showMore },
+        { x1: 386, y1: 568, x2: 386, y2: 590, active: true, endArrow: 'out', displayWhenInactive: showMore },
         // Right into gallery
-        { x1: 440, y1: 590, x2: 440, y2: 568, active: true, startArrow: "in", displayWhenInactive: showMore },
+        { x1: 440, y1: 590, x2: 440, y2: 568, active: true, startArrow: 'in', displayWhenInactive: showMore },
     ];
 
     // Tanks
@@ -324,7 +324,7 @@ export const FuelPage = () => {
             )}
             <Pump x={95} y={227} running={feed1Pump1Active} />
             {(showMore || !(feed1Pump1Active && !feed1Pump2Active)) && (
-                <Pump x={127} y={227} running={feed1Pump2Active} normallyOff={feed1Pump1Active} />
+                <Pump x={127} y={227} running={feed1Pump2Active} displayWhenInactive={feed1Pump1Active} />
             )}
 
             {/* Line.9 & Line.10 & Line.17 -> Engine1LPValve (via Junction.1) = ALWAYS ON */}
@@ -348,13 +348,13 @@ export const FuelPage = () => {
             )}
             <Pump x={258} y={208} running={feed2Pump1Active} />
             {(showMore || !(feed2Pump1Active && !feed2Pump2Active)) && (
-                <Pump x={290} y={208} running={feed2Pump2Active} normallyOff={feed2Pump1Active} />
+                <Pump x={290} y={208} running={feed2Pump2Active} displayWhenInactive={feed2Pump1Active} />
             )}
 
             {/* Line.11 & Line.12 & Line.18 -> Engine2LPValve (via Junction.2) = ALWAYS ON */}
             <FuelLine x1={273} y1={191} x2={273} y2={137} active displayWhenInactive={showMore} />
             {/* Line.129 */}
-            <FuelLine x1={273} y1={152} x2={301} y2={152} active displayWhenInactive={showMore} />
+            <FuelLine x1={273} y1={152} x2={299} y2={152} active displayWhenInactive={showMore} />
 
             {/* Crossfeed valve 2 - Valve.47 */}
             <Valve x={316} y={152} horizontal open={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
@@ -367,16 +367,16 @@ export const FuelPage = () => {
             )}
             <Pump x={476} y={208} running={feed3Pump1Active} />
             {(showMore || !(feed3Pump1Active && !feed3Pump2Active)) && (
-                <Pump x={508} y={208} running={feed3Pump2Active} normallyOff={feed3Pump1Active} />
+                <Pump x={508} y={208} running={feed3Pump2Active} displayWhenInactive={feed3Pump1Active} />
             )}
 
             {/* Line.13 & Line.14 & Line.19 -> Engine3LPValve (via Junction.3) = ALWAYS ON */}
             <FuelLine x1={493} y1={191} x2={493} y2={137} active displayWhenInactive={showMore} />
             {/* Line.130 */}
-            <FuelLine x1={475} y1={152} x2={493} y2={152} active displayWhenInactive={showMore} />
+            <FuelLine x1={467} y1={152} x2={493} y2={152} active displayWhenInactive={showMore} />
 
             {/* Crossfeed valve 3 - Valve.48 */}
-            <Valve x={460} y={152} horizontal open={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
+            <Valve x={450} y={152} horizontal open={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
 
             {/* RIGHT INNER/MID/OUTER */}
             <TankQuantity x={548} y={430} quantity={rightInnerTankWeight} />
@@ -391,16 +391,16 @@ export const FuelPage = () => {
             )}
             <Pump x={639} y={227} running={feed4Pump1Active} />
             {(showMore || !(feed4Pump1Active && !feed4Pump2Active)) && (
-                <Pump x={671} y={227} running={feed4Pump2Active} normallyOff={feed4Pump1Active} />
+                <Pump x={671} y={227} running={feed4Pump2Active} displayWhenInactive={feed4Pump1Active} />
             )}
 
             {/* Line.15 & Line.16 & Line.20 -> Engine4LPValve (via Junction.4) = ALWAYS ON */}
             <FuelLine x1={655} y1={212} x2={655} y2={164} active displayWhenInactive={showMore} />
             {/* Line.131 */}
-            <FuelLine x1={637} y1={179} x2={655} y2={179} active displayWhenInactive={showMore} />
+            <FuelLine x1={629} y1={179} x2={655} y2={179} active displayWhenInactive={showMore} />
 
             {/* Crossfeed valve 4 - Valve.49 */}
-            <Valve x={622} y={179} horizontal open={crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
+            <Valve x={612} y={179} horizontal open={crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
 
             <text x={10} y={620} className='White T2'>ALL ENG FF</text>
 
@@ -414,9 +414,9 @@ export const FuelPage = () => {
             <g>
                 {/* Horizontal lines Line.132 & Line.134 & Line.136 */}
                 <g>
-                    <FuelLine x1={169} y1={179} x2={259} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} endArrow="break" />
-                    <FuelLine x1={287} y1={179} x2={479} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow="break" endArrow="break" />
-                    <FuelLine x1={507} y1={179} x2={607} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow="break" />
+                    <FuelLine x1={169} y1={179} x2={259} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} endArrow='break' />
+                    <FuelLine x1={287} y1={179} x2={479} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break' endArrow='break' />
+                    <FuelLine x1={507} y1={179} x2={607} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break' />
                 </g>
 
                 {/* Lines to crossfeed 2 Line.133 */}
@@ -431,6 +431,9 @@ export const FuelPage = () => {
                     <FuelLine x1={430} y1={152} x2={430} y2={179} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
                 </g>
             </g>
+
+            {/* APU */}
+            <ApuIndication x1={655} y={179} x2={682} showMore={showMore} />
 
             {/* FWD transfer gallery */}
             <Gallery y={362} pumps={fwdGalleryPumps} transferValves={fwdGalleryTransferValves} otherLines={fwdGalleyOtherLines} showMore={showMore} />
@@ -479,7 +482,7 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
         // Check if next element is a pump or valve
         const nextElementIsPump = (j >= intoTankTransferValves.length) || (i < pumps.length && pumps[i].x < intoTankTransferValves[j].x1)
         const nextElement = nextElementIsPump ? pumps[i++] : intoTankTransferValves[j++];
-        const x = "x" in nextElement ? nextElement.x : nextElement.x1;
+        const x = 'x' in nextElement ? nextElement.x : nextElement.x1;
 
         // Check if there's actually a line segment before the next element
         if (k < otherLines.length && otherLines[k].x1 < x) {
@@ -538,41 +541,44 @@ interface FuelLineProps {
     endArrow?: 'in' | 'out' | 'break',
     active: boolean,
     displayWhenInactive: boolean,
+    hasFault?: boolean,
 }
 
-const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, active, displayWhenInactive }) => {
+const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, active, displayWhenInactive, hasFault }) => {
     const arrowWidth = 10;
     const arrowHeight = 10;
 
     let color: string;
-    if (active) {
+    if (hasFault) {
+        color = 'Amber'
+    } else if (active) {
         color = 'Green';
     } else {
         color = displayWhenInactive ? 'White' : 'Transparent';
     }
 
-    let startRotation = Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
-    let endRotation = Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
-    if (startArrow === "out") {
+    let startRotation = Math.atan2(x2 - x1, y1 - y2) * 180 / Math.PI;
+    let endRotation = Math.atan2(x2 - x1, y1 - y2) * 180 / Math.PI;
+    if (startArrow === 'out') {
         startRotation = (startRotation + 180) % 360;
     }
-    if (endArrow === "in") {
+    if (endArrow === 'in') {
         endRotation = (endRotation + 180) % 360;
     }
 
     return (
         <g className={`${color} LineJoinRound`} strokeWidth={3}>
-            {(startArrow === "in" || startArrow === "out") && <polygon
-                className="T4 LineJoinRound"
-                transform={`rotate(${startRotation} ${x1} ${y1}) translate(0 ${startArrow === "in" ? arrowHeight : 0})`}
+            {(startArrow === 'in' || startArrow === 'out') && <polygon
+                className='T4 LineJoinRound'
+                transform={`rotate(${startRotation} ${x1} ${y1}) translate(0 ${startArrow === 'in' ? arrowHeight : 0})`}
                 strokeWidth={3} points={`${x1 - arrowWidth / 2},${y1} ${x1 + arrowWidth / 2},${y1} ${x1},${y1 - arrowHeight}`}
             />}
-            {startArrow === "break" && <line x1={x1 - 3} y1={y1 + 6} x2={x1 + 3} y2={y1 - 6} transform={`rotate(${(startRotation + 90) % 360} ${x1} ${y1})`} />}
+            {startArrow === 'break' && <line x1={x1 - 3} y1={y1 + 6} x2={x1 + 3} y2={y1 - 6} transform={`rotate(${(startRotation + 90) % 360} ${x1} ${y1})`} />}
             <line x1={x1} y1={y1} x2={x2} y2={y2} />
-            {endArrow === "break" && <line x1={x2 - 3} y1={y2 + 6} x2={x2 + 3} y2={y2 - 6} transform={`rotate(${(endRotation + 90) % 360} ${x2} ${y2})`} />}
-            {(endArrow === "in" || endArrow === "out") && <polygon
-                className="T4 LineJoinRound"
-                transform={`rotate(${endRotation} ${x2} ${y2}) translate(0 ${endArrow === "in" ? arrowHeight : 0})`}
+            {endArrow === 'break' && <line x1={x2 - 3} y1={y2 + 6} x2={x2 + 3} y2={y2 - 6} transform={`rotate(${(endRotation + 90) % 360} ${x2} ${y2})`} />}
+            {(endArrow === 'in' || endArrow === 'out') && <polygon
+                className='T4 LineJoinRound'
+                transform={`rotate(${endRotation} ${x2} ${y2}) translate(0 ${endArrow === 'in' ? arrowHeight : 0})`}
                 strokeWidth={3} points={`${x2 - arrowWidth / 2},${y2} ${x2 + arrowWidth / 2},${y2} ${x2},${y2 - arrowHeight}`}
             />}
         </g>
@@ -601,15 +607,18 @@ const Valve: FC<ValveProps> = ({ x, y, open, horizontal = false, normallyClosed 
 
 interface PumpProps extends Position {
     running: boolean,
-    normallyOff?: boolean,
+    hasFault?: boolean,
+    displayWhenInactive?: boolean,
 }
 
-const Pump: FC<PumpProps> = ({ x, y, running, normallyOff }) => {
+const Pump: FC<PumpProps> = ({ x, y, running, displayWhenInactive, hasFault }) => {
     let color: string;
-    if (running) {
+    if (hasFault) {
+        color = 'Amber';
+    } else if (running) {
         color = 'Green';
     } else {
-        color = normallyOff ? 'White' : 'Amber';
+        color = displayWhenInactive ? 'White' : 'Transparent';
     }
 
     const width = 28;
@@ -638,7 +647,7 @@ const Engine: FC<EngineProps> = ({ x, y, index }) => {
     return (<>
         <image x={x} y={y} width={75} height={96} xlinkHref='/Images/SD_FUEL_ENG_L.png' preserveAspectRatio='none' />
 
-        <text x={x + 8} y={y + 25} className={`${isRunning ? "White" : "Amber"} T4`}>{index}</text>
+        <text x={x + 8} y={y + 25} className={`${isRunning ? 'White' : 'Amber'} T4`}>{index}</text>
     </>
 )};
 
@@ -654,3 +663,40 @@ const TankQuantity: FC<TankQuantityProps> = ({ x, y, smallFont = false, quantity
         <text x={x} y={y} className={`Green ${smallFont ? 'T3' : 'T4'}`} textAnchor='end'>{displayQuantity}</text>
     );
 };
+
+
+interface ApuIndicationProps {
+    x1: number,
+    x2: number,
+    y: number,
+    showMore: boolean
+}
+
+const ApuIndication: FC<ApuIndicationProps> = ({ x1, x2, y, showMore }) => {
+    const APU_VALVE_CLOSED_THRESHOLD = 0.1;
+
+    const [apuIsolationValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:50', 'Percent over 100');
+    const isApuIsolationValveOpen = apuIsolationValveOpen >= APU_VALVE_CLOSED_THRESHOLD;
+    const [apuLpValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:51', 'Percent over 100');
+    const isApuLpValveOpen = apuLpValveOpen >= APU_VALVE_CLOSED_THRESHOLD;
+
+    const [isApuFuelPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:21', 'Bool');
+
+    // TODO figure out what these should be
+    const shouldApuIsolationValveBeOpen = isApuFuelPumpActive === 1;
+    const shouldApuLpValveBeOpen = isApuFuelPumpActive === 1;
+
+    const areBothValvesOpen = isApuIsolationValveOpen && isApuLpValveOpen;
+    const areBothValvesClosed = !isApuIsolationValveOpen && !isApuLpValveOpen;
+    const isNormalState = isApuIsolationValveOpen === shouldApuIsolationValveBeOpen
+        && isApuLpValveOpen === shouldApuLpValveBeOpen;
+
+    return (
+        <g>
+            {/* Hide if both valves are closed and they should be closed */}
+            {(!isNormalState || !areBothValvesClosed || showMore) && <text x={x2 + 20} y={y + 8} className={`${isNormalState ? 'White' : 'Amber'} T2`}>APU</text>}
+            {(showMore && isNormalState && !areBothValvesOpen) && <FuelLine x1={x2} y1={y} x2={x2} y2={y} active={false} displayWhenInactive endArrow='out' />}
+            {areBothValvesOpen && <FuelLine x1={x1} y1={y} x2={x2} y2={y} active={!areBothValvesClosed} hasFault={!isNormalState} displayWhenInactive={false} endArrow='out' />}
+        </g>
+    )
+}
