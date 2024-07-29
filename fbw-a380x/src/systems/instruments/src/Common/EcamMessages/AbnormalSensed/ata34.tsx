@@ -34,7 +34,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
-        sensed: false,
+        sensed: true,
         color: 'green',
         level: 1,
       },
@@ -79,7 +79,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
-        sensed: false,
+        sensed: true,
         color: 'green',
         level: 1,
       },
@@ -125,13 +125,13 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
-        sensed: false,
+        sensed: true,
         color: 'cyan',
         level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
-        sensed: false,
+        sensed: true,
         color: 'green',
         level: 1,
       },
@@ -266,162 +266,184 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800008: {
     title: '\x1b<2m\x1b4mNAV\x1bm ADR 1+2+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'USE STBY INSTRUMENTS',
+        sensed: false,
+      },
+      {
+        name: 'ADR 1+2+3 P/Bs',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PFD BKUP SPEED & ALT AVAIL',
+        sensed: true,
+        color: 'green',
+      },
+      // No anemometric failure detection for now
+    ],
   },
   340800009: {
     title: '\x1b<4m\x1b4mNAV\x1bm AIR DATA DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800010: {
     title: '\x1b<2m\x1b4mNAV\x1bm ALL AIR DATA DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800011: {
     title: '\x1b<4m\x1b4mNAV\x1bm AOA 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800012: {
     title: '\x1b<4m\x1b4mNAV\x1bm AOA 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800013: {
     title: '\x1b<4m\x1b4mNAV\x1bm AOA 3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800014: {
     title: '\x1b<4m\x1b4mNAV\x1bm AOA DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800015: {
     title: '\x1b<4m\x1b4mNAV\x1bm ARPT NAV FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800016: {
     title: '\x1b<4m\x1b4mNAV\x1bm CAPT AND F/O ALT DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not modeled
   },
   340800017: {
     title: '\x1b<4m\x1b4mNAV\x1bm CAPT AND F/O ATT DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not modeled
   },
   340800018: {
     title: '\x1b<4m\x1b4mNAV\x1bm CAPT AND F/O BARO REF DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // no separate baros
   },
   340800019: {
     title: '\x1b<4m\x1b4mNAV\x1bm CAPT AND F/O BARO VALUE DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // no separate baros
   },
   340800020: {
     title: '\x1b<4m\x1b4mNAV\x1bm CAPT AND F/O HDG DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not modeled
   },
   340800021: {
     title: '\x1b<4m\x1b4mNAV\x1bm EXTREME LATITUDE',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'NORTH REF SEL',
+        sensed: true,
+        labelNotCompleted: 'TRUE',
+      },
+    ],
   },
   340800022: {
     title: '\x1b<4m\x1b4mNAV\x1bm FLS 1 CAPABILITY LOST',
     sensed: true,
-    items: [], // TODO
+    items: [], // FLS not implemented
   },
   340800023: {
     title: '\x1b<4m\x1b4mNAV\x1bm FLS 2 CAPABILITY LOST',
     sensed: true,
-    items: [], // TODO
+    items: [], // FLS not implemented
   },
   340800024: {
     title: '\x1b<4m\x1b4mNAV\x1bm FLS 1+2 CAPABILITY LOST',
     sensed: true,
-    items: [], // TODO
+    items: [], // FLS not implemented
   },
   340800025: {
     title: '\x1b<4m\x1b4mNAV\x1bm FM / GPS POS DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800026: {
     title: '\x1b<4m\x1b4mNAV\x1bm FM / IR POS DISAGREE',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800027: {
     title: '\x1b<4m\x1b4mNAV\x1bm GLS 1 CAPABILITY LOST',
     sensed: true,
-    items: [], // TODO
+    items: [], // GLS not implemented
   },
   340800028: {
     title: '\x1b<4m\x1b4mNAV\x1bm GLS 2 CAPABILITY LOST',
     sensed: true,
-    items: [], // TODO
+    items: [], // GLS not implemented
   },
   340800029: {
     title: '\x1b<4m\x1b4mNAV\x1bm GLS 1+2 CAPABILITY LOST',
     sensed: true,
-    items: [], // TODO
+    items: [], // GLS not implemented
   },
   340800030: {
     title: '\x1b<4m\x1b4mNAV\x1bm GLS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // GLS not implemented
   },
   340800031: {
     title: '\x1b<4m\x1b4mNAV\x1bm GLS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // GLS not implemented
   },
   340800032: {
     title: '\x1b<4m\x1b4mNAV\x1bm GLS 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // GLS not implemented
   },
   340800033: {
     title: '\x1b<4m\x1b4mNAV\x1bm GNSS SIGNAL DEGRADED',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800034: {
     title: '\x1b<4m\x1b4mNAV\x1bm GPS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800035: {
     title: '\x1b<4m\x1b4mNAV\x1bm GPS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800036: {
     title: '\x1b<4m\x1b4mNAV\x1bm GPS 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800037: {
     title: '\x1b<4m\x1b4mNAV\x1bm ILS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800038: {
     title: '\x1b<4m\x1b4mNAV\x1bm ILS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800039: {
     title: '\x1b<4m\x1b4mNAV\x1bm ILS 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800040: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR 1 FAULT',
@@ -456,17 +478,17 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800046: {
     title: '\x1b<4m\x1b4mNAV\x1bm LS 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800047: {
     title: '\x1b<4m\x1b4mNAV\x1bm LS 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800048: {
     title: '\x1b<4m\x1b4mNAV\x1bm LS 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800049: {
     title: '\x1b<4m\x1b4mNAV\x1bm LS TUNING DISAGREE',
@@ -476,17 +498,17 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800050: {
     title: '\x1b<4m\x1b4mNAV\x1bm OAT PROBE 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800051: {
     title: '\x1b<4m\x1b4mNAV\x1bm OAT PROBE 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800052: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA DEGRADED',
     sensed: true,
-    items: [], // TODO
+    items: [], // error model not implemented
   },
   340800053: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A FAULT',
@@ -506,81 +528,81 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800056: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A LOST BY PRIM',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800057: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS B LOST BY PRIM',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800058: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS C LOST BY PRIM',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800059: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A+B FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   340800060: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A+C FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   340800061: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS B+C FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   340800062: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A+B+C FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   340800063: {
     title: '\x1b<4m\x1b4mNAV\x1bm RESIDUAL AIR SPEED',
     sensed: true,
-    items: [], // TODO
+    items: [], // error model not implemented
   },
   340800064: {
     title: '\x1b<4m\x1b4mNAV\x1bm SIDESLIP PROBE 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800065: {
     title: '\x1b<4m\x1b4mNAV\x1bm SIDESLIP PROBE 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800066: {
     title: '\x1b<4m\x1b4mNAV\x1bm SIDESLIP PROBE 3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800067: {
     title: '\x1b<4m\x1b4mNAV\x1bm STATIC PROBE FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800068: {
     title: '\x1b<4m\x1b4mNAV\x1bm TAT PROBE 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800069: {
     title: '\x1b<4m\x1b4mNAV\x1bm TAT PROBE 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800070: {
     title: '\x1b<4m\x1b4mNAV\x1bm TAT PROBE 3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
   340800071: {
     title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIR SPEED INDICATION',
     sensed: true,
-    items: [], // TODO
+    items: [], // not implemented
   },
 };

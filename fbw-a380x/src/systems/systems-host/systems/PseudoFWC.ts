@@ -173,8 +173,9 @@ export class PseudoFWC {
     (_, i) => `L:A32NX_SD_STATUS_INOP_ALL_LINE_${i + 1}`,
   );
 
-  private readonly sdStatusInopAllPhasesLines = Array.from({ length: PseudoFWC.SD_STATUS_INFO_MAX_LINES }, (_, _i) =>
-    Subject.create(''),
+  private readonly sdStatusInopAllPhasesLines = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, _i) => Subject.create(''),
   );
 
   private static readonly sdStatusInopApprLdgSimVars = Array.from(
@@ -182,7 +183,7 @@ export class PseudoFWC {
     (_, i) => `L:A32NX_SD_STATUS_INOP_LDG_LINE_${i + 1}`,
   );
 
-  private readonly sdStatusInopApprLdgLines = Array.from({ length: PseudoFWC.SD_STATUS_INFO_MAX_LINES }, (_, _i) =>
+  private readonly sdStatusInopApprLdgLines = Array.from({ length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES }, (_, _i) =>
     Subject.create(''),
   );
 
@@ -407,6 +408,10 @@ export class PseudoFWC {
   private readonly ac1BusPowered = Subject.create(false);
 
   private readonly ac2BusPowered = Subject.create(false);
+
+  private readonly ac3BusPowered = Subject.create(false);
+
+  private readonly ac4BusPowered = Subject.create(false);
 
   private readonly acESSBusPowered = Subject.create(false);
 
@@ -813,11 +818,25 @@ export class PseudoFWC {
 
   private readonly adr3Cas = Arinc429Register.empty();
 
+  private readonly adr1Fault = Subject.create(false);
+
+  private readonly adr2Fault = Subject.create(false);
+
+  private readonly adr3Fault = Subject.create(false);
+
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
+
+  private readonly ir1MaintWord = Arinc429Register.empty();
+  private readonly ir2MaintWord = Arinc429Register.empty();
+  private readonly ir3MaintWord = Arinc429Register.empty();
+
+  private readonly extremeLatitudeAlert = Subject.create(false);
 
   private readonly height1Failed = Subject.create(false);
 
   private readonly height2Failed = Subject.create(false);
+
+  private readonly height3Failed = Subject.create(false);
 
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
 
@@ -916,10 +935,6 @@ export class PseudoFWC {
   private readonly radioHeight2 = Arinc429Register.empty();
 
   private readonly radioHeight3 = Arinc429Register.empty();
-
-  private readonly raSysAFailed = Subject.create(false);
-  private readonly raSysBFailed = Subject.create(false);
-  private readonly raSysCFailed = Subject.create(false);
 
   private readonly fac1Failed = Subject.create(0);
 
@@ -1362,20 +1377,24 @@ export class PseudoFWC {
     this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
     this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
 
-    // RA acquisition
-    this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
-    this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
-    this.radioHeight3.setFromSimVar('L:A32NX_RA_3_RADIO_ALTITUDE');
+    this.ir1MaintWord.setFromSimVar('L:A32NX_ADIRS_IR_1_MAINT_WORD');
+    this.ir2MaintWord.setFromSimVar('L:A32NX_ADIRS_IR_2_MAINT_WORD');
+    this.ir3MaintWord.setFromSimVar('L:A32NX_ADIRS_IR_3_MAINT_WORD');
 
-    this.raSysAFailed.set(this.radioHeight1.isFailureWarning());
-    this.raSysBFailed.set(this.radioHeight2.isFailureWarning());
-    this.raSysCFailed.set(this.radioHeight3.isFailureWarning());
+    this.extremeLatitudeAlert.set(
+      (this.ir1MaintWord.bitValueOr(15, false) ||
+        this.ir2MaintWord.bitValueOr(15, false) ||
+        this.ir3MaintWord.bitValueOr(15, false)) &&
+        !SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'bool'),
+    );
 
     /* ELECTRICAL acquisition */
     this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
     this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
     this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
     this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
+    this.ac3BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_3_BUS_IS_POWERED', 'bool'));
+    this.ac4BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_4_BUS_IS_POWERED', 'bool'));
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
 
     /* ENGINE AND THROTTLE acquisition */
@@ -1466,6 +1485,10 @@ export class PseudoFWC {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
+    this.adr1Fault.set(this.adr1Cas.get().isFailureWarning());
+    this.adr2Fault.set(this.adr2Cas.isFailureWarning());
+    this.adr3Fault.set(this.adr3Cas.isFailureWarning());
+
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
     const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
@@ -1477,10 +1500,13 @@ export class PseudoFWC {
     this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
     this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
     this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
-    const height1: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
-    const height2: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
-    this.height1Failed.set(height1.isFailureWarning());
-    this.height2Failed.set(height2.isFailureWarning());
+    // RA acquisition
+    this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
+    this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
+    this.radioHeight3.setFromSimVar('L:A32NX_RA_3_RADIO_ALTITUDE');
+    this.height1Failed.set(this.radioHeight1.isFailureWarning());
+    this.height2Failed.set(this.radioHeight2.isFailureWarning());
+    this.height3Failed.set(this.radioHeight3.isFailureWarning());
     // overspeed
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
@@ -3893,10 +3919,211 @@ export class PseudoFWC {
       sysPage: -1,
       inopSysAllPhases: () => [],
     },
+    // 34 NAVIGATION
+    340800001: {
+      // ADR 1 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.adr1Fault,
+      notActiveWhenFaults: ['340800004', '340800008', '340800005'],
+      whichItemsToShow: () => [true, true, true, true],
+      whichItemsCompleted: () => [
+        this.airKnob.get() === 0,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool'),
+        true,
+        SimVar.GetSimVarValue('A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'number') === 0,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300004',
+        this.airKnob.get() === 0 ? '' : '340300011',
+        this.airKnob.get() === 0 ? '' : '340300001',
+      ],
+      inopSysApprLdg: () => ['220300008'],
+      info: () => ['220200005'],
+    },
+    340800002: {
+      // ADR 2 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.adr2Fault,
+      notActiveWhenFaults: ['340800004', '340800008', '340800006'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [
+        this.airKnob.get() === 2,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool'),
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300005',
+        this.airKnob.get() === 2 ? '' : '340300012',
+        this.airKnob.get() === 2 ? '' : '340300002',
+      ],
+      inopSysApprLdg: () => ['220300008'],
+      info: () => ['220200005'],
+    },
+    340800003: {
+      // ADR 3 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.adr3Fault,
+      notActiveWhenFaults: ['340800005', '340800006', '340800008'],
+      whichItemsToShow: () => [true, true, true, true],
+      whichItemsCompleted: () => [
+        this.airKnob.get() === 1,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
+        true,
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB', 'number') === 0,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['340300006'],
+      inopSysApprLdg: () => ['220300008'],
+      info: () => ['220200005'],
+    },
+    340800004: {
+      // ADR 1+2 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.adr1Fault, this.adr2Fault),
+      notActiveWhenFaults: ['340800008'],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.airKnob.get() === 0,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool'),
+        true,
+        true,
+        true,
+        true,
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'number') === 0,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300014',
+        '340300021',
+        '220300007',
+        '220300024',
+        '340300007',
+        this.airKnob.get() === 0 ? '340300012' : '340300029',
+        this.airKnob.get() === 0 ? '340300002' : '340300003',
+      ],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
+      info: () => ['340200002', '340200003'],
+    },
+    340800005: {
+      // ADR 1+3 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.adr1Fault, this.adr3Fault),
+      notActiveWhenFaults: ['340800008'],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.airKnob.get() === 1,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
+        true,
+        true,
+        true,
+        true,
+        SimVar.GetSimVarValue('A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'number') === 0,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300014',
+        '340300021',
+        '220300007',
+        '220300024',
+        '340300009',
+        '340300011',
+        '340300001',
+      ],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
+      info: () => ['340200002', '340200003'],
+    },
+    340800006: {
+      // ADR 2+3 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.adr2Fault, this.adr3Fault),
+      notActiveWhenFaults: ['340800008'],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.airKnob.get() === 1,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
+        true,
+        true,
+        true,
+        true,
+        SimVar.GetSimVarValue('A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB', 'number') === 0,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300014',
+        '340300021',
+        '220300007',
+        '220300024',
+        '340300008',
+        '340300012',
+        '340300002',
+      ],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
+      info: () => ['340200002', '340200003'],
+    },
+    340800008: {
+      // ADR 1+2+3 FAULT
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.adr1Fault,
+        this.adr2Fault,
+        this.adr3Fault,
+      ),
+      notActiveWhenFaults: ['340800010', '340800071'],
+      whichItemsToShow: () => [true, true, true],
+      whichItemsCompleted: () => [
+        false,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool') &&
+          !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
+          !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
+        true,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300014',
+        '340300021',
+        '220300007',
+        '220300024',
+        '340300010',
+        '340300029',
+        '340300003',
+      ],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300021', '220300025'],
+      info: () => ['340200002', '340200003', '340200007'],
+    },
+    340800021: {
+      // EXTREME LATITUDE
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.extremeLatitudeAlert,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsCompleted: () => [SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'Bool')],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+      inopSysApprLdg: () => [''],
+      redundLoss: () => [''],
+      info: () => [''],
+    },
     340800053: {
       // RA SYS A FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.raSysAFailed,
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.height1Failed && this.ac2BusPowered),
       notActiveWhenFaults: ['340800059', '340800060', '340800062'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
@@ -3910,7 +4137,7 @@ export class PseudoFWC {
     340800054: {
       // RA SYS B FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.raSysBFailed,
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.height2Failed && this.ac4BusPowered),
       notActiveWhenFaults: ['340800059', '340800061', '340800062'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
@@ -3924,7 +4151,7 @@ export class PseudoFWC {
     340800055: {
       // RA SYS C FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.raSysCFailed,
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.height3Failed && this.acESSBusPowered),
       notActiveWhenFaults: ['340800060', '340800061', '340800062'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
@@ -3938,7 +4165,13 @@ export class PseudoFWC {
     340800059: {
       // RA SYS A+B FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.raSysAFailed, this.raSysBFailed),
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.height1Failed,
+        this.height2Failed,
+        this.ac2BusPowered,
+        this.ac4BusPowered,
+      ),
       notActiveWhenFaults: ['340800062'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
@@ -3951,7 +4184,13 @@ export class PseudoFWC {
     340800060: {
       // RA SYS A+C FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.raSysAFailed, this.raSysCFailed),
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.height1Failed,
+        this.height3Failed,
+        this.ac2BusPowered,
+        this.acESSBusPowered,
+      ),
       notActiveWhenFaults: ['340800062'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
@@ -3964,7 +4203,13 @@ export class PseudoFWC {
     340800061: {
       // RA SYS B+C FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.raSysBFailed, this.raSysCFailed),
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.height2Failed,
+        this.height3Failed,
+        this.ac4BusPowered,
+        this.acESSBusPowered,
+      ),
       notActiveWhenFaults: ['340800062'],
       whichItemsToShow: () => [],
       whichItemsCompleted: () => [],
@@ -3979,9 +4224,12 @@ export class PseudoFWC {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.raSysAFailed,
-        this.raSysBFailed,
-        this.raSysCFailed,
+        this.height1Failed,
+        this.height2Failed,
+        this.height3Failed,
+        this.ac2BusPowered,
+        this.ac4BusPowered,
+        this.acESSBusPowered,
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],

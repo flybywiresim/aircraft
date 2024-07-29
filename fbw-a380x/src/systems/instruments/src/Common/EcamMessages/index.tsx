@@ -200,10 +200,15 @@ export const Infos: { [n: number]: string } = {
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   340200002: '\x1b<3mALTN LAW : PROT LOST',
   340200003: '\x1b<3mFLS LIMITED TO F-APP + RAW',
+  340200004: '\x1b<3mDIRECT LAW : PROT LOST',
+  340200005: '\x1b<3mPFD BKUP SPEED & ALT AVAIL',
+  340200006: '\x1b<3mFPV / VV AVAIL',
+  340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
 };
 
 /** All possible INOP sys, with special formatting characters. */
 export const InopSys: { [n: number]: string } = {
+  210300001: '\x1b<4mCAB PRESS AUTO CTL',
   220300001: '\x1b<4mA/THR',
   220300002: '\x1b<4mCAT 3',
   220300004: '\x1b<4mAFS CTL PNL',
