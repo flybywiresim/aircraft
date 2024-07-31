@@ -256,6 +256,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OVRD',
         level: 2,
       },
+      {
+        name: 'MAX FL : 100/MEA',
+        sensed: false,
+        level: 1,
+      },
     ],
   },
   211800022: {
@@ -271,7 +276,14 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   211800024: {
     title: '\x1b<4m\x1b4mCOND\x1bm BULK CARGO DUCT OVHT  ',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'BULK HEATER',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+
+    ],
   },
   211800025: {
     title: '\x1b<4m\x1b4mCOND\x1bm BULK CARGO HEATER FAULT  ',
@@ -301,7 +313,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   211800030: {
     title: '\x1b<4m\x1b4mCOND\x1bm FWD CARGO TEMP REGUL FAULT  ',
     sensed: true,
-    items: [],
+    items: [
+      {
+      name: 'CARGO TRIM AIR VLV FAULT',
+      sensed: false,
+      },
+      {
+      name: 'CARGO TEMP',
+      sensed: true,
+      labelNotCompleted: 'MONITOR',
+      },
+    ],
   },
   211800031: {
     title: '\x1b<4m\x1b4mCOND\x1bm FWD CARGO VENT FAULT  ',
@@ -372,6 +394,21 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mCOND\x1bm TWO PRIMARY CABIN FANS FAULT ',
     sensed: true,
     items: [],
+  },
+  211800045: {
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK REGUL DEGRADED ',
+    sensed: true,
+    items: [
+        {
+        name: 'PACK FLOW INSUFFICIENT FOR FWD CRG',
+        sensed: false,
+        },
+        {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        },
+    ],
   },
   // ATA 21: VENT
   212800001: {
