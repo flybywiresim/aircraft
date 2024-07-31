@@ -49,8 +49,8 @@ const titleSuffix = ` (${titlePostfix})`;
 
 const MS_FILETIME_EPOCH = 116444736000000000n;
 
-const A32NX_SRC = path.resolve(__dirname, '..', 'fbw-a32nx/src');
-const A32NX_OUT = path.resolve(__dirname, '..', 'fbw-a32nx/out/flybywire-aircraft-a320-neo');
+const A32NX_SRC = path.resolve(__dirname, '..', 'fbw-a32nx', 'src');
+const A32NX_OUT = path.resolve(__dirname, '..', 'fbw-a32nx', 'out', 'flybywire-aircraft-a320-neo');
 
 function createPackageFiles(baseDir, manifestBaseFilename) {
     const contentEntries = [];

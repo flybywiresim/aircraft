@@ -43,7 +43,9 @@ const A380X_SRC = path.resolve(__dirname, "..", "fbw-a380x/src");
 const A380X_OUT = path.resolve(
     __dirname,
     "..",
-    "fbw-a380x/out/flybywire-aircraft-a380-842"
+    "fbw-a380x",
+    "out",
+    "flybywire-aircraft-a380-842"
 );
 
 function createPackageFiles(baseDir, manifestBaseFilename) {
