@@ -83,12 +83,13 @@ export type GaugeMarkerComponentType = {
     textNudgeY?: number,
     halfIndicator?: boolean
     bold?: boolean,
-    reverse?: boolean
+    reverse?: boolean,
+    overrideText?: string,
 };
 
 export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
     value, x, y, min, max, radius, startAngle, endAngle, className, textClassName = 'GaugeText', showValue,
-    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false, reverse = false,
+    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false, reverse = false, overrideText = ''
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle, perpendicular: reverse });
 
@@ -131,7 +132,7 @@ export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
         y: y + (dir.y * radius * multiplierInner) + textNudgeY,
     };
 
-    const textValue = !showValue ? '' : Math.abs(value).toString();
+    const textValue = !showValue ? '' : overrideText ? overrideText : Math.abs(value).toString();
 
     return (
         <>
@@ -299,7 +300,6 @@ type ThrustTransientComponentType = {
 };
 
 export const ThrustTransientComponent: FC<ThrustTransientComponentType> = memo(({ x, y, radius, startAngle, endAngle, className, visible, thrustActual, thrustTarget }) => {
-    const targetSmaller = thrustTarget < thrustActual;
     const sweepHorizontal = (radius: number): string => {
         const valueIdleDir = valueRadianAngleConverter({ value: thrustActual, min: 0, max: 1, endAngle, startAngle });
         const valueIdleEnd = {
@@ -316,7 +316,7 @@ export const ThrustTransientComponent: FC<ThrustTransientComponentType> = memo((
 
         return [
             `M ${valueIdleEnd.x},${valueIdleEnd.y}`,
-            `A ${radius} ${radius} 0 ${diffAngle > 180 ? '1' : '0'} ${diffAngle < 0 ? '0' : '1'} ${valueMaxEnd.x} ${valueMaxEnd.y}`,
+            `A ${radius} ${radius} 0 ${Math.abs(diffAngle) > 180 ? '1' : '0'} ${diffAngle < 0 ? '0' : '1'} ${valueMaxEnd.x} ${valueMaxEnd.y}`,
         ].join(' ');
     }
 
