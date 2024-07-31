@@ -153,7 +153,7 @@ export const Checklists = () => {
     const isMarkedCompleted = checklists[index].markedCompleted;
     const isSelected = index === selectedChecklistIndex;
     const isIndexRelevant = relevantChecklistIndices.includes(index);
-    if (isSelected && isChecklistCompleted && isIndexRelevant) {
+    if (isSelected && isChecklistCompleted) {
       return isMarkedCompleted
         ? 'bg-utility-green font-bold text-theme-body'
         : 'bg-utility-amber font-bold text-theme-body';
@@ -161,14 +161,17 @@ export const Checklists = () => {
     if (isSelected) {
       return 'bg-theme-highlight font-bold text-theme-body';
     }
-    if (isChecklistCompleted && isIndexRelevant) {
+    if (isChecklistCompleted) {
       return isMarkedCompleted
         ? 'bg-theme-body border-2 border-utility-green font-bold text-utility-green ' +
             'hover:text-theme-body hover:bg-utility-green'
         : 'bg-theme-body border-2 border-utility-amber ' +
             'font-bold text-utility-amber hover:text-theme-body hover:bg-utility-amber';
     }
-    return 'bg-theme-accent border-2 border-theme-accent font-bold text-theme-text hover:bg-theme-highlight hover:text-theme-body';
+    return (
+      'bg-theme-accent border-2 border-theme-accent font-bold text-theme-text hover:bg-theme-highlight hover:text-theme-body' +
+      (!isIndexRelevant ? ' opacity-50 hover:opacity-100' : '')
+    );
   };
 
   /**
