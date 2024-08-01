@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Wifi, WifiOff } from 'react-bootstrap-icons';
-import { useSimVar, usePersistentNumberProperty, usePersistentProperty, ClientState } from '@flybywiresim/fbw-sdk';
+import { FastForwardFill, Wifi, WifiOff } from 'react-bootstrap-icons';
+import {
+  useSimVar,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  ClientState,
+  useGlobalVar,
+} from '@flybywiresim/fbw-sdk';
 import { useInterval } from '@flybywiresim/react-components';
 import { t, TooltipWrapper, initialState } from '@flybywiresim/flypad';
 import { BatteryStatus } from './BatteryStatus';
@@ -27,6 +33,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
   const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
   const [outdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 500);
+
+  const simRate = useGlobalVar('SIMULATION RATE', 'number', 500);
 
   const dayName = [
     t('StatusBar.Sun'),
@@ -119,7 +127,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
   }, []);
 
   return (
-    <div className="bg-theme-statusbar text-theme-text fixed z-30 flex h-10 w-full items-center justify-between px-6 text-lg font-medium leading-none">
+    <div className="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
       <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
 
       {outdatedVersionFlag ? (
@@ -151,8 +159,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
               <p>{schedOutParsed}</p>
             </div>
             <div className="flex w-32 flex-row">
-              <div className="bg-theme-highlight h-1" style={{ width: `${flightPlanProgress}%` }} />
-              <div className="bg-theme-text h-1" style={{ width: `${100 - flightPlanProgress}%` }} />
+              <div className="h-1 bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }} />
+              <div className="h-1 bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
             </div>
             <div
               className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} flex flex-col space-y-1 transition duration-100`}
@@ -161,6 +169,15 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
               <p>{schedInParsed}</p>
             </div>
           </div>
+        )}
+
+        {simRate !== 1 && (
+          <TooltipWrapper text={`Simulation Rate is currently ${simRate}x`}>
+            <div className="flex items-center space-x-2">
+              <p>{`${simRate > 1 ? simRate.toFixed(0) : simRate.toFixed(2)}x`}</p>
+              <FastForwardFill size={26} />
+            </div>
+          </TooltipWrapper>
         )}
 
         <QuickControls />

@@ -28,9 +28,10 @@ module.exports = {
         typecheckingPlugin(),
     ],
     instruments: [
-        msfsAvionicsInstrument('PFD'),
-        msfsAvionicsInstrument('ND'),
         msfsAvionicsInstrument('Clock'),
+        msfsAvionicsInstrument('ND'),
+        msfsAvionicsInstrument('PFD'),
+        msfsAvionicsInstrument('RMP'),
         msfsAvionicsInstrument('EWDv2'),
 
         reactInstrument('BAT'),
@@ -38,7 +39,6 @@ module.exports = {
       //  reactInstrument('EWD'),
         reactInstrument('MFD'),
         reactInstrument('OIT'),
-        reactInstrument('RMP'),
         reactInstrument('SD'),
     ],
 };

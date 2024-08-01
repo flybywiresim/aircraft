@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { UpdateThrottler, Airport, NdbNavaid, VhfNavaid, Waypoint, RunwaySurfaceType } from '@flybywiresim/fbw-sdk';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Coordinates } from 'msfs-geo';
 
 export class NearbyFacilities {
