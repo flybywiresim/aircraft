@@ -22,7 +22,7 @@ import { EcamAbnormalSensedAta80Rest } from '@instruments/common/EcamMessages/Ab
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -187,7 +187,7 @@ export const pfdMemoDisplay: string[] = [
 ];
 
 /** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
-export const Infos: { [n: number]: string } = {
+export const EcamInfos: { [n: number]: string } = {
   220200001: '\x1b<3mFMS 1 ON FMC-C',
   220200002: '\x1b<3mFMS 2 ON FMC-C',
   220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
@@ -206,8 +206,18 @@ export const Infos: { [n: number]: string } = {
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
 };
 
+/** All possible LIMITATIONs, with special formatting characters. */
+export const EcamLimitations: { [n: number]: string } = {
+  230400001: '\x1b<5mNO COM AVAIL',
+  240400001: '\x1b<5mGA THR : TOGA ONLY',
+  240400002: '\x1b<5mMAX SPEED: 310/.86',
+  240400003: '\x1b<5mSPD BRK: DO NOT USE',
+  240400004: '\x1b<5mMANEUVER WITH CARE',
+  300400001: '\x1b<5mAVOID ICING CONDs',
+};
+
 /** All possible INOP sys, with special formatting characters. */
-export const InopSys: { [n: number]: string } = {
+export const EcamInopSys: { [n: number]: string } = {
   210300001: '\x1b<4mCAB PRESS AUTO CTL',
   220300001: '\x1b<4mA/THR',
   220300002: '\x1b<4mCAT 3',

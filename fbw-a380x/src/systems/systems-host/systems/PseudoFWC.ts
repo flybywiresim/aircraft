@@ -102,6 +102,12 @@ interface EwdAbnormalItem {
   info?: () => string[];
   /** Optional for now: Message IDs of REDUND LOSS systems to be displayed on STS page */
   redundLoss?: () => string[];
+  /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for ALL PHASES */
+  limitationsAllPhases?: () => string[];
+  /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for APPR&LDG */
+  limitationsApprLdg?: () => string[];
+  /** Optional for now: Message IDs of LIMITATIONS to be displayed on the PFD lower area */
+  limitationsPfd?: () => string[];
 }
 
 interface EwdAbnormalDict {
@@ -130,6 +136,10 @@ export class PseudoFWC {
 
   private static readonly EWD_MESSAGE_LINES = 7;
 
+  private static readonly PFD_MEMO_LINES = 3;
+
+  private static readonly PFD_LIMITATIONS_LINES = 8;
+
   private static readonly SD_STATUS_INFO_MAX_LINES = 5;
 
   private static readonly SD_STATUS_INOP_SYS_MAX_LINES = 10;
@@ -152,12 +162,12 @@ export class PseudoFWC {
     Subject.create(''),
   );
 
-  private static readonly pfdMessageSimVars = Array.from(
-    { length: PseudoFWC.EWD_MESSAGE_LINES },
+  private static readonly pfdMemoSimVars = Array.from(
+    { length: PseudoFWC.PFD_MEMO_LINES },
     (_, i) => `L:A32NX_PFD_MEMO_LINE_${i + 1}`,
   );
 
-  private readonly pfdMessageLines = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
+  private readonly pfdMemoLines = Array.from({ length: PseudoFWC.PFD_MEMO_LINES }, (_, _i) => Subject.create(''));
 
   private static readonly sdStatusInfoSimVars = Array.from(
     { length: PseudoFWC.SD_STATUS_INFO_MAX_LINES },
@@ -185,6 +195,35 @@ export class PseudoFWC {
 
   private readonly sdStatusInopApprLdgLines = Array.from({ length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES }, (_, _i) =>
     Subject.create(''),
+  );
+
+  private static readonly pfdLimitationsSimVars = Array.from(
+    { length: PseudoFWC.PFD_LIMITATIONS_LINES },
+    (_, i) => `L:A32NX_PFD_LIMITATIONS_LINE_${i + 1}`,
+  );
+
+  private readonly pfdLimitationsLines = Array.from({ length: PseudoFWC.PFD_LIMITATIONS_LINES }, (_, _i) =>
+    Subject.create(''),
+  );
+
+  private static readonly sdStatusLimitationsAllPhasesSimVars = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, i) => `L:A32NX_SD_STATUS_LIMITATIONS_ALL_LINE_${i + 1}`,
+  );
+
+  private readonly ewdLimitationsAllPhasesLines = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, _i) => Subject.create(''),
+  );
+
+  private static readonly sdStatusLimitationsApprLdgSimVars = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, i) => `L:A32NX_SD_STATUS_LIMITATIONS_LDG_LINE_${i + 1}`,
+  );
+
+  private readonly ewdLimitationsApprLdgLines = Array.from(
+    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
+    (_, _i) => Subject.create(''),
   );
 
   /* PSEUDO FWC VARIABLES */
@@ -1090,9 +1129,9 @@ export class PseudoFWC {
       }),
     );
 
-    this.pfdMessageLines.forEach((ls, i) =>
+    this.pfdMemoLines.forEach((ls, i) =>
       ls.sub((l) => {
-        SimVar.SetSimVarValue(PseudoFWC.pfdMessageSimVars[i], 'string', l ?? '');
+        SimVar.SetSimVarValue(PseudoFWC.pfdMemoSimVars[i], 'string', l ?? '');
       }),
     );
 
@@ -1111,6 +1150,24 @@ export class PseudoFWC {
     this.sdStatusInopApprLdgLines.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(PseudoFWC.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
+      }),
+    );
+
+    this.pfdLimitationsLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.pfdLimitationsSimVars[i], 'string', l ?? '');
+      }),
+    );
+
+    this.ewdLimitationsAllPhasesLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.sdStatusLimitationsAllPhasesSimVars[i], 'string', l ?? '');
+      }),
+    );
+
+    this.ewdLimitationsApprLdgLines.forEach((ls, i) =>
+      ls.sub((l) => {
+        SimVar.SetSimVarValue(PseudoFWC.sdStatusLimitationsApprLdgSimVars[i], 'string', l ?? '');
       }),
     );
 
@@ -2558,6 +2615,9 @@ export class PseudoFWC {
     const stsInfoKeys: string[] = [];
     const stsInopAllPhasesKeys: string[] = [];
     const stsInopApprLdgKeys: string[] = [];
+    const ewdLimitationsAllPhasesKeys: string[] = [];
+    const ewdLimitationsApprLdgKeys: string[] = [];
+    const pfdLimitationsKeys: string[] = [];
     let failureKeys: string[] = this.presentedFailures;
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
@@ -2700,6 +2760,15 @@ export class PseudoFWC {
         }
         if (value.inopSysApprLdg) {
           stsInopApprLdgKeys.push(...[...new Set(value.inopSysApprLdg())]); // Only unique keys
+        }
+        if (value.limitationsAllPhases) {
+          ewdLimitationsAllPhasesKeys.push(...[...new Set(value.limitationsAllPhases())]); // Only unique keys
+        }
+        if (value.limitationsApprLdg) {
+          ewdLimitationsApprLdgKeys.push(...[...new Set(value.limitationsApprLdg())]); // Only unique keys
+        }
+        if (value.limitationsPfd) {
+          pfdLimitationsKeys.push(...[...new Set(value.limitationsPfd())]); // Only unique keys
         }
 
         if (!recallFailureKeys.includes(key)) {
@@ -2861,12 +2930,22 @@ export class PseudoFWC {
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
     // TODO order by decreasing importance
-    this.pfdMessageLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => pfdMemoDisplay.includes(it))[i]));
+    this.pfdMemoLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => pfdMemoDisplay.includes(it))[i]));
 
     // TODO order by decreasing importance
     this.sdStatusInfoLines.forEach((l, i) => l.set(stsInfoKeys[i]));
     this.sdStatusInopAllPhasesLines.forEach((l, i) => l.set(stsInopAllPhasesKeys[i]));
     this.sdStatusInopApprLdgLines.forEach((l, i) => l.set(stsInopApprLdgKeys[i]));
+
+    // TODO order by decreasing importance
+    this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(ewdLimitationsAllPhasesKeys[i]));
+    this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(ewdLimitationsApprLdgKeys[i]));
+
+    // For now, also push EWD limitations to PFD, until EWD limitations are implemented
+    const pfdLimitationsCombined = [
+      ...new Set(pfdLimitationsKeys.concat(ewdLimitationsAllPhasesKeys).concat(ewdLimitationsApprLdgKeys)),
+    ];
+    this.pfdLimitationsLines.forEach((l, i) => l.set(pfdLimitationsCombined[i]));
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
     // We shall wait for the rust FWC for those nice things!
@@ -3819,6 +3898,7 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300016', '230300017', '230300018', '230300019', '230300006', '230300015'],
+      limitationsAllPhases: () => ['230400001'],
     },
     // ATA 27 FLIGHT CONTROLS
     271800003: {
@@ -4010,6 +4090,7 @@ export class PseudoFWC {
       ],
       inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
       info: () => ['340200002', '340200003'],
+      limitationsApprLdg: () => ['240400001'],
     },
     340800005: {
       // ADR 1+3 FAULT
@@ -4041,6 +4122,7 @@ export class PseudoFWC {
       ],
       inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
       info: () => ['340200002', '340200003'],
+      limitationsApprLdg: () => ['240400001'],
     },
     340800006: {
       // ADR 2+3 FAULT
@@ -4072,6 +4154,7 @@ export class PseudoFWC {
       ],
       inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
       info: () => ['340200002', '340200003'],
+      limitationsApprLdg: () => ['240400001'],
     },
     340800008: {
       // ADR 1+2+3 FAULT
@@ -4105,6 +4188,9 @@ export class PseudoFWC {
       ],
       inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300021', '220300025'],
       info: () => ['340200002', '340200003', '340200007'],
+      limitationsAllPhases: () => ['240400002', '240400003', '240400004', '300400001'],
+      limitationsApprLdg: () => ['240400001'],
+      limitationsPfd: () => ['240400002', '240400003', '240400004', '300400001'],
     },
     340800021: {
       // EXTREME LATITUDE
