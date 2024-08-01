@@ -10,11 +10,13 @@ import {
 /* eslint-disable camelcase */
 export interface BaseEwdSimvars {
   engine_state: number;
+  egt: number;
   eng_selector_position: number;
   thrust_limit_type: number;
   thrust_limit: number;
   satRaw: number;
   flex: number;
+  athrTogaWarning: boolean;
   ewdRightLine1: number;
   ewdRightLine2: number;
   ewdRightLine3: number;
@@ -39,11 +41,13 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
   constructor(bus: EventBus, pacer?: PublishPacer<EwdSimvars>) {
     const simvars: [keyof EwdSimvars, SimVarPublisherEntry<any>][] = [
       ['engine_state', { name: 'L:A32NX_ENGINE_STATE:#index#', type: SimVarValueType.Number, indexed: true }],
+      ['egt', { name: 'L:A32NX_ENGINE_EGT:#index#', type: SimVarValueType.Number, indexed: true }],
       ['eng_selector_position', { name: 'L:XMLVAR_ENG_MODE_SEL', type: SimVarValueType.Enum }],
       ['thrust_limit_type', { name: 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', type: SimVarValueType.Number }],
       ['thrust_limit', { name: 'L:A32NX_AUTOTHRUST_THRUST_LIMIT', type: SimVarValueType.Number }],
       ['satRaw', { name: 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', type: SimVarValueType.Number }],
       ['flex', { name: 'L:AIRLINER_TO_FLEX_TEMP', type: SimVarValueType.Number }],
+      ['athrTogaWarning', { name: 'L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', type: SimVarValueType.Bool }],
       ['ewdRightLine1', { name: 'L:A380X_EWD_RIGHT_LINE_1', type: SimVarValueType.Number }],
       ['ewdRightLine2', { name: 'L:A380X_EWD_RIGHT_LINE_2', type: SimVarValueType.Number }],
       ['ewdRightLine3', { name: 'L:A380X_EWD_RIGHT_LINE_3', type: SimVarValueType.Number }],

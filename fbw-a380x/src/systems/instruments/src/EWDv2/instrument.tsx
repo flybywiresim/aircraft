@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import './style.scss';
+import '../index.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWDv2/EWD';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 

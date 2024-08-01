@@ -8,20 +8,19 @@
     src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
-  }
+}
 
-  .ewd-svg {
+.ewd-svg {
     position: absolute;
     width: 768px;
     height: 1024px;
     background: $display-background;
-    font-family: "Ecam", monospace !important;
-  }
+    font-family: "Ecam", monospace;
+}
 
-
-  .HiddenElement {
+.HiddenElement {
     display: none;
-  }
+}
 
 
 .EWDWarningTextLeft {
@@ -232,4 +231,15 @@ text, tspan {
     stroke: none;
     fill: $display-light-grey;
     opacity: 0.2
+}
+
+.ewd-main {
+    position: absolute;
+    width: 768px;
+    height: 1024px;
+    /* 1:1.33 W:H  */
+    background: $display-background;
+    font-family: "Ecam", monospace !important;
+    display: flex;
+    flex-direction: column;
 }

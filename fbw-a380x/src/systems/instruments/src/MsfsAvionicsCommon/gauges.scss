@@ -23,13 +23,22 @@
 
   .GaugeText {
     stroke: $display-white;
-    font-size: 17px;
+    fill: $display-white;
+    font-size: 20px;
   }
 
   .GaugeIndicator {
     stroke: $display-green;
     stroke-width: 3;
     fill: none;
+    stroke-linecap: round;
+  }
+
+  .RedGaugeIndicator {
+    stroke: $display-red;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
   }
 
   .GaugeThrustLimitIndicator {
@@ -43,4 +52,14 @@
     stroke-width: 3;
     fill: $display-amber;
   }
+
+  .GaugeThrustFill {
+    fill: $display-grey;
+  }
+}
+
+.DonutThrottleIndicator {
+  fill: none;
+  stroke-width: 2px;
+  stroke: $display-cyan;
 }

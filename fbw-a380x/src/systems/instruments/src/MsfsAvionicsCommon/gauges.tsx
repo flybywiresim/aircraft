@@ -20,19 +20,26 @@ export const polarToCartesian = (centerX: number, centerY: number, radius: numbe
  * @param radius        radius of arc
  * @param startAngle    value between 0 and 360 degrees where arc starts
  * @param endAngle      value between 0 and 360 degrees where arc finishes
+ * @param sweep         value between 0 and 1 for sweep flag
+ * @param largeArc      value between 0 and 1 for large arc flag
  */
-export const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
+export function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, sweep: number = 0, largeArc: number = 2) {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
 
     const arcSize = startAngle > endAngle ? 360 - endAngle + startAngle : endAngle - startAngle;
-    const largeArcFlag = arcSize <= 180 ? '0' : '1';
+    if (largeArc === 2) {
+        largeArc = arcSize <= 180 ? 0 : 1;
+    }
 
     return [
         'M', start.x, start.y,
-        'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+        'A', radius, radius, 0, largeArc, sweep, end.x, end.y,
     ].join(' ');
-};
+}
+
+export const splitDecimals = (value: number) => (value.toFixed(1).split('.', 2));
+
 
 export const valueRadianAngleConverter = (value: number, min: number, max: number, endAngle: number, startAngle: number, perpendicular: boolean = false) => {
     const valuePercentage = (value - min) / (max - min);
@@ -70,6 +77,8 @@ interface GaugeMarkerComponentProps {
     halfIndicator?: boolean;
     bold?: boolean;
     roundLinecap?: boolean;
+    reverse?: boolean;
+    overrideText?: string;
 }
 export class GaugeMarkerComponent extends DisplayComponent<GaugeMarkerComponentProps> {
     private startX = Subject.create(0);
@@ -98,6 +107,9 @@ export class GaugeMarkerComponent extends DisplayComponent<GaugeMarkerComponentP
         this.props.textClass ??= 'GaugeText';
         this.props.multiplierOuter ??= 1.15;
         this.props.multiplierInner ??= 0.85;
+        this.props.showValue ??= false;
+        this.props.textNudgeX ??= 0;
+        this.props.textNudgeY ??= 0;
 
         this.startAngle = this.props.startAngle.get();
         this.endAngle = this.props.endAngle.get();
@@ -125,7 +137,7 @@ export class GaugeMarkerComponent extends DisplayComponent<GaugeMarkerComponentP
     }
 
     update(): void {
-        const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle);
+        const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle, this.props.reverse ?? false);
 
         let start = {
             x: this.props.x + (dir.x * this.props.radius * this.props.multiplierInner),
@@ -177,7 +189,7 @@ export class GaugeMarkerComponent extends DisplayComponent<GaugeMarkerComponentP
         this.endY.set(end.y);
         this.textX.set(pos.x);
         this.textY.set(pos.y);
-        this.text.set(this.props.showValue ? Math.abs(this.value).toString() : '');
+        this.text.set(!this.props.showValue ? '' : this.props.overrideText ? this.props.overrideText : Math.abs(this.value).toString());
     }
 
     render(): VNode {
@@ -188,7 +200,7 @@ export class GaugeMarkerComponent extends DisplayComponent<GaugeMarkerComponentP
                     y1={this.startY}
                     x2={this.endX}
                     y2={this.endY}
-                    strokeWidth={this.props.bold ? 2 : undefined}
+                    strokeWidth={this.props.bold ? 3 : 2}
                     class={this.props.class}
                     strokeLinecap={this.props.roundLinecap ? 'round' : 'square'}
                 />
@@ -285,6 +297,9 @@ interface ThrottlePositionDonutComponentProps {
     startAngle: Subscribable<number>;
     endAngle: Subscribable<number>;
     class: string;
+    reverse?: boolean,
+    outerMultiplier?: number,
+    donutRadius?: number,
 }
 export class ThrottlePositionDonutComponent extends DisplayComponent<ThrottlePositionDonutComponentProps> {
     private circleX = Subject.create(0);
@@ -326,15 +341,15 @@ export class ThrottlePositionDonutComponent extends DisplayComponent<ThrottlePos
     }
 
     update(): void {
-        const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle);
+        const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle, this.props.reverse);
 
-        this.circleX.set(dir.x * this.props.radius * 1.12);
-        this.circleY.set(dir.y * this.props.radius * 1.12);
+        this.circleX.set(dir.x * this.props.radius * (this.props.outerMultiplier ?? 1.12));
+        this.circleY.set(dir.y * this.props.radius * (this.props.outerMultiplier ?? 1.12));
     }
 
     render(): VNode {
         return (
-            <circle cx={this.circleX} cy={this.circleY} r={4} class={this.props.class} />
+            <circle cx={this.circleX} cy={this.circleY} r={this.props.donutRadius ?? 4} class={this.props.class} />
         );
     }
 }
@@ -347,6 +362,8 @@ interface GaugeComponentProps {
     endAngle: Subscribable<number>;
     class: string;
     visible?: Subscribable<boolean>;
+    sweep?: number,
+    largeArc?: number
 }
 export class GaugeComponent extends DisplayComponent<GaugeComponentProps> {
     private arc = Subject.create('');
@@ -378,7 +395,7 @@ export class GaugeComponent extends DisplayComponent<GaugeComponentProps> {
     }
 
     updateArc(): void {
-        this.arc.set(describeArc(this.props.x, this.props.y, this.props.radius, this.startAngle, this.endAngle));
+        this.arc.set(describeArc(this.props.x, this.props.y, this.props.radius, this.startAngle, this.endAngle, this.props.sweep, this.props.largeArc));
     }
 
     render(): VNode {
@@ -387,6 +404,260 @@ export class GaugeComponent extends DisplayComponent<GaugeComponentProps> {
                 <path d={this.arc} class={this.props.class} />
                 {this.props.children}
             </g>
+        );
+    }
+}
+
+interface GaugeMaxEGTComponentProps {
+    value: Subscribable<number>;
+    x: number;
+    y: number;
+    min: number;
+    max: number;
+    radius: number;
+    startAngle: Subscribable<number>;
+    endAngle: Subscribable<number>;
+    class: string;
+}
+export class GaugeMaxEGTComponent extends DisplayComponent<GaugeMaxEGTComponentProps> {
+    private x = Subject.create(0);
+
+    private y = Subject.create(0);
+
+    private angle = Subject.create(0);
+
+    private startAngle: number = 0;
+
+    private endAngle: number = 0;
+
+    private value: number = 0;
+
+    private path = Subject.create('');
+
+    private pathTransform = Subject.create('');
+
+    constructor(props: GaugeMaxEGTComponentProps) {
+        super(props);
+
+        this.startAngle = this.props.startAngle.get();
+        this.endAngle = this.props.endAngle.get();
+        this.value = this.props.value.get();
+        this.update();
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.props.startAngle.sub((a) => {
+            this.startAngle = a;
+            this.update();
+        });
+
+        this.props.endAngle.sub((a) => {
+            this.endAngle = a;
+            this.update();
+        });
+
+        this.props.value.sub((v) => {
+            this.value = v;
+            this.update();
+        });
+    }
+
+    update(): void {
+        const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle);
+
+        this.x.set(dir.x * this.props.radius - 6);
+        this.y.set(dir.y * this.props.radius);
+        this.angle.set(dir.angle);
+        this.path.set(`M ${this.x.get()},${this.y.get()} l 12,0 l 0,4 l -8,0 Z`);
+        this.pathTransform.set(`rotate(${this.angle.get()} ${this.x.get()} ${this.y.get()})`);
+    }
+
+    render(): VNode {
+        return (
+            <path d={this.path} className={this.props.class} transform={this.pathTransform} />
+        );
+    }
+}
+
+interface GaugeThrustComponentProps {
+    x: number;
+    y: number;
+    min: number;
+    max: number;
+    radius: number;
+    startAngle: Subscribable<number>;
+    endAngle: Subscribable<number>;
+    class: string;
+    visible: Subscribable<boolean>;
+    valueIdle: number;
+    valueMax: number;
+    reverse?: boolean,
+}
+export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentProps> {
+    private startAngle: number = 0;
+
+    private endAngle: number = 0;
+
+    private thrustPath = Subject.create('');
+
+    constructor(props: GaugeThrustComponentProps) {
+        super(props);
+
+        this.startAngle = this.props.startAngle.get();
+        this.endAngle = this.props.endAngle.get();
+        this.update();
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.props.startAngle.sub((a) => {
+            this.startAngle = a;
+            this.update();
+        });
+
+        this.props.endAngle.sub((a) => {
+            this.endAngle = a;
+            this.update();
+        });
+    }
+
+    update(): void {
+        const valueIdleDir = valueRadianAngleConverter(this.props.valueIdle, this.props.min, this.props.max, this.endAngle, this.startAngle);
+        const valueIdleEnd = {
+            x: this.props.x + (valueIdleDir.x * this.props.radius),
+            y: this.props.y + (valueIdleDir.y * this.props.radius),
+        };
+        const valueMaxDir = valueRadianAngleConverter(this.props.valueMax, this.props.min, this.props.max, this.endAngle, this.startAngle);
+        const valueMaxEnd = {
+            x: this.props.x + (valueMaxDir.x * this.props.radius),
+            y: this.props.y + (valueMaxDir.y * this.props.radius),
+        };
+
+        this.thrustPath.set([
+            `M ${this.props.x},${this.props.y} L ${valueIdleEnd.x},${valueIdleEnd.y}`,
+            `A ${this.props.radius} ${this.props.radius} 0 ${this.props.reverse ? '0' : '1'} 1 ${valueMaxEnd.x} ${valueMaxEnd.y}`,
+            `M ${valueMaxEnd.x} ${valueMaxEnd.y} L ${this.props.x},${this.props.y}`,
+        ].join(' '));
+    }
+
+    render(): VNode {
+        return (
+            <>
+                <g className='GaugeComponent'>
+                    <g className={this.props.visible.map((it) => it ? 'Show' : 'Hide')}>
+                        <path d={this.thrustPath} className={this.props.class} />
+                    </g>
+                </g>
+            </>
+        );
+    }
+}
+
+interface ThrustTransientComponentProps {
+    x: number;
+    y: number;
+    radius: number;
+    startAngle: Subscribable<number>;
+    endAngle: Subscribable<number>;
+    class: string;
+    visible: Subscribable<boolean>;
+    thrustActual: Subscribable<number>;
+    thrustTarget: Subscribable<number>;
+}
+export class ThrustTransientComponent extends DisplayComponent<ThrustTransientComponentProps> {
+    private startAngle: number = 0;
+
+    private endAngle: number = 0;
+
+    private thrustActual: number = 0;
+
+    private thrustTarget: number = 0;
+
+    private sweep1 = Subject.create('');
+    private sweep2 = Subject.create('');
+    private sweep3 = Subject.create('');
+    private sweep4 = Subject.create('');
+
+    private endPath = Subject.create('');
+
+    constructor(props: ThrustTransientComponentProps) {
+        super(props);
+
+        this.startAngle = this.props.startAngle.get();
+        this.endAngle = this.props.endAngle.get();
+        this.update();
+    }
+
+    private sweepHorizontal(radius: number) {
+        const valueIdleDir = valueRadianAngleConverter(this.thrustActual, 0, 1, this.endAngle, this.startAngle);
+        const valueIdleEnd = {
+            x: this.props.x + (valueIdleDir.x * radius),
+            y: this.props.y + (valueIdleDir.y * radius),
+        };
+        const valueMaxDir = valueRadianAngleConverter(this.thrustTarget, 0, 1, this.endAngle, this.startAngle);
+        const valueMaxEnd = {
+            x: this.props.x + (valueMaxDir.x * radius),
+            y: this.props.y + (valueMaxDir.y * radius),
+        };
+
+        const diffAngle = valueMaxDir.angle - valueIdleDir.angle;
+
+        return [
+            `M ${valueIdleEnd.x},${valueIdleEnd.y}`,
+            `A ${radius} ${radius} 0 ${Math.abs(diffAngle) > 180 ? '1' : '0'} ${diffAngle < 0 ? '0' : '1'} ${valueMaxEnd.x} ${valueMaxEnd.y}`,
+        ].join(' ');
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.props.startAngle.sub((a) => {
+            this.startAngle = a;
+            this.update();
+        });
+
+        this.props.endAngle.sub((a) => {
+            this.endAngle = a;
+            this.update();
+        });
+
+        this.props.thrustActual.sub((a) => {
+            this.thrustActual = a;
+            this.update();
+        });
+
+        this.props.thrustTarget.sub((a) => {
+            this.thrustTarget = a;
+            this.update();
+        });
+    }
+
+    update(): void {
+        const thrustEnd = valueRadianAngleConverter(this.thrustTarget, 0, 1, this.endAngle, this.startAngle);
+        this.endPath.set(`M ${this.props.x} ${this.props.y} L ${this.props.x + thrustEnd.x * 0.8*this.props.radius} ${this.props.y + thrustEnd.y * 0.8*this.props.radius}`);
+
+        this.sweep1.set(this.sweepHorizontal(0.8 * this.props.radius));
+        this.sweep2.set(this.sweepHorizontal(0.65 * this.props.radius));
+        this.sweep3.set(this.sweepHorizontal(0.5 * this.props.radius));
+        this.sweep4.set(this.sweepHorizontal(0.35 * this.props.radius));
+    }
+
+    render(): VNode {
+        return (
+            <>
+                <g className='GaugeComponent'>
+                    <g className={this.props.visible.map((it) => it ? 'Show' : 'Hide')}>
+                        <path d={this.sweep1} className={this.props.class} />
+                        <path d={this.sweep2} className={this.props.class} />
+                        <path d={this.sweep3} className={this.props.class} />
+                        <path d={this.sweep4} className={this.props.class} />
+                        <path d={this.endPath} className={this.props.class} />
+                    </g>
+                </g>
+            </>
         );
     }
 }

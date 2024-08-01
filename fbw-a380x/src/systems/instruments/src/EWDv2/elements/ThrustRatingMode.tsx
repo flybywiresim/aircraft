@@ -1,25 +1,15 @@
-import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { splitDecimals } from '@instruments/common/gauges';
-import { useSimVar } from '@instruments/common/simVars';
+import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { splitDecimals } from '../../MsfsAvionicsCommon/gauges';
 import {
   ConsumerSubject,
   DisplayComponent,
-  EventBus,
   FSComponent,
   MappedSubject,
-  Subject,
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from 'instruments/src/EWDv2/shared/ArincValueProvider';
 import { EwdSimvars } from 'instruments/src/EWDv2/shared/EwdSimvarPublisher';
-
-type N1LimitProps = {
-  x: number;
-  y: number;
-  active: Subscribable<boolean>;
-};
 
 export class N1Limit extends DisplayComponent<{
   x: number;
