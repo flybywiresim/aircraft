@@ -2,17 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Clock, EventBus, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
-import { PseudoFWC } from './PseudoFWC';
 
 import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWDv2/EWD';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
-class A32NX_EWD extends BaseInstrument {
+class A380X_EWDv2 extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
   private readonly backplane = new InstrumentBackplane();
@@ -23,15 +22,12 @@ class A32NX_EWD extends BaseInstrument {
 
   private readonly clock = new Clock(this.bus);
 
-  private readonly pseudoFwc = new PseudoFWC(this.bus, this);
-
   constructor() {
     super();
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('SimVars', this.simVarPublisher);
     // this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
-    this.backplane.addInstrument('Fwc', this.pseudoFwc);
   }
 
   get templateID(): string {
@@ -57,4 +53,4 @@ class A32NX_EWD extends BaseInstrument {
   }
 }
 
-registerInstrument('a380x-ewd', A32NX_EWD);
+registerInstrument('a380x-ewdv2', A380X_EWDv2);

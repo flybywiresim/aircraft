@@ -1,7 +1,9 @@
 {
   "index": "./instrument.tsx",
-  "isInteractive": false,
-  "extraDeps": [
-    "../MsfsAvionicsCommon"
-  ]
+  "name": "EWDv2",
+  "dimensions": {
+    "width": 768,
+    "height": 1024
+  },
+  "isInteractive": false
 }
