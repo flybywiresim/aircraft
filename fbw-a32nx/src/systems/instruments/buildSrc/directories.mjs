@@ -13,5 +13,5 @@ export const Directories = {
     instruments: path.join(directoryName, '..'),
     instrumentsAceOutput: path.join(directoryName, '..', 'aceBundles'),
     src: path.join(directoryName, '..', '..'),
-    root: path.join(directoryName, '..', '..','..', '..','..'),
+    root: path.join(directoryName, '..', '..', '..', '..', '..'),
 };
