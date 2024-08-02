@@ -6253,6 +6253,7 @@ mod tests {
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
             autobrake_panel: AutobrakePanel,
+            brake_fan_panel: BrakeFanPanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel<2>,
             landing_gear: LandingGear,
@@ -6292,6 +6293,7 @@ mod tests {
                     hydraulics: A320Hydraulic::new(context),
                     overhead: A320HydraulicOverheadPanel::new(context),
                     autobrake_panel: AutobrakePanel::new(context),
+                    brake_fan_panel: BrakeFanPanel::new(context),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(
                         context,
                     ),
@@ -6551,6 +6553,7 @@ mod tests {
                     &self.engine_2,
                     &self.overhead,
                     &self.autobrake_panel,
+                    &self.brake_fan_panel,
                     &self.engine_fire_overhead,
                     &self.lgcius,
                     &self.emergency_electrical_overhead,
@@ -6570,6 +6573,7 @@ mod tests {
                 self.lgcius.accept(visitor);
                 self.hydraulics.accept(visitor);
                 self.autobrake_panel.accept(visitor);
+                self.brake_fan_panel.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
                 self.emergency_electrical_overhead.accept(visitor);
