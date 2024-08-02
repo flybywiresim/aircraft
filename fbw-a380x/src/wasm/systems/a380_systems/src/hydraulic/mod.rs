@@ -2297,12 +2297,14 @@ impl A380Hydraulic {
             overhead_panel,
         );
 
+        // Placeholder to move auxiliary gear doors. To remove when gear system fully implemented
         self.aux_gear_doors.update(
             context,
             lgcius.active_lgciu(),
-            self.yellow_circuit
-                .system_section()
-                .is_pressure_switch_pressurised(),
+            self.gear_system
+                .gear_hydraulic_manifold_pressure()
+                .get::<psi>()
+                > 2000.,
         )
     }
 
