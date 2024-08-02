@@ -12,6 +12,7 @@ use uom::si::{
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
     velocity::knot,
     volume::{cubic_inch, gallon, liter},
     volume_rate::gallon_per_second,
@@ -22,7 +23,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
-        brake::{BrakeAssembly, BrakeProperties},
+        brake::{BrakeAssembly, BrakeFanPanel, BrakeProperties},
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
@@ -60,14 +61,14 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, random_from_normal_distribution, random_from_range,
+        arinc429::SignStatus, interpolation, random_from_normal_distribution, random_from_range,
         update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
-        AirbusEngineDrivenPumpId, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, RamAirTurbineController, ReservoirAirPressure, ReverserPosition,
-        SectionPressure, TrimmableHorizontalStabilizer,
+        AirbusEngineDrivenPumpId, ControllerSignal, DelayedFalseLogicGate,
+        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
+        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
+        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, RamAirTurbineController,
+        ReservoirAirPressure, ReverserPosition, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1516,8 +1517,10 @@ pub(super) struct A320Hydraulic {
     gear_system_hydraulic_controller: A320GearHydraulicController,
     gear_system: HydraulicGearSystem,
     brake_properties: BrakeProperties,
-    left_brake_assembly: BrakeAssembly,
-    right_brake_assembly: BrakeAssembly,
+    left_brake_assembly: BrakeAssembly<2>,
+    right_brake_assembly: BrakeAssembly<2>,
+    // The relays for enabling the brake fans are powered by DC2
+    dc2_powered: bool,
 
     ptu_high_pitch_sound_active: DelayedFalseLogicGate,
 
@@ -1783,20 +1786,24 @@ impl A320Hydraulic {
             gear_system: A320GearSystemFactory::a320_gear_system(context),
             brake_properties: BrakeProperties::new(
                 Length::new::<inch>(20.) / 2.,
+                Length::new::<inch>(15.75), // 40cm
                 Mass::new::<kilogram>(66.),
             ),
             left_brake_assembly: BrakeAssembly::new(
                 context,
                 "WHEEL RPM:1".to_owned(),
-                1..=2,
+                [1, 2],
+                [ElectricalBusType::DirectCurrent(1); 2],
                 Some(ElectricalBusType::AlternatingCurrent(2)),
             ),
             right_brake_assembly: BrakeAssembly::new(
                 context,
                 "WHEEL RPM:2".to_owned(),
-                3..=4,
+                [3, 4],
+                [ElectricalBusType::DirectCurrent(1); 2],
                 Some(ElectricalBusType::AlternatingCurrent(2)),
             ),
+            dc2_powered: false,
 
             ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
                 Self::HIGH_PITCH_PTU_SOUND_DURATION,
@@ -1830,6 +1837,7 @@ impl A320Hydraulic {
         engine2: &impl Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
+        brake_fan_panel: &BrakeFanPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
@@ -1843,6 +1851,7 @@ impl A320Hydraulic {
             context,
             overhead_panel,
             autobrake_panel,
+            brake_fan_panel,
             rat_and_emer_gen_man_on,
             emergency_elec,
             lgcius.lgciu1(),
@@ -2082,12 +2091,6 @@ impl A320Hydraulic {
             &self.gear_system_hydraulic_controller,
             lgcius.active_lgciu(),
             self.green_circuit.system_section(),
-            self.braking_circuit_norm
-                .left_brake_pressure()
-                .max(self.braking_circuit_altn.left_brake_pressure()),
-            self.braking_circuit_norm
-                .right_brake_pressure()
-                .max(self.braking_circuit_altn.right_brake_pressure()),
         );
     }
 
@@ -2096,6 +2099,7 @@ impl A320Hydraulic {
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
+        brake_fan_panel: &BrakeFanPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
         lgciu1: &impl LgciuInterface,
@@ -2121,6 +2125,8 @@ impl A320Hydraulic {
             autobrake_panel,
             engine1,
             engine2,
+            self.left_brake_assembly.brake_temperature_sensors(),
+            self.right_brake_assembly.brake_temperature_sensors(),
         );
 
         // Updating rat stowed pos on all frames in case it's used for graphics
@@ -2151,11 +2157,14 @@ impl A320Hydraulic {
                 self.gear_system.right_gear_position(),
             ),
         ] {
+            let brake_fan_turned_on = self.dc2_powered
+                && brake_fan_panel.brake_fan_pb_is_pressed()
+                && lgciu2.left_gear_compressed(false);
             brake_assembly.update(
                 context,
                 &self.brake_properties,
                 braking_pressure_norm.max(braking_pressure_altn),
-                /* TODO */ false,
+                brake_fan_turned_on,
                 gear_position.get::<ratio>() > 0.25,
             );
         }
@@ -2586,6 +2595,10 @@ impl A320Hydraulic {
     pub fn gear_system(&self) -> &impl GearSystemSensors {
         &self.gear_system
     }
+
+    pub fn brakes_hot(&self) -> bool {
+        self.brake_steer_computer.brakes_hot()
+    }
 }
 impl SimulationElement for A320Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -2649,6 +2662,8 @@ impl SimulationElement for A320Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+        self.left_brake_assembly.accept(visitor);
+        self.right_brake_assembly.accept(visitor);
 
         self.trim_controller.accept(visitor);
         self.trim_assembly.accept(visitor);
@@ -2676,6 +2691,10 @@ impl SimulationElement for A320Hydraulic {
             self.power_transfer_unit.is_in_continuous_mode()
                 && !self.ptu_high_pitch_sound_active.output(),
         );
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.dc2_powered = buses.is_powered(ElectricalBusType::DirectCurrent(2));
     }
 }
 impl EmergencyGeneratorControlUnit for A320Hydraulic {
@@ -3601,6 +3620,9 @@ struct A320HydraulicBrakeSteerComputerUnit {
     norm_brake_outputs: A320BrakeSystemOutputs,
     alternate_brake_outputs: A320BrakeSystemOutputs,
 
+    brake_temperature_ids: [VariableIdentifier; 4],
+    brake_temperatures: [Option<ThermodynamicTemperature>; 4],
+
     normal_brakes_available: bool,
     should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
     anti_skid_activated: bool,
@@ -3651,6 +3673,8 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
     const PILOT_INPUT_DETECTION_TRESHOLD: f64 = 0.2;
 
+    const BRAKES_HOT_THRESHOLD_CELSIUS: f64 = 300.;
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             park_brake_lever_pos_id: context.get_identifier("PARK_BRAKE_LEVER_POS".to_owned()),
@@ -3674,6 +3698,9 @@ impl A320HydraulicBrakeSteerComputerUnit {
             right_brake_pilot_input: Ratio::new::<ratio>(0.0),
             norm_brake_outputs: A320BrakeSystemOutputs::new(),
             alternate_brake_outputs: A320BrakeSystemOutputs::new(),
+            brake_temperature_ids: [1, 2, 3, 4]
+                .map(|index| context.get_identifier(format!("REPORTED_BRAKE_TEMPERATURE_{index}"))),
+            brake_temperatures: [None; 4],
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
@@ -3767,7 +3794,17 @@ impl A320HydraulicBrakeSteerComputerUnit {
         autobrake_panel: &AutobrakePanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        left_brake_temperature_sensors: &[impl ControllerSignal<ThermodynamicTemperature>; 2],
+        right_brake_temperature_sensors: &[impl ControllerSignal<ThermodynamicTemperature>; 2],
     ) {
+        for (i, brake_temperature) in self.brake_temperatures.iter_mut().enumerate() {
+            *brake_temperature = if i < 2 {
+                left_brake_temperature_sensors[i].signal()
+            } else {
+                right_brake_temperature_sensors[i - 2].signal()
+            };
+        }
+
         self.update_steering_demands(lgciu1, engine1, engine2);
 
         self.update_normal_braking_availability(current_pressure.pressure());
@@ -3905,6 +3942,14 @@ impl A320HydraulicBrakeSteerComputerUnit {
     fn alternate_controller(&self) -> &impl BrakeCircuitController {
         &self.alternate_brake_outputs
     }
+
+    fn brakes_hot(&self) -> bool {
+        self.brake_temperatures.iter().any(|t| {
+            t.map_or(false, |t| {
+                t.get::<degree_celsius>() >= Self::BRAKES_HOT_THRESHOLD_CELSIUS
+            })
+        })
+    }
 }
 impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -3929,6 +3974,22 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
 
         self.autopilot_nosewheel_demand =
             Ratio::new::<ratio>(reader.read(&self.autopilot_nosewheel_demand_id));
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        for (id, temp) in self
+            .brake_temperature_ids
+            .iter()
+            .zip(self.brake_temperatures)
+        {
+            // TODO: send status when not powered
+            let ssm = if temp.is_some() {
+                SignStatus::NormalOperation
+            } else {
+                SignStatus::NoComputedData // TODO: needs to be verified
+            };
+            writer.write_arinc429(id, temp.unwrap_or_default(), ssm);
+        }
     }
 }
 impl SteeringController for A320HydraulicBrakeSteerComputerUnit {

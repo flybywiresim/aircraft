@@ -6,7 +6,7 @@ use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
-    length::meter,
+    length::{inch, meter},
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
@@ -20,6 +20,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
+        brake::{BrakeAssembly, BrakeProperties},
         brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
@@ -1581,6 +1582,11 @@ pub(super) struct A380Hydraulic {
     gear_system_gravity_extension_controller: A380GravityExtension,
     gear_system_hydraulic_controller: A380GearHydraulicController,
     gear_system: HydraulicGearSystem,
+    brake_properties: BrakeProperties,
+    left_wing_brake_assembly: BrakeAssembly<4>,
+    right_wing_brake_assembly: BrakeAssembly<4>,
+    left_body_brake_assembly: BrakeAssembly<4>,
+    right_body_brake_assembly: BrakeAssembly<4>,
 
     ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController,
     ths: TrimmableHorizontalStabilizerActuator,
@@ -1888,6 +1894,40 @@ impl A380Hydraulic {
             gear_system_gravity_extension_controller: A380GravityExtension::new(context),
             gear_system_hydraulic_controller: A380GearHydraulicController::new(),
             gear_system: A380GearSystemFactory::a380_gear_system(context),
+            brake_properties: BrakeProperties::new(
+                // TODO: correct numbers to A380 values
+                Length::new::<inch>(20.) / 2.,
+                Length::new::<inch>(15.75), // 40cm
+                Mass::new::<kilogram>(66.),
+            ),
+            left_wing_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:3".to_owned(),
+                [1, 2, 5, 6],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            right_wing_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:4".to_owned(),
+                [3, 4, 7, 8],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            left_body_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(),
+                [9, 10, 13, 14],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            right_body_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(),
+                [11, 12, 15, 16],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
 
             ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController::new(
                 context,
@@ -2187,12 +2227,6 @@ impl A380Hydraulic {
             &self.gear_system_hydraulic_controller,
             lgcius.active_lgciu(),
             self.green_circuit.system_section(),
-            self.braking_circuit_norm
-                .left_brake_pressure()
-                .max(self.braking_circuit_altn.left_brake_pressure()),
-            self.braking_circuit_norm
-                .right_brake_pressure()
-                .max(self.braking_circuit_altn.right_brake_pressure()),
         );
     }
 
@@ -2245,6 +2279,41 @@ impl A380Hydraulic {
 
         self.pushback_tug.update(context);
         self.bypass_pin.update(&self.pushback_tug);
+
+        for (brake_assembly, braking_pressure_norm, braking_pressure_altn, gear_position) in [
+            (
+                &mut self.left_wing_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.left_body_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.right_body_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+            (
+                &mut self.right_wing_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+        ] {
+            brake_assembly.update(
+                context,
+                &self.brake_properties,
+                braking_pressure_norm.max(braking_pressure_altn),
+                false,
+                gear_position.get::<ratio>() > 0.25,
+            );
+        }
 
         self.braking_force.update_forces(
             context,
@@ -2933,6 +3002,10 @@ impl SimulationElement for A380Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+        self.left_wing_brake_assembly.accept(visitor);
+        self.right_wing_brake_assembly.accept(visitor);
+        self.left_body_brake_assembly.accept(visitor);
+        self.right_body_brake_assembly.accept(visitor);
 
         self.ths_system_controller.accept(visitor);
         self.ths.accept(visitor);

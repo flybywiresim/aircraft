@@ -1,12 +1,11 @@
-use std::{f64::consts::PI, time::Duration};
-
 use crate::{
-    shared::{ConsumePower, ElectricalBusType, ElectricalBuses},
+    shared::{ConsumePower, ControllerSignal, ElectricalBusType, ElectricalBuses},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+use std::{f64::consts::PI, time::Duration};
 use uom::si::{
     area::square_meter,
     energy::joule,
@@ -21,33 +20,40 @@ use uom::si::{
     velocity::meter_per_second,
 };
 
-pub struct BrakeAssembly {
+pub struct BrakeAssembly<const N: usize> {
     wheel_speed_id: VariableIdentifier,
     wheel_speed: AngularVelocity,
-    brakes: Vec<(Brake, Option<BrakeFan>)>,
+    brakes: [Brake; N],
+    brake_probes: [BrakeProbe; N],
+    brake_fans: Option<[BrakeFan; N]>,
 }
-impl BrakeAssembly {
+impl<const N: usize> BrakeAssembly<N> {
     /// Creates a new brake assembly
     /// ## Parameters
     /// `wheel_speed_variable_name` - the simvar to be used for the rotational velocity of the tyres
     pub fn new(
         context: &mut InitContext,
         wheel_speed_variable_name: String,
-        indices: impl IntoIterator<Item = usize>,
+        indices: [usize; N],
+        sensors_powered_by: [ElectricalBusType; N],
         brake_fan_bus: Option<ElectricalBusType>,
     ) -> Self {
+        let brakes = indices.map(|index| Brake::new(context, index));
+        let brake_probes = sensors_powered_by.map(BrakeProbe::new);
+        let brake_fans = brake_fan_bus.map(|bus| {
+            brakes
+                .iter()
+                .map(|_| BrakeFan::new(bus))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap()
+        });
         Self {
             wheel_speed_id: context.get_identifier(wheel_speed_variable_name),
             wheel_speed: AngularVelocity::default(),
-            brakes: indices
-                .into_iter()
-                .map(|index| {
-                    (
-                        Brake::new(context, index),
-                        brake_fan_bus.map(|bus| BrakeFan::new(bus)),
-                    )
-                })
-                .collect(),
+            brakes,
+            brake_probes,
+            brake_fans,
         }
     }
 
@@ -60,33 +66,50 @@ impl BrakeAssembly {
         gear_extended_phys: bool,
     ) {
         let passed_length = brake_properties.get_passed_length(context, self.wheel_speed);
-        for (brake, brake_fan) in &mut self.brakes {
-            if let Some(brake_fan) = brake_fan {
+
+        let brake_fan_are_running = if let Some(brake_fans) = &mut self.brake_fans {
+            let brake_fan_on = [false; N];
+            for (brake_fan, ref mut brake_fan_on) in brake_fans.iter_mut().zip(brake_fan_on) {
                 brake_fan.update(brake_fan_should_be_on);
+                *brake_fan_on = brake_fan.is_running();
             }
+            brake_fan_on
+        } else {
+            [false; N]
+        };
+
+        for ((brake, brake_probe), brake_fan_is_running) in self
+            .brakes
+            .iter_mut()
+            .zip(&mut self.brake_probes)
+            .zip(brake_fan_are_running)
+        {
             brake.update(
                 context,
                 brake_properties,
                 passed_length,
                 actuator_pressure,
-                brake_fan
-                    .iter()
-                    .map(|brake_fan| brake_fan.is_running())
-                    .next()
-                    .unwrap_or_default(),
+                brake_fan_is_running,
                 gear_extended_phys,
             );
+            brake_probe.update(context, brake, brake_fan_is_running)
         }
     }
+
+    pub fn brake_temperature_sensors(
+        &self,
+    ) -> &[impl ControllerSignal<ThermodynamicTemperature>; N] {
+        &self.brake_probes
+    }
 }
-impl SimulationElement for BrakeAssembly {
+impl<const N: usize> SimulationElement for BrakeAssembly<N> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for (brake, brake_fan) in &mut self.brakes {
-            brake.accept(visitor);
-            if let Some(brake_fan) = brake_fan {
-                brake_fan.accept(visitor);
-            }
+        accept_iterable!(self.brakes, visitor);
+        accept_iterable!(self.brake_probes, visitor);
+        if let Some(brake_fans) = &mut self.brake_fans {
+            accept_iterable!(brake_fans, visitor);
         }
+
         visitor.visit(self);
     }
 
@@ -129,6 +152,7 @@ impl BrakeProperties {
     }
 }
 
+/// Simulates a carbon brake (C/C composite)
 struct Brake {
     temperature_id: VariableIdentifier,
     temperature: ThermodynamicTemperature,
@@ -252,6 +276,7 @@ impl SimulationElement for Brake {
     }
 }
 
+#[derive(Debug)]
 struct BrakeFan {
     powered_by: ElectricalBusType,
     is_powered: bool,
@@ -290,27 +315,27 @@ impl SimulationElement for BrakeFan {
 }
 
 struct BrakeProbe {
-    temperature_identifier: VariableIdentifier,
-
     temperature: ThermodynamicTemperature,
     initialised: bool,
+    powered_by: ElectricalBusType,
+    is_powered: bool,
 }
 impl BrakeProbe {
     const THERMAL_INERTIA: f64 = 0.003;
 
-    fn new(context: &mut InitContext, index: usize) -> Self {
+    fn new(powered_by: ElectricalBusType) -> Self {
         Self {
-            temperature_identifier: context
-                .get_identifier(format!("REPORTED_BRAKE_TEMPERATURE_{index}")),
-
             temperature: ThermodynamicTemperature::default(),
             initialised: false,
+            powered_by,
+            is_powered: false,
         }
     }
 
     fn update(&mut self, context: &UpdateContext, brake: &Brake, brake_fan_is_on: bool) {
         if !self.initialised {
             self.temperature = context.ambient_temperature();
+            self.initialised = true;
         }
 
         let target_temperature_diff = TemperatureInterval::new::<kelvin>(if brake_fan_is_on {
@@ -325,31 +350,42 @@ impl BrakeProbe {
         self.temperature += target_temperature_diff * Self::THERMAL_INERTIA;
     }
 }
+impl ControllerSignal<ThermodynamicTemperature> for BrakeProbe {
+    fn signal(&self) -> Option<ThermodynamicTemperature> {
+        self.is_powered.then_some(self.temperature)
+    }
+}
+impl SimulationElement for BrakeProbe {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
 
 pub struct BrakeFanPanel {
     brake_fan_pb_identifier: VariableIdentifier,
     running_identifier: VariableIdentifier,
+    brakes_hot_identifier: VariableIdentifier,
 
     brake_fan_pb_pressed: bool,
-    pressed: bool,
+    brakes_hot: bool,
 }
 impl BrakeFanPanel {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             brake_fan_pb_identifier: context.get_identifier("BRAKE_FAN_BTN_PRESSED".to_owned()),
             running_identifier: context.get_identifier("BRAKE_FAN".to_owned()),
+            brakes_hot_identifier: context.get_identifier("BRAKES_HOT".to_owned()),
             brake_fan_pb_pressed: false,
-            pressed: false,
+            brakes_hot: false,
         }
     }
 
-    pub fn update(&mut self, gear_fully_extended: bool) {
-        // TODO: check the exact condition
-        self.pressed = self.brake_fan_pb_pressed && gear_fully_extended
+    pub fn update(&mut self, brakes_hot: bool) {
+        self.brakes_hot = brakes_hot;
     }
 
-    pub fn is_pressed(&self) -> bool {
-        self.pressed
+    pub fn brake_fan_pb_is_pressed(&self) -> bool {
+        self.brake_fan_pb_pressed
     }
 }
 impl SimulationElement for BrakeFanPanel {
@@ -358,6 +394,7 @@ impl SimulationElement for BrakeFanPanel {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.running_identifier, self.pressed);
+        writer.write(&self.brakes_hot_identifier, self.brakes_hot);
+        writer.write(&self.running_identifier, self.brake_fan_pb_pressed);
     }
 }
