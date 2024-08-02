@@ -6,6 +6,7 @@ import {
   EventBus,
   ConsumerSubject,
   Subject,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWDv2/shared/EwdSimvarPublisher';
 import { GaugeComponent, GaugeMarkerComponent, GaugeMaxEGTComponent } from '../../MsfsAvionicsCommon/gauges';
@@ -23,14 +24,10 @@ export class EGT extends DisplayComponent<EGTProps> {
 
   private readonly throttleMode = ConsumerSubject.create(this.sub.on('thrust_limit_type').whenChanged(), 0);
 
-  private readonly togaWarning = ConsumerSubject.create(this.sub.on('athrTogaWarning').whenChanged(), false);
-
   private readonly egt = ConsumerSubject.create(
     this.sub.on(`egt_${this.props.engine}`).withPrecision(1).whenChanged(),
     0,
   );
-
-  private readonly egtModeMax = Subject.create(0);
 
   private radius = 68;
   private startAngle = 270;
@@ -38,47 +35,40 @@ export class EGT extends DisplayComponent<EGTProps> {
   private min = 0;
   private max = 1000;
 
-  private warningEGTColor = (EGTemperature: number) => {
+  private warningEGTColor = (EGTemperature: number, throttleMode: number) => {
     if (EGTemperature >= 900) {
       return 'Red';
     }
-    if (EGTemperature > 850 && this.throttleMode.get() < 3) {
+    if (EGTemperature > 850 && throttleMode < 3) {
       return 'Amber';
     }
     return 'Green';
   };
 
-  private updateModeEGTMax() {
-    switch (this.throttleMode.get()) {
-      case 4:
-        this.egtModeMax.set(this.togaWarning.get() ? 1060 : 1025);
-        break;
+  private readonly amberVisible = this.throttleMode.map((tm) => tm < 4);
 
-      case 1:
-      case 2:
-      case 3:
-      case 5:
-        this.egtModeMax.set(1025);
-        break;
+  private readonly egtColour = MappedSubject.create(
+    ([egt, tm]) => this.warningEGTColor(egt, tm),
+    this.egt,
+    this.throttleMode,
+  );
 
-      default:
-        this.egtModeMax.set(750);
-        break;
-    }
-  }
+  // EEC trims EGT to a max value
+  private readonly trimmedEGT = MappedSubject.create(
+    ([egt, throttleMode]) => Math.min([3, 4].includes(throttleMode) ? 900 : 850, egt),
+    this.egt,
+    this.throttleMode,
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.throttleMode.sub(() => this.updateModeEGTMax());
-    this.togaWarning.sub(() => this.updateModeEGTMax());
   }
 
   render() {
     return (
       <>
         <g id={`EGT-indicator-${this.props.engine}`}>
-          <g visibility={this.props.active.map((it) => (!it ? 'visible' : 'hidden'))}>
+          <g visibility={this.props.active.map((it) => (!it ? 'inherit' : 'hidden'))}>
             <GaugeComponent
               x={this.props.x}
               y={this.props.y}
@@ -92,12 +82,8 @@ export class EGT extends DisplayComponent<EGTProps> {
               XX
             </text>
           </g>
-          <g visibility={this.props.active.map((it) => (it ? 'visible' : 'hidden'))}>
-            <text
-              class={this.egt.map((egt) => `Large End ${this.warningEGTColor(egt)}`)}
-              x={this.props.x + 33}
-              y={this.props.y + 11.7}
-            >
+          <g visibility={this.props.active.map((it) => (it ? 'inherit' : 'hidden'))}>
+            <text class={this.egtColour.map((col) => `Large End ${col}`)} x={this.props.x + 33} y={this.props.y + 11.7}>
               {this.egt.map((egt) => Math.min([3, 4].includes(this.throttleMode.get()) ? 900 : 850, Math.round(egt)))}
             </text>
             <GaugeComponent
@@ -151,20 +137,22 @@ export class EGT extends DisplayComponent<EGTProps> {
                 endAngle={Subject.create(this.endAngle)}
                 class="GaugeText Gauge RedLine"
               />
-              <GaugeMaxEGTComponent
-                value={this.egtModeMax}
-                x={this.props.x}
-                y={this.props.y}
-                min={this.min}
-                max={this.max}
-                radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
-                class="GaugeThrustLimitIndicatorFill Gauge"
-              />
+              <g visibility={this.amberVisible.map((it) => (it ? 'inherit' : 'hidden'))}>
+                <GaugeMaxEGTComponent
+                  value={Subject.create(850)}
+                  x={this.props.x}
+                  y={this.props.y}
+                  min={this.min}
+                  max={this.max}
+                  radius={this.radius}
+                  startAngle={Subject.create(this.startAngle)}
+                  endAngle={Subject.create(this.endAngle)}
+                  class="GaugeThrustLimitIndicatorFill Gauge"
+                />
+              </g>
               <rect x={this.props.x - 36} y={this.props.y - 11} width={72} height={26} class="DarkGreyBox" />
               <GaugeMarkerComponent
-                value={this.egt.map((egt) => Math.min([3, 4].includes(this.throttleMode.get()) ? 900 : 850, egt))}
+                value={this.trimmedEGT}
                 x={this.props.x}
                 y={this.props.y}
                 min={this.min}
@@ -172,7 +160,7 @@ export class EGT extends DisplayComponent<EGTProps> {
                 radius={this.radius}
                 startAngle={Subject.create(this.startAngle)}
                 endAngle={Subject.create(this.endAngle)}
-                class={this.egt.map((egt) => `${this.warningEGTColor(egt)}GaugeIndicator Gauge`)}
+                class={this.egtColour.map((col) => `${col}GaugeIndicator Gauge`)}
                 multiplierInner={0.75}
                 indicator
                 halfIndicator

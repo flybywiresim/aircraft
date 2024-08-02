@@ -419,10 +419,6 @@ interface GaugeMaxEGTComponentProps {
     class: string;
 }
 export class GaugeMaxEGTComponent extends DisplayComponent<GaugeMaxEGTComponentProps> {
-    private x = Subject.create(0);
-
-    private y = Subject.create(0);
-
     private angle = Subject.create(0);
 
     private startAngle: number = 0;
@@ -465,12 +461,12 @@ export class GaugeMaxEGTComponent extends DisplayComponent<GaugeMaxEGTComponentP
 
     update(): void {
         const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle);
+        const x = this.props.x + dir.x * this.props.radius;
+        const y = this.props.y + dir.y * this.props.radius;
 
-        this.x.set(dir.x * this.props.radius - 6);
-        this.y.set(dir.y * this.props.radius);
         this.angle.set(dir.angle);
-        this.path.set(`M ${this.x.get()},${this.y.get()} l 12,0 l 0,4 l -8,0 Z`);
-        this.pathTransform.set(`rotate(${this.angle.get()} ${this.x.get()} ${this.y.get()})`);
+        this.path.set(`M ${x - 6},${y} l 12,0 l 0,4 l -8,0 Z`);
+        this.pathTransform.set(`rotate(${this.angle.get()} ${x} ${y})`);
     }
 
     render(): VNode {

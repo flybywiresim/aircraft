@@ -1,4 +1,5 @@
 import { DisplayComponent, Subscribable, VNode, FSComponent, EventBus } from '@microsoft/msfs-sdk';
+import { AttentionGetter } from 'instruments/src/EWDv2/elements/AttentionGetter';
 import { EGT } from 'instruments/src/EWDv2/elements/EGT';
 import { N1 } from 'instruments/src/EWDv2/elements/N1';
 import { ThrustGauge } from 'instruments/src/EWDv2/elements/ThrustGauge';
@@ -20,7 +21,13 @@ export class EngineGauge extends DisplayComponent<EngineGaugeProps> {
   render() {
     return (
       <g id={`Engine-Gauge-${this.props.engine}`}>
-        {/* <IgnitionBorder x={x} y={y} engine={engine} active={active} /> */}
+        <AttentionGetter
+          bus={this.props.bus}
+          x={this.props.x}
+          y={this.props.y}
+          engine={this.props.engine}
+          active={this.props.active}
+        />
         <ThrustGauge
           bus={this.props.bus}
           x={this.props.x + 2}

@@ -1,6 +1,24 @@
 @import "../MsfsAvionicsCommon/definitions";
 @import "../MsfsAvionicsCommon/gauges";
 
+@mixin Blink10SecondsFill($color) {
+    @keyframes pulsing {
+        100% {
+            fill: $color;
+        }
+        51% {
+            fill: $color;
+        }
+        50% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+        1% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+    }
+
+    animation: pulsing 1s 10;
+}
 
 @font-face {
     font-family: "Ecam";
@@ -128,6 +146,10 @@ text, tspan {
 
     &.End {
         text-anchor: end !important;
+    }
+
+    &.IdleTextPulse {
+        @include Blink10SecondsFill($display-green);
     }
 
     &.Underline {

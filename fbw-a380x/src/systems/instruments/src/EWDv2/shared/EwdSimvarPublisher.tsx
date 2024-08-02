@@ -17,6 +17,8 @@ export interface BaseEwdSimvars {
   reverser_deploying: boolean;
   reverser_deployed: boolean;
   thrust_reverse: boolean;
+  eng_anti_ice: boolean;
+  wing_anti_ice: boolean;
   eng_selector_position: number;
   autothrustStatus: number;
   thrust_limit_type: number;
@@ -30,6 +32,7 @@ export interface BaseEwdSimvars {
   athrTogaWarning: boolean;
   packs1: boolean;
   packs2: boolean;
+  fwc_flight_phase: number;
   ewdRightLine1: number;
   ewdRightLine2: number;
   ewdRightLine3: number;
@@ -48,13 +51,14 @@ type IndexedTopics =
   | 'throttle_position'
   | 'reverser_deploying'
   | 'reverser_deployed'
-  | 'thrust_reverse';
+  | 'thrust_reverse'
+  | 'eng_anti_ice';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
 
 /**
- * Fuel System events.
+ * EWD events.
  */
 export interface EwdSimvars extends BaseEwdSimvars, EwdIndexedEvents {}
 
@@ -72,6 +76,8 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['reverser_deploying', { name: 'L:A32NX_REVERSER_#index#_DEPLOYING', type: SimVarValueType.Bool, indexed: true }],
       ['reverser_deployed', { name: 'L:A32NX_REVERSER_#index#_DEPLOYED', type: SimVarValueType.Bool, indexed: true }],
       ['thrust_reverse', { name: 'L:A32NX_AUTOTHRUST_REVERSE:#index#', type: SimVarValueType.Bool, indexed: true }],
+      ['eng_anti_ice', { name: 'A:ENG ANTI ICE:#index#', type: SimVarValueType.Bool, indexed: true }],
+      ['wing_anti_ice', { name: 'A:STRUCTURAL DEICE SWITCH', type: SimVarValueType.Bool }],
       ['eng_selector_position', { name: 'L:XMLVAR_ENG_MODE_SEL', type: SimVarValueType.Enum }],
       ['autothrustStatus', { name: 'L:A32NX_AUTOTHRUST_STATUS', type: SimVarValueType.Enum }],
       ['thrust_limit_type', { name: 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', type: SimVarValueType.Number }],
@@ -85,6 +91,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['athrTogaWarning', { name: 'L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', type: SimVarValueType.Bool }],
       ['packs1', { name: 'L:A32NX_COND_PACK_1_IS_OPERATING', type: SimVarValueType.Bool }],
       ['packs2', { name: 'L:A32NX_COND_PACK_2_IS_OPERATING', type: SimVarValueType.Bool }],
+      ['fwc_flight_phase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Enum }],
       ['ewdRightLine1', { name: 'L:A380X_EWD_RIGHT_LINE_1', type: SimVarValueType.Number }],
       ['ewdRightLine2', { name: 'L:A380X_EWD_RIGHT_LINE_2', type: SimVarValueType.Number }],
       ['ewdRightLine3', { name: 'L:A380X_EWD_RIGHT_LINE_3', type: SimVarValueType.Number }],

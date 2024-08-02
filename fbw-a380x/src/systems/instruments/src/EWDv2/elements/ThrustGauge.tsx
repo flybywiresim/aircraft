@@ -80,14 +80,16 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
     this.thrustLimitToga,
   );
 
-  private thrIdleOffset = 0.042;
+  private readonly thrIdleOffset = this.engineState.map((es) => (es === 1 ? 0.042 : 0));
 
   private readonly throttleTarget = MappedSubject.create(
-    ([throttlePositionN1, thrustLimitIdle, thrustLimitMax]) =>
-      ((throttlePositionN1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * 0.958 + this.thrIdleOffset,
+    ([throttlePositionN1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      ((throttlePositionN1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) +
+      thrIdleOffset,
     this.throttlePositionN1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
+    this.thrIdleOffset,
   );
 
   private readonly throttleTargetReverse = MappedSubject.create(
@@ -99,14 +101,15 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly thrustPercent = MappedSubject.create(
-    ([n1, thrustLimitIdle, thrustLimitMax]) =>
+    ([n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
       Math.min(
         1,
-        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * 0.958 + this.thrIdleOffset,
+        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
       ) * 100,
     this.n1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
+    this.thrIdleOffset,
   );
 
   private readonly thrustPercentReverse = MappedSubject.create(

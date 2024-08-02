@@ -6,6 +6,8 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
 import { EWDMemo } from './elements/EWDMemo';
 import { EngineGauge } from 'instruments/src/EWDv2/elements/EngineGauge';
+import { Idle } from 'instruments/src/EWDv2/elements/Idle';
+import { BleedSupply } from 'instruments/src/EWDv2/elements/BleedSupply';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
@@ -45,14 +47,6 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
 
     this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
-
-    /*     this.engineStateSubs.push(ConsumerSubject.create(sub.on('engine_state_1').whenChanged(),0));
-    this.engineStateSubs.push(ConsumerSubject.create(sub.on('engine_state_2').whenChanged(),0));
-    this.engineStateSubs.push(ConsumerSubject.create(sub.on('engine_state_3').whenChanged(),0));
-    this.engineStateSubs.push(ConsumerSubject.create(sub.on('engine_state_4').whenChanged(),0));
- */
-
-    //const [n1Degraded] = useState([false, false, false, false]);
   }
 
   render(): VNode {
@@ -66,7 +60,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
         <div class="ewd-main">
           <div style="display: flex; height: 375px; margin: 0px 8px 0px 8px;">
             <svg class="ewd-svg" version="1.1" viewBox="0 0 768 1024" xmlns="http://www.w3.org/2000/svg">
+              <text x={20} y={30} class="Amber F26" visibility="hidden">
+                A FLOOR
+              </text>
               <N1Limit x={330} y={30} active={this.engineRunningOrIgnitionOn} bus={this.props.bus} />
+              <BleedSupply bus={this.props.bus} x={750} y={30} />
 
               <EngineGauge
                 bus={this.props.bus}
@@ -101,6 +99,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 n1Degraded={this.n1Degraded[3]}
               />
 
+              <Idle bus={this.props.bus} x={386} y={90} />
               <text x={386} y={121} class="White F26 Center">
                 THR
               </text>
