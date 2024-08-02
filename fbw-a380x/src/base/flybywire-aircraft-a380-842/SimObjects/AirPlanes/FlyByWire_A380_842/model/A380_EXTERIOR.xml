@@ -780,17 +780,17 @@
             </UseTemplate>
 
             <!-- Reversers -->
-
             <!-- 2 -->
-            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
-                <ID>2</ID>
+             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_1</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_REVERSER_2_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
-
             <!-- 3 -->
-            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
-                <ID>3</ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_2</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_REVERSER_3_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
         </Component>
 
