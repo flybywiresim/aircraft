@@ -66,7 +66,6 @@ interface GaugeMarkerComponentProps {
     endAngle: Subscribable<number>;
     class: string | Subscribable<string>;
     textClass?: string;
-    useCentralAlignmentBaseline?: boolean;
     showValue?: boolean;
     indicator?: boolean;
     outer?: boolean;
@@ -208,7 +207,7 @@ export class GaugeMarkerComponent extends DisplayComponent<GaugeMarkerComponentP
                     x={this.textX}
                     y={this.textY}
                     class={this.props.textClass}
-                    alignmentBaseline={this.props.useCentralAlignmentBaseline ? 'central' : 'auto'}
+                    alignmentBaseline="central"
                     textAnchor="middle"
                 >
                     {this.text}
@@ -343,8 +342,8 @@ export class ThrottlePositionDonutComponent extends DisplayComponent<ThrottlePos
     update(): void {
         const dir = valueRadianAngleConverter(this.value, this.props.min, this.props.max, this.endAngle, this.startAngle, this.props.reverse);
 
-        this.circleX.set(dir.x * this.props.radius * (this.props.outerMultiplier ?? 1.12));
-        this.circleY.set(dir.y * this.props.radius * (this.props.outerMultiplier ?? 1.12));
+        this.circleX.set(this.props.x + dir.x * this.props.radius * (this.props.outerMultiplier ?? 1.12));
+        this.circleY.set(this.props.y + dir.y * this.props.radius * (this.props.outerMultiplier ?? 1.12));
     }
 
     render(): VNode {
@@ -476,7 +475,7 @@ export class GaugeMaxEGTComponent extends DisplayComponent<GaugeMaxEGTComponentP
 
     render(): VNode {
         return (
-            <path d={this.path} className={this.props.class} transform={this.pathTransform} />
+            <path d={this.path} class={this.props.class} transform={this.pathTransform} />
         );
     }
 }
@@ -546,9 +545,9 @@ export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentP
     render(): VNode {
         return (
             <>
-                <g className='GaugeComponent'>
-                    <g className={this.props.visible.map((it) => it ? 'Show' : 'Hide')}>
-                        <path d={this.thrustPath} className={this.props.class} />
+                <g class='GaugeComponent'>
+                    <g class={this.props.visible.map((it) => it ? 'Show' : 'Hide')}>
+                        <path d={this.thrustPath} class={this.props.class} />
                     </g>
                 </g>
             </>
@@ -648,13 +647,13 @@ export class ThrustTransientComponent extends DisplayComponent<ThrustTransientCo
     render(): VNode {
         return (
             <>
-                <g className='GaugeComponent'>
-                    <g className={this.props.visible.map((it) => it ? 'Show' : 'Hide')}>
-                        <path d={this.sweep1} className={this.props.class} />
-                        <path d={this.sweep2} className={this.props.class} />
-                        <path d={this.sweep3} className={this.props.class} />
-                        <path d={this.sweep4} className={this.props.class} />
-                        <path d={this.endPath} className={this.props.class} />
+                <g class='GaugeComponent'>
+                    <g class={this.props.visible.map((it) => it ? 'Show' : 'Hide')}>
+                        <path d={this.sweep1} class={this.props.class} />
+                        <path d={this.sweep2} class={this.props.class} />
+                        <path d={this.sweep3} class={this.props.class} />
+                        <path d={this.sweep4} class={this.props.class} />
+                        <path d={this.endPath} class={this.props.class} />
                     </g>
                 </g>
             </>

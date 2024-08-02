@@ -25,7 +25,10 @@ export class EGT extends DisplayComponent<EGTProps> {
 
   private readonly togaWarning = ConsumerSubject.create(this.sub.on('athrTogaWarning').whenChanged(), false);
 
-  private readonly egt = ConsumerSubject.create(this.sub.on('egt').whenChanged(), 0);
+  private readonly egt = ConsumerSubject.create(
+    this.sub.on(`egt_${this.props.engine}`).withPrecision(1).whenChanged(),
+    0,
+  );
 
   private readonly egtModeMax = Subject.create(0);
 
