@@ -220,6 +220,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               <ThrustTransientComponent
                 x={this.props.x}
                 y={this.props.y}
+                min={this.min / 10}
+                max={this.max / 10}
                 thrustActual={this.thrustPercent.map((it) => it / 100)}
                 thrustTarget={this.throttleTarget}
                 radius={this.radius}
@@ -354,9 +356,12 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
             </g>
           </g>
           <g
-            visibility={MappedSubject.create(SubscribableMapFunctions.and(), this.props.active, this.revVisible).map(
-              (it) => (it ? 'inherit' : 'hidden'),
-            )}
+            visibility={MappedSubject.create(
+              ([active, revVisible, n1Degraded]) => active && revVisible && !n1Degraded,
+              this.props.active,
+              this.revVisible,
+              this.props.n1Degraded,
+            ).map((it) => (it ? 'inherit' : 'hidden'))}
           >
             <GaugeThrustComponent
               x={this.props.x}

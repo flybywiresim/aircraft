@@ -15,6 +15,7 @@ import {
   GaugeMarkerComponent,
   splitDecimals,
   ThrottlePositionDonutComponent,
+  ThrustTransientComponent,
 } from '../../MsfsAvionicsCommon/gauges';
 
 interface N1Props {
@@ -107,6 +108,19 @@ export class N1 extends DisplayComponent<N1Props> {
             <text class="F20 End Green" x={this.xDegraded + 76} y={this.props.y + 45}>
               {this.n1PercentSplit2}
             </text>
+            <ThrustTransientComponent
+              x={this.props.x}
+              y={this.props.y}
+              min={this.min / 10}
+              max={this.max / 10}
+              thrustActual={this.n1.map((it) => it / 100)}
+              thrustTarget={this.throttle_position.map((throttle_position) => throttle_position / 100)}
+              radius={this.radius}
+              startAngle={Subject.create(this.startAngle)}
+              endAngle={Subject.create(this.endAngle)}
+              visible={Subject.create(true)}
+              class="TransientIndicator"
+            />
             <GaugeComponent
               x={this.xDegraded}
               y={this.props.y}
@@ -136,8 +150,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 endAngle={Subject.create(this.endAngle)}
                 class="GaugeText Gauge"
                 showValue
-                textNudgeY={-5}
-                textNudgeX={13}
+                textNudgeY={0}
+                textNudgeX={8}
                 multiplierInner={0.9}
               />
               <GaugeMarkerComponent
@@ -166,7 +180,7 @@ export class N1 extends DisplayComponent<N1Props> {
                 class="GaugeText Gauge"
                 showValue
                 textNudgeX={7}
-                textNudgeY={11}
+                textNudgeY={13}
                 multiplierInner={0.9}
               />
               <GaugeMarkerComponent
@@ -192,8 +206,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 endAngle={Subject.create(this.endAngle)}
                 class="GaugeText Gauge"
                 showValue
-                textNudgeY={0}
-                textNudgeX={-13}
+                textNudgeY={7}
+                textNudgeX={-30}
                 multiplierInner={0.9}
               />
               <rect x={this.xDegraded - 13} y={this.props.y + 19} width={96} height={30} class="DarkGreyBox" />

@@ -554,6 +554,8 @@ export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentP
 interface ThrustTransientComponentProps {
     x: number;
     y: number;
+    min: number;
+    max: number;
     radius: number;
     startAngle: Subscribable<number>;
     endAngle: Subscribable<number>;
@@ -587,12 +589,12 @@ export class ThrustTransientComponent extends DisplayComponent<ThrustTransientCo
     }
 
     private sweepHorizontal(radius: number) {
-        const valueIdleDir = valueRadianAngleConverter(this.thrustActual, 0, 1, this.endAngle, this.startAngle);
+        const valueIdleDir = valueRadianAngleConverter(this.thrustActual, this.props.min, this.props.max, this.endAngle, this.startAngle);
         const valueIdleEnd = {
             x: this.props.x + (valueIdleDir.x * radius),
             y: this.props.y + (valueIdleDir.y * radius),
         };
-        const valueMaxDir = valueRadianAngleConverter(this.thrustTarget, 0, 1, this.endAngle, this.startAngle);
+        const valueMaxDir = valueRadianAngleConverter(this.thrustTarget, this.props.min, this.props.max, this.endAngle, this.startAngle);
         const valueMaxEnd = {
             x: this.props.x + (valueMaxDir.x * radius),
             y: this.props.y + (valueMaxDir.y * radius),
@@ -631,7 +633,7 @@ export class ThrustTransientComponent extends DisplayComponent<ThrustTransientCo
     }
 
     update(): void {
-        const thrustEnd = valueRadianAngleConverter(this.thrustTarget, 0, 1, this.endAngle, this.startAngle);
+        const thrustEnd = valueRadianAngleConverter(this.thrustTarget, this.props.min, this.props.max, this.endAngle, this.startAngle);
         this.endPath.set(`M ${this.props.x} ${this.props.y} L ${this.props.x + thrustEnd.x * 0.8*this.props.radius} ${this.props.y + thrustEnd.y * 0.8*this.props.radius}`);
 
         this.sweep1.set(this.sweepHorizontal(0.8 * this.props.radius));
