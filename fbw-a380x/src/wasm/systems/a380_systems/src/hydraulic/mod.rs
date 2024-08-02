@@ -7560,6 +7560,24 @@ mod tests {
                 }
             }
 
+            fn is_all_auxiliary_gear_door_opened(&mut self) -> bool {
+                let left_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_LEFT_POSITION"));
+                let right_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_RIGHT_POSITION"));
+
+                left_pos.get::<ratio>() > 0.95 && right_pos.get::<ratio>() > 0.95
+            }
+
+            fn is_all_auxiliary_gear_door_closed(&mut self) -> bool {
+                let left_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_LEFT_POSITION"));
+                let right_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_RIGHT_POSITION"));
+
+                left_pos.get::<ratio>() < 0.05 && right_pos.get::<ratio>() < 0.05
+            }
+
             fn is_all_gears_really_up(&mut self) -> bool {
                 self.get_real_gear_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
                     && self.get_real_gear_position(GearWheel::LEFT) <= Ratio::new::<ratio>(0.01)
@@ -10247,6 +10265,7 @@ mod tests {
 
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             test_bed = test_bed
                 .set_green_ed_pump(false)
@@ -10255,6 +10274,9 @@ mod tests {
 
             assert!(test_bed.is_all_doors_really_down());
             assert!(test_bed.is_all_gears_really_down());
+
+            //Auxiliary cannot open without hyd
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
         }
 
         #[test]
@@ -10266,6 +10288,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             let initial_fluid_quantity = test_bed.get_green_reservoir_volume();
 
@@ -10274,6 +10297,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(20.));
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             let uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
 
@@ -10285,6 +10309,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(20.));
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
             assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             let downlocked_fluid_quantity = test_bed.get_green_reservoir_volume();
             assert!(
@@ -10302,12 +10327,14 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(20.));
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             let initial_uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
 
@@ -10335,12 +10362,13 @@ mod tests {
 
         #[test]
         fn gear_init_up_if_spawning_in_air() {
-            let test_bed = test_bed_in_flight_with()
+            let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .run_one_tick();
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
         }
 
         #[test]
