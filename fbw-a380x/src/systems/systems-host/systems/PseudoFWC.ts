@@ -134,11 +134,13 @@ export class PseudoFWC {
   /** The time to play the single chime sound in ms */
   private static readonly AURAL_SC_PLAY_TIME = 500;
 
-  private static readonly EWD_MESSAGE_LINES = 7;
+  private static readonly EWD_MESSAGE_LINES = 10;
 
   private static readonly PFD_MEMO_LINES = 3;
 
   private static readonly PFD_LIMITATIONS_LINES = 8;
+
+  private static readonly EWD_LIMITATIONS_LINES = 10;
 
   private static readonly SD_STATUS_INFO_MAX_LINES = 5;
 
@@ -206,24 +208,22 @@ export class PseudoFWC {
     Subject.create(''),
   );
 
-  private static readonly sdStatusLimitationsAllPhasesSimVars = Array.from(
-    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
-    (_, i) => `L:A32NX_SD_STATUS_LIMITATIONS_ALL_LINE_${i + 1}`,
+  private static readonly ewdLimitationsAllPhasesSimVars = Array.from(
+    { length: PseudoFWC.EWD_LIMITATIONS_LINES },
+    (_, i) => `L:A32NX_EWD_LIMITATIONS_ALL_LINE_${i + 1}`,
   );
 
-  private readonly ewdLimitationsAllPhasesLines = Array.from(
-    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
-    (_, _i) => Subject.create(''),
+  private readonly ewdLimitationsAllPhasesLines = Array.from({ length: PseudoFWC.EWD_LIMITATIONS_LINES }, (_, _i) =>
+    Subject.create(''),
   );
 
-  private static readonly sdStatusLimitationsApprLdgSimVars = Array.from(
-    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
-    (_, i) => `L:A32NX_SD_STATUS_LIMITATIONS_LDG_LINE_${i + 1}`,
+  private static readonly ewdLimitationsApprLdgSimVars = Array.from(
+    { length: PseudoFWC.EWD_LIMITATIONS_LINES },
+    (_, i) => `L:A32NX_EWD_LIMITATIONS_LDG_LINE_${i + 1}`,
   );
 
-  private readonly ewdLimitationsApprLdgLines = Array.from(
-    { length: PseudoFWC.SD_STATUS_INOP_SYS_MAX_LINES },
-    (_, _i) => Subject.create(''),
+  private readonly ewdLimitationsApprLdgLines = Array.from({ length: PseudoFWC.EWD_LIMITATIONS_LINES }, (_, _i) =>
+    Subject.create(''),
   );
 
   /* PSEUDO FWC VARIABLES */
@@ -1161,13 +1161,13 @@ export class PseudoFWC {
 
     this.ewdLimitationsAllPhasesLines.forEach((ls, i) =>
       ls.sub((l) => {
-        SimVar.SetSimVarValue(PseudoFWC.sdStatusLimitationsAllPhasesSimVars[i], 'string', l ?? '');
+        SimVar.SetSimVarValue(PseudoFWC.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
       }),
     );
 
     this.ewdLimitationsApprLdgLines.forEach((ls, i) =>
       ls.sub((l) => {
-        SimVar.SetSimVarValue(PseudoFWC.sdStatusLimitationsApprLdgSimVars[i], 'string', l ?? '');
+        SimVar.SetSimVarValue(PseudoFWC.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
       }),
     );
 
