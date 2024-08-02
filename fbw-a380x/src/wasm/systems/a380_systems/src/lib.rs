@@ -150,7 +150,7 @@ impl A380 {
             cds: A380ControlDisplaySystem::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
-                ElectricalBusType::DirectCurrent(1),
+                ElectricalBusType::AlternatingCurrentEssential,
                 vec![
                     Length::new::<nautical_mile>(0.0),
                     Length::new::<nautical_mile>(10.0),
