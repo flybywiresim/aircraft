@@ -213,6 +213,8 @@ export const EcamLimitations: { [n: number]: string } = {
   240400002: '\x1b<5mMAX SPEED: 310/.86',
   240400003: '\x1b<5mSPD BRK: DO NOT USE',
   240400004: '\x1b<5mMANEUVER WITH CARE',
+  260400001: '\x1b<5mAPU BLEED DO NOT USE',
+  260400002: '\x1b<5mMAX SPEED : 250/.55',
   300400001: '\x1b<5mAVOID ICING CONDs',
 };
 

@@ -4499,6 +4499,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: 0,
       inopSysAllPhases: () => ['260300002', '260300006'],
+      limitationsAllPhases: () => ['260400001'], // Fixme: should only come on when the ENG 1 fire button is pushed
     },
     260800006: {
       // ENG 2 FIRE (IN FLIGHT)
@@ -4945,6 +4946,8 @@ export class PseudoFWC {
       ],
       failure: 3,
       sysPage: 11, // WHEEL SD PAGE
+      limitationsAllPhases: () => ['260400002'],
+      limitationsPfd: () => ['260400002'],
     },
     260800026: {
       // MLG BAY FIRE DET FAULT
