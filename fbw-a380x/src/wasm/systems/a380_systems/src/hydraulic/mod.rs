@@ -1895,10 +1895,10 @@ impl A380Hydraulic {
             gear_system_hydraulic_controller: A380GearHydraulicController::new(),
             gear_system: A380GearSystemFactory::a380_gear_system(context),
             brake_properties: BrakeProperties::new(
-                // TODO: correct numbers to A380 values
-                Length::new::<inch>(20.) / 2.,
-                Length::new::<inch>(15.75), // 40cm
-                Mass::new::<kilogram>(66.),
+                // TODO: find more accurate numbers
+                Length::new::<inch>(26.),
+                Length::new::<inch>(20.),
+                Mass::new::<kilogram>(110.),
             ),
             left_wing_brake_assembly: BrakeAssembly::new(
                 context,
