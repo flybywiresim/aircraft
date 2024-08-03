@@ -17,147 +17,147 @@ import { AbnormalProcedure } from '@instruments/common/EcamMessages';
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
-    260800001: {
-        title: '\x1b<2m\x1b4mAPU FIRE',
+  260800001: {
+    title: '\x1b<2m\x1b4mAPU FIRE',
+    sensed: true,
+    items: [
+      {
+        name: 'APU FIRE P/B',
         sensed: true,
-        items: [
-            {
-              name: 'APU FIRE P/B',
-              sensed: true,
-              labelNotCompleted: 'PUSH',
-            },
-            {
-              name: 'APU AGENT AFTER 10 S',
-              sensed: true,
-              labelNotCompleted: 'DISCH',
-            },
-            {
-              name: 'APU MASTER SW',
-              sensed: true,
-              labelNotCompleted: 'OFF',
-            },
-          ],
-        recommendation: 'LAND ASAP',
-    },
-    260800002: {
-        title:  '\x1b<4m\x1b4mAPU FIRE\x1bm DET FAULT',
+        labelNotCompleted: 'PUSH',
+      },
+      {
+        name: 'APU AGENT AFTER 10 S',
         sensed: true,
-        items: [],
-    },
-    260800003: {
-        title:  '\x1b<4m\x1b4mAPU FIRE\x1bm LOOP A FAULT',
+        labelNotCompleted: 'DISCH',
+      },
+      {
+        name: 'APU MASTER SW',
         sensed: true,
-        items: [],
-    },
-    260800004: {
-        title:  '\x1b<4m\x1b4mAPU FIRE\x1bm LOOP B FAULT',
+        labelNotCompleted: 'OFF',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800002: {
+    title: '\x1b<4m\x1b4mAPU FIRE\x1bm DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800003: {
+    title: '\x1b<4m\x1b4mAPU FIRE\x1bm LOOP A FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800004: {
+    title: '\x1b<4m\x1b4mAPU FIRE\x1bm LOOP B FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800005: {
+    title: '\x1b<2m\x1b4mENG 1\x1bm FIRE', // IN FLIGHT
+    sensed: true,
+    items: [
+      {
+        name: 'THR LEVER 1',
         sensed: true,
-        items: [],
-    },
-    260800005: {
-        title:  '\x1b<2m\x1b4mENG 1\x1bm FIRE (IN FLIGHT)',
+        labelNotCompleted: 'IDLE',
+      },
+      {
+        name: 'ENG 1 MASTER',
         sensed: true,
-        items: [
-          {
-            name: 'THR LEVER 1',
-            sensed: true,
-            labelNotCompleted: 'IDLE',
-          },
-          {
-            name: 'ENG 1 MASTER',
-            sensed: true,
-            labelNotCompleted: 'OFF',
-          },
-          {
-            name: 'ENG 1 FIRE P/B',
-            sensed: true,
-            labelNotCompleted: 'PUSH',
-          },
-          {
-            name: 'APU BLEED',
-            sensed: true,
-            labelNotCompleted: 'OFF',
-            level: 1,
-          },
-          {
-            name: 'APU BLEED : DO NOT USE',
-            sensed: false,
-            color: 'cyan',
-            level: 1,
-          },
-          {
-            // When timer elapsed, this should change to 'AGENT 1...DISCH'
-            name: 'AGENT 1 AFTER 10 S',
-            sensed: true,
-            labelNotCompleted: 'DISCH',
-          },
-          {
-            name: 'ATC',
-            sensed: false,
-            labelNotCompleted: 'NOTIFY',
-          },
-          {
-            // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-            name: '.IF STILL FIRE AFTER 30 S :',
-            sensed: false,
-            level: 1,
-          },
-          {
-            name: 'AGENT 2',
-            sensed: true,
-            labelNotCompleted: 'DISCH',
-            level: 1,
-          },
-        ],
-        recommendation: 'LAND ASAP',
-    },
-    260800006: {
-      title:  '\x1b<2m\x1b4mENG 2\x1bm FIRE (IN FLIGHT)',
-      sensed: true,
-      items: [
-        {
-          name: 'THR LEVER 2',
-          sensed: true,
-          labelNotCompleted: 'IDLE',
-        },
-        {
-          name: 'ENG 2 MASTER',
-          sensed: true,
-          labelNotCompleted: 'OFF',
-        },
-        {
-          name: 'ENG 2 FIRE P/B',
-          sensed: true,
-          labelNotCompleted: 'PUSH',
-        },
-        {
-          // When timer elapsed, this should change to 'AGENT 1...DISCH'
-          name: 'AGENT 1 AFTER 10 S',
-          sensed: true,
-          labelNotCompleted: 'DISCH',
-        },
-        {
-          name: 'ATC',
-          sensed: false,
-          labelNotCompleted: 'NOTIFY',
-        },
-        {
-          // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-          name: '.IF STILL FIRE AFTER 30 S :',
-          sensed: false,
-          level: 1,
-        },
-        {
-          name: 'AGENT 2',
-          sensed: true,
-          labelNotCompleted: 'DISCH',
-          level: 1,
-        },
-      ],
-      recommendation: 'LAND ASAP',
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ENG 1 FIRE P/B',
+        sensed: true,
+        labelNotCompleted: 'PUSH',
+      },
+      {
+        name: 'APU BLEED',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'APU BLEED : DO NOT USE',
+        sensed: false,
+        color: 'cyan',
+        level: 1,
+      },
+      {
+        // When timer elapsed, this should change to 'AGENT 1...DISCH'
+        name: 'AGENT 1 AFTER 10 S',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+      },
+      {
+        name: 'ATC',
+        sensed: false,
+        labelNotCompleted: 'NOTIFY',
+      },
+      {
+        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
+        name: '.IF STILL FIRE AFTER 30 S :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'AGENT 2',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800006: {
+    title: '\x1b<2m\x1b4mENG 2\x1bm FIRE', // IN FLIGHT
+    sensed: true,
+    items: [
+      {
+        name: 'THR LEVER 2',
+        sensed: true,
+        labelNotCompleted: 'IDLE',
+      },
+      {
+        name: 'ENG 2 MASTER',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ENG 2 FIRE P/B',
+        sensed: true,
+        labelNotCompleted: 'PUSH',
+      },
+      {
+        // When timer elapsed, this should change to 'AGENT 1...DISCH'
+        name: 'AGENT 1 AFTER 10 S',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+      },
+      {
+        name: 'ATC',
+        sensed: false,
+        labelNotCompleted: 'NOTIFY',
+      },
+      {
+        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
+        name: '.IF STILL FIRE AFTER 30 S :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'AGENT 2',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+    ],
+    recommendation: 'LAND ASAP',
   },
   260800007: {
-    title:  '\x1b<2m\x1b4mENG 3\x1bm FIRE (IN FLIGHT)',
+    title: '\x1b<2m\x1b4mENG 3\x1bm FIRE', // IN FLIGHT
     sensed: true,
     items: [
       {
@@ -202,7 +202,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800008: {
-    title:  '\x1b<2m\x1b4mENG 4\x1bm FIRE (IN FLIGHT)',
+    title: '\x1b<2m\x1b4mENG 4\x1bm FIRE', // IN FLIGHT
     sensed: true,
     items: [
       {
@@ -247,7 +247,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800009: {
-    title:  '\x1b<2m\x1b4mENG 1\x1bm FIRE (ON GROUND)',
+    title: '\x1b<2m\x1b4mENG 1\x1bm FIRE', // ON GROUND
     sensed: true,
     items: [
       {
@@ -345,7 +345,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800010: {
-    title:  '\x1b<2m\x1b4mENG 2\x1bm FIRE (ON GROUND)',
+    title: '\x1b<2m\x1b4mENG 2\x1bm FIRE', // ON GROUND
     sensed: true,
     items: [
       {
@@ -443,7 +443,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800011: {
-    title:  '\x1b<2m\x1b4mENG 3\x1bm FIRE (ON GROUND)',
+    title: '\x1b<2m\x1b4mENG 3\x1bm FIRE', // ON GROUND
     sensed: true,
     items: [
       {
@@ -541,7 +541,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800012: {
-    title:  '\x1b<2m\x1b4mENG 4\x1bm FIRE (ON GROUND)',
+    title: '\x1b<2m\x1b4mENG 4\x1bm FIRE', // ON GROUND
     sensed: true,
     items: [
       {
@@ -639,74 +639,74 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800013: {
-    title:  '\x1b<4m\x1b4mENG 1\x1bm FIRE DET FAULT',
+    title: '\x1b<4m\x1b4mENG 1\x1bm FIRE DET FAULT',
     sensed: true,
     items: [],
   },
   260800014: {
-    title:  '\x1b<4m\x1b4mENG 2\x1bm FIRE DET FAULT',
+    title: '\x1b<4m\x1b4mENG 2\x1bm FIRE DET FAULT',
     sensed: true,
     items: [],
   },
   260800015: {
-    title:  '\x1b<4m\x1b4mENG 3\x1bm FIRE DET FAULT',
+    title: '\x1b<4m\x1b4mENG 3\x1bm FIRE DET FAULT',
     sensed: true,
     items: [],
   },
   260800016: {
-    title:  '\x1b<4m\x1b4mENG 4\x1bm FIRE DET FAULT',
+    title: '\x1b<4m\x1b4mENG 4\x1bm FIRE DET FAULT',
     sensed: true,
     items: [],
   },
   260800017: {
-    title:  '\x1b<4m\x1b4mENG 1\x1bm FIRE LOOP A FAULT',
+    title: '\x1b<4m\x1b4mENG 1\x1bm FIRE LOOP A FAULT',
     sensed: true,
     items: [],
   },
   260800018: {
-    title:  '\x1b<4m\x1b4mENG 1\x1bm FIRE LOOP B FAULT',
+    title: '\x1b<4m\x1b4mENG 1\x1bm FIRE LOOP B FAULT',
     sensed: true,
     items: [],
   },
   260800019: {
-    title:  '\x1b<4m\x1b4mENG 2\x1bm FIRE LOOP A FAULT',
+    title: '\x1b<4m\x1b4mENG 2\x1bm FIRE LOOP A FAULT',
     sensed: true,
     items: [],
   },
   260800020: {
-    title:  '\x1b<4m\x1b4mENG 2\x1bm FIRE LOOP B FAULT',
+    title: '\x1b<4m\x1b4mENG 2\x1bm FIRE LOOP B FAULT',
     sensed: true,
     items: [],
   },
   260800021: {
-    title:  '\x1b<4m\x1b4mENG 3\x1bm FIRE LOOP A FAULT',
+    title: '\x1b<4m\x1b4mENG 3\x1bm FIRE LOOP A FAULT',
     sensed: true,
     items: [],
   },
   260800022: {
-    title:  '\x1b<4m\x1b4mENG 3\x1bm FIRE LOOP B FAULT',
+    title: '\x1b<4m\x1b4mENG 3\x1bm FIRE LOOP B FAULT',
     sensed: true,
     items: [],
   },
   260800023: {
-    title:  '\x1b<4m\x1b4mENG 4\x1bm FIRE LOOP A FAULT',
+    title: '\x1b<4m\x1b4mENG 4\x1bm FIRE LOOP A FAULT',
     sensed: true,
     items: [],
   },
   260800024: {
-    title:  '\x1b<4m\x1b4mENG 4\x1bm FIRE LOOP B FAULT',
+    title: '\x1b<4m\x1b4mENG 4\x1bm FIRE LOOP B FAULT',
     sensed: true,
     items: [],
   },
   260800025: {
-    title:  '\x1b<2m\x1b4mMLG BAY\x1bm FIRE',
+    title: '\x1b<2m\x1b4mMLG BAY\x1bm FIRE',
     sensed: true,
     items: [
       // In flight
       {
         // If speed above 250/.55
         name: 'SPEED',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'REDUCE BELOW 250/.55',
         level: 1,
       },
@@ -716,7 +716,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'DOWN',
       },
       {
-        name: 'L/G LEVER',
+        name: 'L/G : KEEP DOWN',
         sensed: false,
         color: 'cyan',
       },
@@ -809,17 +809,17 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800026: {
-    title:  '\x1b<4m\x1b4mMLG BAY\x1bm FIRE DET FAULT',
+    title: '\x1b<4m\x1b4mMLG BAY\x1bm FIRE DET FAULT',
     sensed: true,
     items: [],
   },
   260800027: {
-    title:  '\x1b<4m\x1b4mMLG BAY\x1bm FIRE LOOP A FAULT',
+    title: '\x1b<4m\x1b4mMLG BAY\x1bm FIRE LOOP A FAULT',
     sensed: true,
     items: [],
   },
   260800028: {
-    title:  '\x1b<4m\x1b4mMLG BAY\x1bm FIRE LOOP B FAULT',
+    title: '\x1b<4m\x1b4mMLG BAY\x1bm FIRE LOOP B FAULT',
     sensed: true,
     items: [],
   },

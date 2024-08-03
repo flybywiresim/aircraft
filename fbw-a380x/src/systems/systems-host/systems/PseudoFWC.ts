@@ -22,7 +22,6 @@ import {
   Arinc429Word,
   FrequencyMode,
   NXDataStore,
-  NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -429,6 +428,84 @@ export class PseudoFWC {
 
   private readonly engine4Running = Subject.create(false);
 
+  private readonly allBatteriesOff = Subject.create(false);
+
+  /* 26 - FIRE */
+
+  private readonly fduDiscreteWord = Arinc429Register.empty();
+
+  private readonly apuFireDetected = Subject.create(false);
+
+  private readonly eng1FireDetected = Subject.create(false);
+
+  private readonly eng2FireDetected = Subject.create(false);
+
+  private readonly eng3FireDetected = Subject.create(false);
+
+  private readonly eng4FireDetected = Subject.create(false);
+
+  private readonly mlgFireDetected = Subject.create(false);
+
+  private readonly apuAgentDischarged = Subject.create(false);
+
+  private readonly eng1Agent1Discharged = Subject.create(false);
+
+  private readonly eng1Agent2Discharged = Subject.create(false);
+
+  private readonly eng2Agent1Discharged = Subject.create(false);
+
+  private readonly eng2Agent2Discharged = Subject.create(false);
+
+  private readonly eng3Agent1Discharged = Subject.create(false);
+
+  private readonly eng3Agent2Discharged = Subject.create(false);
+
+  private readonly eng4Agent1Discharged = Subject.create(false);
+
+  private readonly eng4Agent2Discharged = Subject.create(false);
+
+  private readonly apuLoopAFault = Subject.create(false);
+
+  private readonly apuLoopBFault = Subject.create(false);
+
+  private readonly eng1LoopAFault = Subject.create(false);
+
+  private readonly eng1LoopBFault = Subject.create(false);
+
+  private readonly eng2LoopAFault = Subject.create(false);
+
+  private readonly eng2LoopBFault = Subject.create(false);
+
+  private readonly eng3LoopAFault = Subject.create(false);
+
+  private readonly eng3LoopBFault = Subject.create(false);
+
+  private readonly eng4LoopAFault = Subject.create(false);
+
+  private readonly eng4LoopBFault = Subject.create(false);
+
+  private readonly mlgLoopAFault = Subject.create(false);
+
+  private readonly mlgLoopBFault = Subject.create(false);
+
+  private readonly evacCommand = Subject.create(false);
+
+  private readonly cargoFireAgentDisch = Subject.create(false);
+
+  private readonly cargoFireTest = Subject.create(false);
+
+  private readonly fireButtonEng1 = Subject.create(false);
+
+  private readonly fireButtonEng2 = Subject.create(false);
+
+  private readonly fireButtonEng3 = Subject.create(false);
+
+  private readonly fireButtonEng4 = Subject.create(false);
+
+  private readonly fireButtonAPU = Subject.create(false);
+
+  private readonly allFireButtons = Subject.create(false);
+
   /* 27 - FLIGHT CONTROLS */
 
   private readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
@@ -802,6 +879,8 @@ export class PseudoFWC {
 
   private onGroundImmediate = false;
 
+  private readonly gearLeverPos = Subject.create(false);
+
   /* NAVIGATION */
 
   private readonly adirsRemainingAlignTime = Subject.create(0);
@@ -819,6 +898,8 @@ export class PseudoFWC {
   private readonly adr3Cas = Arinc429Register.empty();
 
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
+
+  private readonly adr1Mach = Subject.create(Arinc429Word.empty());
 
   private readonly height1Failed = Subject.create(false);
 
@@ -933,9 +1014,21 @@ export class PseudoFWC {
 
   private readonly throttle2Position = Subject.create(0);
 
+  private readonly throttle3Position = Subject.create(0);
+
+  private readonly throttle4Position = Subject.create(0);
+
+  private readonly allThrottleIdle = Subject.create(false);
+
   private readonly engine1ValueSwitch = ConsumerValue.create(null, false);
 
   private readonly engine2ValueSwitch = ConsumerValue.create(null, false);
+
+  private readonly engine3ValueSwitch = ConsumerValue.create(null, false);
+
+  private readonly engine4ValueSwitch = ConsumerValue.create(null, false);
+
+  private readonly allEngineSwitchOff = Subject.create(false);
 
   private readonly autoThrustStatus = Subject.create(0);
 
@@ -948,54 +1041,6 @@ export class PseudoFWC {
   private readonly eng1Or2TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
 
   private readonly eng1Or2TakeoffPower = Subject.create(false);
-
-  /* FIRE */
-
-  private readonly agent1Eng1Discharge = Subject.create(0);
-
-  private readonly agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
-
-  private readonly agent2Eng1Discharge = Subject.create(0);
-
-  private readonly agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
-
-  private readonly agent1Eng2Discharge = Subject.create(0);
-
-  private readonly agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
-
-  private readonly agent2Eng2Discharge = Subject.create(0);
-
-  private readonly agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
-
-  private readonly agentAPUDischarge = Subject.create(0);
-
-  private readonly agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
-
-  private readonly apuAgentPB = Subject.create(false);
-
-  private readonly apuFireTest = Subject.create(false);
-
-  private readonly cargoFireAgentDisch = Subject.create(false);
-
-  private readonly cargoFireTest = Subject.create(false);
-
-  private readonly eng1Agent1PB = Subject.create(false);
-
-  private readonly eng1Agent2PB = Subject.create(false);
-
-  private readonly eng1FireTest = Subject.create(false);
-
-  private readonly eng2Agent1PB = Subject.create(false);
-
-  private readonly eng2Agent2PB = Subject.create(false);
-
-  private readonly eng2FireTest = Subject.create(false);
-
-  private readonly fireButton1 = Subject.create(false);
-
-  private readonly fireButton2 = Subject.create(false);
-
-  private readonly fireButtonAPU = Subject.create(false);
 
   /* ICE */
 
@@ -1153,6 +1198,8 @@ export class PseudoFWC {
     this.fuelCtrTankModeSelMan.setConsumer(sub.on('fuel_ctr_tk_mode_sel_man'));
     this.engine1ValueSwitch.setConsumer(sub.on('fuel_valve_switch_1'));
     this.engine2ValueSwitch.setConsumer(sub.on('fuel_valve_switch_2'));
+    this.engine3ValueSwitch.setConsumer(sub.on('fuel_valve_switch_3'));
+    this.engine4ValueSwitch.setConsumer(sub.on('fuel_valve_switch_4'));
     this.centerFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_1'));
     this.centerFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_4'));
     this.leftOuterInnerValve.setConsumer(sub.on('fuel_valve_open_4'));
@@ -1161,6 +1208,14 @@ export class PseudoFWC {
     this.rightOuterInnerValve.setConsumer(sub.on('fuel_valve_open_5'));
     this.rightFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_3'));
     this.rightFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_6'));
+    this.allEngineSwitchOff.set(
+      !(
+        this.engine1ValueSwitch.get() ||
+        this.engine2ValueSwitch.get() ||
+        this.engine3ValueSwitch.get() ||
+        this.engine1ValueSwitch.get()
+      ),
+    );
 
     // Inhibit single chimes for the first two seconds after power-on
     this.auralSingleChimeInhibitTimer.schedule(
@@ -1358,6 +1413,8 @@ export class PseudoFWC {
     this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
     this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
 
+    this.adr1Mach.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_MACH'));
+
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
@@ -1421,9 +1478,17 @@ export class PseudoFWC {
     this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
+    this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
+    this.throttle4Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
+    this.allThrottleIdle.set(
+      this.throttle1Position.get() == 0 &&
+        this.throttle2Position.get() == 0 &&
+        this.throttle3Position.get() == 0 &&
+        this.throttle4Position.get() == 0,
+    );
 
     /* HYDRAULICS acquisition */
 
@@ -1498,6 +1563,7 @@ export class PseudoFWC {
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_1_L_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
       this.dc2BusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_2_L_GEAR_COMPRESSED', 'bool') > 0;
+    this.gearLeverPos.set(SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'));
 
     // General logic
     const mainGearDownlocked =
@@ -1579,7 +1645,7 @@ export class PseudoFWC {
 
     this.engDualFault.set(
       !this.aircraftOnGround.get() &&
-        ((this.fireButton1.get() && this.fireButton2.get()) ||
+        ((this.fireButtonEng1.get() && this.fireButtonEng2.get()) ||
           (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
           (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
@@ -1851,6 +1917,15 @@ export class PseudoFWC {
         SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED', 'bool') ||
         SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED', 'bool') ||
         SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED', 'bool'),
+    );
+
+    this.allBatteriesOff.set(
+      !(
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO', 'bool')
+      ),
     );
 
     /* OTHER STUFF */
@@ -2353,38 +2428,57 @@ export class PseudoFWC {
         this.radioHeight2.valueOr(Infinity) > 1500,
     );
 
-    /* FIRE */
+    /* 26 - FIRE */
+    this.fduDiscreteWord.setFromSimVar('L:A32NX_FIRE_FDU_DISCRETE_WORD');
 
-    this.fireButton1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
-    this.fireButton2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
+    this.apuFireDetected.set(this.fduDiscreteWord.bitValueOr(15, false));
+    this.eng1FireDetected.set(this.fduDiscreteWord.bitValueOr(11, false));
+    this.eng2FireDetected.set(this.fduDiscreteWord.bitValueOr(12, false));
+    this.eng3FireDetected.set(this.fduDiscreteWord.bitValueOr(13, false));
+    this.eng4FireDetected.set(this.fduDiscreteWord.bitValueOr(14, false));
+    this.mlgFireDetected.set(this.fduDiscreteWord.bitValueOr(16, false));
+
+    this.apuLoopAFault.set(this.fduDiscreteWord.bitValueOr(26, false));
+    this.apuLoopBFault.set(this.fduDiscreteWord.bitValueOr(27, false));
+    this.eng1LoopAFault.set(this.fduDiscreteWord.bitValueOr(18, false));
+    this.eng1LoopBFault.set(this.fduDiscreteWord.bitValueOr(19, false));
+    this.eng2LoopAFault.set(this.fduDiscreteWord.bitValueOr(20, false));
+    this.eng2LoopBFault.set(this.fduDiscreteWord.bitValueOr(21, false));
+    this.eng3LoopAFault.set(this.fduDiscreteWord.bitValueOr(22, false));
+    this.eng3LoopBFault.set(this.fduDiscreteWord.bitValueOr(23, false));
+    this.eng4LoopAFault.set(this.fduDiscreteWord.bitValueOr(24, false));
+    this.eng4LoopBFault.set(this.fduDiscreteWord.bitValueOr(25, false));
+    this.mlgLoopAFault.set(this.fduDiscreteWord.bitValueOr(28, false));
+    this.mlgLoopBFault.set(this.fduDiscreteWord.bitValueOr(29, false));
+
+    this.apuAgentDischarged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_APU_1_IS_DISCHARGED', 'bool'));
+    this.eng1Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_1_IS_DISCHARGED', 'bool'));
+    this.eng1Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_1_IS_DISCHARGED', 'bool'));
+    this.eng2Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_2_IS_DISCHARGED', 'bool'));
+    this.eng2Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_2_IS_DISCHARGED', 'bool'));
+    this.eng3Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_3_IS_DISCHARGED', 'bool'));
+    this.eng3Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_3_IS_DISCHARGED', 'bool'));
+    this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool'));
+    this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool'));
+
+    this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
+    this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
+    this.fireButtonEng3.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG3', 'bool'));
+    this.fireButtonEng4.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG4', 'bool'));
     this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool'));
-    this.eng1FireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_ENG1', 'bool'));
-    this.eng2FireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_ENG2', 'bool'));
-    this.apuFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_APU', 'bool'));
-    this.eng1Agent1PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG1_AGENT1_Discharge', 'bool'));
-    this.eng1Agent2PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG1_AGENT2_Discharge', 'bool'));
-    this.eng2Agent1PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool'));
-    this.eng2Agent2PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool'));
-    this.apuAgentPB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool'));
+
+    this.allFireButtons.set(
+      this.fireButtonEng1.get() &&
+        this.fireButtonEng2.get() &&
+        this.fireButtonEng3.get() &&
+        this.fireButtonEng4.get() &&
+        this.fireButtonAPU.get(),
+    );
+
+    this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
+
     this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
     this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool'));
-
-    this.agent1Eng1Discharge.set(this.agent1Eng1DischargeTimer.write(this.fireButton1.get(), deltaTime));
-    this.agent2Eng1Discharge.set(
-      this.agent2Eng1DischargeTimer.write(
-        this.fireButton1.get() && this.eng1Agent1PB.get() && !this.aircraftOnGround.get(),
-        deltaTime,
-      ),
-    );
-    this.agent1Eng2Discharge.set(
-      this.agent1Eng2DischargeTimer.write(this.fireButton2.get() && !this.eng1Agent1PB.get(), deltaTime),
-    );
-    this.agent2Eng2Discharge.set(
-      this.agent2Eng2DischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime),
-    );
-    this.agentAPUDischarge.set(
-      this.agentAPUDischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime),
-    );
 
     /* ANTI ICE */
 
@@ -2488,12 +2582,12 @@ export class PseudoFWC {
 
     this.landAsapRed.set(
       !this.aircraftOnGround.get() &&
-        (this.fireButton1.get() ||
-          this.eng1FireTest.get() ||
-          this.fireButton2.get() ||
-          this.eng2FireTest.get() ||
-          this.fireButtonAPU.get() ||
-          this.apuFireTest.get() ||
+        (this.apuFireDetected.get() ||
+          this.eng1FireDetected.get() ||
+          this.eng2FireDetected.get() ||
+          this.eng3FireDetected.get() ||
+          this.eng4FireDetected.get() ||
+          this.mlgFireDetected.get() ||
           this.emergencyGeneratorOn.get() ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
           (this.greenLP.get() && this.yellowLP.get()) ||
@@ -2501,11 +2595,18 @@ export class PseudoFWC {
           (this.greenLP.get() && this.blueLP.get())),
     );
 
+    // Is this needed?
     // fire always forces the master warning and SC aural on
     this.fireActive.set(
-      [this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].some(
-        (e) => e,
-      ),
+      [
+        this.apuFireDetected.get(),
+        this.eng1FireDetected.get(),
+        this.eng2FireDetected.get(),
+        this.eng3FireDetected.get(),
+        this.eng4FireDetected.get(),
+        this.mlgFireDetected.get(),
+        this.cargoFireTest.get(),
+      ].some((e) => e),
     );
 
     const flightPhase = this.fwcFlightPhase.get();
@@ -3800,6 +3901,658 @@ export class PseudoFWC {
       sysPage: -1,
       inopSysAllPhases: () => ['230300016', '230300017', '230300018', '230300019', '230300006', '230300015'],
     },
+    // 26 - FIRE PROTECTION
+    260800001: {
+      // APU FIRE
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: this.apuFireDetected,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true],
+      whichItemsCompleted: () => [
+        this.fireButtonAPU.get(),
+        this.apuAgentDischarged.get(),
+        this.apuMasterSwitch.get() === 0,
+      ],
+      failure: 3,
+      sysPage: 7,
+    },
+    260800002: {
+      // APU FIRE DET FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.apuLoopAFault, this.apuLoopBFault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['260300001'],
+    },
+    260800003: {
+      // APU FIRE LOOP A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.apuLoopAFault,
+      notActiveWhenFaults: ['260800002'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260200025'],
+    },
+    260800004: {
+      // APU FIRE LOOP B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.apuLoopBFault,
+      notActiveWhenFaults: ['260800002'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260200026'],
+    },
+    260800005: {
+      // ENG 1 FIRE (IN FLIGHT)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng1Fire]) => !aircraftOnGround && eng1Fire,
+        this.aircraftOnGround,
+        this.eng1FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.throttle1Position.get() == 0,
+        !this.engine1ValueSwitch.get(),
+        this.fireButtonEng1.get(),
+        !this.apuBleedValveOpen.get(),
+        false,
+        this.eng1Agent1Discharged.get(),
+        false,
+        false,
+        this.eng1Agent2Discharged.get(),
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300002', '260300006'],
+    },
+    260800006: {
+      // ENG 2 FIRE (IN FLIGHT)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng2Fire]) => !aircraftOnGround && eng2Fire,
+        this.aircraftOnGround,
+        this.eng2FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.throttle2Position.get() == 0,
+        !this.engine2ValueSwitch.get(),
+        this.fireButtonEng2.get(),
+        this.eng2Agent1Discharged.get(),
+        false,
+        false,
+        this.eng2Agent2Discharged.get(),
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300003'],
+    },
+    260800007: {
+      // ENG 3 FIRE (IN FLIGHT)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng3Fire]) => !aircraftOnGround && eng3Fire,
+        this.aircraftOnGround,
+        this.eng3FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.throttle3Position.get() == 0,
+        !this.engine3ValueSwitch.get(),
+        this.fireButtonEng3.get(),
+        this.eng3Agent1Discharged.get(),
+        false,
+        false,
+        this.eng3Agent2Discharged.get(),
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300004'],
+    },
+    260800008: {
+      // ENG 4 FIRE (IN FLIGHT)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng4Fire]) => !aircraftOnGround && eng4Fire,
+        this.aircraftOnGround,
+        this.eng4FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.throttle4Position.get() == 0,
+        !this.engine4ValueSwitch.get(),
+        this.fireButtonEng4.get(),
+        this.eng4Agent1Discharged.get(),
+        false,
+        false,
+        this.eng4Agent2Discharged.get(),
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300005'],
+    },
+    260800009: {
+      // ENG 1 FIRE (ON GROUND)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng1Fire]) => aircraftOnGround && eng1Fire,
+        this.aircraftOnGround,
+        this.eng1FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsCompleted: () => [
+        this.allThrottleIdle.get(),
+        false,
+        this.parkBrake.get(),
+        false,
+        false,
+        !this.engine1ValueSwitch.get(),
+        this.fireButtonEng1.get(),
+        this.eng1Agent1Discharged.get() && this.eng1Agent2Discharged.get(),
+        this.allEngineSwitchOff.get(),
+        this.allFireButtons.get(),
+        false,
+        false,
+        !this.evacCommand.get(),
+        this.allBatteriesOff.get(),
+        false,
+        false,
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300002'],
+    },
+    260800010: {
+      // ENG 2 FIRE (ON GROUND)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng2Fire]) => aircraftOnGround && eng2Fire,
+        this.aircraftOnGround,
+        this.eng2FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsCompleted: () => [
+        this.allThrottleIdle.get(),
+        false,
+        this.parkBrake.get(),
+        false,
+        false,
+        !this.engine2ValueSwitch.get(),
+        this.fireButtonEng2.get(),
+        this.eng2Agent1Discharged.get() && this.eng2Agent2Discharged.get(),
+        this.allEngineSwitchOff.get(),
+        this.allFireButtons.get(),
+        false,
+        false,
+        !this.evacCommand.get(),
+        this.allBatteriesOff.get(),
+        false,
+        false,
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300003'],
+    },
+    260800011: {
+      // ENG 3 FIRE (ON GROUND)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng3Fire]) => aircraftOnGround && eng3Fire,
+        this.aircraftOnGround,
+        this.eng3FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsCompleted: () => [
+        this.allThrottleIdle.get(),
+        false,
+        this.parkBrake.get(),
+        false,
+        false,
+        !this.engine3ValueSwitch.get(),
+        this.fireButtonEng3.get(),
+        this.eng3Agent1Discharged.get() && this.eng3Agent2Discharged.get(),
+        this.allEngineSwitchOff.get(),
+        this.allFireButtons.get(),
+        false,
+        false,
+        !this.evacCommand.get(),
+        this.allBatteriesOff.get(),
+        false,
+        false,
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300004'],
+    },
+    260800012: {
+      // ENG 4 FIRE (ON GROUND)
+      flightPhaseInhib: [5, 6],
+      simVarIsActive: MappedSubject.create(
+        ([aircraftOnGround, eng4Fire]) => aircraftOnGround && eng4Fire,
+        this.aircraftOnGround,
+        this.eng4FireDetected,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsCompleted: () => [
+        this.allThrottleIdle.get(),
+        false,
+        this.parkBrake.get(),
+        false,
+        false,
+        !this.engine4ValueSwitch.get(),
+        this.fireButtonEng4.get(),
+        this.eng4Agent1Discharged.get() && this.eng4Agent2Discharged.get(),
+        this.allEngineSwitchOff.get(),
+        this.allFireButtons.get(),
+        false,
+        false,
+        !this.evacCommand.get(),
+        this.allBatteriesOff.get(),
+        false,
+        false,
+      ],
+      failure: 3,
+      sysPage: 0,
+      inopSysAllPhases: () => ['260300005'],
+    },
+    260800013: {
+      // ENG 1 FIRE DET FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.eng1LoopAFault, this.eng1LoopBFault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['260300010'],
+    },
+    260800014: {
+      // ENG 2 FIRE DET FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.eng2LoopAFault, this.eng2LoopBFault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['260300011'],
+    },
+    260800015: {
+      // ENG 3 FIRE DET FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.eng3LoopAFault, this.eng3LoopBFault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['260300012'],
+    },
+    260800016: {
+      // ENG 4 FIRE DET FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.eng4LoopAFault, this.eng4LoopBFault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['260300013'],
+    },
+    260800017: {
+      // ENG 1 FIRE LOOP A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng1LoopAFault,
+      notActiveWhenFaults: ['260800013'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300014'],
+    },
+    260800018: {
+      // ENG 1 FIRE LOOP B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng1LoopBFault,
+      notActiveWhenFaults: ['260800013'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300015'],
+    },
+    260800019: {
+      // ENG 2 FIRE LOOP A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng2LoopAFault,
+      notActiveWhenFaults: ['260800014'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300016'],
+    },
+    260800020: {
+      // ENG 2 FIRE LOOP B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng2LoopBFault,
+      notActiveWhenFaults: ['260800014'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300017'],
+    },
+    260800021: {
+      // ENG 3 FIRE LOOP A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng3LoopAFault,
+      notActiveWhenFaults: ['260800015'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300018'],
+    },
+    260800022: {
+      // ENG 3 FIRE LOOP B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng3LoopBFault,
+      notActiveWhenFaults: ['260800015'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300019'],
+    },
+    260800023: {
+      // ENG 4 FIRE LOOP A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng4LoopAFault,
+      notActiveWhenFaults: ['260800016'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300020'],
+    },
+    260800024: {
+      // ENG 4 FIRE LOOP B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.eng4LoopBFault,
+      notActiveWhenFaults: ['260800016'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300021'],
+    },
+    260800025: {
+      // MLG BAY FIRE
+      flightPhaseInhib: [5],
+      simVarIsActive: this.mlgFireDetected,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        // Fixme: this should probably check the 3 adrs data
+        this.adr1Cas.get().valueOr(0) > 250 || this.adr1Mach.get().valueOr(0) > 0.55,
+        true,
+        true,
+        true,
+        true,
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+        this.aircraftOnGround.get(),
+      ],
+      whichItemsCompleted: () => [
+        false,
+        this.gearLeverPos.get(),
+        false,
+        false,
+        false,
+        this.allThrottleIdle.get(),
+        false,
+        this.parkBrake.get(),
+        false,
+        false,
+        this.allEngineSwitchOff.get(),
+        false,
+        false,
+        !this.evacCommand.get(),
+        this.apuMasterSwitch.get() === 0,
+        this.allBatteriesOff.get(),
+        false,
+        false,
+      ],
+      failure: 3,
+      sysPage: 11, // WHEEL SD PAGE
+    },
+    260800026: {
+      // MLG BAY FIRE DET FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.mlgLoopAFault, this.mlgLoopBFault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['260300022'],
+    },
+    260800027: {
+      // MLG BAY FIRE LOOP A FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.mlgLoopAFault,
+      notActiveWhenFaults: ['260800026'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300023'],
+    },
+    260800028: {
+      // MLG BAY FIRE LOOP B FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.mlgLoopBFault,
+      notActiveWhenFaults: ['260800026'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['260300024'],
+    },
+
+    // ATA 27 FLIGHT CONTROLS
+    271800003: {
+      // PITCH TRIM NOT IN TO RANGE
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.pitchTrimNotToWarning,
+      auralWarning: this.pitchTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    271800032: {
+      // PITCH TRIM FMS DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.pitchTrimMcduCgDisagree,
+      notActiveWhenFaults: ['271800003'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
+    271800005: {
+      // SPD BRK NOT RETRACTED
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    272800001: {
+      // SLAT NOT IN TO CONFIG
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
+      auralWarning: this.slatConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.slatConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    272800002: {
+      // FLAPS NOT IN TO CONFIG
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
+      auralWarning: this.flapConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.flapConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 3,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    272800028: {
+      // TO FLAPS FMS DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.flapsMcduDisagree,
+      notActiveWhenFaults: ['272800002'],
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      failure: 2,
+      sysPage: 12,
+      inopSysAllPhases: () => [],
+    },
+    271800069: {
+      // OVERSPEED
+      flightPhaseInhib: [2, 3, 4, 5, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.overspeedVmo,
+        this.overspeedVle,
+        this.overspeedVfeConf1,
+        this.overspeedVfeConf1F,
+        this.overspeedVfeConf2,
+        this.overspeedVfeConf3,
+        this.overspeedVfeConfFull,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.overspeedVmo.get(),
+        this.overspeedVle.get(),
+        this.overspeedVfeConf1.get(),
+        this.overspeedVfeConf1F.get(),
+        this.overspeedVfeConf2.get(),
+        this.overspeedVfeConf3.get(),
+        this.overspeedVfeConfFull.get(),
+      ],
+      whichItemsCompleted: () => [false, false, false, false, false, false, false],
+      failure: 3,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
   };
 
   /**
@@ -3973,9 +4726,9 @@ export class PseudoFWC {
       // ENG 1 FIRE
       flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
-        ([eng1FireTest, fireButton1]) => eng1FireTest || fireButton1,
+        ([eng1FireTest, fireButtonEng1]) => eng1FireTest || fireButtonEng1,
         this.eng1FireTest,
-        this.fireButton1,
+        this.fireButtonEng1,
       ),
       whichItemToReturn: () => [
         0,
@@ -3988,7 +4741,7 @@ export class PseudoFWC {
         this.aircraftOnGround.get() ? 5 : null,
         this.aircraftOnGround.get() ? 6 : null,
         !this.engine1ValueSwitch.get() ? null : 7,
-        !this.fireButton1.get() ? 8 : null,
+        !this.fireButtonEng1.get() ? 8 : null,
         !this.aircraftOnGround.get() && this.agent1Eng1Discharge.get() === 1 && !this.eng1Agent1PB.get() ? 9 : null,
         this.agent1Eng1Discharge.get() === 2 && !this.aircraftOnGround.get() && !this.eng1Agent1PB.get() ? 10 : null,
         !this.eng1Agent1PB.get() && this.aircraftOnGround.get() ? 11 : null,
@@ -4028,9 +4781,9 @@ export class PseudoFWC {
       // ENG 2 FIRE
       flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
-        ([eng2FireTest, fireButton2]) => eng2FireTest || fireButton2,
+        ([eng2FireTest, fireButtonEng2]) => eng2FireTest || fireButtonEng2,
         this.eng2FireTest,
-        this.fireButton2,
+        this.fireButtonEng2,
       ),
       whichItemToReturn: () => [
         0,
@@ -4043,7 +4796,7 @@ export class PseudoFWC {
         this.aircraftOnGround.get() ? 5 : null,
         this.aircraftOnGround.get() ? 6 : null,
         !this.engine2ValueSwitch.get() ? null : 7,
-        !this.fireButton2.get() ? 8 : null,
+        !this.fireButtonEng2.get() ? 8 : null,
         !this.aircraftOnGround.get() && this.agent1Eng2Discharge.get() === 1 && !this.eng2Agent1PB.get() ? 9 : null,
         this.agent1Eng2Discharge.get() === 2 && !this.aircraftOnGround.get() && !this.eng2Agent1PB.get() ? 10 : null,
         !this.eng2Agent1PB.get() && this.aircraftOnGround.get() ? 11 : null,
