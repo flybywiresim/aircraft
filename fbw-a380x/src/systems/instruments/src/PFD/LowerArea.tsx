@@ -3,6 +3,7 @@ import {
   ClockEvents,
   ConsumerSubject,
   DisplayComponent,
+  EventSubscriber,
   FSComponent,
   MappedSubject,
   Subject,
@@ -10,8 +11,9 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
+import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
-import { EcamMemos } from '@instruments/common/EcamMessages';
+import { EcamLimitations, EcamMemos } from '@instruments/common/EcamMessages';
 import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
 
 export class LowerArea extends DisplayComponent<{
@@ -484,13 +486,32 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-class Limitations extends DisplayComponent<{ visible: Subscribable<boolean> }> {
+class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private static lineSubject(index: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, sub: EventSubscriber<FwsPfdSimvars>) {
+    return ConsumerSubject.create(sub.on(`limitationsLine${index}`).whenChanged(), 0).map(
+      (it) => EcamLimitations[padMemoCode(it)] ?? '',
+    );
+  }
+
+  private readonly limitationsLine = [
+    Limitations.lineSubject(1, this.sub),
+    Limitations.lineSubject(2, this.sub),
+    Limitations.lineSubject(3, this.sub),
+    Limitations.lineSubject(4, this.sub),
+    Limitations.lineSubject(5, this.sub),
+    Limitations.lineSubject(6, this.sub),
+    Limitations.lineSubject(7, this.sub),
+    Limitations.lineSubject(8, this.sub),
+  ];
+
   render(): VNode {
     return (
       <g visibility={this.props.visible.map((it) => (it ? 'visible' : 'hidden'))}>
-        <text x={76} y={184} class="FontIntermediate Amber">
-          LIMITATIONS NOT AVAIL
-        </text>
+        {this.limitationsLine.map((line, index) => (
+          <MemoFormatter x={70} y={165 + index * 7} message={line} />
+        ))}
       </g>
     );
   }
@@ -498,7 +519,7 @@ class Limitations extends DisplayComponent<{ visible: Subscribable<boolean> }> {
 
 const padMemoCode = (code: number) => code.toString().padStart(9, '0');
 class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
 
   private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memoLine1').whenChanged(), 0).map(
     (it) => EcamMemos[padMemoCode(it)] ?? '',

@@ -29,12 +29,12 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800003: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm PITCH TRIM NOT IN T.O RANGE',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm PITCH TRIM NOT IN T.O RANGE',
     sensed: true,
     items: [],
   },
   271800004: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm RUDDER TRIM NOT IN T.O RANGE',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm RUDDER TRIM NOT IN T.O RANGE',
     sensed: true,
     items: [],
   },
@@ -358,14 +358,55 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
+  271800069: {
+    title: '\x1b<2mOVERSPEED',
+    sensed: true,
+    items: [
+      {
+        name: 'VMO/MMO',
+        sensed: true,
+        labelNotCompleted: '340/.89',
+      },
+      {
+        name: 'VLE/MLE',
+        sensed: true,
+        labelNotCompleted: '250/.55',
+      },
+      {
+        name: 'VFE', // CONF 1
+        sensed: true,
+        labelNotCompleted: '263',
+      },
+      {
+        name: 'VFE', // CONF 1+F
+        sensed: true,
+        labelNotCompleted: '222',
+      },
+      {
+        name: 'VFE', // CONF 2
+        sensed: true,
+        labelNotCompleted: '220',
+      },
+      {
+        name: 'VFE', // CONF 3
+        sensed: true,
+        labelNotCompleted: '196',
+      },
+      {
+        name: 'VFE', // CONF FULL
+        sensed: true,
+        labelNotCompleted: '182',
+      },
+    ],
+  },
   // ATA 27: FLAPS/SLATS
   272800001: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm SLATS NOT IN T.O CONFIG',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm SLATS NOT IN T.O CONFIG',
     sensed: true,
     items: [],
   },
   272800002: {
-    title: '\x1b<4m\x1b4mCONFIG\x1bm FLAPS NOT IN T.O CONFIG',
+    title: '\x1b<2m\x1b4mCONFIG\x1bm FLAPS NOT IN T.O CONFIG',
     sensed: true,
     items: [],
   },

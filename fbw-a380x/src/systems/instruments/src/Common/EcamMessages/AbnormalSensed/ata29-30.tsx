@@ -229,7 +229,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   290800019: {
-    title: '\x1b<4m\x1b4mHYD\x1b G RSVR AIR PRESS LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm G RSVR AIR PRESS LO',
     sensed: true,
     items: [
       {
@@ -251,7 +251,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800020: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y RSVR AIR PRESS LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y RSVR AIR PRESS LO',
     sensed: true,
     items: [
       {
@@ -273,7 +273,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800021: {
-    title: '\x1b<4m\x1b4mHYD\x1b G  RSVR LEVEL LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm G  RSVR LEVEL LO',
     sensed: true,
     items: [
       {
@@ -306,7 +306,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800022: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y  RSVR LEVEL LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y  RSVR LEVEL LO',
     sensed: true,
     items: [
       {
@@ -339,47 +339,47 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800023: {
-    title: '\x1b<4m\x1b4mHYD\x1b G SYS CHAN A OVHT DET FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS CHAN A OVHT DET FAULT',
     sensed: true,
     items: [],
   },
   290800024: {
-    title: '\x1b<4m\x1b4mHYD\x1b G SYS CHAN  B OVHT DET FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS CHAN  B OVHT DET FAULT',
     sensed: true,
     items: [],
   },
   290800025: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS CHAN A OVHT DET FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS CHAN A OVHT DET FAULT',
     sensed: true,
     items: [],
   },
   290800026: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS CHAN B OVHT DET FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS CHAN B OVHT DET FAULT',
     sensed: true,
     items: [],
   },
   290800027: {
-    title: '\x1b<4m\x1b4mHYD\x1b G  SYS COOLING FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G  SYS COOLING FAULT',
     sensed: true,
     items: [],
   },
   290800028: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y  SYS COOLING FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y  SYS COOLING FAULT',
     sensed: true,
     items: [],
   },
   290800029: {
-    title: '\x1b<4m\x1b4mHYD\x1b G SYS MONITORING FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS MONITORING FAULT',
     sensed: true,
     items: [],
   },
   290800030: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS MONITORING FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS MONITORING FAULT',
     sensed: true,
     items: [],
   },
   290800031: {
-    title: '\x1b<4m\x1b4mHYD\x1b G SYS OVERHEAT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS OVERHEAT',
     sensed: true,
     items: [
       {
@@ -411,7 +411,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800032: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS OVERHEAT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS OVERHEAT',
     sensed: true,
     items: [
       {
@@ -443,17 +443,17 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800033: {
-    title: '\x1b<4m\x1b4mHYD\x1b G SYS OVHT DET FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS OVHT DET FAULT',
     sensed: true,
     items: [],
   },
   290800034: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS OVHT DET FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS OVHT DET FAULT',
     sensed: true,
     items: [],
   },
   290800035: {
-    title: '\x1b<4m\x1b4mHYD\x1b G SYS PRESS LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS PRESS LO',
     sensed: true,
     items: [
       {
@@ -490,7 +490,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800036: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS PRESS LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS PRESS LO',
     sensed: true,
     items: [
       {
@@ -519,7 +519,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800037: {
-    title: '\x1b<4m\x1b4mHYD\x1b  G SYS TEMP HI',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS TEMP HI',
     sensed: true,
     items: [
       {
@@ -553,7 +553,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800038: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y SYS TEMP HI',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS TEMP HI',
     sensed: true,
     items: [
       {
@@ -586,7 +586,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800039: {
-    title: '\x1b<4m\x1b4mHYD\x1b G+Y SYS PRESS LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm G+Y SYS PRESS LO',
     sensed: true,
     items: [
       {
@@ -646,7 +646,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800040: {
-    title: '\x1b<4m\x1b4mHYD\x1b Y ELEC PMP A+B OFF',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y ELEC PMP A+B OFF',
     sensed: true,
     items: [],
   },

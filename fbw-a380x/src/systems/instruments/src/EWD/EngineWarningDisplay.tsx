@@ -7,6 +7,10 @@ import EWDMemo from './elements/EWDMemo';
 // import { Checklist } from './elements/Checklist';
 
 import '../index.scss';
+import FormattedFwcText from '@instruments/common/EcamMessages/EWDMessageParser';
+import { EcamAbnormalSensedProcedures } from '@instruments/common/EcamMessages';
+
+const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
 export const EngineWarningDisplay: React.FC = () => {
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
@@ -16,6 +20,8 @@ export const EngineWarningDisplay: React.FC = () => {
     const [engine4State] = useSimVar('L:A32NX_ENGINE_STATE:4', 'enum', 500); // TODO: Update with correct SimVars
     const engineState = [engine1State, engine2State, engine3State, engine3State, engine4State];
     const engineRunning = engineState.some((value) => value > 0); // TODO Implement FADEC SimVars once available
+
+    const [abnormalDebug] = useSimVar('L:A32NX_EWD_DEBUG_ABNORMAL', 'number', 1000);
 
     const engineRunningOrIgnitionOn = !!(engSelectorPosition === 2 || engineRunning);
 
@@ -53,6 +59,8 @@ export const EngineWarningDisplay: React.FC = () => {
 
             <EWDMemo x={25} y={414} active={displayMemo} side='LEFT' />
             <EWDMemo x={395} y={414} active={displayMemo} side='RIGHT' />
+
+            <FormattedFwcText x={25} y={1000} message={EcamAbnormalSensedProcedures[abnormalDebug] ? EcamAbnormalSensedProcedures[abnormalDebug].title : ''} />
         </LegacyCdsDisplayUnit>
     );
 };
