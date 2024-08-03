@@ -12,6 +12,7 @@ mod navigation;
 mod payload;
 mod pneumatic;
 mod power_consumption;
+mod reverser;
 mod structural_flex;
 
 use self::{
@@ -34,6 +35,8 @@ use icing::Icing;
 use navigation::A380RadioAltimeters;
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
+use reverser::{A380ReverserController, A380Reversers};
+
 use uom::si::{f64::Length, length::nautical_mile, quantities::Velocity, velocity::knot};
 
 use systems::{
@@ -43,7 +46,7 @@ use systems::{
         AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
+    engine::{reverser_thrust::ReverserForce, trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
@@ -90,6 +93,10 @@ pub struct A380 {
     egpwc: EnhancedGroundProximityWarningComputer,
     icing_simulation: Icing,
     structural_flex: A380StructuralFlex,
+
+    engine_reverser_control: [A380ReverserController; 2],
+    reversers_assembly: A380Reversers,
+    reverse_thrust: ReverserForce,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -159,6 +166,12 @@ impl A380 {
 
             icing_simulation: Icing::new(context),
             structural_flex: A380StructuralFlex::new(context),
+            engine_reverser_control: [
+                A380ReverserController::new(context, 2),
+                A380ReverserController::new(context, 3),
+            ],
+            reversers_assembly: A380Reversers::new(context),
+            reverse_thrust: ReverserForce::new(context),
         }
     }
 }
@@ -316,6 +329,26 @@ impl Aircraft for A380 {
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
         self.fuel.update(context);
+
+        self.engine_reverser_control[0].update(
+            &self.engine_2,
+            self.lgcius.lgciu1(),
+            self.reversers_assembly.reverser_feedback(0),
+        );
+        self.engine_reverser_control[1].update(
+            &self.engine_3,
+            self.lgcius.lgciu2(),
+            self.reversers_assembly.reverser_feedback(1),
+        );
+
+        self.reversers_assembly
+            .update(context, &self.engine_reverser_control);
+
+        self.reverse_thrust.update(
+            context,
+            [&self.engine_2, &self.engine_3],
+            self.reversers_assembly.reversers_position(),
+        );
     }
 }
 impl SimulationElement for A380 {
@@ -354,6 +387,10 @@ impl SimulationElement for A380 {
         self.egpwc.accept(visitor);
         self.icing_simulation.accept(visitor);
         self.structural_flex.accept(visitor);
+
+        accept_iterable!(self.engine_reverser_control, visitor);
+        self.reversers_assembly.accept(visitor);
+        self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);
     }
