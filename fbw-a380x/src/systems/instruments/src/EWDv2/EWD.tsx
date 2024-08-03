@@ -4,10 +4,11 @@ import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject,
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
-import { EWDMemo } from './elements/EWDMemo';
 import { EngineGauge } from 'instruments/src/EWDv2/elements/EngineGauge';
 import { Idle } from 'instruments/src/EWDv2/elements/Idle';
 import { BleedSupply } from 'instruments/src/EWDv2/elements/BleedSupply';
+import { WdMemos } from 'instruments/src/EWDv2/elements/WdMemos';
+import { WdLimitations } from 'instruments/src/EWDv2/elements/WdLimitations';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
@@ -58,8 +59,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
         failed={Subject.create(false)}
       >
         <div class="ewd-main">
-          <div style="display: flex; height: 375px; margin: 0px 8px 0px 8px;">
-            <svg class="ewd-svg" version="1.1" viewBox="0 0 768 1024" xmlns="http://www.w3.org/2000/svg">
+          <div class="EngineDisplayArea">
+            <svg class="ewd-svg" version="1.1" viewBox="0 0 768 375" xmlns="http://www.w3.org/2000/svg">
               <text x={20} y={30} class="Amber F26" visibility="hidden">
                 A FLOOR
               </text>
@@ -167,14 +168,12 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
               <text x={384} y={339} class="Cyan F20 Center">
                 &deg;C
               </text>
-
-              <path stroke="#8c8c8c" stroke-width={4} d="m 8 375 h 750" />
             </svg>
           </div>
-          <div style="display: flex; height: 649px; margin: 0px 8px 0px 8px;">
-            <svg class="ewd-svg" version="1.1" viewBox="0 0 768 1024" xmlns="http://www.w3.org/2000/svg">
-              <EWDMemo bus={this.props.bus} />
-            </svg>
+          <div class="WarningDisplayArea">
+            <WdLimitations bus={this.props.bus} />
+            <WdMemos bus={this.props.bus} />
+            <div class="StsArea" /> {/* Reserved for STS */}
           </div>
         </div>
       </CdsDisplayUnit>

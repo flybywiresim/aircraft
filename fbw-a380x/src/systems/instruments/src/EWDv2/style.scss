@@ -23,7 +23,7 @@
 @font-face {
     font-family: "Ecam";
     //noinspection CssUnknownTarget
-    src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+    src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
@@ -31,7 +31,6 @@
 .ewd-svg {
     position: absolute;
     width: 768px;
-    height: 1024px;
     background: $display-background;
     font-family: "Ecam", monospace;
 }
@@ -264,4 +263,72 @@ text, tspan {
     font-family: "Ecam", monospace !important;
     display: flex;
     flex-direction: column;
+}
+
+.EngineDisplayArea {
+    display: flex;
+    height: 379px;
+    margin: 0px 8px 0px 8px;
+    border-bottom: 4px solid $display-light-grey;
+}
+
+.WarningDisplayArea {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0px 8px 0px 8px;
+}
+
+.StsArea {
+  height: 40px;
+}
+
+.MemosContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+}
+
+.LimitationsContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.MemosDividedArea {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 4px;
+}
+
+.MemosLeft {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-right: 2px solid lightgrey;
+}
+
+.MemosRight {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-left: 8px;
+}
+
+.MemosFillArea {
+  flex-grow: 1;
+}
+
+.LimitationsHeading {
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+  letter-spacing: 1.75px;
+  margin-bottom: 4px;
+}
+
+.LimitationsHeading.Underline {
+  text-decoration: underline;
 }

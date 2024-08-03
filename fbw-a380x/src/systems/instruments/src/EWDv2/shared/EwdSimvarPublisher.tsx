@@ -33,14 +33,10 @@ export interface BaseEwdSimvars {
   packs1: boolean;
   packs2: boolean;
   fwc_flight_phase: number;
-  ewdRightLine1: number;
-  ewdRightLine2: number;
-  ewdRightLine3: number;
-  ewdRightLine4: number;
-  ewdRightLine5: number;
-  ewdRightLine6: number;
-  ewdRightLine7: number;
-  ewdRightLine8: number;
+  limitations_apprldg: number;
+  limitations_all: number;
+  memo_left: number;
+  memo_right: number;
 }
 
 type IndexedTopics =
@@ -52,7 +48,11 @@ type IndexedTopics =
   | 'reverser_deploying'
   | 'reverser_deployed'
   | 'thrust_reverse'
-  | 'eng_anti_ice';
+  | 'eng_anti_ice'
+  | 'limitations_apprldg'
+  | 'limitations_all'
+  | 'memo_left'
+  | 'memo_right';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
@@ -92,14 +92,16 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['packs1', { name: 'L:A32NX_COND_PACK_1_IS_OPERATING', type: SimVarValueType.Bool }],
       ['packs2', { name: 'L:A32NX_COND_PACK_2_IS_OPERATING', type: SimVarValueType.Bool }],
       ['fwc_flight_phase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Enum }],
-      ['ewdRightLine1', { name: 'L:A380X_EWD_RIGHT_LINE_1', type: SimVarValueType.Number }],
-      ['ewdRightLine2', { name: 'L:A380X_EWD_RIGHT_LINE_2', type: SimVarValueType.Number }],
-      ['ewdRightLine3', { name: 'L:A380X_EWD_RIGHT_LINE_3', type: SimVarValueType.Number }],
-      ['ewdRightLine4', { name: 'L:A380X_EWD_RIGHT_LINE_4', type: SimVarValueType.Number }],
-      ['ewdRightLine5', { name: 'L:A380X_EWD_RIGHT_LINE_5', type: SimVarValueType.Number }],
-      ['ewdRightLine6', { name: 'L:A380X_EWD_RIGHT_LINE_6', type: SimVarValueType.Number }],
-      ['ewdRightLine7', { name: 'L:A380X_EWD_RIGHT_LINE_7', type: SimVarValueType.Number }],
-      ['ewdRightLine8', { name: 'L:A380X_EWD_RIGHT_LINE_8', type: SimVarValueType.Number }],
+      [
+        'limitations_apprldg',
+        { name: 'L:A32NX_EWD_LIMITATIONS_LDG_LINE_#index#', type: SimVarValueType.Number, indexed: true },
+      ],
+      [
+        'limitations_all',
+        { name: 'L:A32NX_EWD_LIMITATIONS_ALL_LINE_#index#', type: SimVarValueType.Number, indexed: true },
+      ],
+      ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
+      ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
     ];
 
     super(new Map(simvars), bus, pacer);
