@@ -302,7 +302,7 @@ type CabinVerticalSpeedComponentType = {
 
 const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx, y, radius, activeCpc }) => {
   const arincCabinVs = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpc}_CABIN_VS`, 500);
-  const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'foot per minute', 500);
+  const [manCabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute', 500);
   const cabinVs = arincCabinVs.isNormalOperation() ? arincCabinVs.value : manCabinVs;
 
   return (
