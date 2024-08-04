@@ -1,0 +1,15 @@
+{
+  "creator": "FlyByWire Simulations",
+  "release_notes": {
+    "neutral": {
+      "LastUpdate": "",
+      "OlderHistory": ""
+    }
+  },
+  "title": "FlyByWire Arinc429 LVar Bridge",
+  "dependencies": [],
+  "content_type": "MISC",
+  "minimum_game_version": "1.36.2",
+  "manufacturer": "FlyByWire Simulations",
+  "package_version": "0.1.0"
+}
