@@ -607,7 +607,7 @@
     - Bool
     - True when the overhead apu pushbutton has been released
 
-- A32NX_FIRE_TEST_ENG1
+- A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED
     - Bool
     - True when the overhead fire test pushbutton is pressed
 

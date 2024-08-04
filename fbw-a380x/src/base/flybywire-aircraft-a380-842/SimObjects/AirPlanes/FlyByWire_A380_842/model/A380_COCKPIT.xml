@@ -4226,10 +4226,6 @@
                             <BUTTON_ID>APU</BUTTON_ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
-                            <NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
-                            <PART_ID>Fire_test_eng1</PART_ID>
-                        </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>

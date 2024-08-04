@@ -70,13 +70,14 @@ struct FireProtectionSystem {
 
 impl FireProtectionSystem {
     const DELAY_FIRE_TEST_MILLIS: Duration = Duration::from_millis(500);
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             fire_detection_unit: FireDetectionUnit::new(context),
             fire_extinguishing_system: FireExtinguishingSystem::new(context),
 
-            // TODO: Is this the right naming for the a380?
-            fire_test_pushbutton_id: context.get_identifier("FIRE_TEST_ENG1".to_owned()),
+            fire_test_pushbutton_id: context
+                .get_identifier("OVHD_FIRE_TEST_PB_IS_PRESSED".to_owned()),
             fire_test_pushbutton_is_pressed: false,
             fire_test_pushbutton_signal: DelayedTrueLogicGate::new(Self::DELAY_FIRE_TEST_MILLIS),
         }
@@ -102,7 +103,7 @@ impl FireProtectionSystem {
     }
 
     fn apu_fire_on_ground(&self) -> bool {
-        self.fire_detection_unit.should_extinguish_apu_fire()
+        self.fire_detection_unit.apu_fire_on_ground()
     }
 
     fn bottle_discharge(&self) -> [bool; 9] {
@@ -131,7 +132,8 @@ struct FireDetectionUnit {
     fire_detected: [bool; 6],
     fire_detection_zones: [FireDetectionZone; 6],
     interval_between_loop_failures: [Duration; 6],
-    should_extinguish_apu_fire: bool,
+    apu_fire_on_ground: bool,
+    should_extinguish_apu_fire: DelayedTrueLogicGate,
 
     // The FDU sends discrete signals to the overhead panel and arinc signals to the FWS
     // Fixme: We assume a discrete word is sent, validate with references
@@ -140,6 +142,8 @@ struct FireDetectionUnit {
 }
 
 impl FireDetectionUnit {
+    const DELAY_APU_FIRE_EXTINGUISHING: Duration = Duration::from_secs(10);
+
     fn new(context: &mut InitContext) -> Self {
         let fire_detection_zones = [
             FireDetectionZone::Engine(1),
@@ -171,7 +175,10 @@ impl FireDetectionUnit {
             fire_detected: [false; 6],
             fire_detection_zones,
             interval_between_loop_failures: [Duration::ZERO; 6],
-            should_extinguish_apu_fire: false,
+            apu_fire_on_ground: false,
+            should_extinguish_apu_fire: DelayedTrueLogicGate::new(
+                Self::DELAY_APU_FIRE_EXTINGUISHING,
+            ),
 
             discrete_word_id: context.get_identifier("FIRE_FDU_DISCRETE_WORD".to_owned()),
             discrete_word: Arinc429Word::new(0, SignStatus::NoComputedData),
@@ -203,10 +210,12 @@ impl FireDetectionUnit {
             .iter_mut()
             .for_each(|l| l.update_was_powered());
 
-        // If a fire is detected in the APU while the aircraft is on the ground, the extinguishim system is automatically activated
-        self.should_extinguish_apu_fire = self.fire_detected[4]
+        // If a fire is detected in the APU while the aircraft is on the ground, the extinguishim system is automatically activated after a delay
+        self.apu_fire_on_ground = self.fire_detected[4]
             && !fire_test_pushbutton_is_pressed
             && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true));
+        self.should_extinguish_apu_fire
+            .update(context, self.apu_fire_on_ground);
 
         self.update_discrete_word();
     }
@@ -258,7 +267,11 @@ impl FireDetectionUnit {
     }
 
     fn should_extinguish_apu_fire(&self) -> bool {
-        self.should_extinguish_apu_fire
+        self.should_extinguish_apu_fire.output()
+    }
+
+    fn apu_fire_on_ground(&self) -> bool {
+        self.apu_fire_on_ground
     }
 
     fn update_discrete_word(&mut self) {
@@ -361,7 +374,7 @@ impl FireDetectionLoop {
             is_powered: false,
             was_powered_before: false,
             failures: fire_detection_zones
-                .map(|zone| Failure::new(FailureType::FireDetectionLoop(loop_id, zone))), // TODO: Add failures
+                .map(|zone| Failure::new(FailureType::FireDetectionLoop(loop_id, zone))),
 
             fire_detectors: fire_detection_zones.map(|zone| FireDetector::new(context, zone)),
         }
@@ -1024,7 +1037,7 @@ mod a380_fire_and_smoke_protection_tests {
         }
 
         fn set_test_pushbutton(mut self, test_pb: bool) -> Self {
-            self.write_by_name("FIRE_TEST_ENG1", test_pb);
+            self.write_by_name("OVHD_FIRE_TEST_PB_IS_PRESSED", test_pb);
             self
         }
 
@@ -1421,6 +1434,7 @@ mod a380_fire_and_smoke_protection_tests {
                 .set_on_ground(true)
                 .with()
                 .set_apu_on_fire()
+                .run_with_delta_of(Duration::from_secs(10))
                 .and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());
@@ -1432,6 +1446,7 @@ mod a380_fire_and_smoke_protection_tests {
             let mut test_bed = test_bed()
                 .set_on_ground(true)
                 .set_test_pushbutton(true)
+                .run_with_delta_of(Duration::from_secs(10))
                 .and_double_run()
                 .then()
                 .set_test_pushbutton(false)
@@ -1463,6 +1478,7 @@ mod a380_fire_and_smoke_protection_tests {
                 .set_on_ground(false)
                 .with()
                 .set_apu_on_fire()
+                .run_with_delta_of(Duration::from_secs(10))
                 .and_double_run();
 
             assert!(!test_bed.squib_apu_is_armed());

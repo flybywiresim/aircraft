@@ -12,7 +12,7 @@
 
     <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
         <UseTemplate Name="FBW_Push_Held">
-            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
+            <HOLD_SIMVAR>L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED</HOLD_SIMVAR>
             <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
             <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
         </UseTemplate>
