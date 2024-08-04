@@ -128,6 +128,8 @@
                     1 (&gt;L:A32NX_EFIS_L_OPTION)
                 }
 
+                (L:A380X_EFIS_L_ACTIVE_OVERLAY) 2 == (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)
+
                 (L:A380X_EFIS_R_ACTIVE_FILTER) 0 == if{
                     3 (&gt;L:A32NX_EFIS_R_OPTION)
                 }
@@ -147,6 +149,9 @@
                 (L:A380X_EFIS_R_CSTR_BUTTON_IS_ON) 1 == if{
                     1 (&gt;L:A32NX_EFIS_R_OPTION)
                 }
+
+                (L:A380X_EFIS_R_ACTIVE_OVERLAY) 2 == (&gt;L:A32NX_EFIS_TERR_R_ACTIVE)
+
 
                 (O:PrevPot7Value) s0
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) s1

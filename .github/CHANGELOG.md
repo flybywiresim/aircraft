@@ -106,8 +106,9 @@
 1. [EFB] Added a takeoff performance calculator - @donstim (donbikes), @tracernz (Mike)
 1. [MCDU] Removed V-speed auto-fill function - @tracernz (Mike)
 1. [PFD] Implement alerts within artificial horizon (ROP, ROW, OANS, stall, windshear) @flogross89 (Flo)
-1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal 
+1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal
 1. [FWC] Fix NW STRG DISC turning amber too soon - @adoggman (Andrew)
+1. [FMS] Fix VNAV crash for steep approaches - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 
