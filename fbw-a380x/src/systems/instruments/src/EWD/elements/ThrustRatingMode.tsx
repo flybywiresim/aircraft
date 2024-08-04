@@ -8,8 +8,8 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429Values } from 'instruments/src/EWDv2/shared/ArincValueProvider';
-import { EwdSimvars } from 'instruments/src/EWDv2/shared/EwdSimvarPublisher';
+import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
+import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 
 export class N1Limit extends DisplayComponent<{
   x: number;

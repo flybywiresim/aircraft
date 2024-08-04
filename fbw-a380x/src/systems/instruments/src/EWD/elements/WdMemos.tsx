@@ -7,8 +7,8 @@ import {
   Subject,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { FormattedFwcText } from 'instruments/src/EWDv2/elements/FormattedFwcText';
-import { EwdSimvars } from 'instruments/src/EWDv2/shared/EwdSimvarPublisher';
+import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
+import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import EWDMessages from '@instruments/common/EWDMessages';
 
 interface WdMemosProps {

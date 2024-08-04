@@ -1,6 +1,6 @@
 {
   "index": "./instrument.tsx",
-  "name": "EWDv2",
+  "name": "EWD",
   "dimensions": {
     "width": 768,
     "height": 1024

@@ -4,11 +4,11 @@ import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject,
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
-import { EngineGauge } from 'instruments/src/EWDv2/elements/EngineGauge';
-import { Idle } from 'instruments/src/EWDv2/elements/Idle';
-import { BleedSupply } from 'instruments/src/EWDv2/elements/BleedSupply';
-import { WdMemos } from 'instruments/src/EWDv2/elements/WdMemos';
-import { WdLimitations } from 'instruments/src/EWDv2/elements/WdLimitations';
+import { EngineGauge } from 'instruments/src/EWD/elements/EngineGauge';
+import { Idle } from 'instruments/src/EWD/elements/Idle';
+import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
+import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
+import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [

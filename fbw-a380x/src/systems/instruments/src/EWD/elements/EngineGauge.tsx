@@ -1,8 +1,8 @@
 import { DisplayComponent, Subscribable, VNode, FSComponent, EventBus } from '@microsoft/msfs-sdk';
-import { AttentionGetter } from 'instruments/src/EWDv2/elements/AttentionGetter';
-import { EGT } from 'instruments/src/EWDv2/elements/EGT';
-import { N1 } from 'instruments/src/EWDv2/elements/N1';
-import { ThrustGauge } from 'instruments/src/EWDv2/elements/ThrustGauge';
+import { AttentionGetter } from 'instruments/src/EWD/elements/AttentionGetter';
+import { EGT } from 'instruments/src/EWD/elements/EGT';
+import { N1 } from 'instruments/src/EWD/elements/N1';
+import { ThrustGauge } from 'instruments/src/EWD/elements/ThrustGauge';
 
 interface EngineGaugeProps {
   bus: EventBus;

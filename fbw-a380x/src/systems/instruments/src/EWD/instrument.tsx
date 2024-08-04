@@ -8,10 +8,10 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import './style.scss';
 import '../index.scss';
-import { EngineWarningDisplay } from 'instruments/src/EWDv2/EWD';
+import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
-class A380X_EWDv2 extends BaseInstrument {
+class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
   private readonly backplane = new InstrumentBackplane();
@@ -31,7 +31,7 @@ class A380X_EWDv2 extends BaseInstrument {
   }
 
   get templateID(): string {
-    return 'A380X_EWDv2';
+    return 'A380X_EWD';
   }
 
   public connectedCallback(): void {
@@ -40,10 +40,10 @@ class A380X_EWDv2 extends BaseInstrument {
     this.arincProvider.init();
     this.backplane.init();
 
-    FSComponent.render(<EngineWarningDisplay bus={this.bus} />, document.getElementById('EWDv2_CONTENT'));
+    FSComponent.render(<EngineWarningDisplay bus={this.bus} />, document.getElementById('EWD_CONTENT'));
 
     // Remove "instrument didn't load" text
-    document.getElementById('EWDv2_CONTENT').querySelector(':scope > h1').remove();
+    document.getElementById('EWD_CONTENT').querySelector(':scope > h1').remove();
   }
 
   public Update(): void {
@@ -53,4 +53,4 @@ class A380X_EWDv2 extends BaseInstrument {
   }
 }
 
-registerInstrument('a380x-ewdv2', A380X_EWDv2);
+registerInstrument('a380x-ewd', A380X_EWD);
