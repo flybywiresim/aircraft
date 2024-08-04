@@ -32,6 +32,7 @@
         <Include RelativeFile="behaviour\overhead\ovhd-inputs.xml" />
         <Include RelativeFile="behaviour\overhead\electrical.xml" />
         <Include RelativeFile="behaviour\overhead\cargo-air-cond.xml" />
+        <Include RelativeFile="behaviour\overhead\fire.xml" />
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
