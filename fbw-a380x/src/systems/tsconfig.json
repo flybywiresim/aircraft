@@ -17,7 +17,7 @@
         "@atsu/*": ["./atsu/src/*"],
         "@fmgc/*": ["./fmgc/src/*"],
         "@flybywiresim/failures": ["failures"],
-        "@tcas/*": ["./tcas/src/*"],
+        "@tcas/*": ["./tcas/src/index.ts"],
         "@typings/*": ["../typings"],
         "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
         "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
