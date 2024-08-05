@@ -282,7 +282,6 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         sensed: true,
         labelNotCompleted: 'OFF',
       },
-
     ],
   },
   211800025: {
@@ -315,13 +314,13 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-      name: 'CARGO TRIM AIR VLV FAULT',
-      sensed: false,
+        name: 'CARGO TRIM AIR VLV FAULT',
+        sensed: false,
       },
       {
-      name: 'CARGO TEMP',
-      sensed: true,
-      labelNotCompleted: 'MONITOR',
+        name: 'CARGO TEMP',
+        sensed: true,
+        labelNotCompleted: 'MONITOR',
       },
     ],
   },
@@ -399,15 +398,15 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK REGUL DEGRADED ',
     sensed: true,
     items: [
-        {
+      {
         name: 'PACK FLOW INSUFFICIENT FOR FWD CRG',
         sensed: false,
-        },
-        {
+      },
+      {
         name: 'FWD CARGO TEMP REGUL',
         sensed: true,
         labelNotCompleted: 'OFF',
-        },
+      },
     ],
   },
   // ATA 21: VENT
@@ -459,7 +458,14 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   212800010: {
     title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL FAULT',
     sensed: true,
-    items: [],
+    items: [
+      // If IFEC pushbutton switch on
+      {
+        name: 'IFEC',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   212800011: {
     title: '\x1b<4m\x1b4mCOND\x1bm FWD VENT CTL REDUNDANCY LOST',
@@ -479,37 +485,131 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   212800014: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS BLOWING FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'HI',
+      },
+        {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'MAX FLT TIME: 5 HR',
+        sensed: false,
+      },
+    ],
   },
   212800015: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS EXTRACT FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'VENT AVNCS EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+      },
+    ],
   },
   212800016: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS L BLOWING FAULT',
     sensed: true,
-    items: [],
+    items: [
+        {
+          name: 'AIR FLOW',
+          sensed: true,
+          labelNotCompleted: 'HI',
+        },
+        {
+          name: 'CAB FANS',
+          sensed: true,
+          labelNotCompleted: 'ON',
+        },
+    ],
   },
   212800017: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS R BLOWING FAULT',
     sensed: true,
-    items: [],
+    items: [
+        {
+          name: 'AIR FLOW',
+          sensed: true,
+          labelNotCompleted: 'HI',
+        },
+        {
+          name: 'CAB FANS',
+          sensed: true,
+          labelNotCompleted: 'ON',
+        },
+    ],
   },
   212800018: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS OVBD VLV FAULT',
     sensed: true,
-    items: [],
+    items: [
+        {
+          name: 'VENT AVNCS EXTRACT',
+          sensed: true,
+          labelNotCompleted: 'OVRD',
+        },
+        {
+          name: 'MAX FL : 100/MEA',
+          sensed: false,
+          level: 1,
+        },
+        {
+          name: 'CABIN ALT MODE',
+          sensed: true,
+          labelNotCompleted: 'MAN',
+          level: 1,
+        },
+        {
+          name: 'CAB V/S TRGT',
+          sensed: true,
+          labelNotCompleted: '+2500 FT/MIN',
+          level: 1,
+        },
+    ],
   },
   212800019: {
     title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS 1 OVHT',
     sensed: true,
-    items: [],
+    items: [
+        {
+          name: 'COOLG SYS 1 OVHT ISOLATED',
+          sensed: false,
+        },
+        {
+          name: 'COOLG SYS 1 AUTO SHUTDOWN',
+          sensed: false,
+        },
+        {
+          name: 'VENT COOLG',
+          sensed: true,
+          labelNotCompleted: 'OFF',
+        },
+    ],
   },
   212800020: {
     title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS 2 OVHT',
     sensed: true,
-    items: [],
+    items: [
+        {
+          name: 'COOLG SYS 2 OVHT ISOLATED',
+          sensed: false,
+        },
+        {
+          name: 'COOLG SYS 2 AUTO SHUTDOWN',
+          sensed: false,
+        },
+        {
+          name: 'VENT COOLG',
+          sensed: true,
+          labelNotCompleted: 'OFF',
+        },
+    ],
   },
   212800021: {
     title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS PROT FAULT',
@@ -524,27 +624,77 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   212800023: {
     title: '\x1b<4m\x1b4mVENT\x1bm IFE BAY VENT FAULT',
     sensed: true,
-    items: [],
+    items: [
+        {
+          name: 'IFEC',
+          sensed: true,
+          labelNotCompleted: 'OFF',
+        },
+        {
+          name: 'IFE BAY VENT AVAIL IN FLT',
+          sensed: false,
+        },
+    ],
   },
   212800024: {
     title: '\x1b<4m\x1b4mVENT\x1bm LAV & GALLEYS EXTRACT FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'LAV & GALLEYS EXTRACT AVAIL IN FLT',
+        sensed: false,
+      },
+    ],
   },
   212800025: {
     title: '\x1b<4m\x1b4mVENT\x1bm PACK BAY 1 VENT FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 1 AVAIL IN FLT',
+        sensed: false,
+      },
+    ],
   },
   212800026: {
     title: '\x1b<4m\x1b4mVENT\x1bm PACK BAY 2 VENT FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2 AVAIL IN FLT',
+        sensed: false,
+      },
+    ],
   },
   212800027: {
     title: '\x1b<4m\x1b4mVENT\x1bm PACK BAY 1+2 VENT FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 1+2 AVAIL IN FLT',
+        sensed: false,
+      },
+    ],
   },
   212800028: {
     title: '\x1b<4m\x1b4mVENT\x1bm THS BAY VENT FAULT',
