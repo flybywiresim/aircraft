@@ -823,4 +823,486 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
+  260800029: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm AFT AVNCS DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800030: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm AFT AVNCS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CREW OXY MASKS (IF RQRD)',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GALLEY',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800031: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'IFEC',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: '.IF NO LIFESTOCK :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'FWD ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'BULK ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'BULK CARGO HEAT',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+    ],
+  },
+  260800032: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm IFE BAY DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'IFEC',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  260800033: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm IFE BAY SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'IFEC',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800034: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm L MAIN AVNCS DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800035: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm R MAIN AVNCS DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800036: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm L UPPER AVNCS DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800037: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm R UPPER AVNCS DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800038: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm L MAIN AVNCS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CREW OXY MASKS (IF RQRD)',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GALLEY',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: '[QRH] SMOKE/FUMES PROC',
+        sensed: false,
+        labelNotCompleted: 'APPLY',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800039: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm R MAIN AVNCS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CREW OXY MASKS (IF RQRD)',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GALLEY',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: '[QRH] SMOKE/FUMES PROC',
+        sensed: false,
+        labelNotCompleted: 'APPLY',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800040: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm L UPPER AVNCS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CREW OXY MASKS (IF RQRD)',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GALLEY',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // If L UPPER AVNCS compartment affected
+      {
+        name: 'NSS MASTER',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: '. IF SMOKE PERSISTS :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: '[QRH] SMOKE/FUMES PROC',
+        sensed: false,
+        labelNotCompleted: 'APPLY',
+        level: 1,
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800041: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm R UPPER AVNCS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CREW OXY MASKS (IF RQRD)',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GALLEY',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // If L UPPER AVNCS compartment affected
+      {
+        name: 'NSS MASTER',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: '. IF SMOKE PERSISTS :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: '[QRH] SMOKE/FUMES PROC',
+        sensed: false,
+        labelNotCompleted: 'APPLY',
+        level: 1,
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800042: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm FACILITIES DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800043: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm FWD CARGO BOTTLES FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800044: {
+    title:  '\x1b<4m\x1b4mSMOKE\x1bm AFT CARGO BOTTLES FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800045: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm FWD CARGO SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'FWD ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // When all engines are shut down
+      {
+        name: '.IF FWD CRG CLOSED :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'AGENT TO FWD',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+      // When at least one engine running
+      {
+        name: 'AGENT TO FWD',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800046: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm AFT CARGO SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'BULK ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // When all engines are shut down
+      {
+        name: '.IF AFT+BULK CRG CLOSED :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'AGENT TO AFT',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+      // When at least one engine running
+      {
+        name: 'AGENT TO AFT',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800047: {
+    title:  '\x1b<2m\x1b4mSMOKE\x1bm BULK CARGO SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'BULK ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // When all engines are shut down
+      {
+        name: '.IF AFT+BULK CRG CLOSED :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'AGENT TO AFT',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+      // When at least one engine running
+      {
+        name: 'AGENT TO AFT',
+        sensed: true,
+        labelNotCompleted: 'DISCH',
+        level: 1,
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
+        sensed: false,
+        color: 'green',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
 };
