@@ -900,7 +900,6 @@ export class PseudoFWC {
   private readonly trueNorthRef = Subject.create(false);
 
   /* SURVEILLANCE */
-  private readonly gpwsFlaps3 = Subject.create(false);
 
   private readonly gpwsFlapMode = Subject.create(0);
 
@@ -1981,7 +1980,6 @@ export class PseudoFWC {
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
-    this.gpwsFlaps3.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool'));
     this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
     this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
     this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
@@ -3236,17 +3234,6 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000300': {
-      // GPWS FLAPS 3
-      flightPhaseInhib: [],
-      simVarIsActive: this.gpwsFlaps3,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000030001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000230': {
       // MAN LANDING ELEVATION
       flightPhaseInhib: [],
@@ -3707,9 +3694,9 @@ export class PseudoFWC {
           : 1,
         SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 4 : 3,
         SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 6 : 5,
-        (!SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') &&
+        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-        (SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') &&
+        (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3)
           ? 8
           : 7,
