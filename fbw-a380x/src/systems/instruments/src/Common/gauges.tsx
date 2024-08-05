@@ -83,13 +83,12 @@ export type GaugeMarkerComponentType = {
     textNudgeY?: number,
     halfIndicator?: boolean
     bold?: boolean,
-    reverse?: boolean,
-    overrideText?: string,
+    reverse?: boolean
 };
 
 export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
     value, x, y, min, max, radius, startAngle, endAngle, className, textClassName = 'GaugeText', showValue,
-    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false, reverse = false, overrideText = ''
+    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false, reverse = false,
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle, perpendicular: reverse });
 
@@ -132,7 +131,7 @@ export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
         y: y + (dir.y * radius * multiplierInner) + textNudgeY,
     };
 
-    const textValue = !showValue ? '' : overrideText ? overrideText : Math.abs(value).toString();
+    const textValue = !showValue ? '' : Math.abs(value).toString();
 
     return (
         <>
@@ -281,56 +280,6 @@ export const GaugeThrustComponent: FC<GaugeThrustComponentProps> = memo(({ x, y,
             <g className='GaugeComponent'>
                 <g className={visible ? 'Show' : 'Hide'}>
                     <path d={ThrustPath} className={className} />
-                </g>
-            </g>
-        </>
-    );
-});
-
-type ThrustTransientComponentType = {
-    x: number,
-    y: number,
-    radius: number,
-    startAngle: number,
-    endAngle: number,
-    className: string,
-    visible: boolean,
-    thrustActual: number,
-    thrustTarget: number;
-};
-
-export const ThrustTransientComponent: FC<ThrustTransientComponentType> = memo(({ x, y, radius, startAngle, endAngle, className, visible, thrustActual, thrustTarget }) => {
-    const sweepHorizontal = (radius: number): string => {
-        const valueIdleDir = valueRadianAngleConverter({ value: thrustActual, min: 0, max: 1, endAngle, startAngle });
-        const valueIdleEnd = {
-            x: x + (valueIdleDir.x * radius),
-            y: y + (valueIdleDir.y * radius),
-        };
-        const valueMaxDir = valueRadianAngleConverter({ value: thrustTarget, min: 0, max: 1, endAngle, startAngle });
-        const valueMaxEnd = {
-            x: x + (valueMaxDir.x * radius),
-            y: y + (valueMaxDir.y * radius),
-        };
-
-        const diffAngle = valueMaxDir.angle - valueIdleDir.angle;
-
-        return [
-            `M ${valueIdleEnd.x},${valueIdleEnd.y}`,
-            `A ${radius} ${radius} 0 ${Math.abs(diffAngle) > 180 ? '1' : '0'} ${diffAngle < 0 ? '0' : '1'} ${valueMaxEnd.x} ${valueMaxEnd.y}`,
-        ].join(' ');
-    }
-
-    const thrustEnd = valueRadianAngleConverter({ value: thrustTarget, min: 0, max: 1, endAngle, startAngle });
-
-    return (
-        <>
-            <g className='GaugeComponent'>
-                <g className={visible ? 'Show' : 'Hide'}>
-                    <path d={sweepHorizontal(0.8*radius)} className={className} />
-                    <path d={sweepHorizontal(0.65*radius)} className={className} />
-                    <path d={sweepHorizontal(0.5*radius)} className={className} />
-                    <path d={sweepHorizontal(0.35*radius)} className={className} />
-                    <path d={`M ${x} ${y} L ${x + thrustEnd.x * 0.8*radius} ${y + thrustEnd.y * 0.8*radius}`} className={className} />
                 </g>
             </g>
         </>
