@@ -26,7 +26,7 @@ import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/Ca
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
-import { PseudoFWC } from 'systems-host/systems/PseudoFWC';
+import { PseudoFWC } from 'systems-host/systems/FlightWarningSystem/PseudoFWC';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();

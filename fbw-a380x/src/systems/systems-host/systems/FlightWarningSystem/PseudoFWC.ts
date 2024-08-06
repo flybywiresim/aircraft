@@ -43,7 +43,7 @@ import {
   FwsCdsAbnormalSensedEntry,
   FwsCdsAbnormalSensedList,
   FwsCdsEvents,
-} from '../../instruments/src/MsfsAvionicsCommon/providers/FwsCdsPublisher';
+} from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsCdsPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -4161,7 +4161,7 @@ export class PseudoFWC {
           !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
         true,
       ],
-      failure: 2,
+      failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [
         '340300013',
