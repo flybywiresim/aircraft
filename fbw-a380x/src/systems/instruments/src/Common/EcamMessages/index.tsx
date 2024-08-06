@@ -404,7 +404,7 @@ interface AbstractChecklistItem {
   /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
   level?: number;
   /** Manually define color. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
-  color?: 'standard' | 'cyan' | 'green' | 'amber';
+  color?: 'standard' | 'cyan' | 'green' | 'amber' | 'white_underlined' | 'separation_line';
 }
 interface ChecklistAction extends AbstractChecklistItem {
   /** Label at the end of the line if action is not completed. */
@@ -420,10 +420,17 @@ export interface AbnormalProcedure {
   title: string;
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
-  /** An array of possible checklist items. Key represents the message ID, which should be unique. */
+  /** An array of possible checklist items. */
   items: (ChecklistAction | ChecklistCondition)[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
+}
+
+export interface NormalProcedure {
+  /** Title of the checklist, e.g. "BEFORE START".  */
+  title: string;
+  /** An array of possible checklist items.. */
+  items: ChecklistAction[];
 }
 
 export function isChecklistAction(element: ChecklistAction | ChecklistCondition): element is ChecklistAction {
