@@ -36,29 +36,29 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
 
   private readonly memosRightFormatString = Subject.create('');
 
+  private update() {
+    this.memosLeftFormatString.set(
+      this.memosLeft
+        .filter((v) => !!v.get())
+        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .join('\r'),
+    );
+    this.memosRightFormatString.set(
+      this.memosRight
+        .filter((v) => !!v.get())
+        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .join('\r'),
+    );
+
+    this.memosLeftSvgRef.instance.style.height = `${(this.memosLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+    this.memosRightSvgRef.instance.style.height = `${(this.memosRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub
-      .on('realTime')
-      .atFrequency(4)
-      .handle(() => {
-        this.memosLeftFormatString.set(
-          this.memosLeft
-            .filter((v) => !!v.get())
-            .map((val) => EWDMessages[padEWDCode(val.get())])
-            .join('\r'),
-        );
-        this.memosRightFormatString.set(
-          this.memosRight
-            .filter((v) => !!v.get())
-            .map((val) => EWDMessages[padEWDCode(val.get())])
-            .join('\r'),
-        );
-
-        this.memosLeftSvgRef.instance.style.height = `${(this.memosLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-        this.memosRightSvgRef.instance.style.height = `${(this.memosRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-      });
+    this.memosLeft.forEach((el) => el.sub(() => this.update(), true));
+    this.memosRight.forEach((el) => el.sub(() => this.update(), true));
   }
 
   render() {

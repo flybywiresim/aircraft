@@ -24,11 +24,11 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
 
   private readonly limitationsRightSvgRef = FSComponent.createRef<SVGGraphicsElement>();
 
-  private readonly limitationsLeft = Array.from(Array(10), (val, idx) =>
+  private readonly limitationsLeft = Array.from(Array(10), (_, idx) =>
     ConsumerSubject.create(this.sub.on(`limitations_all_${idx + 1}`).whenChanged(), 0),
   );
 
-  private readonly limitationsRight = Array.from(Array(10), (val, idx) =>
+  private readonly limitationsRight = Array.from(Array(10), (_, idx) =>
     ConsumerSubject.create(this.sub.on(`limitations_apprldg_${idx + 1}`).whenChanged(), 0),
   );
 
@@ -38,35 +38,35 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
 
   private readonly limitationsDisplay = Subject.create('none');
 
+  private update() {
+    this.limitationsLeftFormatString.set(
+      this.limitationsLeft
+        .filter((v) => !!v.get())
+        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .join('\r'),
+    );
+    this.limitationsRightFormatString.set(
+      this.limitationsRight
+        .filter((v) => !!v.get())
+        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .join('\r'),
+    );
+
+    this.limitationsLeftSvgRef.instance.style.height = `${(this.limitationsLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+    this.limitationsRightSvgRef.instance.style.height = `${(this.limitationsRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+
+    this.limitationsDisplay.set(
+      this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0
+        ? 'block'
+        : 'none',
+    );
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub
-      .on('realTime')
-      .atFrequency(4)
-      .handle(() => {
-        this.limitationsLeftFormatString.set(
-          this.limitationsLeft
-            .filter((v) => !!v.get())
-            .map((val) => EWDMessages[padEWDCode(val.get())])
-            .join('\r'),
-        );
-        this.limitationsRightFormatString.set(
-          this.limitationsRight
-            .filter((v) => !!v.get())
-            .map((val) => EWDMessages[padEWDCode(val.get())])
-            .join('\r'),
-        );
-
-        this.limitationsLeftSvgRef.instance.style.height = `${(this.limitationsLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-        this.limitationsRightSvgRef.instance.style.height = `${(this.limitationsRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-
-        this.limitationsDisplay.set(
-          this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0
-            ? 'block'
-            : 'none',
-        );
-      });
+    this.limitationsLeft.forEach((el) => el.sub(() => this.update(), true));
+    this.limitationsRight.forEach((el) => el.sub(() => this.update(), true));
   }
 
   render() {

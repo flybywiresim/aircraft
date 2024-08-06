@@ -127,7 +127,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.n1Degraded[1],
                   this.engineRunningOrIgnitionOn,
                 )}
-                d={`m ${171} 228 l 24 -2`}
+                d={'m 171 228 l 24 -2'}
               />
               <path
                 class={MappedSubject.create(
@@ -136,7 +136,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.n1Degraded[1],
                   this.engineRunningOrIgnitionOn,
                 )}
-                d={`m ${335} 216 l 20 -2`}
+                d={'m 335 216 l 20 -2'}
               />
               <path
                 class={MappedSubject.create(
@@ -145,7 +145,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.n1Degraded[2],
                   this.engineRunningOrIgnitionOn,
                 )}
-                d={`m ${416} 216 l 20 2`}
+                d={'m 416 216 l 20 2'}
               />
               <path
                 class={MappedSubject.create(
@@ -157,7 +157,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.n1Degraded[3],
                   this.engineRunningOrIgnitionOn,
                 )}
-                d={`m ${576} 226 l 24 2`}
+                d={'m 576 226 l 24 2'}
               />
 
               {/* EGT */}

@@ -73,8 +73,8 @@ export class EGT extends DisplayComponent<EGTProps> {
               x={this.props.x}
               y={this.props.y}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               visible={Subject.create(true)}
               class="GaugeComponent WhiteLine SW2"
             />
@@ -90,8 +90,8 @@ export class EGT extends DisplayComponent<EGTProps> {
               x={this.props.x}
               y={this.props.y}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               visible={Subject.create(true)}
               class="GaugeComponent Gauge"
             >
@@ -99,8 +99,8 @@ export class EGT extends DisplayComponent<EGTProps> {
                 x={this.props.x}
                 y={this.props.y}
                 radius={this.radius - 2}
-                startAngle={Subject.create(this.endAngle - 20)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.endAngle - 20}
+                endAngle={this.endAngle}
                 visible={Subject.create(true)}
                 class="GaugeComponent Gauge ThickRedLine"
               />
@@ -111,8 +111,8 @@ export class EGT extends DisplayComponent<EGTProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge Medium"
               />
               <GaugeMarkerComponent
@@ -122,8 +122,8 @@ export class EGT extends DisplayComponent<EGTProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
               />
               <GaugeMarkerComponent
@@ -133,8 +133,8 @@ export class EGT extends DisplayComponent<EGTProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge RedLine"
               />
               <g visibility={this.amberVisible.map((it) => (it ? 'inherit' : 'hidden'))}>
@@ -145,8 +145,8 @@ export class EGT extends DisplayComponent<EGTProps> {
                   min={this.min}
                   max={this.max}
                   radius={this.radius}
-                  startAngle={Subject.create(this.startAngle)}
-                  endAngle={Subject.create(this.endAngle)}
+                  startAngle={this.startAngle}
+                  endAngle={this.endAngle}
                   class="GaugeThrustLimitIndicatorFill Gauge"
                 />
               </g>
@@ -158,8 +158,8 @@ export class EGT extends DisplayComponent<EGTProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class={this.egtColour.map((col) => `${col}GaugeIndicator Gauge`)}
                 multiplierInner={0.75}
                 indicator

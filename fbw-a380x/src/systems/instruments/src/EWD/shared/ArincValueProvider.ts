@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { EwdSimvars } from './EwdSimvarPublisher';
 
 export interface Arinc429Values {
@@ -15,12 +15,6 @@ export interface Arinc429Values {
 export class ArincValueProvider {
   private sat = Arinc429Register.empty();
 
-  private slatsFlapsStatus = Arinc429Register.empty();
-
-  private slatsPosition = Arinc429Register.empty();
-
-  private flapsPosition = Arinc429Register.empty();
-
   constructor(private readonly bus: EventBus) {}
 
   public init() {
@@ -31,20 +25,5 @@ export class ArincValueProvider {
       this.sat.set(p);
       publisher.pub('sat', this.sat);
     });
-
-  /*   subscriber.on('slatsFlapsStatusRaw').handle((w) => {
-      this.slatsFlapsStatus = new Arinc429Word(w);
-      publisher.pub('slatsFlapsStatus', this.slatsFlapsStatus);
-    });
-
-    subscriber.on('slatsPositionRaw').handle((w) => {
-      this.slatsPosition = new Arinc429Word(w);
-      publisher.pub('slatsPosition', this.slatsPosition);
-    });
-
-    subscriber.on('flapsPositionRaw').handle((w) => {
-      this.flapsPosition = new Arinc429Word(w);
-      publisher.pub('flapsPosition', this.flapsPosition);
-    }); */
   }
 }

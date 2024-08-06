@@ -27,7 +27,6 @@ class A380X_EWD extends BaseInstrument {
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('SimVars', this.simVarPublisher);
-    // this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
   }
 
   get templateID(): string {

@@ -66,8 +66,8 @@ export class N1 extends DisplayComponent<N1Props> {
               x={this.props.x}
               y={this.props.y}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               visible={Subject.create(true)}
               class="GaugeComponent SW2 WhiteLine"
             />
@@ -116,8 +116,8 @@ export class N1 extends DisplayComponent<N1Props> {
               thrustActual={this.n1.map((it) => it / 100)}
               thrustTarget={this.throttle_position.map((throttle_position) => throttle_position / 100)}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               visible={Subject.create(true)}
               class="TransientIndicator"
             />
@@ -125,8 +125,8 @@ export class N1 extends DisplayComponent<N1Props> {
               x={this.xDegraded}
               y={this.props.y}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               visible={Subject.create(true)}
               class="GaugeComponent Gauge"
             >
@@ -134,8 +134,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 x={this.xDegraded}
                 y={this.props.y}
                 radius={this.radius - 2}
-                startAngle={Subject.create(this.endAngle - 24)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.endAngle - 24}
+                endAngle={this.endAngle}
                 visible={Subject.create(true)}
                 class="GaugeComponent Gauge ThickRedLine"
               />
@@ -146,8 +146,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 showValue
                 textNudgeY={0}
@@ -161,8 +161,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 textNudgeY={6}
                 textNudgeX={13}
@@ -175,8 +175,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 showValue
                 textNudgeX={7}
@@ -190,8 +190,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 multiplierInner={0.9}
               />
@@ -202,8 +202,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 showValue
                 textNudgeY={7}
@@ -218,8 +218,8 @@ export class N1 extends DisplayComponent<N1Props> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeIndicator Gauge"
                 multiplierOuter={1.1}
                 indicator
@@ -234,8 +234,8 @@ export class N1 extends DisplayComponent<N1Props> {
               min={this.min}
               max={this.max}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               class="DonutThrottleIndicator"
             />
           </g>

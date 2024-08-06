@@ -165,8 +165,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               x={this.props.x}
               y={this.props.y + 20}
               radius={this.radius}
-              startAngle={Subject.create(320)}
-              endAngle={Subject.create(40)}
+              startAngle={320}
+              endAngle={40}
               visible={Subject.create(true)}
               largeArc={0}
               sweep={0}
@@ -199,8 +199,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 valueIdle={0.3}
                 valueMax={10}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 min={this.min}
                 max={this.max}
                 visible={MappedSubject.create(
@@ -225,8 +225,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 thrustActual={this.thrustPercent.map((it) => it / 100)}
                 thrustTarget={this.throttleTarget}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 visible={Subject.create(true)}
                 class="TransientIndicator"
               />
@@ -235,8 +235,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               x={this.props.x}
               y={this.props.y}
               radius={this.radius}
-              startAngle={Subject.create(this.startAngle)}
-              endAngle={Subject.create(this.endAngle)}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
               visible={Subject.create(true)}
               class="GaugeComponent Gauge"
             >
@@ -247,8 +247,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 showValue
                 textNudgeX={10}
@@ -262,8 +262,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 textNudgeY={6}
                 textNudgeX={13}
@@ -276,8 +276,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 showValue
                 textNudgeX={5}
@@ -291,8 +291,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 multiplierInner={0.9}
               />
@@ -303,8 +303,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="GaugeText Gauge"
                 showValue
                 textNudgeY={7}
@@ -320,8 +320,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                   min={this.min}
                   max={this.max}
                   radius={this.radius}
-                  startAngle={Subject.create(this.startAngle)}
-                  endAngle={Subject.create(this.endAngle)}
+                  startAngle={this.startAngle}
+                  endAngle={this.endAngle}
                   class="GaugeIndicator Gauge"
                   multiplierOuter={1.1}
                   indicator
@@ -336,8 +336,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min}
                 max={this.max}
                 radius={this.radius}
-                startAngle={Subject.create(this.startAngle)}
-                endAngle={Subject.create(this.endAngle)}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
                 class="DonutThrottleIndicator"
               />
             </g>
@@ -349,8 +349,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.revMin}
                 max={this.revMax}
                 radius={this.revRadius}
-                startAngle={Subject.create(this.revStartAngle)}
-                endAngle={Subject.create(this.revEndAngle)}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
                 class="DonutThrottleIndicator"
               />
             </g>
@@ -369,8 +369,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               valueIdle={0.04}
               valueMax={2.6}
               radius={this.revRadius}
-              startAngle={Subject.create(this.revStartAngle)}
-              endAngle={Subject.create(this.revEndAngle)}
+              startAngle={this.revStartAngle}
+              endAngle={this.revEndAngle}
               min={this.revMin}
               max={this.revMax}
               visible={MappedSubject.create(
@@ -387,8 +387,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               x={this.props.x}
               y={this.props.y}
               radius={this.revRadius}
-              startAngle={Subject.create(this.revStartAngle)}
-              endAngle={Subject.create(this.revEndAngle)}
+              startAngle={this.revStartAngle}
+              endAngle={this.revEndAngle}
               visible={Subject.create(true)}
               class="GaugeComponent Gauge"
             >
@@ -406,8 +406,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.revMin}
                 max={this.revMax}
                 radius={this.revRadius}
-                startAngle={Subject.create(this.revStartAngle)}
-                endAngle={Subject.create(this.revEndAngle)}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
                 class="GaugeText Gauge"
                 textNudgeX={-24}
                 textNudgeY={-6}
@@ -422,8 +422,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.revMin}
                 max={this.revMax}
                 radius={this.revRadius}
-                startAngle={Subject.create(this.revStartAngle)}
-                endAngle={Subject.create(this.revEndAngle)}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
                 class="GaugeText Gauge"
                 multiplierInner={1.1}
               />
@@ -434,8 +434,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.revMin}
                 max={this.revMax}
                 radius={this.revRadius}
-                startAngle={Subject.create(this.revStartAngle)}
-                endAngle={Subject.create(this.revEndAngle)}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
                 class="GaugeIndicator Gauge"
                 multiplierOuter={1.1}
                 indicator
