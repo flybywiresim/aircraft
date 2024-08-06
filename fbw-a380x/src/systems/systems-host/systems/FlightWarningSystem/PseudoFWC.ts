@@ -852,15 +852,11 @@ export class PseudoFWC {
   private readonly adiru3State = Subject.create(0);
 
   private readonly adr1Cas = Subject.create(Arinc429Word.empty());
-
   private readonly adr2Cas = Arinc429Register.empty();
-
   private readonly adr3Cas = Arinc429Register.empty();
 
   private readonly adr1Fault = Subject.create(false);
-
   private readonly adr2Fault = Subject.create(false);
-
   private readonly adr3Fault = Subject.create(false);
 
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
@@ -868,6 +864,16 @@ export class PseudoFWC {
   private readonly ir1MaintWord = Arinc429Register.empty();
   private readonly ir2MaintWord = Arinc429Register.empty();
   private readonly ir3MaintWord = Arinc429Register.empty();
+
+  private readonly ir1Pitch = Arinc429Register.empty();
+  private readonly ir2Pitch = Arinc429Register.empty();
+  private readonly ir3Pitch = Arinc429Register.empty();
+
+  private readonly ir1Fault = Subject.create(false);
+  private readonly ir2Fault = Subject.create(false);
+  private readonly ir3Fault = Subject.create(false);
+
+  private readonly irExcessMotion = Subject.create(false);
 
   private readonly extremeLatitudeAlert = Subject.create(false);
 
@@ -1189,7 +1195,7 @@ export class PseudoFWC {
     this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
-    this.auralCrcOutput.sub((crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', crc));
+    this.auralCrcOutput.sub((crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', crc), true);
 
     this.masterCaution.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
@@ -1198,7 +1204,15 @@ export class PseudoFWC {
 
     this.masterWarningOutput.sub((warning) => {
       // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', this.startupCompleted.get() ? warning : false);
+      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', this.startupCompleted.get() ? warning : false);
+    }, true);
+
+    this.startupCompleted.sub((completed) => {
+      if (completed) {
+        // Check if warnings or cautions have to be set
+        SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.masterCaution.get());
+        SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', this.masterWarningOutput.get());
+      }
     }, true);
 
     // L/G lever red arrow sinking outputs
@@ -1433,6 +1447,10 @@ export class PseudoFWC {
     this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
     this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
 
+    this.ir1Pitch.setFromSimVar('L:A32NX_ADIRS_IR_1_PITCH');
+    this.ir2Pitch.setFromSimVar('L:A32NX_ADIRS_IR_2_PITCH');
+    this.ir3Pitch.setFromSimVar('L:A32NX_ADIRS_IR_3_PITCH');
+
     this.ir1MaintWord.setFromSimVar('L:A32NX_ADIRS_IR_1_MAINT_WORD');
     this.ir2MaintWord.setFromSimVar('L:A32NX_ADIRS_IR_2_MAINT_WORD');
     this.ir3MaintWord.setFromSimVar('L:A32NX_ADIRS_IR_3_MAINT_WORD');
@@ -1541,9 +1559,19 @@ export class PseudoFWC {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
-    this.adr1Fault.set(this.adr1Cas.get().isFailureWarning());
-    this.adr2Fault.set(this.adr2Cas.isFailureWarning());
-    this.adr3Fault.set(this.adr3Cas.isFailureWarning());
+    this.ir1Fault.set(!this.ir1Pitch.isNormalOperation() || this.ir1MaintWord.bitValueOr(9, true));
+    this.ir2Fault.set(!this.ir2Pitch.isNormalOperation() || this.ir2MaintWord.bitValueOr(9, true));
+    this.ir3Fault.set(!this.ir3Pitch.isNormalOperation() || this.ir3MaintWord.bitValueOr(9, true));
+
+    this.irExcessMotion.set(
+      this.ir1MaintWord.bitValueOr(13, false) ||
+        this.ir2MaintWord.bitValueOr(13, false) ||
+        this.ir3MaintWord.bitValueOr(13, false),
+    );
+
+    this.adr1Fault.set(this.adr1Cas.get().isFailureWarning() || this.ir1MaintWord.bitValueOr(8, false));
+    this.adr2Fault.set(this.adr2Cas.isFailureWarning() || this.ir2MaintWord.bitValueOr(8, false));
+    this.adr3Fault.set(this.adr3Cas.isFailureWarning() || this.ir3MaintWord.bitValueOr(8, false));
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
@@ -4192,6 +4220,179 @@ export class PseudoFWC {
       inopSysApprLdg: () => [''],
       redundLoss: () => [''],
       info: () => [''],
+    },
+    340800040: {
+      // IR 1 FAULT
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: this.ir1Fault,
+      notActiveWhenFaults: ['340800042', '340800043'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [
+        this.attKnob.get() === 0,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON', 'Bool'),
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300030',
+        this.attKnob.get() === 0 ? '' : '340300011',
+        this.attKnob.get() === 0 ? '' : '340300037',
+        this.attKnob.get() === 0 ? '' : '340300039',
+        this.attKnob.get() === 0 ? '' : '340300041',
+      ],
+      info: () => ['220200005'],
+    },
+    340800041: {
+      // IR 2 FAULT
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: this.ir2Fault,
+      notActiveWhenFaults: ['340800042', '340800044'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [
+        this.attKnob.get() === 2,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON', 'Bool'),
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300031',
+        this.attKnob.get() === 2 ? '' : '340300012',
+        this.attKnob.get() === 2 ? '' : '340300038',
+        this.attKnob.get() === 2 ? '' : '340300040',
+        this.attKnob.get() === 2 ? '' : '340300042',
+      ],
+      info: () => ['220200005'],
+    },
+    340800072: {
+      // IR 3 FAULT
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: this.ir3Fault,
+      notActiveWhenFaults: ['340800043', '340800044'],
+      whichItemsToShow: () => [true, true],
+      whichItemsCompleted: () => [
+        this.attKnob.get() === 1,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON', 'Bool'),
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => ['340300032'],
+      info: () => ['220200005'],
+    },
+    340800042: {
+      // IR 1+2 FAULT
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.ir1Fault, this.ir2Fault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.attKnob.get() === 0,
+        true,
+        true,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON', 'Bool'),
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300033',
+        this.attKnob.get() === 0 ? '340300038' : '340300043',
+        this.attKnob.get() === 0 ? '340300012' : '340300029',
+        this.attKnob.get() === 0 ? '340300040' : '340300044',
+        this.attKnob.get() === 0 ? '340300042' : '340300045',
+      ],
+      inopSysApprLdg: () => ['220300026'],
+      info: () => ['340200002', '220200010'],
+    },
+    340800043: {
+      // IR 1+3 FAULT
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.ir1Fault, this.ir3Fault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.attKnob.get() === 1,
+        true,
+        true,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON', 'Bool'),
+        true,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300034',
+        '220300005',
+        '220300022',
+        '340300037',
+        '340300011',
+        '340300039',
+        '340300041',
+      ],
+      inopSysApprLdg: () => ['220300026'],
+      info: () => ['340200002', '220200010', '340200008'],
+    },
+    340800044: {
+      // IR 2+3 FAULT
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.ir2Fault, this.ir3Fault),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true],
+      whichItemsCompleted: () => [
+        this.attKnob.get() === 1,
+        true,
+        true,
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON', 'Bool'),
+        true,
+      ],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [
+        '340300013',
+        '340300035',
+        '220300006',
+        '220300023',
+        '340300038',
+        '340300012',
+        '340300040',
+        '340300042',
+      ],
+      inopSysApprLdg: () => ['220300026'],
+      info: () => ['340200002', '220200010'],
+    },
+    340800045: {
+      // IR NOT ALIGNED
+      flightPhaseInhib: [4, 5, 6, 9, 10],
+      simVarIsActive: this.irExcessMotion,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.ir1MaintWord.bitValueOr(13, false) &&
+          !this.ir2MaintWord.bitValueOr(13, false) &&
+          !this.ir3MaintWord.bitValueOr(13, false),
+        !this.ir1MaintWord.bitValueOr(13, false) &&
+          this.ir2MaintWord.bitValueOr(13, false) &&
+          !this.ir3MaintWord.bitValueOr(13, false),
+        !this.ir1MaintWord.bitValueOr(13, false) &&
+          !this.ir2MaintWord.bitValueOr(13, false) &&
+          this.ir3MaintWord.bitValueOr(13, false),
+        this.ir1MaintWord.bitValueOr(13, false) &&
+          this.ir2MaintWord.bitValueOr(13, false) &&
+          !this.ir3MaintWord.bitValueOr(13, false),
+        this.ir1MaintWord.bitValueOr(13, false) &&
+          !this.ir2MaintWord.bitValueOr(13, false) &&
+          this.ir3MaintWord.bitValueOr(13, false),
+        !this.ir1MaintWord.bitValueOr(13, false) &&
+          this.ir2MaintWord.bitValueOr(13, false) &&
+          !this.ir3MaintWord.bitValueOr(13, false),
+        this.ir1MaintWord.bitValueOr(13, false) &&
+          this.ir2MaintWord.bitValueOr(13, false) &&
+          this.ir3MaintWord.bitValueOr(13, false),
+      ],
+      whichItemsCompleted: () => [true, true, true, true, true, true, true],
+      failure: 2,
+      sysPage: -1,
     },
     340800053: {
       // RA SYS A FAULT

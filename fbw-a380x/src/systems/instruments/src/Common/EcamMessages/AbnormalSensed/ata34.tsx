@@ -448,32 +448,195 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800040: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR 1 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'CAPT ON 3',
+      },
+      {
+        name: 'IR 1 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      }, // TODO add "If IR is available in ATT mode" when/if ATT mode is implemented
+    ],
   },
   340800041: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR 2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'F/O ON 3',
+      },
+      {
+        name: 'IR 2 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      }, // TODO add "If IR is available in ATT mode" when/if ATT mode is implemented
+    ],
+  },
+  340800072: {
+    title: '\x1b<4m\x1b4mNAV\x1bm IR 3 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'IR 3 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      }, // TODO add "If IR is available in ATT mode" when/if ATT mode is implemented
+    ],
   },
   340800042: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR 1+2 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'CAPT ON 3',
+      },
+      {
+        // If selected on SYS 2
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        // If selected on SYS 2
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'IR 1 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'IR 2 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ], // TODO add "If one of the affected IR is available in ATT mode" when/if ATT mode is implemented
   },
   340800043: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR 1+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        // If selected on SYS 1
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        // If selected on SYS 1
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: 'IR 1 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'IR 3 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'STANDBY NAV IN TRUE GPS TRK',
+        sensed: true,
+        color: 'green',
+      },
+    ], // TODO add "If one of the affected IR is available in ATT mode" when/if ATT mode is implemented
   },
   340800044: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR 2+3 FAULT',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ATT HDG SWTG',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        // If selected on SYS 2
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        // If selected on SYS 2
+        name: 'XPDR & TCAS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: 'IR 2 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'IR 3 P/B',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ], // TODO add "If one of the affected IR is available in ATT mode" when/if ATT mode is implemented
   },
   340800045: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR NOT ALIGNED',
     sensed: true,
-    items: [], // TODO
+    items: [
+      {
+        name: 'IR 1 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'IR 2 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'IR 3 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'IR 1+2 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'IR 1+3 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'IR 2+3 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+      {
+        name: 'IR 1+2+3 IN ALIGN',
+        sensed: true,
+        color: 'green',
+      },
+    ], // Only EXCESS MOTION for now
   },
   340800046: {
     title: '\x1b<4m\x1b4mNAV\x1bm LS 1 FAULT',
