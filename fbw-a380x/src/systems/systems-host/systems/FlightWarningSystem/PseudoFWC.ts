@@ -1118,6 +1118,17 @@ export class PseudoFWC {
 
   private readonly voiceVhf3 = Subject.create(false);
 
+  private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
+    if (val) {
+      // Push only unique keys
+      for (const key of val()) {
+        if (!pushTo.includes(key)) {
+          pushTo.push(key);
+        }
+      }
+    }
+  }
+
   constructor(
     private readonly bus: EventBus,
     private readonly instrument: BaseInstrument,
@@ -2778,24 +2789,12 @@ export class PseudoFWC {
         allFailureKeys.push(key);
 
         // Add keys for STS page
-        if (value.info) {
-          stsInfoKeys.push(...[...new Set(value.info())]); // Only unique keys
-        }
-        if (value.inopSysAllPhases) {
-          stsInopAllPhasesKeys.push(...[...new Set(value.inopSysAllPhases())]); // Only unique keys
-        }
-        if (value.inopSysApprLdg) {
-          stsInopApprLdgKeys.push(...[...new Set(value.inopSysApprLdg())]); // Only unique keys
-        }
-        if (value.limitationsAllPhases) {
-          ewdLimitationsAllPhasesKeys.push(...[...new Set(value.limitationsAllPhases())]); // Only unique keys
-        }
-        if (value.limitationsApprLdg) {
-          ewdLimitationsApprLdgKeys.push(...[...new Set(value.limitationsApprLdg())]); // Only unique keys
-        }
-        if (value.limitationsPfd) {
-          pfdLimitationsKeys.push(...[...new Set(value.limitationsPfd())]); // Only unique keys
-        }
+        PseudoFWC.pushKeyUnique(value.info, stsInfoKeys);
+        PseudoFWC.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys);
+        PseudoFWC.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys);
+        PseudoFWC.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys);
+        PseudoFWC.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys);
+        PseudoFWC.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);
 
         if (!recallFailureKeys.includes(key)) {
           if (value.sysPage > -1) {
@@ -4338,14 +4337,13 @@ export class PseudoFWC {
       flightPhaseInhib: [4, 5, 6, 9, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.ir2Fault, this.ir3Fault),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true, true, true, true, true],
+      whichItemsToShow: () => [true, true, true, true, true],
       whichItemsCompleted: () => [
         this.attKnob.get() === 1,
         true,
         true,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON', 'Bool'),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON', 'Bool'),
-        true,
       ],
       failure: 2,
       sysPage: -1,
