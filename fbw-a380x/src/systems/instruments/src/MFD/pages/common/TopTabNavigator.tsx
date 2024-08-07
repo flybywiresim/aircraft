@@ -1,12 +1,11 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { FmgcFlightPhase } from '@shared/flightphase';
 
 interface TopTabElementProps extends ComponentProps {
   title: string;
   isSelected: boolean;
   selectedTextColor: string;
-  isActiveFlightPhase: boolean;
+  isHighlighted: boolean;
   height: number; // height of tab bar element
   slantedEdgeAngle: number; // in degrees
   onClick: () => void;
@@ -24,7 +23,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
     this.divRef.instance.addEventListener('click', this.props.onClick);
 
-    if (this.props.isActiveFlightPhase) {
+    if (this.props.isHighlighted) {
       this.textRef.instance.style.color = '#00ff00';
     } else if (this.props.isSelected) {
       this.textRef.instance.style.color = this.props.selectedTextColor;
@@ -128,10 +127,14 @@ interface TopTabNavigatorProps {
   pageTitles: Subscribable<string[]>;
   selectedPageIndex: Subject<number>;
   selectedTabTextColor?: string;
-  tabBarHeight?: number; // in pixels
-  tabBarSlantedEdgeAngle?: number; // in degrees, vertical line equals 0°
-  additionalRightSpace?: number; // in pixels
-  activeFlightPhase?: Subscribable<FmgcFlightPhase>; // special handling for PERF pages, mark tab from active flight phase with green text color
+  /** in pixels */
+  tabBarHeight?: number;
+  /** in degrees, vertical line equals 0° */
+  tabBarSlantedEdgeAngle?: number;
+  /** in pixels */
+  additionalRightSpace?: number;
+  /** Index of tab to be highlighted with green text color instead of white (e.g. used for PERF page) */
+  highlightedTab?: Subscribable<number>;
   pageChangeCallback?: (index: number) => void;
 }
 
@@ -183,12 +186,6 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
 
     // Re-populate top navigation bar
     this.props.pageTitles.get().forEach((pageTitle, index) => {
-      let isActiveFlightPhase = false;
-      if (this.props.activeFlightPhase) {
-        // PERF pages: Color tabs based on flight phase
-        isActiveFlightPhase = this.props.activeFlightPhase.get() === index + 1;
-      }
-
       FSComponent.render(
         <TopTabElement
           title={pageTitle}
@@ -197,7 +194,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
           slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
           selectedTextColor={this.props.selectedTabTextColor || 'white'}
           onClick={() => this.onPageChange(index)}
-          isActiveFlightPhase={isActiveFlightPhase}
+          isHighlighted={this.props.highlightedTab ? this.props.highlightedTab?.get() === index : false}
         />,
         this.navigatorBarRef.instance,
       );
@@ -219,8 +216,8 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
       this.populateElements(node, value);
     }, true);
 
-    if (this.props.activeFlightPhase) {
-      this.props.activeFlightPhase.sub(() => this.populateElements(node, this.props.selectedPageIndex.get()));
+    if (this.props.highlightedTab) {
+      this.props.highlightedTab.sub(() => this.populateElements(node, this.props.selectedPageIndex.get()));
     }
   }
 
@@ -240,7 +237,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
               slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
               selectedTextColor={this.props.selectedTabTextColor || 'white'}
               onClick={() => this.onPageChange(index)}
-              isActiveFlightPhase={false}
+              isHighlighted={false}
             />
           ))}
           <div

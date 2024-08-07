@@ -932,7 +932,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               selectedPageIndex={this.flightPhasesSelectedPageIndex}
               pageChangeCallback={(val) => this.flightPhasesSelectedPageIndex.set(val)}
               selectedTabTextColor="white"
-              activeFlightPhase={this.activeFlightPhase}
+              highlightedTab={this.activeFlightPhase.map((fp) => fp - 1)}
             >
               <TopTabNavigatorPage>
                 {/* T.O */}
