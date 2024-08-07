@@ -316,7 +316,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.props.value.get());
         const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
-        if (!validation) {
+        if (validation === false) {
           updateWasSuccessful = false;
         }
       } catch {
