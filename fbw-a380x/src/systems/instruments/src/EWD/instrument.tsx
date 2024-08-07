@@ -42,7 +42,7 @@ class A380X_EWD extends BaseInstrument {
     FSComponent.render(<EngineWarningDisplay bus={this.bus} />, document.getElementById('EWD_CONTENT'));
 
     // Remove "instrument didn't load" text
-    document.getElementById('EWD_CONTENT').querySelector(':scope > h1').remove();
+    document.getElementById('EWD_CONTENT')?.querySelector(':scope > h1')?.remove();
   }
 
   public Update(): void {

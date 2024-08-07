@@ -1,4 +1,4 @@
-const EWDMessages = {
+const EWDMessages: { [key: string]: string } = {
   '000000001': '              \x1b<3mNORMAL',
   '000001001': ' \x1b<7m\x1b4mT.O\x1bm',
   '000001002': '   \x1b<5m-SIGNS .........ON',

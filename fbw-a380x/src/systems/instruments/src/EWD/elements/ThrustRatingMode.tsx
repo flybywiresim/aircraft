@@ -20,7 +20,7 @@ export class N1Limit extends DisplayComponent<{
   private readonly N1LimitType = ConsumerSubject.create(null, 0);
   private readonly N1ThrustLimit = ConsumerSubject.create(null, 0);
   private readonly flexTemp = ConsumerSubject.create(null, 0);
-  private readonly sat = Arinc429ConsumerSubject.create(null);
+  private readonly sat = Arinc429ConsumerSubject.create(undefined);
   private readonly thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
 
   private readonly displayFlexTemp = MappedSubject.create(
