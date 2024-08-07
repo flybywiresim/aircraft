@@ -52,8 +52,11 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
         .join('\r'),
     );
 
-    this.limitationsLeftSvgRef.instance.style.height = `${(this.limitationsLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-    this.limitationsRightSvgRef.instance.style.height = `${(this.limitationsRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+    // Weirdly enough, we have to wait for the SVG to be rendered to get its bounding box
+    setTimeout(() => {
+      this.limitationsLeftSvgRef.instance.style.height = `${(this.limitationsLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+      this.limitationsRightSvgRef.instance.style.height = `${(this.limitationsRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
+    }, 100);
 
     this.limitationsDisplay.set(
       this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0

@@ -40,6 +40,16 @@ export class N1 extends DisplayComponent<N1Props> {
     0,
   );
 
+  private readonly n1Commanded = ConsumerSubject.create(
+    this.sub.on(`n1_commanded_${this.props.engine}`).withPrecision(2).whenChanged(),
+    0,
+  );
+
+  private readonly athrEngaged = ConsumerSubject.create(
+    this.sub.on('autothrustStatus').withPrecision(2).whenChanged(),
+    0,
+  ).map((it) => it !== 0);
+
   private readonly n1Idle = ConsumerSubject.create(this.sub.on('n1Idle').withPrecision(1).whenChanged(), 0);
 
   private n1PercentSplit1 = this.n1.map((n1) => splitDecimals(n1)[0]);
@@ -114,11 +124,11 @@ export class N1 extends DisplayComponent<N1Props> {
               min={this.min / 10}
               max={this.max / 10}
               thrustActual={this.n1.map((it) => it / 100)}
-              thrustTarget={this.throttle_position.map((throttle_position) => throttle_position / 100)}
+              thrustTarget={this.n1Commanded.map((n1Commanded) => n1Commanded / 100)}
               radius={this.radius}
               startAngle={this.startAngle}
               endAngle={this.endAngle}
-              visible={Subject.create(true)}
+              visible={this.athrEngaged}
               class="TransientIndicator"
             />
             <GaugeComponent

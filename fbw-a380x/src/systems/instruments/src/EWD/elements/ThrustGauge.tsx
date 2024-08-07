@@ -46,6 +46,16 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
     0,
   );
 
+  private readonly n1Commanded = ConsumerSubject.create(
+    this.sub.on(`n1_commanded_${this.props.engine}`).withPrecision(2).whenChanged(),
+    0,
+  );
+
+  private readonly athrEngaged = ConsumerSubject.create(
+    this.sub.on('autothrustStatus').withPrecision(2).whenChanged(),
+    0,
+  ).map((it) => it !== 0);
+
   private readonly thrustLimitIdle = ConsumerSubject.create(this.sub.on('thrust_limit_idle').whenChanged(), 0);
   private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
   private readonly thrustLimitRev = ConsumerSubject.create(this.sub.on('thrust_limit_rev').whenChanged(), 0);
@@ -87,6 +97,15 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
       ((throttlePositionN1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) +
       thrIdleOffset,
     this.throttlePositionN1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
+
+  private readonly autoThrottleTarget = MappedSubject.create(
+    ([n1Commanded, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      ((n1Commanded - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
+    this.n1Commanded,
     this.thrustLimitIdle,
     this.thrustLimitMax,
     this.thrIdleOffset,
@@ -223,11 +242,11 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 min={this.min / 10}
                 max={this.max / 10}
                 thrustActual={this.thrustPercent.map((it) => it / 100)}
-                thrustTarget={this.throttleTarget}
+                thrustTarget={this.autoThrottleTarget}
                 radius={this.radius}
                 startAngle={this.startAngle}
                 endAngle={this.endAngle}
-                visible={Subject.create(true)}
+                visible={this.athrEngaged}
                 class="TransientIndicator"
               />
             </g>
