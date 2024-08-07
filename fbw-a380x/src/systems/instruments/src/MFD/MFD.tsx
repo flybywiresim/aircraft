@@ -44,7 +44,6 @@ export interface AbstractMfdPageProps extends ComponentProps {
 
 interface MfdComponentProps extends ComponentProps {
   bus: EventBus;
-  instrument: BaseInstrument;
   fmcService: FmcServiceInterface;
   captOrFo: 'CAPT' | 'FO';
 }

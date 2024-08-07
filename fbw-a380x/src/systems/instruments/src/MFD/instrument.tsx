@@ -1,4 +1,12 @@
-import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  EventBus,
+  HEventPublisher,
+  InstrumentBackplane,
+  FsInstrument,
+  FsBaseInstrument,
+  ClockPublisher,
+} from '@microsoft/msfs-sdk';
 import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { MfdComponent } from './MFD';
@@ -6,14 +14,16 @@ import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
-class A380X_MFD extends BaseInstrument {
+class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
+
+  private readonly backplane = new InstrumentBackplane();
 
   private readonly simVarPublisher: MfdSimvarPublisher;
 
-  private readonly hEventPublisher: HEventPublisher;
+  private readonly clockPublisher = new ClockPublisher(this.bus);
 
-  private readonly clock: Clock;
+  private readonly hEventPublisher = new HEventPublisher(this.bus);
 
   private mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
@@ -23,38 +33,21 @@ class A380X_MFD extends BaseInstrument {
 
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
-
-  constructor() {
-    super();
+  constructor(public readonly instrument: BaseInstrument) {
     this.simVarPublisher = new MfdSimvarPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
-    this.clock = new Clock(this.bus);
+
+    this.backplane.addPublisher('mfd', this.simVarPublisher);
+    this.backplane.addPublisher('hEvent', this.hEventPublisher);
+    this.backplane.addPublisher('clock', this.clockPublisher);
+
     this.fmcService = new FmcService(this.bus, this.mfdCaptRef.getOrDefault(), this.failuresConsumer);
+
+    this.doInit();
   }
 
-  get templateID(): string {
-    return 'A380X_MFD';
-  }
-
-  get isInteractive(): boolean {
-    return true;
-  }
-
-  public getDeltaTime() {
-    return this.deltaTime;
-  }
-
-  public connectedCallback(): void {
-    super.connectedCallback();
-
-    this.clock.init();
+  public doInit(): void {
+    this.backplane.init();
 
     const mfd = document.getElementById('MFD_CONTENT');
     if (mfd) {
@@ -72,17 +65,11 @@ class A380X_MFD extends BaseInstrument {
       document.getElementById('MFD_CONTENT'),
     );
     FSComponent.render(
-      <MfdComponent
-        captOrFo="CAPT"
-        ref={this.mfdCaptRef}
-        bus={this.bus}
-        instrument={this}
-        fmcService={this.fmcService}
-      />,
+      <MfdComponent captOrFo="CAPT" ref={this.mfdCaptRef} bus={this.bus} fmcService={this.fmcService} />,
       document.getElementById('MFD_LEFT_PARENT_DIV'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="FO" ref={this.mfdFoRef} bus={this.bus} instrument={this} fmcService={this.fmcService} />,
+      <MfdComponent captOrFo="FO" ref={this.mfdFoRef} bus={this.bus} fmcService={this.fmcService} />,
       document.getElementById('MFD_RIGHT_PARENT_DIV'),
     );
 
@@ -103,29 +90,64 @@ class A380X_MFD extends BaseInstrument {
     this.failuresConsumer.register(A380Failure.FmcC);
   }
 
-  public onInteractionEvent(args: string[]): void {
-    this.hEventPublisher.dispatchHEvent(args[0]);
-  }
-
   /**
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    super.Update();
-
+    this.backplane.onUpdate();
     this.failuresConsumer.update();
+  }
 
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.simVarPublisher.startPublish();
-        this.hEventPublisher.startPublish();
-      }
-      this.gameState = gamestate;
-    } else {
-      this.simVarPublisher.onUpdate();
-      this.clock.onUpdate();
-    }
+  public onInteractionEvent(args: string[]): void {
+    this.hEventPublisher.dispatchHEvent(args[0]);
+  }
+
+  public onGameStateChanged(_oldState: GameState, _newState: GameState): void {
+    // noop
+  }
+
+  public onFlightStart(): void {
+    // noop
+  }
+
+  public onSoundEnd(_soundEventId: Name_Z): void {
+    // noop
+  }
+
+  public onPowerOn(): void {
+    // noop
+  }
+
+  public onPowerOff(): void {
+    // noop
+  }
+}
+
+class A380X_MFD extends FsBaseInstrument<MfdInstrument> {
+  public constructInstrument(): MfdInstrument {
+    return new MfdInstrument(this);
+  }
+
+  public get isInteractive(): boolean {
+    return true;
+  }
+
+  public get templateID(): string {
+    return 'A380X_MFD';
+  }
+
+  /** @inheritdoc */
+  public onPowerOn(): void {
+    super.onPowerOn();
+
+    this.fsInstrument.onPowerOn();
+  }
+
+  /** @inheritdoc */
+  public onShutDown(): void {
+    super.onShutDown();
+
+    this.fsInstrument.onPowerOff();
   }
 }
 
