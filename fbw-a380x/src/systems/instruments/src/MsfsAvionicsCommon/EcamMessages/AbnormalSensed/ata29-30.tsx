@@ -470,6 +470,10 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
+        name: 'L/G GRVTY EXTN ONLY',
+        sensed: false,
+      },
+      {
         // if prim3 also failed
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
