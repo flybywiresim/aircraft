@@ -720,9 +720,41 @@ export class PseudoFWC {
 
   private readonly greenBPumpOn = Subject.create(false);
 
+  private readonly greenAPumpAuto = Subject.create(false);
+
+  private readonly greenBPumpAuto = Subject.create(false);
+
   private readonly yellowAPumpOn = Subject.create(false);
 
   private readonly yellowBPumpOn = Subject.create(false);
+
+  private readonly yellowAPumpAuto = Subject.create(false);
+
+  private readonly yellowBPumpAuto = Subject.create(false);
+
+  private readonly eng1APumpAuto = Subject.create(false);
+
+  private readonly eng1BPumpAuto = Subject.create(false);
+
+  private readonly eng1PumpDisc = Subject.create(false);
+
+  private readonly eng2APumpAuto = Subject.create(false);
+
+  private readonly eng2BPumpAuto = Subject.create(false);
+
+  private readonly eng2PumpDisc = Subject.create(false);
+
+  private readonly eng3APumpAuto = Subject.create(false);
+
+  private readonly eng3BPumpAuto = Subject.create(false);
+
+  private readonly eng3PumpDisc = Subject.create(false);
+
+  private readonly eng4APumpAuto = Subject.create(false);
+
+  private readonly eng4BPumpAuto = Subject.create(false);
+
+  private readonly eng4PumpDisc = Subject.create(false);
 
   private readonly yellowLoPressure = Subject.create(false);
 
@@ -1555,8 +1587,30 @@ export class PseudoFWC {
 
     this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool'));
     this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool'));
+
+    this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GREEN_A_OFF_PB_IS_AUTO', 'bool'));
+    this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GREEN_A_OFF_PB_IS_AUTO', 'bool'));
+    this.yellowAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YELLOW_A_OFF_PB_IS_AUTO', 'bool'));
+    this.yellowBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YELLOW_B_OFF_PB_IS_AUTO', 'bool'));
+
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
+
+    this.eng1APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng1PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_1AB_PUMP_DISC', 'bool'));
+
+    this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng2BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng2PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_2AB_PUMP_DISC', 'bool'));
+
+    this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool'));
+
+    this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool'));
 
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
     this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
@@ -4075,7 +4129,14 @@ export class PseudoFWC {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.greenLoPressure, this.yellowLoPressure),
       whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true],
       whichItemsCompleted: () => [
-        false, // TODO
+        !this.eng1APumpAuto.get() &&
+          !this.eng1BPumpAuto.get() &&
+          !this.eng2APumpAuto.get() &&
+          !this.eng2BPumpAuto.get() &&
+          !this.eng3APumpAuto.get() &&
+          !this.eng3BPumpAuto.get() &&
+          !this.eng4APumpAuto.get() &&
+          !this.eng4BPumpAuto.get(),
         this.gpwsFlapMode.get() == 0,
         false,
         false,
@@ -4104,7 +4165,16 @@ export class PseudoFWC {
       notActiveWhenFaults: [],
       sysPage: -1,
     },
-
+    290800040: {
+      // Y ELEC PMP A+B OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.nand(), this.yellowAPumpAuto, this.yellowBPumpAuto),
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      notActiveWhenFaults: [], // TODO
+      failure: 2,
+      sysPage: -1,
+    },
     // 34 NAVIGATION
     340800001: {
       // ADR 1 FAULT
