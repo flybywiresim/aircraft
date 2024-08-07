@@ -29,6 +29,7 @@ import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './style.scss';
+import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
 
 class NDInstrument implements FsInstrument {
   public readonly instrument: BaseInstrument;
@@ -117,6 +118,7 @@ class NDInstrument implements FsInstrument {
         failed={Subject.create(false)}
       >
         <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a380EfisRangeSettings} />
+        <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
       </CdsDisplayUnit>,
       document.getElementById('ND_CONTENT'),
     );
