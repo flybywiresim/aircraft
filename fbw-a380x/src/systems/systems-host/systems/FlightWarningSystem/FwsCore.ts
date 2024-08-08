@@ -560,6 +560,10 @@ export class FwsCore implements Instrument {
 
   public readonly sec3FaultLine123Display = Subject.create(false);
 
+  public readonly prim2Healthy = Subject.create(false);
+
+  public readonly prim3Healthy = Subject.create(false);
+
   public readonly showLandingInhibit = Subject.create(false);
 
   public readonly showTakeoffInhibit = Subject.create(false);
@@ -672,6 +676,8 @@ export class FwsCore implements Instrument {
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
+  public readonly taxiInFlap0Check = new NXLogicConfirmNode(60, false);
+
   /* FUEL */
 
   public readonly allFuelPumpsOff = Subject.create(false);
@@ -746,9 +752,45 @@ export class FwsCore implements Instrument {
 
   public readonly greenBPumpOn = Subject.create(false);
 
+  public readonly greenAPumpAuto = Subject.create(false);
+
+  public readonly greenBPumpAuto = Subject.create(false);
+
   public readonly yellowAPumpOn = Subject.create(false);
 
   public readonly yellowBPumpOn = Subject.create(false);
+
+  public readonly yellowAPumpAuto = Subject.create(false);
+
+  public readonly yellowBPumpAuto = Subject.create(false);
+
+  public readonly eng1APumpAuto = Subject.create(false);
+
+  public readonly eng1BPumpAuto = Subject.create(false);
+
+  public readonly eng1PumpDisc = Subject.create(false);
+
+  public readonly eng2APumpAuto = Subject.create(false);
+
+  public readonly eng2BPumpAuto = Subject.create(false);
+
+  public readonly eng2PumpDisc = Subject.create(false);
+
+  public readonly eng3APumpAuto = Subject.create(false);
+
+  public readonly eng3BPumpAuto = Subject.create(false);
+
+  public readonly eng3PumpDisc = Subject.create(false);
+
+  public readonly eng4APumpAuto = Subject.create(false);
+
+  public readonly eng4BPumpAuto = Subject.create(false);
+
+  public readonly eng4PumpDisc = Subject.create(false);
+
+  public readonly yellowLoPressure = Subject.create(false);
+
+  public readonly greenLoPressure = Subject.create(false);
 
   /* 31 - FWS */
 
@@ -1654,8 +1696,30 @@ export class FwsCore implements Instrument {
 
     this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool'));
     this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool'));
+
+    this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GREEN_A_OFF_PB_IS_AUTO', 'bool'));
+    this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GREEN_A_OFF_PB_IS_AUTO', 'bool'));
+    this.yellowAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YELLOW_A_OFF_PB_IS_AUTO', 'bool'));
+    this.yellowBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YELLOW_B_OFF_PB_IS_AUTO', 'bool'));
+
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
+
+    this.eng1APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng1PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_1AB_PUMP_DISC', 'bool'));
+
+    this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng2BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng2PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_2AB_PUMP_DISC', 'bool'));
+
+    this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool'));
+
+    this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool'));
+    this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool'));
 
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
     this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
@@ -2168,6 +2232,9 @@ export class FwsCore implements Instrument {
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
+    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
+    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
+
     // ELAC 1 FAULT computation
     const se1f =
       (fcdc1DiscreteWord1.getBitValueOr(19, false) || fcdc2DiscreteWord1.getBitValueOr(19, false)) &&
@@ -2401,6 +2468,9 @@ export class FwsCore implements Instrument {
         !this.toConfigPulseNode.read() &&
         (this.fwcFlightPhase.get() === 3 || this.toConfigCheckedInPhase2Or3),
     );
+
+    // taxi in flap 0 one minute check
+    this.taxiInFlap0Check.write(this.slatFlapSelectionS0F0 && this.fwcFlightPhase.get() == 11, deltaTime);
 
     this.flapsMcduDisagree.set(
       (flapsMcduPos1Disagree || flapsMcduPos2Disagree || flapsMcduPos3Disagree) &&

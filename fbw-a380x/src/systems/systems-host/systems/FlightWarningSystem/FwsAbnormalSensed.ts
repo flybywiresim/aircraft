@@ -1136,6 +1136,121 @@ export class FwsAbnormalSensed {
       sysPage: -1,
       inopSysAllPhases: () => [],
     },
+    // 29 Hydraulic
+    290800035: {
+      // G SYS LO PRESS
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.greenLoPressure,
+      whichItemsToShow: () => [
+        this.fws.taxiInFlap0Check.read(),
+        true,
+        true,
+        true,
+        !this.fws.prim3Healthy,
+        !this.fws.prim3Healthy,
+        true,
+        true,
+      ],
+      whichItemsCompleted: () => [false, false, false, false, false, false, false, false],
+      failure: 2,
+      limitationsPfd: () => ['320400001'],
+      limitationsAllPhases: () => [!this.fws.prim3Healthy ? '800400001' : ''],
+      limitationsApprLdg: () => ['320400001', '290400001', '290400002', '320400002', '320400003', '800400002'],
+      info: () => ['800200001', '800200002', '220200005'],
+      notActiveWhenFaults: ['290800039'],
+      sysPage: -1,
+    },
+    290800036: {
+      // Y SYS LO PRESS
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.yellowLoPressure,
+      whichItemsToShow: () => [
+        this.fws.taxiInFlap0Check.read(),
+        true,
+        !this.fws.prim2Healthy,
+        !this.fws.prim2Healthy,
+        true,
+      ],
+      whichItemsCompleted: () => [false, false, false, false, false],
+      failure: 2,
+      limitationsAllPhases: () => [!this.fws.prim2Healthy ? '800400001' : ''],
+      limitationsApprLdg: () => ['800400002'],
+      info: () => ['800400003', '800200004', '800200004', '220200005'],
+      notActiveWhenFaults: ['290800039'],
+      sysPage: -1,
+    },
+    290800039: {
+      // G + Y SYS LO PRESS
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.greenLoPressure,
+        this.fws.yellowLoPressure,
+      ),
+      whichItemsToShow: () => [
+        true,
+        this.fws.flapsHandle.get() <= 3,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ], // fix me use actual flap angle
+      whichItemsCompleted: () => [
+        !this.fws.eng1APumpAuto.get() &&
+          !this.fws.eng1BPumpAuto.get() &&
+          !this.fws.eng2APumpAuto.get() &&
+          !this.fws.eng2BPumpAuto.get() &&
+          !this.fws.eng3APumpAuto.get() &&
+          !this.fws.eng3BPumpAuto.get() &&
+          !this.fws.eng4APumpAuto.get() &&
+          !this.fws.eng4BPumpAuto.get(),
+        this.fws.gpwsFlapMode.get() == 0,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      limitationsPfd: () => ['320400001'],
+      limitationsAllPhases: () => ['800400001'],
+      limitationsApprLdg: () => [
+        '320400001',
+        '270400001',
+        '290400001',
+        '320400002',
+        '220400001',
+        '800400004',
+        '320400003',
+        '800400003',
+      ],
+      info: () => ['340200002', '800200001', '320200001', '800200004', '800200005'],
+      notActiveWhenFaults: [],
+      sysPage: -1,
+    },
+    290800040: {
+      // Y ELEC PMP A+B OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.nand(),
+        this.fws.yellowAPumpAuto,
+        this.fws.yellowBPumpAuto,
+      ),
+      whichItemsToShow: () => [],
+      whichItemsCompleted: () => [],
+      notActiveWhenFaults: [], // TODO
+      failure: 2,
+      sysPage: -1,
+    },
     // 34 NAVIGATION
     340800001: {
       // ADR 1 FAULT
