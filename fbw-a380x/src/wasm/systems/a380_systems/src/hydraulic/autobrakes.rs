@@ -800,7 +800,7 @@ impl BrakingDistanceCalculator {
     const MAX_DECEL_DRY_MS2: f64 = -2.8;
     const MAX_DECEL_WET_MS2: f64 = -1.8;
 
-    const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.25;
+    const MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2: f64 = -0.2;
     const MIN_SPEED_FOR_STOPPING_ESTIMATION_MS: f64 = 15.;
 
     const MAX_STOPPING_DISTANCE_M: f64 = 5000.;
@@ -809,6 +809,9 @@ impl BrakingDistanceCalculator {
 
     // Offset for stop bar so it shows at front of the plane instead of its reference position
     const OFFSET_PLANE_REF_POINT_TO_FRONT_METERS: f64 = 40.;
+
+    const ALTITUDE_THRESHOLD_TO_SWITCH_ESTIMATION_TO_GROUND_SPEED_FT: f64 = 500.;
+    const MIN_PREDICTED_TOUCHDOWN_SPEED_KNOT: f64 = 100.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -839,11 +842,14 @@ impl BrakingDistanceCalculator {
         deceleration: Acceleration,
     ) {
         // TODO use correct input to switch speed used
-        let speed_used_for_prediction = if context.plane_height_over_ground().get::<foot>() < 500. {
+        let speed_used_for_prediction = if context.plane_height_over_ground().get::<foot>()
+            < Self::ALTITUDE_THRESHOLD_TO_SWITCH_ESTIMATION_TO_GROUND_SPEED_FT
+        {
             ground_speed
         } else {
-            self.predicted_touchdown_speed
-                .max(Velocity::new::<knot>(100.))
+            self.predicted_touchdown_speed.max(Velocity::new::<knot>(
+                Self::MIN_PREDICTED_TOUCHDOWN_SPEED_KNOT,
+            ))
         };
 
         if ground_speed.get::<meter_per_second>() > Self::MIN_SPEED_FOR_STOPPING_ESTIMATION_MS {
@@ -904,7 +910,9 @@ impl BrakingDistanceCalculator {
         current_speed: Velocity,
         deceleration: Acceleration,
     ) -> Length {
-        if deceleration.get::<meter_per_second_squared>() < -0.2 {
+        if deceleration.get::<meter_per_second_squared>()
+            < Self::MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2
+        {
             Length::new::<meter>(
                 (current_speed.get::<meter_per_second>().powi(2)
                     / (2. * deceleration.get::<meter_per_second_squared>().abs()))
@@ -991,13 +999,28 @@ struct BtvDecelScheduler {
     distance_to_rwy_end: Length,
 }
 impl BtvDecelScheduler {
+    // Target decel when optimizing runway time before braking
+    const ROT_OPTIMIZATION_TARGET_DECEL_M_S_2: f64 = -0.2;
+
+    // Target decel ratio to switch from ROT optimization to braking phase
+    const DECEL_RATIO_TO_REACH_TO_START_DECEL: f64 = 0.98;
+
     const MAX_DECEL_DRY_MS2: f64 = -3.0;
     const MAX_DECEL_WET_MS2: f64 = -2.0;
 
     const MIN_RUNWAY_LENGTH_M: f64 = 1500.;
 
-    const DISTANCE_OFFSET_TO_RELEASE_BTV_M: f64 = 65.5;
+    const DISTANCE_OFFSET_TO_RELEASE_BTV_M: f64 = 65.5; // Targeted distance for deceleration computation
+    const DISTANCE_TO_RELEASE_BTV_M: f64 = 50.; // Targeted distance to cut off BTV mode
+
     const TARGET_SPEED_TO_RELEASE_BTV_M_S: f64 = 5.15;
+    const SAFETY_RATIO_ON_RELEASE_SPEED: f64 = 0.9; // 0.9 = -10% margin on TARGET_SPEED_TO_RELEASE_BTV_M_S
+
+    const MAX_DECEL_SAFETY_MARGIN_RATIO: f64 = 1.4;
+    const MIN_DECEL_SAFETY_MARGIN_RATIO: f64 = 1.15;
+    const DECEL_SAFETY_MARGIN_SHAPING_FACTOR: f64 = 0.4;
+
+    const REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS: f64 = 100.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -1098,7 +1121,12 @@ impl BtvDecelScheduler {
         // Max distance clamped to end of rwy minus a margin
         (distance_remaining_raw - distance_from_btv_exit)
             .max(Length::default())
-            .min(self.distance_to_rwy_end - Length::new::<meter>(100.))
+            .min(
+                self.distance_to_rwy_end
+                    - Length::new::<meter>(
+                        Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS,
+                    ),
+            )
     }
 
     fn compute_decel(&mut self, ground_speed: Velocity) {
@@ -1108,7 +1136,8 @@ impl BtvDecelScheduler {
             | BTVState::EndOfBraking
             | BTVState::_OutOfDecelRange => {
                 let speed_at_btv_release =
-                    Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV_M_S) * 0.9; // 10% safety margin on release speed
+                    Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV_M_S)
+                        * Self::SAFETY_RATIO_ON_RELEASE_SPEED;
 
                 self.final_distance_remaining = self.braking_distance_remaining();
 
@@ -1141,28 +1170,29 @@ impl BtvDecelScheduler {
     }
 
     fn accel_to_reach_to_decelerate(&self) -> Acceleration {
-        let percent_of_max = 0.98;
-        self.desired_deceleration * percent_of_max
+        self.desired_deceleration * Self::DECEL_RATIO_TO_REACH_TO_START_DECEL
     }
 
     fn accel_during_rot_opti(&self) -> Acceleration {
-        // let percent_of_max = 0.1;
-        // self.desired_deceleration * percent_of_max
-        Acceleration::new::<meter_per_second_squared>(-0.2)
+        Acceleration::new::<meter_per_second_squared>(Self::ROT_OPTIMIZATION_TARGET_DECEL_M_S_2)
     }
 
+    // Safety margin gives a dynamic ratio on targeted decel based on remaining distance
     fn safety_margin(&self) -> f64 {
         match self.state {
             BTVState::Decel | BTVState::EndOfBraking | BTVState::_OutOfDecelRange => {
                 let ratio_of_decel_distance =
                     self.braking_distance_remaining() / self.distance_remaining_at_decel_activation;
 
-                (1. + (ratio_of_decel_distance.get::<ratio>().sqrt() * 0.4))
-                    .max(1.15)
-                    .min(1.4)
+                (1. + (ratio_of_decel_distance.get::<ratio>().sqrt()
+                    * Self::DECEL_SAFETY_MARGIN_SHAPING_FACTOR))
+                    .max(Self::MIN_DECEL_SAFETY_MARGIN_RATIO)
+                    .min(Self::MAX_DECEL_SAFETY_MARGIN_RATIO)
             }
 
-            BTVState::Disabled | BTVState::Armed | BTVState::RotOptimization => 1.4,
+            BTVState::Disabled | BTVState::Armed | BTVState::RotOptimization => {
+                Self::MAX_DECEL_SAFETY_MARGIN_RATIO
+            }
         }
     }
 
@@ -1190,7 +1220,7 @@ impl BtvDecelScheduler {
                 }
             }
             BTVState::Decel => {
-                if self.final_distance_remaining.get::<meter>() < 50.
+                if self.final_distance_remaining.get::<meter>() < Self::DISTANCE_TO_RELEASE_BTV_M
                     || ground_speed.get::<meter_per_second>()
                         <= Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
                 {
@@ -1241,6 +1271,7 @@ impl BtvDecelScheduler {
         if distance_valid {
             let distance = self.in_flight_btv_stopping_distance.value();
 
+            // Magic statistical function: basic regression on a landing attempts database
             let rot_duration =
                 Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.));
             Arinc429Word::new(rot_duration.as_secs(), SignStatus::NormalOperation)
