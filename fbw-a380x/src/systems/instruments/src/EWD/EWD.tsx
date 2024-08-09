@@ -9,6 +9,8 @@ import { Idle } from 'instruments/src/EWD/elements/Idle';
 import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
 import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
 import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
+import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
+import { EcamAbnormalSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
@@ -37,6 +39,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     Subject.create(false),
   ];
 
+  private readonly abnormalDebugLine = ConsumerSubject.create(null, 0);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -48,6 +52,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
 
     this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
+
+    this.abnormalDebugLine.setConsumer(sub.on('abnormal_debug_line').whenChanged());
   }
 
   render(): VNode {
@@ -173,7 +179,19 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
           <div class="WarningDisplayArea">
             <WdLimitations bus={this.props.bus} />
             <WdMemos bus={this.props.bus} />
-            <div class="StsArea" /> {/* Reserved for STS */}
+            <div class="VerticalFill" />
+            <div class="StsArea">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <FormattedFwcText
+                  x={8}
+                  y={20}
+                  message={this.abnormalDebugLine.map((it) =>
+                    EcamAbnormalSensedProcedures[it] ? EcamAbnormalSensedProcedures[it].title : '',
+                  )}
+                />
+              </svg>
+            </div>{' '}
+            {/* Reserved for STS */}
           </div>
         </div>
       </CdsDisplayUnit>

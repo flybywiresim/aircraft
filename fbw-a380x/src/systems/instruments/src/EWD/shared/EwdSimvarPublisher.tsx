@@ -37,6 +37,7 @@ export interface BaseEwdSimvars {
   limitations_all: number;
   memo_left: number;
   memo_right: number;
+  abnormal_debug_line: number;
 }
 
 type IndexedTopics =
@@ -102,6 +103,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ],
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
+      ['abnormal_debug_line', { name: 'L:A32NX_EWD_DEBUG_ABNORMAL', type: SimVarValueType.Number }],
     ];
 
     super(new Map(simvars), bus, pacer);
