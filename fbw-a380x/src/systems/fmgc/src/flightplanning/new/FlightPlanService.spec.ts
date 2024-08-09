@@ -4,13 +4,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import fetch from 'node-fetch';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { loadSingleWaypoint } from '@fmgc/flightplanning/new/segments/enroute/WaypointLoading';
-import { assertDiscontinuity, assertNotDiscontinuity } from '@fmgc/flightplanning/new/test/LegUtils';
-import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { loadSingleWaypoint } from '@fmgc/flightplanning/segments/enroute/WaypointLoading';
+import { assertDiscontinuity, assertNotDiscontinuity } from '@fmgc/flightplanning/test/LegUtils';
+import { setupNavigraphDatabase } from '@fmgc/flightplanning/test/Database';
 import { placeBearingDistance } from 'msfs-geo';
-import { dumpFlightPlan } from '@fmgc/flightplanning/new/test/FlightPlan';
+import { dumpFlightPlan } from '@fmgc/flightplanning/test/FlightPlan';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 if (!globalThis.fetch) {

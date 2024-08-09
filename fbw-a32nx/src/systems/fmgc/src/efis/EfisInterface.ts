@@ -21,11 +21,12 @@ type ShownFplnLegs = {
 export class EfisInterface {
   public version = 0;
 
-  static readonly NUM_LEGS_ON_FPLN_PAGE = 5;
+  static readonly A32NX_NUM_LEGS_ON_FPLN_PAGE = 5;
 
   constructor(
     private side: EfisSide,
     private flightPlanService: FlightPlanService,
+    private numLegOnFplnPage = EfisInterface.A32NX_NUM_LEGS_ON_FPLN_PAGE,
   ) {}
 
   private isSecRelatedPageOpen: boolean = false;
@@ -89,7 +90,7 @@ export class EfisInterface {
 
     if (!isPlanMode) {
       const legIn1stLineIndex = plan.activeLegIndex - 1;
-      const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
+      const legInLastLineIndex = legIn1stLineIndex + this.numLegOnFplnPage - 1;
 
       const firstMissedLegIndex = plan.firstMissedApproachLegIndex;
       const lastMissedLegIndex = plan.legCount - 1;
@@ -120,7 +121,7 @@ export class EfisInterface {
 
     if (!isPlanMode) {
       const legIn1stLineIndex = plan.activeLegIndex - 1;
-      const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
+      const legInLastLineIndex = legIn1stLineIndex + this.numLegOnFplnPage - 1;
 
       const firstAlternateLegIndex = plan.legCount + 1;
       const lastAlternateLegIndex = plan.legCount + plan.alternateFlightPlan.legCount;
@@ -147,7 +148,7 @@ export class EfisInterface {
 
     if (!isPlanMode) {
       const legIn1stLineIndex = plan.activeLegIndex - 1;
-      const legInLastLineIndex = legIn1stLineIndex + EfisInterface.NUM_LEGS_ON_FPLN_PAGE - 1;
+      const legInLastLineIndex = legIn1stLineIndex + this.numLegOnFplnPage - 1;
 
       const firstAlternateMissedLegIndex = plan.legCount + 1 + plan.alternateFlightPlan.firstMissedApproachLegIndex;
       const lastAlternateLegIndex = plan.legCount + plan.alternateFlightPlan.legCount;
@@ -164,5 +165,9 @@ export class EfisInterface {
       this.planCentre.inAlternate &&
       this.planCentre.index >= plan.alternateFlightPlan.firstMissedApproachLegIndex
     );
+  }
+
+  setNumLegsOnFplnPage(numLegs: number) {
+    this.numLegOnFplnPage = numLegs;
   }
 }

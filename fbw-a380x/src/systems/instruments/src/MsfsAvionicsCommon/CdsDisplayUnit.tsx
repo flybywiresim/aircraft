@@ -9,12 +9,12 @@ import {
     FSComponent, MappedSubject,
     Subject,
     Subscribable,
-    VNode
+    VNode,
 } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 // import { getSupplier } from '@flybywiresim/fbw-sdk';
+import { DcElectricalBus } from '@shared/electrical';
 import { DisplayVars } from './SimVarTypes';
-import { DcElectricalBus } from "@shared/electrical";
 
 import './common.scss';
 
@@ -244,11 +244,11 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
                     </text>
                 </svg>
 
-                <svg style="display:none" ref={this.thalesBootupRef} class='SelfTest' viewBox='0 0 768 1024'>
-                    <rect class='SelfTestBackground' x='0' y='0' width='100%' height='100%' />
+                <svg style="display:none" ref={this.thalesBootupRef} class="SelfTest" viewBox="0 0 768 1024">
+                    <rect class="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
-                    <rect x={84} y={880} width={600} height={70} fill='#ffffff' />
-                    <rect x={89} y={885} width={35} height={60} fill='#4d4dff' />
+                    <rect x={84} y={880} width={600} height={70} fill="#ffffff" />
+                    <rect x={89} y={885} width={35} height={60} fill="#4d4dff" />
                 </svg>
 
                 <svg style="display:none" ref={this.maintenanceModeRef} class="MaintenanceMode" viewBox="0 0 600 600">
