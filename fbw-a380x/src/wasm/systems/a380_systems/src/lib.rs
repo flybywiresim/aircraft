@@ -5,6 +5,7 @@ mod airframe;
 mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
+mod fire_and_smoke_protection;
 mod fuel;
 pub mod hydraulic;
 mod icing;
@@ -29,6 +30,7 @@ use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
+use fire_and_smoke_protection::A380FireAndSmokeProtection;
 use fuel::FuelLevel;
 use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
@@ -73,6 +75,7 @@ pub struct A380 {
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
     payload: A380Payload,
     airframe: A380Airframe,
+    fire_and_smoke_protection: A380FireAndSmokeProtection,
     fuel: A380Fuel,
     engine_1: TrentEngine,
     engine_2: TrentEngine,
@@ -127,6 +130,7 @@ impl A380 {
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
             payload: A380Payload::new(context),
             airframe: A380Airframe::new(context),
+            fire_and_smoke_protection: A380FireAndSmokeProtection::new(context),
             fuel: A380Fuel::new(context),
             engine_1: TrentEngine::new(context, 1),
             engine_2: TrentEngine::new(context, 2),
@@ -184,6 +188,7 @@ impl Aircraft for A380 {
         self.apu.update_before_electrical(
             context,
             &self.apu_overhead,
+            self.fire_and_smoke_protection.apu_fire_on_ground(),
             &self.apu_fire_overhead,
             self.pneumatic_overhead.apu_bleed_is_on(),
             // This will be replaced when integrating the whole electrical system.
@@ -243,6 +248,12 @@ impl Aircraft for A380 {
             &self.landing_gear,
             self.hydraulic.gear_system(),
             self.ext_pwrs[0].output_potential().is_powered(),
+        );
+
+        self.fire_and_smoke_protection.update(
+            context,
+            &self.engine_fire_overhead,
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
         self.radio_altimeters.update(context);
@@ -363,6 +374,7 @@ impl SimulationElement for A380 {
         self.apu_overhead.accept(visitor);
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
+        self.fire_and_smoke_protection.accept(visitor);
         self.fuel.accept(visitor);
         self.payload.accept(visitor);
         self.airframe.accept(visitor);

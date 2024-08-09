@@ -146,6 +146,12 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         }
     }
 
+    pub fn update_apu_fire(&mut self, should_emergency_shut_down: bool) {
+        if should_emergency_shut_down {
+            self.fault = Some(ApuFault::ApuFire)
+        }
+    }
+
     pub fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
         self.air_intake_flap_open_amount = air_intake_flap.open_amount();
     }
