@@ -62,7 +62,7 @@
     "build-a380x:extras-host": "node fbw-a380x/src/systems/extras-host/build.js",
     "build-a380x:instruments": "mach build --config fbw-a380x/mach.config.js --work-in-config-dir",
     "build-a380x:systems-host": "node fbw-a380x/src/systems/systems-host/build.js",
-
+    "build-a380x:tcas": "node fbw-a380x/src/systems/tcas/rollup.config.js",
     "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 --signext-lowering --enable-bulk-memory -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
     "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh       && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm",
     "build-a380x:terronnd": "cd fbw-common/src/wasm/terronnd && ./build.sh && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm /external/fbw-common/src/wasm/terronnd/out/terronnd.wasm",

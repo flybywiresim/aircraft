@@ -60,7 +60,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/tcas/tcas.js'),
+        file: join(root, 'fbw-a380x/src/base/flybywire-aircraft-a380-842/html_ui/JS/fbw-a380x/tcas/tcas.js'),
         format: 'umd',
         name: 'Tcas',
     },
