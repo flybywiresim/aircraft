@@ -65,6 +65,12 @@
                 <ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
             </UseTemplate>
 
+            <!-- LH Secondary Body Gear Door-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>l_blg_inner_door</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
+            </UseTemplate>
+
             <!-- LH Wing Gear Door-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>l_wing_gear_door</ANIM_NAME>
@@ -76,6 +82,12 @@
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>r_body_gear_door</ANIM_NAME>
                 <ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
+            </UseTemplate>
+
+            <!-- RH Secondary Body Gear Door-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>r_blg_inner_door</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
             </UseTemplate>
 
             <!-- RH Wing Gear Door-->
