@@ -19,7 +19,7 @@ import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
 // import { VideoPage } from './Pages/VideoPage';
 import { CruisePage } from './Pages/Cruise/CruisePage';
-import { StatusPage } from './Pages/StatusPage';
+import { StatusPage } from './Pages/Status/StatusPage';
 
 import { StatusArea } from './StatusArea';
 import { Mailbox } from './Mailbox';

@@ -279,6 +279,11 @@ text, tspan {
   margin: 0px 8px 0px 8px;
 }
 
+.VerticalFill {
+    display: flex;
+    flex-grow: 1;
+}
+
 .StsArea {
   height: 40px;
 }
