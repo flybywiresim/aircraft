@@ -36,8 +36,8 @@ ExampleModule exampleModule(msfsHandler);
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically
 LightingPresets_A380X lightingPresets(msfsHandler);
-Pushback_A380X pushback(msfsHandler);
-AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A380X::aircraftProcedureDefinition);
+Pushback_A380X        pushback(msfsHandler);
+AircraftPresets       aircraftPresets(msfsHandler, AircraftPresetProcedures_A380X::aircraftProcedureDefinition);
 
 /**
  * Gauge Callback

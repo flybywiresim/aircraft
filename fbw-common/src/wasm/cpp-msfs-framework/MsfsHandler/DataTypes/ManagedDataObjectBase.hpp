@@ -115,12 +115,12 @@ class ManagedDataObjectBase : public DataObjectBase {
   }
 
  public:
-  ManagedDataObjectBase() = delete;                                         // no default constructor
-  ManagedDataObjectBase(const ManagedDataObjectBase&) = delete;             // no copy constructor
-  ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete;  // no copy assignment
-  ManagedDataObjectBase(ManagedDataObjectBase&&) = delete;                  // no move constructor
-  ManagedDataObjectBase& operator=(ManagedDataObjectBase&&) = delete;       // no move assignment
-  virtual ~ManagedDataObjectBase() = default;                               // so derived classes can be destroyed with base class pointer
+  ManagedDataObjectBase()                                        = delete;   // no default constructor
+  ManagedDataObjectBase(const ManagedDataObjectBase&)            = delete;   // no copy constructor
+  ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete;   // no copy assignment
+  ManagedDataObjectBase(ManagedDataObjectBase&&)                 = delete;   // no move constructor
+  ManagedDataObjectBase& operator=(ManagedDataObjectBase&&)      = delete;   // no move assignment
+  virtual ~ManagedDataObjectBase()                               = default;  // so derived classes can be destroyed with base class pointer
 
   /**
    * Adds a callback function to be called when the data object's data changed.<p/>
@@ -167,9 +167,9 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @param tickCounter - current tick counter
    */
   void updateStamps(FLOAT64 timeStamp, UINT64 tickCounter) {
-    timeStampSimTime = timeStamp;
+    timeStampSimTime    = timeStamp;
     nextUpdateTimeStamp = timeStamp + maxAgeTime;
-    tickStamp = tickCounter;
+    tickStamp           = tickCounter;
     nextUpdateTickStamp = tickCounter + maxAgeTicks;
   }
 
@@ -197,7 +197,8 @@ class ManagedDataObjectBase : public DataObjectBase {
 
   /**
    * @brief Sets the auto read update mode for the variable.
-   * @param autoRead if true the variable will be updated from the sim every time the DataManager::preUpdate() method is called, false otherwise
+   * @param autoRead if true the variable will be updated from the sim every time the DataManager::preUpdate() method is called, false
+   * otherwise
    */
   virtual void setAutoRead(bool autoRead) {
     updateMode = static_cast<UpdateMode>(autoRead ? updateMode | UpdateMode::AUTO_READ : updateMode & ~UpdateMode::AUTO_READ);
@@ -211,7 +212,8 @@ class ManagedDataObjectBase : public DataObjectBase {
 
   /**
    * @brief Sets the auto write update mode for the variable.
-   * @param autoWrite if true the variable will be written to the sim every time the DataManager::postUpdate() method is called, false otherwise
+   * @param autoWrite if true the variable will be written to the sim every time the DataManager::postUpdate() method is called, false
+   * otherwise
    */
   virtual void setAutoWrite(bool autoWrite) {
     updateMode = static_cast<UpdateMode>(autoWrite ? updateMode | UpdateMode::AUTO_WRITE : updateMode & ~UpdateMode::AUTO_WRITE);

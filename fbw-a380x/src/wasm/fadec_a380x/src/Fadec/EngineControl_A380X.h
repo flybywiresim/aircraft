@@ -52,7 +52,7 @@ class EngineControl_A380X {
   double prevThrustLimitType = 0.0;
 
   // FLX->CLB thrust limit transition
-  bool wasFlexActive;
+  bool   wasFlexActive;
   double transitionStartTime;
   double transitionFactor;
 

@@ -40,35 +40,35 @@ bool LightingPresets_A380X::initialize_aircraft() {
 
   // Light Potentiometers - manual update and write when load/saving is requested
   readingLightCptLevel = createLightPotentiometerVar(96);
-  readingLightFoLevel = createLightPotentiometerVar(97);
+  readingLightFoLevel  = createLightPotentiometerVar(97);
 
   glareshieldIntegralLightLevel = createLightPotentiometerVar(84);
-  glareshieldLcdLightLevel = createLightPotentiometerVar(87);
-  tableLightCptLevel = createLightPotentiometerVar(10);
-  tableLightFoLevel = createLightPotentiometerVar(11);
+  glareshieldLcdLightLevel      = createLightPotentiometerVar(87);
+  tableLightCptLevel            = createLightPotentiometerVar(10);
+  tableLightFoLevel             = createLightPotentiometerVar(11);
 
-  pfdBrtCptLevel = createLightPotentiometerVar(88);
-  ndBrtCptLevel = createLightPotentiometerVar(89);
+  pfdBrtCptLevel       = createLightPotentiometerVar(88);
+  ndBrtCptLevel        = createLightPotentiometerVar(89);
   wxTerrainBrtCptLevel = createLightPotentiometerVar(94);
-  mfdBrtCptLevel = createLightPotentiometerVar(98);
+  mfdBrtCptLevel       = createLightPotentiometerVar(98);
   consoleLightCptLevel = createLightPotentiometerVar(8);
 
-  pfdBrtFoLevel = createLightPotentiometerVar(90);
-  ndBrtFoLevel = createLightPotentiometerVar(91);
+  pfdBrtFoLevel       = createLightPotentiometerVar(90);
+  ndBrtFoLevel        = createLightPotentiometerVar(91);
   wxTerrainBrtFoLevel = createLightPotentiometerVar(95);
-  mfdBrtFoLevel = createLightPotentiometerVar(99);
+  mfdBrtFoLevel       = createLightPotentiometerVar(99);
   consoleLightFoLevel = createLightPotentiometerVar(9);
 
-  rmpCptLightLevel = createLightPotentiometerVar(80);
-  rmpFoLightLevel = createLightPotentiometerVar(81);
-  rmpOvhdLightLevel = createLightPotentiometerVar(82);
+  rmpCptLightLevel    = createLightPotentiometerVar(80);
+  rmpFoLightLevel     = createLightPotentiometerVar(81);
+  rmpOvhdLightLevel   = createLightPotentiometerVar(82);
   ecamUpperLightLevel = createLightPotentiometerVar(92);
   ecamLowerLightLevel = createLightPotentiometerVar(93);
 
-  pedFloodLightLevel = createLightPotentiometerVar(76);
+  pedFloodLightLevel     = createLightPotentiometerVar(76);
   mainPnlFloodLightLevel = createLightPotentiometerVar(83);
-  integralLightLevel = createLightPotentiometerVar(85);
-  ambientLightLevel = createLightPotentiometerVar(7);
+  integralLightLevel     = createLightPotentiometerVar(85);
+  ambientLightLevel      = createLightPotentiometerVar(7);
 
   loadLightingPresetRequest->setAsInt64(0);
   saveLightingPresetRequest->setAsInt64(0);
@@ -86,35 +86,35 @@ void LightingPresets_A380X::readFromAircraft() {
   currentLightValues.efbBrightness = efbBrightness->readFromSim();
 
   currentLightValues.readingLightCptLevel = readingLightCptLevel->readFromSim();
-  currentLightValues.readingLightFoLevel = readingLightFoLevel->readFromSim();
+  currentLightValues.readingLightFoLevel  = readingLightFoLevel->readFromSim();
 
   currentLightValues.glareshieldIntegralLightLevel = glareshieldIntegralLightLevel->readFromSim();
-  currentLightValues.glareshieldLcdLightLevel = glareshieldLcdLightLevel->readFromSim();
-  currentLightValues.tableLightCptLevel = tableLightCptLevel->readFromSim();
-  currentLightValues.tableLightFoLevel = tableLightFoLevel->readFromSim();
+  currentLightValues.glareshieldLcdLightLevel      = glareshieldLcdLightLevel->readFromSim();
+  currentLightValues.tableLightCptLevel            = tableLightCptLevel->readFromSim();
+  currentLightValues.tableLightFoLevel             = tableLightFoLevel->readFromSim();
 
-  currentLightValues.pfdBrtCptLevel = pfdBrtCptLevel->readFromSim();
-  currentLightValues.ndBrtCptLevel = ndBrtCptLevel->readFromSim();
+  currentLightValues.pfdBrtCptLevel       = pfdBrtCptLevel->readFromSim();
+  currentLightValues.ndBrtCptLevel        = ndBrtCptLevel->readFromSim();
   currentLightValues.wxTerrainBrtCptLevel = wxTerrainBrtCptLevel->readFromSim();
-  currentLightValues.mfdBrtCptLevel = mfdBrtCptLevel->readFromSim();
+  currentLightValues.mfdBrtCptLevel       = mfdBrtCptLevel->readFromSim();
   currentLightValues.consoleLightCptLevel = consoleLightCptLevel->readFromSim();
 
-  currentLightValues.pfdBrtFoLevel = pfdBrtFoLevel->readFromSim();
-  currentLightValues.ndBrtFoLevel = ndBrtFoLevel->readFromSim();
+  currentLightValues.pfdBrtFoLevel       = pfdBrtFoLevel->readFromSim();
+  currentLightValues.ndBrtFoLevel        = ndBrtFoLevel->readFromSim();
   currentLightValues.wxTerrainBrtFoLevel = wxTerrainBrtFoLevel->readFromSim();
-  currentLightValues.mfdBrtFoLevel = mfdBrtFoLevel->readFromSim();
+  currentLightValues.mfdBrtFoLevel       = mfdBrtFoLevel->readFromSim();
   currentLightValues.consoleLightFoLevel = consoleLightFoLevel->readFromSim();
 
-  currentLightValues.rmpCptLightLevel = rmpCptLightLevel->readFromSim();
-  currentLightValues.rmpFoLightLevel = rmpFoLightLevel->readFromSim();
-  currentLightValues.rmpOvhdLightLevel = rmpOvhdLightLevel->readFromSim();
+  currentLightValues.rmpCptLightLevel    = rmpCptLightLevel->readFromSim();
+  currentLightValues.rmpFoLightLevel     = rmpFoLightLevel->readFromSim();
+  currentLightValues.rmpOvhdLightLevel   = rmpOvhdLightLevel->readFromSim();
   currentLightValues.ecamUpperLightLevel = ecamUpperLightLevel->readFromSim();
   currentLightValues.ecamLowerLightLevel = ecamLowerLightLevel->readFromSim();
 
   currentLightValues.mainPnlFloodLightLevel = mainPnlFloodLightLevel->readFromSim();
-  currentLightValues.integralLightLevel = integralLightLevel->readFromSim();
-  currentLightValues.pedFloodLightLevel = pedFloodLightLevel->readFromSim();
-  currentLightValues.ambientLightLevel = ambientLightLevel->readFromSim();
+  currentLightValues.integralLightLevel     = integralLightLevel->readFromSim();
+  currentLightValues.pedFloodLightLevel     = pedFloodLightLevel->readFromSim();
+  currentLightValues.ambientLightLevel      = ambientLightLevel->readFromSim();
 }
 
 void LightingPresets_A380X::applyToAircraft() {
@@ -164,70 +164,70 @@ void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini, const std
   loadedLightValues.efbBrightness = iniGetOrDefault(ini, iniSectionName, "efb_brightness", 80.0);
 
   loadedLightValues.readingLightCptLevel = iniGetOrDefault(ini, iniSectionName, "reading_cpt_lt", 50.0);
-  loadedLightValues.readingLightFoLevel = iniGetOrDefault(ini, iniSectionName, "reading_fo_lt", 50.0);
+  loadedLightValues.readingLightFoLevel  = iniGetOrDefault(ini, iniSectionName, "reading_fo_lt", 50.0);
 
   loadedLightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, iniSectionName, "glareshield_int_lt", 50.0);
-  loadedLightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, iniSectionName, "glareshield_lcd_lt", 50.0);
-  loadedLightValues.tableLightCptLevel = iniGetOrDefault(ini, iniSectionName, "table_cpt_lt", 50.0);
-  loadedLightValues.tableLightFoLevel = iniGetOrDefault(ini, iniSectionName, "table_fo_lt", 50.0);
+  loadedLightValues.glareshieldLcdLightLevel      = iniGetOrDefault(ini, iniSectionName, "glareshield_lcd_lt", 50.0);
+  loadedLightValues.tableLightCptLevel            = iniGetOrDefault(ini, iniSectionName, "table_cpt_lt", 50.0);
+  loadedLightValues.tableLightFoLevel             = iniGetOrDefault(ini, iniSectionName, "table_fo_lt", 50.0);
 
-  loadedLightValues.pfdBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "pfd_cpt_lvl", 50.0);
-  loadedLightValues.ndBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "nd_cpt_lvl", 50.0);
+  loadedLightValues.pfdBrtCptLevel       = iniGetOrDefault(ini, iniSectionName, "pfd_cpt_lvl", 50.0);
+  loadedLightValues.ndBrtCptLevel        = iniGetOrDefault(ini, iniSectionName, "nd_cpt_lvl", 50.0);
   loadedLightValues.wxTerrainBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "wx_cpt_lvl", 50.0);
-  loadedLightValues.mfdBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "mfd_cpt_lvl", 50.0);
+  loadedLightValues.mfdBrtCptLevel       = iniGetOrDefault(ini, iniSectionName, "mfd_cpt_lvl", 50.0);
   loadedLightValues.consoleLightCptLevel = iniGetOrDefault(ini, iniSectionName, "console_cpt_lt", 50.0);
 
-  loadedLightValues.pfdBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "pfd_fo_lvl", 50.0);
-  loadedLightValues.ndBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "nd_fo_lvl", 50.0);
+  loadedLightValues.pfdBrtFoLevel       = iniGetOrDefault(ini, iniSectionName, "pfd_fo_lvl", 50.0);
+  loadedLightValues.ndBrtFoLevel        = iniGetOrDefault(ini, iniSectionName, "nd_fo_lvl", 50.0);
   loadedLightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "wx_fo_lvl", 50.0);
-  loadedLightValues.mfdBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "mfd_fo_lvl", 50.0);
+  loadedLightValues.mfdBrtFoLevel       = iniGetOrDefault(ini, iniSectionName, "mfd_fo_lvl", 50.0);
   loadedLightValues.consoleLightFoLevel = iniGetOrDefault(ini, iniSectionName, "console_fo_lt", 50.0);
 
-  loadedLightValues.rmpCptLightLevel = iniGetOrDefault(ini, iniSectionName, "rmp_cpt_lt", 50.0);
-  loadedLightValues.rmpFoLightLevel = iniGetOrDefault(ini, iniSectionName, "rmp_fo_lt", 50.0);
-  loadedLightValues.rmpOvhdLightLevel = iniGetOrDefault(ini, iniSectionName, "rmp_ovhd_lt", 50.0);
+  loadedLightValues.rmpCptLightLevel    = iniGetOrDefault(ini, iniSectionName, "rmp_cpt_lt", 50.0);
+  loadedLightValues.rmpFoLightLevel     = iniGetOrDefault(ini, iniSectionName, "rmp_fo_lt", 50.0);
+  loadedLightValues.rmpOvhdLightLevel   = iniGetOrDefault(ini, iniSectionName, "rmp_ovhd_lt", 50.0);
   loadedLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_upper_lvl", 50.0);
   loadedLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_lower_lvl", 50.0);
 
-  loadedLightValues.pedFloodLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_ped_lvl", 50.0);
+  loadedLightValues.pedFloodLightLevel     = iniGetOrDefault(ini, iniSectionName, "flood_ped_lvl", 50.0);
   loadedLightValues.mainPnlFloodLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_pnl_lt", 50.0);
-  loadedLightValues.integralLightLevel = iniGetOrDefault(ini, iniSectionName, "pedestal_int_lt", 50.0);
-  loadedLightValues.ambientLightLevel = iniGetOrDefault(ini, iniSectionName, "cabin_light", 50.0);
+  loadedLightValues.integralLightLevel     = iniGetOrDefault(ini, iniSectionName, "pedestal_int_lt", 50.0);
+  loadedLightValues.ambientLightLevel      = iniGetOrDefault(ini, iniSectionName, "cabin_light", 50.0);
 }
 
 void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const {
   ini[iniSectionName]["efb_brightness"] = std::to_string(currentLightValues.efbBrightness);
 
   ini[iniSectionName]["reading_cpt_lt"] = std::to_string(currentLightValues.readingLightCptLevel);
-  ini[iniSectionName]["reading_fo_lt"] = std::to_string(currentLightValues.readingLightFoLevel);
+  ini[iniSectionName]["reading_fo_lt"]  = std::to_string(currentLightValues.readingLightFoLevel);
 
   ini[iniSectionName]["glareshield_int_lt"] = std::to_string(currentLightValues.glareshieldIntegralLightLevel);
   ini[iniSectionName]["glareshield_lcd_lt"] = std::to_string(currentLightValues.glareshieldLcdLightLevel);
-  ini[iniSectionName]["table_cpt_lt"] = std::to_string(currentLightValues.tableLightCptLevel);
-  ini[iniSectionName]["table_fo_lt"] = std::to_string(currentLightValues.tableLightFoLevel);
+  ini[iniSectionName]["table_cpt_lt"]       = std::to_string(currentLightValues.tableLightCptLevel);
+  ini[iniSectionName]["table_fo_lt"]        = std::to_string(currentLightValues.tableLightFoLevel);
 
-  ini[iniSectionName]["pfd_cpt_lvl"] = std::to_string(currentLightValues.pfdBrtCptLevel);
-  ini[iniSectionName]["nd_cpt_lvl"] = std::to_string(currentLightValues.ndBrtCptLevel);
-  ini[iniSectionName]["wx_cpt_lvl"] = std::to_string(currentLightValues.wxTerrainBrtCptLevel);
-  ini[iniSectionName]["mfd_cpt_lvl"] = std::to_string(currentLightValues.mfdBrtCptLevel);
+  ini[iniSectionName]["pfd_cpt_lvl"]    = std::to_string(currentLightValues.pfdBrtCptLevel);
+  ini[iniSectionName]["nd_cpt_lvl"]     = std::to_string(currentLightValues.ndBrtCptLevel);
+  ini[iniSectionName]["wx_cpt_lvl"]     = std::to_string(currentLightValues.wxTerrainBrtCptLevel);
+  ini[iniSectionName]["mfd_cpt_lvl"]    = std::to_string(currentLightValues.mfdBrtCptLevel);
   ini[iniSectionName]["console_cpt_lt"] = std::to_string(currentLightValues.consoleLightCptLevel);
 
-  ini[iniSectionName]["pfd_fo_lvl"] = std::to_string(currentLightValues.pfdBrtFoLevel);
-  ini[iniSectionName]["nd_fo_lvl"] = std::to_string(currentLightValues.ndBrtFoLevel);
-  ini[iniSectionName]["wx_fo_lvl"] = std::to_string(currentLightValues.wxTerrainBrtFoLevel);
-  ini[iniSectionName]["mfd_fo_lvl"] = std::to_string(currentLightValues.mfdBrtFoLevel);
+  ini[iniSectionName]["pfd_fo_lvl"]    = std::to_string(currentLightValues.pfdBrtFoLevel);
+  ini[iniSectionName]["nd_fo_lvl"]     = std::to_string(currentLightValues.ndBrtFoLevel);
+  ini[iniSectionName]["wx_fo_lvl"]     = std::to_string(currentLightValues.wxTerrainBrtFoLevel);
+  ini[iniSectionName]["mfd_fo_lvl"]    = std::to_string(currentLightValues.mfdBrtFoLevel);
   ini[iniSectionName]["console_fo_lt"] = std::to_string(currentLightValues.consoleLightFoLevel);
 
-  ini[iniSectionName]["rmp_cpt_lt"] = std::to_string(currentLightValues.rmpCptLightLevel);
-  ini[iniSectionName]["rmp_fo_lt"] = std::to_string(currentLightValues.rmpFoLightLevel);
-  ini[iniSectionName]["rmp_ovhd_lt"] = std::to_string(currentLightValues.rmpOvhdLightLevel);
+  ini[iniSectionName]["rmp_cpt_lt"]     = std::to_string(currentLightValues.rmpCptLightLevel);
+  ini[iniSectionName]["rmp_fo_lt"]      = std::to_string(currentLightValues.rmpFoLightLevel);
+  ini[iniSectionName]["rmp_ovhd_lt"]    = std::to_string(currentLightValues.rmpOvhdLightLevel);
   ini[iniSectionName]["ecam_upper_lvl"] = std::to_string(currentLightValues.ecamUpperLightLevel);
   ini[iniSectionName]["ecam_lower_lvl"] = std::to_string(currentLightValues.ecamLowerLightLevel);
 
-  ini[iniSectionName]["flood_ped_lvl"] = std::to_string(currentLightValues.pedFloodLightLevel);
-  ini[iniSectionName]["flood_pnl_lt"] = std::to_string(currentLightValues.mainPnlFloodLightLevel);
+  ini[iniSectionName]["flood_ped_lvl"]   = std::to_string(currentLightValues.pedFloodLightLevel);
+  ini[iniSectionName]["flood_pnl_lt"]    = std::to_string(currentLightValues.mainPnlFloodLightLevel);
   ini[iniSectionName]["pedestal_int_lt"] = std::to_string(currentLightValues.integralLightLevel);
-  ini[iniSectionName]["cabin_light"] = std::to_string(currentLightValues.ambientLightLevel);
+  ini[iniSectionName]["cabin_light"]     = std::to_string(currentLightValues.ambientLightLevel);
 }
 
 [[maybe_unused]] std::string LightingPresets_A380X::str() const {
