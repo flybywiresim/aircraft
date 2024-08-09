@@ -824,12 +824,12 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   260800029: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm AFT AVNCS DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm AFT AVNCS DET FAULT',
     sensed: true,
     items: [],
   },
   260800030: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm AFT AVNCS SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm AFT AVNCS SMOKE',
     sensed: true,
     items: [
       {
@@ -861,7 +861,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800031: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm DET FAULT',
     sensed: true,
     items: [
       {
@@ -900,7 +900,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800032: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm IFE BAY DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm IFE BAY DET FAULT',
     sensed: true,
     items: [
       {
@@ -911,7 +911,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800033: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm IFE BAY SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm IFE BAY SMOKE',
     sensed: true,
     items: [
       {
@@ -933,27 +933,27 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800034: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm L MAIN AVNCS DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm L MAIN AVNCS DET FAULT',
     sensed: true,
     items: [],
   },
   260800035: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm R MAIN AVNCS DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm R MAIN AVNCS DET FAULT',
     sensed: true,
     items: [],
   },
   260800036: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm L UPPER AVNCS DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm L UPPER AVNCS DET FAULT',
     sensed: true,
     items: [],
   },
   260800037: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm R UPPER AVNCS DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm R UPPER AVNCS DET FAULT',
     sensed: true,
     items: [],
   },
   260800038: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm L MAIN AVNCS SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm L MAIN AVNCS SMOKE',
     sensed: true,
     items: [
       {
@@ -990,7 +990,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800039: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm R MAIN AVNCS SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm R MAIN AVNCS SMOKE',
     sensed: true,
     items: [
       {
@@ -1027,7 +1027,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800040: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm L UPPER AVNCS SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm L UPPER AVNCS SMOKE',
     sensed: true,
     items: [
       {
@@ -1077,7 +1077,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800041: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm R UPPER AVNCS SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm R UPPER AVNCS SMOKE',
     sensed: true,
     items: [
       {
@@ -1127,7 +1127,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800042: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm FACILITIES DET FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FACILITIES DET FAULT',
     sensed: true,
     items: [
       {
@@ -1143,17 +1143,17 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800043: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm FWD CARGO BOTTLES FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD CARGO BOTTLES FAULT',
     sensed: true,
     items: [],
   },
   260800044: {
-    title:  '\x1b<4m\x1b4mSMOKE\x1bm AFT CARGO BOTTLES FAULT',
+    title: '\x1b<4m\x1b4mSMOKE\x1bm AFT CARGO BOTTLES FAULT',
     sensed: true,
     items: [],
   },
   260800045: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm FWD CARGO SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm FWD CARGO SMOKE',
     sensed: true,
     items: [
       {
@@ -1204,7 +1204,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800046: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm AFT CARGO SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm AFT CARGO SMOKE',
     sensed: true,
     items: [
       {
@@ -1255,7 +1255,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800047: {
-    title:  '\x1b<2m\x1b4mSMOKE\x1bm BULK CARGO SMOKE',
+    title: '\x1b<2m\x1b4mSMOKE\x1bm BULK CARGO SMOKE',
     sensed: true,
     items: [
       {
@@ -1301,6 +1301,752 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
         sensed: false,
         color: 'green',
+      },
+    ],
+    recommendation: 'LAND ASAP',
+  },
+  260800048: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD CARGO DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '.IF NO LIVESTOCK',
+        sensed: false,
+      },
+      {
+        name: 'FWD ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+    ],
+  },
+  260800049: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm AFT CARGO DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '.IF NO LIVESTOCK',
+        sensed: false,
+      },
+      {
+        name: 'BULK ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'BULK CARGO HEATER',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+    ],
+  },
+  260800050: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm BULK CARGO DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '.IF NO LIVESTOCK',
+        sensed: false,
+      },
+      {
+        name: 'BULK ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'BULK CARGO HEATER',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+    ],
+  },
+  260800051: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD+AFT CARGO BOTTLES FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800052: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD+AFT CARGO BTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800053: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD+AFT CARGO BTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800054: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD LWR CAB REST BTL 1 FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800055: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD LWR CAB REST BTL 2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800056: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm FWD LWR CAB REST DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800057: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm FWD LWR CAB REST SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: '.IF FIRE PERSISTS :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'LAND ASAP',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+        level: 1,
+      },
+    ],
+  },
+  260800058: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 5L FLT REST DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800059: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 5L CAB REST DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800060: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 5L FLT REST SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800061: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 5L CAB REST SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800062: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN DECK LAVATORY DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800063: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER DECK LAVATORY DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800064: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm LOWER DECK LAVATORY DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800065: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN DECK LAVATORY SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800066: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER DECK LAVATORY SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800067: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm LOWER DECK LAVATORY SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800068: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 1L CWS DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800069: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 1L RCC DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800070: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 1L CWS DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800071: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 1L RCC DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800072: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 2L CWS DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800073: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 2L RCC DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800074: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 2L CWS DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800075: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 2L RCC DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800076: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 3R CWS DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800077: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm MAIN 3R RCC DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800078: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 3R CWS DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800079: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 3R RCC DET FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800080: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 1L CWS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800081: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 1L RCC SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800082: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 1L CWS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800083: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 1L RCC SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800084: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 2L CWS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800085: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 2L RCC SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800086: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 2L CWS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800087: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 2L RCC SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800088: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 3R CWS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800089: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm MAIN 3R RCC SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800090: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 3R CWS SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800091: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 3R RCC SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800092: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm SAFETY TEST REQUIRED',
+    sensed: true,
+    items: [],
+  },
+  260800093: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 1L SHOWER DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800094: {
+    title: '\x1b<4m\x1b4mSMOKE\x1bm UPPER 1R SHOWER DET FAULT',
+    sensed: true,
+    items: [],
+  },
+  260800095: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 1L SHOWER SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800096: {
+    title: '\x1b<2m\x1b4mSMOKE\x1bm UPPER 1R SHOWER SMOKE',
+    sensed: true,
+    items: [
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+    ],
+  },
+  260800097: {
+    title: '\x1b<2m\x1b2mFIRE\x1bm SMOKE/FUMES',
+    sensed: false,
+    items: [
+      {
+        name: 'CREW OXY MASKS (IF RQRD)',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: 'GALLEY',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CKPT / CABIN COM',
+        sensed: false,
+        labelNotCompleted: 'ESTABLISH',
+      },
+      {
+        name: '[QRH] SMOKE/FUMES PROC',
+        sensed: false,
+        labelNotCompleted: 'APPLY',
       },
     ],
     recommendation: 'LAND ASAP',
