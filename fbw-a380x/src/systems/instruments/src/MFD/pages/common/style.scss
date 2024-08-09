@@ -117,7 +117,7 @@
 }
 
 .mfd-button.disabled {
-  color: $display-grey;
+  color: $display-dark-grey;
 }
 
 .mfd-button.selected {
@@ -224,7 +224,7 @@
 }
 
 .mfd-dropdown-menu-element.disabled {
-  color: $display-grey;
+  color: $display-dark-grey;
 }
 
 .mfd-page-selector-label {
@@ -413,7 +413,7 @@
 }
 
 .mfd-radio-button input[type="radio"]:disabled {
-  background: $display-grey !important;
+  background: $display-dark-grey !important;
 }
 
 
@@ -443,7 +443,7 @@
 }
 
 .mfd-radio-button input[type="radio"]:disabled ~ * {
-  color: $display-grey !important;
+  color: $display-dark-grey !important;
 }
 
 .mfd-radio-button:hover {
@@ -521,7 +521,7 @@
   position: absolute;
   top: -18px;
   z-index: 5;
-  border: 1px solid $display-grey !important;
+  border: 1px solid $display-dark-grey !important;
 }
 
 .mfd-input-field-text-input {
@@ -763,7 +763,7 @@
 }
 
 .mfd-surv-button.disabled {
-  background-color: $display-grey;
+  background-color: $display-dark-grey;
   border: none;
 }
 
