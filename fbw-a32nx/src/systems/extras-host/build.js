@@ -10,4 +10,4 @@ const { createModuleBuild } = require('#build-utils');
 
 const outFile = 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost/index.js';
 
-esbuild.build(createModuleBuild('fbw-a32nx', undefined, path.join(__dirname, './index.ts'), outFile, __dirname));
+esbuild.build(createModuleBuild('fbw-a32nx', undefined, path.join(__dirname, 'index.ts'), outFile, __dirname));

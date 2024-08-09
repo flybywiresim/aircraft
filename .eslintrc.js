@@ -52,7 +52,7 @@ module.exports = {
   settings: {
     tailwindcss: {
       groupByResponsive: true,
-      config: path.join(__dirname, 'fbw-common/src/systems/instruments/src/EFB/tailwind.config.js'),
+      config: path.join(__dirname, 'fbw-common', 'src', 'systems', 'instruments', 'src', 'EFB', 'tailwind.config.js'),
     },
     react: { version: 'detect' },
   },

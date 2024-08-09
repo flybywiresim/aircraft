@@ -47,8 +47,8 @@ const titleSuffix = ` (${titlePostfix})`;
 
 const MS_FILETIME_EPOCH = 116444736000000000n;
 
-const INGAMEPANELS_CHECKLISTS_FIX_SRC = path.resolve(__dirname, '..', 'fbw-ingamepanels-checklist-fix/src');
-const INGAMEPANELS_CHECKLISTS_FIX_OUT = path.resolve(__dirname, '..', 'fbw-ingamepanels-checklist-fix/out');
+const INGAMEPANELS_CHECKLISTS_FIX_SRC = path.resolve(__dirname, '..', 'fbw-ingamepanels-checklist-fix', 'src');
+const INGAMEPANELS_CHECKLISTS_FIX_OUT = path.resolve(__dirname, '..', 'fbw-ingamepanels-checklist-fix', 'out');
 
 function createPackageFiles(baseDir, manifestBaseFilename) {
     const contentEntries = [];
