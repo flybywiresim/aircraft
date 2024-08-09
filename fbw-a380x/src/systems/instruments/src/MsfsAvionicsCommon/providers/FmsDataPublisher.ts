@@ -19,6 +19,8 @@ export interface FmsVars {
     toWptEta: number;
     apprMessage0: number;
     apprMessage1: number;
+    mrpLat: number;
+    mrpLong: number;
 }
 
 export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R'> {
@@ -44,6 +46,8 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
             ['toWptEta', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_ETA`, type: SimVarValueType.Seconds }],
             ['apprMessage0', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_0`, type: SimVarValueType.Number }],
             ['apprMessage1', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_1`, type: SimVarValueType.Number }],
+            ['mrpLat', { name: (side) => `L:A32NX_EFIS_${side}_MRP_LAT`, type: SimVarValueType.Degree }],
+            ['mrpLong', { name: (side) => `L:A32NX_EFIS_${side}_MRP_LONG`, type: SimVarValueType.Degree }],
 
         ]), stateSubject, bus);
     }

@@ -1,0 +1,30 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fpln-hold-timedist-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-left: 30px;
+}
+
+.mfd-fpln-hold-last-exit-label {
+  width: 100%;
+  margin-top: 50px;
+  padding-top: 50px;
+  margin-bottom: 30px;
+  border-top: 1px solid $display-light-grey;
+}
+
+.mfd-fpln-hold-grid {
+  display: grid;
+  grid-template-columns: 20% 30% 30%;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-fpln-hold-button-with-creative-class-name-which-is-as-long-as-style-attribute {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px;
+}
