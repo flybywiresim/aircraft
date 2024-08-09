@@ -145,6 +145,7 @@ impl Aircraft for A320 {
         self.apu.update_before_electrical(
             context,
             &self.apu_overhead,
+            false, // Todo: fire detection system
             &self.apu_fire_overhead,
             self.pneumatic_overhead.apu_bleed_is_on(),
             // This will be replaced when integrating the whole electrical system.
