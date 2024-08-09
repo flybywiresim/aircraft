@@ -32,7 +32,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
 
   private readonly n1 = ConsumerSubject.create(
-    this.sub.on(`n1_${this.props.engine}`).withPrecision(1).whenChanged(),
+    this.sub.on(`n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
