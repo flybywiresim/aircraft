@@ -3,6 +3,7 @@
 
 import { NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
+/** All normal procedures (checklists, via ECL) should be here. */
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   1000001: {
     title: 'BEFORE START',

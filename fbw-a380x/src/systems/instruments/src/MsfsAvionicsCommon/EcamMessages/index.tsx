@@ -433,9 +433,6 @@ export function isChecklistAction(element: ChecklistAction | ChecklistCondition)
   return 'labelNotCompleted' in element;
 }
 
-/** All normal procedures (checklists, via ECL) should be here. */
-export const EcamNormalProcedures: { [n: number]: void } = {};
-
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
   ...EcamAbnormalSensedAta212223,

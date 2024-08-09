@@ -40,10 +40,10 @@ import {
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import {
-  FwsCdsAbnormalSensedEntry,
-  FwsCdsAbnormalSensedList,
-  FwsCdsEvents,
-} from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsCdsPublisher';
+  FwsEwdAbnormalSensedEntry,
+  FwsEwdAbnormalSensedList,
+  FwsEwdEvents,
+} from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
 import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
 import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
@@ -68,7 +68,7 @@ export enum FwcAuralWarning {
   Crc,
 }
 
-type InternalAbnormalSensedList = Map<string, FwsCdsAbnormalSensedEntry>;
+type InternalAbnormalSensedList = Map<string, FwsEwdAbnormalSensedEntry>;
 
 export class FwsCore implements Instrument {
   public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents>();
@@ -718,6 +718,12 @@ export class FwsCore implements Instrument {
 
   private recallTriggerRisingEdge = false;
 
+  public readonly clPulseNode = new NXLogicPulseNode(true, 0.05);
+  public readonly clCheckLeftPulseNode = new NXLogicPulseNode(true, 0.05);
+  public readonly clCheckRightPulseNode = new NXLogicPulseNode(true, 0.05);
+  public readonly clUpPulseNode = new NXLogicPulseNode(true, 0.05);
+  public readonly clDownPulseNode = new NXLogicPulseNode(true, 0.05);
+
   public readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
   public readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
@@ -1354,7 +1360,6 @@ export class FwsCore implements Instrument {
     this.healthInjector();
 
     // Inputs update
-
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
@@ -1396,6 +1401,13 @@ export class FwsCore implements Instrument {
     this.rclUpPulseNode.write(recallButton, deltaTime);
     const previousRclUpTriggerNode = this.rclUpTriggerNode.read();
     this.rclUpTriggerNode.write(recallButton, deltaTime);
+
+    // C/L buttons
+    this.clPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CL', 'bool'), deltaTime);
+    this.clCheckLeftPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_LH', 'bool'), deltaTime);
+    this.clCheckRightPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_RH', 'bool'), deltaTime);
+    this.clUpPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_UP', 'bool'), deltaTime);
+    this.clDownPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_DOWN', 'bool'), deltaTime);
 
     this.recallTriggerRisingEdge = !previousRclUpTriggerNode && this.rclUpTriggerNode.read();
 
@@ -2833,10 +2845,10 @@ export class FwsCore implements Instrument {
       console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
     }
 
-    const fwsCdsProcedures: FwsCdsAbnormalSensedList = Array.from(this.activeAbnormalSensedList.keys()).map((abn) => {
+    const fwsCdsProcedures: FwsEwdAbnormalSensedList = Array.from(this.activeAbnormalSensedList.keys()).map((abn) => {
       return { id: abn, itemsActive: [], itemsCompleted: [], itemsToShow: [] };
     });
-    this.bus.getPublisher<FwsCdsEvents>().pub('fws_abnormal_sensed_procedures', fwsCdsProcedures);
+    this.bus.getPublisher<FwsEwdEvents>().pub('fws_abnormal_sensed_procedures', fwsCdsProcedures);
     SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', fwsCdsProcedures[0] ? fwsCdsProcedures[0].id : '');
 
     // MEMOs (except T.O and LDG)
@@ -2944,6 +2956,7 @@ export class FwsCore implements Instrument {
       );
     }
 
+    this.normalChecklists.onUpdate();
     this.updateRowRopWarnings();
   }
 
