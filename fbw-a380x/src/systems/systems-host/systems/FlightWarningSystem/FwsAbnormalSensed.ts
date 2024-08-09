@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamAbnormalSensedProcedures } from '@instruments/common/EcamMessages';
+import { EcamAbnormalSensedProcedures } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 

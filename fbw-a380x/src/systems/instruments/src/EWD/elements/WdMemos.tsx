@@ -9,7 +9,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import EWDMessages from '@instruments/common/EWDMessages';
+import { EcamMemos } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdMemosProps {
   bus: EventBus;
@@ -40,13 +40,13 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
     this.memosLeftFormatString.set(
       this.memosLeft
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamMemos[padEWDCode(val.get())])
         .join('\r'),
     );
     this.memosRightFormatString.set(
       this.memosRight
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamMemos[padEWDCode(val.get())])
         .join('\r'),
     );
 
@@ -54,7 +54,7 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
     setTimeout(() => {
       this.memosLeftSvgRef.instance.style.height = `${(this.memosLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
       this.memosRightSvgRef.instance.style.height = `${(this.memosRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-    }, 100);
+    }, 150);
   }
 
   public onAfterRender(node: VNode): void {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamMemos } from '@instruments/common/EcamMessages';
+import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
@@ -691,20 +691,17 @@ export class FwsMemos {
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
           ? 2
           : 1,
-        SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 4 : 3,
-        this.fws.spoilersArmed.get() ? 6 : 5,
+        this.fws.spoilersArmed.get() ? 4 : 3,
         this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20
-          ? 8
-          : 7,
-        this.fws.autoBrake.get() === 6 ? 10 : 9,
-        this.fws.toConfigNormal.get() ? 12 : 11,
+          ? 6
+          : 5,
+        this.fws.autoBrake.get() === 6 ? 8 : 7,
+        this.fws.toConfigNormal.get() ? 10 : 9,
       ],
       codesToReturn: [
         '000001001',
         '000001002',
         '000001003',
-        '000001004',
-        '000001005',
         '000001006',
         '000001007',
         '000001008',
@@ -729,22 +726,19 @@ export class FwsMemos {
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
           ? 2
           : 1,
-        SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 4 : 3,
-        SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 6 : 5,
+        SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 4 : 3,
+        this.fws.spoilersArmed.get() ? 6 : 5,
         (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
         (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3)
           ? 8
           : 7,
-        this.fws.spoilersArmed.get() ? 10 : 9,
       ],
       codesToReturn: [
         '000002001',
         '000002002',
         '000002003',
-        '000002004',
-        '000002005',
         '000002006',
         '000002007',
         '000002008',

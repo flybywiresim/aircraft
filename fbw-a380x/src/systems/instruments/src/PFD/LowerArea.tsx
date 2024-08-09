@@ -13,7 +13,7 @@ import {
 import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
-import { EcamLimitations, EcamMemos } from '@instruments/common/EcamMessages';
+import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
 
 export class LowerArea extends DisplayComponent<{

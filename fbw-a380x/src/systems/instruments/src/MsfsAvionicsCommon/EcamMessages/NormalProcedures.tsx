@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NormalProcedure } from '@instruments/common/EcamMessages';
+import { NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   1000001: {

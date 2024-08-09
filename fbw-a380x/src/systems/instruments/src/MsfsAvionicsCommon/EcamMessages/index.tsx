@@ -1,18 +1,18 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamAbnormalSensedAta212223 } from '@instruments/common/EcamMessages/AbnormalSensed/ata21-22-23';
-import { EcamAbnormalSensedAta24 } from '@instruments/common/EcamMessages/AbnormalSensed/ata24';
-import { EcamAbnormalSensedAta26 } from '@instruments/common/EcamMessages/AbnormalSensed/ata26';
-import { EcamAbnormalSensedAta27 } from '@instruments/common/EcamMessages/AbnormalSensed/ata27';
-import { EcamAbnormalSensedAta28 } from '@instruments/common/EcamMessages/AbnormalSensed/ata28';
-import { EcamAbnormalSensedAta2930 } from '@instruments/common/EcamMessages/AbnormalSensed/ata29-30';
-import { EcamAbnormalSensedAta313233 } from '@instruments/common/EcamMessages/AbnormalSensed/ata31-32-33';
-import { EcamAbnormalSensedAta34 } from '@instruments/common/EcamMessages/AbnormalSensed/ata34';
-import { EcamAbnormalSensedAta353642 } from '@instruments/common/EcamMessages/AbnormalSensed/ata35-36-42';
-import { EcamAbnormalSensedAta46495256 } from '@instruments/common/EcamMessages/AbnormalSensed/ata46-49-52-56';
-import { EcamAbnormalSensedAta70 } from '@instruments/common/EcamMessages/AbnormalSensed/ata70';
-import { EcamAbnormalSensedAta80Rest } from '@instruments/common/EcamMessages/AbnormalSensed/ata80-rest';
+import { EcamAbnormalSensedAta212223 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
+import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
+import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
+import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
+import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
+import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
+import { EcamAbnormalSensedAta313233 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata31-32-33';
+import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
+import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
+import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
+import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
+import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -30,12 +30,10 @@ import { EcamAbnormalSensedAta80Rest } from '@instruments/common/EcamMessages/Ab
 export const EcamMemos: { [n: string]: string } = {
   '000000001': '              \x1b<3mNORMAL',
   '000001001': ' \x1b<7m\x1b4mT.O\x1bm',
-  '000001002': '   \x1b<5m-SIGNS .........ON',
-  '000001003': '   \x1b<3m-SIGNS ON',
-  '000001004': '   \x1b<5m-CABIN ......CHECK',
-  '000001005': '   \x1b<3m-CABIN READY',
-  '000001006': '   \x1b<5m-SPLRs ........ARM',
-  '000001007': '   \x1b<3m-SPLRs ARM',
+  '000001002': '   \x1b<5m-SEAT BELTS ....ON',
+  '000001003': '   \x1b<3m-SEAT BELTS ON',
+  '000001006': '   \x1b<5m-GND SPLRs ....ARM',
+  '000001007': '   \x1b<3m-GND SPLRs ARM',
   '000001008': '   \x1b<5m-FLAPS ........T.O',
   '000001009': '   \x1b<3m-FLAPS : T.O',
   '000001010': '   \x1b<5m-AUTO BRAKE ...RTO',
@@ -43,16 +41,14 @@ export const EcamMemos: { [n: string]: string } = {
   '000001012': '   \x1b<5m-T.O CONFIG ..TEST',
   '000001013': '   \x1b<3m-T.O CONFIG NORMAL',
   '000002001': ' \x1b<7m\x1b4mLDG\x1bm',
-  '000002002': '   \x1b<5m-SIGNS .........ON',
-  '000002003': '   \x1b<3m-SIGNS ON',
-  '000002004': '   \x1b<5m-CABIN ......CHECK',
-  '000002005': '   \x1b<3m-CABIN READY',
+  '000002002': '   \x1b<5m-SEAT BELTS ....ON',
+  '000002003': '   \x1b<3m-SEAT BELTS ON',
   '000002006': '   \x1b<5m-LDG GEAR ....DOWN',
   '000002007': '   \x1b<3m-LDG GEAR DOWN',
-  '000002008': '   \x1b<5m-FLAPS ........LDG',
-  '000002009': '   \x1b<3m-FLAPS : LDG',
-  '000002010': '   \x1b<5m-SPLRs ........ARM',
-  '000002011': '   \x1b<3m-SPLRs ARM',
+  '000002008': '   \x1b<5m-GND SPLRs ....ARM',
+  '000002009': '   \x1b<3m-GND SPLRs ARM',
+  '000002010': '   \x1b<5m-FLAPS ........LDG',
+  '000002011': '   \x1b<3m-FLAPS : LDG',
   '320000001': '\x1b<4mAUTO BRK OFF',
   '320000002': '\x1b<3mPARK BRK ON',
   '321000001': '\x1b<3mFLT L/G DOWN',

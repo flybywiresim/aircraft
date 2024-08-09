@@ -37,7 +37,7 @@ import {
   EcamMemos,
   isChecklistAction,
   pfdMemoDisplay,
-} from '@instruments/common/EcamMessages';
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import {
   FwsCdsAbnormalSensedEntry,
@@ -1158,7 +1158,10 @@ export class FwsCore implements Instrument {
     this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
-    this.auralCrcOutput.sub((crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', crc), true);
+    this.auralCrcOutput.sub(
+      (crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', this.startupCompleted.get() ? crc : false),
+      true,
+    );
 
     this.masterCaution.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
@@ -1175,6 +1178,7 @@ export class FwsCore implements Instrument {
         // Check if warnings or cautions have to be set
         SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.masterCaution.get());
         SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', this.masterWarningOutput.get());
+        SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', this.auralCrcOutput.get());
       }
     }, true);
 

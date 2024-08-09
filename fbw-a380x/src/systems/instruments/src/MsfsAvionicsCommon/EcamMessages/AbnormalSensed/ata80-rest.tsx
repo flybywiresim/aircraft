@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from '@instruments/common/EcamMessages';
+import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -16,4 +16,4 @@ import { AbnormalProcedure } from '@instruments/common/EcamMessages';
 //    9 for ABN non-sensed procedures
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
-export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {};
+export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {};

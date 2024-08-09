@@ -9,13 +9,11 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import EWDMessages from '@instruments/common/EWDMessages';
+import { EcamLimitations } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdLimitationsProps {
   bus: EventBus;
 }
-
-const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
 export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
@@ -42,13 +40,13 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
     this.limitationsLeftFormatString.set(
       this.limitationsLeft
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamLimitations[val.get()])
         .join('\r'),
     );
     this.limitationsRightFormatString.set(
       this.limitationsRight
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamLimitations[val.get()])
         .join('\r'),
     );
 
@@ -56,7 +54,7 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
     setTimeout(() => {
       this.limitationsLeftSvgRef.instance.style.height = `${(this.limitationsLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
       this.limitationsRightSvgRef.instance.style.height = `${(this.limitationsRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-    }, 100);
+    }, 150);
 
     this.limitationsDisplay.set(
       this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0
