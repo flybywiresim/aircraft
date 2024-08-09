@@ -64,8 +64,8 @@
     - represents the brake temperature of the rear wheels
 
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
-    - celsius
-    - represents the reported brake temperature of the rear wheels by the sensor.
+    - `Arinc429Word<Celsius>`
+    - represents the reported brake temperature of the main wheels by the sensor to the BSCU.
     - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool
       the sensor more than the brakes
     - (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must
