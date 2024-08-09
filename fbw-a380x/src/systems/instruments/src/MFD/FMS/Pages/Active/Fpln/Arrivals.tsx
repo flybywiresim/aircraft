@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { useActiveOrTemporaryFlightPlan, useNavDatabase } from '@instruments/common/flightplan';
 import { Approach, Arrival, Database, IlsNavaid, Runway } from 'msfs-navdata';
 import { useHistory } from 'react-router-dom';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { Layer } from '../../../../Components/Layer';
 import { Dropdown, DropdownItem } from '../../../../Components/Dropdown';
 import { Button } from '../../../../Components/Button';

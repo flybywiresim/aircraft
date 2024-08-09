@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useActiveOrTemporaryFlightPlan } from '@instruments/common/flightplan';
 import { useHistory } from 'react-router-dom';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { Layer } from '../../../../Components/Layer';
 import { TextBox } from '../../../../Components/Textbox';
 import { Button } from '../../../../Components/Button';

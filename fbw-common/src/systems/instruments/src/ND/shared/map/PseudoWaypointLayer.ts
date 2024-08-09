@@ -11,7 +11,7 @@ import {
   MathUtils,
 } from '@flybywiresim/fbw-sdk';
 
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { NDSimvars } from '../../NDSimvarPublisher';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../utils/MapParameters';
 import { PaintUtils } from './PaintUtils';

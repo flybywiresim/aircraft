@@ -2,12 +2,12 @@ import React, { FC } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useHover } from 'use-events';
 import { useActiveOrTemporaryFlightPlan } from '@instruments/common/flightplan';
-import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
-import { DestinationSegment } from '@fmgc/flightplanning/new/segments/DestinationSegment';
-import { ApproachSegment } from '@fmgc/flightplanning/new/segments/ApproachSegment';
+import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
+import { DestinationSegment } from '@fmgc/flightplanning/segments/DestinationSegment';
+import { ApproachSegment } from '@fmgc/flightplanning/segments/ApproachSegment';
 import { LegType } from 'msfs-navdata';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Layer } from '../../../../Components/Layer';
 import { WindowType } from './index';
 
@@ -60,14 +60,14 @@ const RevisionsMenu = ({ leg, setCurrentWindow, onClose }: RevisionsMenuProps) =
                     0, 0
                     ${width}, 0
                     ${width - 5}, 5
-                    5, ${height - 5} 
+                    5, ${height - 5}
                     0, ${height}`}
                     fill="white"
                 />
                 <polygon
                     points={`
                     ${width}, 0
-                    ${width}, ${height} 
+                    ${width}, ${height}
                     0, ${height}
                     5, ${height - 5}
                     ${width - 5}, 5`}
