@@ -4,7 +4,8 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Flight Management System ATA 22](flight-management-system-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
@@ -109,7 +110,6 @@
 - A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
     - Degrees
     - Angular position of right nose wheel (in wheel axis not steering)
-
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
@@ -295,6 +295,11 @@
     - Bool
     - True if the overhead manual extract vent override pushbutton is on (illuminated)
 
+## Flight Management System ATA 22
+- A32NX_FMS_SWITCHING_KNOB
+    - FMS used
+    - Position (0-2)
+    - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
 ## Electrical ATA 24
 

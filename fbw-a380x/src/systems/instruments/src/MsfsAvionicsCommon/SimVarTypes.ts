@@ -78,17 +78,14 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
 export interface SwitchingPanelVSimVars {
     attHdgKnob: number;
     airKnob: number;
-    dmcKnob: number;
 }
 
 export enum SwitchingPanelVars {
     attHdgKnob = 'L:A32NX_ATT_HDG_SWITCHING_KNOB',
     airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
-    dmcKnob = 'L:A32NX_EIS_DMC_SWITCHING_KNOB',
 }
 
 export const SwitchingPanelSimVarsDefinitions = new Map<keyof SwitchingPanelVSimVars, SimVarDefinition>([
     ['attHdgKnob', { name: SwitchingPanelVars.attHdgKnob, type: SimVarValueType.Enum }],
     ['airKnob', { name: SwitchingPanelVars.airKnob, type: SimVarValueType.Enum }],
-    ['dmcKnob', { name: SwitchingPanelVars.dmcKnob, type: SimVarValueType.Enum }],
 ]);
