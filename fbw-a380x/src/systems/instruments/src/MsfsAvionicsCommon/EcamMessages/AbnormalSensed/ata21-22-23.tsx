@@ -705,22 +705,160 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   213800001: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS CAB ALT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'CREW OXY MASKS',
+        sensed: true,
+        labelNotCompleted: 'USE',
+      },
+      {
+        name: 'DESCENT',
+        sensed: true,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'EMER DESCENT:',
+        sensed: false,
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'ALL THR LEVERS',
+        sensed: true,
+        labelNotCompleted: 'IDLE',
+        level: 1,
+      },
+      {
+        name: 'SPEED BRAKE LEVERS',
+        sensed: true,
+        labelNotCompleted: 'FULL',
+      },
+      {
+        name: 'SPEED',
+        sensed: false,
+        labelNotCompleted: 'MAX/APPROPRIATE',
+        level: 1,
+      },
+      {
+        name: 'ATC',
+        sensed: true,
+        labelNotCompleted: 'NOTIFY',
+      },
+      {
+        name: 'MAX FL: 100/MEA',
+        sensed: false,
+      },
+      {
+        name: 'PAX OXY MASK MAN ON',
+        sensed: true,
+        labelNotCompleted: 'PRESS',
+      },
+      {
+        name: 'CREW OXY MASKS DILUTION',
+        sensed: true,
+        labelNotCompleted: 'N',
+        level: 1,
+      },
+    ],
   },
   213800002: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS DIFF PRESS',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'DESCENT TO FL 100/MEA',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+        level: 1,
+      },
+      {
+        name: 'MAX FL: 100/MEA',
+        sensed: false,
+      },
+      {
+        name: 'WHEN DIFF PRESS < 1 PSI & FL < 100/MEA :',
+        sensed: false,
+      },
+      {
+        name: 'RAM AIR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'CABIN EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+        level: 1,
+      },
+    ],
   },
   213800003: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS NEGATIVE DIFF PRESS',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ACFT IMMEDIATE LEVEL OFF',
+        sensed: true,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'HI',
+        level: 1,
+      },
+      {
+        name: 'RAM AIR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+    ],
   },
   213800004: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS RESIDUAL DIFF PRESS',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: true,
+        labelNotCompleted: 'ALERT',
+      },
+      {
+        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        sensed: false,
+      },
+      {
+        name: 'RESIDUAL DIFF PRESS',
+        sensed: true,
+        labelNotCompleted: 'CHECK',
+        level: 1,
+      },
+    ],
   },
   213800005: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm AUTO CTL FAULT',
