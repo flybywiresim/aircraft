@@ -102,7 +102,7 @@ void EngineControl_A380X::update() {
   updateFuel(deltaTime);
 
   // Update thrust limits while considering the current bleed air settings (packs, nai, wai)
-  const int packs = (simData.packsState[1]->get() > 0.5 || simData.packsState[2]->get() > 0.5) ? 1 : 0;
+  const int packs = (simData.packsState[0]->get() || simData.packsState[1]->get()) ? 1 : 0;
   const int nai   = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5     //
                    || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5  //
                    || simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5  //
