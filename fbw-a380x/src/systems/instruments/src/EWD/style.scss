@@ -110,7 +110,7 @@ tspan {
     font-size: 36px !important;
 }
 
-text, tspan {
+text, tspan, span {
     fill: $display-white;
     stroke: none !important;
 
@@ -322,7 +322,7 @@ text, tspan {
   padding-left: 8px;
 }
 
-.MemosFillArea {
+.FillArea {
   flex-grow: 1;
 }
 
@@ -336,4 +336,50 @@ text, tspan {
 
 .LimitationsHeading.Underline {
   text-decoration: underline;
+}
+
+.ProceduresContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+  height: 100%;
+}
+
+.EclLine {
+  display: flex;
+  flex-direction: row;
+  padding: 4px 0px 4px 0px;
+  margin-left: 20px;
+  height: 34px;
+  align-items: center;
+  border: 2px solid transparent;
+  color: $display-cyan;
+}
+
+.EclLine.ChecklistMenuItem {
+  color: $display-cyan !important;
+}
+
+.EclLine.ChecklistMenuItem.Completed {
+  color: $display-grey !important;
+}
+
+.EclLine.Active {
+  border: 2px solid $display-cyan;
+}
+
+.EclLine.Headline {
+  color: $display-white !important;
+  text-decoration: underline;
+}
+
+.EclLineCheckboxArea {
+  text-align: center;
+  justify-content: center;
+  width: 40px;
+}
+
+.EclLineText {
+  margin-left: 10px;
+  font-size: 26px;
 }

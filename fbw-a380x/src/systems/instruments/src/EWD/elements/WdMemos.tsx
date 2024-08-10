@@ -5,6 +5,7 @@ import {
   EventBus,
   FSComponent,
   Subject,
+  Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
@@ -13,6 +14,7 @@ import { EcamMemos } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdMemosProps {
   bus: EventBus;
+  visible: Subscribable<boolean>;
 }
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
@@ -67,7 +69,7 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
   render() {
     return (
       <>
-        <div class="MemosContainer">
+        <div class="MemosContainer" style={{ display: this.props.visible.map((it) => (it ? 'block' : 'none')) }}>
           <div class="MemosDividedArea">
             <div class="MemosLeft">
               <svg ref={this.memosLeftSvgRef} version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -80,7 +82,7 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
               </svg>
             </div>
           </div>
-          <div class="MemosFillArea" />
+          <div class="FillArea" />
         </div>
       </>
     );

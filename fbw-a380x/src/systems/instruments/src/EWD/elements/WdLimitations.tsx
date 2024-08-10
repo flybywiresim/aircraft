@@ -4,7 +4,10 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
+  Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
@@ -13,6 +16,7 @@ import { EcamLimitations } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdLimitationsProps {
   bus: EventBus;
+  visible: Subscribable<boolean>;
 }
 
 export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
@@ -34,7 +38,7 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
 
   private readonly limitationsRightFormatString = Subject.create('');
 
-  private readonly limitationsDisplay = Subject.create('none');
+  private readonly limitationsDisplay = Subject.create(false);
 
   private update() {
     this.limitationsLeftFormatString.set(
@@ -57,9 +61,7 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
     }, 150);
 
     this.limitationsDisplay.set(
-      this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0
-        ? 'block'
-        : 'none',
+      this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0,
     );
   }
 
@@ -73,7 +75,16 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
   render() {
     return (
       <>
-        <div class="LimitationsContainer" style={{ display: this.limitationsDisplay }}>
+        <div
+          class="LimitationsContainer"
+          style={{
+            display: MappedSubject.create(
+              SubscribableMapFunctions.and(),
+              this.limitationsDisplay,
+              this.props.visible,
+            ).map((it) => (it ? 'block' : 'none')),
+          }}
+        >
           <span class="LimitationsHeading Underline">LIMITATIONS</span>
           <div class="MemosDividedArea">
             <div class="MemosLeft">
@@ -89,7 +100,7 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
               </svg>
             </div>
           </div>
-          <div class="MemosFillArea" />
+          <div class="FillArea" />
         </div>
       </>
     );

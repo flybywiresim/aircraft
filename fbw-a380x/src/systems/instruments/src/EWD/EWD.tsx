@@ -11,6 +11,8 @@ import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
 import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EcamAbnormalSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
+import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
@@ -39,12 +41,16 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     Subject.create(false),
   ];
 
+  private readonly normalChecklistsVisible = ConsumerSubject.create(null, false);
+
+  private readonly memosLimitationVisible = this.normalChecklistsVisible.map((v) => !v);
+
   private readonly abnormalDebugLine = ConsumerSubject.create(null, 0);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<EwdSimvars>();
+    const sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
 
     this.engineStateSubs[0].setConsumer(sub.on('engine_state_1').whenChanged());
     this.engineStateSubs[1].setConsumer(sub.on('engine_state_2').whenChanged());
@@ -52,6 +58,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
 
     this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
+
+    this.normalChecklistsVisible.setConsumer(sub.on('fws_show_normal_checklists').whenChanged());
 
     this.abnormalDebugLine.setConsumer(sub.on('abnormal_debug_line').whenChanged());
   }
@@ -177,9 +185,9 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
             </svg>
           </div>
           <div class="WarningDisplayArea">
-            <WdLimitations bus={this.props.bus} />
-            <WdMemos bus={this.props.bus} />
-            <div class="VerticalFill" />
+            <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
+            <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
+            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} />
             <div class="StsArea">
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
                 <FormattedFwcText
