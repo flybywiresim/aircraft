@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 /** All normal procedures (checklists, via ECL) should be here. */
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
@@ -47,7 +47,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'NAV',
         sensed: true,
       },
-      { name: '', labelNotCompleted: '', sensed: true, color: 'separation_line' },
+      { name: '', labelNotCompleted: '', sensed: true, style: ChecklistLineStyle.SeparationLine },
       {
         name: 'WINDOWS/DOORS',
         labelNotCompleted: 'CLOSE (BOTH)',
@@ -133,7 +133,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'T.O',
-        color: 'white_underlined',
+        style: ChecklistLineStyle.SubHeadline,
         labelNotCompleted: '',
         sensed: true,
       },
@@ -163,7 +163,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'NORMAL',
         sensed: true,
       },
-      { name: '', color: 'separation_line', labelNotCompleted: '', sensed: true },
+      { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
       {
         name: 'T.O RWY',
         labelNotCompleted: '___ CONFIRM (BOTH)',
@@ -206,7 +206,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'OFF',
         sensed: true,
       },
-      { name: '', color: 'separation_line', labelNotCompleted: '', sensed: true },
+      { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
       {
         name: 'BARO REF VALUE',
         labelNotCompleted: '____ SET (BOTH)',
@@ -268,7 +268,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'AS RQRD',
         sensed: false,
       },
-      { name: 'LDG', color: 'white_underlined', sensed: false, labelNotCompleted: '' },
+      { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: false, labelNotCompleted: '' },
       {
         name: 'SIGNS',
         labelNotCompleted: 'ON',

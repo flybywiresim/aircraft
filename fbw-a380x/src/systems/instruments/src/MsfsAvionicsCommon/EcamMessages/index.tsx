@@ -392,6 +392,17 @@ export const EcamInopSys: { [n: number]: string } = {
   341300003: '\x1b<4mPRED W/S 1+2',
 };
 
+export enum ChecklistLineStyle {
+  Standard = 'Standard',
+  Cyan = 'Cyan',
+  Green = 'Green',
+  Amber = 'Amber',
+  Headline = 'Headline',
+  SubHeadline = 'SubHeadline',
+  SeparationLine = 'SeparationLine',
+  ChecklistMenuItem = 'ChecklistMenuItem',
+}
+
 interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
   name: string;
@@ -399,10 +410,10 @@ interface AbstractChecklistItem {
   sensed: boolean;
   /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
   level?: number;
-  /** Manually define color. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
-  color?: 'standard' | 'cyan' | 'green' | 'amber' | 'white_underlined' | 'separation_line';
+  /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
+  style?: ChecklistLineStyle;
 }
-interface ChecklistAction extends AbstractChecklistItem {
+export interface ChecklistAction extends AbstractChecklistItem {
   /** Label at the end of the line if action is not completed. */
   labelNotCompleted: string;
   /** Label after "name" if action is completed. Optional, only fill if different from "labelNotCompleted". */

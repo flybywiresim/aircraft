@@ -2835,7 +2835,7 @@ export class FwsCore implements Instrument {
                 : ` .......... ${it.labelNotCompleted}`
               : '';
             console.log(
-              `%c${'  '.repeat(it.level ?? 0)} ${it.sensed ? (val.itemsCompleted[itemIdx] ? 'X' : 'O') : ' '} ${it.name} ${cpl} ${it.color ? `(${it.color})` : ''}`,
+              `%c${'  '.repeat(it.level ?? 0)} ${it.sensed ? (val.itemsCompleted[itemIdx] ? 'X' : 'O') : ' '} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
               'font-family:monospace; font-weight: bold',
             );
           }

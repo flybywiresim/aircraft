@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -206,12 +206,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -222,12 +222,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -238,12 +238,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -254,12 +254,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -270,12 +270,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -286,12 +286,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -302,12 +302,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -318,12 +318,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DELAY BRAKING UNTIL NLG TOUCHDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -363,7 +363,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'NO LOSS IN BRK EFFICIENCY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -375,7 +375,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'NO LOSS IN BRK EFFICIENCY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -412,7 +412,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'NO LOSS IN BRK EFFICIENCY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -461,7 +461,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'NO LOSS IN BRK EFFICIENCY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -540,42 +540,42 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'ON BRK (1/2)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (3/4)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (5/6)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (7/8)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (9/10)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (11/12)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (13/14)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'ON BRK (15/16)',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
     ],
   },
@@ -592,31 +592,31 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         // If one or more RDC channels B are lost:
         name: 'SYS B REDUNDANCY LOST',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         // If RDC channel 3A is lost:
         name: 'SYS A REDUNDANCY LOST ON L BODY',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         // If RDC channel 2A is lost
         name: 'SYS A REDUNDANCY LOST ON R BODY ',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         // If RDC channel (2A+3A) is lost:
         name: 'SYS B REDUNDANCY LOST ON L + R BODY',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         // If RDC channel 1A is lost:
         name: 'SYS A REDUNDANCY LOST ON WING',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
     ],
   },
@@ -738,7 +738,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -822,7 +822,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
 
       // if all doors are closed
@@ -929,7 +929,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -955,7 +955,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT N/W STEER LOSS',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -966,7 +966,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT N/W STEER LOSS',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -977,7 +977,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'B/W STEER NOT CENTERED',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       // If all L/G are already locked down when the alert is activated, and at least one engine isrunning:
 
@@ -1019,7 +1019,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'POTENTIAL DAMAGE TO NOSE L/G',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -1031,7 +1031,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'N/W STEER POWERED',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FOR TOWING : ALL ENG MASTERS OFF',
@@ -1051,7 +1051,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'N/W STEER POWERED',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FOR TOWING : ALL ENG MASTERS OFF',
@@ -1082,7 +1082,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         // If the normal or the alternate NW steering selector valves is stuck open
         name: 'N/W STEER POWERED',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         // If only the normal NW steering selector valve is stuck open

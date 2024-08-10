@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -35,13 +35,13 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
         level: 1,
       },
@@ -80,13 +80,13 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         level: 1,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
         level: 1,
       },
@@ -126,19 +126,19 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
         level: 1,
       },
@@ -178,19 +178,19 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
         level: 1,
       },
@@ -230,19 +230,19 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         level: 1,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
         level: 1,
       },
@@ -279,7 +279,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'PFD BKUP SPEED & ALT AVAIL',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       // No anemometric failure detection for now
     ],
@@ -560,7 +560,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'STANDBY NAV IN TRUE GPS TRK',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ], // TODO add "If one of the affected IR is available in ATT mode" when/if ATT mode is implemented
   },
@@ -604,37 +604,37 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       {
         name: 'IR 1 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 2 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 3 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1+2 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1+3 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 2+3 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1+2+3 IN ALIGN',
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ], // Only EXCESS MOTION for now
   },
