@@ -13,7 +13,7 @@ import {
 import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
-import { EcamLimitations, EcamMemos } from '@instruments/common/EcamMessages';
+import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
 
 export class LowerArea extends DisplayComponent<{
@@ -29,7 +29,7 @@ export class LowerArea extends DisplayComponent<{
         <Memos bus={this.props.bus} />
         <FlapsIndicator bus={this.props.bus} />
 
-        <Limitations visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
+        <Limitations bus={this.props.bus} visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
       </g>
     );
   }
@@ -489,8 +489,8 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscribable<boolean> }> {
   private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
 
-  private static lineSubject(index: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, sub: EventSubscriber<FwsPfdSimvars>) {
-    return ConsumerSubject.create(sub.on(`limitationsLine${index}`).whenChanged(), 0).map(
+  private static lineSubject(index: number, sub: EventSubscriber<FwsPfdSimvars>) {
+    return ConsumerSubject.create(sub.on(`limitations_line_${index}`).whenChanged(), 0).map(
       (it) => EcamLimitations[padMemoCode(it)] ?? '',
     );
   }
@@ -521,15 +521,15 @@ const padMemoCode = (code: number) => code.toString().padStart(9, '0');
 class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
 
-  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memoLine1').whenChanged(), 0).map(
+  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memo_line_1').whenChanged(), 0).map(
     (it) => EcamMemos[padMemoCode(it)] ?? '',
   );
 
-  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memoLine2').whenChanged(), 0).map(
+  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memo_line_2').whenChanged(), 0).map(
     (it) => EcamMemos[padMemoCode(it)] ?? '',
   );
 
-  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memoLine3').whenChanged(), 0).map(
+  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memo_line_3').whenChanged(), 0).map(
     (it) => EcamMemos[padMemoCode(it)] ?? '',
   );
 

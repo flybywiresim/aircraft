@@ -1,6 +1,6 @@
 import React from 'react';
-import FormattedFwcText from '../../../Common/EcamMessages/EWDMessageParser';
-import { EcamInfos, EcamInopSys } from '../../../Common/EcamMessages';
+import FormattedFwcText from '../../../Common/ReactEwdMessageParser';
+import { EcamInfos, EcamInopSys } from '../../../MsfsAvionicsCommon/EcamMessages';
 import { PageTitle } from '../Generic/PageTitle';
 import { StatusTitle } from 'instruments/src/SD/Pages/Status/elements/StatusTitle';
 import { useSimVar, useSimVarList } from '@flybywiresim/fbw-sdk';
@@ -33,24 +33,30 @@ export const StatusPage: React.FC = () => {
     const [pfdLimitations]  = useSimVar('L:A32NX_PFD_LIMITATIONS_LINE_1', 'number', 1000);
     const limitationsVisible = ewdLimitationsAllPhases || ewdLimitationsApprLdg || pfdLimitations;
 
+    const statusNormal = !(limitationsVisible || maxInopLines > 0);
+
     return (
         <>
             <PageTitle x={6} y={29}>STATUS</PageTitle>
-            <g transform='translate(6 40)' visibility={limitationsVisible ? 'visible' : 'hidden'}>
-                <FormattedFwcText x={0} y={50} message={'\x1b<5mLIMITATIONS'} />
-            </g>
-            <g transform='translate(6 120)'>
-                <StatusTitle x={378} y={2} separatorLineWidth={335}>INFO</StatusTitle>
-                {infos.map((v, idx) => EcamInfos[padEWDCode(v)] && <FormattedFwcText x={0} y={idx * 30 + 40} message={EcamInfos[padEWDCode(v)]} />)}
-            </g>
-            <g transform='translate(6 300)'>
-                <StatusTitle x={378} y={2} separatorLineWidth={300}>INOP SYS</StatusTitle>
-                <text x={190} y={40} className='F26 White MiddleAlign'>ALL PHASES</text>
-                <text x={567} y={40} className='F26 White MiddleAlign'>APPR & LDG</text>
-                <line x1={378} y1={30} x2={378} y2={25 + 30 * (maxInopLines + 1)} style={{ stroke: 'white', strokeWidth: 2 }} />
-                {inopAllPhases.map((v, idx) => EcamInopSys[padEWDCode(v)] && <FormattedFwcText x={0} y={idx * 30 + 80} message={EcamInopSys[padEWDCode(v)]} />)}
-                {inopApprLdg.map((v, idx) => EcamInopSys[padEWDCode(v)] && <FormattedFwcText x={410} y={idx * 30 + 80} message={EcamInopSys[padEWDCode(v)]} />)}
-            </g>
+            {!statusNormal &&
+            <>
+                <g transform='translate(6 40)' visibility={limitationsVisible ? 'visible' : 'hidden'}>
+                    <FormattedFwcText x={0} y={50} message={'\x1b<5mLIMITATIONS'} />
+                </g>
+                <g transform='translate(6 120)'>
+                    <StatusTitle x={378} y={2} separatorLineWidth={335}>INFO</StatusTitle>
+                    {infos.map((v, idx) => EcamInfos[padEWDCode(v)] && <FormattedFwcText x={0} y={idx * 30 + 40} message={EcamInfos[padEWDCode(v)]} />)}
+                </g>
+                <g transform='translate(6 300)'>
+                    <StatusTitle x={378} y={2} separatorLineWidth={300}>INOP SYS</StatusTitle>
+                    <text x={190} y={40} className='F26 White MiddleAlign'>ALL PHASES</text>
+                    <text x={567} y={40} className='F26 White MiddleAlign'>APPR & LDG</text>
+                    <line x1={378} y1={30} x2={378} y2={25 + 30 * (maxInopLines + 1)} style={{ stroke: 'white', strokeWidth: 2 }} />
+                    {inopAllPhases.map((v, idx) => EcamInopSys[padEWDCode(v)] && <FormattedFwcText x={0} y={idx * 30 + 80} message={EcamInopSys[padEWDCode(v)]} />)}
+                    {inopApprLdg.map((v, idx) => EcamInopSys[padEWDCode(v)] && <FormattedFwcText x={410} y={idx * 30 + 80} message={EcamInopSys[padEWDCode(v)]} />)}
+                </g>
+            </>}
+            {statusNormal && <text x={384} y={343} className='F26 Green MiddleAlign'>NORMAL</text>}
         </>
     );
 }

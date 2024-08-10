@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from '@instruments/common/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -674,7 +674,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FOR AUTOLAND: MAN ROLL OUT ONLY', // Always completed
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -685,18 +685,18 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FOR TCAS ALERT', // Always completed
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'AP & FD', // Always completed
         sensed: true,
         labelNotCompleted: 'OFF',
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FLY MANUALLY TCAS RA ORDER', // Always completed
         sensed: true,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -745,17 +745,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMC A+C FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC A+B FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC A FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMS SWTG',
@@ -771,17 +771,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMC A+B FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC B+C FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC B FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMS SWTG',
@@ -797,7 +797,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'ALL FMCs FAULT',
         sensed: false,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMS SWTG',
@@ -836,22 +836,22 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'UPPER DECK PA FAULT',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'MAIN DECK PA FAULT',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'LOWER DECK PA FAULT',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'CABIN INTERPHONE FAULT',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
     ],
   },
@@ -862,12 +862,12 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'PA DEGRADED',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
       {
         name: 'CABIN INTERPHONE DEGRADED',
         sensed: true,
-        color: 'amber',
+        style: ChecklistLineStyle.Amber,
       },
     ],
   },
@@ -893,12 +893,12 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'ATC COM VOICE ONLY',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'CPNY COM VOICE ONLY',
         sensed: true,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },
@@ -1025,17 +1025,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'NO VOICE COM AVAIL', // If SATCOM datalink avail
         sensed: true,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'SATCOM DATALINK AVAIL', // If SATCOM datalink avail
         sensed: true,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'NO COM AVAIL', // If SATCOM datalink not avail
         sensed: true,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
     ],
   },

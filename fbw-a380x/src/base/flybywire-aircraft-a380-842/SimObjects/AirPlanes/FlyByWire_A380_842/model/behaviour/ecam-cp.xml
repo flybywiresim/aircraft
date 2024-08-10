@@ -196,6 +196,16 @@
             <SIMVAR>A32NX_BTN_RCL</SIMVAR>
         </UseTemplate>
 
+        <!-- ECAM C/L -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CL</BASE_NAME>
+            <PART_ID>ECAM_CL</PART_ID>
+            <TOOLTIPID>ECAM C/L</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CL</SIMVAR>
+        </UseTemplate>
+
         <!-- ECAM ECL CAPT -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -244,6 +254,16 @@
             <PART_ID>ECAM_ABNPROC</PART_ID>
             <TOOLTIPID>ECAM checklist abnormal procedures</TOOLTIPID>
             <SIMVAR>A32NX_BTN_ABNPROC</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM EMER CANC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>EMERCANC</BASE_NAME>
+            <PART_ID>ECAM_EMERCANC</PART_ID>
+            <TOOLTIPID>ECAM emergency cancel</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_EMERCANC</SIMVAR>
         </UseTemplate>
 
         <!-- SD ENG -->
@@ -409,6 +429,16 @@
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
 
             <TOOLTIPID>SELECT STS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- ECAM MORE -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>MORE</BASE_NAME>
+            <PART_ID>ECAM_MORE</PART_ID>
+            <TOOLTIPID>ECAM MORE...</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_MORE</SIMVAR>
         </UseTemplate>
 
         <!-- EWD POTENTIOMETER -->

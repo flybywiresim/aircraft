@@ -199,9 +199,9 @@ export class LegacyGpws {
             radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450
             && !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool')
         ) { // Activate between 10 - 2450 radio alt unless SYS is off
-            const FlapPushButton = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool');
+            const flapsThreeSelected = SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'Bool');
             const FlapPosition = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
-            const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
+            const FlapsInLandingConfig = flapsThreeSelected ? (FlapPosition === 3) : (FlapPosition === 4); // fixme should be actual flap angle
             const vSpeed = Simplane.getVerticalSpeed();
             const Airspeed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'Knots');
             const gearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'Percent') > 0.9;

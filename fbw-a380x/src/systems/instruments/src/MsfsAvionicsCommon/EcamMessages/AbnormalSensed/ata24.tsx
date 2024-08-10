@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from '@instruments/common/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -31,7 +31,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         // on ground
         name: 'LAST ENG SHUTDOWN : ENG 4',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -42,12 +42,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'ATC COM VOICE ONLY',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'AP : SIDESTICK LOCKING DEVICE NOT AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       // Next two only if PRIM 2 Failed
       {
@@ -57,7 +57,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST: AFFECTED',
@@ -96,7 +96,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -108,13 +108,13 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENG SHUTDOWN :',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: false,
         labelNotCompleted: 'OFF',
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -182,12 +182,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'OIS ON BAT',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'MID TKs NOT USABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FEED TK 4 : 1300 KG MAX NOT USABLE',
@@ -221,7 +221,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'AVOID NEG G LOAD',
@@ -254,7 +254,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'AVOID NEG G LOAD',
@@ -288,7 +288,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
@@ -329,7 +329,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'LAST ENG SHUTDOWN : ENG 1',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'ALL CROSSFEEDS',
@@ -377,7 +377,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'USE TRIM TK XFR FOR CG IF NECESSARY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FEED TK 1: 1300 KG MAX NOT USABLE',
@@ -409,7 +409,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'AVOID NEG G LOAD',
@@ -438,7 +438,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT NORM COLLECTOR CELL DEPLETION',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'AVOID NEG G LOAD',
@@ -561,7 +561,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'F/O BARO REF : STD ONLY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'USE VHF 1 OR 3',
@@ -580,12 +580,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DU RECONF PB AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'F/O KEYBOARD CURSOR CTL AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
 
       // Next two only if PRIM 3 Failed
@@ -596,7 +596,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST: AFFECTED',
@@ -627,7 +627,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'LAST ENG SHUTDOWN : ENG 1',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'VENT AVNCS EXTRACT', // in flight
@@ -663,7 +663,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -690,12 +690,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENGINE SHUTDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -747,7 +747,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -759,12 +759,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENGINE SHUTDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -905,7 +905,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'AP: SIDESTICK LOCKING DEVICE NOT AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
 
       // Next two only if PRIM 2 Failed
@@ -916,7 +916,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST: AFFECTED',
@@ -931,7 +931,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -943,12 +943,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENGINE SHUTDOWN',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -989,7 +989,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'OIS ON BAT',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'INR TKs NOT USABLE',
@@ -1016,7 +1016,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'USE TRIM TK XFR FOR CG IF NECESSARY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
 
       // If L/G is not down and locked:
@@ -1032,7 +1032,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
@@ -1056,7 +1056,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -1092,7 +1092,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'SATCOM DATALINK AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'F/O HEADSETS',
@@ -1102,27 +1102,27 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'SQUAWK AVAIL ON MFD SURV PAGE ONLY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'DU RECONF P/B AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'ECP KEYS NOT AVAIL :',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FOR SYS PAGES : "ALL" AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'INR TKs NOT USABLE',
@@ -1147,7 +1147,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FOB & GW COMPUTED FROM FU',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL CONSUMPT INCRSD',
@@ -1156,7 +1156,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'SLATS SLOW',
@@ -1185,7 +1185,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'F/O BARO REF : STD ONLY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'USE VHF 1 OR 3',
@@ -1194,12 +1194,12 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DU RECONF P/B AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'F/O KEYBOARD CURSOR CTL AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
 
       // Next two only if PRIM 3 Failed
@@ -1210,7 +1210,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'LDG DIST: AFFECTED',
@@ -1225,7 +1225,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -1250,7 +1250,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'CAPT BARO REF : STD ONLY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'HEADSETS',
@@ -1273,32 +1273,32 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'SQUAWK AVAIL ON MFD SURV PAGE ONLY',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'DU RECONF P/B AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'CAPT KEYBOARD CURSOR CTL AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'ECP KEYS NOT AVAIL :',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FOR SYS PAGES : "ALL" AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'SLATS SLOW',
@@ -1317,7 +1317,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -1329,13 +1329,13 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENG SHUTDOWN :',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: false,
         labelNotCompleted: 'OFF',
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -1365,28 +1365,28 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'DU RECONF P/B AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'CAPT KEYBOARD CURSOR CTL AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
 
       {
         name: 'ECP KEYS NOT AVAIL :',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FOR SYS PAGES : "ALL" AVAIL',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'SLATS SLOW',
@@ -1405,7 +1405,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'EXPECT FEED TKS IMBALANCE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'FUEL MAN BALANCING PROC',
@@ -1417,13 +1417,13 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE LAST ENG SHUTDOWN :',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: false,
         labelNotCompleted: 'OFF',
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
   },
@@ -1832,7 +1832,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FMS PRED UNRELIABLE',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
       {
         name: 'IF SEVERE ICE ACCRETION: FLAP LEVER 3 FOR LDG',

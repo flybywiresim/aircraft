@@ -26,7 +26,7 @@ import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/Ca
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
-import { PseudoFWC } from 'systems-host/systems/PseudoFWC';
+import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -82,7 +82,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
-  private readonly pseudoFwc = new PseudoFWC(this.bus, this);
+  private readonly fwsCore = new FwsCore(this.bus, this);
 
   /**
    * "mainmenu" = 0
@@ -103,7 +103,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Amu2', this.amu2, true);
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
-    this.backplane.addInstrument('Fwc', this.pseudoFwc);
+    this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);

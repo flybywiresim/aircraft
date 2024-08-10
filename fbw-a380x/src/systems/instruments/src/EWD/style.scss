@@ -1,5 +1,44 @@
-@import "../Common/definitions";
-@import "../Common/gauges";
+@import "../MsfsAvionicsCommon/definitions";
+@import "../MsfsAvionicsCommon/gauges";
+
+@mixin Blink10SecondsFill($color) {
+    @keyframes pulsing {
+        100% {
+            fill: $color;
+        }
+        51% {
+            fill: $color;
+        }
+        50% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+        1% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+    }
+
+    animation: pulsing 1s 10;
+}
+
+@font-face {
+    font-family: "Ecam";
+    //noinspection CssUnknownTarget
+    src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+.ewd-svg {
+    position: absolute;
+    width: 768px;
+    background: $display-background;
+    font-family: "Ecam", monospace;
+}
+
+.HiddenElement {
+    display: none;
+}
+
 
 .EWDWarningTextLeft {
     fill: white;
@@ -71,7 +110,7 @@ tspan {
     font-size: 36px !important;
 }
 
-text, tspan {
+text, tspan, span {
     fill: $display-white;
     stroke: none !important;
 
@@ -79,7 +118,7 @@ text, tspan {
         font-size: 24px;
         letter-spacing: 1.75px;
     }
-    
+
     &.Cyan {
         fill: $display-cyan !important;
     }
@@ -106,6 +145,10 @@ text, tspan {
 
     &.End {
         text-anchor: end !important;
+    }
+
+    &.IdleTextPulse {
+        @include Blink10SecondsFill($display-green);
     }
 
     &.Underline {
@@ -211,6 +254,132 @@ text, tspan {
     opacity: 0.2
 }
 
+.ewd-main {
+    position: absolute;
+    width: 768px;
+    height: 1024px;
+    /* 1:1.33 W:H  */
+    background: $display-background;
+    font-family: "Ecam", monospace !important;
+    display: flex;
+    flex-direction: column;
+}
 
+.EngineDisplayArea {
+    display: flex;
+    height: 379px;
+    margin: 0px 8px 0px 8px;
+    border-bottom: 4px solid $display-light-grey;
+}
 
+.WarningDisplayArea {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0px 8px 0px 8px;
+}
 
+.VerticalFill {
+    display: flex;
+    flex-grow: 1;
+}
+
+.StsArea {
+  height: 40px;
+}
+
+.MemosContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+}
+
+.LimitationsContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.MemosDividedArea {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 4px;
+}
+
+.MemosLeft {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-right: 2px solid lightgrey;
+}
+
+.MemosRight {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-left: 8px;
+}
+
+.FillArea {
+  flex-grow: 1;
+}
+
+.LimitationsHeading {
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+  letter-spacing: 1.75px;
+  margin-bottom: 4px;
+}
+
+.LimitationsHeading.Underline {
+  text-decoration: underline;
+}
+
+.ProceduresContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+  height: 100%;
+}
+
+.EclLine {
+  display: flex;
+  flex-direction: row;
+  padding: 4px 0px 4px 0px;
+  margin-left: 20px;
+  height: 34px;
+  align-items: center;
+  border: 2px solid transparent;
+  color: $display-cyan;
+}
+
+.EclLine.ChecklistMenuItem {
+  color: $display-cyan !important;
+}
+
+.EclLine.ChecklistMenuItem.Completed {
+  color: $display-grey !important;
+}
+
+.EclLine.Active {
+  border: 2px solid $display-cyan;
+}
+
+.EclLine.Headline {
+  color: $display-white !important;
+  text-decoration: underline;
+}
+
+.EclLineCheckboxArea {
+  text-align: center;
+  justify-content: center;
+  width: 40px;
+}
+
+.EclLineText {
+  margin-left: 10px;
+  font-size: 26px;
+}
