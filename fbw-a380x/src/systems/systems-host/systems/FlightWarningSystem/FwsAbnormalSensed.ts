@@ -1137,6 +1137,134 @@ export class FwsAbnormalSensed {
       inopSysAllPhases: () => [],
     },
     // 29 Hydraulic
+    290800019: {
+      // G RSVR AIR PRESS LO
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.greenRsvLoAirPressure,
+      whichItemsToShow: () => [
+        true,
+        this.fws.engine1Running.get(),
+        this.fws.engine2Running.get(),
+        this.fws.enginesOffAndOnGroundSignal.read(),
+      ],
+      whichItemsCompleted: () => [
+        false,
+        !this.fws.eng1APumpAuto.get() && !this.fws.eng1BPumpAuto.get(),
+        !this.fws.eng2APumpAuto.get() && !this.fws.eng2BPumpAuto.get(),
+        !this.fws.greenAPumpAuto.get() && !this.fws.greenBPumpAuto.get(),
+      ],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800020: {
+      // Y RSVR AIR PRESS LO
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.yellowRsvLoAirPressure,
+      whichItemsToShow: () => [
+        true,
+        this.fws.engine3Running.get(),
+        this.fws.engine4Running.get(),
+        this.fws.enginesOffAndOnGroundSignal.read(),
+      ],
+      whichItemsCompleted: () => [
+        false,
+        !this.fws.eng3APumpAuto.get() && !this.fws.eng3BPumpAuto.get(),
+        !this.fws.eng4APumpAuto.get() && !this.fws.eng4BPumpAuto.get(),
+        !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
+      ],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800021: {
+      // G RSVR LEVEL LO
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.greenRsvLoLevel,
+      whichItemsToShow: () => [
+        this.fws.engine1Running.get(),
+        this.fws.engine2Running.get(),
+        true,
+        true,
+        this.fws.enginesOffAndOnGroundSignal.read(),
+      ],
+      whichItemsCompleted: () => [
+        !this.fws.eng1APumpAuto.get() && !this.fws.eng1BPumpAuto.get(),
+        !this.fws.eng2APumpAuto.get() && !this.fws.eng2BPumpAuto.get(),
+        this.fws.eng1PumpDisc.get(),
+        this.fws.eng2PumpDisc.get(),
+        !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
+      ],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800022: {
+      // Y RSVR LEVEL LO
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.yellowRsvLoLevel,
+      whichItemsToShow: () => [
+        this.fws.engine3Running.get(),
+        this.fws.engine4Running.get(),
+        true,
+        true,
+        this.fws.enginesOffAndOnGroundSignal.read(),
+      ],
+      whichItemsCompleted: () => [
+        !this.fws.eng3APumpAuto.get() && !this.fws.eng3BPumpAuto.get(),
+        !this.fws.eng4APumpAuto.get() && !this.fws.eng4BPumpAuto.get(),
+        this.fws.eng3PumpDisc.get(),
+        this.fws.eng4PumpDisc.get(),
+        !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
+      ],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800031: {
+      // G SYS OVHT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.greenRsvOverheat,
+      whichItemsToShow: () => [
+        this.fws.engine1Running.get(),
+        this.fws.engine2Running.get(),
+        true,
+        true,
+        this.fws.enginesOffAndOnGroundSignal.read(),
+      ],
+      whichItemsCompleted: () => [
+        !this.fws.eng1APumpAuto.get() && !this.fws.eng1BPumpAuto.get(),
+        !this.fws.eng2APumpAuto.get() && !this.fws.eng2BPumpAuto.get(),
+        this.fws.eng1PumpDisc.get(),
+        this.fws.eng2PumpDisc.get(),
+        !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
+      ],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800032: {
+      // Y SYS OVHT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.yellowRsvOverheat,
+      whichItemsToShow: () => [
+        this.fws.engine3Running.get(),
+        this.fws.engine4Running.get(),
+        true,
+        true,
+        this.fws.enginesOffAndOnGroundSignal.read(),
+      ],
+      whichItemsCompleted: () => [
+        !this.fws.eng3APumpAuto.get() && !this.fws.eng3BPumpAuto.get(),
+        !this.fws.eng4APumpAuto.get() && !this.fws.eng4BPumpAuto.get(),
+        this.fws.eng3PumpDisc.get(),
+        this.fws.eng4PumpDisc.get(),
+        !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
+      ],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
     290800035: {
       // G SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
@@ -1182,14 +1310,10 @@ export class FwsAbnormalSensed {
     290800039: {
       // G + Y SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.greenLoPressure,
-        this.fws.yellowLoPressure,
-      ),
+      simVarIsActive: this.fws.greenYellowLoPressure,
       whichItemsToShow: () => [
         true,
-        this.fws.flapsHandle.get() <= 3,
+        this.fws.flapsHandle.get() <= 3, // fix me use actual flap angle
         true,
         true,
         true,
@@ -1199,7 +1323,7 @@ export class FwsAbnormalSensed {
         true,
         true,
         true,
-      ], // fix me use actual flap angle
+      ],
       whichItemsCompleted: () => [
         !this.fws.eng1APumpAuto.get() &&
           !this.fws.eng1BPumpAuto.get() &&

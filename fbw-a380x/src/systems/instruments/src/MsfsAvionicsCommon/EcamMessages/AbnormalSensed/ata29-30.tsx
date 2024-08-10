@@ -233,6 +233,10 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
+        name : 'IF G SYS PRESSURE FLUCTUATES',
+        sensed : false,
+      },
+      {
         name: 'G ENG 1 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
@@ -254,6 +258,10 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mHYD\x1bm Y RSVR AIR PRESS LO',
     sensed: true,
     items: [
+      {
+        name : 'IF Y SYS PRESSURE FLUCTUATES',
+        sensed : false,
+      },
       {
         name: 'Y ENG 3 PMP A AND B',
         sensed: true,

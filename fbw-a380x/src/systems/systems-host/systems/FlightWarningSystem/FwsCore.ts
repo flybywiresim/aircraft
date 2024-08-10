@@ -718,35 +718,7 @@ export class FwsCore implements Instrument {
 
   /* HYDRAULICS */
 
-  public readonly blueElecPumpPBAuto = Subject.create(false);
-
-  public readonly blueLP = Subject.create(false);
-
-  public readonly blueRvrLow = Subject.create(false);
-
-  public readonly blueRvrOvht = Subject.create(false);
-
-  public readonly eng1pumpPBisAuto = Subject.create(false);
-
-  public readonly eng2pumpPBisAuto = Subject.create(false);
-
-  public readonly greenHydEng1PBAuto = Subject.create(false);
-
-  public readonly greenLP = Subject.create(false);
-
-  public readonly greenRvrOvht = Subject.create(false);
-
-  public readonly hydPTU = Subject.create(false);
-
-  public readonly ptuAuto = Subject.create(false);
-
   public readonly ratDeployed = Subject.create(0);
-
-  public readonly yellowLP = Subject.create(false);
-
-  public readonly yellowRvrOvht = Subject.create(false);
-
-  public readonly yepumpPBisAuto = Subject.create(false);
 
   public readonly greenAPumpOn = Subject.create(false);
 
@@ -790,7 +762,21 @@ export class FwsCore implements Instrument {
 
   public readonly yellowLoPressure = Subject.create(false);
 
+  public readonly yellowRsvLoAirPressure = Subject.create(false);
+
+  public readonly yellowRsvOverheat = Subject.create(false);
+
+  public readonly yellowRsvLoLevel = Subject.create(false);
+
   public readonly greenLoPressure = Subject.create(false);
+
+  public readonly greenRsvLoAirPressure = Subject.create(false);
+
+  public readonly greenRsvOverheat = Subject.create(false);
+
+  public readonly greenRsvLoLevel = Subject.create(false);
+
+  public readonly greenYellowLoPressure = Subject.create(false);
 
   /* 31 - FWS */
 
@@ -1721,22 +1707,25 @@ export class FwsCore implements Instrument {
     this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool'));
 
-    this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
-    this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
-    this.blueRvrLow.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool'));
-    this.blueRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_RESERVOIR_OVHT', 'bool'));
-    this.eng1pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng2pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool'));
-    this.greenLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool'));
-    this.greenRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
-    this.hydPTU.set(SimVar.GetSimVarValue('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'Bool'));
-    this.ptuAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'bool'));
-    this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_RAT_STOW_POSITION', 'percent over 100'));
-    this.yellowLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool'));
-    this.yellowRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
-    this.yepumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'bool'));
+    const yLoPressure = SimVar.GetSimVarValue('A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
+    const gLoPressure = SimVar.GetSimVarValue('A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
 
-    const blueSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+    this.yellowLoPressure.set(yLoPressure);
+    this.greenLoPressure.set(gLoPressure);
+    this.greenYellowLoPressure.set(yLoPressure && gLoPressure);
+
+    this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
+    this.yellowRsvLoAirPressure.set(
+      SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') && !this.greenYellowLoPressure,
+    );
+    this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW', 'bool'));
+
+    this.greenRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
+    this.greenRsvLoAirPressure.set(
+      SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') && !this.greenYellowLoPressure,
+    );
+    this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW', 'bool'));
+
     const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
     const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
 
@@ -2088,8 +2077,12 @@ export class FwsCore implements Instrument {
     const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
     this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
 
-    const eng1And2NotRunning = !this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get();
-    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && eng1And2NotRunning, deltaTime);
+    const engNotRunning =
+      !this.engine1Running.get() &&
+      !this.engine2Running.get() &&
+      !this.engine3Running.get() &&
+      !this.engine4Running.get();
+    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // Fix me core at above min idle
     const residualPressureSignal = SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_RESIDUAL_PR', 'bool');
     this.excessResidualPr.set(
       this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),
@@ -2252,9 +2245,7 @@ export class FwsCore implements Instrument {
       !(fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false)) &&
         (fcdc1DiscreteWord1.getBitValueOr(23, false) || fcdc2DiscreteWord1.getBitValueOr(23, false)),
     );
-    this.elac1HydConfirmNodeOutput.set(
-      this.elac1HydConfirmNode.write(!greenSysPressurised && !blueSysPressurised, deltaTime),
-    );
+    this.elac1HydConfirmNodeOutput.set(this.elac1HydConfirmNode.write(!greenSysPressurised, deltaTime));
     this.elac1FaultConfirmNodeOutput.set(this.elac1FaultConfirmNode.write(elac1FaultCondition, deltaTime));
 
     // ELAC 2 FAULT computation
@@ -2275,7 +2266,7 @@ export class FwsCore implements Instrument {
         (fcdc1DiscreteWord1.getBitValueOr(24, false) || fcdc2DiscreteWord1.getBitValueOr(24, false)),
     );
     this.elac2HydConfirmNodeOutput.set(
-      this.elac2HydConfirmNode.write((!greenSysPressurised || !yellowSysPressurised) && !blueSysPressurised, deltaTime),
+      this.elac2HydConfirmNode.write(!greenSysPressurised || !yellowSysPressurised, deltaTime),
     );
     this.elac2FaultConfirmNodeOutput.set(this.elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime));
 
@@ -2817,14 +2808,7 @@ export class FwsCore implements Instrument {
 
     if (this.toMemo.get() && this.toConfigTestRaw) {
       // TODO Note that fuel tank low pressure and gravity feed warnings are not included
-      const systemStatus =
-        this.engine1Generator.get() &&
-        this.engine2Generator.get() &&
-        !this.greenLP.get() &&
-        !this.yellowLP.get() &&
-        !this.blueLP.get() &&
-        this.eng1pumpPBisAuto.get() &&
-        this.eng2pumpPBisAuto.get();
+      const systemStatus = this.engine1Generator.get() && this.engine2Generator.get();
 
       const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
       const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
@@ -2871,10 +2855,7 @@ export class FwsCore implements Instrument {
           this.eng4FireDetected.get() ||
           this.mlgFireDetected.get() ||
           this.emergencyGeneratorOn.get() ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
-          (this.greenLP.get() && this.yellowLP.get()) ||
-          (this.yellowLP.get() && this.blueLP.get()) ||
-          (this.greenLP.get() && this.blueLP.get())),
+          (this.engine1State.get() === 0 && this.engine2State.get() === 0)),
     );
 
     // fire always forces the master warning and SC aural on
