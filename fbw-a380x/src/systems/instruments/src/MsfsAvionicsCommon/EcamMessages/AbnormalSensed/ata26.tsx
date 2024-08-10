@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -82,7 +82,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'APU BLEED : DO NOT USE',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
@@ -718,7 +718,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'L/G : KEEP DOWN',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'ATC',
@@ -728,7 +728,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'MAX SPEED : 250/.55',
         sensed: false,
-        color: 'cyan',
+        style: ChecklistLineStyle.Cyan,
       },
       // On ground
       {
@@ -1198,7 +1198,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
     recommendation: 'LAND ASAP',
@@ -1249,7 +1249,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
     recommendation: 'LAND ASAP',
@@ -1300,7 +1300,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'BEFORE CARGO OPENING : PAX DISEMBARK',
         sensed: false,
-        color: 'green',
+        style: ChecklistLineStyle.Green,
       },
     ],
     recommendation: 'LAND ASAP',

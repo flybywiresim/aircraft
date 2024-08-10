@@ -21,7 +21,6 @@ import {
   Arinc429SignStatusMatrix,
   Arinc429Word,
   FrequencyMode,
-  NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -415,6 +414,84 @@ export class FwsCore implements Instrument {
 
   public readonly engine4Running = Subject.create(false);
 
+  public readonly allBatteriesOff = Subject.create(false);
+
+  /* 26 - FIRE */
+
+  public readonly fduDiscreteWord = Arinc429Register.empty();
+
+  public readonly apuFireDetected = Subject.create(false);
+
+  public readonly eng1FireDetected = Subject.create(false);
+
+  public readonly eng2FireDetected = Subject.create(false);
+
+  public readonly eng3FireDetected = Subject.create(false);
+
+  public readonly eng4FireDetected = Subject.create(false);
+
+  public readonly mlgFireDetected = Subject.create(false);
+
+  public readonly apuAgentDischarged = Subject.create(false);
+
+  public readonly eng1Agent1Discharged = Subject.create(false);
+
+  public readonly eng1Agent2Discharged = Subject.create(false);
+
+  public readonly eng2Agent1Discharged = Subject.create(false);
+
+  public readonly eng2Agent2Discharged = Subject.create(false);
+
+  public readonly eng3Agent1Discharged = Subject.create(false);
+
+  public readonly eng3Agent2Discharged = Subject.create(false);
+
+  public readonly eng4Agent1Discharged = Subject.create(false);
+
+  public readonly eng4Agent2Discharged = Subject.create(false);
+
+  public readonly apuLoopAFault = Subject.create(false);
+
+  public readonly apuLoopBFault = Subject.create(false);
+
+  public readonly eng1LoopAFault = Subject.create(false);
+
+  public readonly eng1LoopBFault = Subject.create(false);
+
+  public readonly eng2LoopAFault = Subject.create(false);
+
+  public readonly eng2LoopBFault = Subject.create(false);
+
+  public readonly eng3LoopAFault = Subject.create(false);
+
+  public readonly eng3LoopBFault = Subject.create(false);
+
+  public readonly eng4LoopAFault = Subject.create(false);
+
+  public readonly eng4LoopBFault = Subject.create(false);
+
+  public readonly mlgLoopAFault = Subject.create(false);
+
+  public readonly mlgLoopBFault = Subject.create(false);
+
+  public readonly evacCommand = Subject.create(false);
+
+  public readonly cargoFireAgentDisch = Subject.create(false);
+
+  public readonly cargoFireTest = Subject.create(false);
+
+  public readonly fireButtonEng1 = Subject.create(false);
+
+  public readonly fireButtonEng2 = Subject.create(false);
+
+  public readonly fireButtonEng3 = Subject.create(false);
+
+  public readonly fireButtonEng4 = Subject.create(false);
+
+  public readonly fireButtonAPU = Subject.create(false);
+
+  public readonly allFireButtons = Subject.create(false);
+
   /* 27 - FLIGHT CONTROLS */
 
   public readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
@@ -794,6 +871,8 @@ export class FwsCore implements Instrument {
 
   private onGroundImmediate = false;
 
+  public readonly gearLeverPos = Subject.create(false);
+
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
@@ -813,6 +892,8 @@ export class FwsCore implements Instrument {
   public readonly adr3Fault = Subject.create(false);
 
   public readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
+
+  public readonly adr1Mach = Subject.create(Arinc429Word.empty());
 
   public readonly ir1MaintWord = Arinc429Register.empty();
   public readonly ir2MaintWord = Arinc429Register.empty();
@@ -955,9 +1036,21 @@ export class FwsCore implements Instrument {
 
   public readonly throttle2Position = Subject.create(0);
 
+  public readonly throttle3Position = Subject.create(0);
+
+  public readonly throttle4Position = Subject.create(0);
+
+  public readonly allThrottleIdle = Subject.create(false);
+
   public readonly engine1ValueSwitch = ConsumerValue.create(null, false);
 
   public readonly engine2ValueSwitch = ConsumerValue.create(null, false);
+
+  public readonly engine3ValueSwitch = ConsumerValue.create(null, false);
+
+  public readonly engine4ValueSwitch = ConsumerValue.create(null, false);
+
+  public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
 
@@ -970,54 +1063,6 @@ export class FwsCore implements Instrument {
   public readonly eng1Or2TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
 
   public readonly eng1Or2TakeoffPower = Subject.create(false);
-
-  /* FIRE */
-
-  public readonly agent1Eng1Discharge = Subject.create(0);
-
-  public readonly agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
-
-  public readonly agent2Eng1Discharge = Subject.create(0);
-
-  public readonly agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
-
-  public readonly agent1Eng2Discharge = Subject.create(0);
-
-  public readonly agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
-
-  public readonly agent2Eng2Discharge = Subject.create(0);
-
-  public readonly agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
-
-  public readonly agentAPUDischarge = Subject.create(0);
-
-  public readonly agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
-
-  public readonly apuAgentPB = Subject.create(false);
-
-  public readonly apuFireTest = Subject.create(false);
-
-  public readonly cargoFireAgentDisch = Subject.create(false);
-
-  public readonly cargoFireTest = Subject.create(false);
-
-  public readonly eng1Agent1PB = Subject.create(false);
-
-  public readonly eng1Agent2PB = Subject.create(false);
-
-  public readonly eng1FireTest = Subject.create(false);
-
-  public readonly eng2Agent1PB = Subject.create(false);
-
-  public readonly eng2Agent2PB = Subject.create(false);
-
-  public readonly eng2FireTest = Subject.create(false);
-
-  public readonly fireButton1 = Subject.create(false);
-
-  public readonly fireButton2 = Subject.create(false);
-
-  public readonly fireButtonAPU = Subject.create(false);
 
   /* ICE */
 
@@ -1215,6 +1260,8 @@ export class FwsCore implements Instrument {
     this.fuelCtrTankModeSelMan.setConsumer(sub.on('fuel_ctr_tk_mode_sel_man'));
     this.engine1ValueSwitch.setConsumer(sub.on('fuel_valve_switch_1'));
     this.engine2ValueSwitch.setConsumer(sub.on('fuel_valve_switch_2'));
+    this.engine3ValueSwitch.setConsumer(sub.on('fuel_valve_switch_3'));
+    this.engine4ValueSwitch.setConsumer(sub.on('fuel_valve_switch_4'));
     this.centerFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_1'));
     this.centerFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_4'));
     this.leftOuterInnerValve.setConsumer(sub.on('fuel_valve_open_4'));
@@ -1223,6 +1270,14 @@ export class FwsCore implements Instrument {
     this.rightOuterInnerValve.setConsumer(sub.on('fuel_valve_open_5'));
     this.rightFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_3'));
     this.rightFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_6'));
+    this.allEngineSwitchOff.set(
+      !(
+        this.engine1ValueSwitch.get() ||
+        this.engine2ValueSwitch.get() ||
+        this.engine3ValueSwitch.get() ||
+        this.engine1ValueSwitch.get()
+      ),
+    );
 
     // Inhibit single chimes for the first two seconds after power-on
     this.auralSingleChimeInhibitTimer.schedule(
@@ -1426,6 +1481,8 @@ export class FwsCore implements Instrument {
     this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
     this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
 
+    this.adr1Mach.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_MACH'));
+
     this.ir1Pitch.setFromSimVar('L:A32NX_ADIRS_IR_1_PITCH');
     this.ir2Pitch.setFromSimVar('L:A32NX_ADIRS_IR_2_PITCH');
     this.ir3Pitch.setFromSimVar('L:A32NX_ADIRS_IR_3_PITCH');
@@ -1505,9 +1562,17 @@ export class FwsCore implements Instrument {
     this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
+    this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
+    this.throttle4Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
+    this.allThrottleIdle.set(
+      this.throttle1Position.get() == 0 &&
+        this.throttle2Position.get() == 0 &&
+        this.throttle3Position.get() == 0 &&
+        this.throttle4Position.get() == 0,
+    );
 
     /* HYDRAULICS acquisition */
 
@@ -1599,6 +1664,7 @@ export class FwsCore implements Instrument {
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_1_L_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
       this.dc2BusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_2_L_GEAR_COMPRESSED', 'bool') > 0;
+    this.gearLeverPos.set(SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'));
 
     // General logic
     const mainGearDownlocked =
@@ -1695,7 +1761,7 @@ export class FwsCore implements Instrument {
 
     this.engDualFault.set(
       !this.aircraftOnGround.get() &&
-        ((this.fireButton1.get() && this.fireButton2.get()) ||
+        ((this.fireButtonEng1.get() && this.fireButtonEng2.get()) ||
           (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
           (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
@@ -1974,6 +2040,15 @@ export class FwsCore implements Instrument {
         SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED', 'bool') ||
         SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED', 'bool') ||
         SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED', 'bool'),
+    );
+
+    this.allBatteriesOff.set(
+      !(
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO', 'bool') ||
+        SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO', 'bool')
+      ),
     );
 
     /* OTHER STUFF */
@@ -2462,38 +2537,57 @@ export class FwsCore implements Instrument {
         this.radioHeight3.valueOr(Infinity) > 1500,
     );
 
-    /* FIRE */
+    /* 26 - FIRE */
 
-    this.fireButton1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
-    this.fireButton2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
+    this.fduDiscreteWord.setFromSimVar('L:A32NX_FIRE_FDU_DISCRETE_WORD');
+
+    this.apuFireDetected.set(this.fduDiscreteWord.bitValueOr(15, false));
+    this.eng1FireDetected.set(this.fduDiscreteWord.bitValueOr(11, false));
+    this.eng2FireDetected.set(this.fduDiscreteWord.bitValueOr(12, false));
+    this.eng3FireDetected.set(this.fduDiscreteWord.bitValueOr(13, false));
+    this.eng4FireDetected.set(this.fduDiscreteWord.bitValueOr(14, false));
+    this.mlgFireDetected.set(this.fduDiscreteWord.bitValueOr(16, false));
+
+    this.apuLoopAFault.set(this.fduDiscreteWord.bitValueOr(26, false));
+    this.apuLoopBFault.set(this.fduDiscreteWord.bitValueOr(27, false));
+    this.eng1LoopAFault.set(this.fduDiscreteWord.bitValueOr(18, false));
+    this.eng1LoopBFault.set(this.fduDiscreteWord.bitValueOr(19, false));
+    this.eng2LoopAFault.set(this.fduDiscreteWord.bitValueOr(20, false));
+    this.eng2LoopBFault.set(this.fduDiscreteWord.bitValueOr(21, false));
+    this.eng3LoopAFault.set(this.fduDiscreteWord.bitValueOr(22, false));
+    this.eng3LoopBFault.set(this.fduDiscreteWord.bitValueOr(23, false));
+    this.eng4LoopAFault.set(this.fduDiscreteWord.bitValueOr(24, false));
+    this.eng4LoopBFault.set(this.fduDiscreteWord.bitValueOr(25, false));
+    this.mlgLoopAFault.set(this.fduDiscreteWord.bitValueOr(28, false));
+    this.mlgLoopBFault.set(this.fduDiscreteWord.bitValueOr(29, false));
+
+    this.apuAgentDischarged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_APU_1_IS_DISCHARGED', 'bool'));
+    this.eng1Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_1_IS_DISCHARGED', 'bool'));
+    this.eng1Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_1_IS_DISCHARGED', 'bool'));
+    this.eng2Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_2_IS_DISCHARGED', 'bool'));
+    this.eng2Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_2_IS_DISCHARGED', 'bool'));
+    this.eng3Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_3_IS_DISCHARGED', 'bool'));
+    this.eng3Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_3_IS_DISCHARGED', 'bool'));
+    this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool'));
+    this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool'));
+
+    this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
+    this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
+    this.fireButtonEng3.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG3', 'bool'));
+    this.fireButtonEng4.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG4', 'bool'));
     this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool'));
-    this.eng1FireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_ENG1', 'bool'));
-    this.eng2FireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_ENG2', 'bool'));
-    this.apuFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_APU', 'bool'));
-    this.eng1Agent1PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG1_AGENT1_Discharge', 'bool'));
-    this.eng1Agent2PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG1_AGENT2_Discharge', 'bool'));
-    this.eng2Agent1PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool'));
-    this.eng2Agent2PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool'));
-    this.apuAgentPB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool'));
+    this.allFireButtons.set(
+      this.fireButtonEng1.get() &&
+        this.fireButtonEng2.get() &&
+        this.fireButtonEng3.get() &&
+        this.fireButtonEng4.get() &&
+        this.fireButtonAPU.get(),
+    );
+
+    this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
+
     this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
     this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool'));
-
-    this.agent1Eng1Discharge.set(this.agent1Eng1DischargeTimer.write(this.fireButton1.get(), deltaTime));
-    this.agent2Eng1Discharge.set(
-      this.agent2Eng1DischargeTimer.write(
-        this.fireButton1.get() && this.eng1Agent1PB.get() && !this.aircraftOnGround.get(),
-        deltaTime,
-      ),
-    );
-    this.agent1Eng2Discharge.set(
-      this.agent1Eng2DischargeTimer.write(this.fireButton2.get() && !this.eng1Agent1PB.get(), deltaTime),
-    );
-    this.agent2Eng2Discharge.set(
-      this.agent2Eng2DischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime),
-    );
-    this.agentAPUDischarge.set(
-      this.agentAPUDischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime),
-    );
 
     /* ANTI ICE */
 
@@ -2593,12 +2687,12 @@ export class FwsCore implements Instrument {
 
     this.landAsapRed.set(
       !this.aircraftOnGround.get() &&
-        (this.fireButton1.get() ||
-          this.eng1FireTest.get() ||
-          this.fireButton2.get() ||
-          this.eng2FireTest.get() ||
-          this.fireButtonAPU.get() ||
-          this.apuFireTest.get() ||
+        (this.apuFireDetected.get() ||
+          this.eng1FireDetected.get() ||
+          this.eng2FireDetected.get() ||
+          this.eng3FireDetected.get() ||
+          this.eng4FireDetected.get() ||
+          this.mlgFireDetected.get() ||
           this.emergencyGeneratorOn.get() ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
           (this.greenLP.get() && this.yellowLP.get()) ||
@@ -2606,11 +2700,18 @@ export class FwsCore implements Instrument {
           (this.greenLP.get() && this.blueLP.get())),
     );
 
+    // Is this needed?
     // fire always forces the master warning and SC aural on
     this.fireActive.set(
-      [this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].some(
-        (e) => e,
-      ),
+      [
+        this.apuFireDetected.get(),
+        this.eng1FireDetected.get(),
+        this.eng2FireDetected.get(),
+        this.eng3FireDetected.get(),
+        this.eng4FireDetected.get(),
+        this.mlgFireDetected.get(),
+        this.cargoFireTest.get(),
+      ].some((e) => e),
     );
 
     const flightPhase = this.fwcFlightPhase.get();
