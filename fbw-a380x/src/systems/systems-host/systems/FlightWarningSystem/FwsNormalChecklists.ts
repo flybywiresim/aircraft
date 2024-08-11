@@ -1,11 +1,11 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject } from '@microsoft/msfs-sdk';
+import { MapSubject, Subject } from '@microsoft/msfs-sdk';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
-import { NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { NormalProcedure, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 export type ChecklistState = {
   id: number;
@@ -13,54 +13,161 @@ export type ChecklistState = {
   itemsCompleted: boolean[];
 };
 export class FwsNormalChecklists {
+  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+
+  public readonly showChecklist = Subject.create(false);
+
+  /** ID of checklist or 0 for overview */
+  public readonly checklistId = Subject.create(0);
+
+  /** Marked with cyan box */
+  public readonly selectedLine = Subject.create(0);
+
+  public readonly checklistState = MapSubject.create<number, ChecklistState>(null);
+
   constructor(private fws: FwsCore) {
-    this.showChecklist.sub((v) => this.pub.pub('fws_show_normal_checklists', v, true));
+    this.showChecklist.sub((v) => this.pub.pub('fws_show_normal_checklists', v, true), true);
     this.checklistState.sub((cl) => {
       const flattened: ChecklistState[] = [];
       cl.forEach((val, key) =>
         flattened.push({ id: key, checklistCompleted: val.checklistCompleted, itemsCompleted: val.itemsCompleted }),
       );
       this.pub.pub('fws_normal_checklists', flattened, true);
-    });
-    this.activeChecklist.sub((id) => this.pub.pub('fws_normal_checklists_id', id, true));
-    this.activeLine.sub((line) => this.pub.pub('fws_normal_checklists_active_line', line, true));
+    }, true);
+    this.checklistId.sub((id) => this.pub.pub('fws_normal_checklists_id', id, true), true);
+    this.selectedLine.sub((line) => this.pub.pub('fws_normal_checklists_active_line', line, true), true);
 
     // Populate checklistState
-    const clStateInit = new Map<number, ChecklistState>();
-    clStateInit.set(0, {
-      id: 0,
-      checklistCompleted: false,
-      itemsCompleted: Array(Object.keys(EcamNormalProcedures).length).fill(false),
-    });
-
-    const keys = Object.keys(EcamNormalProcedures);
+    const keys = this.getNormalProceduresKeysSorted();
     keys.forEach((k) => {
       const proc = EcamNormalProcedures[k] as NormalProcedure;
-      clStateInit.set(parseInt(k), {
-        id: parseInt(k),
+      this.checklistState.setValue(k, {
+        id: k,
         checklistCompleted: false,
         itemsCompleted: Array(proc.items.length).fill(false),
       });
     });
 
-    this.checklistState.set(clStateInit);
+    this.checklistState.setValue(0, {
+      id: 0,
+      checklistCompleted: false,
+      itemsCompleted: Array(Object.keys(EcamNormalProcedures).length).fill(false),
+    });
   }
 
-  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+  getNormalProceduresKeysSorted() {
+    return Object.keys(EcamNormalProcedures)
+      .map((v) => parseInt(v))
+      .sort((a, b) => a - b);
+  }
 
-  public readonly showChecklist = Subject.create(false);
+  selectFirst() {
+    this.selectedLine.set(-1);
+    this.moveDown();
+  }
 
-  /** ID of checklist or 0 for overview */
-  public readonly activeChecklist = Subject.create(0);
+  moveUp() {
+    if (this.checklistId.get() === 0) {
+      this.selectedLine.set(Math.max(this.selectedLine.get() - 1, 0));
+    } else {
+      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
+      const selectable = EcamNormalProcedures[this.checklistId.get()].items
+        .map((item, index) => (item.sensed === false ? index : null))
+        .filter((v) => v !== null);
 
-  /** Marked with cyan box */
-  public readonly activeLine = Subject.create(0);
+      if (this.selectedLine.get() == numItems + 1) {
+        // RESET
+        this.selectedLine.set(this.selectedLine.get() - 1);
+      } else {
+        if (selectable.length === 0) {
+          return;
+        }
+        const previousElement = () => {
+          for (let i = selectable.length - 1; i >= 0; i--) {
+            if (selectable[i] < this.selectedLine.get()) {
+              return selectable[i];
+            }
+          }
+          return -1;
+        };
+        const pEl = previousElement();
 
-  public readonly checklistState = Subject.create<Map<number, ChecklistState> | null>(null);
+        if (pEl >= 0) {
+          this.selectedLine.set(Math.max(pEl, 0));
+        }
+      }
+    }
+  }
+
+  moveDown() {
+    if (this.checklistId.get() === 0) {
+      this.selectedLine.set(
+        Math.min(this.selectedLine.get() + 1, this.getNormalProceduresKeysSorted().length - 1, WD_NUM_LINES - 1),
+      );
+    } else {
+      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
+      const selectable = EcamNormalProcedures[this.checklistId.get()].items
+        .map((item, index) => (item.sensed === false ? index : null))
+        .filter((v) => v !== null);
+      if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
+        // Last element before C/L complete
+        this.selectedLine.set(
+          Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1, WD_NUM_LINES - 1)),
+        );
+      } else {
+        this.selectedLine.set(
+          Math.min(
+            selectable.find((v) => v > this.selectedLine.get()),
+            WD_NUM_LINES - 1,
+          ),
+        );
+      }
+    }
+  }
+
+  navigateToChecklist(id: number) {
+    this.checklistId.set(id);
+    this.selectFirst();
+  }
 
   onUpdate() {
-    if (this.fws.clPulseNode.read() === true) {
+    if (this.fws.clPulseNode.read()) {
+      console.log('C/L');
+      this.navigateToChecklist(0);
       this.showChecklist.set(!this.showChecklist.get());
+    }
+
+    if (this.fws.clDownPulseNode.read()) {
+      if (!this.showChecklist.get()) {
+        return;
+      }
+
+      console.log('DOWN');
+      this.moveDown();
+    }
+
+    if (this.fws.clUpPulseNode.read()) {
+      if (!this.showChecklist.get()) {
+        return;
+      }
+
+      console.log('UP');
+      this.moveUp();
+    }
+
+    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
+      if (!this.showChecklist.get()) {
+        return;
+      }
+
+      console.log('CHECK');
+      if (this.checklistId.get() === 0) {
+        // Navigate to check list
+        this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
+      } else {
+        // Check +
+        this.moveDown();
+      }
     }
   }
 }

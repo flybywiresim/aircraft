@@ -100,7 +100,6 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
               </svg>
             </div>
           </div>
-          <div class="FillArea" />
         </div>
       </>
     );

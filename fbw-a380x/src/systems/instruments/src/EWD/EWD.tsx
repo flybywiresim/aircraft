@@ -189,7 +189,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} />
             <div class="StsArea">
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="700" height="30">
                 <FormattedFwcText
                   x={8}
                   y={20}

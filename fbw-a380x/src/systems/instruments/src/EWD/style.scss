@@ -291,6 +291,7 @@ text, tspan, span {
 .MemosContainer {
   display: flex;
   flex-direction: column;
+  flex: 1;
   padding: 12px 0px 12px 0px;
 }
 
@@ -350,21 +351,24 @@ text, tspan, span {
   flex-direction: row;
   padding: 4px 0px 4px 0px;
   margin-left: 20px;
-  height: 34px;
   align-items: center;
   border: 2px solid transparent;
   color: $display-cyan;
 }
 
 .EclLine.ChecklistMenuItem {
-  color: $display-cyan !important;
+  color: $display-cyan;
 }
 
-.EclLine.ChecklistMenuItem.Completed {
-  color: $display-grey !important;
+.EclLine.ChecklistMenuItem.Checked {
+  color: $display-green;
 }
 
-.EclLine.Active {
+.EclLine.ChecklistMenuItem.ChecklistCompleted {
+    color: $display-green !important;
+}
+
+.EclLine.Selected {
   border: 2px solid $display-cyan;
 }
 
@@ -377,9 +381,22 @@ text, tspan, span {
   text-align: center;
   justify-content: center;
   width: 40px;
+  font-size: 26px;
 }
 
 .EclLineText {
   margin-left: 10px;
   font-size: 26px;
+}
+
+.EclSeparationLine {
+  border-bottom: 2px solid $display-white;
+  padding-top: 16px;
+  margin-bottom: 16px;
+  align-self: center;
+  justify-self: center;
+}
+
+.EclLineContainer {
+  height: 34px;
 }

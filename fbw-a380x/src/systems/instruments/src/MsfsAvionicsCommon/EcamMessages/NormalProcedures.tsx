@@ -3,7 +3,7 @@
 
 import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
-/** All normal procedures (checklists, via ECL) should be here. */
+/** All normal procedures (checklists, via ECL) should be here. Display is ordered by ID, ascending. */
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   1000001: {
     title: 'BEFORE START',
@@ -33,7 +33,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'BARO REF VALUE',
-        labelNotCompleted: '____ SET (BOTH)',
+        labelNotCompleted: '--.-- SET (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -141,32 +141,37 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         name: 'SIGNS',
         labelNotCompleted: 'ON',
         sensed: true,
+        level: 1,
       },
       {
         name: 'SPLRs',
         labelNotCompleted: 'ARM',
         labelCompleted: ': ARM',
         sensed: true,
+        level: 1,
       },
       {
         name: 'FLAPS',
         labelNotCompleted: 'T.O',
         sensed: true,
+        level: 1,
       },
       {
         name: 'AUTO BRAKE',
         labelNotCompleted: 'RTO',
         sensed: true,
+        level: 1,
       },
       {
         name: 'T.O CONFIG',
         labelNotCompleted: 'NORMAL',
         sensed: true,
+        level: 1,
       },
       { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
       {
         name: 'T.O RWY',
-        labelNotCompleted: '___ CONFIRM (BOTH)',
+        labelNotCompleted: '--- CONFIRM (BOTH)',
         labelCompleted: 'CONFIRMED',
         sensed: false,
       },
@@ -209,7 +214,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
       {
         name: 'BARO REF VALUE',
-        labelNotCompleted: '____ SET (BOTH)',
+        labelNotCompleted: '--.-- SET (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -232,13 +237,13 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'BARO REF VALUE',
-        labelNotCompleted: '____ SET (BOTH)',
+        labelNotCompleted: '--.-- SET (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
       {
         name: 'MINIMA',
-        labelNotCompleted: '____ SET (BOTH)',
+        labelNotCompleted: '--- SET (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -268,7 +273,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'AS RQRD',
         sensed: false,
       },
-      { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: false, labelNotCompleted: '' },
+      { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: true, labelNotCompleted: '' },
       {
         name: 'SIGNS',
         labelNotCompleted: 'ON',

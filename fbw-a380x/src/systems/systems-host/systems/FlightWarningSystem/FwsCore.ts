@@ -68,7 +68,7 @@ export enum FwcAuralWarning {
   Crc,
 }
 
-type InternalAbnormalSensedList = Map<string, FwsEwdAbnormalSensedEntry>;
+type InternalAbnormalSensedList = Map<number, FwsEwdAbnormalSensedEntry>;
 
 export class FwsCore implements Instrument {
   public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents>();
@@ -2684,7 +2684,7 @@ export class FwsCore implements Instrument {
           }
         }
 
-        if (!this.activeAbnormalSensedList.has(key)) {
+        if (!this.activeAbnormalSensedList.has(parseInt(key))) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -2708,8 +2708,8 @@ export class FwsCore implements Instrument {
               'ECAM alert definition error: whichItemsCompleted() not the same size as number of procedure items',
             );
           }
-          this.activeAbnormalSensedList.set(key, {
-            id: key,
+          this.activeAbnormalSensedList.set(parseInt(key), {
+            id: parseInt(key),
             itemsActive: itemsActive,
             itemsCompleted: itemsCompleted,
             itemsToShow: itemsToShow,
@@ -2717,7 +2717,7 @@ export class FwsCore implements Instrument {
           stateWasChanged = true;
         } else {
           // Update internal map
-          const prevEl = this.activeAbnormalSensedList.get(key);
+          const prevEl = this.activeAbnormalSensedList.get(parseInt(key));
           // Update only sensed items
           proc.items.forEach((item, idx) => {
             if (item.sensed === true) {
@@ -2792,7 +2792,7 @@ export class FwsCore implements Instrument {
 
     // Delete inactive failures from internal map
     this.activeAbnormalSensedList.forEach((_, key) => {
-      if (!allFailureKeys.includes(key)) {
+      if (!allFailureKeys.includes(key.toString())) {
         this.activeAbnormalSensedList.delete(key);
         stateWasChanged = true;
       }
