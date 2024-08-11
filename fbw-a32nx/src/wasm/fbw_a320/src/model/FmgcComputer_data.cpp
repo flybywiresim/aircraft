@@ -768,6 +768,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         false,
         fmgc_flight_phase::Preflight,
         fmgc_approach_type::None,
+        false,
         0.0,
         0.0,
         0.0,
@@ -4018,6 +4019,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { 10.0F, 10.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F },
 
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
+  -1.0F,
   0.0F,
   -2.0F,
   4.0F,

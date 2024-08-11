@@ -219,6 +219,7 @@ struct base_fms_inputs
   boolean_T fm_valid;
   fmgc_flight_phase fms_flight_phase;
   fmgc_approach_type selected_approach_type;
+  boolean_T backbeam_selected;
   real_T fms_loc_distance;
   real_T fms_weight_lbs;
   real_T fms_cg_percent;
