@@ -216,7 +216,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_gk;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_fx;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_hz;
-    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_pn;
+    rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_pnl;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_mtz;
     rtDW_MATLABFunction_FmgcComputer_e_T sf_MATLABFunction_fn;
     rtDW_MATLABFunction_FmgcComputer_h_T sf_MATLABFunction_lm;
@@ -447,6 +447,10 @@ class FmgcComputer final
     real_T CompareToConstant6_const_h;
     real_T CompareToConstant5_const_av;
     real_T CompareToConstant7_const;
+    real_T CompareToConstant8_const;
+    real_T CompareToConstant9_const;
+    real_T CompareToConstant10_const;
+    real_T CompareToConstant11_const;
     real_T CompareToConstant_const_e3;
     real_T CompareToConstant1_const_f;
     real_T CompareToConstant2_const_j;
@@ -656,6 +660,8 @@ class FmgcComputer final
     real32_T A429ValueOrDefault1_defaultValue_o2;
     real32_T A429ValueOrDefault2_defaultValue_k;
     real32_T A429ValueOrDefault3_defaultValue_l;
+    real32_T A429ValueOrDefault4_defaultValue_n;
+    real32_T A429ValueOrDefault5_defaultValue_mv;
     real32_T A429ValueOrDefault_defaultValue_km;
     real32_T A429ValueOrDefault4_defaultValue_hv;
     real32_T A429ValueOrDefault5_defaultValue_i;
