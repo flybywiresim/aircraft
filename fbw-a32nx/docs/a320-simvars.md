@@ -2941,6 +2941,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 22  | THRUST EPR Mode Active            |
       | 23  | A/THR ALPHA FLOOR                 |
       | 24  | A/THR Inop                        |
+      | 25  | A/THR Limited                     |
 
 - A32NX_FMGC_{number}_ATS_FMA_DISCRETE_WORD
     - Arinc429<Discrete>
