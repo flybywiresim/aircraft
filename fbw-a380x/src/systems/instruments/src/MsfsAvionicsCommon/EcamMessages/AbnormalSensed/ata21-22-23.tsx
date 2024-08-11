@@ -863,32 +863,161 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   213800005: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm AUTO CTL FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AUTO CTL SYS 1 FAULT',
+        sensed: false,
+      },
+      {
+        name: 'AUTO CTL SYS 2 FAULT',
+        sensed: false,
+      },
+      {
+        name: 'AUTO CTL SYS 3 FAULT',
+        sensed: false,
+      },
+      {
+        name: 'AUTO CTL SYS 4 FAULT',
+        sensed: false,
+      },
+      {
+        name: 'AUTO CTL SYS 1+2+3+4 FAULT',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'CAB PRESS IN BACKUP MODE',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'CAB ALT REGULATED TO 7000 FT',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'BELOW 7000 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'BELOW 7000 FT : AVOID HI DES V/S',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+        level: 2,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+        level: 2,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+        level: 2,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+        level: 2,
+      },
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 1,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+        level: 1,
+      },
+    ],
   },
   213800006: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm CTL REDUNDANCY LOST',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'CABIN ALT TARGET',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'EXPECT HI CAB RATE',
+        sensed: false,
+      },
+    ],
   },
   213800007: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm DIFF PRESS HI',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'CABIN ALT TARGET',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'EXPECT HI CAB RATE',
+        sensed: false,
+      },
+    ],
   },
   213800008: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm DIFF PRESS LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'EXPECT HI CAB RATE',
+        sensed: false,
+      },
+      {
+        name: 'ACFT DESCENT RATE',
+        sensed: true,
+        labelNotCompleted: 'REDUCE',
+      },
+    ],
   },
   213800009: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm INHIBITED BY DOORS',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'MAX FL : 100/MEA',
+        sensed: false,
+      },
+    ],
   },
   213800010: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm MAN CTL FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+    ],
   },
   213800011: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL 1 FAULT',
@@ -923,12 +1052,467 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   213800017: {
     title: '\x1b<4m\x1b4mCAB PRESS\x1bm SYS FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'DIFF PRESS',
+        sensed: true,
+        labelNotCompleted: 'MONITOR',
+      },
+      {
+        name: 'IF DIFF PRESS > 9.6 PSI :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'DESCENT TO FL 100/MEA',
+        sensed: true,
+        labelNotCompleted: 'INITIATE',
+        level: 2,
+      },
+      {
+        name: 'MAX FL : 100/MEA',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'WHEN FL < 100 / MEA :',
+        sensed: false,
+        level: 3,
+      },
+      {
+        name: 'RAM AIR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 3,
+      },
+      {
+        name: 'CABIN AIR EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+        level: 3,
+      },
+      {
+        name: 'RAM AIR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 2,
+      },
+      {
+        name: 'CABIN AIR EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+        level: 2,
+      },
+      {
+        name: 'BEFORE OPENING ANY CABIN DOOR :',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: true,
+        labelNotCompleted: 'ADVISE',
+      },
+      {
+        name: 'RESIDUAL DIFF PRESS',
+        sensed: true,
+        labelNotCompleted: 'CHECK',
+      },
+    ],
   },
   213800018: {
     title: '\x1b<4m\x1b4mCOND\x1bm CABIN AIR EXTRACT VLV FAULT',
     sensed: true,
     items: [],
+  },
+  213800019: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 1+2+3',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800020: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 1+2+4',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800021: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 1+3+4',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800022: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 2+3+4',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800023: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 1+2',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800024: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 1+3',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800025: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 1+4',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800026: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 2+3',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800027: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 2+4',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
+  },
+  213800028: {
+    title: '\x1b<4m\x1b4mCAB PRESS\x1bm OUTFLW VLV CTL FAULT OUTFLW VLV 3+4',
+    sensed: true,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'ACFT FL CABIN ALT TRGT',
+        sensed: false,
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: true,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'CABIN ALT REGULATED TO 7500FT',
+        sensed: false,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
+        sensed: false,
+      },
+      {
+        name: 'BELOW 7500 FT : AVOID HI DES V/S',
+        sensed: false,
+      },
+    ],
   },
   // ATA 22: FG / FMS
   220800001: {
