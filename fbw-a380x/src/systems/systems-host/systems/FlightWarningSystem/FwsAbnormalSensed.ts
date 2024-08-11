@@ -1268,7 +1268,7 @@ export class FwsAbnormalSensed {
     290800035: {
       // G SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.greenLoPressure,
+      simVarIsActive: this.fws.greenAbnormLoPressure,
       whichItemsToShow: () => [
         this.fws.taxiInFlap0Check.read(),
         true,
@@ -1291,7 +1291,7 @@ export class FwsAbnormalSensed {
     290800036: {
       // Y SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.yellowLoPressure,
+      simVarIsActive: this.fws.yellowAbnormLoPressure,
       whichItemsToShow: () => [
         this.fws.taxiInFlap0Check.read(),
         true,
@@ -1310,7 +1310,7 @@ export class FwsAbnormalSensed {
     290800039: {
       // G + Y SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.greenYellowLoPressure,
+      simVarIsActive: this.fws.greenYellowAbnormLoPressure,
       whichItemsToShow: () => [
         true,
         this.fws.flapsHandle.get() <= 3, // fix me use actual flap angle

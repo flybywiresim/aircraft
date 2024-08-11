@@ -776,7 +776,7 @@ export class FwsCore implements Instrument {
 
   public readonly eng4PumpDisc = Subject.create(false);
 
-  public readonly yellowLoPressure = Subject.create(false);
+  public readonly yellowAbnormLoPressure = Subject.create(false);
 
   public readonly yellowRsvLoAirPressure = Subject.create(false);
 
@@ -784,7 +784,7 @@ export class FwsCore implements Instrument {
 
   public readonly yellowRsvLoLevel = Subject.create(false);
 
-  public readonly greenLoPressure = Subject.create(false);
+  public readonly greenAbnormLoPressure = Subject.create(false);
 
   public readonly greenRsvLoAirPressure = Subject.create(false);
 
@@ -792,7 +792,7 @@ export class FwsCore implements Instrument {
 
   public readonly greenRsvLoLevel = Subject.create(false);
 
-  public readonly greenYellowLoPressure = Subject.create(false);
+  public readonly greenYellowAbnormLoPressure = Subject.create(false);
 
   /* 31 - FWS */
 
@@ -1696,13 +1696,33 @@ export class FwsCore implements Instrument {
 
     /* HYDRAULICS acquisition */
 
+    const yLoPressure = SimVar.GetSimVarValue('A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
+    const gLoPressure = SimVar.GetSimVarValue('A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
+
+    this.yellowAbnormLoPressure.set(yLoPressure);
+    this.greenAbnormLoPressure.set(gLoPressure);
+    this.greenYellowAbnormLoPressure.set(yLoPressure && gLoPressure);
+
+    this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
+    this.yellowRsvLoAirPressure.set(
+      SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') &&
+        !this.greenYellowAbnormLoPressure,
+    );
+    this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW', 'bool'));
+
+    this.greenRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
+    this.greenRsvLoAirPressure.set(
+      SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') &&
+        !this.greenYellowAbnormLoPressure,
+    );
+
     this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool'));
     this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool'));
 
-    this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GREEN_A_OFF_PB_IS_AUTO', 'bool'));
-    this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GREEN_A_OFF_PB_IS_AUTO', 'bool'));
-    this.yellowAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YELLOW_A_OFF_PB_IS_AUTO', 'bool'));
-    this.yellowBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YELLOW_B_OFF_PB_IS_AUTO', 'bool'));
+    this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GA_OFF_PB_IS_AUTO', 'bool'));
+    this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_GB_OFF_PB_IS_AUTO', 'bool'));
+    this.yellowAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YA_OFF_PB_IS_AUTO', 'bool'));
+    this.yellowBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMP_YB_OFF_PB_IS_AUTO', 'bool'));
 
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
@@ -1711,35 +1731,94 @@ export class FwsCore implements Instrument {
     this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng1PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_1AB_PUMP_DISC', 'bool'));
 
+    // TODO pump faults should also check for power source
+    const eng1APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng1APumpFault.set(
+      eng1APumpBelow2900 &&
+        this.engine1Running &&
+        this.eng1APumpAuto &&
+        !this.greenRsvLoAirPressure &&
+        !this.greenRsvOverheat &&
+        !this.greenAbnormLoPressure,
+    );
+    const eng1BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng1BPumpFault.set(
+      eng1BPumpBelow2900 &&
+        this.engine1Running &&
+        this.eng1BPumpAuto &&
+        !this.greenRsvLoAirPressure &&
+        !this.greenRsvOverheat &&
+        !this.greenAbnormLoPressure,
+    );
+
     this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
     this.eng2BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng2PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_2AB_PUMP_DISC', 'bool'));
+    const eng2APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng2APumpFault.set(
+      eng2APumpBelow2900 &&
+        this.engine2Running &&
+        this.eng2APumpAuto &&
+        !this.greenRsvLoAirPressure &&
+        !this.greenRsvOverheat &&
+        !this.greenAbnormLoPressure,
+    );
+    const eng2BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng2BPumpFault.set(
+      eng2BPumpBelow2900 &&
+        this.engine2Running &&
+        this.eng2BPumpAuto &&
+        !this.greenRsvLoAirPressure &&
+        !this.greenRsvOverheat &&
+        !this.greenAbnormLoPressure,
+    );
 
     this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
     this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool'));
 
+    const eng3APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng3APumpFault.set(
+      eng3APumpBelow2900 &&
+        this.engine3Running &&
+        this.eng3APumpAuto &&
+        !this.yellowRsvLoAirPressure &&
+        !this.yellowRsvOverheat &&
+        !this.yellowAbnormLoPressure,
+    );
+    const eng3BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng3BPumpFault.set(
+      eng3BPumpBelow2900 &&
+        this.engine3Running &&
+        this.eng3BPumpAuto &&
+        !this.yellowRsvLoAirPressure &&
+        !this.yellowRsvOverheat &&
+        !this.yellowAbnormLoPressure,
+    );
+
     this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
     this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool'));
 
-    const yLoPressure = SimVar.GetSimVarValue('A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
-    const gLoPressure = SimVar.GetSimVarValue('A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
-
-    this.yellowLoPressure.set(yLoPressure);
-    this.greenLoPressure.set(gLoPressure);
-    this.greenYellowLoPressure.set(yLoPressure && gLoPressure);
-
-    this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
-    this.yellowRsvLoAirPressure.set(
-      SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') && !this.greenYellowLoPressure,
+    const eng4APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng4APumpFault.set(
+      eng4APumpBelow2900 &&
+        this.engine4Running &&
+        this.eng4APumpAuto &&
+        !this.yellowRsvLoAirPressure &&
+        !this.yellowRsvOverheat &&
+        !this.yellowAbnormLoPressure,
     );
-    this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW', 'bool'));
-
-    this.greenRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
-    this.greenRsvLoAirPressure.set(
-      SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') && !this.greenYellowLoPressure,
+    const eng4BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE', 'psi') < 2900;
+    this.eng4BPumpFault.set(
+      eng4BPumpBelow2900 &&
+        this.engine4Running &&
+        this.eng4BPumpAuto &&
+        !this.yellowRsvLoAirPressure &&
+        !this.yellowRsvOverheat &&
+        !this.yellowAbnormLoPressure,
     );
+
     this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW', 'bool'));
 
     const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
