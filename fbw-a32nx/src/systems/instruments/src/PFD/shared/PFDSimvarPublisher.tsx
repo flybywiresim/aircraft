@@ -178,6 +178,8 @@ export type PFDSimvars = AdirsSimVars &
     fcuEisRightBaroHpaRaw: number;
     fcuDiscreteWord1Raw: number;
     fcuDiscreteWord2Raw: number;
+    ecu1MaintenanceWord6Raw: number;
+    ecu2MaintenanceWord6Raw: number;
   };
 
 export enum PFDVars {
@@ -347,6 +349,8 @@ export enum PFDVars {
   fcuEisRightBaroHpaRaw = 'L:A32NX_FCU_RIGHT_EIS_BARO_HPA',
   fcuDiscreteWord1Raw = 'L:A32NX_FCU_DISCRETE_WORD_1',
   fcuDiscreteWord2Raw = 'L:A32NX_FCU_DISCRETE_WORD_2',
+  ecu1MaintenanceWord6Raw = 'L:A32NX_ECU_1_MAINTENANCE_WORD_6',
+  ecu2MaintenanceWord6Raw = 'L:A32NX_ECU_2_MAINTENANCE_WORD_6',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -517,6 +521,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fcuEisRightBaroHpaRaw', { name: PFDVars.fcuEisRightBaroHpaRaw, type: SimVarValueType.Number }],
     ['fcuDiscreteWord1Raw', { name: PFDVars.fcuDiscreteWord1Raw, type: SimVarValueType.Number }],
     ['fcuDiscreteWord2Raw', { name: PFDVars.fcuDiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['ecu1MaintenanceWord6Raw', { name: PFDVars.ecu1MaintenanceWord6Raw, type: SimVarValueType.Number }],
+    ['ecu2MaintenanceWord6Raw', { name: PFDVars.ecu2MaintenanceWord6Raw, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: ArincEventBus) {
