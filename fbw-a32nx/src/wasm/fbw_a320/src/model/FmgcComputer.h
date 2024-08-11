@@ -896,6 +896,7 @@ class FmgcComputer final
     real32_T Gain1_Gain_g;
     real32_T uDLookupTable_tableData[7];
     real32_T uDLookupTable_bp01Data[7];
+    real32_T Gain_Gain_f;
     real32_T Y_Y0_d;
     real32_T Bias_Bias_e;
     real32_T Bias1_Bias;

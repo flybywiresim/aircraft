@@ -334,6 +334,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
+  idFmsLsCourse = std::make_unique<LocalVariable>("A32NX_FM_LS_COURSE");
 
   idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
   idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
@@ -1234,12 +1235,12 @@ bool FlyByWireInterface::updateIls(int ilsIndex) {
   }
 
   ilsBusOutputs[ilsIndex].runway_heading_deg.SSM = nav_loc_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
-  ilsBusOutputs[ilsIndex].runway_heading_deg.Data = std::fmod(std::fmod(simData.nav_loc_deg - simData.nav_loc_magvar_deg, 360) + 360, 360);
+  ilsBusOutputs[ilsIndex].runway_heading_deg.Data = std::fmod(std::fmod(idFmsLsCourse->get() - simData.nav_loc_magvar_deg, 360) + 360, 360);
   ilsBusOutputs[ilsIndex].ils_frequency_mhz.SSM = Arinc429SignStatus::NormalOperation;
   ilsBusOutputs[ilsIndex].ils_frequency_mhz.Data = 0;
   ilsBusOutputs[ilsIndex].localizer_deviation_deg.SSM =
       nav_loc_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
-  ilsBusOutputs[ilsIndex].localizer_deviation_deg.Data = nav_loc_error_deg;
+  ilsBusOutputs[ilsIndex].localizer_deviation_deg.Data = MathUtils::correctMsfsLocaliserError(nav_loc_error_deg);
   ilsBusOutputs[ilsIndex].glideslope_deviation_deg.SSM =
       nav_gs_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
   ilsBusOutputs[ilsIndex].glideslope_deviation_deg.Data = nav_gs_error_deg;
@@ -1720,6 +1721,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fm_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.selected_approach_type = fmgc_approach_type::None;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.backbeam_selected = idFm1BackbeamSelected->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_loc_distance = (simData.nav_dme_valid != 0) ? simData.nav_dme_nmi : 0;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
