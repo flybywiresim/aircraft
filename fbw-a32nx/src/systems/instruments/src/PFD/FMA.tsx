@@ -620,6 +620,10 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private fcuAtsFmaDiscreteWord = new Arinc429Word(0);
 
+  private ecu1MaintenanceWord6 = new Arinc429Word(0);
+
+  private ecu2MaintenanceWord6 = new Arinc429Word(0);
+
   private autobrakeMode = 0;
 
   private AB3Message = false;
@@ -628,11 +632,13 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     const clbDemand = this.fcuAtsFmaDiscreteWord.getBitValueOr(22, false);
     const mctDemand = this.fcuAtsFmaDiscreteWord.getBitValueOr(23, false);
     const assymThrust = this.fcuAtsFmaDiscreteWord.getBitValueOr(21, false);
+    const thrLocked =
+      this.ecu1MaintenanceWord6.getBitValueOr(12, false) || this.ecu2MaintenanceWord6.getBitValueOr(12, false);
 
     let text: string = '';
     let className: string = '';
     // TODO Implement ECU Bus for THR LK
-    if (false) {
+    if (thrLocked) {
       text = 'THR LK';
       className = 'Amber BlinkInfinite';
     } else if (false) {
@@ -668,6 +674,22 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .whenChanged()
       .handle((word) => {
         this.fcuAtsFmaDiscreteWord = word;
+        this.updateMessage();
+      });
+
+    sub
+      .on('ecu1MaintenanceWord6')
+      .whenChanged()
+      .handle((word) => {
+        this.ecu1MaintenanceWord6 = word;
+        this.updateMessage();
+      });
+
+    sub
+      .on('ecu2MaintenanceWord6')
+      .whenChanged()
+      .handle((word) => {
+        this.ecu2MaintenanceWord6 = word;
         this.updateMessage();
       });
 
