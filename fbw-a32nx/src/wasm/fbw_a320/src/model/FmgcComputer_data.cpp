@@ -120,6 +120,7 @@ base_fmgc_athr_outputs rtP_fmgc_athr_output_MATLABStruct{
   false,
   false,
   false,
+  false,
   athr_fma_mode::NONE,
   athr_fma_message::NONE,
   0.0
@@ -311,6 +312,10 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   35.0,
   0.0,
   35.0,
+  34.0,
+  34.0,
+  24.0,
+  24.0,
   40.0,
   0.0,
   0.0,
@@ -432,6 +437,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   20.0F,
   250.0F,
   40.0F,
+  0.0F,
+  0.0F,
   0.0F,
   0.0F,
   0.0F,
@@ -2911,6 +2918,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       false,
       false,
       false,
+      false,
       athr_fma_mode::NONE,
       athr_fma_message::NONE,
       0.0
@@ -3959,6 +3967,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   },
 
   {
+    false,
     false,
     false,
     false,
