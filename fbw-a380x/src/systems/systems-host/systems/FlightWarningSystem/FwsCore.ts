@@ -740,11 +740,19 @@ export class FwsCore implements Instrument {
 
   public readonly eng1BPumpAuto = Subject.create(false);
 
+  public readonly eng1APumpFault = Subject.create(false);
+
+  public readonly eng1BPumpFault = Subject.create(false);
+
   public readonly eng1PumpDisc = Subject.create(false);
 
   public readonly eng2APumpAuto = Subject.create(false);
 
   public readonly eng2BPumpAuto = Subject.create(false);
+
+  public readonly eng2APumpFault = Subject.create(false);
+
+  public readonly eng2BPumpFault = Subject.create(false);
 
   public readonly eng2PumpDisc = Subject.create(false);
 
@@ -752,11 +760,19 @@ export class FwsCore implements Instrument {
 
   public readonly eng3BPumpAuto = Subject.create(false);
 
+  public readonly eng3APumpFault = Subject.create(false);
+
+  public readonly eng3BPumpFault = Subject.create(false);
+
   public readonly eng3PumpDisc = Subject.create(false);
 
   public readonly eng4APumpAuto = Subject.create(false);
 
   public readonly eng4BPumpAuto = Subject.create(false);
+
+  public readonly eng4APumpFault = Subject.create(false);
+
+  public readonly eng4BPumpFault = Subject.create(false);
 
   public readonly eng4PumpDisc = Subject.create(false);
 
