@@ -284,6 +284,45 @@ pub trait CabinPressure {
     fn cabin_pressure(&self) -> Pressure;
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum FdacId {
+    One,
+    Two,
+}
+
+impl Display for FdacId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FdacId::One => write!(f, "1"),
+            FdacId::Two => write!(f, "2"),
+        }
+    }
+}
+
+impl From<FdacId> for usize {
+    fn from(value: FdacId) -> Self {
+        match value {
+            FdacId::One => 1,
+            FdacId::Two => 2,
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum VcmId {
+    Fwd,
+    Aft,
+}
+
+impl Display for VcmId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VcmId::Fwd => write!(f, "FWD"),
+            VcmId::Aft => write!(f, "AFT"),
+        }
+    }
+}
+
 // Future work this can be different types of failure.
 enum OperatingChannelFault {
     NoFault,

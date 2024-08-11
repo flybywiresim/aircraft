@@ -136,6 +136,12 @@
         - CARGO_FWD
         - CARGO_BULK
 
+- A32NX_COND_FDAC_{id1}_CHANNEL_{id2}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id - both}
+        - 1 or 2
+
 - A32NX_COND_{id}_DUCT_TEMP
     - Degree Celsius
     - Temperature of trim air coming out of the ducts in the cabin and cockpit

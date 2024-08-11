@@ -5,9 +5,9 @@ use systems::{
         cabin_air::CabinAirSimulation,
         pressure_valve::{NegativeRelieveValveSignal, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
-        AirHeater, CabinFan, DuctTemperature, MixerUnit, OutletAir, OverheadFlowSelector, PackFlow,
-        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        VcmShared, ZoneType,
+        AirHeater, CabinFan, DuctTemperature, FdacId, MixerUnit, OutletAir, OverheadFlowSelector,
+        PackFlow, PackFlowControllers, PressurizationConstants, PressurizationOverheadShared,
+        TrimAirSystem, VcmId, VcmShared, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -42,7 +42,7 @@ use self::{
         full_digital_agu_controller::FullDigitalAGUController,
         outflow_valve_control_module::{OcsmShared, OutflowValveControlModule},
         trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
-        ventilation_control_module::{VcmId, VentilationControlModule},
+        ventilation_control_module::VentilationControlModule,
     },
 };
 
@@ -366,14 +366,16 @@ impl A380AirConditioningSystem {
         Self {
             fdac: [
                 FullDigitalAGUController::new(
-                    1,
+                    context,
+                    FdacId::One,
                     [
                         ElectricalBusType::AlternatingCurrentEssential, // 403XP
                         ElectricalBusType::AlternatingCurrent(2),       // 117XP
                     ],
                 ),
                 FullDigitalAGUController::new(
-                    2,
+                    context,
+                    FdacId::Two,
                     [
                         ElectricalBusType::AlternatingCurrentEssential, // 403XP
                         ElectricalBusType::AlternatingCurrent(4),       // 204XP
@@ -4015,7 +4017,7 @@ mod tests {
             }
 
             #[test]
-            fn pack_flow_valve_is_unresponsive_when_fdac_unpowered() {
+            fn pack_flow_valve_closes_when_fdac_unpowered() {
                 let mut test_bed = test_bed()
                     .with()
                     .command_packs_on_off(true)
@@ -4029,10 +4031,9 @@ mod tests {
                     .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
                     .unpowered_ac_4_bus()
-                    .command_ditching_pb_on()
                     .iterate(4);
 
-                assert!(test_bed.pack_flow() > MassRate::default());
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
             }
 
             #[test]
@@ -4049,20 +4050,19 @@ mod tests {
                 test_bed = test_bed
                     .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
-                    .command_ditching_pb_on()
                     .iterate(4);
 
                 assert!(test_bed.pack_flow() > MassRate::default());
                 assert!(!test_bed.all_pack_flow_valves_are_open());
                 assert!(
-                    test_bed.pack_flow_by_pack(1) > MassRate::default()
-                        && test_bed.pack_flow_by_pack(2) == MassRate::default()
+                    test_bed.pack_flow_by_pack(1) == MassRate::default()
+                        && test_bed.pack_flow_by_pack(2) > MassRate::default()
                 );
                 assert!(
-                    test_bed.pack_flow_valve_is_open(1)
-                        && test_bed.pack_flow_valve_is_open(2)
-                        && !test_bed.pack_flow_valve_is_open(3)
-                        && !test_bed.pack_flow_valve_is_open(4)
+                    !test_bed.pack_flow_valve_is_open(1)
+                        && !test_bed.pack_flow_valve_is_open(2)
+                        && test_bed.pack_flow_valve_is_open(3)
+                        && test_bed.pack_flow_valve_is_open(4)
                 );
             }
 
@@ -4099,17 +4099,16 @@ mod tests {
                     .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
                     .unpowered_ac_4_bus()
-                    .command_ditching_pb_on()
                     .iterate(4);
 
-                assert!(test_bed.pack_flow() > MassRate::default());
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
 
                 test_bed = test_bed
                     .powered_ac_ess_bus()
                     .powered_ac_2_bus()
                     .powered_ac_4_bus()
                     .iterate(4);
-                assert_eq!(test_bed.pack_flow(), MassRate::default());
+                assert!(test_bed.pack_flow() > MassRate::default());
             }
         }
 

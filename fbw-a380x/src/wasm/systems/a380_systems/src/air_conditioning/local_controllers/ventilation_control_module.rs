@@ -1,10 +1,10 @@
 use super::outflow_valve_control_module::OcsmShared;
-use std::fmt::Display;
 use systems::{
     air_conditioning::{
         AirConditioningOverheadShared, CabinFansSignal, Channel, OperatingChannel,
-        PressurizationOverheadShared, VcmShared,
+        PressurizationOverheadShared, VcmId, VcmShared,
     },
+    failures::FailureType,
     shared::{ControllerSignal, ElectricalBusType},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
@@ -17,21 +17,6 @@ use uom::si::{f64::*, pressure::psi, ratio::percent};
 enum VcmFault {
     OneChannelFault,
     BothChannelsFault,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum VcmId {
-    Fwd,
-    Aft,
-}
-
-impl Display for VcmId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            VcmId::Fwd => write!(f, "FWD"),
-            VcmId::Aft => write!(f, "AFT"),
-        }
-    }
 }
 
 pub struct VentilationControlModule {
@@ -64,8 +49,16 @@ impl VentilationControlModule {
                 .get_identifier("VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN".to_owned()),
 
             id,
-            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
-            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
+            active_channel: OperatingChannel::new(
+                1,
+                Some(FailureType::Vcm(id, Channel::ChannelOne)),
+                &[powered_by[0]],
+            ),
+            stand_by_channel: OperatingChannel::new(
+                2,
+                Some(FailureType::Vcm(id, Channel::ChannelTwo)),
+                &[powered_by[1]],
+            ),
             hp_cabin_fans_are_enabled: false,
 
             fcvcs: ForwardCargoVentilationControlSystem::new(),

@@ -5,6 +5,18 @@
 import { FailureDefinition } from '@flybywiresim/fbw-sdk';
 
 export const A380Failure = Object.freeze({
+  RapidDecompression: 21000,
+  Fdac1Ch1: 21001,
+  Fdac1Ch2: 21002,
+  Fdac2Ch1: 21003,
+  Fdac2Ch2: 21004,
+  Tadd1: 21005,
+  Tadd2: 21006,
+  VcmFwd1: 21007,
+  VcmFwd2: 21008,
+  VcmAft1: 21009,
+  VcmAft2: 21010,
+
   AudioManagementUnit1: 23000,
   AudioManagementUnit2: 23001,
   RadioManagementPanel1: 23002,
@@ -48,6 +60,18 @@ export const A380Failure = Object.freeze({
 });
 
 export const A380FailureDefinitions: FailureDefinition[] = [
+  [21, A380Failure.RapidDecompression, 'Rapid Decompression'],
+  [21, A380Failure.Fdac1Ch1, 'FDAC 1 Channel 1'],
+  [21, A380Failure.Fdac1Ch2, 'FDAC 1 Channel 2'],
+  [21, A380Failure.Fdac2Ch1, 'FDAC 2 Channel 1'],
+  [21, A380Failure.Fdac2Ch2, 'FDAC 2 Channel 2'],
+  [21, A380Failure.Tadd1, 'TADD Channel 1'],
+  [21, A380Failure.Tadd2, 'TADD Channel 2'],
+  [21, A380Failure.VcmFwd1, 'Forward VCM Channel 1'],
+  [21, A380Failure.VcmFwd2, 'Forward VCM Channel 2'],
+  [21, A380Failure.VcmAft1, 'Aft VCM Channel 1'],
+  [21, A380Failure.VcmAft2, 'Aft VCM Channel 2'],
+
   [23, A380Failure.AudioManagementUnit1, 'AMU 1'],
   [23, A380Failure.AudioManagementUnit2, 'AMU 2'],
   [23, A380Failure.RadioManagementPanel1, 'RMP 1'],

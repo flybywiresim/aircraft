@@ -4,6 +4,7 @@ use systems::{
         AirConditioningOverheadShared, Channel, DuctTemperature, OperatingChannel,
         TrimAirControllers, TrimAirSystem,
     },
+    failures::FailureType,
     shared::{ElectricalBusType, EngineStartState, PackFlowValveState, PneumaticBleed},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -44,8 +45,16 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
             tadd_channel_2_failure_id: context
                 .get_identifier("COND_TADD_CHANNEL_2_FAILURE".to_owned()),
 
-            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
-            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
+            active_channel: OperatingChannel::new(
+                1,
+                Some(FailureType::Tadd(Channel::ChannelOne)),
+                &[powered_by[0]],
+            ),
+            stand_by_channel: OperatingChannel::new(
+                2,
+                Some(FailureType::Tadd(Channel::ChannelTwo)),
+                &[powered_by[1]],
+            ),
             hot_air_is_enabled: [false; 2],
             hot_air_is_open: [false; 2],
             taprv_controllers: [TrimAirPressureRegulatingValveController::new(); 2],

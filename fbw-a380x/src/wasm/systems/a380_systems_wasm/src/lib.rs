@@ -28,6 +28,7 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
+use systems::air_conditioning::{Channel, FdacId, VcmId};
 use systems::failures::FailureType;
 use systems::shared::{
     ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
@@ -68,6 +69,17 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
     .with_failures(vec![
+        (21_000, FailureType::RapidDecompression),
+        (21_001, FailureType::Fdac(FdacId::One, Channel::ChannelOne)),
+        (21_002, FailureType::Fdac(FdacId::One, Channel::ChannelTwo)),
+        (21_003, FailureType::Fdac(FdacId::Two, Channel::ChannelOne)),
+        (21_004, FailureType::Fdac(FdacId::Two, Channel::ChannelTwo)),
+        (21_005, FailureType::Tadd(Channel::ChannelOne)),
+        (21_006, FailureType::Tadd(Channel::ChannelTwo)),
+        (21_007, FailureType::Vcm(VcmId::Fwd, Channel::ChannelOne)),
+        (21_008, FailureType::Vcm(VcmId::Fwd, Channel::ChannelTwo)),
+        (21_009, FailureType::Vcm(VcmId::Aft, Channel::ChannelOne)),
+        (21_010, FailureType::Vcm(VcmId::Aft, Channel::ChannelTwo)),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
