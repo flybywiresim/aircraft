@@ -221,9 +221,14 @@ impl FireDetectionUnit {
     }
 
     fn fire_detection_determination(&self, fire_test_pb: bool) -> [bool; 6] {
-        let mut fire_detected: [bool; 6] = [false; 6];
-        for (id, &zone) in self.fire_detection_zones.iter().enumerate() {
-            fire_detected[id] = (self.fire_detection_loop[0]
+        let mut fire_detected = [false; 6];
+        for ((&zone, &interval_between_loop_failures), fire_detected) in self
+            .fire_detection_zones
+            .iter()
+            .zip(&self.interval_between_loop_failures)
+            .zip(&mut fire_detected)
+        {
+            *fire_detected = (self.fire_detection_loop[0]
                 .fire_detected_in_loop(zone, fire_test_pb)
                 && self.fire_detection_loop[1].fire_detected_in_loop(zone, fire_test_pb))
                 || (self
@@ -238,16 +243,21 @@ impl FireDetectionUnit {
                     .fire_detection_loop
                     .iter()
                     .all(|l| l.loop_has_failed(zone))
-                    && self.interval_between_loop_failures[id] < Duration::from_secs(5)
+                    && interval_between_loop_failures < Duration::from_secs(5)
                     && zone != FireDetectionZone::Mlg);
         }
         fire_detected
     }
 
     fn calculate_interval_between_failures(&self, context: &UpdateContext) -> [Duration; 6] {
-        let mut interval: [Duration; 6] = [Duration::ZERO; 6];
-        for (id, &zone) in self.fire_detection_zones.iter().enumerate() {
-            interval[id] = if self
+        let mut interval = [Duration::ZERO; 6];
+        for ((&zone, &interval_between_loop_failures), interval) in self
+            .fire_detection_zones
+            .iter()
+            .zip(&self.interval_between_loop_failures)
+            .zip(&mut interval)
+        {
+            *interval = if self
                 .fire_detection_loop
                 .iter()
                 .all(|l| !l.loop_has_failed(zone))
@@ -258,9 +268,9 @@ impl FireDetectionUnit {
                 .iter()
                 .all(|l| l.loop_has_failed(zone))
             {
-                self.interval_between_loop_failures[id]
+                interval_between_loop_failures
             } else {
-                self.interval_between_loop_failures[id] + context.delta()
+                interval_between_loop_failures + context.delta()
             }
         }
         interval
