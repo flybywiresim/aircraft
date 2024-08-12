@@ -2700,7 +2700,6 @@ export class FwsCore implements Instrument {
           (this.greenLP.get() && this.blueLP.get())),
     );
 
-    // Is this needed?
     // fire always forces the master warning and SC aural on
     this.fireActive.set(
       [
