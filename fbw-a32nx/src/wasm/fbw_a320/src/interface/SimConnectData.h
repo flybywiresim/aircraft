@@ -134,6 +134,7 @@ struct SimData {
   unsigned long long aiControlsActive;
   double wheelRpmLeft;
   double wheelRpmRight;
+  double seaLevelPressure;
 };
 
 struct SimInput {
