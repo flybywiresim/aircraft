@@ -47,6 +47,7 @@ import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
 import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
 import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { FwsAbnormalNonSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalNonSensed';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -70,7 +71,7 @@ export enum FwcAuralWarning {
 type InternalAbnormalSensedList = Map<string, FwsEwdAbnormalSensedEntry>;
 
 export class FwsCore implements Instrument {
-  public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents>();
+  public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents>();
   public readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
@@ -945,9 +946,19 @@ export class FwsCore implements Instrument {
 
   /* SURVEILLANCE */
 
-  public readonly gpwsFlapMode = Subject.create(0);
+  public readonly gpwsFlapModeOff = Subject.create(false);
+
+  public readonly gpwsSysOff = Subject.create(false);
+
+  public readonly gpwsGsOff = Subject.create(false);
 
   public readonly gpwsTerrOff = Subject.create(false);
+
+  public readonly xpdrAltReportingRequest = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
+
+  public readonly xpdrStby = Subject.create(false);
+
+  public readonly xpdrAltReporting = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
 
@@ -2086,9 +2097,6 @@ export class FwsCore implements Instrument {
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
-    this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
-    this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
-    this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
     this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
@@ -2547,6 +2555,20 @@ export class FwsCore implements Instrument {
     this.lgLeverRedArrow.set(redArrow);
 
     // 32 - Surveillance Logic
+    this.gpwsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
+    this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
+    this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
+    this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
+
+    // fix me use active transponder
+    const transponder1State = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum');
+    const transponder2State = SimVar.GetSimVarValue('TRANSPONDER STATE:2', 'Enum');
+    this.xpdrStby.set(transponder1State === 1 || transponder2State === 1);
+    this.xpdrAltReporting.set(
+      this.aircraftOnGround.get()
+        ? this.xpdrAltReportingRequest.get()
+        : transponder1State === 5 || transponder1State === 4,
+    ); // mode S or mode C
     const isNormalLaw = fcdc1DiscreteWord1.getBitValue(11) || fcdc2DiscreteWord1.getBitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
