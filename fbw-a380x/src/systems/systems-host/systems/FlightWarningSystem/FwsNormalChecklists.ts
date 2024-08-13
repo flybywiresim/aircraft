@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { MapSubject, Subject, SubscribableMapEventType } from '@microsoft/msfs-sdk';
+import { MapSubject, SimVarValueType, Subject, SubscribableMapEventType } from '@microsoft/msfs-sdk';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
@@ -12,6 +12,15 @@ export type ChecklistState = {
   checklistCompleted: boolean;
   itemsCompleted: boolean[];
 };
+
+export interface NormalEclSensedItems {
+  /** Returns a boolean vector (same length as number of items). If true, item is marked as completed. If null, it's a non-sensed item */
+  whichItemsChecked: () => boolean[];
+}
+
+export interface FwsNormalChecklistsDict {
+  [key: keyof typeof EcamNormalProcedures]: NormalEclSensedItems;
+}
 export class FwsNormalChecklists {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
@@ -165,11 +174,14 @@ export class FwsNormalChecklists {
     };
     if (this.selectedLine.get() < clState.itemsCompleted.length) {
       clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
+      this.checklistState.setValue(this.checklistId.get(), clState);
     } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
       // C/L complete
       clState.checklistCompleted = true;
       const proc = EcamNormalProcedures[this.checklistId.get()];
       clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
+      this.checklistState.setValue(this.checklistId.get(), clState);
+      this.showChecklist.set(false);
     } else if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
       // RESET
       clState.checklistCompleted = false;
@@ -195,10 +207,7 @@ export class FwsNormalChecklists {
           this.checklistState.setValue(idFollowing, clStateFollowing);
         }
       }
-    }
-    this.checklistState.setValue(this.checklistId.get(), clState);
-
-    if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
+      this.checklistState.setValue(this.checklistId.get(), clState);
       this.selectFirst();
     }
   }
@@ -210,7 +219,6 @@ export class FwsNormalChecklists {
 
   onUpdate() {
     if (this.fws.clPulseNode.read()) {
-      console.log('C/L');
       this.navigateToChecklist(0);
       this.showChecklist.set(!this.showChecklist.get());
     }
@@ -219,8 +227,6 @@ export class FwsNormalChecklists {
       if (!this.showChecklist.get()) {
         return;
       }
-
-      console.log('DOWN');
       this.moveDown();
     }
 
@@ -228,8 +234,6 @@ export class FwsNormalChecklists {
       if (!this.showChecklist.get()) {
         return;
       }
-
-      console.log('UP');
       this.moveUp();
     }
 
@@ -238,7 +242,6 @@ export class FwsNormalChecklists {
         return;
       }
 
-      console.log('CHECK');
       if (this.checklistId.get() === 0) {
         // Navigate to check list
         this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
@@ -247,5 +250,148 @@ export class FwsNormalChecklists {
         this.moveDown();
       }
     }
+
+    // Update sensed items
+    const ids = this.getNormalProceduresKeysSorted();
+
+    for (let id = 0; id < ids.length; id++) {
+      let changed = false;
+      const procId = ids[id];
+      const cl = this.checklistState.getValue(procId);
+      const proc = EcamNormalProcedures[procId];
+
+      if (!this.sensedItems[procId]) {
+        continue;
+      }
+      const sensedResult = this.sensedItems[procId].whichItemsChecked();
+      if (sensedResult.some((val, index) => val !== null && val !== cl.itemsCompleted[index])) {
+        changed = true;
+      }
+      const clState: ChecklistState = {
+        id: procId,
+        checklistCompleted: false,
+        itemsCompleted: [...cl.itemsCompleted].map((val, index) =>
+          proc.items[index].sensed && sensedResult[index] != null ? sensedResult[index] : val,
+        ),
+      };
+      if (changed) {
+        this.checklistState.setValue(procId, clState);
+      }
+    }
   }
+
+  public sensedItems: FwsNormalChecklistsDict = {
+    1000001: {
+      whichItemsChecked: () => [
+        null,
+        null,
+        null,
+        null,
+        null,
+        !!this.fws.seatBelt.get(),
+        this.fws.ir1MaintWord.bitValueOr(3, false) &&
+          this.fws.ir2MaintWord.bitValueOr(3, false) &&
+          this.fws.ir3MaintWord.bitValueOr(3, false),
+        false,
+        null,
+        null,
+        SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool),
+      ],
+    },
+    1000002: {
+      whichItemsChecked: () => [
+        null,
+        this.fws.ecamStsNormal.get(),
+        null,
+        Math.abs(SimVar.GetSimVarValue('L:RUDDER_TRIM_1_COMMANDED_POSITION', SimVarValueType.Number)) < 0.35 &&
+          Math.abs(SimVar.GetSimVarValue('L:RUDDER_TRIM_2_COMMANDED_POSITION', SimVarValueType.Number)) < 0.35,
+        null,
+      ],
+    },
+    1000003: {
+      whichItemsChecked: () => [
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1,
+        this.fws.spoilersArmed.get(),
+        this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
+        this.fws.autoBrake.get() === 6,
+        this.fws.toConfigNormal.get(),
+        false,
+        null,
+        null,
+        null,
+      ],
+    },
+    1000004: {
+      whichItemsChecked: () => [
+        !SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'),
+        this.fws.slatFlapSelectionS0F0,
+        this.fws.pack1On.get() && this.fws.pack2On.get(),
+        !this.fws.apuMasterSwitch.get(),
+        false,
+        null,
+      ],
+    },
+    1000005: {
+      whichItemsChecked: () => [
+        null,
+        this.fws.ecamStsNormal.get(),
+        null,
+        null,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
+      ],
+    },
+    1000006: {
+      whichItemsChecked: () => [
+        null,
+        null,
+        null,
+        false,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
+        SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'),
+        this.fws.spoilersArmed.get(),
+        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
+          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+            SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
+      ],
+    },
+    1000007: {
+      whichItemsChecked: () => [
+        !this.fws.spoilersArmed.get(),
+        SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 0,
+        !!this.fws.apuMasterSwitch.get(),
+      ],
+    },
+    1000008: {
+      whichItemsChecked: () => [
+        null,
+        null,
+        this.fws.apuBleedValveOpen.get(),
+        !this.fws.engine1Master.get() &&
+          !this.fws.engine2Master.get() &&
+          !this.fws.engine3Master.get() &&
+          !this.fws.engine4Master.get(),
+        this.fws.allFuelPumpsOff.get(),
+        !SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
+      ],
+    },
+    1000009: {
+      whichItemsChecked: () => [
+        null,
+        SimVar.GetSimVarValue('L:PUSH_OVHD_OXYGEN_CREW', 'bool'),
+        !this.fws.apuBleedValveOpen.get(),
+        SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position', 'number') === 0,
+        !SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
+        null,
+        null,
+        null,
+      ],
+    },
+  };
 }

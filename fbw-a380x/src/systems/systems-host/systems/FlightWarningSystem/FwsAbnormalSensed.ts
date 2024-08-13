@@ -909,7 +909,7 @@ export class FwsAbnormalSensed {
     // 34 NAVIGATION
     340800001: {
       // ADR 1 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: this.fws.adr1Fault,
       notActiveWhenFaults: ['340800004', '340800008', '340800005'],
       whichItemsToShow: () => [true, true, true, true],
@@ -931,7 +931,7 @@ export class FwsAbnormalSensed {
     },
     340800002: {
       // ADR 2 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: this.fws.adr2Fault,
       notActiveWhenFaults: ['340800004', '340800008', '340800006'],
       whichItemsToShow: () => [true, true],
@@ -951,7 +951,7 @@ export class FwsAbnormalSensed {
     },
     340800003: {
       // ADR 3 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: this.fws.adr3Fault,
       notActiveWhenFaults: ['340800005', '340800006', '340800008'],
       whichItemsToShow: () => [true, true, true, true],
@@ -969,7 +969,7 @@ export class FwsAbnormalSensed {
     },
     340800004: {
       // ADR 1+2 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr2Fault),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
@@ -1001,7 +1001,7 @@ export class FwsAbnormalSensed {
     },
     340800005: {
       // ADR 1+3 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr3Fault),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
@@ -1033,7 +1033,7 @@ export class FwsAbnormalSensed {
     },
     340800006: {
       // ADR 2+3 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Fault, this.fws.adr3Fault),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
@@ -1065,7 +1065,7 @@ export class FwsAbnormalSensed {
     },
     340800008: {
       // ADR 1+2+3 FAULT
-      flightPhaseInhib: [4, 5, 10],
+      flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
         this.fws.adr1Fault,

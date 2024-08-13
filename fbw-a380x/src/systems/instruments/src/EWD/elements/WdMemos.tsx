@@ -64,6 +64,11 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
 
     this.memosLeft.forEach((el) => el.sub(() => this.update(), true));
     this.memosRight.forEach((el) => el.sub(() => this.update(), true));
+
+    this.sub
+      .on('realTime')
+      .atFrequency(0.05)
+      .handle(() => this.update());
   }
 
   render() {

@@ -223,6 +223,8 @@ export class FwsCore implements Instrument {
     this.fireActive,
   );
 
+  public readonly ecamStsNormal = Subject.create(true);
+
   public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
@@ -668,6 +670,8 @@ export class FwsCore implements Instrument {
 
   /* FUEL */
 
+  public readonly allFuelPumpsOff = Subject.create(false);
+
   public readonly centerFuelPump1Auto = ConsumerValue.create(null, false);
 
   public readonly centerFuelPump2Auto = ConsumerValue.create(null, false);
@@ -950,6 +954,10 @@ export class FwsCore implements Instrument {
   public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
 
   public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
+
+  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine3Master'), 0);
+
+  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine4Master'), 0);
 
   public readonly engine1State = Subject.create(0);
 
@@ -1275,8 +1283,23 @@ export class FwsCore implements Instrument {
         this.engine1ValueSwitch.get() ||
         this.engine2ValueSwitch.get() ||
         this.engine3ValueSwitch.get() ||
-        this.engine1ValueSwitch.get()
+        this.engine4ValueSwitch.get()
       ),
+    );
+    this.allFuelPumpsOff.set(
+      !this.engine1ValueSwitch.get() &&
+        !this.engine2ValueSwitch.get() &&
+        !this.engine3ValueSwitch.get() &&
+        !this.engine4ValueSwitch.get() &&
+        !this.centerFuelPump1Auto.get() &&
+        !this.centerFuelPump2Auto.get() &&
+        !this.leftOuterInnerValve.get() &&
+        !this.leftFuelPump1Auto.get() &&
+        !this.leftFuelPump2Auto.get() &&
+        !this.rightOuterInnerValve.get() &&
+        !this.rightFuelPump1Auto.get() &&
+        !this.rightFuelPump2Auto.get() &&
+        this.allEngineSwitchOff.get(),
     );
 
     // Inhibit single chimes for the first two seconds after power-on
@@ -1603,9 +1626,9 @@ export class FwsCore implements Instrument {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
-    this.ir1Fault.set(!this.ir1Pitch.isNormalOperation() || this.ir1MaintWord.bitValueOr(9, true));
-    this.ir2Fault.set(!this.ir2Pitch.isNormalOperation() || this.ir2MaintWord.bitValueOr(9, true));
-    this.ir3Fault.set(!this.ir3Pitch.isNormalOperation() || this.ir3MaintWord.bitValueOr(9, true));
+    this.ir1Fault.set(this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true));
+    this.ir2Fault.set(this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true));
+    this.ir3Fault.set(this.ir3Pitch.isFailureWarning() || this.ir3MaintWord.bitValueOr(9, true));
 
     this.irExcessMotion.set(
       this.ir1MaintWord.bitValueOr(13, false) ||
@@ -1616,6 +1639,7 @@ export class FwsCore implements Instrument {
     this.adr1Fault.set(this.adr1Cas.get().isFailureWarning() || this.ir1MaintWord.bitValueOr(8, false));
     this.adr2Fault.set(this.adr2Cas.isFailureWarning() || this.ir2MaintWord.bitValueOr(8, false));
     this.adr3Fault.set(this.adr3Cas.isFailureWarning() || this.ir3MaintWord.bitValueOr(8, false));
+    // console.log('2', this.adr1Cas.get().isFailureWarning(), this.ir1MaintWord.bitValueOr(8, false));
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
@@ -3039,6 +3063,14 @@ export class FwsCore implements Instrument {
       ...new Set(pfdLimitationsKeys.concat(ewdLimitationsAllPhasesKeys).concat(ewdLimitationsApprLdgKeys)),
     ];
     this.pfdLimitationsLines.forEach((l, i) => l.set(pfdLimitationsCombined[i]));
+
+    this.ecamStsNormal.set(
+      !stsInfoKeys.length &&
+        !stsInopAllPhasesKeys.length &&
+        !stsInopApprLdgKeys.length &&
+        !ewdLimitationsAllPhasesKeys.length &&
+        !ewdLimitationsApprLdgKeys.length,
+    );
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
     // We shall wait for the rust FWC for those nice things!

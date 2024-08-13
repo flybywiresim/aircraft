@@ -39,6 +39,8 @@ export type PseudoFwcSimvars = {
   engine2ReverserTransit: boolean;
   engine2ReverserDeployed: boolean;
   engine2State: number;
+  engine3Master: number;
+  engine4Master: number;
   wingAntiIce: boolean;
   apuBleedPressure: number;
   left1LandingGear: boolean;
@@ -168,6 +170,8 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
     ['engine2ReverserTransit', { name: PseudoFwcVars.engine2ReverserTransit, type: SimVarValueType.Bool }],
     ['engine2ReverserDeployed', { name: PseudoFwcVars.engine2ReverserDeployed, type: SimVarValueType.Bool }],
     ['engine2State', { name: PseudoFwcVars.engine2State, type: SimVarValueType.Enum }],
+    ['engine3Master', { name: 'A:FUELSYSTEM VALVE SWITCH:3', type: SimVarValueType.Bool }],
+    ['engine4Master', { name: 'A:FUELSYSTEM VALVE SWITCH:4', type: SimVarValueType.Bool }],
     ['wingAntiIce', { name: PseudoFwcVars.wingAntiIce, type: SimVarValueType.Bool }],
     ['apuBleedPressure', { name: PseudoFwcVars.apuBleedPressure, type: SimVarValueType.PSI }],
     ['left1LandingGear', { name: PseudoFwcVars.left1LandingGear, type: SimVarValueType.Bool }],

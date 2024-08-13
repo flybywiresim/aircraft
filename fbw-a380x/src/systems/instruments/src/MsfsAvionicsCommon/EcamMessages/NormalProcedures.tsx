@@ -3,7 +3,8 @@
 
 import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
-/** All normal procedures (checklists, via ECL) should be here. Display is ordered by ID, ascending. */
+/** All normal procedures (checklists, via ECL) should be here.
+ * Display is ordered by ID, ascending. That's why keys need to be numbers. */
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   1000001: {
     title: 'BEFORE START',
@@ -77,7 +78,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'ECAM STS',
         labelNotCompleted: 'CHECK',
-        labelCompleted: ': NORMAL',
+        labelCompleted: 'NORMAL',
         sensed: true,
       },
       {
@@ -138,15 +139,15 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         sensed: true,
       },
       {
-        name: 'SIGNS',
+        name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
         sensed: true,
         level: 1,
       },
       {
-        name: 'SPLRs',
+        name: 'GND SPLRs',
         labelNotCompleted: 'ARM',
-        labelCompleted: ': ARM',
+        labelCompleted: 'ARM',
         sensed: true,
         level: 1,
       },
@@ -164,7 +165,8 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'T.O CONFIG',
-        labelNotCompleted: 'NORMAL',
+        labelNotCompleted: 'TEST',
+        labelCompleted: 'NORMAL',
         sensed: true,
         level: 1,
       },
@@ -232,7 +234,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'ECAM STS',
         labelNotCompleted: 'CHECK',
-        labelCompleted: ': NORMAL',
+        labelCompleted: 'NORMAL',
         sensed: true,
       },
       {
@@ -275,7 +277,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: true, labelNotCompleted: '' },
       {
-        name: 'SIGNS',
+        name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
         sensed: true,
       },
@@ -285,16 +287,17 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         sensed: true,
       },
       {
+        name: 'GND SPLRs',
+        labelNotCompleted: 'ARM',
+        labelCompleted: 'ARM',
+        sensed: true,
+      },
+      {
         name: 'FLAPS',
         labelNotCompleted: 'LDG',
         sensed: true,
       },
-      {
-        name: 'SPLRs',
-        labelNotCompleted: 'ARM',
-        labelCompleted: ': ARM',
-        sensed: true,
-      },
+
     ],
   },
   1000007: {
@@ -303,7 +306,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'SPLRs',
         labelNotCompleted: 'DISARM',
-        labelCompleted: ': DISARM',
         sensed: true,
       },
       {
@@ -314,7 +316,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'APU',
         labelNotCompleted: 'START',
-        labelCompleted: ': START',
         sensed: true,
       },
     ],

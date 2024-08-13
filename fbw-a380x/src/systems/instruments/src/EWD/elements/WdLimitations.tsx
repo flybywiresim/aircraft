@@ -70,6 +70,11 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
 
     this.limitationsLeft.forEach((el) => el.sub(() => this.update(), true));
     this.limitationsRight.forEach((el) => el.sub(() => this.update(), true));
+
+    this.sub
+      .on('realTime')
+      .atFrequency(0.05)
+      .handle(() => this.update());
   }
 
   render() {
