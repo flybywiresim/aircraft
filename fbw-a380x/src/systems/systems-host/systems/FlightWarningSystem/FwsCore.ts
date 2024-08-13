@@ -1716,8 +1716,11 @@ export class FwsCore implements Instrument {
 
     /* HYDRAULICS acquisition */
 
-    const yLoPressure = SimVar.GetSimVarValue('A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
-    const gLoPressure = SimVar.GetSimVarValue('A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE', 'psi') < 2900;
+    const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+    const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+
+    const gLoPressure = !greenSysPressurised;
+    const yLoPressure = !yellowSysPressurised;
 
     this.eng1Or2RunningAndPhaseConfirmationNode.write(
       !this.engine1Running || !this.engine2Running || ![1, 2, 11, 12].includes(this.fwcFlightPhase.get()),
@@ -1770,7 +1773,7 @@ export class FwsCore implements Instrument {
         !this.eng1APumpAuto,
       deltaTime,
     );
-    const eng1APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE', 'psi') < 2900;
+    const eng1APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1APumpFault.set(
       this.eng1APumpOffConfirmationNode.read() ||
         (!this.engine1Running && eng1APumpBelow2900 && !this.greenYellowAbnormLoPressure),
@@ -1784,7 +1787,7 @@ export class FwsCore implements Instrument {
         !this.eng1BPumpAuto,
       deltaTime,
     );
-    const eng1BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE', 'psi') < 2900;
+    const eng1BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1BPumpFault.set(
       this.eng1BPumpOffConfirmationNode.read() ||
         (!this.engine1Running && eng1BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
@@ -1803,7 +1806,7 @@ export class FwsCore implements Instrument {
       deltaTime,
     );
 
-    const eng2APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE', 'psi') < 2900;
+    const eng2APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2APumpFault.set(
       this.eng2APumpOffConfirmationNode.read() ||
         (!this.engine2Running && eng2APumpBelow2900 && !this.greenYellowAbnormLoPressure),
@@ -1818,7 +1821,7 @@ export class FwsCore implements Instrument {
       deltaTime,
     );
 
-    const eng2BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE', 'psi') < 2900;
+    const eng2BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2BPumpFault.set(
       this.eng2BPumpOffConfirmationNode.read() ||
         (!this.engine2Running && eng2BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
@@ -1838,7 +1841,7 @@ export class FwsCore implements Instrument {
     this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool'));
 
-    const eng3APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE', 'psi') < 2900;
+    const eng3APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3APumpFault.set(
       this.eng3APumpOffConfirmationNode.read() ||
         (!this.engine3Running && eng3APumpBelow2900 && !this.greenYellowAbnormLoPressure),
@@ -1853,7 +1856,7 @@ export class FwsCore implements Instrument {
       deltaTime,
     );
 
-    const eng3BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE', 'psi') < 2900;
+    const eng3BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3BPumpFault.set(
       this.eng3BPumpOffConfirmationNode.read() ||
         (!this.engine3Running && eng3BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
@@ -1872,7 +1875,7 @@ export class FwsCore implements Instrument {
       deltaTime,
     );
 
-    const eng4APumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_3_SECTION_PRESSURE', 'psi') < 2900;
+    const eng4APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
 
     this.eng4APumpFault.set(
       this.eng4APumpOffConfirmationNode.read() ||
@@ -1888,14 +1891,11 @@ export class FwsCore implements Instrument {
       deltaTime,
     );
 
-    const eng4BPumpBelow2900 = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_4_SECTION_PRESSURE', 'psi') < 2900;
+    const eng4BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng4BPumpFault.set(
       this.eng4BPumpOffConfirmationNode.read() ||
         (!this.engine4Running && eng4BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
-
-    const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
-    const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
 
     /* ADIRS acquisition */
     /* NAVIGATION */
