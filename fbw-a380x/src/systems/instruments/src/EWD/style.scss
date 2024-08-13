@@ -39,6 +39,9 @@
     display: none;
 }
 
+.Invisible {
+  visibility: hidden;
+}
 
 .EWDWarningTextLeft {
     fill: white;
@@ -341,18 +344,33 @@ text, tspan, span {
 
 .ProceduresContainer {
   display: flex;
+  flex-direction: row;
+}
+
+.OverflowIndicatorColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  padding: 50px 0px 12px 0px;
+}
+
+.WarningsColumn {
+  display: flex;
   flex-direction: column;
   padding: 12px 0px 12px 0px;
   height: 100%;
+  flex: 1;
 }
 
 .EclLine {
   display: flex;
   flex-direction: row;
+  flex: 1;
   padding: 4px 0px 4px 0px;
-  margin-left: 20px;
+  margin-left: 10px;
   align-items: center;
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   color: $display-cyan;
 }
 
@@ -364,12 +382,13 @@ text, tspan, span {
   color: $display-green;
 }
 
-.EclLine.ChecklistMenuItem.ChecklistCompleted {
-    color: $display-green !important;
+.EclLine.ChecklistCompleted {
+  color: $display-grey !important;
 }
 
 .EclLine.Selected {
-  border: 2px solid $display-cyan;
+  border: 3px solid $display-cyan;
+  border-right: 3px solid transparent;
 }
 
 .EclLine.Headline {
@@ -380,23 +399,51 @@ text, tspan, span {
 .EclLineCheckboxArea {
   text-align: center;
   justify-content: center;
-  width: 40px;
+  align-items: center;
+  padding-top: 2px;
+  width: 32px;
   font-size: 26px;
 }
 
 .EclLineText {
-  margin-left: 10px;
+  margin: 0px 10px 0px 10px;
   font-size: 26px;
 }
 
 .EclSeparationLine {
+  flex: 1;
   border-bottom: 2px solid $display-white;
   padding-top: 16px;
   margin-bottom: 16px;
   align-self: center;
   justify-self: center;
+  margin-right: 10px;
 }
 
 .EclLineContainer {
   height: 34px;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.EclLineEndMarker {
+  content: ' ';
+  width: 28px;
+  height: 34px;
+  border-right: 3px solid $display-white;
+  border-left: 3px solid $display-white;
+  margin-left: -5px;
+}
+
+.EclLineEndMarker.Selected {
+  border-left: 3px solid transparent;
+}
+
+.EclLineEndMarker.First {
+  border-top: 3px solid $display-white;
+}
+
+.EclLineEndMarker.Last {
+  border-bottom: 3px solid $display-white;
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { MapSubject, Subject } from '@microsoft/msfs-sdk';
+import { MapSubject, Subject, SubscribableMapEventType } from '@microsoft/msfs-sdk';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
@@ -23,19 +23,31 @@ export class FwsNormalChecklists {
   /** Marked with cyan box */
   public readonly selectedLine = Subject.create(0);
 
-  public readonly checklistState = MapSubject.create<number, ChecklistState>(null);
+  /** For overflowing checklists */
+  public readonly showFromLine = Subject.create(0);
+
+  public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
   constructor(private fws: FwsCore) {
     this.showChecklist.sub((v) => this.pub.pub('fws_show_normal_checklists', v, true), true);
-    this.checklistState.sub((cl) => {
-      const flattened: ChecklistState[] = [];
-      cl.forEach((val, key) =>
-        flattened.push({ id: key, checklistCompleted: val.checklistCompleted, itemsCompleted: val.itemsCompleted }),
-      );
-      this.pub.pub('fws_normal_checklists', flattened, true);
-    }, true);
+    this.checklistState.sub(
+      (
+        map: ReadonlyMap<number, ChecklistState>,
+        _type: SubscribableMapEventType,
+        _key: number,
+        _value: ChecklistState,
+      ) => {
+        const flattened: ChecklistState[] = [];
+        map.forEach((val, key) =>
+          flattened.push({ id: key, checklistCompleted: val.checklistCompleted, itemsCompleted: val.itemsCompleted }),
+        );
+        this.pub.pub('fws_normal_checklists', flattened, true);
+      },
+      true,
+    );
     this.checklistId.sub((id) => this.pub.pub('fws_normal_checklists_id', id, true), true);
     this.selectedLine.sub((line) => this.pub.pub('fws_normal_checklists_active_line', line, true), true);
+    this.showFromLine.sub((line) => this.pub.pub('fws_normal_checklists_show_from_line', line, true), true);
 
     // Populate checklistState
     const keys = this.getNormalProceduresKeysSorted();
@@ -62,7 +74,26 @@ export class FwsNormalChecklists {
   }
 
   selectFirst() {
-    this.selectedLine.set(-1);
+    if (this.checklistId.get() === 0) {
+      // Find first non-completed checklist
+      const keys = this.getNormalProceduresKeysSorted();
+      let firstIncompleteChecklist = 0;
+      keys.some((key, index) => {
+        if (!this.checklistState.getValue(key).checklistCompleted) {
+          firstIncompleteChecklist = index;
+          return true;
+        }
+      });
+      this.selectedLine.set(firstIncompleteChecklist - 1);
+    } else {
+      const clState = this.checklistState.getValue(this.checklistId.get());
+      const selectableAndNotChecked = EcamNormalProcedures[this.checklistId.get()].items
+        .map((item, index) => (item.sensed === false && clState.itemsCompleted[index] === false ? index : null))
+        .filter((v) => v !== null);
+      this.selectedLine.set(
+        selectableAndNotChecked[0] !== undefined ? selectableAndNotChecked[0] - 1 : clState.itemsCompleted.length - 1,
+      );
+    }
     this.moveDown();
   }
 
@@ -97,6 +128,7 @@ export class FwsNormalChecklists {
         }
       }
     }
+    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
   }
 
   moveDown() {
@@ -111,17 +143,63 @@ export class FwsNormalChecklists {
         .filter((v) => v !== null);
       if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
         // Last element before C/L complete
-        this.selectedLine.set(
-          Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1, WD_NUM_LINES - 1)),
-        );
+        this.selectedLine.set(Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1)));
       } else {
         this.selectedLine.set(
           Math.min(
             selectable.find((v) => v > this.selectedLine.get()),
-            WD_NUM_LINES - 1,
+            numItems - 1,
           ),
         );
       }
+    }
+    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
+  }
+
+  checkCurrentItem() {
+    const cl = this.checklistState.getValue(this.checklistId.get());
+    const clState: ChecklistState = {
+      id: cl.id,
+      checklistCompleted: cl.checklistCompleted,
+      itemsCompleted: [...cl.itemsCompleted],
+    };
+    if (this.selectedLine.get() < clState.itemsCompleted.length) {
+      clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
+    } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
+      // C/L complete
+      clState.checklistCompleted = true;
+      const proc = EcamNormalProcedures[this.checklistId.get()];
+      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
+    } else if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
+      // RESET
+      clState.checklistCompleted = false;
+      const proc = EcamNormalProcedures[this.checklistId.get()];
+      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : false));
+
+      // Reset all following checklists
+      const fromId = this.getNormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get());
+      const ids = this.getNormalProceduresKeysSorted();
+
+      if (fromId !== -1) {
+        for (let id = fromId + 1; id < ids.length; id++) {
+          const idFollowing = ids[id];
+          const clFollowing = this.checklistState.getValue(idFollowing);
+          const procFollowing = EcamNormalProcedures[idFollowing];
+          const clStateFollowing: ChecklistState = {
+            id: idFollowing,
+            checklistCompleted: false,
+            itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
+              procFollowing.items[index].sensed ? val : false,
+            ),
+          };
+          this.checklistState.setValue(idFollowing, clStateFollowing);
+        }
+      }
+    }
+    this.checklistState.setValue(this.checklistId.get(), clState);
+
+    if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
+      this.selectFirst();
     }
   }
 
@@ -165,7 +243,7 @@ export class FwsNormalChecklists {
         // Navigate to check list
         this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
       } else {
-        // Check +
+        this.checkCurrentItem();
         this.moveDown();
       }
     }

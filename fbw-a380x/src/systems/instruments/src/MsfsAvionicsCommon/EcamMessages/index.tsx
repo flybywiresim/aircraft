@@ -468,6 +468,7 @@ export enum ChecklistLineStyle {
   SubHeadline = 'SubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistMenuItem = 'ChecklistMenuItem',
+  CompletedChecklist = 'CompletedChecklist',
 }
 
 interface AbstractChecklistItem {

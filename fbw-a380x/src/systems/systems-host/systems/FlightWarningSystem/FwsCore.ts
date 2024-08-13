@@ -184,7 +184,7 @@ export class FwsCore implements Instrument {
   public readonly presentedFailures: string[] = [];
 
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalSensedList: InternalAbnormalSensedList = new Map();
+  public readonly activeAbnormalSensedList: InternalAbnormalSensedList = new Map<number, FwsEwdAbnormalSensedEntry>();
 
   private recallFailures: string[] = [];
 

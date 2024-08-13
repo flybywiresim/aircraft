@@ -32,6 +32,8 @@ export interface FwsEwdEvents {
   fws_normal_checklists_id: number,
   /** (FWS -> EWD) Which line to mark as next */
   fws_normal_checklists_active_line: number,
+  /** (FWS -> EWD) From which line on to show the items, for overflowing procedures */
+  fws_normal_checklists_show_from_line: number,
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
   fws_abnormal_sensed_procedures: FwsEwdAbnormalSensedList,
 }
