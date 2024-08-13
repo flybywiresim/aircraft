@@ -67,7 +67,7 @@ export enum FwcAuralWarning {
   Crc,
 }
 
-type InternalAbnormalSensedList = Map<number, FwsEwdAbnormalSensedEntry>;
+type InternalAbnormalSensedList = Map<string, FwsEwdAbnormalSensedEntry>;
 
 export class FwsCore implements Instrument {
   public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents>();
@@ -184,7 +184,7 @@ export class FwsCore implements Instrument {
   public readonly presentedFailures: string[] = [];
 
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalSensedList: InternalAbnormalSensedList = new Map<number, FwsEwdAbnormalSensedEntry>();
+  public readonly activeAbnormalSensedList: InternalAbnormalSensedList = new Map<string, FwsEwdAbnormalSensedEntry>();
 
   private recallFailures: string[] = [];
 
@@ -2784,7 +2784,7 @@ export class FwsCore implements Instrument {
           }
         }
 
-        if (!this.activeAbnormalSensedList.has(parseInt(key))) {
+        if (!this.activeAbnormalSensedList.has(key)) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -2808,8 +2808,8 @@ export class FwsCore implements Instrument {
               'ECAM alert definition error: whichItemsCompleted() not the same size as number of procedure items',
             );
           }
-          this.activeAbnormalSensedList.set(parseInt(key), {
-            id: parseInt(key),
+          this.activeAbnormalSensedList.set(key, {
+            id: key,
             itemsActive: itemsActive,
             itemsCompleted: itemsCompleted,
             itemsToShow: itemsToShow,
@@ -2817,7 +2817,7 @@ export class FwsCore implements Instrument {
           stateWasChanged = true;
         } else {
           // Update internal map
-          const prevEl = this.activeAbnormalSensedList.get(parseInt(key));
+          const prevEl = this.activeAbnormalSensedList.get(key);
           // Update only sensed items
           proc.items.forEach((item, idx) => {
             if (item.sensed === true) {

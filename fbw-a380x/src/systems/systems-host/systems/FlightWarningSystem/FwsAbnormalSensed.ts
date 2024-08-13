@@ -1290,7 +1290,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.height1Failed && this.fws.ac2BusPowered,
+        this.fws.height1Failed,
+        this.fws.ac2BusPowered,
       ),
       notActiveWhenFaults: ['340800059', '340800060', '340800062'],
       whichItemsToShow: () => [],
@@ -1307,7 +1308,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.height2Failed && this.fws.ac4BusPowered,
+        this.fws.height2Failed,
+        this.fws.ac4BusPowered,
       ),
       notActiveWhenFaults: ['340800059', '340800061', '340800062'],
       whichItemsToShow: () => [],
@@ -1324,7 +1326,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.height3Failed && this.fws.acESSBusPowered,
+        this.fws.height3Failed,
+        this.fws.acESSBusPowered,
       ),
       notActiveWhenFaults: ['340800060', '340800061', '340800062'],
       whichItemsToShow: () => [],

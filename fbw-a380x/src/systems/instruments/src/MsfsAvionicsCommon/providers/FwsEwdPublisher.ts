@@ -12,7 +12,7 @@ export interface FwsEwdNormalChecklistEntry {
 export type FwsEwdNormalChecklist = FwsEwdNormalChecklistEntry[];
 
 export interface FwsEwdAbnormalSensedEntry {
-  id: number;
+  id: string;
   itemsToShow: boolean[];
   itemsCompleted: boolean[];
   itemsActive: boolean[];

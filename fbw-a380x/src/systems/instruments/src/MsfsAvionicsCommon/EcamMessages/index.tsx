@@ -185,7 +185,7 @@ export const pfdMemoDisplay: string[] = [
 ];
 
 /** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
-export const EcamInfos: { [n: number]: string } = {
+export const EcamInfos: { [n: string]: string } = {
   220200001: '\x1b<3mFMS 1 ON FMC-C',
   220200002: '\x1b<3mFMS 2 ON FMC-C',
   220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
@@ -208,7 +208,7 @@ export const EcamInfos: { [n: number]: string } = {
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
-export const EcamLimitations: { [n: number]: string } = {
+export const EcamLimitations: { [n: string]: string } = {
   230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',
   240400002: '\x1b<5mMAX SPEED: 310/.86',
@@ -220,7 +220,7 @@ export const EcamLimitations: { [n: number]: string } = {
 };
 
 /** All possible INOP sys, with special formatting characters. */
-export const EcamInopSys: { [n: number]: string } = {
+export const EcamInopSys: { [n: string]: string } = {
   210300001: '\x1b<4mCAB PRESS AUTO CTL',
   220300001: '\x1b<4mA/THR',
   220300002: '\x1b<4mCAT 3',
@@ -513,7 +513,7 @@ export function isChecklistAction(element: ChecklistAction | ChecklistCondition)
 }
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
-export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = {
+export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = {
   ...EcamAbnormalSensedAta212223,
   ...EcamAbnormalSensedAta24,
   ...EcamAbnormalSensedAta26,
@@ -529,4 +529,4 @@ export const EcamAbnormalSensedProcedures: { [n: number]: AbnormalProcedure } = 
 };
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
-export const EcamAbnormalNonSensedProcedures: { [n: number]: AbnormalProcedure } = {};
+export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
