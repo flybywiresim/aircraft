@@ -265,6 +265,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI CONTROLS", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:1", "RPM");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:2", "RPM");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SEA LEVEL PRESSURE", "MBAR");
 
   // FIXME use MMR2 (NAV4) as well
 
@@ -405,6 +406,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ATT_HOLD, "AP_ATT_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_HOLD, "AP_MACH_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC, "BAROMETRIC", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
@@ -2361,6 +2363,13 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       fcuAfsPanelInputs.loc_button_pressed = true;
       std::cout << "WASM: event triggered: AP_LOC_HOLD" << std::endl;
       break;
+    }
+
+    case Events::BAROMETRIC: {
+      simInputAutopilot.baro_left_set = simData.seaLevelPressure;
+      simInputAutopilot.baro_right_set = simData.seaLevelPressure;
+
+      std::cout << "WASM: event triggered: BAROMETRIC" << std::endl;
     }
 
     case Events::AUTO_THROTTLE_ARM: {
