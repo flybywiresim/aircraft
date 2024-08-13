@@ -69,17 +69,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000305': {
-      // GPWS FLAP MODE OFF
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.gpwsFlapMode.map((v) => !!v),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000030501'], // Not inhibited
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000060': {
       // SPEED BRK
       flightPhaseInhib: [],
@@ -90,66 +79,6 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [this.fws.amberSpeedBrake.get() ? 1 : 0],
       codesToReturn: ['000006001', '000006002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000540': {
-      // PRED W/S OFF
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([predWSOn, fwcFlightPhase]) => !predWSOn && ![1, 10].includes(fwcFlightPhase),
-        this.fws.predWSOn,
-        this.fws.fwcFlightPhase,
-      ),
-      whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fws.fwcFlightPhase.get()) || this.fws.toConfigNormal.get() ? 1 : 0,
-      ],
-      codesToReturn: ['000054001', '000054002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000545': {
-      // TERR OFF
-      flightPhaseInhib: [1, 10],
-      simVarIsActive: this.fws.gpwsTerrOff,
-      whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fws.fwcFlightPhase.get()) || this.fws.toConfigNormal.get() ? 1 : 0,
-      ],
-      codesToReturn: ['000054501', '000054502'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000320': {
-      // TCAS STBY
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase !== 6,
-        this.fws.tcasSensitivity,
-        this.fws.fwcFlightPhase,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000032001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
-    '0000325': {
-      // TCAS STBY in flight
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase === 6,
-        this.fws.tcasSensitivity,
-        this.fws.fwcFlightPhase,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000032501'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -666,6 +595,75 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
+
+    '341000001': {
+      // GPWS OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.fws.gpwsSysOff,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000001'],
+      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '341000002': {
+      // TAWS FLAP MODE OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.fws.gpwsFlapModeOff,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000002'],
+      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '341000003': {
+      // TAWS G/S MODE OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.fws.gpwsGsOff,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['341000003'],
+      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+
+    '343000001': {
+      // TCAS STBY
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: MappedSubject.create(([tcasSensitivity]) => tcasSensitivity === 1, this.fws.tcasSensitivity),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['343000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '343000002': {
+      // ALT RPTG OFF
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.fws.xpdrAltReporting.map((v) => !v),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['343000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '343000003': {
+      // XPDR STBY
+      flightPhaseInhib: [1, 12],
+      simVarIsActive: this.fws.xpdrStby,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['343000003'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+
     '709000001': {
       // IGNITION
       flightPhaseInhib: [],

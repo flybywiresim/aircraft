@@ -119,7 +119,7 @@ export class FwsAbnormalSensed {
         this.fws.fmsSwitchingKnob.get() === 1,
         false,
         false,
-        this.fws.gpwsFlapMode.get() === 1,
+        !this.fws.gpwsFlapModeOff.get(),
       ],
       failure: 2,
       sysPage: -1,
