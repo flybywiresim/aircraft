@@ -1723,12 +1723,12 @@ export class FwsCore implements Instrument {
     const yLoPressure = !yellowSysPressurised;
 
     this.eng1Or2RunningAndPhaseConfirmationNode.write(
-      !this.engine1Running || !this.engine2Running || ![1, 2, 11, 12].includes(this.fwcFlightPhase.get()),
+      this.engine1Running || this.engine2Running || ![1, 2, 11, 12].includes(this.fwcFlightPhase.get()),
       deltaTime,
     );
 
     this.eng3Or4RunningAndPhaseConfirmationNode.write(
-      !this.engine3Running || !this.engine4Running || ![1, 2, 11, 12].includes(this.fwcFlightPhase.get()),
+      this.engine3Running || this.engine4Running || ![1, 2, 11, 12].includes(this.fwcFlightPhase.get()),
       deltaTime,
     );
 
@@ -1790,7 +1790,7 @@ export class FwsCore implements Instrument {
     const eng1BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1BPumpFault.set(
       this.eng1BPumpOffConfirmationNode.read() ||
-        (!this.engine1Running && eng1BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine1Running && eng1BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
@@ -1809,7 +1809,7 @@ export class FwsCore implements Instrument {
     const eng2APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2APumpFault.set(
       this.eng2APumpOffConfirmationNode.read() ||
-        (!this.engine2Running && eng2APumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine2Running && eng2APumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     this.eng2BPumpOffConfirmationNode.write(
@@ -1824,7 +1824,7 @@ export class FwsCore implements Instrument {
     const eng2BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2BPumpFault.set(
       this.eng2BPumpOffConfirmationNode.read() ||
-        (!this.engine2Running && eng2BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine2Running && eng2BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
@@ -1844,7 +1844,7 @@ export class FwsCore implements Instrument {
     const eng3APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3APumpFault.set(
       this.eng3APumpOffConfirmationNode.read() ||
-        (!this.engine3Running && eng3APumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine3Running && eng3APumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     this.eng3BPumpOffConfirmationNode.write(
@@ -1859,7 +1859,7 @@ export class FwsCore implements Instrument {
     const eng3BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3BPumpFault.set(
       this.eng3BPumpOffConfirmationNode.read() ||
-        (!this.engine3Running && eng3BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine3Running && eng3BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
@@ -1879,7 +1879,7 @@ export class FwsCore implements Instrument {
 
     this.eng4APumpFault.set(
       this.eng4APumpOffConfirmationNode.read() ||
-        (!this.engine4Running && eng4APumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine4Running && eng4APumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     this.eng4BPumpOffConfirmationNode.write(
@@ -1894,7 +1894,7 @@ export class FwsCore implements Instrument {
     const eng4BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng4BPumpFault.set(
       this.eng4BPumpOffConfirmationNode.read() ||
-        (!this.engine4Running && eng4BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine4Running && eng4BPumpBelow2900 && !this.greenYellowAbnormLoPressure),
     );
 
     /* ADIRS acquisition */
