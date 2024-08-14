@@ -109,6 +109,7 @@
 1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal
 1. [FWC] Fix NW STRG DISC turning amber too soon - @adoggman (Andrew)
 1. [FMS] Fix VNAV crash for steep approaches - @BlueberryKing (BlueberryKing)
+1. [GPWS] Fixed behaviour and trigger conditions for GPWS Mode 4 submodes - @LeechCZ (Leech)
 
 ## 0.11.0
 
