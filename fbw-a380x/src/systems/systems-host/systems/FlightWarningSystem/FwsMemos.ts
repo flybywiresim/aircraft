@@ -84,17 +84,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000552': {
-      // COMPANY MESSAGE
-      flightPhaseInhib: [3, 4, 5, 7, 8],
-      simVarIsActive: this.fws.compMesgCount.map((v) => v > 0),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000055201'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000260': {
       // ENG ANTI ICE
       flightPhaseInhib: [3, 4, 5, 7, 8],
@@ -663,7 +652,28 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-
+    '350000001': {
+      // OXY PAX SYS ON
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.paxOxyMasksDeployed,
+      whichCodeToReturn: () => [0],
+      codesToReturn: [!this.fws.aircraftOnGround.get() && this.fws.excessPressure.get() ? '350000001' : '350000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '460000001': {
+      // COMPANY MSG
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.compMesgCount.map((c) => c > 0),
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['460000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     '709000001': {
       // IGNITION
       flightPhaseInhib: [],

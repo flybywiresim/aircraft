@@ -17,7 +17,7 @@ import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/Ecam
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 
 // Convention for IDs:
-// First two digits: ATA chapter
+// First two digits: ATA chapter. 00 for T.O and LDG memos
 // Third digit: Sub chapter, if needed
 // Fourth digit:
 //    0 for MEMOs,
@@ -90,7 +90,6 @@ export const EcamMemos: { [n: string]: string } = {
   '000029001': '\x1b<3mSWITCHG PNL',
   '000035001': '\x1b<2mLAND ASAP',
   '000036001': '\x1b<4mLAND ASAP',
-  '000055201': '\x1b<3mCOMPANY MSG',
   '000056001': '\x1b<3mHI ALT SET',
   '220000001': '\x1b<2mAP OFF',
   '220000002': '\x1b<4mA/THR OFF',
@@ -171,6 +170,13 @@ export const EcamMemos: { [n: string]: string } = {
   '343000001': '\x1b<3mTCAS STBY',
   '343000002': '\x1b<3mALT RPTG OFF',
   '343000003': '\x1b<3mXPDR STBY',
+  '350000001': '\x1b<3mOXY PAX SYS ON',
+  '350000002': '\x1b<4mOXY PAX SYS ON',
+  '460000001': '\x1b<3mCOMPANY MSG',
+  '460000002': '\x1b<3mCOMPANY MSG:PRNTR',
+  '460000003': '\x1b<3mCOMPANY ALERT',
+  '460000004': '\x1b<3mCOMPANY ALERT:PRNTR',
+  '460000005': '\x1b<3mCALL COMPANY',
   '709000001': '\x1b<3mIGNITION',
 };
 

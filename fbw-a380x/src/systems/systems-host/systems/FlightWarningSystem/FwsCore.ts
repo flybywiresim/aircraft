@@ -960,6 +960,9 @@ export class FwsCore implements Instrument {
 
   public readonly xpdrAltReporting = Subject.create(false);
 
+  /** 35 OXYGEN */
+  public readonly paxOxyMasksDeployed = Subject.create(false);
+
   /** ENGINE AND THROTTLE */
 
   public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
@@ -2657,6 +2660,9 @@ export class FwsCore implements Instrument {
     this.iceNotDetTimer2Status.set(
       this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime),
     );
+
+    /* OXYGEN */
+    this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
 
     /* CABIN READY */
 
