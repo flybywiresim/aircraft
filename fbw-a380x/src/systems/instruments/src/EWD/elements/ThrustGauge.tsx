@@ -42,7 +42,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly throttlePositionN1 = ConsumerSubject.create(
-    this.sub.on(`throttle_position_${this.props.engine}`).withPrecision(2).whenChanged(),
+    this.sub.on(`throttle_position_n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
