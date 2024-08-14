@@ -497,6 +497,8 @@ export interface ChecklistAction extends AbstractChecklistItem {
   labelNotCompleted: string;
   /** Label after "name" if action is completed. Optional, only fill if different from "labelNotCompleted". */
   labelCompleted?: string;
+  /** Whether to show a colon (:) between item name and labelCompleted. Default is true. */
+  colonIfCompleted?: boolean;
 }
 
 interface ChecklistCondition extends AbstractChecklistItem {}

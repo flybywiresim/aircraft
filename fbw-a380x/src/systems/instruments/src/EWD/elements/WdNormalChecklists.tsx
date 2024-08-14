@@ -113,9 +113,9 @@ export class WdNormalChecklists extends DisplayComponent<WdNormalChecklistsProps
           text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
           text += item.name;
           if (clState.itemsCompleted[index] && item.labelCompleted) {
-            text += ` : ${item.labelCompleted}`;
+            text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
           } else if (clState.itemsCompleted[index] && item.labelNotCompleted) {
-            text += ` : ${item.labelNotCompleted}`;
+            text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
           } else if (!clState.itemsCompleted[index] && item.labelNotCompleted) {
             // Pad to 39 characters max
             const paddingNeeded = 39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);

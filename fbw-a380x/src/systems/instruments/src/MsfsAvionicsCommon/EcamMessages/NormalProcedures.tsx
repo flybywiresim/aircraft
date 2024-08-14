@@ -41,11 +41,13 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'ADIRS',
         labelNotCompleted: 'NAV',
+        colonIfCompleted: false,
         sensed: true,
       },
       { name: '', labelNotCompleted: '', sensed: true, style: ChecklistLineStyle.SeparationLine },
@@ -63,6 +65,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'BEACON',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
       },
     ],
@@ -90,6 +93,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'RUDDER TRIM',
         labelNotCompleted: 'NEUTRAL',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
@@ -141,6 +145,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
         level: 1,
       },
@@ -148,6 +153,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         name: 'GND SPLRs',
         labelNotCompleted: 'ARM',
         labelCompleted: 'ARM',
+        colonIfCompleted: false,
         sensed: true,
         level: 1,
       },
@@ -160,6 +166,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'AUTO BRAKE',
         labelNotCompleted: 'RTO',
+        colonIfCompleted: false,
         sensed: true,
         level: 1,
       },
@@ -167,6 +174,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         name: 'T.O CONFIG',
         labelNotCompleted: 'TEST',
         labelCompleted: 'NORMAL',
+        colonIfCompleted: false,
         sensed: true,
         level: 1,
       },
@@ -196,21 +204,25 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'LDG GEAR',
         labelNotCompleted: 'UP',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'FLAPS',
         labelNotCompleted: '0',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'PACKS 1+2',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'APU MASTER SW',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
@@ -252,6 +264,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
       },
     ],
@@ -279,17 +292,19 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'LDG GEAR',
         labelNotCompleted: 'DOWN',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'GND SPLRs',
         labelNotCompleted: 'ARM',
-        labelCompleted: 'ARM',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
@@ -304,7 +319,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     title: 'AFTER LANDING',
     items: [
       {
-        name: 'SPLRs',
+        name: 'GND SPLRs',
         labelNotCompleted: 'DISARM',
         sensed: true,
       },
@@ -336,21 +351,25 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'APU BLEED',
         labelNotCompleted: 'ON',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'ALL ENGs',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'FUEL PMPs',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'SEAT BELTS',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
     ],
@@ -366,21 +385,25 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'OXYGEN',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'APU BLEED',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'EMER EXIT LT',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
         name: 'SIGNS',
         labelNotCompleted: 'OFF',
+        colonIfCompleted: false,
         sensed: true,
       },
       {
