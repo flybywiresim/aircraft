@@ -52,11 +52,8 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
         .join('\r'),
     );
 
-    // Weirdly enough, we have to wait for the SVG to be rendered to get its bounding box
-    setTimeout(() => {
-      this.memosLeftSvgRef.instance.style.height = `${(this.memosLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-      this.memosRightSvgRef.instance.style.height = `${(this.memosRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-    }, 150);
+    this.memosLeftSvgRef.instance.style.height = `${this.memosLeft.filter((v) => !!v.get()).length * 30 + 3}px`;
+    this.memosRightSvgRef.instance.style.height = `${this.memosRight.filter((v) => !!v.get()).length * 30 + 3}px`;
   }
 
   public onAfterRender(node: VNode): void {
