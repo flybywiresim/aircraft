@@ -283,7 +283,8 @@ class Polynomial_A380X {
    */
   static double correctedEGT(double cn1, double cff, double mach, double alt) {
     // TODO: Adjust the corrected fuel flow to account for the A380 double fuel flow. Will have to be taken care of.
-    cff = cff / 2;
+    // Divide by 3 to lower EGT. Very hacky.
+    cff = cff / 3;
 
     // Coefficients for the polynomial calculation
     double c_EGT[16] = {
