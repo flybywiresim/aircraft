@@ -219,8 +219,10 @@ export class FwsNormalChecklists {
 
   onUpdate() {
     if (this.fws.clPulseNode.read()) {
-      this.navigateToChecklist(0);
-      this.showChecklist.set(!this.showChecklist.get());
+      if (!this.fws.abnormalSensed.showAbnormalSensed.get()) {
+        this.navigateToChecklist(0);
+        this.showChecklist.set(!this.showChecklist.get());
+      }
     }
 
     if (this.fws.clDownPulseNode.read()) {

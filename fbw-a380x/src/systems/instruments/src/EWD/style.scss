@@ -114,7 +114,6 @@ tspan {
 }
 
 text, tspan, span {
-    fill: $display-white;
     stroke: none !important;
 
     &.EWDWarn {
@@ -382,8 +381,28 @@ text, tspan, span {
   color: $display-green;
 }
 
+.EclLine.AbnormalItem {
+  color: $display-cyan;
+}
+
+.EclLine.AbnormalItem.Checked {
+  color: $display-white;
+}
+
 .EclLine.ChecklistCompleted {
   color: $display-grey !important;
+}
+
+.EclLine.Green {
+  color: $display-green !important;
+}
+
+.EclLine.Cyan {
+  color: $display-cyan !important;
+}
+
+.EclLine.Amber {
+  color: $display-amber !important;
 }
 
 .EclLine.Selected {

@@ -2,8 +2,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamAbnormalSensedProcedures } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import { EcamAbnormalSensedProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  MappedSubject,
+  Subject,
+  Subscribable,
+  SubscribableMapEventType,
+  SubscribableMapFunctions,
+} from '@microsoft/msfs-sdk';
+import { FwsEwdAbnormalSensedEntry, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem {
@@ -17,7 +24,7 @@ export interface EwdAbnormalItem {
   /** Returns a boolean vector (same length as number of items). If true, item is shown in ECAM actions */
   whichItemsToShow: () => boolean[];
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed */
-  whichItemsCompleted: () => boolean[];
+  whichItemsChecked: () => boolean[];
   /** Returns a boolean vector (same length as number of items). Optional, defaults to true. If true, item is shown as activated */
   whichItemsActive?: () => boolean[];
   /** 3 = master warning, 2 = master caution */
@@ -47,7 +54,183 @@ export interface EwdAbnormalDict {
 }
 
 export class FwsAbnormalSensed {
-  constructor(private fws: FwsCore) {}
+  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+
+  public readonly showAbnormalSensed = Subject.create(false);
+
+  /** Marked with cyan box */
+  public readonly selectedLine = Subject.create(1);
+
+  /** For overflowing checklists */
+  public readonly showFromLine = Subject.create(0);
+
+  constructor(private fws: FwsCore) {
+    this.showAbnormalSensed.sub((v) => this.pub.pub('fws_show_abn_sensed', v, true), true);
+    this.fws.activeAbnormalSensedList.sub(
+      (
+        map: ReadonlyMap<string, FwsEwdAbnormalSensedEntry>,
+        _type: SubscribableMapEventType,
+        _key: string,
+        _value: FwsEwdAbnormalSensedEntry,
+      ) => {
+        const flattened: FwsEwdAbnormalSensedEntry[] = [];
+        map.forEach((val, key) =>
+          flattened.push({
+            id: key,
+            itemsCompleted: val.itemsCompleted,
+            itemsActive: val.itemsActive,
+            itemsToShow: val.itemsToShow,
+          }),
+        );
+        this.pub.pub('fws_abn_sensed_procedures', flattened, true);
+        SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', flattened[0] ? flattened[0].id : '');
+      },
+      true,
+    );
+    this.selectedLine.sub((line) => this.pub.pub('fws_abn_sensed_active_line', line, true), true);
+    this.showFromLine.sub((line) => this.pub.pub('fws_abn_sensed_show_from_line', line, true), true);
+  }
+
+  getAbnormalProceduresKeysSorted() {
+    return Object.keys(EcamAbnormalSensedProcedures).map((v) => v);
+  }
+
+  moveUp() {
+    /* const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
+    const selectable = EcamNormalProcedures[this.checklistId.get()].items
+      .map((item, index) => (item.sensed === false ? index : null))
+      .filter((v) => v !== null);
+
+    if (this.selectedLine.get() == numItems + 1) {
+      // RESET
+      this.selectedLine.set(this.selectedLine.get() - 1);
+    } else {
+      if (selectable.length === 0) {
+        return;
+      }
+      const previousElement = () => {
+        for (let i = selectable.length - 1; i >= 0; i--) {
+          if (selectable[i] < this.selectedLine.get()) {
+            return selectable[i];
+          }
+        }
+        return -1;
+      };
+      const pEl = previousElement();
+
+      if (pEl >= 0) {
+        this.selectedLine.set(Math.max(pEl, 0));
+      }
+    }
+    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));*/
+  }
+
+  moveDown() {
+    /* if (this.checklistId.get() === 0) {
+      this.selectedLine.set(
+        Math.min(this.selectedLine.get() + 1, this.getAbnormalProceduresKeysSorted().length - 1, WD_NUM_LINES - 1),
+      );
+    } else {
+      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
+      const selectable = EcamNormalProcedures[this.checklistId.get()].items
+        .map((item, index) => (item.sensed === false ? index : null))
+        .filter((v) => v !== null);
+      if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
+        // Last element before C/L complete
+        this.selectedLine.set(Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1)));
+      } else {
+        this.selectedLine.set(
+          Math.min(
+            selectable.find((v) => v > this.selectedLine.get()),
+            numItems - 1,
+          ),
+        );
+      }
+    }
+    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));*/
+  }
+
+  checkCurrentItem() {
+    /* const cl = this.checklistState.getValue(this.checklistId.get());
+    const clState: ChecklistState = {
+      id: cl.id,
+      checklistCompleted: cl.checklistCompleted,
+      itemsCompleted: [...cl.itemsCompleted],
+    };
+    if (this.selectedLine.get() < clState.itemsCompleted.length) {
+      clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
+      this.checklistState.setValue(this.checklistId.get(), clState);
+    } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
+      // C/L complete
+      clState.checklistCompleted = true;
+      const proc = EcamNormalProcedures[this.checklistId.get()];
+      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
+      this.checklistState.setValue(this.checklistId.get(), clState);
+      this.showChecklist.set(false);
+    } else if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
+      // RESET
+      clState.checklistCompleted = false;
+      const proc = EcamNormalProcedures[this.checklistId.get()];
+      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : false));
+
+      // Reset all following checklists
+      const fromId = this.getAbnormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get());
+      const ids = this.getAbnormalProceduresKeysSorted();
+
+      if (fromId !== -1) {
+        for (let id = fromId + 1; id < ids.length; id++) {
+          const idFollowing = ids[id];
+          const clFollowing = this.checklistState.getValue(idFollowing);
+          const procFollowing = EcamNormalProcedures[idFollowing];
+          const clStateFollowing: ChecklistState = {
+            id: idFollowing,
+            checklistCompleted: false,
+            itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
+              procFollowing.items[index].sensed ? val : false,
+            ),
+          };
+          this.checklistState.setValue(idFollowing, clStateFollowing);
+        }
+      }
+      this.checklistState.setValue(this.checklistId.get(), clState);
+      this.selectFirst();
+    }*/
+  }
+
+  /**
+   * The majority of ECAM fault logic is still inside FwsCore (due to dependencies to MEMOs, and general flow)
+   * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
+   */
+  onUpdate() {
+    if (this.fws.activeAbnormalSensedList.get().size > 0) {
+      this.showAbnormalSensed.set(true);
+      this.fws.normalChecklists.showChecklist.set(false);
+    } else {
+      this.showAbnormalSensed.set(false);
+    }
+    /* if (this.fws.clDownPulseNode.read()) {
+      if (!this.showAbnormalSensed.get()) {
+        return;
+      }
+      this.moveDown();
+    }
+
+    if (this.fws.clUpPulseNode.read()) {
+      if (!this.showAbnormalSensed.get()) {
+        return;
+      }
+      this.moveUp();
+    }
+
+    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
+      if (!this.showAbnormalSensed.get()) {
+        return;
+      }
+
+      this.checkCurrentItem();
+      this.moveDown();
+    }*/
+  }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
     // 22 - AUTOFLIGHT
@@ -57,7 +240,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fmcAFault,
       notActiveWhenFaults: ['221800004', '221800005', '221800006'],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [this.fws.fmsSwitchingKnob.get() === 1],
+      whichItemsChecked: () => [this.fws.fmsSwitchingKnob.get() === 1],
       failure: 1,
       sysPage: -1,
       info: () => ['220200001'],
@@ -69,7 +252,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fmcBFault,
       notActiveWhenFaults: ['221800004', '221800005', '221800006'],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [this.fws.fmsSwitchingKnob.get() === 1],
+      whichItemsChecked: () => [this.fws.fmsSwitchingKnob.get() === 1],
       failure: 1,
       sysPage: -1,
       info: () => ['220200002'],
@@ -81,7 +264,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fmcCFault,
       notActiveWhenFaults: ['221800004', '221800005', '221800006'],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [this.fws.fmsSwitchingKnob.get() === 1],
+      whichItemsChecked: () => [this.fws.fmsSwitchingKnob.get() === 1],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['221300003'],
@@ -92,7 +275,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fms1Fault,
       notActiveWhenFaults: ['221800006'],
       whichItemsToShow: () => [true, false, false, true], // simplified, update when improved FMS swtchg logic
-      whichItemsCompleted: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 0],
+      whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 0],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['221300004'],
@@ -103,7 +286,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fms2Fault,
       notActiveWhenFaults: ['221800006'],
       whichItemsToShow: () => [true, false, false, true], // simplified, update when improved FMS swtchg logic
-      whichItemsCompleted: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 2],
+      whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 2],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['221300005'],
@@ -114,7 +297,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.fms1Fault, this.fws.fms2Fault),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true], // simplified, update when improved FMS swtchg logic
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         true,
         this.fws.fmsSwitchingKnob.get() === 1,
         false,
@@ -132,7 +315,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.toSpeedsNotInsertedWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
     },
@@ -143,7 +326,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.rmp1Fault,
       notActiveWhenFaults: ['230800015', '230800016', '230800018'],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [this.fws.rmp1Off.get()],
+      whichItemsChecked: () => [this.fws.rmp1Off.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300009'],
@@ -154,7 +337,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.rmp2Fault,
       notActiveWhenFaults: ['230800015', '230800017', '230800018'],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [this.fws.rmp2Off.get()],
+      whichItemsChecked: () => [this.fws.rmp2Off.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300010'],
@@ -165,7 +348,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.rmp3Fault,
       notActiveWhenFaults: ['230800016', '230800017', '230800018'],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [this.fws.rmp3Off.get()],
+      whichItemsChecked: () => [this.fws.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300011'],
@@ -176,7 +359,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp1Fault, this.fws.rmp2Fault),
       notActiveWhenFaults: ['230800018'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [this.fws.rmp1Off.get(), this.fws.rmp2Off.get()],
+      whichItemsChecked: () => [this.fws.rmp1Off.get(), this.fws.rmp2Off.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300012', '230300015'],
@@ -187,7 +370,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp1Fault, this.fws.rmp3Fault),
       notActiveWhenFaults: ['230800018'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [this.fws.rmp1Off.get(), this.fws.rmp3Off.get()],
+      whichItemsChecked: () => [this.fws.rmp1Off.get(), this.fws.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300013'],
@@ -198,7 +381,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp2Fault, this.fws.rmp3Fault),
       notActiveWhenFaults: ['230800018'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [this.fws.rmp2Off.get(), this.fws.rmp3Off.get()],
+      whichItemsChecked: () => [this.fws.rmp2Off.get(), this.fws.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['230300014'],
@@ -214,7 +397,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, false, false, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.rmp1Off.get(),
         this.fws.rmp2Off.get(),
         this.fws.rmp3Off.get(),
@@ -234,7 +417,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.apuFireDetected,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.fireButtonAPU.get(),
         this.fws.apuAgentDischarged.get(),
         this.fws.apuMasterSwitch.get() === 0,
@@ -252,7 +435,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['260300001'],
@@ -263,7 +446,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.apuLoopAFault,
       notActiveWhenFaults: ['260800002'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260200025'],
@@ -274,7 +457,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.apuLoopBFault,
       notActiveWhenFaults: ['260800002'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260200026'],
@@ -289,7 +472,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.throttle1Position.get() == 0,
         !this.fws.engine1ValueSwitch.get(),
         this.fws.fireButtonEng1.get(),
@@ -315,7 +498,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.throttle2Position.get() == 0,
         !this.fws.engine2ValueSwitch.get(),
         this.fws.fireButtonEng2.get(),
@@ -338,7 +521,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.throttle3Position.get() == 0,
         !this.fws.engine3ValueSwitch.get(),
         this.fws.fireButtonEng3.get(),
@@ -361,7 +544,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.throttle4Position.get() == 0,
         !this.fws.engine4ValueSwitch.get(),
         this.fws.fireButtonEng4.get(),
@@ -401,7 +584,7 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
         false,
         this.fws.parkBrake.get(),
@@ -450,7 +633,7 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
         false,
         this.fws.parkBrake.get(),
@@ -499,7 +682,7 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
         false,
         this.fws.parkBrake.get(),
@@ -548,7 +731,7 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
         false,
         this.fws.parkBrake.get(),
@@ -580,7 +763,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['260300010'],
@@ -595,7 +778,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['260300011'],
@@ -610,7 +793,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['260300012'],
@@ -625,7 +808,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['260300013'],
@@ -636,7 +819,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng1LoopAFault,
       notActiveWhenFaults: ['260800013'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300014'],
@@ -647,7 +830,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng1LoopBFault,
       notActiveWhenFaults: ['260800013'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300015'],
@@ -658,7 +841,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng2LoopAFault,
       notActiveWhenFaults: ['260800014'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300016'],
@@ -669,7 +852,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng2LoopBFault,
       notActiveWhenFaults: ['260800014'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300017'],
@@ -680,7 +863,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng3LoopAFault,
       notActiveWhenFaults: ['260800015'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300018'],
@@ -691,7 +874,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng3LoopBFault,
       notActiveWhenFaults: ['260800015'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300019'],
@@ -702,7 +885,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng4LoopAFault,
       notActiveWhenFaults: ['260800016'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300020'],
@@ -713,7 +896,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.eng4LoopBFault,
       notActiveWhenFaults: ['260800016'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300021'],
@@ -744,7 +927,7 @@ export class FwsAbnormalSensed {
         this.fws.aircraftOnGround.get(),
         this.fws.aircraftOnGround.get(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         false,
         this.fws.gearLeverPos.get(),
         false,
@@ -779,7 +962,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['260300022'],
@@ -790,7 +973,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.mlgLoopAFault,
       notActiveWhenFaults: ['260800026'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300023'],
@@ -801,7 +984,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.mlgLoopBFault,
       notActiveWhenFaults: ['260800026'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['260300024'],
@@ -815,7 +998,7 @@ export class FwsAbnormalSensed {
       auralWarning: this.fws.pitchTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 3,
       sysPage: 12,
       inopSysAllPhases: () => [],
@@ -826,7 +1009,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.pitchTrimMcduCgDisagree,
       notActiveWhenFaults: ['271800003'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -838,7 +1021,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.speedbrakesConfigWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 3,
       sysPage: 12,
       inopSysAllPhases: () => [],
@@ -850,7 +1033,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.slatConfigWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 3,
       sysPage: 12,
       inopSysAllPhases: () => [],
@@ -862,7 +1045,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.flapConfigWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 3,
       sysPage: 12,
       inopSysAllPhases: () => [],
@@ -873,7 +1056,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.flapsMcduDisagree,
       notActiveWhenFaults: ['272800002'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: 12,
       inopSysAllPhases: () => [],
@@ -901,7 +1084,7 @@ export class FwsAbnormalSensed {
         this.fws.overspeedVfeConf3.get(),
         this.fws.overspeedVfeConfFull.get(),
       ],
-      whichItemsCompleted: () => [false, false, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
       failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -913,7 +1096,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.adr1Fault,
       notActiveWhenFaults: ['340800004', '340800008', '340800005'],
       whichItemsToShow: () => [true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.airKnob.get() === 0,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool'),
         true,
@@ -935,7 +1118,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.adr2Fault,
       notActiveWhenFaults: ['340800004', '340800008', '340800006'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.airKnob.get() === 2,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool'),
       ],
@@ -955,7 +1138,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.adr3Fault,
       notActiveWhenFaults: ['340800005', '340800006', '340800008'],
       whichItemsToShow: () => [true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.airKnob.get() === 1,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
         true,
@@ -973,7 +1156,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr2Fault),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.airKnob.get() === 0,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool'),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool'),
@@ -1005,7 +1188,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr3Fault),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.airKnob.get() === 1,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool'),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
@@ -1037,7 +1220,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Fault, this.fws.adr3Fault),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.airKnob.get() === 1,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool'),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
@@ -1074,7 +1257,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800010', '340800071'],
       whichItemsToShow: () => [true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         false,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool') &&
           !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
@@ -1105,7 +1288,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.extremeLatitudeAlert,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true],
-      whichItemsCompleted: () => [SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'Bool')],
+      whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'Bool')],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1119,7 +1302,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.ir1Fault,
       notActiveWhenFaults: ['340800042', '340800043'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.attKnob.get() === 0,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON', 'Bool'),
       ],
@@ -1140,7 +1323,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.ir2Fault,
       notActiveWhenFaults: ['340800042', '340800044'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.attKnob.get() === 2,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON', 'Bool'),
       ],
@@ -1161,7 +1344,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.ir3Fault,
       notActiveWhenFaults: ['340800043', '340800044'],
       whichItemsToShow: () => [true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.attKnob.get() === 1,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON', 'Bool'),
       ],
@@ -1176,7 +1359,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.ir1Fault, this.fws.ir2Fault),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.attKnob.get() === 0,
         true,
         true,
@@ -1202,7 +1385,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.ir1Fault, this.fws.ir3Fault),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.attKnob.get() === 1,
         true,
         true,
@@ -1231,7 +1414,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.ir2Fault, this.fws.ir3Fault),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         this.fws.attKnob.get() === 1,
         true,
         true,
@@ -1281,7 +1464,7 @@ export class FwsAbnormalSensed {
           this.fws.ir2MaintWord.bitValueOr(13, false) &&
           this.fws.ir3MaintWord.bitValueOr(13, false),
       ],
-      whichItemsCompleted: () => [true, true, true, true, true, true, true],
+      whichItemsChecked: () => [true, true, true, true, true, true, true],
       failure: 2,
       sysPage: -1,
     },
@@ -1295,7 +1478,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800059', '340800060', '340800062'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1313,7 +1496,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800059', '340800061', '340800062'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1331,7 +1514,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800060', '340800061', '340800062'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1351,7 +1534,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800062'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1370,7 +1553,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800062'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1389,7 +1572,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['340800062'],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
@@ -1410,7 +1593,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['340300029', '340300003', '341300003'],

@@ -4,21 +4,12 @@
 
 import { ChecklistState } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists'
 
-export interface FwsEwdNormalChecklistEntry {
-  id: number;
-  itemsCompleted: boolean[];
-}
-
-export type FwsEwdNormalChecklist = FwsEwdNormalChecklistEntry[];
-
 export interface FwsEwdAbnormalSensedEntry {
   id: string;
   itemsToShow: boolean[];
   itemsCompleted: boolean[];
   itemsActive: boolean[];
 }
-
-export type FwsEwdAbnormalSensedList = FwsEwdAbnormalSensedEntry[];
 
 /**
  * Transmitted from FWS to EWD
@@ -34,6 +25,13 @@ export interface FwsEwdEvents {
   fws_normal_checklists_active_line: number,
   /** (FWS -> EWD) From which line on to show the items, for overflowing procedures */
   fws_normal_checklists_show_from_line: number,
+
+  /** (FWS -> EWD) Show abnormal sensed procedures */
+  fws_show_abn_sensed: boolean,
+  /** (FWS -> EWD) Which line to mark as next */
+  fws_abn_sensed_active_line: number,
+  /** (FWS -> EWD) From which line on to show the items, for overflowing procedures */
+  fws_abn_sensed_show_from_line: number,
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
-  fws_abnormal_sensed_procedures: FwsEwdAbnormalSensedList,
+  fws_abn_sensed_procedures: FwsEwdAbnormalSensedEntry[],
 }

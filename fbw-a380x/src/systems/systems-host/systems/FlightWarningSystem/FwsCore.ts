@@ -13,6 +13,7 @@ import {
   SubscribableMapFunctions,
   StallWarningEvents,
   Instrument,
+  MapSubject,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -38,11 +39,7 @@ import {
   pfdMemoDisplay,
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
-import {
-  FwsEwdAbnormalSensedEntry,
-  FwsEwdAbnormalSensedList,
-  FwsEwdEvents,
-} from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FwsEwdAbnormalSensedEntry } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
 import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
 import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
@@ -67,8 +64,6 @@ export enum FwcAuralWarning {
   SingleChime,
   Crc,
 }
-
-type InternalAbnormalSensedList = Map<string, FwsEwdAbnormalSensedEntry>;
 
 export class FwsCore implements Instrument {
   public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents>();
@@ -185,7 +180,7 @@ export class FwsCore implements Instrument {
   public readonly presentedFailures: string[] = [];
 
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalSensedList: InternalAbnormalSensedList = new Map<string, FwsEwdAbnormalSensedEntry>();
+  public readonly activeAbnormalSensedList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   private recallFailures: string[] = [];
 
@@ -1149,10 +1144,10 @@ export class FwsCore implements Instrument {
     }
   }
 
-  private readonly memos = new FwsMemos(this);
-  private readonly normalChecklists = new FwsNormalChecklists(this);
-  private readonly abnormalSensed = new FwsAbnormalSensed(this);
-  private readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
+  public readonly memos = new FwsMemos(this);
+  public readonly normalChecklists = new FwsNormalChecklists(this);
+  public readonly abnormalSensed = new FwsAbnormalSensed(this);
+  public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
 
   constructor(
     public readonly bus: EventBus,
@@ -2821,7 +2816,7 @@ export class FwsCore implements Instrument {
           continue;
         }
 
-        const itemsCompleted = value.whichItemsCompleted();
+        const itemsCompleted = value.whichItemsChecked();
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsCompleted.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsCompleted.length).fill(true);
 
@@ -2854,13 +2849,13 @@ export class FwsCore implements Instrument {
               );
             }
           }
-          if (proc.items.length !== value.whichItemsCompleted().length) {
+          if (proc.items.length !== value.whichItemsChecked().length) {
             console.warn(
               proc.title,
               'ECAM alert definition error: whichItemsCompleted() not the same size as number of procedure items',
             );
           }
-          this.activeAbnormalSensedList.set(key, {
+          this.activeAbnormalSensedList.setValue(key, {
             id: key,
             itemsActive: itemsActive,
             itemsCompleted: itemsCompleted,
@@ -2869,22 +2864,37 @@ export class FwsCore implements Instrument {
           stateWasChanged = true;
         } else {
           // Update internal map
-          const prevEl = this.activeAbnormalSensedList.get(key);
-          // Update only sensed items
-          proc.items.forEach((item, idx) => {
-            if (item.sensed === true) {
-              if (
-                prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
-                prevEl.itemsActive[idx] !== itemsActive[idx] ||
-                prevEl.itemsCompleted[idx] !== itemsCompleted[idx]
-              ) {
-                stateWasChanged = true;
+          const prevEl = this.activeAbnormalSensedList.get().get(key);
+          if (
+            proc.items.some((item, idx) => {
+              if (item.sensed === true) {
+                if (
+                  prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+                  prevEl.itemsActive[idx] !== itemsActive[idx] ||
+                  prevEl.itemsCompleted[idx] !== itemsCompleted[idx]
+                ) {
+                  return true;
+                }
               }
-              prevEl.itemsToShow[idx] = itemsToShow[idx];
-              prevEl.itemsActive[idx] = itemsActive[idx];
-              prevEl.itemsCompleted[idx] = itemsCompleted[idx];
-            }
-          });
+            })
+          ) {
+            stateWasChanged = true;
+          }
+
+          if (stateWasChanged) {
+            this.activeAbnormalSensedList.setValue(key, {
+              id: key,
+              itemsCompleted: [...prevEl.itemsCompleted].map((val, index) =>
+                proc.items[index].sensed ? itemsCompleted[index] : val,
+              ),
+              itemsActive: [...prevEl.itemsActive].map((val, index) =>
+                proc.items[index].sensed ? itemsActive[index] : val,
+              ),
+              itemsToShow: [...prevEl.itemsToShow].map((val, index) =>
+                proc.items[index].sensed ? itemsToShow[index] : val,
+              ),
+            });
+          }
         }
 
         if (value.cancel === false && value.failure === 3) {
@@ -2943,8 +2953,8 @@ export class FwsCore implements Instrument {
     }
 
     // Delete inactive failures from internal map
-    this.activeAbnormalSensedList.forEach((_, key) => {
-      if (!allFailureKeys.includes(key.toString())) {
+    this.activeAbnormalSensedList.get().forEach((_, key) => {
+      if (!allFailureKeys.includes(key.toString()) || this.recallFailures.includes(key)) {
         this.activeAbnormalSensedList.delete(key);
         stateWasChanged = true;
       }
@@ -2976,7 +2986,7 @@ export class FwsCore implements Instrument {
     if (stateWasChanged) {
       console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
       // Debug output for ABN sensed procedures
-      this.activeAbnormalSensedList.forEach((val, key) => {
+      this.activeAbnormalSensedList.get().forEach((val, key) => {
         const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
         console.log('%c' + proc.title, 'font-family:monospace; font-weight: bold');
         proc.items.forEach((it, itemIdx) => {
@@ -2996,12 +3006,6 @@ export class FwsCore implements Instrument {
 
       console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
     }
-
-    const fwsCdsProcedures: FwsEwdAbnormalSensedList = Array.from(this.activeAbnormalSensedList.keys()).map((abn) => {
-      return { id: abn, itemsActive: [], itemsCompleted: [], itemsToShow: [] };
-    });
-    this.bus.getPublisher<FwsEwdEvents>().pub('fws_abnormal_sensed_procedures', fwsCdsProcedures);
-    SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', fwsCdsProcedures[0] ? fwsCdsProcedures[0].id : '');
 
     // MEMOs (except T.O and LDG)
     for (const [, value] of Object.entries(this.memos.ewdMemos)) {
@@ -3117,6 +3121,7 @@ export class FwsCore implements Instrument {
     }
 
     this.normalChecklists.onUpdate();
+    this.abnormalSensed.onUpdate();
     this.updateRowRopWarnings();
   }
 

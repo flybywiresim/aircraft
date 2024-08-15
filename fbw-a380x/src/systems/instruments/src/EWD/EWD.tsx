@@ -1,6 +1,14 @@
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
-import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
@@ -9,10 +17,9 @@ import { Idle } from 'instruments/src/EWD/elements/Idle';
 import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
 import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
 import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EcamAbnormalSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
@@ -43,7 +50,13 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly normalChecklistsVisible = ConsumerSubject.create(null, false);
 
-  private readonly memosLimitationVisible = this.normalChecklistsVisible.map((v) => !v);
+  private readonly abnormalSensedVisible = ConsumerSubject.create(null, false);
+
+  private readonly memosLimitationVisible = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.normalChecklistsVisible,
+    this.abnormalSensedVisible,
+  );
 
   private readonly abnormalDebugLine = ConsumerSubject.create(null, 0);
 
@@ -60,6 +73,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
 
     this.normalChecklistsVisible.setConsumer(sub.on('fws_show_normal_checklists').whenChanged());
+    this.abnormalSensedVisible.setConsumer(sub.on('fws_show_abn_sensed').whenChanged());
 
     this.abnormalDebugLine.setConsumer(sub.on('abnormal_debug_line').whenChanged());
   }
@@ -188,17 +202,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
             <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} />
-            <div class="StsArea">
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="700" height="30">
-                <FormattedFwcText
-                  x={8}
-                  y={20}
-                  message={this.abnormalDebugLine.map((it) =>
-                    EcamAbnormalSensedProcedures[it] ? EcamAbnormalSensedProcedures[it].title : '',
-                  )}
-                />
-              </svg>
-            </div>{' '}
+            <WdAbnormalSensedProcedures bus={this.props.bus} visible={this.abnormalSensedVisible} />
+            <div class="StsArea" />
             {/* Reserved for STS */}
           </div>
         </div>
