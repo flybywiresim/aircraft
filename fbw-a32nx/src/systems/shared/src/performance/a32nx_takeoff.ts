@@ -256,7 +256,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Segment segment weight factors for each takeoff config. */
   private static readonly vmcgBaseFactor: Record<number, [number, number]> = {
-    1: [0.06722, -23.463],
+    1: [0.0644, -19.526],
     2: [0.082005, -39.27],
     3: [0.0704, -25.6868],
   };
@@ -270,14 +270,14 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Pressure altitude factors for each takeoff config. */
   private static readonly vmcgPressureAltFactor: Record<number, [number, number]> = {
-    1: [1.123e-6, 0.000136],
+    1: [-8.35e-7, 0.00589],
     2: [-7.58e-7, 0.00703],
     3: [1.95e-7, 0.000266],
   };
 
   /** Temperature factors for each takeoff config. */
   private static readonly vmcgTemperatureFactor: Record<number, [number, number, number, number, number, number]> = {
-    1: [-0.0016, 2.489, 0.000699, -0.128144, -0.000718, 1.8103],
+    1: [-0.00133, 2.104, 0.000699, -0.128144, -0.000718, 1.8103],
     2: [-0.00097, 1.613, 0.000242, 0.462005, -0.000547, 1.603],
     3: [-0.000923, 1.6087, 0.00061, 0.002239, -0.000335, 1.2716],
   };
@@ -294,7 +294,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Tailwind factors for each takeoff config. */
   private static readonly vmcgTailWindFactor: Record<number, [number, number, number, number, number, number]> = {
-    1: [0.00161, -4.7535, -0.000106, 0.145473, 0.031431, -0.0356],
+    1: [0.00218, -5.489, -0.000106, 0.145473, 0.031431, -0.0356],
     2: [0.001892, -5.646, -0.000059, 0.079539, 0.009948, -0.010763],
     3: [0.000613, -3.165, -0.000022, 0.020622, 0.049286, -0.0396],
   };
