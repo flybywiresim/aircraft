@@ -163,7 +163,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             class="EclLineText"
             style={{
               display: this.props.data.map((d) =>
-                d.abnormalProcedure === false && d.style === ChecklistLineStyle.Headline ? 'none' : 'block',
+                d.abnormalProcedure === true && d.style === ChecklistLineStyle.Headline ? 'none' : 'block',
               ),
             }}
           >

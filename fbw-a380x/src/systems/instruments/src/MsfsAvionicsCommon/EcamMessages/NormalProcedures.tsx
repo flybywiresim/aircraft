@@ -7,14 +7,8 @@ import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionic
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   1000001: {
-    title: 'BEFORE START',
+    title: 'COCKPIT PREPARATION',
     items: [
-      {
-        name: 'CKPT PREP',
-        labelNotCompleted: 'COMPLETE (BOTH)',
-        labelCompleted: 'COMPLETED',
-        sensed: false,
-      },
       {
         name: 'GEAR PINS & COVERS',
         labelNotCompleted: 'REMOVE',
@@ -23,19 +17,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'FUEL QTY',
-        labelNotCompleted: 'CHECK',
-        labelCompleted: 'CHECKED',
-        sensed: false,
-      },
-      {
-        name: 'T.O DATA',
-        labelNotCompleted: 'SET',
-        sensed: false,
-      },
-      {
-        name: 'BARO REF VALUE',
-        labelNotCompleted: '--.-- SET (BOTH)',
-        labelCompleted: 'SET',
+        labelNotCompleted: '---KG',
         sensed: false,
       },
       {
@@ -45,21 +27,25 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         sensed: true,
       },
       {
-        name: 'ADIRS',
-        labelNotCompleted: 'NAV',
-        colonIfCompleted: false,
-        sensed: true,
+        name: 'BARO REF',
+        labelNotCompleted: '---- (BOTH)',
+        labelCompleted: 'SET',
+        sensed: false,
       },
-      { name: '', labelNotCompleted: '', sensed: true, style: ChecklistLineStyle.SeparationLine },
+    ],
+  },
+  1000002: {
+    title: 'BEFORE START',
+    items: [
       {
-        name: 'WINDOWS/DOORS',
-        labelNotCompleted: 'CLOSE (BOTH)',
-        labelCompleted: 'CLOSED',
+        name: 'PARKING BRAKE',
+        labelNotCompleted: '---',
         sensed: false,
       },
       {
-        name: 'PARK BRK',
-        labelNotCompleted: 'AS RQRD',
+        name: 'T.O SPEEDS & THRUST',
+        labelNotCompleted: 'CHECK (BOTH)',
+        labelCompleted: 'CHECKED',
         sensed: false,
       },
       {
@@ -70,70 +56,45 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
     ],
   },
-  1000002: {
+  1000003: {
     title: 'AFTER START',
     items: [
       {
-        name: 'A-ICE',
-        labelNotCompleted: 'AS RQRD',
+        name: 'ANTI ICE',
+        labelNotCompleted: '---',
         sensed: false,
       },
       {
-        name: 'ECAM STS',
-        labelNotCompleted: 'CHECK',
-        labelCompleted: 'NORMAL',
+        name: 'PITCH TRIM',
+        labelNotCompleted: 'T.O',
         sensed: true,
-      },
-      {
-        name: 'F/CTL',
-        labelNotCompleted: 'CHECK (BOTH)',
-        labelCompleted: 'CHECKED',
-        sensed: false,
       },
       {
         name: 'RUDDER TRIM',
         labelNotCompleted: 'NEUTRAL',
-        colonIfCompleted: false,
         sensed: true,
       },
-      {
-        name: 'PITCH TRIM',
-        labelNotCompleted: 'CHECK',
-        labelCompleted: 'CHECKED',
-        sensed: false,
-      },
+
     ],
   },
-  1000003: {
-    title: 'BEFORE TAKEOFF',
+  1000004: {
+    title: 'TAXI',
     items: [
       {
-        name: 'WX / TERR PB',
-        labelNotCompleted: 'AS RQRD (BOTH)',
-        labelCompleted: 'AS RQRD',
-        sensed: false,
-      },
-      {
-        name: 'FLIGHT INSTRUMENTS',
-        labelNotCompleted: 'CHECK (BOTH)',
+        name: 'FLIGHT CONTROLS',
+        labelNotCompleted: 'CHECKED (BOTH)',
         labelCompleted: 'CHECKED',
         sensed: false,
       },
       {
-        name: 'BRIEFING',
-        labelNotCompleted: 'CONFIRM',
-        labelCompleted: 'CONFIRMED',
+        name: 'FLAPS SETTING',
+        labelNotCompleted: 'CONF --- (BOTH)',
+        labelCompleted: 'CONF ---',
         sensed: false,
       },
       {
-        name: 'V1 / VR / V2 / THR RATING',
-        labelNotCompleted: 'CHECK (BOTH)',
-        labelCompleted: 'CHECKED',
-        sensed: false,
-      },
-      {
-        name: 'SQUAWK',
-        labelNotCompleted: 'SET',
+        name: 'RADAR',
+        labelNotCompleted: 'ON',
         sensed: false,
       },
       {
@@ -178,10 +139,14 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         sensed: true,
         level: 1,
       },
-      { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
+    ],
+  },
+  1000005: {
+    title: 'LINE-UP',
+    items: [
       {
         name: 'T.O RWY',
-        labelNotCompleted: '--- CONFIRM (BOTH)',
+        labelNotCompleted: '--- (BOTH)',
         labelCompleted: 'CONFIRMED',
         sensed: false,
       },
@@ -193,71 +158,45 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'PACKS 1+2',
-        labelNotCompleted: 'AS RQRD',
+        labelNotCompleted: 'ON',
         sensed: false,
       },
     ],
   },
-  1000004: {
-    title: 'AFTER TAKEOFF/CLIMB',
+  1000006: {
+    title: 'DEPARTURE CHANGE',
     items: [
       {
-        name: 'LDG GEAR',
-        labelNotCompleted: 'UP',
-        colonIfCompleted: false,
-        sensed: true,
+        name: 'RWY & SID',
+        labelNotCompleted: '---',
+        sensed: false,
       },
       {
-        name: 'FLAPS',
-        labelNotCompleted: '0',
-        colonIfCompleted: false,
-        sensed: true,
+        name: 'FLAPS SETTING',
+        labelNotCompleted: 'CONF --- (BOTH)',
+        labelCompleted: 'CONF ---',
+        sensed: false,
       },
       {
-        name: 'PACKS 1+2',
-        labelNotCompleted: 'ON',
-        colonIfCompleted: false,
-        sensed: true,
+        name: 'T.O SPEEDS & THRUST',
+        labelNotCompleted: 'CHECK (BOTH)',
+        labelCompleted: 'CHECKED',
+        sensed: false,
       },
       {
-        name: 'APU MASTER SW',
-        labelNotCompleted: 'OFF',
-        colonIfCompleted: false,
-        sensed: true,
-      },
-      { name: '', style: ChecklistLineStyle.SeparationLine, labelNotCompleted: '', sensed: true },
-      {
-        name: 'BARO REF VALUE',
-        labelNotCompleted: '--.-- SET (BOTH)',
+        name: 'FCU ALT',
+        labelNotCompleted: '---',
         labelCompleted: 'SET',
         sensed: false,
       },
     ],
   },
-  1000005: {
+  1000007: {
     title: 'APPROACH',
     items: [
       {
-        name: 'BRIEFING',
-        labelNotCompleted: 'CONFIRM',
-        labelCompleted: 'CONFIRMED',
-        sensed: false,
-      },
-      {
-        name: 'ECAM STS',
-        labelNotCompleted: 'CHECK',
-        labelCompleted: 'NORMAL',
-        sensed: true,
-      },
-      {
-        name: 'BARO REF VALUE',
-        labelNotCompleted: '--.-- SET (BOTH)',
-        labelCompleted: 'SET',
-        sensed: false,
-      },
-      {
-        name: 'MINIMA',
-        labelNotCompleted: '--- SET (BOTH)',
+        name: 'BARO REF',
+        labelNotCompleted: '---- (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -267,27 +206,23 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         colonIfCompleted: false,
         sensed: true,
       },
+      {
+        name: 'MINIMUM',
+        labelNotCompleted: '---',
+        labelCompleted: 'SET',
+        sensed: false,
+      },
+      {
+        name: 'AUTO BRAKE',
+        labelNotCompleted: '---',
+        labelCompleted: 'SET',
+        sensed: false,
+      },
     ],
   },
-  1000006: {
+  1000008: {
     title: 'LANDING',
     items: [
-      {
-        name: 'CABIN CREW',
-        labelNotCompleted: 'ADVISE',
-        labelCompleted: 'ADVISED',
-        sensed: false,
-      },
-      {
-        name: 'A/THR',
-        labelNotCompleted: 'AS RQRD',
-        sensed: false,
-      },
-      {
-        name: 'AUTO BRK',
-        labelNotCompleted: 'AS RQRD',
-        sensed: false,
-      },
       { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: true, labelNotCompleted: '' },
       {
         name: 'SEAT BELTS',
@@ -315,81 +250,38 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
 
     ],
   },
-  1000007: {
-    title: 'AFTER LANDING',
-    items: [
-      {
-        name: 'GND SPLRs',
-        labelNotCompleted: 'DISARM',
-        sensed: true,
-      },
-      {
-        name: 'FLAPS',
-        labelNotCompleted: '0',
-        sensed: true,
-      },
-      {
-        name: 'APU',
-        labelNotCompleted: 'START',
-        sensed: true,
-      },
-    ],
-  },
-  1000008: {
+  1000009: {
     title: 'PARKING',
     items: [
       {
-        name: 'EXT LT',
+        name: 'PARK BRAKE OR CHOCKS',
         labelNotCompleted: 'AS RQRD',
         sensed: false,
       },
       {
-        name: 'PARK BRK / CHOCKS',
-        labelNotCompleted: 'AS RQRD',
-        sensed: false,
-      },
-      {
-        name: 'APU BLEED',
-        labelNotCompleted: 'ON',
-        colonIfCompleted: false,
-        sensed: true,
-      },
-      {
-        name: 'ALL ENGs',
+        name: 'ENGINES',
         labelNotCompleted: 'OFF',
         colonIfCompleted: false,
         sensed: true,
       },
       {
-        name: 'FUEL PMPs',
+        name: 'WING LIGHTS',
         labelNotCompleted: 'OFF',
-        colonIfCompleted: false,
-        sensed: true,
+        sensed: false,
       },
       {
-        name: 'SEAT BELTS',
+        name: 'FUEL PUMPs',
         labelNotCompleted: 'OFF',
         colonIfCompleted: false,
         sensed: true,
       },
     ],
   },
-  1000009: {
+  1000010: {
     title: 'SECURING THE AIRCRAFT',
     items: [
       {
-        name: 'ADIRS',
-        labelNotCompleted: 'OFF',
-        sensed: false,
-      },
-      {
         name: 'OXYGEN',
-        labelNotCompleted: 'OFF',
-        colonIfCompleted: false,
-        sensed: true,
-      },
-      {
-        name: 'APU BLEED',
         labelNotCompleted: 'OFF',
         colonIfCompleted: false,
         sensed: true,
@@ -401,23 +293,12 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         sensed: true,
       },
       {
-        name: 'SIGNS',
-        labelNotCompleted: 'OFF',
-        colonIfCompleted: false,
-        sensed: true,
-      },
-      {
-        name: 'APU',
+        name: 'EFBs',
         labelNotCompleted: 'OFF',
         sensed: false,
       },
       {
-        name: 'ALL 3 LAPTOPS',
-        labelNotCompleted: 'OFF',
-        sensed: false,
-      },
-      {
-        name: 'ALL 4 BATs',
+        name: 'BATTERIES',
         labelNotCompleted: 'OFF',
         sensed: false,
       },
