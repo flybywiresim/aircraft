@@ -1642,6 +1642,7 @@ impl A380Hydraulic {
                 AngularVelocity::new::<radian_per_second>(0.35),
                 Length::new::<meter>(0.11), // Diameter of 0.11 gives correct A380 flow of around 35 lpm at full speed
                 Ratio::new::<ratio>(0.18),
+                Pressure::new::<psi>(4000.),
             ),
 
             core_hydraulic_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
