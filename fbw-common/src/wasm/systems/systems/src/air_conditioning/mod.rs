@@ -323,6 +323,25 @@ impl Display for VcmId {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum CpiomId {
+    B1,
+    B2,
+    B3,
+    B4,
+}
+
+impl Display for CpiomId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CpiomId::B1 => write!(f, "B1"),
+            CpiomId::B2 => write!(f, "B2"),
+            CpiomId::B3 => write!(f, "B3"),
+            CpiomId::B4 => write!(f, "B4"),
+        }
+    }
+}
+
 // Future work this can be different types of failure.
 enum OperatingChannelFault {
     NoFault,

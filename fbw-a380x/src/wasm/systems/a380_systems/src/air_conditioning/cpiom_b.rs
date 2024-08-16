@@ -5,20 +5,24 @@ use systems::{
         acs_controller::{AcscId, AirConditioningStateManager, Pack, ZoneController},
         cabin_pressure_controller::PressureScheduleManager,
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, BulkHeaterSignal,
-        CabinFansSignal, Channel, DuctTemperature, OverheadFlowSelector, PackFlow,
+        CabinFansSignal, Channel, CpiomId, DuctTemperature, OverheadFlowSelector, PackFlow,
         PressurizationConstants, PressurizationOverheadShared, VcmShared, ZoneType,
     },
-    integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
+    failures::{Failure, FailureType},
     shared::{
-        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, CabinAltitude, CabinSimulation,
-        CargoDoorLocked, ControllerSignal, EngineCorrectedN1, EngineStartState,
-        InternationalStandardAtmosphere, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        arinc429::{Arinc429Word, SignStatus},
+        low_pass_filter::LowPassFilter,
+        CabinAltitude, CabinSimulation, CargoDoorLocked, ControllerSignal, EngineCorrectedN1,
+        EngineStartState, InternationalStandardAtmosphere, LgciuWeightOnWheels, PackFlowValveState,
+        PneumaticBleed, Resolution,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+
+use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
 
 use super::local_controllers::{
     outflow_valve_control_module::{CpcsShared, OcsmShared},
@@ -38,7 +42,9 @@ use uom::si::{
 use super::A380PressurizationConstants;
 
 pub(super) struct CoreProcessingInputOutputModuleB {
-    cpiom_are_active: [bool; 4],
+    cpiom_id: CpiomId,
+    cpiom_is_active: bool,
+
     ags_app: AirGenerationSystemApplication,
     tcs_app: TemperatureControlSystemApplication,
     vcs_app: VentilationControlSystemApplication,
@@ -47,13 +53,19 @@ pub(super) struct CoreProcessingInputOutputModuleB {
 }
 
 impl CoreProcessingInputOutputModuleB {
-    pub(super) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
+    pub(super) fn new(
+        context: &mut InitContext,
+        cpiom_id: CpiomId,
+        cabin_zones: &[ZoneType; 18],
+    ) -> Self {
         Self {
-            cpiom_are_active: [false; 4],
-            ags_app: AirGenerationSystemApplication::new(context),
-            tcs_app: TemperatureControlSystemApplication::new(context, cabin_zones),
-            vcs_app: VentilationControlSystemApplication::new(context),
-            cpcs_app: CabinPressureControlSystemApplication::new(context),
+            cpiom_id,
+            cpiom_is_active: false,
+
+            ags_app: AirGenerationSystemApplication::new(context, cpiom_id),
+            tcs_app: TemperatureControlSystemApplication::new(context, cpiom_id, cabin_zones),
+            vcs_app: VentilationControlSystemApplication::new(context, cpiom_id),
+            cpcs_app: CabinPressureControlSystemApplication::new(context, cpiom_id),
             // avionics_ventilation_system_app: AvionicsVentilationSystemApplication::new(),
         }
     }
@@ -65,16 +77,18 @@ impl CoreProcessingInputOutputModuleB {
         acs_overhead: &impl AirConditioningOverheadShared,
         cabin_temperature: &impl CabinSimulation,
         cargo_door_open: &impl CargoDoorLocked,
-        cpiom_b: [&CoreProcessingInputOutputModule; 4],
+        cpiom_b: &impl CoreProcessingInputOutputModuleShared,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         local_controllers: &(impl TaddShared + VcmShared),
     ) {
-        self.cpiom_are_active = cpiom_b.map(|cpiom| cpiom.is_available());
+        self.cpiom_is_active = cpiom_b
+            .core_processing_input_output_module(&self.cpiom_id.to_string())
+            .is_available();
 
         // We check if any CPIOM B is available to run the applications
-        if self.cpiom_are_active.iter().any(|&cpiom| cpiom) {
+        if self.cpiom_is_active {
             self.ags_app.update(
                 context,
                 adirs,
@@ -88,13 +102,14 @@ impl CoreProcessingInputOutputModuleB {
                 context,
                 acs_overhead,
                 cabin_temperature,
-                self.cpiom_are_active.iter().any(|c| *c),
+                self.cpiom_is_active, // Todo = replace with failure
                 &self.cpcs_app,
                 local_controllers,
             );
             self.vcs_app.update(
                 acs_overhead,
-                self.cpiom_are_active[1] || self.cpiom_are_active[3],
+                (self.cpiom_id == CpiomId::B1 || self.cpiom_id == CpiomId::B3)
+                    && !self.cpiom_has_fault(),
                 cabin_temperature,
                 cargo_door_open,
                 lgciu,
@@ -146,6 +161,26 @@ impl CoreProcessingInputOutputModuleB {
         &self.vcs_app
     }
 
+    pub(super) fn cpiom_has_fault(&self) -> bool {
+        !self.cpiom_is_active
+    }
+
+    pub(super) fn ags_has_fault(&self) -> bool {
+        self.ags_app.has_failed() || !self.cpiom_is_active
+    }
+
+    pub(super) fn tcs_has_fault(&self) -> bool {
+        self.tcs_app.has_failed() || !self.cpiom_is_active
+    }
+
+    pub(super) fn vcs_has_fault(&self) -> bool {
+        self.vcs_app.has_failed() || !self.cpiom_is_active
+    }
+
+    pub(super) fn cpcs_has_fault(&self) -> bool {
+        self.cpcs_app.has_failed() || !self.cpiom_is_active
+    }
+
     #[cfg(test)]
     pub(super) fn cabin_altitude(&self) -> Length {
         self.cpcs_app.altitude()
@@ -155,6 +190,62 @@ impl CoreProcessingInputOutputModuleB {
     pub(super) fn reference_pressure(&self) -> Pressure {
         self.cpcs_app.reference_pressure()
     }
+
+    fn pack_operating(&self, pack: Pack) -> bool {
+        self.ags_app.pack_is_operating(pack)
+    }
+
+    fn hot_air_is_enabled(&self, hot_air: Pack) -> bool {
+        self.tcs_app.hot_air_is_enabled(hot_air)
+    }
+
+    fn hot_air_is_open(&self, hot_air: Pack) -> bool {
+        self.tcs_app.hot_air_is_open(hot_air)
+    }
+
+    fn fwd_extraction_fan_is_on(&self) -> bool {
+        self.vcs_app.fwd_extraction_fan_is_on()
+    }
+
+    fn fwd_isolation_valve_is_open(&self) -> bool {
+        self.vcs_app.fwd_isolation_valve_is_open()
+    }
+
+    fn bulk_extraction_fan_is_on(&self) -> bool {
+        self.vcs_app.bulk_extraction_fan_is_on()
+    }
+
+    fn bulk_isolation_valve_is_open(&self) -> bool {
+        self.vcs_app.bulk_isolation_valve_is_open()
+    }
+
+    fn primary_fans_enabled(&self) -> bool {
+        self.vcs_app.primary_fans_enabled()
+    }
+
+    fn high_differential_pressure(&self) -> bool {
+        self.cpcs_app.is_diff_press_hi()
+    }
+
+    pub(super) fn low_differential_pressure(&self) -> bool {
+        self.cpcs_app.is_low_diff_pressure()
+    }
+
+    pub(super) fn excessive_cabin_alt(&self) -> bool {
+        self.cpcs_app.is_excessive_alt()
+    }
+
+    fn excessive_differential_pressure(&self) -> bool {
+        self.cpcs_app.is_excessive_differential_pressure()
+    }
+
+    fn excessive_negative_differential_pressure(&self) -> bool {
+        self.cpcs_app.is_excessive_negative_differential_pressure()
+    }
+
+    pub(super) fn excessive_residual_pressure(&self) -> bool {
+        self.cpcs_app.is_excessive_residual_pressure()
+    }
 }
 
 impl PackFlow for CoreProcessingInputOutputModuleB {
@@ -162,9 +253,12 @@ impl PackFlow for CoreProcessingInputOutputModuleB {
         // CPIOM B1 and B3 calculate the LH AGU Flow Demand
         // CPIOM B2 and B4 calculate the RH AGU Flow Demand
         // If both CPIOMs for the respective AGU are not available, we return 0
-        if (matches!(pack_id, Pack(1)) && (self.cpiom_are_active[0] || self.cpiom_are_active[2]))
-            || (matches!(pack_id, Pack(2))
-                && (self.cpiom_are_active[1] || self.cpiom_are_active[3]))
+        if self.cpiom_is_active
+            && !self.ags_app.has_failed()
+            && ((matches!(pack_id, Pack(1))
+                && (self.cpiom_id == CpiomId::B1 || self.cpiom_id == CpiomId::B3))
+                || (matches!(pack_id, Pack(2))
+                    && (self.cpiom_id == CpiomId::B2 || self.cpiom_id == CpiomId::B4)))
         {
             self.ags_app.pack_flow_demand(pack_id)
         } else {
@@ -212,6 +306,7 @@ impl SimulationElement for CoreProcessingInputOutputModuleB {
 struct AirGenerationSystemApplication {
     pack_flow_id: [VariableIdentifier; 4],
     pack_operational_id: [VariableIdentifier; 2],
+    ags_failure_id: VariableIdentifier,
 
     pax_number_fms_id: VariableIdentifier,
 
@@ -222,6 +317,8 @@ struct AirGenerationSystemApplication {
     pack_flow_demand: [MassRate; 2],
     pack_operating: [bool; 2], // One for each pack
     pax_number_fms: usize,
+
+    failure: Failure,
 }
 
 impl AirGenerationSystemApplication {
@@ -237,11 +334,13 @@ impl AirGenerationSystemApplication {
     const A320_T0_A380_FLOW_CONVERSION_FACTOR: f64 = 2.8; // This is an assumed conversion factor for now based on number of pax
     const A380_PASSENGER_FACTOR: f64 = 450.; // 517 max passengers, we set 100% flow at 450
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, cpiom_id: CpiomId) -> Self {
         Self {
             pack_flow_id: Self::pack_flow_id(context),
             pack_operational_id: [1, 2]
                 .map(|pack| context.get_identifier(format!("COND_PACK_{}_IS_OPERATING", pack))),
+            ags_failure_id: context
+                .get_identifier(format!("COND_CPIOM{}_AGS_APPLICATION_FAILURE", cpiom_id)),
 
             pax_number_fms_id: context.get_identifier("FMS_PAX_NUMBER".to_owned()),
 
@@ -252,6 +351,8 @@ impl AirGenerationSystemApplication {
             pack_flow_demand: [MassRate::default(); 2],
             pack_operating: [false; 2],
             pax_number_fms: 0,
+
+            failure: Failure::new(FailureType::AgsApp(cpiom_id)),
         }
     }
 
@@ -421,6 +522,14 @@ impl AirGenerationSystemApplication {
             self.fcv_timer_open[1] = Duration::from_secs(0);
         }
     }
+
+    fn pack_is_operating(&self, pack: Pack) -> bool {
+        self.pack_operating[pack.to_index()]
+    }
+
+    fn has_failed(&self) -> bool {
+        self.failure.is_active()
+    }
 }
 
 impl PackFlow for AirGenerationSystemApplication {
@@ -439,30 +548,45 @@ impl SimulationElement for AirGenerationSystemApplication {
             .iter()
             .zip(self.flow_ratio)
             .for_each(|(id, flow)| writer.write(id, flow));
+        writer.write(&self.ags_failure_id, self.has_failed());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.pax_number_fms = reader.read(&self.pax_number_fms_id);
+    }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
 struct TemperatureControlSystemApplication {
     hot_air_is_enabled_id: [VariableIdentifier; 2],
     hot_air_is_open_id: [VariableIdentifier; 2],
+    tcs_failure_id: VariableIdentifier,
 
     zone_controllers: [ZoneController; 18],
     hot_air_is_enabled: [bool; 2],
     hot_air_is_open: [bool; 2],
+
+    failure: Failure,
 }
 impl TemperatureControlSystemApplication {
-    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
+    fn new(context: &mut InitContext, cpiom_id: CpiomId, cabin_zones: &[ZoneType; 18]) -> Self {
         let hot_air_variable_identifiers = Self::hot_air_id_init(context);
         Self {
             hot_air_is_enabled_id: hot_air_variable_identifiers[0],
             hot_air_is_open_id: hot_air_variable_identifiers[1],
+            tcs_failure_id: context
+                .get_identifier(format!("COND_CPIOM{}_TCS_APPLICATION_FAILURE", cpiom_id)),
+
             zone_controllers: cabin_zones.map(ZoneController::new),
             hot_air_is_enabled: [false; 2],
             hot_air_is_open: [false; 2],
+
+            failure: Failure::new(FailureType::TcsApp(cpiom_id)),
         }
     }
 
@@ -479,17 +603,18 @@ impl TemperatureControlSystemApplication {
         context: &UpdateContext,
         acs_overhead: &impl AirConditioningOverheadShared,
         cabin_temperature: &impl CabinSimulation,
-        cpiom_b_powered: bool,
+        cpiom_b_active: bool,
         pressurization: &impl CabinAltitude,
         trim_air_drive_device: &impl TaddShared,
     ) {
+        let tcs_is_active = !self.has_failed();
         for zone in self.zone_controllers.iter_mut() {
             // Acsc is irrelevant for the A380 so we set it to 1
             zone.update(
                 context,
                 AcscId::Acsc1(Channel::ChannelOne),
                 acs_overhead,
-                cpiom_b_powered,
+                cpiom_b_active && tcs_is_active,
                 cabin_temperature.cabin_temperature(),
                 pressurization,
             );
@@ -509,6 +634,18 @@ impl TemperatureControlSystemApplication {
         // This signal is used when there is an overheat or leak detection
         // At the moment we hard code it to false until failures are implemented
         [false; 2]
+    }
+
+    fn hot_air_is_enabled(&self, hot_air: Pack) -> bool {
+        self.hot_air_is_enabled[hot_air.to_index()]
+    }
+
+    fn hot_air_is_open(&self, hot_air: Pack) -> bool {
+        self.hot_air_is_open[hot_air.to_index()]
+    }
+
+    fn has_failed(&self) -> bool {
+        self.failure.is_active()
     }
 }
 
@@ -531,6 +668,13 @@ impl SimulationElement for TemperatureControlSystemApplication {
             .iter()
             .zip(self.hot_air_is_open)
             .for_each(|(id, is_open)| writer.write(id, is_open));
+        writer.write(&self.tcs_failure_id, self.has_failed());
+    }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -540,6 +684,7 @@ struct VentilationControlSystemApplication {
     bulk_extraction_fan_id: VariableIdentifier,
     bulk_isolation_valve_id: VariableIdentifier,
     primary_fans_enabled_id: VariableIdentifier,
+    vcs_failure_id: VariableIdentifier,
 
     fwd_extraction_fan_is_on: bool,
     fwd_isolation_valve_is_open: bool,
@@ -549,6 +694,8 @@ struct VentilationControlSystemApplication {
     hp_cabin_fans_are_enabled: bool,
     hp_cabin_fans_flow_demand: MassRate,
     should_switch_on_bulk_heater: bool,
+
+    failure: Failure,
 }
 
 impl VentilationControlSystemApplication {
@@ -556,7 +703,7 @@ impl VentilationControlSystemApplication {
     const TOTAL_MIXED_AIR_DEMAND: f64 = 5.1183; // kg/s
     const NUMBER_OF_FANS: f64 = 4.;
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, cpiom_id: CpiomId) -> Self {
         Self {
             fwd_extraction_fan_id: context.get_identifier("VENT_FWD_EXTRACTION_FAN_ON".to_owned()),
             fwd_isolation_valve_id: context
@@ -566,6 +713,8 @@ impl VentilationControlSystemApplication {
             bulk_isolation_valve_id: context
                 .get_identifier("VENT_BULK_ISOLATION_VALVE_OPEN".to_owned()),
             primary_fans_enabled_id: context.get_identifier("VENT_PRIMARY_FANS_ENABLED".to_owned()),
+            vcs_failure_id: context
+                .get_identifier(format!("COND_CPIOM{}_VCS_APPLICATION_FAILURE", cpiom_id)),
 
             fwd_extraction_fan_is_on: false,
             fwd_isolation_valve_is_open: false,
@@ -575,6 +724,8 @@ impl VentilationControlSystemApplication {
             hp_cabin_fans_are_enabled: false,
             hp_cabin_fans_flow_demand: MassRate::default(),
             should_switch_on_bulk_heater: false,
+
+            failure: Failure::new(FailureType::VcsApp(cpiom_id)),
         }
     }
 
@@ -590,7 +741,7 @@ impl VentilationControlSystemApplication {
     ) {
         self.fwd_extraction_fan_is_on = vcm_shared.fwd_extraction_fan_is_on();
         self.fwd_isolation_valve_is_open = vcm_shared.fwd_isolation_valves_open_allowed();
-        self.bulk_control_is_powered = bulk_control_is_powered;
+        self.bulk_control_is_powered = bulk_control_is_powered && !self.has_failed();
         self.bulk_extraction_fan_is_on = vcm_shared.bulk_extraction_fan_is_on();
         self.bulk_isolation_valve_is_open =
             self.bulk_control_is_powered && vcm_shared.bulk_isolation_valves_open_allowed();
@@ -606,7 +757,7 @@ impl VentilationControlSystemApplication {
             cargo_door_open,
             lgciu,
             vcm_shared,
-        );
+        ) && !self.has_failed();
     }
 
     fn recirculation_flow_determination(
@@ -640,6 +791,30 @@ impl VentilationControlSystemApplication {
         (temperature_difference < -1.
             || (self.should_switch_on_bulk_heater && temperature_difference < 1.))
             && bulk_heater_on_allowed
+    }
+
+    fn fwd_extraction_fan_is_on(&self) -> bool {
+        self.fwd_extraction_fan_is_on
+    }
+
+    fn fwd_isolation_valve_is_open(&self) -> bool {
+        self.fwd_isolation_valve_is_open
+    }
+
+    fn bulk_extraction_fan_is_on(&self) -> bool {
+        self.bulk_extraction_fan_is_on
+    }
+
+    fn bulk_isolation_valve_is_open(&self) -> bool {
+        self.bulk_isolation_valve_is_open
+    }
+
+    fn primary_fans_enabled(&self) -> bool {
+        self.hp_cabin_fans_are_enabled
+    }
+
+    fn has_failed(&self) -> bool {
+        self.failure.is_active()
     }
 }
 
@@ -683,6 +858,13 @@ impl SimulationElement for VentilationControlSystemApplication {
             &self.primary_fans_enabled_id,
             self.hp_cabin_fans_are_enabled,
         );
+        writer.write(&self.vcs_failure_id, self.has_failed());
+    }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -692,12 +874,6 @@ struct CabinPressureControlSystemApplication<C: PressurizationConstants> {
     cabin_vs_id: VariableIdentifier,
     cabin_vs_target_id: VariableIdentifier,
     cabin_delta_pressure_id: VariableIdentifier,
-    fwc_diff_pressure_excessive_id: VariableIdentifier,
-    fwc_diff_negative_pressure_excessive_id: VariableIdentifier,
-    fwc_diff_pressure_hi_id: VariableIdentifier,
-    fwc_excess_cabin_altitude_id: VariableIdentifier,
-    fwc_excess_residual_pressure_id: VariableIdentifier,
-    fwc_low_diff_pressure_id: VariableIdentifier,
     outflow_valve_open_percentage_id: [VariableIdentifier; 4],
 
     landing_elevation_id: VariableIdentifier,
@@ -728,8 +904,10 @@ struct CabinPressureControlSystemApplication<C: PressurizationConstants> {
     destination_qnh: Pressure,
     fma_lateral_mode: usize,
 
+    adirs_data_is_valid: bool,
     is_active: bool,
     is_initialised: bool,
+    failure: Failure,
     constants: PhantomData<C>,
 }
 
@@ -743,39 +921,33 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     const FWC_EXCESSIVE_DIFF_PRESSURE: f64 = 9.65;
     const FWC_EXCESSIVE_NEGATIVE_DIFF_PRESSURE: f64 = -0.72;
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, cpiom_id: CpiomId) -> Self {
         Self {
-            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            cabin_altitude_id: context.get_identifier(format!("PRESS_CABIN_ALTITUDE_{}", cpiom_id)),
             cabin_altitude_target_id: context
-                .get_identifier("PRESS_CABIN_ALTITUDE_TARGET".to_owned()),
-            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
-            cabin_vs_target_id: context.get_identifier("PRESS_CABIN_VS_TARGET".to_owned()),
+                .get_identifier(format!("PRESS_CABIN_ALTITUDE_TARGET_{}", cpiom_id)),
+            cabin_vs_id: context.get_identifier(format!("PRESS_CABIN_VS_{}", cpiom_id)),
+            cabin_vs_target_id: context
+                .get_identifier(format!("PRESS_CABIN_VS_TARGET_{}", cpiom_id)),
             cabin_delta_pressure_id: context
-                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
-            fwc_diff_pressure_excessive_id: context
-                .get_identifier("PRESS_DIFF_PRESS_EXCESSIVE".to_owned()),
-            fwc_diff_negative_pressure_excessive_id: context
-                .get_identifier("PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE".to_owned()),
-            fwc_diff_pressure_hi_id: context.get_identifier("PRESS_DIFF_PRESS_HI".to_owned()),
-            fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
-            fwc_excess_residual_pressure_id: context
-                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
-            fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
-
-            landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
-            destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
-            cruise_altitude_id: context.get_identifier("AIRLINER_CRUISE_ALTITUDE".to_owned()),
-            fma_lateral_mode_id: context.get_identifier("FMA_LATERAL_MODE".to_owned()),
-
+                .get_identifier(format!("PRESS_CABIN_DELTA_PRESSURE_{}", cpiom_id)),
             outflow_valve_open_percentage_id: (1..=4)
                 .map(|id| {
-                    context.get_identifier(format!("PRESS_OUTFLOW_VALVE_{}_OPEN_PERCENTAGE", id))
+                    context.get_identifier(format!(
+                        "PRESS_OUTFLOW_VALVE_{}_OPEN_PERCENTAGE_{}",
+                        id, cpiom_id
+                    ))
                 })
                 .collect::<Vec<_>>()
                 .try_into()
                 .unwrap_or_else(|v: Vec<_>| {
                     panic!("Expected a Vec of length {} but it was {}", 4, v.len())
                 }),
+
+            landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
+            destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
+            cruise_altitude_id: context.get_identifier("AIRLINER_CRUISE_ALTITUDE".to_owned()),
+            fma_lateral_mode_id: context.get_identifier("FMA_LATERAL_MODE".to_owned()),
 
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
             exterior_airspeed: Velocity::default(),
@@ -810,8 +982,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             destination_qnh: Pressure::default(),
             fma_lateral_mode: 0,
 
+            adirs_data_is_valid: false,
             is_active: false,
             is_initialised: false,
+            failure: Failure::new(FailureType::CpcsApp(cpiom_id)),
             constants: PhantomData,
         }
     }
@@ -825,6 +999,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         press_overhead: &impl PressurizationOverheadShared,
         ocsm: [&impl OcsmShared; 4],
     ) {
+        self.adirs_data_is_valid = [1, 2, 3]
+            .iter()
+            .any(|&adr| adirs.ambient_static_pressure(adr).is_normal_operation());
+
         self.cabin_pressure = ocsm[0].cabin_pressure(); // TODO Add check for failure
         self.cabin_delta_pressure = ocsm[0].cabin_delta_pressure(); // TODO Add check for failure
         self.outflow_valve_open_amount = ocsm.map(|ocsm| ocsm.outflow_valve_open_amount());
@@ -1197,9 +1375,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     fn is_diff_press_hi(&self) -> bool {
         self.cabin_delta_pressure.get::<psi>() > Self::FWC_DIFF_PRESS_HI_LOWER_LIMIT
             && self.cabin_delta_pressure.get::<psi>() < Self::FWC_DIFF_PRESS_HI_UPPER_LIMIT
+            && self.adirs_data_is_valid
     }
 
-    pub(super) fn is_excessive_alt(&self) -> bool {
+    pub fn is_excessive_alt(&self) -> bool {
         let elevation_diff = Length::new::<foot>(1000.);
         self.cabin_altitude.get::<foot>() > C::EXCESSIVE_ALT_WARNING
             && self.cabin_altitude > (self.departure_elevation + elevation_diff)
@@ -1208,18 +1387,21 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
 
     fn is_excessive_differential_pressure(&self) -> bool {
         self.cabin_delta_pressure.get::<psi>() > Self::FWC_EXCESSIVE_DIFF_PRESSURE
+            && self.adirs_data_is_valid
     }
 
     fn is_excessive_negative_differential_pressure(&self) -> bool {
         self.cabin_delta_pressure.get::<psi>() < Self::FWC_EXCESSIVE_NEGATIVE_DIFF_PRESSURE
+            && self.adirs_data_is_valid
     }
 
-    pub(super) fn is_excessive_residual_pressure(&self) -> bool {
+    pub fn is_excessive_residual_pressure(&self) -> bool {
         self.cabin_delta_pressure.get::<psi>() > C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
             && self.is_ground()
+            && self.adirs_data_is_valid
     }
 
-    pub(super) fn is_low_diff_pressure(&self) -> bool {
+    pub fn is_low_diff_pressure(&self) -> bool {
         self.cabin_delta_pressure.get::<psi>() < C::LOW_DIFFERENTIAL_PRESSURE_WARNING
             && self.cabin_altitude > (self.landing_elevation + Length::new::<foot>(1500.))
             && self
@@ -1227,6 +1409,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 .output()
                 .get::<foot_per_minute>()
                 < -500.
+            && self.adirs_data_is_valid
     }
 
     fn activate(&mut self) {
@@ -1286,6 +1469,45 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         }
     }
 
+    fn cabin_delta_p_out(&self) -> Pressure {
+        // Correct format for ARINC delta P
+        let delta_p_psi = self
+            .cabin_delta_pressure
+            .get::<psi>()
+            .clamp(-6., 12.)
+            .resolution(0.075);
+        Pressure::new::<psi>(delta_p_psi)
+    }
+
+    fn cabin_altitude_out(&self, altitude: Length) -> Length {
+        // Correct format for ARINC altitude
+        let altitude_ft = altitude
+            .get::<foot>()
+            .clamp(-15000., 30000.)
+            .resolution(16.);
+        Length::new::<foot>(altitude_ft)
+    }
+
+    fn cabin_vertical_speed_out(&self, vertical_speed: Velocity) -> Velocity {
+        let vertical_speed_fpm = vertical_speed
+            .get::<foot_per_minute>()
+            .clamp(-6400., 6400.)
+            .resolution(50.);
+        Velocity::new::<foot_per_minute>(vertical_speed_fpm)
+    }
+
+    fn outflow_valve_open_amount_out(&self, ofv_open_amoount: Ratio) -> Ratio {
+        let outflow_valve_position_pct = ofv_open_amoount
+            .get::<percent>()
+            .clamp(0., 100.)
+            .resolution(1.);
+        Ratio::new::<percent>(outflow_valve_position_pct)
+    }
+
+    fn has_failed(&self) -> bool {
+        self.failure.is_active()
+    }
+
     #[cfg(test)]
     fn reference_pressure(&self) -> Pressure {
         self.reference_pressure
@@ -1300,38 +1522,55 @@ impl<C: PressurizationConstants> CabinAltitude for CabinPressureControlSystemApp
 
 impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSystemApplication<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.cabin_altitude_id, self.cabin_altitude);
-        writer.write(&self.cabin_altitude_target_id, self.cabin_target_altitude);
-        writer.write(
-            &self.cabin_vs_id,
-            self.cabin_vertical_speed().get::<foot_per_minute>(),
+        let ssm = if self.has_failed() {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+
+        // Delta P is no computed data if the adirs are not sending ambient pressure information
+        let delta_p_ssm = if self.has_failed() {
+            SignStatus::FailureWarning
+        } else if !self.adirs_data_is_valid {
+            SignStatus::NoComputedData
+        } else {
+            SignStatus::NormalOperation
+        };
+
+        writer.write_arinc429(
+            &self.cabin_altitude_id,
+            self.cabin_altitude_out(self.cabin_altitude),
+            ssm,
         );
-        writer.write(
-            &self.cabin_vs_target_id,
-            self.cabin_target_vertical_speed_ocsm
+        writer.write_arinc429(
+            &self.cabin_altitude_target_id,
+            self.cabin_altitude_out(self.cabin_target_altitude),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.cabin_vs_id,
+            self.cabin_vertical_speed_out(self.cabin_vertical_speed())
                 .get::<foot_per_minute>(),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.cabin_vs_target_id,
+            self.cabin_vertical_speed_out(self.cabin_target_vertical_speed_ocsm)
+                .get::<foot_per_minute>(),
+            ssm,
         );
         for (id, ofv) in self.outflow_valve_open_percentage_id.iter().enumerate() {
-            writer.write(ofv, self.outflow_valve_open_amount[id]);
+            writer.write_arinc429(
+                ofv,
+                self.outflow_valve_open_amount_out(self.outflow_valve_open_amount[id]),
+                ssm,
+            );
         }
-        writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_pressure);
-
-        // FWC warning signals
-        writer.write(
-            &self.fwc_diff_pressure_excessive_id,
-            self.is_excessive_differential_pressure(),
+        writer.write_arinc429(
+            &self.cabin_delta_pressure_id,
+            self.cabin_delta_p_out(),
+            delta_p_ssm,
         );
-        writer.write(&self.fwc_diff_pressure_hi_id, self.is_diff_press_hi());
-        writer.write(
-            &self.fwc_diff_negative_pressure_excessive_id,
-            self.is_excessive_negative_differential_pressure(),
-        );
-        writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
-        writer.write(
-            &self.fwc_excess_residual_pressure_id,
-            self.is_excessive_residual_pressure(),
-        );
-        writer.write(&self.fwc_low_diff_pressure_id, self.is_low_diff_pressure());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -1341,5 +1580,121 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
         self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
         self.fma_lateral_mode = reader.read(&self.fma_lateral_mode_id);
+    }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+/// This struct centralises the data transmittion of discrete signals from each CPIOM for convenience
+pub(super) struct CpiomBInterfaceUnit {
+    discrete_word_ags_id: VariableIdentifier,
+    discrete_word_tcs_id: VariableIdentifier,
+    discrete_word_vcs_id: VariableIdentifier,
+    discrete_word_cpcs_id: VariableIdentifier,
+
+    discrete_word_ags: Arinc429Word<u32>,
+    discrete_word_tcs: Arinc429Word<u32>,
+    discrete_word_vcs: Arinc429Word<u32>,
+    discrete_word_cpcs: Arinc429Word<u32>,
+}
+
+impl CpiomBInterfaceUnit {
+    pub(super) fn new(context: &mut InitContext, cpiom_id: CpiomId) -> Self {
+        Self {
+            discrete_word_ags_id: context
+                .get_identifier(format!("COND_CPIOM_{}_AGS_DISCRETE_WORD", cpiom_id)),
+            discrete_word_tcs_id: context
+                .get_identifier(format!("COND_CPIOM_{}_TCS_DISCRETE_WORD", cpiom_id)),
+            discrete_word_vcs_id: context
+                .get_identifier(format!("COND_CPIOM_{}_VCS_DISCRETE_WORD", cpiom_id)),
+            discrete_word_cpcs_id: context
+                .get_identifier(format!("COND_CPIOM_{}_CPCS_DISCRETE_WORD", cpiom_id)),
+
+            discrete_word_ags: Arinc429Word::new(0, SignStatus::NoComputedData),
+            discrete_word_tcs: Arinc429Word::new(0, SignStatus::NoComputedData),
+            discrete_word_vcs: Arinc429Word::new(0, SignStatus::NoComputedData),
+            discrete_word_cpcs: Arinc429Word::new(0, SignStatus::NoComputedData),
+        }
+    }
+
+    pub(super) fn update(&mut self, cpiom: &CoreProcessingInputOutputModuleB) {
+        if cpiom.ags_has_fault() {
+            self.discrete_word_ags = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word_ags = Arinc429Word::new(0, SignStatus::NormalOperation);
+        }
+
+        self.discrete_word_ags.set_bit(11, cpiom.ags_has_fault());
+        self.discrete_word_ags
+            .set_bit(13, cpiom.pack_operating(Pack(1)));
+        self.discrete_word_ags
+            .set_bit(14, cpiom.pack_operating(Pack(2)));
+
+        if cpiom.tcs_has_fault() {
+            self.discrete_word_tcs = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word_tcs = Arinc429Word::new(0, SignStatus::NormalOperation);
+        }
+
+        self.discrete_word_tcs.set_bit(11, cpiom.tcs_has_fault());
+        self.discrete_word_tcs
+            .set_bit(13, cpiom.hot_air_is_enabled(Pack(1)));
+        self.discrete_word_tcs
+            .set_bit(14, cpiom.hot_air_is_enabled(Pack(2)));
+        self.discrete_word_tcs
+            .set_bit(15, cpiom.hot_air_is_open(Pack(1)));
+        self.discrete_word_tcs
+            .set_bit(16, cpiom.hot_air_is_open(Pack(2)));
+
+        if cpiom.vcs_has_fault() {
+            self.discrete_word_vcs = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word_vcs = Arinc429Word::new(0, SignStatus::NormalOperation);
+        }
+
+        self.discrete_word_vcs.set_bit(11, cpiom.vcs_has_fault());
+        self.discrete_word_vcs
+            .set_bit(13, cpiom.fwd_extraction_fan_is_on());
+        self.discrete_word_vcs
+            .set_bit(14, cpiom.fwd_isolation_valve_is_open());
+        self.discrete_word_vcs
+            .set_bit(15, cpiom.bulk_extraction_fan_is_on());
+        self.discrete_word_vcs
+            .set_bit(16, cpiom.bulk_isolation_valve_is_open());
+        self.discrete_word_vcs
+            .set_bit(17, cpiom.primary_fans_enabled());
+
+        if cpiom.cpcs_has_fault() {
+            self.discrete_word_cpcs = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word_cpcs = Arinc429Word::new(0, SignStatus::NormalOperation);
+        }
+
+        self.discrete_word_vcs.set_bit(11, cpiom.cpcs_has_fault());
+        self.discrete_word_vcs
+            .set_bit(13, cpiom.excessive_cabin_alt());
+        self.discrete_word_vcs
+            .set_bit(14, cpiom.excessive_differential_pressure());
+        self.discrete_word_vcs
+            .set_bit(15, cpiom.excessive_negative_differential_pressure());
+        self.discrete_word_vcs
+            .set_bit(16, cpiom.high_differential_pressure());
+        self.discrete_word_vcs
+            .set_bit(17, cpiom.low_differential_pressure());
+        self.discrete_word_vcs
+            .set_bit(18, cpiom.excessive_residual_pressure());
+    }
+}
+
+impl SimulationElement for CpiomBInterfaceUnit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.discrete_word_ags_id, self.discrete_word_ags);
+        writer.write(&self.discrete_word_tcs_id, self.discrete_word_tcs);
+        writer.write(&self.discrete_word_vcs_id, self.discrete_word_vcs);
+        writer.write(&self.discrete_word_cpcs_id, self.discrete_word_cpcs);
     }
 }

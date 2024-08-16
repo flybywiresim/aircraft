@@ -113,6 +113,99 @@
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
+<!-- - A32NX_COND_CPIOM_B{id}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - Discrete Data word of the Fire Detection Unit (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | AGS Application INOP                                 |
+      | 12  | TCS Application INOP                                 |
+      | 13  | VCS Application INOP                                 |
+      | 14  | CPCS Application INOP                                |
+      | 15  | Pack 1 operating                                     |
+      | 16  | Pack 2 operating                                     |
+      | 17  | Hot Air 1 is enabled                                 |
+      | 18  | Hot Air 2 is enabled                                 |
+      | 19  | Trim Air Pressure Regulating Valve 1 is open         |
+      | 20  | Trim Air Pressure Regulating Valve 2 is open         |
+      | 21  | FWD Extraction fan is on                             |
+      | 22  | FWD isolation valve is open                          |
+      | 23  | Bulk Extraction fan is on                            |
+      | 24  | Bulk isolation valve is open                         |
+      | 25  | Primary fans are enabled                             |
+      | 26  | Unused                                               |
+      | 27  | Unused                                               |
+      | 28  | Unused                                               |
+      | 29  | Unused                                               |
+
+- A32NX_COND_CPIOM_B{id}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - Discrete Data word of the Fire Detection Unit (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Excessive cabin altitude - warn                      |
+      | 12  | Excessive differential pressure - warn               |
+      | 13  | Excessive negative differential pressure - warn      |
+      | 14  | High differential pressure - warn                    |
+      | 15  | Low differential pressure - warn                     |
+      | 16  | Excessive residual pressure - warn                   | -->
+
+
+- A32NX_COND_CPIOM_B{id}_AGS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the AGS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | AGS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | Pack 1 operating                                     |
+      | 14  | Pack 2 operating                                     |
+
+- A32NX_COND_CPIOM_B{id}_TCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the TCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | TCS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | Hot Air 1 is enabled                                 |
+      | 14  | Hot Air 2 is enabled                                 |
+      | 15  | Trim Air Pressure Regulating Valve 1 is open         |
+      | 16  | Trim Air Pressure Regulating Valve 2 is open         |
+
+- A32NX_COND_CPIOM_B{id}_VCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the VCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | VCS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | FWD Extraction fan is on                             |
+      | 14  | FWD isolation valve is open                          |
+      | 15  | Bulk Extraction fan is on                            |
+      | 16  | Bulk isolation valve is open                         |
+      | 17  | Primary fans are enabled                             |
+
+- A32NX_COND_CPIOM_B{id}_CPCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the CPCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | CPCS Application INOP                                |
+      | 12  | Unused                                               |
+      | 13  | Excessive cabin altitude - warn                      |
+      | 14  | Excessive differential pressure - warn               |
+      | 15  | Excessive negative differential pressure - warn      |
+      | 16  | High differential pressure - warn                    |
+      | 17  | Low differential pressure - warn                     |
+      | 18  | Excessive residual pressure - warn                   |
+
 - A32NX_COND_{id}_TEMP
     - Degree Celsius
     - Temperature as measured in each of the cabin zones and cockpit

@@ -1,3 +1,4 @@
+use cpiom_b::CpiomBInterfaceUnit;
 use systems::{
     accept_iterable,
     air_conditioning::{
@@ -5,9 +6,9 @@ use systems::{
         cabin_air::CabinAirSimulation,
         pressure_valve::{NegativeRelieveValveSignal, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
-        AirHeater, CabinFan, DuctTemperature, FdacId, MixerUnit, OutletAir, OverheadFlowSelector,
-        PackFlow, PackFlowControllers, PressurizationConstants, PressurizationOverheadShared,
-        TrimAirSystem, VcmId, VcmShared, ZoneType,
+        AirHeater, CabinFan, CpiomId, DuctTemperature, FdacId, MixerUnit, OutletAir,
+        OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
+        PressurizationOverheadShared, TrimAirSystem, VcmId, VcmShared, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -54,7 +55,8 @@ pub(super) struct A380AirConditioning {
     a380_air_conditioning_system: A380AirConditioningSystem,
     a380_pressurization_system: A380PressurizationSystem,
 
-    cpiom_b: CoreProcessingInputOutputModuleB,
+    cpiom_b: [CoreProcessingInputOutputModuleB; 4],
+    cpiom_b_interface: [CpiomBInterfaceUnit; 4],
 
     pressurization_updater: MaxStepLoop,
 }
@@ -84,12 +86,17 @@ impl A380AirConditioning {
             ZoneType::Cargo(2),  // CARGO_BULK
         ];
 
+        let cpiom_b_id = [CpiomId::B1, CpiomId::B2, CpiomId::B3, CpiomId::B4];
+
         Self {
             a380_cabin: A380Cabin::new(context, &cabin_zones),
             a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
             a380_pressurization_system: A380PressurizationSystem::new(context),
 
-            cpiom_b: CoreProcessingInputOutputModuleB::new(context, &cabin_zones),
+            cpiom_b: cpiom_b_id
+                .map(|cpiom| CoreProcessingInputOutputModuleB::new(context, cpiom, &cabin_zones)),
+
+            cpiom_b_interface: cpiom_b_id.map(|cpiom| CpiomBInterfaceUnit::new(context, cpiom)),
 
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
         }
@@ -111,22 +118,26 @@ impl A380AirConditioning {
     ) {
         self.pressurization_updater.update(context);
 
-        let cpiom =
-            ["B1", "B2", "B3", "B4"].map(|name| cpiom_b.core_processing_input_output_module(name));
+        self.cpiom_b.iter_mut().for_each(|cpiom| {
+            cpiom.update(
+                context,
+                adirs,
+                self.a380_air_conditioning_system
+                    .air_conditioning_overhead(),
+                &self.a380_cabin,
+                cargo_door_open,
+                cpiom_b,
+                &engines,
+                lgciu,
+                pneumatic,
+                &self.a380_air_conditioning_system,
+            )
+        });
 
-        self.cpiom_b.update(
-            context,
-            adirs,
-            self.a380_air_conditioning_system
-                .air_conditioning_overhead(),
-            &self.a380_cabin,
-            cargo_door_open,
-            cpiom,
-            &engines,
-            lgciu,
-            pneumatic,
-            &self.a380_air_conditioning_system,
-        );
+        self.cpiom_b_interface
+            .iter_mut()
+            .zip(&self.cpiom_b)
+            .for_each(|(interface, cpiom)| interface.update(cpiom));
 
         self.a380_air_conditioning_system.update(
             context,
@@ -153,18 +164,21 @@ impl A380AirConditioning {
                 number_of_passengers,
                 &self.a380_pressurization_system,
             );
-            self.cpiom_b.update_cpcs(
-                &context.with_delta(cur_time_step),
-                adirs,
-                &engines,
-                lgciu,
-                self.a380_pressurization_system
-                    .outflow_valve_control_module(),
-                pressurization_overhead,
-            );
+            self.cpiom_b.iter_mut().for_each(|cpiom| {
+                cpiom.update_cpcs(
+                    &context.with_delta(cur_time_step),
+                    adirs,
+                    &engines,
+                    lgciu,
+                    self.a380_pressurization_system
+                        .outflow_valve_control_module(),
+                    pressurization_overhead,
+                )
+            });
             self.a380_pressurization_system.update(
                 &context.with_delta(cur_time_step),
-                &self.cpiom_b,
+                // FIXME
+                &self.cpiom_b[0],
                 adirs,
                 pressurization_overhead,
                 &self.a380_cabin,
@@ -185,7 +199,9 @@ impl A380AirConditioning {
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
     ) {
-        self.cpiom_b.update_cpcs_ambient_conditions(context, adirs);
+        self.cpiom_b
+            .iter_mut()
+            .for_each(|cpiom| cpiom.update_cpcs_ambient_conditions(context, adirs));
     }
 
     pub(crate) fn fcv_to_pack_id(fcv_id: usize) -> usize {
@@ -212,7 +228,8 @@ impl SimulationElement for A380AirConditioning {
         self.a380_cabin.accept(visitor);
         self.a380_air_conditioning_system.accept(visitor);
         self.a380_pressurization_system.accept(visitor);
-        self.cpiom_b.accept(visitor);
+        accept_iterable!(self.cpiom_b, visitor);
+        accept_iterable!(self.cpiom_b_interface, visitor);
 
         visitor.visit(self);
     }
@@ -444,7 +461,7 @@ impl A380AirConditioningSystem {
         &mut self,
         context: &UpdateContext,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
@@ -465,7 +482,8 @@ impl A380AirConditioningSystem {
             pressurization_overhead,
         );
 
-        self.update_fans(cabin_simulation, cpiom_b);
+        // FIXME
+        self.update_fans(cabin_simulation, &cpiom_b[0]);
 
         self.update_packs(context, cpiom_b);
 
@@ -482,7 +500,7 @@ impl A380AirConditioningSystem {
     fn update_local_controllers(
         &mut self,
         context: &UpdateContext,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
@@ -491,27 +509,37 @@ impl A380AirConditioningSystem {
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
     ) {
-        self.fdac.iter_mut().for_each(|controller| {
-            controller.update(
-                context,
-                &self.air_conditioning_overhead,
-                number_of_open_doors > 0,
-                engine_fire_push_buttons,
-                engines,
-                cpiom_b,
-                pneumatic,
-                pneumatic_overhead,
-                pressurization_overhead,
-            )
-        });
+        // CPIOM B1 and B3 calculate the LH AGU Flow Demand
+        // CPIOM B2 and B4 calculate the RH AGU Flow Demand
+        self.fdac
+            .iter_mut()
+            .enumerate()
+            .for_each(|(id, controller)| {
+                controller.update(
+                    context,
+                    &self.air_conditioning_overhead,
+                    number_of_open_doors > 0,
+                    engine_fire_push_buttons,
+                    engines,
+                    if !cpiom_b[id].ags_has_fault() {
+                        &cpiom_b[id]
+                    } else {
+                        &cpiom_b[id + 2]
+                    },
+                    pneumatic,
+                    pneumatic_overhead,
+                    pressurization_overhead,
+                );
+            });
 
+        // FIXME
         self.tadd.update(
             context,
             &self.air_conditioning_overhead,
-            cpiom_b,
+            &cpiom_b[0],
             &self.trim_air_system,
             pneumatic,
-            cpiom_b.should_close_taprv(),
+            cpiom_b[0].should_close_taprv(),
             &self.trim_air_system,
         );
 
@@ -527,20 +555,21 @@ impl A380AirConditioningSystem {
     fn update_packs(
         &mut self,
         context: &UpdateContext,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
     ) {
-        for (pack, pack_flow) in self
+        for (id, (pack, pack_flow)) in self
             .packs
             .iter_mut()
             .zip(self.fdac.iter().map(|fdac| fdac.pack_flow()))
+            .enumerate()
         {
+            let duct_demand = if !cpiom_b[id].tcs_has_fault() {
+                cpiom_b[id].duct_demand_temperature()
+            } else {
+                cpiom_b[id + 2].duct_demand_temperature()
+            };
             // TODO: Failures
-            pack.update(
-                context,
-                pack_flow,
-                &cpiom_b.duct_demand_temperature(),
-                false,
-            )
+            pack.update(context, pack_flow, &duct_demand, false)
         }
     }
 
@@ -567,13 +596,18 @@ impl A380AirConditioningSystem {
     fn update_cargo_heater(
         &mut self,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
     ) {
         // For the bulk cargo, air flows from the LD and is warmed up by an electric heater
+        // The heater is controlled by CPIOM B1 and B3
         self.cargo_air_heater.update(
             cabin_simulation,
             &self.trim_air_system,
-            cpiom_b.bulk_heater_on_signal(),
+            if !cpiom_b[0].vcs_has_fault() {
+                cpiom_b[0].bulk_heater_on_signal()
+            } else {
+                cpiom_b[2].bulk_heater_on_signal()
+            },
         );
     }
 
@@ -2497,7 +2531,7 @@ mod tests {
         }
 
         fn cabin_altitude(&self) -> Length {
-            self.query(|a| a.a380_cabin_air.cpiom_b.cabin_altitude())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].cabin_altitude())
         }
 
         fn cabin_pressure(&self) -> Pressure {
@@ -2519,7 +2553,7 @@ mod tests {
         }
 
         fn cabin_vs(&self) -> Velocity {
-            self.query(|a| a.a380_cabin_air.cpiom_b.cabin_vertical_speed())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].cabin_vertical_speed())
         }
 
         fn cabin_delta_p(&self) -> Pressure {
@@ -2557,6 +2591,13 @@ mod tests {
         }
 
         fn all_pack_flow_valves_are_open(&self) -> bool {
+            println!(
+                "PFV1: {}, PFV2: {}, PFV3: {}, PFV4: {}",
+                self.pack_flow_valve_is_open(1),
+                self.pack_flow_valve_is_open(2),
+                self.pack_flow_valve_is_open(3),
+                self.pack_flow_valve_is_open(4)
+            );
             self.pack_flow_valve_is_open(1)
                 && self.pack_flow_valve_is_open(2)
                 && self.pack_flow_valve_is_open(3)
@@ -2564,7 +2605,7 @@ mod tests {
         }
 
         fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
-            self.query(|a| a.a380_cabin_air.cpiom_b.duct_demand_temperature())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].duct_demand_temperature())
         }
 
         fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
@@ -2628,7 +2669,7 @@ mod tests {
         }
 
         fn reference_pressure(&self) -> Pressure {
-            self.query(|a| a.a380_cabin_air.cpiom_b.reference_pressure())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].reference_pressure())
         }
 
         fn pack_1_has_fault(&mut self) -> bool {

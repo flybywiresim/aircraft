@@ -28,7 +28,7 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
-use systems::air_conditioning::{Channel, FdacId, VcmId};
+use systems::air_conditioning::{Channel, CpiomId, FdacId, VcmId};
 use systems::failures::FailureType;
 use systems::shared::{
     ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
@@ -80,6 +80,18 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (21_008, FailureType::Vcm(VcmId::Fwd, Channel::ChannelTwo)),
         (21_009, FailureType::Vcm(VcmId::Aft, Channel::ChannelOne)),
         (21_010, FailureType::Vcm(VcmId::Aft, Channel::ChannelTwo)),
+        (21_011, FailureType::AgsApp(CpiomId::B1)),
+        (21_012, FailureType::AgsApp(CpiomId::B2)),
+        (21_013, FailureType::AgsApp(CpiomId::B3)),
+        (21_014, FailureType::AgsApp(CpiomId::B4)),
+        (21_015, FailureType::TcsApp(CpiomId::B1)),
+        (21_016, FailureType::TcsApp(CpiomId::B2)),
+        (21_017, FailureType::TcsApp(CpiomId::B3)),
+        (21_018, FailureType::TcsApp(CpiomId::B4)),
+        (21_019, FailureType::VcsApp(CpiomId::B1)),
+        (21_020, FailureType::VcsApp(CpiomId::B2)),
+        (21_021, FailureType::VcsApp(CpiomId::B3)),
+        (21_022, FailureType::VcsApp(CpiomId::B4)),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
