@@ -478,7 +478,7 @@ export enum ChecklistLineStyle {
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
   SeparationLine = 'SeparationLine',
-  ChecklistMenuItem = 'ChecklistMenuItem',
+  ChecklistItem = 'ChecklistItem',
   CompletedChecklist = 'CompletedChecklist',
 }
 
@@ -543,3 +543,22 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
+
+
+/** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
+export interface WdLineData {
+  activeProcedure: boolean;
+  sensed: boolean; // Line is selectable if false
+  checked: boolean;
+  text: string;
+  style: ChecklistLineStyle;
+  firstLine: boolean;
+  lastLine: boolean;
+  specialLine?: WdSpecialLine;
+  abnormalProcedure?: boolean;
+  // associatedProcedureId?: string;
+}
+
+export enum WdSpecialLine {
+  ClComplete, Reset, Clear, Empty, SeparationLine,
+}

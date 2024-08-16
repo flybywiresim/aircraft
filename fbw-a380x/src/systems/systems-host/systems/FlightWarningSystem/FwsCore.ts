@@ -35,7 +35,6 @@ import {
   AbnormalProcedure,
   EcamAbnormalSensedProcedures,
   EcamMemos,
-  isChecklistAction,
   pfdMemoDisplay,
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
@@ -182,7 +181,7 @@ export class FwsCore implements Instrument {
   /** Map to hold all failures which are currently active */
   public readonly activeAbnormalSensedList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
-  private recallFailures: string[] = [];
+  public recallFailures: string[] = [];
 
   private auralCrcKeys: string[] = [];
 
@@ -2788,7 +2787,6 @@ export class FwsCore implements Instrument {
     this.recallFailures.length = 0;
     this.recallFailures.push(...recallFailureKeys);
     this.nonCancellableWarningCount = 0;
-    let stateWasChanged = false;
 
     // Abnormal sensed procedures
     const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.abnormalSensed.ewdAbnormalSensed);
@@ -2831,7 +2829,7 @@ export class FwsCore implements Instrument {
           }
         }
 
-        if (!this.activeAbnormalSensedList.has(key)) {
+        if (!this.activeAbnormalSensedList.has(key) && !this.recallFailures.includes(key)) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -2861,27 +2859,22 @@ export class FwsCore implements Instrument {
             itemsCompleted: itemsCompleted,
             itemsToShow: itemsToShow,
           });
-          stateWasChanged = true;
-        } else {
+        } else if (this.activeAbnormalSensedList.has(key)) {
           // Update internal map
           const prevEl = this.activeAbnormalSensedList.get().get(key);
-          if (
-            proc.items.some((item, idx) => {
-              if (item.sensed === true) {
-                if (
-                  prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
-                  prevEl.itemsActive[idx] !== itemsActive[idx] ||
-                  prevEl.itemsCompleted[idx] !== itemsCompleted[idx]
-                ) {
-                  return true;
-                }
+          const itemUpdated = proc.items.some((item, idx) => {
+            if (item.sensed === true) {
+              if (
+                prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+                prevEl.itemsActive[idx] !== itemsActive[idx] ||
+                prevEl.itemsCompleted[idx] !== itemsCompleted[idx]
+              ) {
+                return true;
               }
-            })
-          ) {
-            stateWasChanged = true;
-          }
+            }
+          });
 
-          if (stateWasChanged) {
+          if (itemUpdated) {
             this.activeAbnormalSensedList.setValue(key, {
               id: key,
               itemsCompleted: [...prevEl.itemsCompleted].map((val, index) =>
@@ -2956,7 +2949,6 @@ export class FwsCore implements Instrument {
     this.activeAbnormalSensedList.get().forEach((_, key) => {
       if (!allFailureKeys.includes(key.toString()) || this.recallFailures.includes(key)) {
         this.activeAbnormalSensedList.delete(key);
-        stateWasChanged = true;
       }
     });
 
@@ -2982,30 +2974,6 @@ export class FwsCore implements Instrument {
 
     this.presentedFailures.length = 0;
     this.presentedFailures.push(...failureKeys);
-
-    if (stateWasChanged) {
-      console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
-      // Debug output for ABN sensed procedures
-      this.activeAbnormalSensedList.get().forEach((val, key) => {
-        const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
-        console.log('%c' + proc.title, 'font-family:monospace; font-weight: bold');
-        proc.items.forEach((it, itemIdx) => {
-          if (val.itemsToShow[itemIdx]) {
-            const cpl = isChecklistAction(it)
-              ? val.itemsCompleted[itemIdx]
-                ? it.labelNotCompleted
-                : ` .......... ${it.labelNotCompleted}`
-              : '';
-            console.log(
-              `%c${'  '.repeat(it.level ?? 0)} ${it.sensed ? (val.itemsCompleted[itemIdx] ? 'X' : 'O') : ' '} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
-              'font-family:monospace; font-weight: bold',
-            );
-          }
-        });
-      });
-
-      console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
-    }
 
     // MEMOs (except T.O and LDG)
     for (const [, value] of Object.entries(this.memos.ewdMemos)) {

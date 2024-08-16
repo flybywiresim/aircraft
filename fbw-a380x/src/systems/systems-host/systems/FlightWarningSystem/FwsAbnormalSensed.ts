@@ -2,7 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamAbnormalSensedProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  EcamAbnormalSensedProcedures,
+  isChecklistAction,
+  WD_NUM_LINES,
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
   Subject,
@@ -84,11 +89,32 @@ export class FwsAbnormalSensed {
         );
         this.pub.pub('fws_abn_sensed_procedures', flattened, true);
         SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', flattened[0] ? flattened[0].id : '');
+
+        console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
+        // Debug output for ABN sensed procedures
+        this.fws.activeAbnormalSensedList.get().forEach((val, key) => {
+          const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
+          console.log('%c' + proc.title, 'font-family:monospace; font-weight: bold');
+          proc.items.forEach((it, itemIdx) => {
+            if (val.itemsToShow[itemIdx]) {
+              const cpl = isChecklistAction(it)
+                ? val.itemsCompleted[itemIdx]
+                  ? it.labelNotCompleted
+                  : ` .......... ${it.labelNotCompleted}`
+                : '';
+              console.log(
+                `%c${'  '.repeat(it.level ?? 0)} ${it.sensed ? (val.itemsCompleted[itemIdx] ? 'X' : 'O') : ' '} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
+                'font-family:monospace; font-weight: bold',
+              );
+            }
+          });
+        });
+        console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
       },
       true,
     );
-    this.selectedLine.sub((line) => this.pub.pub('fws_abn_sensed_active_line', line, true), true);
-    this.showFromLine.sub((line) => this.pub.pub('fws_abn_sensed_show_from_line', line, true), true);
+    this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line, true), true);
+    this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
   }
 
   getAbnormalProceduresKeysSorted() {
@@ -205,9 +231,15 @@ export class FwsAbnormalSensed {
     if (this.fws.activeAbnormalSensedList.get().size > 0) {
       this.showAbnormalSensed.set(true);
       this.fws.normalChecklists.showChecklist.set(false);
+
+      // Update selected line: CLEAR of first procedure
+      this.selectedLine.set(
+        EcamAbnormalSensedProcedures[this.fws.activeAbnormalSensedList.get().keys().next().value].items.length + 1,
+      );
     } else {
       this.showAbnormalSensed.set(false);
     }
+
     /* if (this.fws.clDownPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
@@ -220,16 +252,19 @@ export class FwsAbnormalSensed {
         return;
       }
       this.moveUp();
-    }
+    }*/
 
     if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
 
-      this.checkCurrentItem();
-      this.moveDown();
-    }*/
+      // Only CLEAR implemented atm
+      this.fws.presentedFailures.splice(0, 1);
+      this.fws.recallFailures = this.fws.allCurrentFailures.filter(
+        (item) => !this.fws.presentedFailures.includes(item),
+      );
+    }
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {

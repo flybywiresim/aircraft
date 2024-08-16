@@ -55,8 +55,8 @@ export class FwsNormalChecklists {
       true,
     );
     this.checklistId.sub((id) => this.pub.pub('fws_normal_checklists_id', id, true), true);
-    this.selectedLine.sub((line) => this.pub.pub('fws_normal_checklists_active_line', line, true), true);
-    this.showFromLine.sub((line) => this.pub.pub('fws_normal_checklists_show_from_line', line, true), true);
+    this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line + 1, true), true); // Start at second line, headline not selectable
+    this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
 
     // Populate checklistState
     const keys = this.getNormalProceduresKeysSorted();
@@ -142,9 +142,7 @@ export class FwsNormalChecklists {
 
   moveDown() {
     if (this.checklistId.get() === 0) {
-      this.selectedLine.set(
-        Math.min(this.selectedLine.get() + 1, this.getNormalProceduresKeysSorted().length - 1, WD_NUM_LINES - 1),
-      );
+      this.selectedLine.set(Math.min(this.selectedLine.get() + 1, this.getNormalProceduresKeysSorted().length - 1));
     } else {
       const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
       const selectable = EcamNormalProcedures[this.checklistId.get()].items
@@ -175,6 +173,7 @@ export class FwsNormalChecklists {
     if (this.selectedLine.get() < clState.itemsCompleted.length) {
       clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
       this.checklistState.setValue(this.checklistId.get(), clState);
+      this.moveDown();
     } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
       // C/L complete
       clState.checklistCompleted = true;
@@ -249,7 +248,6 @@ export class FwsNormalChecklists {
         this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
       } else {
         this.checkCurrentItem();
-        this.moveDown();
       }
     }
 
