@@ -2172,10 +2172,13 @@ impl A380Hydraulic {
             ],
         );
 
+        // TODO real logic uses engine state as well, this is only a simple placeholder
         let placeholder_spoiler_antiscrap_active =
             self.flap_system.flap_surface_angle().get::<degree>()
                 < Self::FLAP_ANGLE_TO_STOP_SPOILER_ANTI_SCRAP_LOGIC_DEGREES
-                && self.flap_system.is_surface_moving();
+                && self.flap_system.is_surface_moving()
+                && (lgcius.lgciu1().left_and_right_gear_compressed(false)
+                    || lgcius.lgciu2().left_and_right_gear_compressed(false));
 
         self.left_spoilers.update(
             context,
@@ -9933,6 +9936,36 @@ mod tests {
             assert!(test_bed.get_left_spoiler_position(1).get::<percent>() > 10.);
             assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 20.);
 
+            assert!(test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(30));
+
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
+
+            assert!(test_bed.is_flaps_moving());
+        }
+
+        #[test]
+        fn spoilers_do_not_lift_in_flight_on_initial_flap_movement() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .in_flight()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(3));
+
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
             assert!(test_bed.is_flaps_moving());
 
             test_bed = test_bed
