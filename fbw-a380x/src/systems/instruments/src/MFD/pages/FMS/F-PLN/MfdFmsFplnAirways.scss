@@ -1,0 +1,21 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.mfd-fms-fpln-awy-awy-container {
+  height: 630px;
+  margin: 10px 30px 5px 30px;
+  border: 2px outset $display-light-grey;
+  padding: 15px;
+}
+
+.mfd-fms-fpln-awy-btn-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center
+}
+
+.mfd-fms-awy-line-container {
+  justify-content: space-between;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}

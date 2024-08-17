@@ -5,6 +5,10 @@
 import { FailureDefinition } from '@flybywiresim/fbw-sdk';
 
 export const A380Failure = Object.freeze({
+  FmcA: 22000,
+  FmcB: 22001,
+  FmcC: 22002,
+
   AudioManagementUnit1: 23000,
   AudioManagementUnit2: 23001,
   RadioManagementPanel1: 23002,
@@ -49,6 +53,10 @@ export const A380Failure = Object.freeze({
 });
 
 export const A380FailureDefinitions: FailureDefinition[] = [
+  [22, A380Failure.FmcA, 'FMC-A'],
+  [22, A380Failure.FmcB, 'FMC-B'],
+  [22, A380Failure.FmcC, 'FMC-C'],
+
   [23, A380Failure.AudioManagementUnit1, 'AMU 1'],
   [23, A380Failure.AudioManagementUnit2, 'AMU 2'],
   [23, A380Failure.RadioManagementPanel1, 'RMP 1'],
