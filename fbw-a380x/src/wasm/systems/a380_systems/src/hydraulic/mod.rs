@@ -1642,8 +1642,9 @@ impl A380Hydraulic {
                 context,
                 Angle::new::<degree>(75.),
                 AngularVelocity::new::<radian_per_second>(0.35),
-                Length::new::<meter>(0.075),
+                Length::new::<meter>(0.11), // Diameter of 0.11 gives correct A380 flow of around 35 lpm at full speed
                 Ratio::new::<ratio>(0.18),
+                Pressure::new::<psi>(4000.),
             ),
 
             core_hydraulic_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
@@ -10218,6 +10219,8 @@ mod tests {
                 .set_yellow_e_pump_a(false)
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
                 .set_anti_skid(false)
                 .run_one_tick();
 
@@ -10227,6 +10230,26 @@ mod tests {
 
             assert!(test_bed.nose_steering_position().get::<degree>() >= -0.1);
             assert!(test_bed.nose_steering_position().get::<degree>() <= 0.1);
+        }
+
+        #[test]
+        fn nose_steering_steers() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump_a(false)
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_tiller_demand(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.nose_steering_position().get::<degree>() >= 40.);
         }
 
         #[test]
