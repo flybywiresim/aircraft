@@ -1590,6 +1590,8 @@ pub(super) struct A380Hydraulic {
     tilting_gears: A380TiltingGears,
 }
 impl A380Hydraulic {
+    const FLAP_ANGLE_TO_STOP_SPOILER_ANTI_SCRAP_LOGIC_DEGREES: f64 = 15.;
+
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
@@ -2170,20 +2172,23 @@ impl A380Hydraulic {
             ],
         );
 
+        let placeholder_spoiler_antiscrap_active =
+            self.flap_system.flap_surface_angle().get::<degree>()
+                < Self::FLAP_ANGLE_TO_STOP_SPOILER_ANTI_SCRAP_LOGIC_DEGREES
+                && self.flap_system.is_surface_moving();
+
         self.left_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
-            self.flap_system.flap_surface_angle().get::<degree>() < 15.
-                && self.flap_system.is_surface_moving(),
+            placeholder_spoiler_antiscrap_active,
         );
 
         self.right_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
-            self.flap_system.flap_surface_angle().get::<degree>() < 15.
-                && self.flap_system.is_surface_moving(),
+            placeholder_spoiler_antiscrap_active,
         );
 
         self.gear_system.update(
