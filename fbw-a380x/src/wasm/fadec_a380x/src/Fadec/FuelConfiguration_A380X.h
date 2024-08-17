@@ -28,38 +28,37 @@
  */
 class FuelConfiguration_A380X {
   // Fuel tank default quantities in gallons
-  static constexpr double fuelFeedOneDefault   = 1082.0;              // tank 2
-  static constexpr double fuelFeedTwoDefault   = fuelFeedOneDefault;  // tank 5
+  static constexpr double fuelFeedOneDefault = 1082.0;                // tank 2
+  static constexpr double fuelFeedTwoDefault = fuelFeedOneDefault;    // tank 5
   static constexpr double fuelFeedThreeDefault = fuelFeedOneDefault;  // tank 6
-  static constexpr double fuelFeedFourDefault  = fuelFeedOneDefault;  // tank 9
+  static constexpr double fuelFeedFourDefault = fuelFeedOneDefault;   // tank 9
 
-  static constexpr double fuelLeftOuterDefault  = 2731.0;                // tank 1
+  static constexpr double fuelLeftOuterDefault = 2731.0;                 // tank 1
   static constexpr double fuelRightOuterDefault = fuelLeftOuterDefault;  // tank 10
-  static constexpr double fuelLeftMidDefault    = 9630.0;                // tank 3
-  static constexpr double fuelRightMidDefault   = fuelLeftMidDefault;    // tank 8
-  static constexpr double fuelLeftInnerDefault  = 12187.0;               // tank 4
+  static constexpr double fuelLeftMidDefault = 9630.0;                   // tank 3
+  static constexpr double fuelRightMidDefault = fuelLeftMidDefault;      // tank 8
+  static constexpr double fuelLeftInnerDefault = 12187.0;                // tank 4
   static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;  // tank 7
 
   static constexpr double fuelTrimDefault = 6259.0;  // tank 11
 
  private:
   // Actual fuel tank quantities in gallons
-  double fuelLeftOuterGallons;
-  double fuelFeedOneGallons;
-  double fuelLeftMidGallons;
-  double fuelLeftInnerGallons;
-  double fuelRightOuterGallons;
-  double fuelFeedTwoGallons;
-  double fuelRightMidGallons;
-  double fuelRightInnerGallons;
-  double fuelFeedThreeGallons;
-  double fuelFeedFourGallons;
-  double fuelTrimGallons;
+  double fuelLeftOuterGallons = fuelLeftOuterDefault;
+  double fuelFeedOneGallons = fuelFeedOneDefault;
+  double fuelLeftMidGallons = fuelLeftMidDefault;
+  double fuelLeftInnerGallons = fuelLeftInnerDefault;
+  double fuelRightOuterGallons = fuelRightOuterDefault;
+  double fuelFeedTwoGallons = fuelFeedTwoDefault;
+  double fuelRightMidGallons = fuelRightMidDefault;
+  double fuelRightInnerGallons = fuelRightInnerDefault;
+  double fuelFeedThreeGallons = fuelFeedThreeDefault;
+  double fuelFeedFourGallons = fuelFeedFourDefault;
+  double fuelTrimGallons = fuelTrimDefault;
 
   std::string configFilename{"A380X-default-fuel-config.ini"};
 
  public:
-
   /**
    * @brief Returns the filename of the INI file to use for loading and saving the fuel configuration.
    */

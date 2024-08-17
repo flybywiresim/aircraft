@@ -2695,10 +2695,10 @@ class FMCMainDisplay extends BaseAirliners {
 
         const tow = grossWeight - (this.isAnEngineOn() || this.taxiFuelWeight === undefined ? 0 : this.taxiFuelWeight);
 
-        return this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
-            || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
-            || this.v2Speed < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && this.v2Speed < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, this.flaps, true)));
+        return ((this.v1Speed == null) ? Infinity : this.v1Speed) < Math.trunc(NXSpeedsUtils.getVmcg(zp))
+            || ((this.vRSpeed == null) ? Infinity : this.vRSpeed) < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
+            || ((this.v2Speed == null) ? Infinity : this.v2Speed) < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
+            || (isFinite(tow) && ((this.v2Speed == null) ? Infinity : this.v2Speed) < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, this.flaps, true)));
     }
 
     toSpeedsChecks() {
