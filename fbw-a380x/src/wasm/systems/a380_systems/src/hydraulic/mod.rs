@@ -2178,13 +2178,6 @@ impl A380Hydraulic {
                 && self.flap_system.is_surface_moving(),
         );
 
-        println!(
-            "LEFT SPOILERS FLAP COND pos {:.2} , ismoving {:?}, final cond {:?}",
-            self.flap_system.flap_surface_angle().get::<degree>(),
-            self.flap_system.is_surface_moving(),
-            self.flap_system.left_position() < 0.05 && self.flap_system.is_surface_moving()
-        );
-
         self.right_spoilers.update(
             context,
             self.green_circuit.system_section(),
@@ -6234,6 +6227,7 @@ impl SpoilerGroup {
         yellow_section: &impl SectionPressure,
         flaps_antiscrap_condition: bool,
     ) {
+        // TODO Remove all antiscrap function from here when it's handled by flight controls
         if flaps_antiscrap_condition {
             self.min_antiscrap_position += Self::ANTISCRAP_SLEW_SPEED * context.delta_as_secs_f64();
             self.min_antiscrap_position = self
@@ -6245,7 +6239,7 @@ impl SpoilerGroup {
                 .min_antiscrap_position
                 .clamp(0., Self::ANTISCRAP_POSOTION);
         }
-        println!("AS POS {:.2}", self.min_antiscrap_position);
+
         for controller in &mut self.hydraulic_controllers {
             controller.requested_position = controller
                 .requested_position
