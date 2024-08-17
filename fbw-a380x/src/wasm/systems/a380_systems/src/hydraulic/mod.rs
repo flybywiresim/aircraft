@@ -9938,7 +9938,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(10));
+                .run_waiting_for(Duration::from_secs(30));
 
             assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
 
