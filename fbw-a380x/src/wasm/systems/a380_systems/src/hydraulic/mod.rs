@@ -1594,7 +1594,7 @@ impl A380Hydraulic {
         0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
     const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+        [0., 1.3, 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
 
     const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
@@ -2174,12 +2174,23 @@ impl A380Hydraulic {
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            self.flap_system.flap_surface_angle().get::<degree>() < 15.
+                && self.flap_system.is_surface_moving(),
+        );
+
+        println!(
+            "LEFT SPOILERS FLAP COND pos {:.2} , ismoving {:?}, final cond {:?}",
+            self.flap_system.flap_surface_angle().get::<degree>(),
+            self.flap_system.is_surface_moving(),
+            self.flap_system.left_position() < 0.05 && self.flap_system.is_surface_moving()
         );
 
         self.right_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            self.flap_system.flap_surface_angle().get::<degree>() < 15.
+                && self.flap_system.is_surface_moving(),
         );
 
         self.gear_system.update(
@@ -6190,8 +6201,13 @@ struct SpoilerGroup {
     spoilers: [SpoilerElement; 8],
     hydraulic_controllers: [SpoilerController; 8],
     spoiler_positions: [f64; 8],
+
+    min_antiscrap_position: f64,
 }
 impl SpoilerGroup {
+    const ANTISCRAP_SLEW_SPEED: f64 = 0.1;
+    const ANTISCRAP_POSOTION: f64 = 0.16;
+
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
         Self {
             spoilers,
@@ -6206,6 +6222,8 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 8),
             ],
             spoiler_positions: [0.; 8],
+
+            min_antiscrap_position: 0.,
         }
     }
 
@@ -6214,7 +6232,26 @@ impl SpoilerGroup {
         context: &UpdateContext,
         green_section: &impl SectionPressure,
         yellow_section: &impl SectionPressure,
+        flaps_antiscrap_condition: bool,
     ) {
+        if flaps_antiscrap_condition {
+            self.min_antiscrap_position += Self::ANTISCRAP_SLEW_SPEED * context.delta_as_secs_f64();
+            self.min_antiscrap_position = self
+                .min_antiscrap_position
+                .clamp(0., Self::ANTISCRAP_POSOTION);
+        } else {
+            self.min_antiscrap_position -= Self::ANTISCRAP_SLEW_SPEED * context.delta_as_secs_f64();
+            self.min_antiscrap_position = self
+                .min_antiscrap_position
+                .clamp(0., Self::ANTISCRAP_POSOTION);
+        }
+        println!("AS POS {:.2}", self.min_antiscrap_position);
+        for controller in &mut self.hydraulic_controllers {
+            controller.requested_position = controller
+                .requested_position
+                .max(Ratio::new::<ratio>(self.min_antiscrap_position))
+        }
+
         self.spoilers[0].update(
             context,
             &self.hydraulic_controllers[0],
@@ -9874,6 +9911,38 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn spoilers_lift_on_initial_flap_movement_then_back_down() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(3));
+
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() > 10.);
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 20.);
+
+            assert!(test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
+
+            assert!(test_bed.is_flaps_moving());
         }
 
         #[test]
