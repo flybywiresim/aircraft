@@ -1147,7 +1147,7 @@ export class FwsAbnormalSensed {
         this.fws.engine2Running.get(),
         this.fws.enginesOffAndOnGroundSignal.read(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         false,
         !this.fws.eng1APumpAuto.get() && !this.fws.eng1BPumpAuto.get(),
         !this.fws.eng2APumpAuto.get() && !this.fws.eng2BPumpAuto.get(),
@@ -1167,7 +1167,7 @@ export class FwsAbnormalSensed {
         this.fws.engine4Running.get(),
         this.fws.enginesOffAndOnGroundSignal.read(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         false,
         !this.fws.eng3APumpAuto.get() && !this.fws.eng3BPumpAuto.get(),
         !this.fws.eng4APumpAuto.get() && !this.fws.eng4BPumpAuto.get(),
@@ -1188,7 +1188,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.enginesOffAndOnGroundSignal.read(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         !this.fws.eng1APumpAuto.get() && !this.fws.eng1BPumpAuto.get(),
         !this.fws.eng2APumpAuto.get() && !this.fws.eng2BPumpAuto.get(),
         this.fws.eng1PumpDisc.get(),
@@ -1210,7 +1210,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.enginesOffAndOnGroundSignal.read(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         !this.fws.eng3APumpAuto.get() && !this.fws.eng3BPumpAuto.get(),
         !this.fws.eng4APumpAuto.get() && !this.fws.eng4BPumpAuto.get(),
         this.fws.eng3PumpDisc.get(),
@@ -1232,7 +1232,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.enginesOffAndOnGroundSignal.read(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         !this.fws.eng1APumpAuto.get() && !this.fws.eng1BPumpAuto.get(),
         !this.fws.eng2APumpAuto.get() && !this.fws.eng2BPumpAuto.get(),
         this.fws.eng1PumpDisc.get(),
@@ -1254,7 +1254,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.enginesOffAndOnGroundSignal.read(),
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         !this.fws.eng3APumpAuto.get() && !this.fws.eng3BPumpAuto.get(),
         !this.fws.eng4APumpAuto.get() && !this.fws.eng4BPumpAuto.get(),
         this.fws.eng3PumpDisc.get(),
@@ -1279,7 +1279,7 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsCompleted: () => [false, false, false, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false, false],
       failure: 2,
       limitationsPfd: () => ['320400001'],
       limitationsAllPhases: () => [!this.fws.prim3Healthy ? '800400001' : ''],
@@ -1299,7 +1299,7 @@ export class FwsAbnormalSensed {
         !this.fws.prim2Healthy,
         true,
       ],
-      whichItemsCompleted: () => [false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false],
       failure: 2,
       limitationsAllPhases: () => [!this.fws.prim2Healthy ? '800400001' : ''],
       limitationsApprLdg: () => ['800400002'],
@@ -1324,7 +1324,7 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsCompleted: () => [
+      whichItemsChecked: () => [
         !this.fws.eng1APumpAuto.get() &&
           !this.fws.eng1BPumpAuto.get() &&
           !this.fws.eng2APumpAuto.get() &&
@@ -1333,7 +1333,7 @@ export class FwsAbnormalSensed {
           !this.fws.eng3BPumpAuto.get() &&
           !this.fws.eng4APumpAuto.get() &&
           !this.fws.eng4BPumpAuto.get(),
-        this.fws.gpwsFlapMode.get() == 0,
+        this.fws.gpwsFlapModeOff.get(),
         false,
         false,
         false,
@@ -1370,7 +1370,7 @@ export class FwsAbnormalSensed {
         this.fws.yellowBPumpAuto,
       ),
       whichItemsToShow: () => [],
-      whichItemsCompleted: () => [],
+      whichItemsChecked: () => [],
       notActiveWhenFaults: [], // TODO
       failure: 2,
       sysPage: -1,
