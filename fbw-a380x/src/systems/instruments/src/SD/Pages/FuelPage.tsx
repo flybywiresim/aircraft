@@ -7,7 +7,7 @@ export const FuelPage = () => {
     const CROSS_FEED_VALVE_CLOSED_THRESHOLD = 0.1;
     const TRANSFER_VALVE_CLOSED_THRESHOLD = 0.1;
 
-    const [showMore] = useState(false);
+    const [showMore] = useState(true);
 
     const [eng1FuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg');
     const [eng2FuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg');
@@ -155,6 +155,10 @@ export const FuelPage = () => {
 
     const [trimTankInletValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:43', 'Percent over 100');
 
+    // Emergency transfer valves
+    const [leftOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:52', 'Percent over 100');
+    const [rightOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:53', 'Percent over 100');
+
     const fwdGalleryPumps: PumpProps[] = [
         // Pump.9
         { x: 84, y: 384, running: isLeftOuterTankPumpActive, displayWhenInactive: showMore, },
@@ -209,7 +213,7 @@ export const FuelPage = () => {
         // Right outer into gallery
         { x1: 712, y1: 382, x2: 712, y2: 362, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: 'in', displayWhenInactive: showMore },
         // Right outer into tank
-        { x1: 724, y1: 362, x2: 724, y2: 382, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
+        { x1: 728, y1: 362, x2: 728, y2: 382, active: rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
     ];
 
     const aftGalleryTransferValves: FuelLineProps[] = [
@@ -268,11 +272,11 @@ export const FuelPage = () => {
 
     const trimTankTransferValves: FuelLineProps[] = [
         // Left into gallery
-        { x1: 330, y1: 590, x2: 330, y2: 568, active: true, startArrow: 'in', displayWhenInactive: showMore },
+        { x1: 330, y1: 590, x2: 330, y2: 568, active: false, startArrow: 'in', displayWhenInactive: showMore },
         // Center into tank
-        { x1: 386, y1: 568, x2: 386, y2: 590, active: true, endArrow: 'out', displayWhenInactive: showMore },
+        { x1: 386, y1: 568, x2: 386, y2: 590, active: false, endArrow: 'out', displayWhenInactive: showMore },
         // Right into gallery
-        { x1: 440, y1: 590, x2: 440, y2: 568, active: true, startArrow: 'in', displayWhenInactive: showMore },
+        { x1: 440, y1: 590, x2: 440, y2: 568, active: false, startArrow: 'in', displayWhenInactive: showMore },
     ];
 
     // Tanks
@@ -416,7 +420,7 @@ export const FuelPage = () => {
                 <g>
                     <FuelLine x1={169} y1={179} x2={259} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} endArrow='break' />
                     <FuelLine x1={287} y1={179} x2={479} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break' endArrow='break' />
-                    <FuelLine x1={507} y1={179} x2={607} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break' />
+                    <FuelLine x1={507} y1={179} x2={597} y2={179} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break' />
                 </g>
 
                 {/* Lines to crossfeed 2 Line.133 */}
@@ -427,13 +431,17 @@ export const FuelPage = () => {
 
                 {/* Lines to crossfeed 3 Line.135 */}
                 <g>
-                    <FuelLine x1={445} y1={152} x2={430} y2={152} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
-                    <FuelLine x1={430} y1={152} x2={430} y2={179} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
+                    <FuelLine x1={435} y1={152} x2={420} y2={152} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
+                    <FuelLine x1={420} y1={152} x2={420} y2={179} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
                 </g>
             </g>
 
             {/* APU */}
             <ApuIndication x1={655} y={179} x2={682} showMore={showMore} />
+
+            {/* Emergency transfer valves */}
+            <FuelLine x1={43} y1={293} x2={42} y2={293} active={leftOuterEmerTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD} displayWhenInactive={false} endArrow='in' />
+            <FuelLine x1={719} y1={293} x2={720} y2={293} active={rightOuterEmerTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD} displayWhenInactive={false} endArrow='in' />
 
             {/* FWD transfer gallery */}
             <Gallery y={362} pumps={fwdGalleryPumps} transferValves={fwdGalleryTransferValves} otherLines={fwdGalleyOtherLines} showMore={showMore} />
@@ -447,7 +455,7 @@ export const FuelPage = () => {
             {/* Trim tank gallery */}
             <Gallery y={568} pumps={trimTankPumps} transferValves={trimTankTransferValves} otherLines={[]} showMore={showMore} />
             {/* Trim tank valve */}
-            <Valve x={386} y={540} open={trimTankInletValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD} />
+            <Valve x={386} y={540} open={trimTankInletValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD} normallyClosed />
 
             {/* TRIM TANK */}
             <TankQuantity x={418} y={640} quantity={trimTankWeight} />
@@ -470,11 +478,11 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
     const prevLineEnd = { x: -Infinity, y };
     const fuelLineSegments = [];
     for (let i = 0, j = 0, k = 0; i < pumps.length || j < intoTankTransferValves.length;) {
-        if (i < pumps.length && !pumps[i].running) {
+        if (i < pumps.length && !pumps[i].running && !showMore) {
             i++;
             continue;
         }
-        if (j < intoTankTransferValves.length && !intoTankTransferValves[j].active) {
+        if (j < intoTankTransferValves.length && !intoTankTransferValves[j].active && !showMore) {
             j++;
             continue;
         }
@@ -483,6 +491,7 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
         const nextElementIsPump = (j >= intoTankTransferValves.length) || (i < pumps.length && pumps[i].x < intoTankTransferValves[j].x1)
         const nextElement = nextElementIsPump ? pumps[i++] : intoTankTransferValves[j++];
         const x = 'x' in nextElement ? nextElement.x : nextElement.x1;
+        const nextElementIsActive = 'running' in nextElement ? nextElement.running : nextElement.active;
 
         // Check if there's actually a line segment before the next element
         if (k < otherLines.length && otherLines[k].x1 < x) {
@@ -504,14 +513,14 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
         // Add connecting line if we have a starting point and are not staying at the same position
         if (prevLineEnd.x > Number.NEGATIVE_INFINITY && x > prevLineEnd.x) {
             fuelLineSegments.push(
-                <FuelLine x1={prevLineEnd.x} y1={prevLineEnd.y} x2={x} y2={prevLineEnd.y} active displayWhenInactive={showMore} />,
+                <FuelLine x1={prevLineEnd.x} y1={prevLineEnd.y} x2={x} y2={prevLineEnd.y} active={nextElementIsActive} displayWhenInactive={showMore} />,
             );
 
         }
 
         if (nextElementIsPump) {
             fuelLineSegments.push(
-                <FuelLine x1={x} y1={(nextElement as PumpProps).y + PUMP_SIZE / 2} x2={(nextElement as PumpProps).x} y2={prevLineEnd.y} active displayWhenInactive={showMore} />
+                <FuelLine x1={x} y1={(nextElement as PumpProps).y - PUMP_SIZE / 2} x2={(nextElement as PumpProps).x} y2={prevLineEnd.y} active={nextElementIsActive} displayWhenInactive={showMore} />
             )
         }
 
@@ -593,7 +602,7 @@ interface ValveProps extends Position {
 
 const Valve: FC<ValveProps> = ({ x, y, open, horizontal = false, normallyClosed = false }) => {
     const color = !open && !normallyClosed ? 'Amber' : 'Green';
-    const rotation = !open && !horizontal ? 90 : 0;
+    const rotation = (open !== !horizontal) ? 90 : 0;
     const radius = 16;
 
     return (
