@@ -94,8 +94,8 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [86_850, 2918],
     [89_000, 3000],
     [90_700, 3180],
-    [99_400, 3800],
-    [107_000, 5000],
+    [101_700, 3800],
+    [108_000, 5000],
   ]);
 
   /** CONF 2 runway limited weights at sea level/ISA/0 slope/no bleed/fwd cg/no wind/dry, MTOW [kg], runway length [metres] => lookup key = (runway length) */
