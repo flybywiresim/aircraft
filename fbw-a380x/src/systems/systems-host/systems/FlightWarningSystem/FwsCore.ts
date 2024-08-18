@@ -1744,10 +1744,11 @@ export class FwsCore implements Instrument {
     this.greenYellowAbnormLoPressure.set(greenAbnormLoPressure && yellowAbnormLoPressure);
 
     this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
-    this.yellowRsvLoAirPressure.set(
-      SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') &&
-        !this.greenYellowAbnormLoPressure.get(),
+    const yellowHydralicRsvLoPressure = SimVar.GetSimVarValue(
+      'L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW',
+      'bool',
     );
+    this.yellowRsvLoAirPressure.set(yellowHydralicRsvLoPressure && !this.greenYellowAbnormLoPressure.get());
     this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW', 'bool'));
     this.greenRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW', 'bool'));
 
@@ -1768,7 +1769,7 @@ export class FwsCore implements Instrument {
     this.yellowAPumpAuto.set(yellowAPumpAuto);
     this.yellowBPumpAuto.set(yellowBPumpAuto);
 
-    this.yellowElecAandBPumpOff.set(!yellowAPumpAuto && !yellowBPumpAuto);
+    this.yellowElecAandBPumpOff.set(!yellowAPumpAuto && !yellowBPumpAuto && !yellowHydralicRsvLoPressure);
 
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
