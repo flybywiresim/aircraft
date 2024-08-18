@@ -212,8 +212,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     this.subs.push(
       this.enginesWereStarted.sub((val) => {
-        if (val && this.blockLineRef.getOrDefault()) {
-          this.blockLineRef.instance.style.visibility = 'hidden';
+        if (this.blockLineRef.getOrDefault()) {
+          this.blockLineRef.instance.style.visibility = val ? 'hidden' : 'visible';
         }
       }, true),
     );
