@@ -139,7 +139,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private btvUtils = new BrakeToVacateUtils(this.props.bus);
 
-  private readonly airportDatabase = Subject.create('SXT59027250AA04');
+  private readonly airportDatabase = Subject.create('FBW9027250BB04');
 
   private readonly activeDatabase = Subject.create('30DEC-27JAN');
 
@@ -170,9 +170,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
 
+    NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((db) => {
+      const from = new Date(db.effectiveFrom);
+      const to = new Date(db.effectiveTo);
+      this.activeDatabase.set(`${from.getDay()}${months[from.getMonth()]}-${to.getDay()}${months[to.getMonth()]}`);
+    });
+
     const date = SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
     if (date) {
-      this.activeDatabase.set(this.calculateActiveDate(date));
       this.secondDatabase.set(this.calculateSecDate(date));
     }
 
