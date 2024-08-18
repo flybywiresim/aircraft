@@ -169,17 +169,4 @@ class A380X_ND extends FsBaseInstrument<NDInstrument> {
   }
 }
 
-// Hack to support tspan SVG elements, which FSComponent does not recognise as SVG
-
-const original = document.createElement.bind(document);
-
-const extraSvgTags = ['tspan'];
-
-document.createElement = ((tagName, options) => {
-  if (extraSvgTags.includes(tagName)) {
-    return document.createElementNS('http://www.w3.org/2000/svg', tagName, options);
-  }
-  return original(tagName, options);
-}) as any;
-
 registerInstrument('a380x-nd', A380X_ND);

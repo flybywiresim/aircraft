@@ -3909,6 +3909,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
 ## Radio Altimeter (ATA 34)
 
 - A32NX_RA_{number}_RADIO_ALTITUDE
@@ -3919,7 +3920,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 2
 
 ## GPWS / TAWS (ATA 34)
-- `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_1`
+
+- A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_1
     - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380) and triggering aural warnings
     - Arinc429<Discrete>
     - | Bit |       Description      |
@@ -3936,7 +3938,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 22  | TERRAIN AHEAD PULL UP  |
       | 27  | TERRAIN AHEAD          |
 
-- `A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_2`
+- A32NX_EGPWS_ALERT_{1 | 2}_DISCRETE_WORD_2
     - Data word for GPWS alerts. Used for displaying alerts on the PFD (on the A380) or on the GPWS visual indicators on the A320
     - Arinc429<Discrete>
     - | Bit |          Description         |
@@ -3952,6 +3954,34 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 24  | TERRAIN AWARENESS INOP       |
       | 25  | EXTERNAL FAULT               |
       | 26  | TERRAIN AWARENESS NOT AVAIL. |
+
+- A32NX_GPWS_TERR_OFF
+    - Boolean
+    - Indicates whether the GPWS TERR pushbutton is OFF
+
+- A32NX_GPWS_SYS_OFF
+    - Boolean
+    - Indicates whether the GPWS SYS pushbutton is OFF
+
+- A32NX_GPWS_GS_OFF
+    - Boolean
+    - Indicates whether the GPWS G/S MODE pushbutton is OFF
+
+- A32NX_GPWS_FLAP_OFF
+    - Boolean
+    - Indicates whether the GPWS FLAP MODE pushbutton is OFF
+
+- A32NX_GPWS_FLAPS3
+    - Boolean
+    - Indicates whether the GPWS LDG FLAP 3 pushbutton is ON
+
+- A32NX_GPWS_GROUND_STATE
+    - Boolean
+    - Indicates whether the GPWS is in ground vs airborne mode
+
+- A32NX_GPWS_APPROACH_STATE
+    - Boolean
+    - Indicates whether the GPWS is in Approach vs Takeoff mode
 
 ## ROW / ROP / OANS (ATA 34)
 

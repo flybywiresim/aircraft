@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ExternalBackend, Database } from 'msfs-navdata';
 import { useUpdate } from '@instruments/common/hooks';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 
 const FlightPlanContext = React.createContext<{ database: Database }>(undefined as any);
