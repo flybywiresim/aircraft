@@ -1137,6 +1137,86 @@ export class FwsAbnormalSensed {
       inopSysAllPhases: () => [],
     },
     // 29 Hydraulic
+    290800005: {
+      // G ENG 1 PMP A PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng1APumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng1APumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800006: {
+      // G ENG 1 PMP B PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng1BPumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng1BPumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800007: {
+      // G ENG 2 PMP A PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng2APumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng2APumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800008: {
+      // G ENG 2 PMP B PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng2BPumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng2BPumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800009: {
+      // Y ENG 3 PMP A PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng3APumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng3APumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800010: {
+      // Y ENG 3 PMP B PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng3BPumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng3BPumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800011: {
+      // Y ENG 4 PMP A PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng4APumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng4APumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
+    290800012: {
+      // Y ENG 4 PMP B PRESS LO
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.eng4BPumpFault,
+      whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
+      whichItemsChecked: () => [!this.fws.eng4BPumpAuto.get(), false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+    },
     290800019: {
       // G RSVR AIR PRESS LO
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
@@ -1364,11 +1444,7 @@ export class FwsAbnormalSensed {
     290800040: {
       // Y ELEC PMP A+B OFF
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.nand(),
-        this.fws.yellowAPumpAuto,
-        this.fws.yellowBPumpAuto,
-      ),
+      simVarIsActive: this.fws.yellowElecAandBPumpOff,
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       notActiveWhenFaults: [], // TODO

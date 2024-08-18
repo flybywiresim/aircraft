@@ -814,6 +814,10 @@ export class FwsCore implements Instrument {
 
   private readonly eng3Or4RunningAndPhaseConfirmationNode = new NXLogicConfirmNode(1);
 
+  public readonly threeYellowPumpsFailed = Subject.create(false);
+
+  public readonly yellowElecAandBPumpOff = Subject.create(false);
+
   /* 31 - FWS */
 
   public readonly fwcFlightPhase = Subject.create(-1);
@@ -1758,8 +1762,13 @@ export class FwsCore implements Instrument {
 
     this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGA_OFF_PB_IS_AUTO', 'bool'));
     this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGB_OFF_PB_IS_AUTO', 'bool'));
-    this.yellowAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPYA_OFF_PB_IS_AUTO', 'bool'));
-    this.yellowBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPYB_OFF_PB_IS_AUTO', 'bool'));
+
+    const yellowAPumpAuto = SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPYA_OFF_PB_IS_AUTO', 'bool');
+    const yellowBPumpAuto = SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPYB_OFF_PB_IS_AUTO', 'bool');
+    this.yellowAPumpAuto.set(yellowAPumpAuto);
+    this.yellowBPumpAuto.set(yellowBPumpAuto);
+
+    this.yellowElecAandBPumpOff.set(!yellowAPumpAuto && !yellowBPumpAuto);
 
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
@@ -1779,7 +1788,7 @@ export class FwsCore implements Instrument {
     const eng1APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1APumpFault.set(
       this.eng1APumpOffConfirmationNode.read() ||
-        (!this.engine1Running.get() && eng1APumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine1Running.get() && eng1APumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
     );
 
     this.eng1BPumpOffConfirmationNode.write(
@@ -1888,7 +1897,7 @@ export class FwsCore implements Instrument {
     this.eng4BPumpOffConfirmationNode.write(
       !this.yellowRsvLoAirPressure.get() &&
         !this.yellowRsvOverheat.get() &&
-        !this.yellowAbnormLoPressure &&
+        !this.yellowAbnormLoPressure.get() &&
         [2].includes(this.fwcFlightPhase.get()) &&
         !this.eng4BPumpAuto.get(),
       deltaTime,
@@ -1898,6 +1907,10 @@ export class FwsCore implements Instrument {
     this.eng4BPumpFault.set(
       this.eng4BPumpOffConfirmationNode.read() ||
         (this.engine4Running.get() && eng4BPumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+    );
+
+    this.threeYellowPumpsFailed.set(
+      [eng3APumpBelow2900, eng3BPumpBelow2900, eng4APumpBelow2900, eng4BPumpBelow2900].filter((v) => v).length > 3,
     );
 
     /* ADIRS acquisition */
