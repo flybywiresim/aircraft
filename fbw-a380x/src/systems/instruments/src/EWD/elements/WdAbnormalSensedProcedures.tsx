@@ -29,15 +29,19 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         });
 
         cl.items.forEach((item, itemIndex) => {
+          if (procState.itemsToShow[itemIndex] === false) {
+            return;
+          }
+
           let text = item.level ? '\xa0'.repeat(item.level * 2) : '';
           if (isChecklistAction(item)) {
             text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
             text += item.name;
-            if (procState.itemsCompleted[itemIndex] && item.labelCompleted) {
+            if (procState.itemsChecked[itemIndex] && item.labelCompleted) {
               text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-            } else if (procState.itemsCompleted[itemIndex] && item.labelNotCompleted) {
+            } else if (procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
               text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-            } else if (!procState.itemsCompleted[itemIndex] && item.labelNotCompleted) {
+            } else if (!procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
               // Pad to 39 characters max
               const paddingNeeded = 39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);
               text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
@@ -50,7 +54,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
             abnormalProcedure: true,
             activeProcedure: procIndex === 0,
             sensed: item.sensed,
-            checked: procState.itemsCompleted[itemIndex],
+            checked: procState.itemsChecked[itemIndex],
             text: text,
             style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
             firstLine: procIndex !== 0 ? true : false,

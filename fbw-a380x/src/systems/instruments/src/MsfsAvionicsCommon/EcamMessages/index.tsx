@@ -485,7 +485,7 @@ export enum ChecklistLineStyle {
 interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
   name: string;
-  /** sensed or not sensed item. Sensed items are automatically checked. */
+  /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
   sensed: boolean;
   /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
   level?: number;
@@ -556,7 +556,6 @@ export interface WdLineData {
   lastLine: boolean;
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
-  // associatedProcedureId?: string;
 }
 
 export enum WdSpecialLine {

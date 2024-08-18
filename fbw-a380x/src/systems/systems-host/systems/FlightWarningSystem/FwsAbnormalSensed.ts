@@ -82,7 +82,7 @@ export class FwsAbnormalSensed {
         map.forEach((val, key) =>
           flattened.push({
             id: key,
-            itemsCompleted: val.itemsCompleted,
+            itemsChecked: val.itemsChecked,
             itemsActive: val.itemsActive,
             itemsToShow: val.itemsToShow,
           }),
@@ -98,12 +98,12 @@ export class FwsAbnormalSensed {
           proc.items.forEach((it, itemIdx) => {
             if (val.itemsToShow[itemIdx]) {
               const cpl = isChecklistAction(it)
-                ? val.itemsCompleted[itemIdx]
+                ? val.itemsChecked[itemIdx]
                   ? it.labelNotCompleted
                   : ` .......... ${it.labelNotCompleted}`
                 : '';
               console.log(
-                `%c${'  '.repeat(it.level ?? 0)} ${it.sensed ? (val.itemsCompleted[itemIdx] ? 'X' : 'O') : ' '} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
+                `%c${'  '.repeat(it.level ?? 0)} ${val.itemsChecked[itemIdx] ? 'X' : 'O'} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
                 'font-family:monospace; font-weight: bold',
               );
             }
@@ -233,9 +233,11 @@ export class FwsAbnormalSensed {
       this.fws.normalChecklists.showChecklist.set(false);
 
       // Update selected line: CLEAR of first procedure
-      this.selectedLine.set(
-        EcamAbnormalSensedProcedures[this.fws.activeAbnormalSensedList.get().keys().next().value].items.length + 1,
-      );
+      const firstKey = this.fws.activeAbnormalSensedList.get().keys().next().value;
+      const numItems = this.fws.activeAbnormalSensedList
+        .getValue(firstKey)
+        .itemsToShow.filter((v) => v === true).length;
+      this.selectedLine.set(numItems + 1);
     } else {
       this.showAbnormalSensed.set(false);
     }
@@ -309,7 +311,12 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: this.fws.fms1Fault,
       notActiveWhenFaults: ['221800006'],
-      whichItemsToShow: () => [true, false, false, true], // simplified, update when improved FMS swtchg logic
+      whichItemsToShow: () => [
+        this.fws.fmcAFault.get() && this.fws.fmcCFault.get(),
+        this.fws.fmcAFault.get() && this.fws.fmcBFault.get(),
+        this.fws.fmcAFault.get() && !this.fws.fmcBFault.get() && !this.fws.fmcCFault.get(),
+        true,
+      ], // simplified, update when improved FMS swtchg logic
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 0],
       failure: 2,
       sysPage: -1,
@@ -320,7 +327,12 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: this.fws.fms2Fault,
       notActiveWhenFaults: ['221800006'],
-      whichItemsToShow: () => [true, false, false, true], // simplified, update when improved FMS swtchg logic
+      whichItemsToShow: () => [
+        this.fws.fmcAFault.get() && this.fws.fmcBFault.get(),
+        this.fws.fmcBFault.get() && this.fws.fmcCFault.get(),
+        this.fws.fmcBFault.get() && !this.fws.fmcAFault.get() && !this.fws.fmcCFault.get(),
+        true,
+      ], // simplified, update when improved FMS swtchg logic
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 2],
       failure: 2,
       sysPage: -1,

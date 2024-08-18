@@ -177,13 +177,13 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Green,
         level: 1,
       },
@@ -229,13 +229,13 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Green,
         level: 1,
       },
@@ -254,7 +254,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'USE STBY INSTRUMENTS',
-        sensed: false,
+        sensed: true,
       },
       {
         name: '[MFD SURV] ALT RPTG',
@@ -269,7 +269,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'USE STBY INSTRUMENTS',
-        sensed: false,
+        sensed: true,
       },
       {
         name: 'ADR 1+2+3 P/Bs',

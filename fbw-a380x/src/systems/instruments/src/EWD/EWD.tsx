@@ -201,8 +201,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
           <div class="WarningDisplayArea">
             <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
-            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} />
-            <WdAbnormalSensedProcedures bus={this.props.bus} visible={this.abnormalSensedVisible} />
+            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} abnormal={false} />
+            <WdAbnormalSensedProcedures bus={this.props.bus} visible={this.abnormalSensedVisible} abnormal={true} />
             <div class="StsArea" />
             {/* Reserved for STS */}
           </div>

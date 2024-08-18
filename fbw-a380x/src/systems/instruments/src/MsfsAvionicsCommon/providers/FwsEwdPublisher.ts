@@ -7,7 +7,7 @@ import { ChecklistState } from 'systems-host/systems/FlightWarningSystem/FwsNorm
 export interface FwsEwdAbnormalSensedEntry {
   id: string;
   itemsToShow: boolean[];
-  itemsCompleted: boolean[];
+  itemsChecked: boolean[];
   itemsActive: boolean[];
 }
 

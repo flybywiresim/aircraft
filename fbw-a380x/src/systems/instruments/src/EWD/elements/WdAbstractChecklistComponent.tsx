@@ -22,6 +22,7 @@ import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText'
 interface WdAbstractChecklistComponentProps {
   bus: EventBus;
   visible: Subscribable<boolean>;
+  abnormal: boolean;
 }
 
 export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChecklistComponentProps> {
@@ -108,7 +109,11 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
         </div>
         <div class="WarningsColumn">
           {Array.from(Array(WD_NUM_LINES), () => '').map((_, index) => (
-            <EclLine data={this.lineDataSubject[index]} selected={this.lineSelected[index]} />
+            <EclLine
+              data={this.lineDataSubject[index]}
+              selected={this.lineSelected[index]}
+              abnormal={this.props.abnormal}
+            />
           ))}
         </div>
       </div>
@@ -119,6 +124,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
 interface EclLineProps {
   data: Subscribable<WdLineData>;
   selected: Subscribable<boolean>;
+  abnormal: boolean;
 }
 
 export class EclLine extends DisplayComponent<EclLineProps> {
@@ -157,7 +163,10 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               ),
             }}
           >
-            <CheckSymbol checked={this.props.data.map((d) => d.checked)} />
+            <CheckSymbol
+              checked={this.props.data.map((d) => d.checked)}
+              checkedColor={this.props.abnormal === true ? '#ffffff' : '#00ff00'}
+            />
           </div>
           <span
             class="EclLineText"
@@ -208,7 +217,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
   }
 }
 
-class CheckSymbol extends DisplayComponent<{ checked: Subscribable<boolean> }> {
+class CheckSymbol extends DisplayComponent<{ checked: Subscribable<boolean>; checkedColor: string }> {
   render(): VNode | null {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="25" viewBox="0 0 28 34">
@@ -219,14 +228,14 @@ class CheckSymbol extends DisplayComponent<{ checked: Subscribable<boolean> }> {
             y="5"
             x="7"
             stroke-width="3"
-            stroke={this.props.checked.map((c) => (c ? '#00ff00' : '#00ffff'))}
+            stroke={this.props.checked.map((c) => (c ? this.props.checkedColor : '#00ffff'))}
             fill="none"
           />
         </g>
         <g visibility={this.props.checked.map((c) => (c ? 'visible' : 'hidden'))}>
           <line
             stroke-width="2"
-            stroke={this.props.checked.map((c) => (c ? '#00ff00' : '#00ffff'))}
+            stroke={this.props.checked.map((c) => (c ? this.props.checkedColor : '#00ffff'))}
             stroke-linecap="rounded"
             y2="27.74468"
             x2="12.40425"
@@ -236,7 +245,7 @@ class CheckSymbol extends DisplayComponent<{ checked: Subscribable<boolean> }> {
           />
           <line
             stroke-width="2"
-            stroke={this.props.checked.map((c) => (c ? '#00ff00' : '#00ffff'))}
+            stroke={this.props.checked.map((c) => (c ? this.props.checkedColor : '#00ffff'))}
             stroke-linecap="rounded"
             y2="27.6383"
             x2="12.51064"

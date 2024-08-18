@@ -744,17 +744,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'FMC A+C FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC A+B FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC A FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
@@ -770,17 +770,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'FMC A+B FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC B+C FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
         name: 'FMC B FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
@@ -796,7 +796,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'ALL FMCs FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
@@ -806,11 +806,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'FOR NAV: USE STBY INSTRUMENTS',
-        sensed: false,
+        sensed: true,
       },
       {
         name: 'FOR NAVAID TUNING: USE RMP',
-        sensed: false,
+        sensed: true,
       },
       {
         name: '[MFD SURV] TAWS FLAP MODE',

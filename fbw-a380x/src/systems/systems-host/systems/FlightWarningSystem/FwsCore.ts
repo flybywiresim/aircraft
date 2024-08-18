@@ -2813,10 +2813,9 @@ export class FwsCore implements Instrument {
         if (overridden) {
           continue;
         }
-
-        const itemsCompleted = value.whichItemsChecked();
-        const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsCompleted.length).fill(true);
-        const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsCompleted.length).fill(true);
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : v));
+        const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
+        const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -2850,13 +2849,13 @@ export class FwsCore implements Instrument {
           if (proc.items.length !== value.whichItemsChecked().length) {
             console.warn(
               proc.title,
-              'ECAM alert definition error: whichItemsCompleted() not the same size as number of procedure items',
+              'ECAM alert definition error: whichItemsChecked() not the same size as number of procedure items',
             );
           }
           this.activeAbnormalSensedList.setValue(key, {
             id: key,
             itemsActive: itemsActive,
-            itemsCompleted: itemsCompleted,
+            itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
           });
         } else if (this.activeAbnormalSensedList.has(key)) {
@@ -2867,7 +2866,7 @@ export class FwsCore implements Instrument {
               if (
                 prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
                 prevEl.itemsActive[idx] !== itemsActive[idx] ||
-                prevEl.itemsCompleted[idx] !== itemsCompleted[idx]
+                prevEl.itemsChecked[idx] !== itemsChecked[idx]
               ) {
                 return true;
               }
@@ -2877,8 +2876,8 @@ export class FwsCore implements Instrument {
           if (itemUpdated) {
             this.activeAbnormalSensedList.setValue(key, {
               id: key,
-              itemsCompleted: [...prevEl.itemsCompleted].map((val, index) =>
-                proc.items[index].sensed ? itemsCompleted[index] : val,
+              itemsChecked: [...prevEl.itemsChecked].map((val, index) =>
+                proc.items[index].sensed ? itemsChecked[index] : val,
               ),
               itemsActive: [...prevEl.itemsActive].map((val, index) =>
                 proc.items[index].sensed ? itemsActive[index] : val,
