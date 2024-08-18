@@ -242,21 +242,21 @@ export class FwsAbnormalSensed {
       this.showAbnormalSensed.set(false);
     }
 
-    /* if (this.fws.clDownPulseNode.read()) {
+    /* if (this.fws.clDownTriggerRisingEdge) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveDown();
     }
 
-    if (this.fws.clUpPulseNode.read()) {
+    if (this.fws.clUpTriggerRisingEdge) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveUp();
-    }*/
+    } */
 
-    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
+    if (this.fws.clCheckTriggerRisingEdge) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }

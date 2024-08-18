@@ -157,16 +157,17 @@ export class EclLine extends DisplayComponent<EclLineProps> {
           <div
             class={{
               EclLineCheckboxArea: true,
+              AbnormalItem: this.props.data.map(
+                (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
+              ),
+              Checked: this.props.data.map((d) => d.checked),
               HiddenElement: this.props.data.map((d) => d.style === ChecklistLineStyle.Headline),
               Invisible: this.props.data.map(
                 (d) => d.sensed || (d.firstLine && d.lastLine) || d.specialLine === WdSpecialLine.Empty,
               ),
             }}
           >
-            <CheckSymbol
-              checked={this.props.data.map((d) => d.checked)}
-              checkedColor={this.props.abnormal === true ? '#ffffff' : '#00ff00'}
-            />
+            {this.props.data.map((d) => (d.checked ? '\u25A0' : '\u25A1'))}
           </div>
           <span
             class="EclLineText"
@@ -213,48 +214,6 @@ export class EclLine extends DisplayComponent<EclLineProps> {
           }}
         />
       </div>
-    );
-  }
-}
-
-class CheckSymbol extends DisplayComponent<{ checked: Subscribable<boolean>; checkedColor: string }> {
-  render(): VNode | null {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="25" viewBox="0 0 28 34">
-        <g>
-          <rect
-            height="24"
-            width="14"
-            y="5"
-            x="7"
-            stroke-width="3"
-            stroke={this.props.checked.map((c) => (c ? this.props.checkedColor : '#00ffff'))}
-            fill="none"
-          />
-        </g>
-        <g visibility={this.props.checked.map((c) => (c ? 'visible' : 'hidden'))}>
-          <line
-            stroke-width="2"
-            stroke={this.props.checked.map((c) => (c ? this.props.checkedColor : '#00ffff'))}
-            stroke-linecap="rounded"
-            y2="27.74468"
-            x2="12.40425"
-            y1="17.6383"
-            x1="8.78723"
-            fill="none"
-          />
-          <line
-            stroke-width="2"
-            stroke={this.props.checked.map((c) => (c ? this.props.checkedColor : '#00ffff'))}
-            stroke-linecap="rounded"
-            y2="27.6383"
-            x2="12.51064"
-            y1="6.68085"
-            x1="18.89361"
-            fill="none"
-          />
-        </g>
-      </svg>
     );
   }
 }

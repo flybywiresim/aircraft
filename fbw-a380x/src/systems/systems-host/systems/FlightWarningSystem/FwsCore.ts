@@ -786,19 +786,30 @@ export class FwsCore implements Instrument {
 
   public readonly clrPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
 
-  private clrTriggerRisingEdge = false;
+  public clrTriggerRisingEdge = false;
 
   public readonly rclUpPulseNode = new NXLogicPulseNode();
 
   public readonly rclUpTriggerNode = new NXLogicTriggeredMonostableNode(0.5, true);
 
-  private recallTriggerRisingEdge = false;
+  public recallTriggerRisingEdge = false;
 
-  public readonly clPulseNode = new NXLogicPulseNode(true, 0.05);
-  public readonly clCheckLeftPulseNode = new NXLogicPulseNode(true, 0.05);
-  public readonly clCheckRightPulseNode = new NXLogicPulseNode(true, 0.05);
-  public readonly clUpPulseNode = new NXLogicPulseNode(true, 0.05);
-  public readonly clDownPulseNode = new NXLogicPulseNode(true, 0.05);
+  public readonly clPulseNode = new NXLogicPulseNode();
+  public readonly clTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  public clTriggerRisingEdge = false;
+
+  public readonly clCheckLeftPulseNode = new NXLogicPulseNode();
+  public readonly clCheckRightPulseNode = new NXLogicPulseNode();
+  public readonly clCheckTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  public clCheckTriggerRisingEdge = false;
+
+  public readonly clUpPulseNode = new NXLogicPulseNode();
+  public readonly clUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  public clUpTriggerRisingEdge = false;
+
+  public readonly clDownPulseNode = new NXLogicPulseNode();
+  public readonly clDownTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  public clDownTriggerRisingEdge = false;
 
   public readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
@@ -1490,10 +1501,25 @@ export class FwsCore implements Instrument {
 
     // C/L buttons
     this.clPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CL', 'bool'), deltaTime);
+    const previousClTrigger = this.clTrigger.read();
+    this.clTrigger.write(this.clPulseNode.read(), deltaTime);
+    this.clTriggerRisingEdge = !previousClTrigger && this.clTrigger.read();
+
     this.clCheckLeftPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_LH', 'bool'), deltaTime);
     this.clCheckRightPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_RH', 'bool'), deltaTime);
+    const previousClCheckTrigger = this.clCheckTrigger.read();
+    this.clCheckTrigger.write(this.clCheckLeftPulseNode.read() || this.clCheckRightPulseNode.read(), deltaTime);
+    this.clCheckTriggerRisingEdge = !previousClCheckTrigger && this.clCheckTrigger.read();
+
     this.clUpPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_UP', 'bool'), deltaTime);
+    const previousClUpTrigger = this.clUpTrigger.read();
+    this.clUpTrigger.write(this.clUpPulseNode.read(), deltaTime);
+    this.clUpTriggerRisingEdge = !previousClUpTrigger && this.clUpTrigger.read();
+
     this.clDownPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_DOWN', 'bool'), deltaTime);
+    const previousClDownTrigger = this.clDownTrigger.read();
+    this.clDownTrigger.write(this.clDownPulseNode.read(), deltaTime);
+    this.clDownTriggerRisingEdge = !previousClDownTrigger && this.clDownTrigger.read();
 
     this.recallTriggerRisingEdge = !previousRclUpTriggerNode && this.rclUpTriggerNode.read();
 

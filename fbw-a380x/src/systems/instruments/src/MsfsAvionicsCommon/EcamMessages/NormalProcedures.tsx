@@ -17,7 +17,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'FUEL QTY',
-        labelNotCompleted: '---KG',
+        labelNotCompleted: '___KG',
         sensed: false,
       },
       {
@@ -28,7 +28,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'BARO REF',
-        labelNotCompleted: '---- (BOTH)',
+        labelNotCompleted: '____ (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -39,7 +39,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'PARKING BRAKE',
-        labelNotCompleted: '---',
+        labelNotCompleted: '___',
         sensed: false,
       },
       {
@@ -61,7 +61,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'ANTI ICE',
-        labelNotCompleted: '---',
+        labelNotCompleted: '___',
         sensed: false,
       },
       {
@@ -88,8 +88,8 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'FLAPS SETTING',
-        labelNotCompleted: 'CONF --- (BOTH)',
-        labelCompleted: 'CONF ---',
+        labelNotCompleted: 'CONF ___ (BOTH)',
+        labelCompleted: 'CONF ___',
         sensed: false,
       },
       {
@@ -146,7 +146,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'T.O RWY',
-        labelNotCompleted: '--- (BOTH)',
+        labelNotCompleted: '___ (BOTH)',
         labelCompleted: 'CONFIRMED',
         sensed: false,
       },
@@ -164,17 +164,17 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     ],
   },
   1000006: {
-    title: 'DEPARTURE CHANGE',
+    title: '<<DEPARTURE CHANGE>>',
     items: [
       {
         name: 'RWY & SID',
-        labelNotCompleted: '---',
+        labelNotCompleted: '___',
         sensed: false,
       },
       {
         name: 'FLAPS SETTING',
-        labelNotCompleted: 'CONF --- (BOTH)',
-        labelCompleted: 'CONF ---',
+        labelNotCompleted: 'CONF ___ (BOTH)',
+        labelCompleted: 'CONF ___',
         sensed: false,
       },
       {
@@ -185,7 +185,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'FCU ALT',
-        labelNotCompleted: '---',
+        labelNotCompleted: '___',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -196,7 +196,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'BARO REF',
-        labelNotCompleted: '---- (BOTH)',
+        labelNotCompleted: '____ (BOTH)',
         labelCompleted: 'SET',
         sensed: false,
       },
@@ -208,13 +208,13 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'MINIMUM',
-        labelNotCompleted: '---',
+        labelNotCompleted: '___',
         labelCompleted: 'SET',
         sensed: false,
       },
       {
         name: 'AUTO BRAKE',
-        labelNotCompleted: '---',
+        labelNotCompleted: '___',
         labelCompleted: 'SET',
         sensed: false,
       },
