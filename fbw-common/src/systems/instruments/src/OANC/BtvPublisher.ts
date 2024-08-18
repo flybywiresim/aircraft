@@ -18,6 +18,10 @@ export interface BtvData {
   wetStoppingDistance: number;
   /** (PRIM -> OANS) Remaining stop distance on ground, used for ROP */
   stopBarDistance: number;
+
+  radioAltitude_1: number;
+  radioAltitude_2: number;
+  fmgcFlightPhase: number;
 }
 
 export enum BtvSimVars {
@@ -27,6 +31,9 @@ export enum BtvSimVars {
   dryStoppingDistance = 'L:A32NX_OANS_BTV_DRY_DISTANCE_ESTIMATED',
   wetStoppingDistance = 'L:A32NX_OANS_BTV_WET_DISTANCE_ESTIMATED',
   stopBarDistance = 'L:A32NX_OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED',
+  radioAltitude_1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
+  radioAltitude_2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
+  fmgcFlightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
 }
 
 export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
@@ -37,6 +44,9 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
     ['dryStoppingDistance', { name: BtvSimVars.dryStoppingDistance, type: SimVarValueType.Number }],
     ['wetStoppingDistance', { name: BtvSimVars.wetStoppingDistance, type: SimVarValueType.Number }],
     ['stopBarDistance', { name: BtvSimVars.stopBarDistance, type: SimVarValueType.Number }],
+    ['radioAltitude_1', { name: BtvSimVars.radioAltitude_1, type: SimVarValueType.Number }],
+    ['radioAltitude_2', { name: BtvSimVars.radioAltitude_2, type: SimVarValueType.Number }],
+    ['fmgcFlightPhase', { name: BtvSimVars.fmgcFlightPhase, type: SimVarValueType.Enum }],
   ]);
 
   public constructor(bus: ArincEventBus) {

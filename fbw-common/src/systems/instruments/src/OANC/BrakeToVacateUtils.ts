@@ -88,6 +88,9 @@ export class BrakeToVacateUtils<T extends number> {
     this.dryStoppingDistance.setConsumer(sub.on('dryStoppingDistance').whenChanged());
     this.wetStoppingDistance.setConsumer(sub.on('wetStoppingDistance').whenChanged());
     this.liveStoppingDistance.setConsumer(sub.on('stopBarDistance').whenChanged());
+    this.radioAltitude1.setConsumer(sub.on('radioAltitude_1').whenChanged());
+    this.radioAltitude2.setConsumer(sub.on('radioAltitude_2').whenChanged());
+    this.fmgcFlightPhase.setConsumer(sub.on('fmgcFlightPhase').whenChanged());
     sub
       .on('groundSpeed')
       .atFrequency(2)
@@ -154,6 +157,12 @@ export class BrakeToVacateUtils<T extends number> {
   private rwyAheadTriggeredTime: number = 0;
 
   private readonly rwyAheadArinc = Arinc429Word.empty();
+
+  private readonly radioAltitude1 = ConsumerSubject.create(null, 0);
+
+  private readonly radioAltitude2 = ConsumerSubject.create(null, 0);
+
+  private readonly fmgcFlightPhase = ConsumerSubject.create(null, 0);
 
   selectRunwayFromOans(
     runway: string,
@@ -339,6 +348,18 @@ export class BrakeToVacateUtils<T extends number> {
   }
 
   updateRemainingDistances(pos: Position) {
+    // Only update below 600ft AGL, and in landing FMGC phase
+    const ra1 = new Arinc429Word(this.radioAltitude1.get());
+    const ra2 = new Arinc429Word(this.radioAltitude2.get());
+
+    if (
+      (!ra1.isNormalOperation() && !ra2.isNormalOperation()) ||
+      (ra1.isNormalOperation() ? ra1.value : ra2.value > 600) ||
+      this.fmgcFlightPhase.get() !== 5
+    ) {
+      return;
+    }
+
     if (this.btvThresholdPosition && this.btvThresholdPosition.length > 0) {
       if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
         const rwyEndDistanceFromTdz =
