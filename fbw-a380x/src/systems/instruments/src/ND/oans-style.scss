@@ -4,12 +4,19 @@
 
 @import "../MsfsAvionicsCommon/definitions";
 
-@font-face {
-  font-family: "Ecam";
-  /* noinspection CssUnknownTarget */
-  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+.oans-control-panel-background {
+  font-family: "Ecam", monospace !important;
+  z-index: 2;
+  position: absolute;
+  top: 768px;
+  width: 768px;
+  height: 256px;
+  background-color: $display-background;
+}
+
+.oans-control-panel {
+  display: flex;
+  height: 256px;
 }
 
 .oanc-container {

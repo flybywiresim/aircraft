@@ -1,4 +1,4 @@
-import './UI/style.scss';
+import './oans-style.scss';
 import './OansControlPanel.scss';
 
 import {
@@ -38,17 +38,20 @@ import {
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
-import { Button } from './UI/Button';
+import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
-import { DropdownMenu } from './UI/DropdownMenu';
-import { RadioButtonGroup } from './UI/RadioButtonGroup';
-import { InputField } from './UI/InputField';
-import { LengthFormat } from './UI/DataEntryFormats';
-import { IconButton } from './UI/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from './UI/TopTabNavigator';
+import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { InteractionMode } from 'instruments/src/MFD/MFD';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -142,6 +145,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly secondDatabase = Subject.create('27JAN-24FEB');
 
+  public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
+
+  public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
+
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
       this.mapDataLdgShiftPanelRef.instance.style.display = 'flex';
@@ -206,7 +213,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       }
     }, true);
 
-    const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansDataArinc429 & AdirsSimVars>();
+    const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansDataArinc429 & AdirsSimVars & NDSimvars>();
 
     sub
       .on('latitude')
@@ -302,6 +309,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       .handle((it) => this.reqStoppingDistance.set(it.isNormalOperation() ? it.value : 0));
 
     this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
+
+    sub
+      .on(this.props.side === 'L' ? 'kccuOnL' : 'kccuOnR')
+      .whenChanged()
+      .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen));
   }
 
   public updateAirportSearchData() {
@@ -325,6 +337,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     const prop = ControlPanelUtils.getSearchModeProp(mode);
 
     array.sort((a, b) => {
+      if (a[prop] == null || b[prop] == null) {
+        return 0;
+      }
+
       if (a[prop] < b[prop]) {
         return -1;
       }
@@ -339,15 +355,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private handleSelectAirport = (icao: string, indexInSearchData?: number) => {
     const airport = this.store.airports.getArray().find((it) => it.idarpt === icao);
+    const prop = ControlPanelUtils.getSearchModeProp(
+      this.store.airportSearchMode.get() ?? ControlPanelAirportSearchMode.Icao,
+    );
 
-    if (!airport) {
+    if (!airport || typeof airport[prop] !== 'string') {
       throw new Error('');
     }
 
-    const firstLetter =
-      airport[
-        ControlPanelUtils.getSearchModeProp(this.store.airportSearchMode.get() ?? ControlPanelAirportSearchMode.Icao)
-      ][0];
+    const firstLetter = airport[prop][0];
     this.store.airportSearchSelectedSearchLetterIndex.set(
       ControlPanelUtils.LETTERS.findIndex((it) => it === firstLetter),
     );
@@ -364,10 +380,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     const selectedAirport = this.store.selectedAirport.get();
 
     this.store.airportSearchMode.set(newSearchMode);
+    const prop = ControlPanelUtils.getSearchModeProp(newSearchMode);
 
-    if (selectedAirport !== null) {
-      const prop = ControlPanelUtils.getSearchModeProp(newSearchMode);
-
+    if (selectedAirport !== null && typeof selectedAirport[prop] === 'string') {
       const firstLetter = selectedAirport[prop][0];
       const airportIndexInSearchData = this.store.sortedAirports
         .getArray()
@@ -381,15 +396,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   };
 
   private handleDisplayAirport = () => {
-    if (!this.store.selectedAirport.get()) {
+    const selectedArpt = this.store.selectedAirport.get();
+    if (!selectedArpt || !selectedArpt.idarpt) {
       throw new Error('[OANS] Empty airport selected for display.');
     }
 
     this.manualAirportSelection = true;
-    this.props.bus
-      .getPublisher<OansControlEvents>()
-      .pub('oansDisplayAirport', this.store.selectedAirport.get().idarpt, true);
-    this.store.loadedAirport.set(this.store.selectedAirport.get().idarpt);
+    this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', selectedArpt.idarpt, true);
+    this.store.loadedAirport.set(selectedArpt);
     this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
   };
 
@@ -418,7 +432,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         if (ap.idarpt !== this.store.loadedAirport.get()?.idarpt) {
           this.handleSelectAirport(ap.idarpt);
           this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', ap.idarpt, true);
-          this.store.loadedAirport.set(ap.idarpt);
+          this.store.loadedAirport.set(ap);
           this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
         }
         return;
@@ -431,7 +445,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         if (distanceTo(this.presentPos.get(), { lat: destArpt.coordinates.lat, long: destArpt.coordinates.lon }) < 50) {
           this.handleSelectAirport(destArpt.idarpt);
           this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', destArpt.idarpt, true);
-          this.store.loadedAirport.set(destArpt.idarpt);
+          this.store.loadedAirport.set(destArpt);
           this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
           return;
         }
@@ -527,6 +541,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       freeTextAllowed={false}
                       onModified={(i) => this.selectedEntityIndex.set(i)}
                       inactive={Subject.create(true)}
+                      hEventConsumer={this.hEventConsumer}
+                      interactionMode={this.interactionMode}
                     />
                     <div style="border-right: 2px solid lightgrey; height: 100%;">
                       <RadioButtonGroup
@@ -557,6 +573,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                             value={this.thresholdShift}
                             mandatory={Subject.create(false)}
+                            hEventConsumer={this.hEventConsumer}
+                            interactionMode={this.interactionMode}
                           />
                           <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">
                             END SHIFT
@@ -565,6 +583,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                             value={this.endShift}
                             mandatory={Subject.create(false)}
+                            hEventConsumer={this.hEventConsumer}
+                            interactionMode={this.interactionMode}
                           />
                         </div>
                         <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
@@ -669,6 +689,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           value={this.reqStoppingDistance}
                           mandatory={Subject.create(false)}
                           inactive={this.selectedEntityString.map((it) => !it)}
+                          hEventConsumer={this.hEventConsumer}
+                          interactionMode={this.interactionMode}
                         />
                       </div>
                     </div>
@@ -695,6 +717,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           it === ControlPanelAirportSearchMode.City ? 'flex-start' : 'center',
                         )}
                         idPrefix="oanc-search-airport"
+                        hEventConsumer={this.hEventConsumer}
+                        interactionMode={this.interactionMode}
                       />
                     </div>
                     <div style="padding-top: 20px; margin-top: 2px; height: 100%;">

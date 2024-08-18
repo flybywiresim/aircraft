@@ -1,5 +1,5 @@
 import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import './UI/style.scss';
+import './oans-style.scss';
 import { EntityTypes } from './OansControlPanel';
 
 interface OansRunwayInfoBoxProps {

@@ -35,7 +35,8 @@ import {
   ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';
 
-import { ContextMenu, ContextMenuElement } from './UI/ContextMenu';
+import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
+import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 import { OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -51,10 +52,9 @@ import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { FcuBusPublisher, FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
-import { MouseCursor } from './UI/MouseCursor';
 
 import './style.scss';
-import './oans-styles.scss';
+import './oans-style.scss';
 
 declare type MousePosition = {
   x: number;
