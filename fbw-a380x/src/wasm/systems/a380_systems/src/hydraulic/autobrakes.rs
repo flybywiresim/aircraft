@@ -167,7 +167,6 @@ pub struct A380AutobrakeController {
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
     rto_mode_armed_id: VariableIdentifier,
-    ground_speed_id: VariableIdentifier,
 
     external_disarm_event_id: VariableIdentifier,
 
@@ -200,8 +199,6 @@ pub struct A380AutobrakeController {
 
     braking_distance_calculator: BrakingDistanceCalculator,
     autobrake_runway_overrun_protection: AutobrakeRunwayOverrunProtection,
-
-    ground_speed: Velocity,
 }
 impl A380AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: Duration = Duration::from_secs(10);
@@ -231,7 +228,6 @@ impl A380AutobrakeController {
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             rto_mode_armed_id: context.get_identifier("AUTOBRAKES_RTO_ARMED".to_owned()),
-            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
 
             external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
 
@@ -274,8 +270,6 @@ impl A380AutobrakeController {
 
             braking_distance_calculator: BrakingDistanceCalculator::new(context),
             autobrake_runway_overrun_protection: AutobrakeRunwayOverrunProtection::new(context),
-
-            ground_speed: Velocity::default(),
         }
     }
 
@@ -506,6 +500,7 @@ impl A380AutobrakeController {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         placeholder_ground_spoilers_out: bool,
+        ground_speed: Velocity,
     ) {
         self.update_input_conditions(
             context,
@@ -518,7 +513,7 @@ impl A380AutobrakeController {
 
         self.braking_distance_calculator.update_braking_estimations(
             context,
-            self.ground_speed,
+            ground_speed,
             if self.mode == A380AutobrakeMode::BTV {
                 self.btv_scheduler.predicted_decel()
             } else if self.mode != A380AutobrakeMode::DISARM {
@@ -563,13 +558,13 @@ impl A380AutobrakeController {
             context,
             self.ground_spoilers_are_deployed,
             &self.braking_distance_calculator,
-            self.ground_speed,
+            ground_speed,
             &self.autobrake_runway_overrun_protection,
         );
 
         self.autobrake_runway_overrun_protection.update(
             self.deceleration_governor.is_engaged(),
-            self.ground_speed,
+            ground_speed,
             &self.braking_distance_calculator,
             lgciu1,
             lgciu2,
@@ -604,8 +599,6 @@ impl SimulationElement for A380AutobrakeController {
         if readed_mode >= 0.0 {
             self.mode = readed_mode.into();
         }
-
-        self.ground_speed = reader.read(&self.ground_speed_id);
     }
 }
 

@@ -3987,6 +3987,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             lgciu1,
             lgciu2,
             placeholder_ground_spoilers_out,
+            self.ground_speed,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
