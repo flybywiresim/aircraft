@@ -1590,8 +1590,6 @@ pub(super) struct A380Hydraulic {
     tilting_gears: A380TiltingGears,
 }
 impl A380Hydraulic {
-    const FLAP_ANGLE_TO_STOP_SPOILER_ANTI_SCRAP_LOGIC_DEGREES: f64 = 15.;
-
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
