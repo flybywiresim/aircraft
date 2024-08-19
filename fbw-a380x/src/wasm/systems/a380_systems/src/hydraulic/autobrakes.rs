@@ -909,8 +909,7 @@ impl BrakingDistanceCalculator {
             Length::new::<meter>(
                 (current_speed.get::<meter_per_second>().powi(2)
                     / (2. * deceleration.get::<meter_per_second_squared>().abs()))
-                .max(0.)
-                .min(Self::MAX_STOPPING_DISTANCE_M),
+                .clamp(0., Self::MAX_STOPPING_DISTANCE_M),
             )
         } else {
             Length::new::<meter>(0.)
@@ -1144,9 +1143,10 @@ impl BtvDecelScheduler {
                     target_deceleration_raw * self.safety_margin();
 
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(
-                    target_deceleration_safety_corrected
-                        .max(self.desired_deceleration.get::<meter_per_second_squared>())
-                        .min(5.),
+                    target_deceleration_safety_corrected.clamp(
+                        self.desired_deceleration.get::<meter_per_second_squared>(),
+                        5.,
+                    ),
                 );
             }
             _ => {
@@ -1179,8 +1179,10 @@ impl BtvDecelScheduler {
 
                 (1. + (ratio_of_decel_distance.get::<ratio>().sqrt()
                     * Self::DECEL_SAFETY_MARGIN_SHAPING_FACTOR))
-                    .max(Self::MIN_DECEL_SAFETY_MARGIN_RATIO)
-                    .min(Self::MAX_DECEL_SAFETY_MARGIN_RATIO)
+                    .clamp(
+                        Self::MIN_DECEL_SAFETY_MARGIN_RATIO,
+                        Self::MAX_DECEL_SAFETY_MARGIN_RATIO,
+                    )
             }
 
             BTVState::Disabled | BTVState::Armed | BTVState::RotOptimization => {
