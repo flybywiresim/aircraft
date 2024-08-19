@@ -2173,26 +2173,16 @@ impl A380Hydraulic {
             ],
         );
 
-        // TODO real logic uses engine state as well, this is only a simple placeholder
-        let placeholder_spoiler_antiscrap_active =
-            self.flap_system.flap_surface_angle().get::<degree>()
-                < Self::FLAP_ANGLE_TO_STOP_SPOILER_ANTI_SCRAP_LOGIC_DEGREES
-                && self.flap_system.is_surface_moving()
-                && (lgcius.lgciu1().left_and_right_gear_compressed(false)
-                    || lgcius.lgciu2().left_and_right_gear_compressed(false));
-
         self.left_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
-            placeholder_spoiler_antiscrap_active,
         );
 
         self.right_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
-            placeholder_spoiler_antiscrap_active,
         );
 
         self.gear_system.update(
@@ -6203,13 +6193,8 @@ struct SpoilerGroup {
     spoilers: [SpoilerElement; 8],
     hydraulic_controllers: [SpoilerController; 8],
     spoiler_positions: [f64; 8],
-
-    min_antiscrap_position: f64,
 }
 impl SpoilerGroup {
-    const ANTISCRAP_SLEW_SPEED: f64 = 0.1;
-    const ANTISCRAP_POSOTION: f64 = 0.16;
-
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
         Self {
             spoilers,
@@ -6224,8 +6209,6 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 8),
             ],
             spoiler_positions: [0.; 8],
-
-            min_antiscrap_position: 0.,
         }
     }
 
@@ -6234,27 +6217,7 @@ impl SpoilerGroup {
         context: &UpdateContext,
         green_section: &impl SectionPressure,
         yellow_section: &impl SectionPressure,
-        flaps_antiscrap_condition: bool,
     ) {
-        // TODO Remove all antiscrap function from here when it's handled by flight controls
-        if flaps_antiscrap_condition {
-            self.min_antiscrap_position += Self::ANTISCRAP_SLEW_SPEED * context.delta_as_secs_f64();
-            self.min_antiscrap_position = self
-                .min_antiscrap_position
-                .clamp(0., Self::ANTISCRAP_POSOTION);
-        } else {
-            self.min_antiscrap_position -= Self::ANTISCRAP_SLEW_SPEED * context.delta_as_secs_f64();
-            self.min_antiscrap_position = self
-                .min_antiscrap_position
-                .clamp(0., Self::ANTISCRAP_POSOTION);
-        }
-
-        for controller in &mut self.hydraulic_controllers {
-            controller.requested_position = controller
-                .requested_position
-                .max(Ratio::new::<ratio>(self.min_antiscrap_position))
-        }
-
         self.spoilers[0].update(
             context,
             &self.hydraulic_controllers[0],
@@ -9914,68 +9877,6 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-        }
-
-        #[test]
-        fn spoilers_lift_on_initial_flap_movement_then_back_down() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .start_eng3(Ratio::new::<percent>(80.))
-                .start_eng4(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(3));
-
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() > 10.);
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 20.);
-
-            assert!(test_bed.is_flaps_moving());
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(30));
-
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
-
-            assert!(test_bed.is_flaps_moving());
-        }
-
-        #[test]
-        fn spoilers_do_not_lift_in_flight_on_initial_flap_movement() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .in_flight()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .start_eng3(Ratio::new::<percent>(80.))
-                .start_eng4(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(3));
-
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
-            assert!(test_bed.is_flaps_moving());
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(30));
-
-            assert!(test_bed.get_left_spoiler_position(1).get::<percent>() < 1.);
-
-            assert!(test_bed.is_flaps_moving());
         }
 
         #[test]

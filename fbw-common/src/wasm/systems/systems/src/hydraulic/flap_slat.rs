@@ -448,7 +448,7 @@ impl FlapSlatAssembly {
     }
 
     /// Gets flap surface angle from current Feedback Position Pickup Unit (FPPU) position
-    pub fn flap_surface_angle(&self) -> Angle {
+    fn flap_surface_angle(&self) -> Angle {
         Angle::new::<degree>(interpolation(
             &self.synchro_gear_breakpoints,
             &self.final_surface_angle_carac,
@@ -475,7 +475,7 @@ impl FlapSlatAssembly {
         self.right_motor.reset_accumulators();
     }
 
-    pub fn is_surface_moving(&self) -> bool {
+    fn is_surface_moving(&self) -> bool {
         self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
     }
 
