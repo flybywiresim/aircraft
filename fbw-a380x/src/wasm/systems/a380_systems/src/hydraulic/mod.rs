@@ -1903,21 +1903,21 @@ impl A380Hydraulic {
             ),
             left_wing_brake_assembly: BrakeAssembly::new(
                 context,
-                "WHEEL RPM:3".to_owned(),
+                "WHEEL RPM:1".to_owned(), // Should be "WHEEL RPM:3" but MSFS has weird definitions...
                 [1, 2, 5, 6],
                 [ElectricalBusType::DirectCurrent(1); 4], // TODO
                 None,
             ),
             right_wing_brake_assembly: BrakeAssembly::new(
                 context,
-                "WHEEL RPM:4".to_owned(),
+                "WHEEL RPM:2".to_owned(), // Should be "WHEEL RPM:4" but MSFS has weird definitions...
                 [3, 4, 7, 8],
                 [ElectricalBusType::DirectCurrent(1); 4], // TODO
                 None,
             ),
             left_body_brake_assembly: BrakeAssembly::new(
                 context,
-                "WHEEL RPM:2".to_owned(),
+                "WHEEL RPM:1".to_owned(),
                 [9, 10, 13, 14],
                 [ElectricalBusType::DirectCurrent(1); 4], // TODO
                 None,
