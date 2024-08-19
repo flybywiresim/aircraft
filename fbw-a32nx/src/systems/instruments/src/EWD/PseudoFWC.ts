@@ -1272,7 +1272,6 @@ export class PseudoFWC {
     const mainGearDownlocked =
       (this.lgciu1DiscreteWord1.bitValueOr(23, false) || this.lgciu2DiscreteWord1.bitValueOr(23, false)) &&
       (this.lgciu1DiscreteWord1.bitValueOr(24, false) || this.lgciu2DiscreteWord1.bitValueOr(24, false));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.isAllGearDownlocked =
       mainGearDownlocked &&
       (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
