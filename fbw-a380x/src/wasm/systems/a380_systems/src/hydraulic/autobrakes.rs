@@ -774,7 +774,6 @@ enum BTVState {
     RotOptimization,
     Decel,
     EndOfBraking,
-    _OutOfDecelRange,
 }
 
 struct BrakingDistanceCalculator {
@@ -1071,10 +1070,12 @@ impl BtvDecelScheduler {
 
     fn decel(&self) -> Acceleration {
         match self.state {
-            BTVState::Decel | BTVState::_OutOfDecelRange => self.deceleration_request,
+            BTVState::Decel => self.deceleration_request,
             BTVState::EndOfBraking => self.end_of_decel_acceleration,
             BTVState::RotOptimization => self.accel_during_rot_opti(),
-            _ => Acceleration::new::<meter_per_second_squared>(5.),
+            BTVState::Disabled | BTVState::Armed => {
+                Acceleration::new::<meter_per_second_squared>(5.)
+            }
         }
     }
 
@@ -1123,10 +1124,7 @@ impl BtvDecelScheduler {
 
     fn compute_decel(&mut self, ground_speed: Velocity) {
         match self.state {
-            BTVState::RotOptimization
-            | BTVState::Decel
-            | BTVState::EndOfBraking
-            | BTVState::_OutOfDecelRange => {
+            BTVState::RotOptimization | BTVState::Decel | BTVState::EndOfBraking => {
                 let speed_at_btv_release =
                     Velocity::new::<meter_per_second>(Self::TARGET_SPEED_TO_RELEASE_BTV_M_S)
                         * Self::SAFETY_RATIO_ON_RELEASE_SPEED;
@@ -1149,7 +1147,7 @@ impl BtvDecelScheduler {
                     ),
                 );
             }
-            _ => {
+            BTVState::Armed | BTVState::Disabled => {
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(5.);
             }
         }
@@ -1173,7 +1171,7 @@ impl BtvDecelScheduler {
     // Safety margin gives a dynamic ratio on targeted decel based on remaining distance
     fn safety_margin(&self) -> f64 {
         match self.state {
-            BTVState::Decel | BTVState::EndOfBraking | BTVState::_OutOfDecelRange => {
+            BTVState::Decel | BTVState::EndOfBraking => {
                 let ratio_of_decel_distance =
                     self.braking_distance_remaining() / self.distance_remaining_at_decel_activation;
 
@@ -1240,10 +1238,7 @@ impl BtvDecelScheduler {
 
     fn integrate_distance(&mut self, context: &UpdateContext, ground_speed: Velocity) {
         match self.state {
-            BTVState::RotOptimization
-            | BTVState::Decel
-            | BTVState::EndOfBraking
-            | BTVState::_OutOfDecelRange => {
+            BTVState::RotOptimization | BTVState::Decel | BTVState::EndOfBraking => {
                 let distance_this_tick = ground_speed * context.delta_as_time();
                 self.rolling_distance += distance_this_tick;
             }
@@ -1279,9 +1274,7 @@ impl BtvDecelScheduler {
         match self.state {
             BTVState::Disabled | BTVState::Armed => Acceleration::default(),
             BTVState::RotOptimization => self.deceleration_request,
-            BTVState::Decel | BTVState::EndOfBraking | BTVState::_OutOfDecelRange => {
-                self.actual_deceleration
-            }
+            BTVState::Decel | BTVState::EndOfBraking => self.actual_deceleration,
         }
     }
 
