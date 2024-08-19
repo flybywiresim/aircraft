@@ -249,7 +249,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Tailwind factors for each takeoff config. */
   private static readonly brakeEnergyTailWindFactor: Record<number, [number, number, number, number]> = {
-    1: [0.00117, -0.8024, 0.0117879, 0.006667],
+    1: [0.000117, -0.8024, 0.0117879, 0.006667],
     2: [-0.000157, 0.849, 0.0066818, 0.006667],
     3: [-0.00013, 0.6946, 0.0068333, 0.006667],
   };
