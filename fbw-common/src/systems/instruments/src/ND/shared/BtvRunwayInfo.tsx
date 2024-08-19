@@ -162,7 +162,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
               {this.rot}
             </text>
             <text x={107} y={0} class="Cyan FontSmallest">
-              s
+              "
             </text>
           </Layer>
         </g>
