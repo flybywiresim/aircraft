@@ -14,8 +14,8 @@ struct A380AuxiliaryGearDoor {
     position: Ratio,
 }
 impl A380AuxiliaryGearDoor {
-    const MEAN_SPEED_RAT_PER_S: f64 = 0.6;
-    const STDEV_SPEED_RAT_PER_S: f64 = 0.1;
+    const MEAN_SPEED_RAT_PER_S: f64 = 0.4;
+    const STDEV_SPEED_RAT_PER_S: f64 = 0.03;
     pub fn new(context: &mut InitContext, side: &str) -> A380AuxiliaryGearDoor {
         A380AuxiliaryGearDoor {
             door_id: context.get_identifier(format!("SECONDARY_GEAR_DOOR_{}_POSITION", side)),
