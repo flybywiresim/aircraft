@@ -43,11 +43,11 @@ impl A380AuxiliaryGearDoor {
 
             let delta_position =
                 Ratio::new::<ratio>(self.speed_ratio_per_sec * context.delta_as_secs_f64());
-            if should_open {
-                self.position += delta_position;
+           self.position += if should_open {
+                delta_position
             } else {
-                self.position -= delta_position;
-            }
+                -delta_position
+            };
 
             self.position = Ratio::new::<ratio>(self.position.get::<ratio>().clamp(0., 1.));
         }
