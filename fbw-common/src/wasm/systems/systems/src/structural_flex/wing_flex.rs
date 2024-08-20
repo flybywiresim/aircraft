@@ -614,11 +614,13 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         lift_forces: &[f64],
         fuel_masses: [Mass; NODE_NUMBER],
         external_acceleration_from_plane_body: Acceleration,
-        min_height: Length,
+        wing_tip_limit: Length,
+        outter_engine_limit: Length,
     ) {
         self.updater_max_step.update(context);
 
-        self.nodes[4].set_min_position(min_height);
+        self.nodes[4].set_min_position(wing_tip_limit);
+        self.nodes[3].set_min_position(outter_engine_limit);
 
         for cur_time_step in &mut self.updater_max_step {
             self.external_accelerations_filtered
