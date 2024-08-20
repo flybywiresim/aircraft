@@ -123,12 +123,12 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [72_600, 1604],
     [79_900, 1959],
     [83_200, 2134],
-    [84_600, 2239],
-    [87_100, 2459],
-    [88_500, 2709],
-    [89_300, 2839],
-    [92_300, 3180],
-    [97_800, 3800],
+    [83_500, 2239],
+    [85_100, 2459],
+    [87_800, 2709],
+    [88_800, 2839],
+    [91_700, 3180],
+    [97_600, 3800],
     [105_000, 5000],
   ]);
 
@@ -164,7 +164,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly runwayTailWindFactor: Record<number, [number, number, number, number]> = {
     1: [0.000065, -0.684701, 0.00498, 0.0808],
     2: [0.000198, -1.017, 0.00711, 0.009],
-    3: [0.000271, -1.1506, 0.0078, 0.00875],
+    3: [0.000271, -1.11506, 0.0078, 0.00875],
   };
 
   /** Segment segment weight factors for each takeoff config. */
