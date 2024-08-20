@@ -1,0 +1,81 @@
+name: Bug Report A32NX
+description: File a bug report for the A32NX
+labels: ["Bug", "A32NX"]
+body:
+- type: markdown
+  attributes:
+    value: "# A32NX Bug Report Form"
+- type: dropdown
+  id: version
+  attributes:
+    label: Aircraft Version
+    description: What version of the A32NX are you using?
+    options:
+    - Stable
+    - Development
+  validations:
+    required: true
+- type: textarea
+  id: build-info
+  attributes:
+    label: Build info
+    placeholder: |
+      {
+        "built": "2021-04-15T22:57:32+00:00",
+        "ref": "v0.6.0",
+        "sha": "981b2e4b0e89998d21a70fe26de54a2f10066f6e",
+        "actor": "Benjozork",
+        "event_name": "manual"
+      }
+    description: Please paste the contents from the a32nx_build_info.json (located inside main aircraft folder) into the field.
+    render: json
+  validations:
+    required: true
+- type: textarea
+  id: desc
+  attributes:
+    label: Describe the bug
+    description: A clear and concise description of what the bug is and what happened.
+  validations:
+    required: true
+- type: textarea
+  id: expected
+  attributes:
+    label: Expected behavior
+    description: A clear and concise description of what you expected to happen.
+  validations:
+    required: true
+- type: textarea
+  id: reproduce
+  attributes:
+    label: Steps to reproduce
+    placeholder: |
+      1.
+      2.
+      3.
+      ...
+    description: We need to know how you encountered the bug to properly troubleshoot the issue.
+  validations:
+    required: true
+- type: textarea
+  id: references
+  attributes:
+    label: References (optional)
+    description: If applicable, add screenshots or videos to help explain your problem.
+  validations:
+    required: false
+- type: textarea
+  id: misc
+  attributes:
+    label: Additional info (optional)
+    description: Add any other context about the problem here. Was this working before? When did the issue start occurring?
+  validations:
+    required: false
+- type: input
+  id: discord
+  attributes:
+    label: Discord Username (optional)
+    description: You may optionally provide your discord username, so that we may contact you directly about the issue.
+    placeholder: ex. username
+  validations:
+    required: false
