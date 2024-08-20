@@ -421,11 +421,16 @@ struct WingSectionNode {
     position: Length,
     acceleration: Acceleration,
 
+    min_position: Length,
+
     external_position_offset: Length,
 
     sum_of_forces: Force,
 }
 impl WingSectionNode {
+    const ABSOLUTE_MIN_POSITION: f64 = -10.;
+    const ABSOLUTE_MAX_POSITION: f64 = 10.;
+
     fn new(empty_mass: Mass) -> Self {
         Self {
             empty_mass,
@@ -433,11 +438,21 @@ impl WingSectionNode {
             speed: Velocity::default(),
             position: Length::default(),
             acceleration: Acceleration::default(),
+            min_position: Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION),
 
             external_position_offset: Length::default(),
 
             sum_of_forces: Force::default(),
         }
+    }
+
+    pub fn set_min_position(&mut self, min_pos: Length) {
+        let new_min = min_pos.max(Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION));
+        self.min_position = new_min;
+        println!(
+            "Injected min tip position {:.2}",
+            self.min_position.get::<meter>()
+        );
     }
 
     fn update(&mut self, context: &UpdateContext) {
@@ -473,6 +488,14 @@ impl WingSectionNode {
             self.speed += self.acceleration * context.delta_as_time();
 
             self.position += self.speed * context.delta_as_time();
+
+            if self.position < self.min_position {
+                self.position = self.min_position;
+                self.speed = Velocity::default();
+            } else if self.position > Length::new::<meter>(Self::ABSOLUTE_MAX_POSITION) {
+                self.position = Length::new::<meter>(Self::ABSOLUTE_MAX_POSITION);
+                self.speed = Velocity::default();
+            }
         }
 
         self.sum_of_forces = Force::default();
@@ -591,8 +614,11 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         lift_forces: &[f64],
         fuel_masses: [Mass; NODE_NUMBER],
         external_acceleration_from_plane_body: Acceleration,
+        min_height: Length,
     ) {
         self.updater_max_step.update(context);
+
+        self.nodes[4].set_min_position(min_height);
 
         for cur_time_step in &mut self.updater_max_step {
             self.external_accelerations_filtered

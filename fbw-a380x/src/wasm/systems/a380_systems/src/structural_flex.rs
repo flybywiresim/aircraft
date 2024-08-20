@@ -1,21 +1,23 @@
 use systems::{
     fuel::FuelPayload,
-    shared::SurfacesPositions,
+    shared::{height_over_ground, SurfacesPositions},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
     },
-    structural_flex::elevator_flex::FlexibleElevators,
-    structural_flex::engine_wobble::EnginesFlexiblePhysics,
-    structural_flex::wing_flex::{
-        FlexPhysicsNG, WingAnimationMapper, WingFuelNodeMapper, WingLift, WingRootAcceleration,
+    structural_flex::{
+        elevator_flex::FlexibleElevators,
+        engine_wobble::EnginesFlexiblePhysics,
+        wing_flex::{
+            FlexPhysicsNG, WingAnimationMapper, WingFuelNodeMapper, WingLift, WingRootAcceleration,
+        },
+        SurfaceVibrationGenerator,
     },
-    structural_flex::SurfaceVibrationGenerator,
 };
 
 use crate::fuel::A380FuelTankType;
 
-use uom::si::{f64::*, force::newton, mass::kilogram, ratio::ratio};
+use uom::si::{f64::*, force::newton, length::meter, mass::kilogram, ratio::ratio};
 
 use nalgebra::{Vector3, Vector5};
 
@@ -344,6 +346,51 @@ impl WingFlexA380 {
 
         self.update_fuel_masses(fuel_mass);
 
+        // let tip_offset = 1.5;
+        // let wing_tip_coord = Vector3::new(36.57, -0.273, 6.903);
+        // let tip_deviation = self.flex_physics[1].nodes_height_meters()[4];
+        // let wing_tip_coord_including_flex =
+        //     wing_tip_coord + Vector3::new(0., tip_deviation + tip_offset, 0.);
+
+        // let tip_height_including_plane_angle =
+        //     height_over_ground(context, wing_tip_coord_including_flex);
+
+        // let penetration_height = if tip_height_including_plane_angle.get::<meter>() < 0. {
+        //     (tip_height_including_plane_angle.get::<meter>())
+        //         .abs()
+        //         .clamp(0., 15.)
+        // } else {
+        //     0.
+        // };
+
+        // println!(
+        //     "wing_tip_coord_including_flex {:.2}/ {:.2}/ {:.2} HEIGHT {:.2} PENETRATION {:.2}",
+        //     wing_tip_coord_including_flex[0],
+        //     wing_tip_coord_including_flex[1],
+        //     wing_tip_coord_including_flex[2],
+        //     tip_height_including_plane_angle.get::<meter>(),
+        //     penetration_height
+        // );
+
+        let tip_offset = 1.7;
+        let right_wing_tip_coord =
+            Vector3::new(36.57, -0.273, 6.903) + Vector3::new(0., tip_offset, 0.);
+        let right_min_tip_height_including_plane_angle =
+            -height_over_ground(context, right_wing_tip_coord);
+
+        let left_wing_tip_coord =
+            Vector3::new(-36.57, -0.273, 6.903) + Vector3::new(0., tip_offset, 0.);
+        let left_min_tip_height_including_plane_angle =
+            -height_over_ground(context, left_wing_tip_coord);
+
+        println!(
+            "wing_tip_coord {:.2}/ {:.2}/ {:.2} MIN HEIGHT {:.2}",
+            right_wing_tip_coord[0],
+            right_wing_tip_coord[1],
+            right_wing_tip_coord[2],
+            right_min_tip_height_including_plane_angle.get::<meter>(),
+        );
+
         self.flex_physics[0].update(
             context,
             self.wing_lift_dynamic
@@ -351,6 +398,7 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper.fuel_masses(self.left_wing_fuel_mass),
             surface_vibration_acceleration + self.left_right_wing_root_position[0].acceleration(),
+            left_min_tip_height_including_plane_angle,
         );
 
         self.flex_physics[1].update(
@@ -360,6 +408,7 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper.fuel_masses(self.right_wing_fuel_mass),
             surface_vibration_acceleration + self.left_right_wing_root_position[1].acceleration(),
+            right_min_tip_height_including_plane_angle,
         );
     }
 
