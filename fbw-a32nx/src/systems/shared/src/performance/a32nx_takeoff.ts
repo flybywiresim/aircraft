@@ -272,7 +272,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly vmcgPressureAltFactor: Record<number, [number, number]> = {
     1: [-8.35e-7, 0.00589],
     2: [-7.58e-7, 0.00703],
-    3: [1.95e-7, 0.000266],
+    3: [1.95e-7, 0.00266],
   };
 
   /** Temperature factors for each takeoff config. */
