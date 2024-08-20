@@ -8,6 +8,7 @@ mod fuel;
 mod gear;
 mod nose_wheel_steering;
 mod payload;
+mod rear_wheel_steering;
 mod reversers;
 mod rudder;
 mod spoilers;
@@ -24,6 +25,7 @@ use fuel::fuel;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
 use payload::payload;
+use rear_wheel_steering::rear_wheel_steering;
 use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
@@ -432,6 +434,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(cargo_doors)?
     .with_aspect(autobrakes)?
     .with_aspect(nose_wheel_steering)?
+    .with_aspect(rear_wheel_steering)?
     .with_aspect(flaps)?
     .with_aspect(spoilers)?
     .with_aspect(ailerons)?
