@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FeatureType, PolygonStructureType } from '@flybywiresim/fbw-sdk';
+import { FeatureType, PolygonalStructureType } from '@flybywiresim/fbw-sdk';
 
 export interface StyleRule {
   forFeatureTypes?: FeatureType[];
 
-  forPolygonStructureTypes?: PolygonStructureType[];
+  forPolygonStructureTypes?: PolygonalStructureType[];
 
   dontFetchFromAmdb?: boolean;
 
@@ -27,7 +27,7 @@ export interface StyleRule {
 export const STYLE_DATA: Record<number, StyleRule[]> = {
   0: [
     {
-      forFeatureTypes: [FeatureType.Taxiway],
+      forFeatureTypes: [FeatureType.TaxiwayElement],
       styles: { doStroke: false, doFill: true, fillStyle: '#8f8f8f' },
     },
     {
@@ -49,13 +49,13 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
       styles: { doStroke: false, doFill: true, fillStyle: '#778585' },
     },
     {
-      forFeatureTypes: [FeatureType.VerticalPolygonObject],
-      forPolygonStructureTypes: [PolygonStructureType.TerminalBuilding],
+      forFeatureTypes: [FeatureType.VerticalPolygonalStructure],
+      forPolygonStructureTypes: [PolygonalStructureType.TerminalBuilding],
       styles: { doStroke: false, doFill: true, fillStyle: '#00ffff' },
     },
     {
-      forFeatureTypes: [FeatureType.VerticalPolygonObject],
-      forPolygonStructureTypes: [PolygonStructureType.NonTerminalBuilding],
+      forFeatureTypes: [FeatureType.VerticalPolygonalStructure],
+      forPolygonStructureTypes: [PolygonalStructureType.NonTerminalBuilding],
       styles: { doStroke: false, doFill: true, fillStyle: '#3286da' },
     },
   ],
@@ -64,7 +64,7 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
       forFeatureTypes: [
         FeatureType.RunwayElement,
         FeatureType.RunwayIntersection,
-        FeatureType.Blastpad,
+        FeatureType.BlastPad,
         FeatureType.RunwayDisplacedArea,
         FeatureType.Stopway,
       ],
@@ -81,7 +81,7 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
   ],
   3: [
     {
-      forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.ExitLine],
+      forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.RunwayExitLine],
       styles: { doStroke: true, doFill: false, strokeStyle: '#ffff00', lineWidth: 1.85 },
     },
     {
@@ -91,7 +91,7 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
   ],
   4: [
     {
-      forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.ExitLine],
+      forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.RunwayExitLine],
       styles: { doStroke: true, doFill: false, strokeStyle: '#666666', lineWidth: 8 },
     },
   ],
@@ -108,7 +108,7 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
   ],
   6: [
     {
-      forFeatureTypes: [FeatureType.StandGuidanceTaxiline],
+      forFeatureTypes: [FeatureType.StandGuidanceLine],
       styles: { doStroke: true, doFill: false, strokeStyle: '#ffff00', lineWidth: 1.85 },
     },
   ],

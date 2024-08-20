@@ -43,7 +43,7 @@ export function filterLabel(
   }
   if (
     btvSelectedRunway &&
-    label.associatedFeature?.properties.feattype === FeatureType.Centerline &&
+    label.associatedFeature?.properties.feattype === FeatureType.PaintedCenterline &&
     label.text === btvSelectedRunway?.substring(4)
   ) {
     return true;
@@ -67,16 +67,16 @@ export function filterLabel(
     case 'none':
       return false;
     case 'null':
-      return label.associatedFeature?.properties.feattype !== FeatureType.ExitLine;
+      return label.associatedFeature?.properties.feattype !== FeatureType.RunwayExitLine;
     case 'major':
       return (
-        label.associatedFeature?.properties.feattype === FeatureType.Centerline ||
-        (label.text.length < 2 && label.associatedFeature?.properties.feattype !== FeatureType.ExitLine)
+        label.associatedFeature?.properties.feattype === FeatureType.PaintedCenterline ||
+        (label.text.length < 2 && label.associatedFeature?.properties.feattype !== FeatureType.RunwayExitLine)
       );
     case 'runwayBtvSelection':
       return (
-        label.associatedFeature?.properties.feattype === FeatureType.Centerline ||
-        label.associatedFeature?.properties.feattype === FeatureType.ExitLine ||
+        label.associatedFeature?.properties.feattype === FeatureType.PaintedCenterline ||
+        label.associatedFeature?.properties.feattype === FeatureType.RunwayExitLine ||
         filter.showAdjacent
       ); // FIXME lower opacity if associated rwy not selected
   }

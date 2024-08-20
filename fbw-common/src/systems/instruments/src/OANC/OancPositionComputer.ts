@@ -8,11 +8,11 @@ import { Oanc } from './Oanc';
 
 const OANC_VALID_POSITION_INDICATION_FEATURE_TYPES = [
   FeatureType.ParkingStandArea,
-  FeatureType.Taxiway,
+  FeatureType.TaxiwayElement,
   FeatureType.RunwayElement,
   FeatureType.Stopway,
   FeatureType.RunwayDisplacedArea,
-  FeatureType.Blastpad,
+  FeatureType.BlastPad,
 ];
 
 export class OancPositionComputer<T extends number> {
@@ -36,12 +36,12 @@ export class OancPositionComputer<T extends number> {
         switch (feature.properties.feattype) {
           case FeatureType.ParkingStandArea:
             return feature.properties.idstd;
-          case FeatureType.Taxiway:
+          case FeatureType.TaxiwayElement:
             return feature.properties.idlin;
           case FeatureType.RunwayElement:
           case FeatureType.Stopway:
             return feature.properties.idrwy.replace('.', '-');
-          case FeatureType.Blastpad:
+          case FeatureType.BlastPad:
           case FeatureType.RunwayDisplacedArea:
             return feature.properties.idthr;
           default:

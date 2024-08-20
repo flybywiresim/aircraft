@@ -27,7 +27,7 @@ import {
   FeatureType,
   FeatureTypeString,
   MathUtils,
-  PolygonStructureType,
+  PolygonalStructureType,
   EfisNdMode,
   MapParameters,
   EfisSide,
@@ -73,14 +73,14 @@ export const ZOOM_TRANSITION_TIME_MS = 300;
 const PAN_MIN_MOVEMENT = 10;
 
 const LABEL_FEATURE_TYPES = [
-  FeatureType.Taxiway,
-  FeatureType.VerticalPolygonObject,
-  FeatureType.Centerline,
+  FeatureType.TaxiwayElement,
+  FeatureType.VerticalPolygonalStructure,
+  FeatureType.PaintedCenterline,
   FeatureType.ParkingStandLocation,
-  FeatureType.ExitLine,
+  FeatureType.RunwayExitLine,
 ];
 
-const LABEL_POLYGON_STRUCTURE_TYPES = [PolygonStructureType.TerminalBuilding];
+const LABEL_POLYGON_STRUCTURE_TYPES = [PolygonalStructureType.TerminalBuilding];
 
 export type A320EfisZoomRangeValue = 0.2 | 0.5 | 1 | 2.5;
 
@@ -513,7 +513,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     // Additional stuff we need that isn't handled by the canvas renderer
     includeLayers.push(FeatureTypeString.AerodromeReferencePoint);
     includeLayers.push(FeatureTypeString.ParkingStandLocation);
-    includeLayers.push(FeatureTypeString.Centerline);
+    includeLayers.push(FeatureTypeString.PaintedCenterline);
     includeLayers.push(FeatureTypeString.RunwayThreshold);
 
     const data = await this.amdbClient.getAirportData(icao, includeLayers, undefined);
@@ -616,7 +616,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         );
       });
     }
-    if (label.style === LabelStyle.ExitLine && label.associatedFeature.properties.feattype === FeatureType.ExitLine) {
+    if (
+      label.style === LabelStyle.ExitLine &&
+      label.associatedFeature.properties.feattype === FeatureType.RunwayExitLine
+    ) {
       element.addEventListener('click', () => {
         this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
       });
@@ -635,12 +638,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       );
       const layerPolygonStructureTypes = STYLE_DATA[i].reduce(
         (acc, rule) => [...acc, ...(rule.forPolygonStructureTypes ?? [])],
-        [] as PolygonStructureType[],
+        [] as PolygonalStructureType[],
       );
       const layerData = data.features.filter((it) => {
-        if (it.properties.feattype === FeatureType.VerticalPolygonObject) {
+        if (it.properties.feattype === FeatureType.VerticalPolygonalStructure) {
           return (
-            layerFeatureTypes.includes(FeatureType.VerticalPolygonObject) &&
+            layerFeatureTypes.includes(FeatureType.VerticalPolygonalStructure) &&
             layerPolygonStructureTypes.includes(it.properties.plysttyp)
           );
         }
@@ -658,13 +661,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       }
 
       // Only include "Taxiway" features that have a valid "idlin" property
-      if (feature.properties.feattype === FeatureType.Taxiway && !feature.properties.idlin) {
+      if (feature.properties.feattype === FeatureType.TaxiwayElement && !feature.properties.idlin) {
         continue;
       }
 
       // Only include "VerticalPolygonObject" features whose "plysttyp" property has what we want
       if (
-        feature.properties.feattype === FeatureType.VerticalPolygonObject &&
+        feature.properties.feattype === FeatureType.VerticalPolygonalStructure &&
         !LABEL_POLYGON_STRUCTURE_TYPES.includes(feature.properties.plysttyp)
       ) {
         continue;
@@ -695,7 +698,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         }
       }
 
-      if (feature.properties.feattype === FeatureType.Centerline) {
+      if (feature.properties.feattype === FeatureType.PaintedCenterline) {
         const designators: string[] = [];
         if (feature.properties.idrwy) {
           designators.push(...feature.properties.idrwy.split('.'));
@@ -831,13 +834,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         if (text !== undefined) {
           let style: LabelStyle.TerminalBuilding | LabelStyle.Taxiway | LabelStyle.ExitLine;
           switch (feature.properties.feattype) {
-            case FeatureType.VerticalPolygonObject:
+            case FeatureType.VerticalPolygonalStructure:
               style = LabelStyle.TerminalBuilding;
               break;
             case FeatureType.ParkingStandLocation:
               style = LabelStyle.TerminalBuilding;
               break;
-            case FeatureType.ExitLine:
+            case FeatureType.RunwayExitLine:
               style = LabelStyle.ExitLine;
               break;
             default:
@@ -1444,7 +1447,7 @@ function renderFeaturesToCanvas(
     let doFill = false;
 
     const matchingRule = styleRules.find((it) => {
-      if (feature.properties.feattype === FeatureType.VerticalPolygonObject) {
+      if (feature.properties.feattype === FeatureType.VerticalPolygonalStructure) {
         return (
           it.forFeatureTypes.includes(feature.properties.feattype) &&
           it.forPolygonStructureTypes.includes(feature.properties.plysttyp)
