@@ -843,6 +843,8 @@ export class FwsCore implements Instrument {
 
   public readonly lgciu2DiscreteWord2 = Arinc429Register.empty();
 
+  public isAllGearDownlocked = false;
+
   public readonly nwSteeringDisc = Subject.create(false);
 
   public readonly parkBrake = Subject.create(false);
@@ -1729,7 +1731,7 @@ export class FwsCore implements Instrument {
       (this.lgciu1DiscreteWord1.bitValueOr(23, false) || this.lgciu2DiscreteWord1.bitValueOr(23, false)) &&
       (this.lgciu1DiscreteWord1.bitValueOr(24, false) || this.lgciu2DiscreteWord1.bitValueOr(24, false));
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const gearDownlocked =
+    this.isAllGearDownlocked =
       mainGearDownlocked &&
       (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
 
@@ -1850,8 +1852,8 @@ export class FwsCore implements Instrument {
     }
     overspeedWarning ||= adr1Discrete1.getBitValueOr(9, false) || adr2Discrete1.getBitValueOr(9, false);
     const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
-    this.overspeedVmo.set(!gearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(340));
-    this.overspeedVle.set(gearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(250));
+    this.overspeedVmo.set(!this.isAllGearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(340));
+    this.overspeedVle.set(this.isAllGearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(250));
     this.overspeedVfeConf1.set(this.flapsHandle.get() === 1 && isOverspeed(263)); // FIXME
     // this.overspeedVfeConf1F.set(this.flapsHandle.get() === 1 && isOverspeed(222));
     this.overspeedVfeConf2.set(this.flapsHandle.get() === 2 && isOverspeed(220));

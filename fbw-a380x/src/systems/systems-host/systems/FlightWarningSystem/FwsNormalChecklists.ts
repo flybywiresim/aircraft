@@ -322,7 +322,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [
         false,
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
-        SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'),
+        this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
         (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
