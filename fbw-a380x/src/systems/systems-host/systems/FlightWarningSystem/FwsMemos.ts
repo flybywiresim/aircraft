@@ -84,33 +84,35 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000260': {
+    '300000001': {
       // ENG ANTI ICE
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: MappedSubject.create(
-        ([eng1AntiIce, eng2AntiIce]) => eng1AntiIce || eng2AntiIce,
+        SubscribableMapFunctions.or(),
         this.fws.eng1AntiIce,
         this.fws.eng2AntiIce,
+        this.fws.eng3AntiIce,
+        this.fws.eng4AntiIce,
       ),
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000026001'],
+      codesToReturn: ['300000001'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000270': {
+    '300000002': {
       // WING ANTI ICE
       flightPhaseInhib: [],
       simVarIsActive: this.fws.wingAntiIce,
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000027001'],
+      codesToReturn: ['300000002'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000275': {
+    '300000003': {
       // ICE NOT DETECTED
       flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
@@ -119,7 +121,7 @@ export class FwsMemos {
         this.fws.aircraftOnGround,
       ),
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000027501'],
+      codesToReturn: ['300000003'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,

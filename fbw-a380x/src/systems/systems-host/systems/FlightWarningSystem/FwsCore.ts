@@ -1061,6 +1061,10 @@ export class FwsCore implements Instrument {
 
   public readonly eng2AntiIce = Subject.create(false);
 
+  public readonly eng3AntiIce = Subject.create(false);
+
+  public readonly eng4AntiIce = Subject.create(false);
+
   public readonly throttle1Position = Subject.create(0);
 
   public readonly throttle2Position = Subject.create(0);
@@ -1617,8 +1621,11 @@ export class FwsCore implements Instrument {
     this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
     this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
     this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
-    this.eng1AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:1', 'bool'));
-    this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
+    this.eng1AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:1', 'bool'));
+    this.eng2AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:2', 'bool'));
+    this.eng3AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:3', 'bool'));
+    this.eng4AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:4', 'bool'));
+    this.wingAntiIce.set(SimVar.GetSimVarValue('A:STRUCTURAL DEICE SWITCH', 'bool'));
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
@@ -2124,7 +2131,6 @@ export class FwsCore implements Instrument {
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
-    this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
 
     /* FUEL */
@@ -2670,13 +2676,21 @@ export class FwsCore implements Instrument {
       deltaTime,
     );
     this.iceDetectedTimer2Status.set(
-      this.iceDetectedTimer2.write(iceDetected1 && !(this.eng1AntiIce.get() && this.eng2AntiIce.get()), deltaTime),
+      this.iceDetectedTimer2.write(
+        iceDetected1 &&
+          !(this.eng1AntiIce.get() && this.eng2AntiIce.get() && this.eng3AntiIce.get() && this.eng4AntiIce.get()),
+        deltaTime,
+      ),
     );
     this.iceSevereDetectedTimerStatus.set(
       this.iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !this.aircraftOnGround.get(), deltaTime),
     );
     const iceNotDetected1 = this.iceNotDetTimer1.write(
-      this.eng1AntiIce.get() || this.eng2AntiIce.get() || this.wingAntiIce.get(),
+      this.eng1AntiIce.get() ||
+        this.eng2AntiIce.get() ||
+        this.eng3AntiIce.get() ||
+        this.eng4AntiIce.get() ||
+        this.wingAntiIce.get(),
       deltaTime,
     );
     this.iceNotDetTimer2Status.set(

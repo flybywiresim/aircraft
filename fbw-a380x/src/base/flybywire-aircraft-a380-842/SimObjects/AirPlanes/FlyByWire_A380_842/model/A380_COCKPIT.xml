@@ -3942,7 +3942,7 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG3</NODE_ID>
-                        <PART_ID>ANTIICE_ENG1</PART_ID>
+                        <PART_ID>ANTIICE_ENG3</PART_ID>
                         <ID>3</ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -3951,7 +3951,7 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG4</NODE_ID>
-                        <PART_ID>ANTIICE_ENG2</PART_ID>
+                        <PART_ID>ANTIICE_ENG4</PART_ID>
                         <ID>4</ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
