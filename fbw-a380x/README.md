@@ -52,6 +52,11 @@ These systems are currently not operational / these features are missing and sha
 - Automatic fuel transfer system
 
 #### ATA 29 Hydraulic System
+- No accumulators / LEHGS systems
+- Brakes
+- Gear system
+- Flap/Slat not implemented (copy from 32NX)
+- Hydraulics Cooling 
 
 #### ATA 30 Ice and Rain Protection
 
@@ -70,7 +75,16 @@ These systems are currently not operational / these features are missing and sha
 - SD VIDEO page
 
 #### ATA 32 Landing Gear / Braking / BTV
-
+- Gear system not implemented (copy from 32NX)
+    - Wrong door sequence
+    - Wrong hydraulic behavior
+- Rear wheel steering hydraulics not implemented
+- Brake system not implemented (copy from 32NX)
+    - Wrong hydraulic behavior
+- BTV simplified logic only
+    - Basic braking distance calculations
+    - No glide slope adaptation
+  
 #### ATA 33 Lights
 
 #### ATA 34 Navigation
@@ -104,5 +118,7 @@ These systems are currently not operational / these features are missing and sha
 - Custom engine model (current model is modified LEAP-1A)
 - ACUTE
 - METOTS
+- Reverser
+    - Electrical system for triple lock safety system
 
 #### Misc / Sim specifics
