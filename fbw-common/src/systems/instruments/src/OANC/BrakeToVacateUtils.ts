@@ -357,6 +357,8 @@ export class BrakeToVacateUtils<T extends number> {
       (ra1.isNormalOperation() ? ra1.value : ra2.value > 600) ||
       this.fmgcFlightPhase.get() !== 5
     ) {
+      this.remaininingDistToRwyEnd.set(-1);
+      this.remaininingDistToExit.set(-1);
       return;
     }
 
