@@ -43,7 +43,8 @@ impl A380AuxiliaryGearDoor {
 
             let delta_position =
                 Ratio::new::<ratio>(self.speed_ratio_per_sec * context.delta_as_secs_f64());
-           self.position += if should_open {
+
+            self.position += if should_open {
                 delta_position
             } else {
                 -delta_position
@@ -51,12 +52,6 @@ impl A380AuxiliaryGearDoor {
 
             self.position = Ratio::new::<ratio>(self.position.get::<ratio>().clamp(0., 1.));
         }
-
-        println!(
-            "GEAR DOOR POS = {:.2}, shouldOpen {:?}",
-            self.position.get::<ratio>(),
-            lgciu.main_down_and_locked() && lgciu.gear_handle_is_down()
-        );
     }
 }
 impl SimulationElement for A380AuxiliaryGearDoor {
