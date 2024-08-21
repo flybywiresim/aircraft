@@ -594,10 +594,12 @@ export class MsfsMapping {
             authorisationRequired,
             levelOfService,
             transitions,
-            legs: approach.finalLegs.map((leg) =>
-              this.mapLeg(leg, facilities, msAirport, approachName, approach.approachType, rnp),
+            legs: approach.finalLegs.map((leg, legIndex) =>
+              this.mapLeg(leg, legIndex, facilities, msAirport, approachName, approach.approachType, rnp),
             ),
-            missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName)),
+            missedLegs: approach.missedLegs.map((leg, legIndex) =>
+              this.mapLeg(leg, legIndex, facilities, msAirport, approachName),
+            ),
           };
         })
     );
@@ -615,7 +617,9 @@ export class MsfsMapping {
       databaseId: `P${icaoCode}${airportIdent}${arrival.name}`,
       icaoCode,
       ident: arrival.name,
-      commonLegs: arrival.commonLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, arrival.name)),
+      commonLegs: arrival.commonLegs.map((leg, legIndex) =>
+        this.mapLeg(leg, legIndex, facilities, msAirport, arrival.name),
+      ),
       enrouteTransitions: arrival.enRouteTransitions.map((trans, idx) =>
         this.mapEnrouteTransition(trans, facilities, msAirport, arrival.name, arrival.name + idx),
       ),
@@ -646,8 +650,8 @@ export class MsfsMapping {
         icaoCode,
         ident: departure.name,
         authorisationRequired,
-        commonLegs: departure.commonLegs.map((leg) =>
-          this.mapLeg(leg, facilities, msAirport, departure.name, undefined, commonLegsRnp),
+        commonLegs: departure.commonLegs.map((leg, legIndex) =>
+          this.mapLeg(leg, legIndex, facilities, msAirport, departure.name, undefined, commonLegsRnp),
         ),
         engineOutLegs: [],
         enrouteTransitions: departure.enRouteTransitions.map((trans, idx) =>
@@ -812,7 +816,7 @@ export class MsfsMapping {
     return {
       databaseId,
       ident: trans.name,
-      legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent)),
+      legs: trans.legs.map((leg, legIndex) => this.mapLeg(leg, legIndex, facilities, airport, procedureIdent)),
     };
   }
 
@@ -827,7 +831,9 @@ export class MsfsMapping {
     return {
       databaseId,
       ident: trans.name,
-      legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, undefined, rnp)),
+      legs: trans.legs.map((leg, legIndex) =>
+        this.mapLeg(leg, legIndex, facilities, airport, procedureIdent, undefined, rnp),
+      ),
     };
   }
 
@@ -846,12 +852,15 @@ export class MsfsMapping {
     return {
       databaseId,
       ident,
-      legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, undefined, rnp)),
+      legs: trans.legs.map((leg, legIndex) =>
+        this.mapLeg(leg, legIndex, facilities, airport, procedureIdent, undefined, rnp),
+      ),
     };
   }
 
   private mapLeg(
     leg: JS_Leg,
+    legIndex: number,
     facilities: Map<string, JS_Facility>,
     airport: JS_FacilityAirport,
     procedureIdent: string,
@@ -884,6 +893,9 @@ export class MsfsMapping {
       arcRadius = distanceTo(arcCentreFix.location, waypoint.location);
     }
 
+    const approachWaypointDescriptor =
+      approachType !== undefined ? this.mapMsLegToApproachWaypointDescriptor(leg, legIndex, approachType) : undefined;
+
     // TODO for approach, pass approach type to mapMsAltDesc
     return {
       procedureIdent,
@@ -897,7 +909,7 @@ export class MsfsMapping {
       arcRadius,
       length: leg.distanceMinutes ? undefined : leg.distance / 1852,
       lengthTime: leg.distanceMinutes ? leg.distance : undefined,
-      altitudeDescriptor: this.mapMsAltDesc(leg.altDesc, leg.fixTypeFlags, approachType),
+      altitudeDescriptor: this.mapMsAltDesc(leg.altDesc, leg.fixTypeFlags, approachType, approachWaypointDescriptor),
       altitude1: Math.round(leg.altitude1 / 0.3048),
       altitude2: Math.round(leg.altitude2 / 0.3048),
       speed: leg.speedRestriction > 0 ? leg.speedRestriction : undefined,
@@ -905,8 +917,7 @@ export class MsfsMapping {
       turnDirection: this.mapMsTurnDirection(leg.turnDirection),
       magneticCourse: leg.course, // TODO check magnetic/true
       waypointDescriptor: this.mapMsIcaoToWaypointDescriptor(leg.fixIcao),
-      approachWaypointDescriptor:
-        approachType !== undefined ? this.mapMsLegToApproachWaypointDescriptor(leg) : undefined,
+      approachWaypointDescriptor,
       verticalAngle: Math.abs(leg.verticalAngle) > Number.EPSILON ? leg.verticalAngle - 360 : undefined,
       rnp,
     };
@@ -1119,6 +1130,7 @@ export class MsfsMapping {
     altDesc: MSAltitudeDescriptor,
     fixTypeFlags: FixTypeFlags,
     approachType?: MSApproachType,
+    approachWaypointDescriptor?: ApproachWaypointDescriptor,
   ): AltitudeDescriptor | undefined {
     // TODO can we do more of these for other approach types?
     if (approachType === MSApproachType.Ils) {
@@ -1130,8 +1142,7 @@ export class MsfsMapping {
           return AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2;
         }
       }
-      if (fixTypeFlags & FixTypeFlags.IF) {
-        // FACF
+      if (approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix) {
         if (altDesc === MSAltitudeDescriptor.At) {
           return AltitudeDescriptor.AtAlt1GsIntcptAlt2;
         }
@@ -1187,7 +1198,30 @@ export class MsfsMapping {
     }
   }
 
-  private mapMsLegToApproachWaypointDescriptor(leg: JS_Leg): ApproachWaypointDescriptor {
+  private isLocBasedApproach(approachType?: MSApproachType): boolean {
+    // Localizer based approaches according to ARINC 424 6.4.1
+    switch (approachType) {
+      // IGS
+      case MSApproachType.Ils:
+      case MSApproachType.Lda:
+      case MSApproachType.Loc:
+      case MSApproachType.Sdf:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private mapMsLegToApproachWaypointDescriptor(
+    leg: JS_Leg,
+    legIndex: number,
+    approachType?: MSApproachType,
+  ): ApproachWaypointDescriptor {
+    // All localiser based approaches start with FACF (ARINC 424 6.4.1.1)
+    if (legIndex === 0 && this.isLocBasedApproach(approachType)) {
+      return ApproachWaypointDescriptor.FinalApproachCourseFix;
+    }
+
     if ((leg.fixTypeFlags & FixTypeFlags.FAF) > 0) {
       return ApproachWaypointDescriptor.FinalApproachFix;
     }
