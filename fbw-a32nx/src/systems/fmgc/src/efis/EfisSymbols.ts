@@ -25,18 +25,18 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
@@ -238,9 +238,6 @@ export class EfisSymbols<T extends number> {
       // we reverse the array at the end to make sure symbols are drawn in the correct order
       // eslint-disable-next-line no-loop-func
       const upsertSymbol = (symbol: NdSymbol): void => {
-        if (DEBUG) {
-          console.time(`upsert symbol ${symbol.databaseId}`);
-        }
         // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
         const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
         if (symbolIdx !== -1) {

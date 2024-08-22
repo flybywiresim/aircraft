@@ -630,6 +630,8 @@ export class PseudoFWC {
 
   private readonly lgciu2DiscreteWord2 = Arinc429Register.empty();
 
+  private isAllGearDownlocked = false;
+
   private readonly nwSteeringDisc = Subject.create(false);
 
   private readonly parkBrake = Subject.create(false);
@@ -715,6 +717,8 @@ export class PseudoFWC {
   private readonly N2Eng2 = Subject.create(0);
 
   private readonly N1IdleEng = Subject.create(0);
+
+  private readonly engineOnFor30Seconds = new NXLogicConfirmNode(30);
 
   // FIXME ECU should provide this in a discrete word
   private readonly engine1AboveIdle = MappedSubject.create(
@@ -1166,6 +1170,7 @@ export class PseudoFWC {
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
+    this.engineOnFor30Seconds.write(this.engine1State.get() === 1 || this.engine2State.get() === 1, deltaTime);
 
     this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
     this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
@@ -1267,8 +1272,7 @@ export class PseudoFWC {
     const mainGearDownlocked =
       (this.lgciu1DiscreteWord1.bitValueOr(23, false) || this.lgciu2DiscreteWord1.bitValueOr(23, false)) &&
       (this.lgciu1DiscreteWord1.bitValueOr(24, false) || this.lgciu2DiscreteWord1.bitValueOr(24, false));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const gearDownlocked =
+    this.isAllGearDownlocked =
       mainGearDownlocked &&
       (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
 
@@ -3980,7 +3984,7 @@ export class PseudoFWC {
       flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
       simVarIsActive: this.ldgMemo.map((t) => !!t),
       whichCodeToReturn: () => [
-        SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 1 : 0,
+        this.isAllGearDownlocked ? 1 : 0,
         SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum') !== 2 &&
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
           ? 3
@@ -4288,7 +4292,7 @@ export class PseudoFWC {
       // NW STRG DISC
       flightPhaseInhib: [],
       simVarIsActive: this.nwSteeringDisc,
-      whichCodeToReturn: () => [this.engine1State.get() > 0 || this.engine2State.get() > 0 ? 1 : 0],
+      whichCodeToReturn: () => [this.engineOnFor30Seconds.read() ? 1 : 0],
       codesToReturn: ['000004001', '000004002'],
       memoInhibit: () => false,
       failure: 0,
