@@ -21,7 +21,7 @@ export interface BtvData {
 
   radioAltitude_1: number;
   radioAltitude_2: number;
-  fmgcFlightPhase: number;
+  fwcFlightPhase: number;
 }
 
 export enum BtvSimVars {
@@ -33,7 +33,7 @@ export enum BtvSimVars {
   stopBarDistance = 'L:A32NX_OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED',
   radioAltitude_1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
   radioAltitude_2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
-  fmgcFlightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
+  fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
 }
 
 export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
@@ -46,7 +46,7 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
     ['stopBarDistance', { name: BtvSimVars.stopBarDistance, type: SimVarValueType.Number }],
     ['radioAltitude_1', { name: BtvSimVars.radioAltitude_1, type: SimVarValueType.Number }],
     ['radioAltitude_2', { name: BtvSimVars.radioAltitude_2, type: SimVarValueType.Number }],
-    ['fmgcFlightPhase', { name: BtvSimVars.fmgcFlightPhase, type: SimVarValueType.Enum }],
+    ['fwcFlightPhase', { name: BtvSimVars.fwcFlightPhase, type: SimVarValueType.Enum }],
   ]);
 
   public constructor(bus: ArincEventBus) {
