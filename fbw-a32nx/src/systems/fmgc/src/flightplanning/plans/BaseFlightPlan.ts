@@ -7,6 +7,7 @@ import {
   Airport,
   AltitudeDescriptor,
   Approach,
+  ApproachType,
   ApproachWaypointDescriptor,
   Arrival,
   Departure,
@@ -1035,14 +1036,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   glideslopeIntercept(): number | undefined {
-    for (const leg of this.approachSegment.allLegs) {
-      if (
-        leg.isDiscontinuity === false &&
-        leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix &&
-        (leg.definition.altitudeDescriptor === AltitudeDescriptor.AtAlt1GsMslAlt2 ||
-          leg.definition.altitudeDescriptor === AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2)
-      ) {
-        return leg.definition.altitude2;
+    // On ILS approaches altitude2 on the FACF is the GS intercept alt,
+    // even when there is no descriptor (i.e. there's no alt constraint) - ARINC 424 5.29.
+    if (this.approach.type === ApproachType.Ils) {
+      for (const leg of this.approachSegment.allLegs) {
+        if (
+          leg.isDiscontinuity === false &&
+          leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix &&
+          leg.definition.altitude2 > 0
+        ) {
+          return leg.definition.altitude2;
+        }
       }
     }
 
