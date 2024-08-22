@@ -963,6 +963,8 @@ struct BtvDecelScheduler {
     runway_length_id: VariableIdentifier,
     distance_to_exit_id: VariableIdentifier,
     rot_estimation_id: VariableIdentifier,
+    turnaround_idle_estimation_id: VariableIdentifier,
+    turnaround_max_estimation_id: VariableIdentifier,
 
     runway_length: Arinc429Word<Length>,
 
@@ -1011,7 +1013,7 @@ impl BtvDecelScheduler {
     const MIN_DECEL_SAFETY_MARGIN_RATIO: f64 = 1.15;
     const DECEL_SAFETY_MARGIN_SHAPING_FACTOR: f64 = 0.4;
 
-    const REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS: f64 = 100.;
+    const REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS: f64 = 300.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -1021,6 +1023,10 @@ impl BtvDecelScheduler {
             distance_to_exit_id: context
                 .get_identifier("OANS_BTV_REMAINING_DIST_TO_EXIT".to_owned()),
             rot_estimation_id: context.get_identifier("BTV_ROT".to_owned()),
+            turnaround_idle_estimation_id: context
+                .get_identifier("BTV_TURNAROUND_IDLE_REV".to_owned()),
+            turnaround_max_estimation_id: context
+                .get_identifier("BTV_TURNAROUND_MAX_REV".to_owned()),
 
             runway_length: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
             rolling_distance: Length::default(),
@@ -1270,6 +1276,46 @@ impl BtvDecelScheduler {
         }
     }
 
+    fn turnaround_estimation_for_distance(&self, rot_seconds: f64) -> [Arinc429Word<u64>; 2] {
+        let distance_valid = self.in_flight_btv_stopping_distance.is_normal_operation();
+
+        if distance_valid && rot_seconds > 0. {
+            let is_max_braking = self.braking_distance_remaining() < self.wet_prediction;
+
+            // println!(
+            //     "TEST MAX BRAKING MODE? {:?}, DISTANCE REMAININ {:.2} WET PREDICTION{:.2}",
+            //     is_max_braking,
+            //     self.braking_distance_remaining().get::<meter>(),
+            //     self.wet_prediction.get::<meter>()
+            // );
+
+            // Magic statistical function for max turnaound. Idle is max+15%. 10% penalty if max braking is used
+            let mut max_duration_minutes =
+                (0.00495 * rot_seconds.powi(2) - 1.2244 * rot_seconds + 204.).clamp(10., 500.);
+
+            if is_max_braking {
+                max_duration_minutes *= 1.1;
+            }
+
+            let idle_duration_minutes = (max_duration_minutes * 1.15).clamp(10., 500.);
+
+            // println!(
+            //     "MAX BRAKING MODE? {:?}, MAX DURATION {:.2} IDLE DURATION {:.2}",
+            //     is_max_braking, max_duration_minutes, idle_duration_minutes
+            // );
+
+            [
+                Arinc429Word::new(max_duration_minutes as u64, SignStatus::NormalOperation),
+                Arinc429Word::new(idle_duration_minutes as u64, SignStatus::NormalOperation),
+            ]
+        } else {
+            [
+                Arinc429Word::new(0, SignStatus::NoComputedData),
+                Arinc429Word::new(0, SignStatus::NoComputedData),
+            ]
+        }
+    }
+
     fn predicted_decel(&self) -> Acceleration {
         match self.state {
             BTVState::Disabled | BTVState::Armed => Acceleration::default(),
@@ -1289,8 +1335,20 @@ impl BtvDecelScheduler {
 impl SimulationElement for BtvDecelScheduler {
     fn write(&self, writer: &mut SimulatorWriter) {
         let rot_arinc = self.rot_estimation_for_distance();
+        let turnaround_esti = self.turnaround_estimation_for_distance(rot_arinc.value() as f64);
 
         writer.write_arinc429(&self.rot_estimation_id, rot_arinc.value(), rot_arinc.ssm());
+
+        writer.write_arinc429(
+            &self.turnaround_idle_estimation_id,
+            turnaround_esti[1].value(),
+            turnaround_esti[1].ssm(),
+        );
+        writer.write_arinc429(
+            &self.turnaround_max_estimation_id,
+            turnaround_esti[0].value(),
+            turnaround_esti[0].ssm(),
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
