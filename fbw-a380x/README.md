@@ -43,6 +43,7 @@ These systems are currently not operational / these features are missing and sha
 ### ATA 23 Communication
 
 - RMP: HF, TEL, MENU, SATCOM, DATALINK pages
+- CIDS: CALLS buttons
 
 ### ATA 24 Electrical
 
@@ -61,8 +62,8 @@ These systems are currently not operational / these features are missing and sha
 ### ATA 29 Hydraulic System
 
 - No accumulators / LEHGS systems
-- Brakes
-- Gear system
+- Brakes: Only rudimentary + carryover from A32NX
+- Gear system: Only rudimentary + carryover from A32NX
 - Flap/Slat not implemented (copy from 32NX)
 - Hydraulics Cooling
 
