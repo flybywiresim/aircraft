@@ -2,7 +2,7 @@
 
 The project directory is structured as follows:
 
-```
+```text
 - docs            <Specific docs for the project>
 - src             <src files required for the project>
 - out             <contains MSFS package folder after the build>
@@ -11,22 +11,26 @@ The project directory is structured as follows:
 The `out` folder can be deleted as it is completely recreated during the build.
 This is essentially a clean build.
 
-# A380X INOP systems
+## A380X INOP systems
 
 These systems are currently not operational / these features are missing and shall thus not lead to bug reports.
-#### ATA 20 Aircraft General / Exterior 3D Model
 
-#### ATA 21 Air Con / Pressurization / Ventilation
+### ATA 20 Aircraft General / Exterior 3D Model
 
-#### ATA 22 Flight Envelope
+### ATA 21 Air Con / Pressurization / Ventilation
+
+### ATA 22 Flight Envelope
+
 - PRIM FE part (FMS taking over atm)
 
-#### ATA 22 Autoflight / FCU
+### ATA 22 Autoflight / FCU
+
 - AP tuning for A380X
 - FLS
 - THR NOISE, DCLB
 
-#### ATA 22 Flight Management System (FMS)
+### ATA 22 Flight Management System (FMS)
+
 - Incomplete pages see fbw-a380x/src/systems/instruments/src/MFD/pages
 - Separation into three synchronized FMCs and two FMSs (currently one FMC serving one FMS)
 - EO modes / EO SID
@@ -36,31 +40,36 @@ These systems are currently not operational / these features are missing and sha
 - ATC / datalink
 - FCU BKUP
 
-#### ATA 23 Communication
+### ATA 23 Communication
+
 - RMP: HF, TEL, MENU, SATCOM, DATALINK pages
 
-#### ATA 24 Electrical
+### ATA 24 Electrical
 
-#### ATA 25 Equipment / Cockpit 3D Model
+### ATA 25 Equipment / Cockpit 3D Model
 
-#### ATA 26 Fire and Smoke Protection
+### ATA 26 Fire and Smoke Protection
 
-#### ATA 27 Flight Controls
+### ATA 27 Flight Controls
+
 - Complete SLAT/FLAP CTL implementation (adapted A32NX computers atm)
 
-#### ATA 28 Fuel
+### ATA 28 Fuel
+
 - Automatic fuel transfer system
 
-#### ATA 29 Hydraulic System
+### ATA 29 Hydraulic System
+
 - No accumulators / LEHGS systems
 - Brakes
 - Gear system
 - Flap/Slat not implemented (copy from 32NX)
-- Hydraulics Cooling 
+- Hydraulics Cooling
 
-#### ATA 30 Ice and Rain Protection
+### ATA 30 Ice and Rain Protection
 
-#### ATA 31 Indicating / Recording / ECAM / EFIS / Displays
+### ATA 31 Indicating / Recording / ECAM / EFIS / Displays
+
 - CDS / displays (automatic) reconfiguration
 - PFD backup scales
 - Interactive ND
@@ -74,51 +83,59 @@ These systems are currently not operational / these features are missing and sha
 - Latest FMA indications for landing modes (e.g. LAND3 instead of CAT3)
 - SD VIDEO page
 
-#### ATA 32 Landing Gear / Braking / BTV
+### ATA 32 Landing Gear / Braking / BTV
+
 - Gear system not implemented (copy from 32NX)
-    - Wrong door sequence
-    - Wrong hydraulic behavior
+  - Wrong door sequence
+  - Wrong hydraulic behavior
 - Rear wheel steering hydraulics not implemented
 - Brake system not implemented (copy from 32NX)
-    - Wrong hydraulic behavior
+  - Wrong hydraulic behavior
 - BTV simplified logic only
-    - Basic braking distance calculations
-    - No glide slope adaptation
-  
-#### ATA 33 Lights
+  - Basic braking distance calculations
+  - No glide slope adaptation
 
-#### ATA 34 Navigation
+### ATA 33 Lights
+
+### ATA 34 Navigation
+
 - MMR implementation including GPIRS position
 - GLS
 
-#### ATA 34 Surveillance / TCAS / TAWS / WXR / XPDR
+### ATA 34 Surveillance / TCAS / TAWS / WXR / XPDR
+
 - Weather radar / WXR
 - TAWS obstacles
 - TCAS
 
-#### ATA 34 ROW/ROP
+### ATA 34 ROW/ROP
+
 - Automatic detection of landing runway (needs FMS to have landing runway selected)
 - Shift of touchdown point according to position on glide slope
 
-#### ATA 35 Oxygen
+### ATA 35 Oxygen
+
 - Oxygen masks test P/B
 
-#### ATA 36 Bleed Air
+### ATA 36 Bleed Air
 
-#### ATA 42 Avionics Network
+### ATA 42 Avionics Network
+
 - Communication between systems using AFDX (ARINC protocol used mostly)
 
-#### ATA 49 APU
+### ATA 49 APU
 
-#### ATA 52 Doors
+### ATA 52 Doors
+
 - CKPT DOOR functions
 - All cargo and passenger doors animated
 
-#### ATA 70 Engines
+### ATA 70 Engines
+
 - Custom engine model (current model is modified LEAP-1A)
 - ACUTE
 - METOTS
 - Reverser
-    - Electrical system for triple lock safety system
+  - Electrical system for triple lock safety system
 
-#### Misc / Sim specifics
+### Misc / Sim specifics
