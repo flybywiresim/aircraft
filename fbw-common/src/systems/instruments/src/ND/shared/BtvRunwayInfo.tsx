@@ -52,15 +52,6 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly turnaroundIdleRev = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
 
-  private readonly turnaroundString = MappedSubject.create(
-    ([idle, max]) =>
-      idle.isNormalOperation() && max.isNormalOperation()
-        ? `${max.value.toFixed(0).padStart(3, '\xa0')}'/${idle.value.toFixed(0).padStart(3, '\xa0')}'`
-        : '',
-    this.turnaroundIdleRev,
-    this.turnaroundMaxRev,
-  );
-
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -168,9 +159,10 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
         </g>
         <g
           visibility={MappedSubject.create(
-            ([exit, ta]) => (exit && ta ? 'visible' : 'hidden'),
+            ([exit, idle, max]) => (exit && idle.isNormalOperation() && max.isNormalOperation() ? 'visible' : 'hidden'),
             this.exitIdent,
-            this.turnaroundString,
+            this.turnaroundIdleRev,
+            this.turnaroundMaxRev,
           )}
         >
           <Layer x={2} y={140}>
@@ -179,7 +171,19 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
               TURNAROUND
             </text>
             <text x={150} y={0} class="Green FontSmallest">
-              {this.turnaroundString}
+              {this.turnaroundMaxRev.map((t) => t.value.toFixed(0).padStart(3, '\xa0'))}
+            </text>
+            <text x={192} y={0} class="Cyan FontSmallest">
+              '
+            </text>
+            <text x={202} y={0} class="White FontSmallest">
+              /
+            </text>
+            <text x={218} y={0} class="Green FontSmallest">
+              {this.turnaroundIdleRev.map((t) => t.value.toFixed(0).padStart(3, '\xa0'))}
+            </text>
+            <text x={260} y={0} class="Cyan FontSmallest">
+              '
             </text>
           </Layer>
         </g>
