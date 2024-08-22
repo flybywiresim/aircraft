@@ -60,4 +60,12 @@ export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
       this.notify();
     }
   }
+
+  setBitValue(bit: number, value: boolean): void {
+    const oldValue = this.value.value;
+    this.value.setBitValue(bit, value);
+    if (oldValue !== this.value.value) {
+      this.notify();
+    }
+  }
 }

@@ -12,6 +12,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
+import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -173,6 +174,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorFixedUpper bus={this.props.bus} />
+          <AttitudeIndicatorWarnings bus={this.props.bus} instrument={this.props.instrument} />
           <VerticalSpeedIndicator
             bus={this.props.bus}
             instrument={this.props.instrument}

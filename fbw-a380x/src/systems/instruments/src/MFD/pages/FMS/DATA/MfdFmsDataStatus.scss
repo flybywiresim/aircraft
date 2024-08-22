@@ -1,0 +1,55 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-status-pse-label {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 20px;
+}
+
+.mfd-data-status-pse-value {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mfd-data-status-airframe-label {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.mfd-data-status-first-section {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 15px;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.mfd-data-status-second-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 15px;
+  padding-top: 15px;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.mfd-data-status-third-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-top: 25px;
+}

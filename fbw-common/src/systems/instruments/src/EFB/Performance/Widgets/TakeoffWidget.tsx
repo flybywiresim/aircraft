@@ -1025,22 +1025,22 @@ export const TakeoffWidget = () => {
                     background: 'black',
                   }}
                 >
-                  <div className="mcdu-big">
+                  <div className="mcdu-big text-white">
                     {'\xa0\xa0\xa0\xa0'}
                     TAKE OFF RWY
                     {'\xa0'}
                     <span className="mcdu-big text-green-500">{selectedRunway?.ident ?? ''}</span>
                   </div>
-                  <div className="mcdu-sml">{'\xa0V1\xa0\xa0\xa0FLP\xa0RETR'}</div>
-                  <div className="mcdu-big">
-                    <span className={result?.v1 !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big'}>
+                  <div className="mcdu-sml text-white">{'\xa0V1\xa0\xa0\xa0FLP\xa0RETR'}</div>
+                  <div className="mcdu-big text-white">
+                    <span className={`mcdu-big ${result?.v1 !== undefined ? 'text-green-500' : 'text-white'}`}>
                       {result?.v1 !== undefined ? result.v1.toFixed(0) : '---'}
                     </span>
                     {'\xa0\xa0\xa0\xa0F=---'}
                   </div>
-                  <div className="mcdu-sml">{'\xa0VR\xa0\xa0\xa0SLT\xa0RETR\xa0\xa0TO\xa0SHIFT'}</div>
-                  <div className="mcdu-big">
-                    <span className={result?.vR !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big'}>
+                  <div className="mcdu-sml text-white">{'\xa0VR\xa0\xa0\xa0SLT\xa0RETR\xa0\xa0TO\xa0SHIFT'}</div>
+                  <div className="mcdu-big text-white">
+                    <span className={`mcdu-big ${result?.vR !== undefined ? 'text-green-500' : 'text-white'}`}>
                       {result?.vR !== undefined ? result.vR.toFixed(0) : '---'}
                     </span>
                     {'\xa0\xa0\xa0\xa0S=---\xa0\xa0'}
@@ -1048,7 +1048,7 @@ export const TakeoffWidget = () => {
                     {takeoffShift !== undefined ? (
                       <>
                         <span className={'mcdu-small text-white-500'}>{usingMetricPinProg ? '\xa0[M]' : '[FT]'}</span>
-                        <span className={takeoffShift !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big'}>
+                        <span className={`mcdu-big ${takeoffShift !== undefined ? 'text-green-500' : 'text-white'}`}>
                           {Math.round(usingMetricPinProg ? takeoffShift : Units.metreToFoot(takeoffShift))
                             .toString()
                             .padStart(6, '\xa0')}
@@ -1058,29 +1058,29 @@ export const TakeoffWidget = () => {
                       '\xa0\xa0\xa0\xa0\xa0\xa0----'
                     )}
                   </div>
-                  <div className="mcdu-sml">{'\xa0V2\xa0\xa0\xa0CLEAN\xa0\xa0\xa0\xa0FLAPS/THS'}</div>
-                  <div className="mcdu-big">
-                    <span className={result?.v2 !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big'}>
+                  <div className="mcdu-sml text-white">{'\xa0V2\xa0\xa0\xa0CLEAN\xa0\xa0\xa0\xa0FLAPS/THS'}</div>
+                  <div className="mcdu-big text-white">
+                    <span className={result?.v2 !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big text-white'}>
                       {result?.v2 !== undefined ? result.v2.toFixed(0) : '---'}
                     </span>
                     {'\xa0\xa0\xa0\xa0O=---\xa0\xa0\xa0'}
-                    <span className={result?.inputs.conf !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big'}>
+                    <span className={`mcdu-big ${result?.inputs.conf !== undefined ? 'text-green-500' : 'text-white'}`}>
                       {result?.inputs.conf !== undefined ? result.inputs.conf.toString().padStart(3, '\xa0') : '---'}
                     </span>
-                    <span className={result?.stabTrim !== undefined ? 'mcdu-big text-green-500' : 'mcdu-big'}>
+                    <span className={`mcdu-big ${result?.stabTrim !== undefined ? 'text-green-500' : 'text-white'}`}>
                       /
                       {result?.stabTrim !== undefined
                         ? `${result.stabTrim < 0 ? 'DN' : 'UP'}${Math.abs(result.stabTrim).toFixed(1)}`
                         : '-----'}
                     </span>
                   </div>
-                  <div className="mcdu-sml">{'TRANS\xa0ALT\xa0\xa0\xa0FLEX\xa0TO\xa0TEMP'}</div>
-                  <div className={`${result?.flex !== undefined ? 'text-green-500 ' : ''}mcdu-big`}>
+                  <div className="mcdu-sml text-white">{'TRANS\xa0ALT\xa0\xa0\xa0FLEX\xa0TO\xa0TEMP'}</div>
+                  <div className={`mcdu-big ${result?.flex !== undefined ? 'text-green-500' : 'text-white'}`}>
                     {'\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'}
                     {result?.flex !== undefined ? result.flex.toFixed(0).padStart(4, '\xa0') : '----'}°
                   </div>
-                  <div className="mcdu-sml">{'THR RED/ACC\xa0\xa0ENG\xa0OUT\xa0ACC'}</div>
-                  <div className="mcdu-big">{'-----/-----\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0-----'}</div>
+                  <div className="mcdu-sml text-white">{'THR RED/ACC\xa0\xa0ENG\xa0OUT\xa0ACC'}</div>
+                  <div className="mcdu-big text-white">{'-----/-----\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0-----'}</div>
                 </div>
               </div>
             </div>
