@@ -630,6 +630,8 @@ export class PseudoFWC {
 
   private readonly lgciu2DiscreteWord2 = Arinc429Register.empty();
 
+  private isAllGearDownlocked = false;
+
   private readonly nwSteeringDisc = Subject.create(false);
 
   private readonly parkBrake = Subject.create(false);
@@ -1270,8 +1272,7 @@ export class PseudoFWC {
     const mainGearDownlocked =
       (this.lgciu1DiscreteWord1.bitValueOr(23, false) || this.lgciu2DiscreteWord1.bitValueOr(23, false)) &&
       (this.lgciu1DiscreteWord1.bitValueOr(24, false) || this.lgciu2DiscreteWord1.bitValueOr(24, false));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const gearDownlocked =
+    this.isAllGearDownlocked =
       mainGearDownlocked &&
       (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
 
@@ -3983,7 +3984,7 @@ export class PseudoFWC {
       flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
       simVarIsActive: this.ldgMemo.map((t) => !!t),
       whichCodeToReturn: () => [
-        SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 1 : 0,
+        this.isAllGearDownlocked ? 1 : 0,
         SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum') !== 2 &&
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
           ? 3
