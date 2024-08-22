@@ -15,6 +15,7 @@ export const Wheel: FC<WheelProps> = ({ x, y, number, isLeftSide, hasBrake, more
     const rightNegativeSign = !isLeftSide ? '-' : '';
 
     const [oat] = useSimVar('A:AMBIENT TEMPERATURE', 'celsius', 4000);
+    const oatRoundedTo5 = Math.max(0, Math.ceil((oat as number) / 5) * 5).toFixed(0);
 
     return (
         <g id={`wheel-${number ?? 'nose'}`} transform={`translate(${x} ${y})`}>
@@ -33,7 +34,7 @@ export const Wheel: FC<WheelProps> = ({ x, y, number, isLeftSide, hasBrake, more
                         d={`m ${negativeSign}15,18 v -36 M ${negativeSign}21,18 v -36 M ${negativeSign}27,18 v -36 M ${negativeSign}33,18 v -36`}
                     />
                     <path className='BackgroundFill' d={`m ${isLeftSide ? -18 : 70},-13 h -50 v -24 h 50 z`} />
-                    <text className='F26 Green EndAlign' x={isLeftSide ? -16 : 72} y={-16}>{Math.max(0, oat as number).toFixed(0)}</text>
+                    <text className='F26 Green EndAlign' x={isLeftSide ? -16 : 72} y={-16}>{oatRoundedTo5}</text>
                 </>
             )}
             <text className='F22 Green EndAlign' x={isLeftSide ? -16 : 65} y={34} visibility={moreActive ? 'visible' : 'hidden'}>220</text>
