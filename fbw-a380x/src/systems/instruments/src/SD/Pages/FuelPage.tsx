@@ -29,96 +29,95 @@ export const FuelPage = () => {
 
     const allEngFuelFlow = (eng1FuelFlowPph + eng2FuelFlowPph + eng3FuelFlowPph + eng4FuelFlowPph);
     const allEngFuelFlowDisplayed = Math.floor(allEngFuelFlow / 60 / 10) * 10; // kg/min
-    // TODO convert to right unit
 
     // LP valves
-    const [engine1Valve] = useSimVar('FUELSYSTEM VALVE OPEN:1', 'Percent over 100');
-    const [engine2Valve] = useSimVar('FUELSYSTEM VALVE OPEN:2', 'Percent over 100');
-    const [engine3Valve] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'Percent over 100');
-    const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100');
+    const [engine1Valve] = useSimVar('FUELSYSTEM VALVE OPEN:1', 'Percent over 100', 1000);
+    const [engine2Valve] = useSimVar('FUELSYSTEM VALVE OPEN:2', 'Percent over 100', 1000);
+    const [engine3Valve] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'Percent over 100', 1000);
+    const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100', 1000);
 
     // Feed pumps
-    const [feed1Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Bool');
-    const [feed1Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Bool');
-    const [feed2Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Bool');
-    const [feed2Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Bool');
-    const [feed3Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Bool');
-    const [feed3Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Bool');
-    const [feed4Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:7', 'Bool');
-    const [feed4Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:8', 'Bool');
+    const [feed1Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Bool', 1000);
+    const [feed1Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Bool', 1000);
+    const [feed2Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Bool', 1000);
+    const [feed2Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Bool', 1000);
+    const [feed3Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Bool', 1000);
+    const [feed3Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Bool', 1000);
+    const [feed4Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:7', 'Bool', 1000);
+    const [feed4Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:8', 'Bool', 1000);
 
     // Transfer pumps
-    const [isLeftOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:9', 'Bool');
-    const [isLeftMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:10', 'Bool');
-    const [isLeftMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:11', 'Bool');
-    const [isLeftInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:12', 'Bool');
-    const [isRightInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:13', 'Bool');
-    const [isRightOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:14', 'Bool');
-    const [isRightMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:15', 'Bool');
-    const [isRightMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:16', 'Bool');
-    const [isLeftInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:17', 'Bool');
-    const [isRightInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:18', 'Bool');
+    const [isLeftOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:9', 'Bool', 1000);
+    const [isLeftMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:10', 'Bool', 1000);
+    const [isLeftMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:11', 'Bool', 1000);
+    const [isLeftInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:12', 'Bool', 1000);
+    const [isRightInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:13', 'Bool', 1000);
+    const [isRightOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:14', 'Bool', 1000);
+    const [isRightMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:15', 'Bool', 1000);
+    const [isRightMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:16', 'Bool', 1000);
+    const [isLeftInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:17', 'Bool', 1000);
+    const [isRightInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:18', 'Bool', 1000);
 
     // Trim tank pumps
-    const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool');
-    const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool');
+    const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
+    const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
 
     // Crossfeed valves
-    const [crossFeed1ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:46', 'Percent over 100');
-    const [crossFeed2ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:47', 'Percent over 100');
-    const [crossFeed3ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:48', 'Percent over 100');
-    const [crossFeed4ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:49', 'Percent over 100');
+    const [crossFeed1ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:46', 'Percent over 100', 1000);
+    const [crossFeed2ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:47', 'Percent over 100', 1000);
+    const [crossFeed3ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:48', 'Percent over 100', 1000);
+    const [crossFeed4ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:49', 'Percent over 100', 1000);
 
     const isAnyCrossFeedValveNotClosed = crossFeed1ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD;
 
     // Emergency transfer valves
-    const [leftOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:52', 'Percent over 100');
-    const [rightOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:53', 'Percent over 100');
+    const [leftOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:52', 'Percent over 100', 1000);
+    const [rightOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:53', 'Percent over 100', 1000);
 
-    const [transferDefuelValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:56', 'Percent over 100');
+    const [transferDefuelValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:56', 'Percent over 100', 1000);
 
     // Valve.54 = Name:GalleryAuxRefuelValveLeft#OpeningTime:3#Circuit:54
-    const [galleryAuxRefuelValveLeftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:54', 'Percent over 100');
+    const [galleryAuxRefuelValveLeftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:54', 'Percent over 100', 1000);
     // Valve.55 = Name:GalleryAuxRefuelValveRight#OpeningTime:3#Circuit:55
-    const [galleryAuxRefuelValveRightOpen] = useSimVar('FUELSYSTEM VALVE OPEN:55', 'Percent over 100');
+    const [galleryAuxRefuelValveRightOpen] = useSimVar('FUELSYSTEM VALVE OPEN:55', 'Percent over 100', 1000);
     const isAnyGalleryAuxRefuelValveOpen = galleryAuxRefuelValveLeftOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD || galleryAuxRefuelValveRightOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     // Into tank transfer valves
     //  FWD
     //      Feed tanks
-    const [feedTank1FwdTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'Percent over 100');
-    const [feedTank1FwdTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:11', 'Percent over 100');
+    const [feedTank1FwdTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'Percent over 100', 1000);
+    const [feedTank1FwdTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:11', 'Percent over 100', 1000);
     const isAnyFeedTank1FwdTransferValveOpen = feedTank1FwdTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || feedTank1FwdTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [feedTank2FwdTransferValve1_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:6', 'Percent over 100');
-    const [feedTank2FwdTransferValve1_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:8', 'Percent over 100');
-    const [feedTank2FwdTransferValve2_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:12', 'Percent over 100');
-    const [feedTank2FwdTransferValve2_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:14', 'Percent over 100');
+    const [feedTank2FwdTransferValve1_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:6', 'Percent over 100', 1000);
+    const [feedTank2FwdTransferValve1_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:8', 'Percent over 100', 1000);
+    const [feedTank2FwdTransferValve2_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:12', 'Percent over 100', 1000);
+    const [feedTank2FwdTransferValve2_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:14', 'Percent over 100', 1000);
     const isAnyFeedTank2FwdTransferValveOpen = feedTank2FwdTransferValve1_1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || feedTank2FwdTransferValve1_2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || feedTank2FwdTransferValve2_1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || feedTank2FwdTransferValve2_2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [feedTank3FwdTransferValve1_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:7', 'Percent over 100');
-    const [feedTank3FwdTransferValve1_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:9', 'Percent over 100');
-    const [feedTank3FwdTransferValve2_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:13', 'Percent over 100');
-    const [feedTank3FwdTransferValve2_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:15', 'Percent over 100');
+    const [feedTank3FwdTransferValve1_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:7', 'Percent over 100', 1000);
+    const [feedTank3FwdTransferValve1_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:9', 'Percent over 100', 1000);
+    const [feedTank3FwdTransferValve2_1Open] = useSimVar('FUELSYSTEM VALVE OPEN:13', 'Percent over 100', 1000);
+    const [feedTank3FwdTransferValve2_2Open] = useSimVar('FUELSYSTEM VALVE OPEN:15', 'Percent over 100', 1000);
     const isAnyFeedTank3FwdTransferValveOpen = feedTank3FwdTransferValve1_1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || feedTank3FwdTransferValve1_2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || feedTank3FwdTransferValve2_1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || feedTank3FwdTransferValve2_2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [feedTank4FwdTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:10', 'Percent over 100');
-    const [feedTank4FwdTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:16', 'Percent over 100');
+    const [feedTank4FwdTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:10', 'Percent over 100', 1000);
+    const [feedTank4FwdTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:16', 'Percent over 100', 1000);
     const isAnyFeedTank4FwdTransferValveOpen = feedTank4FwdTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || feedTank4FwdTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     //     Transfer tanks
-    const [leftInnerFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:17', 'Percent over 100');
-    const [leftMidFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:18', 'Percent over 100');
-    const [leftOuterFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:19', 'Percent over 100');
-    const [rightInnerFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:20', 'Percent over 100');
-    const [rightMidFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:21', 'Percent over 100');
-    const [rightOuterFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:22', 'Percent over 100');
+    const [leftInnerFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:17', 'Percent over 100', 1000);
+    const [leftMidFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:18', 'Percent over 100', 1000);
+    const [leftOuterFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:19', 'Percent over 100', 1000);
+    const [rightInnerFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:20', 'Percent over 100', 1000);
+    const [rightMidFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:21', 'Percent over 100', 1000);
+    const [rightOuterFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:22', 'Percent over 100', 1000);
     const isAnyFwdTransferValveOpen = leftInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
         || leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
@@ -128,50 +127,50 @@ export const FuelPage = () => {
 
     //  AFT
     //     Feed tanks
-    const [feedTank1AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:23', 'Percent over 100');
-    const [feedTank1AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:27', 'Percent over 100');
+    const [feedTank1AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:23', 'Percent over 100', 1000);
+    const [feedTank1AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:27', 'Percent over 100', 1000);
     const isAnyFeedTank1AftTransferValveOpen = feedTank1AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || feedTank1AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [feedTank2AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:24', 'Percent over 100');
-    const [feedTank2AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:28', 'Percent over 100');
+    const [feedTank2AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:24', 'Percent over 100', 1000);
+    const [feedTank2AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:28', 'Percent over 100', 1000);
     const isAnyFeedTank2AftTransferValveOpen = feedTank2AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || feedTank2AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [feedTank3AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:25', 'Percent over 100');
-    const [feedTank3AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:29', 'Percent over 100');
+    const [feedTank3AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:25', 'Percent over 100', 1000);
+    const [feedTank3AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:29', 'Percent over 100', 1000);
     const isAnyFeedTank3AftTransferValveOpen = feedTank3AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || feedTank3AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [feedTank4AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:26', 'Percent over 100');
-    const [feedTank4AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:30', 'Percent over 100');
+    const [feedTank4AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:26', 'Percent over 100', 1000);
+    const [feedTank4AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:30', 'Percent over 100', 1000);
     const isAnyFeedTank4AftTransferValveOpen = feedTank4AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || feedTank4AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     //    Transfer tanks
-    const [leftOuterAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:33', 'Percent over 100');
-    const [leftOuterAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:39', 'Percent over 100');
+    const [leftOuterAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:33', 'Percent over 100', 1000);
+    const [leftOuterAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:39', 'Percent over 100', 1000);
     const isAnyLeftOuterAftTransferValveOpen = leftOuterAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftOuterAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [leftMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:32', 'Percent over 100'); // Into tank
-    const [leftMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:38', 'Percent over 100'); // Out of tank
+    const [leftMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:32', 'Percent over 100'); // Into ta, 1000nk
+    const [leftMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:38', 'Percent over 100'); // Out of ta, 1000nk
     const isAnyLeftMidAftTransferValveOpen = leftMidAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftMidAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [leftInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:31', 'Percent over 100'); // Into tank (I think)
-    const [leftInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:37', 'Percent over 100'); // Out of tank (I think)
+    const [leftInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:31', 'Percent over 100'); // Into tank (I thin, 1000k)
+    const [leftInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:37', 'Percent over 100'); // Out of tank (I thin, 1000k)
     const isAnyLeftInnerAftTransferValveOpen = leftInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftInnerAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [rightInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:34', 'Percent over 100'); // Into tank (I think)
-    const [rightInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:40', 'Percent over 100'); // Out of tank (I think)
+    const [rightInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:34', 'Percent over 100'); // Into tank (I thin, 1000k)
+    const [rightInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:40', 'Percent over 100'); // Out of tank (I thin, 1000k)
     const isAnyRightInnerAftTransferValveOpen = rightInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || rightInnerAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [rightMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:35', 'Percent over 100'); // Into tank
-    const [rightMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:41', 'Percent over 100'); // Out of tank
+    const [rightMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:35', 'Percent over 100'); // Into ta, 1000nk
+    const [rightMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:41', 'Percent over 100'); // Out of ta, 1000nk
     const isAnyRightMidAftTransferValveOpen = rightMidAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || rightMidAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [rightOuterAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:36', 'Percent over 100');
-    const [rightOuterAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:42', 'Percent over 100');
+    const [rightOuterAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:36', 'Percent over 100', 1000);
+    const [rightOuterAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:42', 'Percent over 100', 1000);
     const isAnyRightOuterAftTransferValveOpen = rightOuterAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || rightOuterAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [trimTankInletValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:43', 'Percent over 100');
-    const [trimLineIsolationValveFwdOpen] = useSimVar('FUELSYSTEM VALVE OPEN:44', 'Percent over 100');
-    const [trimLineIsolationValveAftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100');
+    const [trimTankInletValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:43', 'Percent over 100', 1000);
+    const [trimLineIsolationValveFwdOpen] = useSimVar('FUELSYSTEM VALVE OPEN:44', 'Percent over 100', 1000);
+    const [trimLineIsolationValveAftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100', 1000);
     const isTrimLineIsolated = trimTankInletValveOpen < TRANSFER_VALVE_CLOSED_THRESHOLD && trimLineIsolationValveFwdOpen < TRANSFER_VALVE_CLOSED_THRESHOLD && trimLineIsolationValveAftOpen < TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     const fwdGalleryPumps: PumpProps[] = [
@@ -309,18 +308,26 @@ export const FuelPage = () => {
             {/* Engines and LP valves */}
             <Engine x={74} y={105} index={1} />
             <Valve x={111} y={150} open={engine1Valve >= 0.5} />
+            <FuelLine x1={111} y1={132} x2={111} y2={124} active displayWhenInactive={false} />
+            <FuelLine x1={111} y1={132} x2={111} y2={124} active={engine1Valve >= 0.5} displayWhenInactive={false} endArrow='out' />
             <text textAnchor='middle' x={111} y={84} className='Green T3'>{Math.floor(eng1FuelUsed / 50) * 50}</text>
 
             <Engine x={236} y={81} index={2} />
             <Valve x={273} y={123} open={engine2Valve >= 0.5} />
+            <FuelLine x1={273} y1={105} x2={273} y2={97} active displayWhenInactive={false} />
+            <FuelLine x1={273} y1={105} x2={273} y2={97} active={engine2Valve >= 0.5} displayWhenInactive={false} endArrow='out' />
             <text textAnchor='middle' x={273} y={68} className='Green T3'>{Math.floor(eng2FuelUsed / 50) * 50}</text>
 
             <Engine x={456} y={81} index={3} />
             <Valve x={493} y={123} open={engine3Valve >= 0.5} />
+            <FuelLine x1={493} y1={105} x2={493} y2={97} active displayWhenInactive={false} />
+            <FuelLine x1={493} y1={105} x2={493} y2={97} active={engine3Valve >= 0.5} displayWhenInactive={false} endArrow='out' />
             <text textAnchor='middle' x={493} y={68} className='Green T3'>{Math.floor(eng3FuelUsed / 50) * 50}</text>
 
             <Engine x={618} y={105} index={4} />
             <Valve x={655} y={150} open={engine4Valve >= 0.5} />
+            <FuelLine x1={655} y1={132} x2={655} y2={124} active displayWhenInactive={false} />
+            <FuelLine x1={655} y1={132} x2={655} y2={124} active={engine4Valve >= 0.5} displayWhenInactive={false} endArrow='out' />
             <text textAnchor='middle' x={655} y={84} className='Green T3'>{Math.floor(eng4FuelUsed / 50) * 50}</text>
 
             <image x={7} y={168} width={751} height={310} xlinkHref='/Images/SD_FUEL_BG.png' preserveAspectRatio='none' />
@@ -473,8 +480,12 @@ export const FuelPage = () => {
                     <FuelLine x1={326} y1={460} x2={326} y2={346} active={false} displayWhenInactive={showMore} startArrow='break' />
                 </g>
 
+                <FuelLine x1={298} y1={596} x2={298} y2={568} active={false} displayWhenInactive={showMore} />
                 <Pump running={isLeftTrimTankPumpActive} x={298} y={610} />
+                <FuelLine x1={468} y1={596} x2={468} y2={568} active={false} displayWhenInactive={showMore} />
                 <Pump running={isRightTrimTankPumpActive} x={468} y={610} />
+
+                <FuelLine x1={298} y1={568} x2={468} y2={568} active={false} displayWhenInactive={showMore} />
 
                 <FuelLine x1={330} y1={590} x2={330} y2={568} active={false} displayWhenInactive={showMore} startArrow='in' />
                 <FuelLine x1={386} y1={568} x2={386} y2={590} active={false} displayWhenInactive={showMore} endArrow='out' />
@@ -502,18 +513,17 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
     // TODO make this configurable
     const PUMP_SIZE = 28;
 
+    const lastActivePumpX = pumps.filter(pump => pump.running).reduce((maxX, pump) => Math.max(maxX, pump.x), -Infinity);
+    const lastActiveValveX = intoTankTransferValves.filter(valve => valve.active).reduce((maxX, valve) => Math.max(maxX, valve.x1), -Infinity);
+    const lastActiveX = Math.max(lastActivePumpX, lastActiveValveX);
+
+    const firstActivePumpX = pumps.filter(pump => pump.running).reduce((minX, pump) => Math.min(minX, pump.x), Infinity);
+    const firstActiveValveX = intoTankTransferValves.filter(valve => valve.active).reduce((minX, valve) => Math.min(minX, valve.x1), Infinity);
+    const firstActiveX = Math.min(firstActivePumpX, firstActiveValveX);
+
     const prevLineEnd = { x: -Infinity, y };
     const fuelLineSegments = [];
     for (let i = 0, j = 0, k = 0; i < pumps.length || j < intoTankTransferValves.length;) {
-        if (i < pumps.length && !pumps[i].running && !showMore) {
-            i++;
-            continue;
-        }
-        if (j < intoTankTransferValves.length && !intoTankTransferValves[j].active && !showMore) {
-            j++;
-            continue;
-        }
-
         // Check if next element is a pump or valve
         const nextElementIsPump = (j >= intoTankTransferValves.length) || (i < pumps.length && pumps[i].x < intoTankTransferValves[j].x1)
         const nextElement = nextElementIsPump ? pumps[i++] : intoTankTransferValves[j++];
@@ -527,9 +537,16 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
             // Add connecting line if we have a starting point
             if (prevLineEnd.x > Number.NEGATIVE_INFINITY) {
                 // Move to line segment start
-                fuelLineSegments.push(<FuelLine x1={prevLineEnd.x} y1={prevLineEnd.y} x2={otherLine.x1} y2={prevLineEnd.y} active displayWhenInactive={showMore} />)
+                fuelLineSegments.push(<FuelLine
+                    x1={prevLineEnd.x}
+                    y1={prevLineEnd.y}
+                    x2={otherLine.x1}
+                    y2={prevLineEnd.y}
+                    active={prevLineEnd.x >= firstActiveX && otherLine.x1 <= lastActiveX}
+                    displayWhenInactive={showMore}
+                />)
                 // Draw line segment
-                fuelLineSegments.push(<FuelLine {...otherLine} />)
+                fuelLineSegments.push(<FuelLine {...otherLine} active={otherLine.x1 >= firstActiveX && otherLine.x2 <= lastActiveX} />)
             }
 
             prevLineEnd.x = otherLine.x2;
@@ -539,9 +556,14 @@ const Gallery: FC<GalleryProps> = ({ y, pumps, transferValves: intoTankTransferV
 
         // Add connecting line if we have a starting point and are not staying at the same position
         if (prevLineEnd.x > Number.NEGATIVE_INFINITY && x > prevLineEnd.x) {
-            fuelLineSegments.push(
-                <FuelLine x1={prevLineEnd.x} y1={prevLineEnd.y} x2={x} y2={prevLineEnd.y} active={nextElementIsActive} displayWhenInactive={showMore} />,
-            );
+            fuelLineSegments.push(<FuelLine
+                x1={prevLineEnd.x}
+                y1={prevLineEnd.y}
+                x2={x}
+                y2={prevLineEnd.y}
+                active={prevLineEnd.x >= firstActiveX && x <= lastActiveX}
+                displayWhenInactive={showMore}
+            />);
 
         }
 
@@ -608,7 +630,7 @@ const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, act
     return (
         <g className={`${color} LineJoinRound LineRound`} strokeWidth={3}>
             {(startArrow === 'in' || startArrow === 'out') && <polygon
-                className='T4 LineJoinRound'
+                className='T4 LineJoinRound NoFill'
                 transform={`rotate(${startRotation} ${x1} ${y1}) translate(0 ${startArrow === 'in' ? arrowHeight : 0})`}
                 strokeWidth={3} points={`${x1 - arrowWidth / 2},${y1} ${x1 + arrowWidth / 2},${y1} ${x1},${y1 - arrowHeight}`}
             />}
@@ -616,7 +638,7 @@ const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, act
             <line x1={x1} y1={y1} x2={x2} y2={y2} />
             {endArrow === 'break' && <line x1={x2 - 3} y1={y2 + 6} x2={x2 + 3} y2={y2 - 6} transform={`rotate(${(endRotation + 90) % 360} ${x2} ${y2})`} />}
             {(endArrow === 'in' || endArrow === 'out') && <polygon
-                className='T4 LineJoinRound'
+                className='T4 LineJoinRound NoFill'
                 transform={`rotate(${endRotation} ${x2} ${y2}) translate(0 ${endArrow === 'in' ? arrowHeight : 0})`}
                 strokeWidth={3} points={`${x2 - arrowWidth / 2},${y2} ${x2 + arrowWidth / 2},${y2} ${x2},${y2 - arrowHeight}`}
             />}
