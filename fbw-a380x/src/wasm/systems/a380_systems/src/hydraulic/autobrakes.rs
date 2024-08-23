@@ -1282,13 +1282,6 @@ impl BtvDecelScheduler {
         if distance_valid && rot_seconds > 0. {
             let is_max_braking = self.braking_distance_remaining() < self.wet_prediction;
 
-            // println!(
-            //     "TEST MAX BRAKING MODE? {:?}, DISTANCE REMAININ {:.2} WET PREDICTION{:.2}",
-            //     is_max_braking,
-            //     self.braking_distance_remaining().get::<meter>(),
-            //     self.wet_prediction.get::<meter>()
-            // );
-
             // Magic statistical function for max turnaound. Idle is max+15%. 10% penalty if max braking is used
             let mut max_duration_minutes =
                 (0.00495 * rot_seconds.powi(2) - 1.2244 * rot_seconds + 204.).clamp(10., 500.);
@@ -1298,11 +1291,6 @@ impl BtvDecelScheduler {
             }
 
             let idle_duration_minutes = (max_duration_minutes * 1.15).clamp(10., 500.);
-
-            // println!(
-            //     "MAX BRAKING MODE? {:?}, MAX DURATION {:.2} IDLE DURATION {:.2}",
-            //     is_max_braking, max_duration_minutes, idle_duration_minutes
-            // );
 
             [
                 Arinc429Word::new(max_duration_minutes as u64, SignStatus::NormalOperation),
