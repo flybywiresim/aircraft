@@ -2,29 +2,33 @@ import React, { FC, useState } from 'react';
 import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';
 import { MoreLabel, PageTitle } from './Generic/PageTitle';
+import { useArinc429Var } from '@instruments/common/arinc429';
 
 export const FuelPage = () => {
     const CROSS_FEED_VALVE_CLOSED_THRESHOLD = 0.1;
     const TRANSFER_VALVE_CLOSED_THRESHOLD = 0.1;
 
-    const [showMore] = useState(true);
+    const [showMore] = useState(false);
 
-    const [eng1FuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg');
-    const [eng2FuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg');
-    const [eng3FuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:3', 'kg');
-    const [eng4FuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:4', 'kg');
+    const [eng1FuelUsed] = useSimVar('L:A32NX_FUEL_USED:1', 'kg', 1000); // kg
+    const [eng2FuelUsed] = useSimVar('L:A32NX_FUEL_USED:2', 'kg', 1000); // kg
+    const [eng3FuelUsed] = useSimVar('L:A32NX_FUEL_USED:3', 'kg', 1000); // kg
+    const [eng4FuelUsed] = useSimVar('L:A32NX_FUEL_USED:4', 'kg', 1000); // kg
 
-    const totalFuelUsed = (eng1FuelUsed + eng2FuelUsed + eng3FuelUsed + eng4FuelUsed);
-    const totalFuelUsedDisplayed = Math.floor(totalFuelUsed / 20) * 20;
+    const apuFuelUsed = useArinc429Var('L:A32NX_APU_FUEL_USED', 1000);
 
-    const [eng1FuelFlowPph] = useSimVar('ENG FUEL FLOW PPH:1', 'Pounds');
-    const [eng2FuelFlowPph] = useSimVar('ENG FUEL FLOW PPH:2', 'Pounds');
-    const [eng3FuelFlowPph] = useSimVar('ENG FUEL FLOW PPH:3', 'Pounds');
-    const [eng4FuelFlowPph] = useSimVar('ENG FUEL FLOW PPH:4', 'Pounds');
+    const totalEngFuelUsed = (eng1FuelUsed + eng2FuelUsed + eng3FuelUsed + eng4FuelUsed);
+    const totalFuelUsedDisplayed = apuFuelUsed.isNormalOperation()
+        ? Math.floor((totalEngFuelUsed + apuFuelUsed.value) / 50) * 50
+        : Math.floor(totalEngFuelUsed / 50) * 50
+
+    const [eng1FuelFlowPph] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 1000); // kg/h
+    const [eng2FuelFlowPph] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 1000); // kg/h
+    const [eng3FuelFlowPph] = useSimVar('L:A32NX_ENGINE_FF:3', 'number', 1000); // kg/h
+    const [eng4FuelFlowPph] = useSimVar('L:A32NX_ENGINE_FF:4', 'number', 1000); // kg/h
 
     const allEngFuelFlow = (eng1FuelFlowPph + eng2FuelFlowPph + eng3FuelFlowPph + eng4FuelFlowPph);
-    const allEngFuelFlowDisplayed = Math.floor(allEngFuelFlow / 10) * 10;
-    // TODO TOTAL FF (+APU)
+    const allEngFuelFlowDisplayed = Math.floor(allEngFuelFlow / 60 / 10) * 10; // kg/min
     // TODO convert to right unit
 
     // LP valves
@@ -299,7 +303,7 @@ export const FuelPage = () => {
             <MoreLabel x={137} y={28} moreActive={showMore} />
 
             <text textAnchor='middle' x={384} y={56} className='White T2'>FU</text>
-            <text textAnchor='middle' x={384} y={79} className='White T2'>TOTAL</text>
+            <text textAnchor='middle' x={384} y={79} className='White T2'>{apuFuelUsed.isNormalOperation() ? "TOTAL" : "ALL ENG"}</text>
             <text textAnchor='middle' x={384} y={103} className='Green T3'>{totalFuelUsedDisplayed}</text>
 
             {/* TODO unit switching? */}
@@ -308,15 +312,19 @@ export const FuelPage = () => {
             {/* Engines and LP valves */}
             <Engine x={74} y={105} index={1} />
             <Valve x={111} y={150} open={engine1Valve >= 0.5} />
+            <text textAnchor='middle' x={111} y={84} className='Green T3'>{Math.floor(eng1FuelUsed / 50) * 50}</text>
 
             <Engine x={236} y={81} index={2} />
             <Valve x={273} y={123} open={engine2Valve >= 0.5} />
+            <text textAnchor='middle' x={273} y={68} className='Green T3'>{Math.floor(eng2FuelUsed / 50) * 50}</text>
 
             <Engine x={456} y={81} index={3} />
             <Valve x={493} y={123} open={engine3Valve >= 0.5} />
+            <text textAnchor='middle' x={493} y={68} className='Green T3'>{Math.floor(eng3FuelUsed / 50) * 50}</text>
 
             <Engine x={618} y={105} index={4} />
             <Valve x={655} y={150} open={engine4Valve >= 0.5} />
+            <text textAnchor='middle' x={655} y={84} className='Green T3'>{Math.floor(eng4FuelUsed / 50) * 50}</text>
 
             <image x={7} y={168} width={751} height={310} xlinkHref='/Images/SD_FUEL_BG.png' preserveAspectRatio='none' />
 
