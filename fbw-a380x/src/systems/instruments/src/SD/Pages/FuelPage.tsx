@@ -280,20 +280,6 @@ export const FuelPage = () => {
         { x1: 592, y1: 346, x2: 602, y2: 362, active: true, displayWhenInactive: showMore }
     ];
 
-    const trimTankPumps: PumpProps[] = [
-        { x: 298, y: 610, running: isLeftTrimTankPumpActive, displayWhenInactive: showMore },
-        { x: 468, y: 610, running: isRightTrimTankPumpActive, displayWhenInactive: showMore },
-    ]
-
-    const trimTankTransferValves: FuelLineProps[] = [
-        // Left into gallery
-        { x1: 330, y1: 590, x2: 330, y2: 568, active: false, startArrow: 'in', displayWhenInactive: showMore },
-        // Center into tank
-        { x1: 386, y1: 568, x2: 386, y2: 590, active: false, endArrow: 'out', displayWhenInactive: showMore },
-        // Right into gallery
-        { x1: 440, y1: 590, x2: 440, y2: 568, active: false, startArrow: 'in', displayWhenInactive: showMore },
-    ];
-
     // Tanks
     const [leftOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:1', 'kg');
     const [feed1TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:2', 'kg');
@@ -487,8 +473,13 @@ export const FuelPage = () => {
                     <FuelLine x1={326} y1={460} x2={326} y2={346} active={false} displayWhenInactive={showMore} startArrow='break' />
                 </g>
 
-                {/* Trim tank gallery */}
-                <Gallery y={568} pumps={trimTankPumps} transferValves={trimTankTransferValves} otherLines={[]} showMore={showMore} />
+                <Pump running={isLeftTrimTankPumpActive} x={298} y={610} />
+                <Pump running={isRightTrimTankPumpActive} x={468} y={610} />
+
+                <FuelLine x1={330} y1={590} x2={330} y2={568} active={false} displayWhenInactive={showMore} startArrow='in' />
+                <FuelLine x1={386} y1={568} x2={386} y2={590} active={false} displayWhenInactive={showMore} endArrow='out' />
+                <FuelLine x1={440} y1={590} x2={440} y2={568} active={false} displayWhenInactive={showMore} startArrow='in' />
+
                 {/* Trim tank valve */}
                 <Valve x={386} y={540} open={!isTrimLineIsolated} normallyClosed />
 
