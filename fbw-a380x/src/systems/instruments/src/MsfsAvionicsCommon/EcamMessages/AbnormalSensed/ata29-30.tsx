@@ -74,7 +74,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -91,7 +91,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -108,7 +108,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -125,7 +125,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -142,7 +142,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -159,7 +159,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -176,7 +176,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -193,7 +193,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         // if on ground and low pressure on 3 hydraulic pumps
         name: 'MOVE FLAPS/SPLRS IN STRAIGHT LINE ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -240,17 +240,20 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'G ENG 1 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
+        level : 1,
       },
       {
         name: 'G ENG 2 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
+        level : 1
       },
       // if on ground and all engines off
       {
         name: 'G ELEC PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
+        level : 1,
       },
     ],
   },
@@ -266,17 +269,21 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'Y ENG 3 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
+        level : 1,
+        
       },
       {
         name: 'Y ENG 4 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
+        level : 1
       },
       // if on ground and all engines off
       {
         name: 'Y ELEC PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
+        level : 1,
       },
     ],
   },
@@ -488,7 +495,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'FMS PRED UNRELIABLE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
@@ -521,7 +528,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'FMS PRED UNRELIABLE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
@@ -644,7 +651,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'FMS PRED UNRELIABLE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
