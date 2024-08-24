@@ -715,6 +715,11 @@
   - `Arinc429Word<Mass>`
   - The APU fuel used, in kilograms
 
+## Engines ATA 70
+  - L:A32NX_OVHD_FADEC_{ENG}
+  - The powered status of the associated engine's FADEC dependant on the button on the OVHD
+  - {ENG} = 1, 2, 3, 4
+
 ## Hydraulics
 
 - A32NX_OVHD_HYD_ENG_{ENG}AB_PUMP_DISC_PB_IS_AUTO
