@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
@@ -292,6 +292,9 @@ export class NavaidTuner {
     for (const backbeam of this.backbeamOutput) {
       backbeam.selected.sub((v) => SimVar.SetSimVarValue(backbeam.localVar, SimVarValueType.Bool, v), true);
     }
+
+    // All selections are reset upon entering the DONE phase after landing.
+    this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState());
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
