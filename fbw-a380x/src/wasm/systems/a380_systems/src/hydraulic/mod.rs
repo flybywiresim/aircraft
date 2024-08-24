@@ -1498,7 +1498,10 @@ impl A380GearSystemFactory {
 }
 
 pub(super) struct A380Hydraulic {
+    //TODO create a A380_Steering structure
     nose_steering: SteeringActuator,
+    body_wheel_steering_left: SteeringActuator,
+    body_wheel_steering_right: SteeringActuator,
 
     core_hydraulic_updater: MaxStepLoop,
 
@@ -1639,9 +1642,27 @@ impl A380Hydraulic {
             nose_steering: SteeringActuator::new(
                 context,
                 Angle::new::<degree>(75.),
-                AngularVelocity::new::<radian_per_second>(0.35),
+                AngularVelocity::new::<radian_per_second>(0.2618), // Reference is 15 deg/s
                 Length::new::<meter>(0.11), // Diameter of 0.11 gives correct A380 flow of around 35 lpm at full speed
                 Ratio::new::<ratio>(0.18),
+                Pressure::new::<psi>(4000.),
+            ),
+
+            body_wheel_steering_left: SteeringActuator::new(
+                context,
+                Angle::new::<degree>(15.),
+                AngularVelocity::new::<radian_per_second>(0.07854), // Reference is 4.5 deg/s
+                Length::new::<meter>(0.11),                         // TODO
+                Ratio::new::<ratio>(0.18),                          // TODO
+                Pressure::new::<psi>(4000.),
+            ),
+
+            body_wheel_steering_right: SteeringActuator::new(
+                context,
+                Angle::new::<degree>(15.),
+                AngularVelocity::new::<radian_per_second>(0.07854), // Reference is 4.5 deg/s
+                Length::new::<meter>(0.11),                         // TODO
+                Ratio::new::<ratio>(0.18),                          // TODO
                 Pressure::new::<psi>(4000.),
             ),
 
@@ -3826,8 +3847,8 @@ impl A380HydraulicBrakeSteerComputerUnit {
     const RUDDER_PEDAL_INPUT_CURVE_MAP: [f64; 6] = [0., 0., 2., 6.4, 6.4, 6.4];
     const MAX_RUDDER_INPUT_INCLUDING_AUTOPILOT_DEGREE: f64 = 6.;
 
-    const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 40., 130., 1500.0, 2800.0];
-    const STEERING_ANGLE_FOR_PEDAL_ACTION_DEGREE: [f64; 5] = [1., 1., 0., 0., 0.];
+    const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 100., 150., 1500.0, 2800.0];
+    const STEERING_ANGLE_FOR_PEDAL_ACTION_DEGREE: [f64; 5] = [1., 1., 0.333, 0.333, 0.333]; // TODO this is for takeoff phase only coeff is 0 for landing
 
     const TILLER_INPUT_GAIN: f64 = 75.;
     const TILLER_INPUT_MAP: [f64; 6] = [0., 1., 20., 40., 66., 75.];
@@ -3835,10 +3856,10 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
     const AUTOPILOT_STEERING_INPUT_GAIN: f64 = 6.;
 
-    const SPEED_MAP_FOR_TILLER_ACTION_KNOT: [f64; 5] = [0., 20., 70., 1500.0, 2800.0];
+    const SPEED_MAP_FOR_TILLER_ACTION_KNOT: [f64; 5] = [0., 40., 100., 1500.0, 2800.0];
     const STEERING_ANGLE_FOR_TILLER_ACTION_DEGREE: [f64; 5] = [1., 1., 0., 0., 0.];
 
-    const MAX_STEERING_ANGLE_DEMAND_DEGREES: f64 = 74.;
+    const MAX_STEERING_ANGLE_DEMAND_DEGREES: f64 = 70.;
 
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
