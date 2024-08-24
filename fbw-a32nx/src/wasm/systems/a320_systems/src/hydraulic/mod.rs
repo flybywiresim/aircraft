@@ -3984,12 +3984,18 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
             .zip(self.brake_temperatures)
         {
             // TODO: send status when not powered
+            // Should send FW with FIXME to change to "no transmission" when we get around to implementing an A429 bus simulation.
             let ssm = if temp.is_some() {
                 SignStatus::NormalOperation
             } else {
                 SignStatus::NoComputedData // TODO: needs to be verified
             };
-            writer.write_arinc429(id, temp.unwrap_or_default(), ssm);
+            writer.write_arinc429(
+                id,
+                temp.map(|t| (t.get::<degree_celsius>() as u32).clamp(0, 2048))
+                    .unwrap_or_default(),
+                ssm,
+            );
         }
     }
 }
