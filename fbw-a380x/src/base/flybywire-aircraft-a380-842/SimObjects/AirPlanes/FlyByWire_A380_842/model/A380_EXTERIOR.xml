@@ -104,14 +104,14 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>left_bws</NODE_ID>
                 <ANIM_NAME>left_bws</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_REAR_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
             <!-- rear right Steering -->
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>right_bws</NODE_ID>
                 <ANIM_NAME>right_bws</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_REAR_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
 
@@ -119,7 +119,7 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>ll_tire_key</NODE_ID>
                 <ANIM_NAME>ll_tire_key</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_LEFT_REAR_STEERING_WHEEL_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
                 <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
@@ -127,7 +127,7 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>lr_tire_key</NODE_ID>
                 <ANIM_NAME>lr_tire_key</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_LEFT_REAR_STEERING_WHEEL_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
                 <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
@@ -135,7 +135,7 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>rl_tire_key</NODE_ID>
                 <ANIM_NAME>rl_tire_key</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_RIGHT_REAR_STEERING_WHEEL_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
                 <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
@@ -143,7 +143,7 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>rr_tire_key</NODE_ID>
                 <ANIM_NAME>rr_tire_key</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_RIGHT_REAR_STEERING_WHEEL_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
                 <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
