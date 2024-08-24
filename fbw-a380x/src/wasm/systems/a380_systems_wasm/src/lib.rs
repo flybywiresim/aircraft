@@ -30,7 +30,8 @@ use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
 use systems::shared::{
-    ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
+    HydraulicColor, LgciuId, ProximityDetectorId,
 };
 
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -151,25 +152,67 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
         ),
         (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
-        (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
-        (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
-        (29_003, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
-        (29_004, FailureType::ReservoirAirLeak(HydraulicColor::Blue)),
+        (29_001, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
+        (29_002, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
         (
-            29_005,
+            29_003,
             FailureType::ReservoirAirLeak(HydraulicColor::Yellow),
         ),
         (
-            29_006,
+            29_004,
             FailureType::ReservoirReturnLeak(HydraulicColor::Green),
         ),
         (
+            29_005,
+            FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+        ),
+        (
+            29_006,
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::GreenA),
+        ),
+        (
             29_007,
-            FailureType::ReservoirReturnLeak(HydraulicColor::Blue),
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::GreenB),
         ),
         (
             29_008,
-            FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::YellowA),
+        ),
+        (
+            29_009,
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::YellowB),
+        ),
+        (
+            29_010,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp1a),
+        ),
+        (
+            29_011,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp1b),
+        ),
+        (
+            29_012,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp2a),
+        ),
+        (
+            29_013,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp2b),
+        ),
+        (
+            29_014,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp3a),
+        ),
+        (
+            29_015,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp3b),
+        ),
+        (
+            29_016,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp4a),
+        ),
+        (
+            29_017,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp4b),
         ),
         (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
         (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
