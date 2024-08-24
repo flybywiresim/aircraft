@@ -1,17 +1,19 @@
-name: Bug Report
-description: File a bug report
-labels: [Bug]
+name: Bug Report A380X
+description: File a bug report for the A380X
+labels: ["Bug", "A380X"]
 body:
 - type: markdown
   attributes:
-    value: "# A32NX Bug Report Form"
+    value: "# A380X Bug Report Form"
+- type: markdown
+  attributes:
+    value: "Please make sure to check existing issues and the list of INOP systems (link TODO)"
 - type: dropdown
   id: version
   attributes:
     label: Aircraft Version
-    description: What version of the A32NX are you using?
+    description: What version of the A380X are you using?
     options:
-    - Stable
     - Development
   validations:
     required: true
@@ -27,7 +29,7 @@ body:
         "actor": "Benjozork",
         "event_name": "manual"
       }
-    description: Please paste the contents from the a32nx_build_info.json (located inside main aircraft folder) into the field.
+    description: Please paste the contents from the a380x_build_info.json (located inside main aircraft folder) into the field.
     render: json
   validations:
     required: true
@@ -76,6 +78,6 @@ body:
   attributes:
     label: Discord Username (optional)
     description: You may optionally provide your discord username, so that we may contact you directly about the issue.
-    placeholder: ex. username#1234
+    placeholder: ex. username
   validations:
     required: false
