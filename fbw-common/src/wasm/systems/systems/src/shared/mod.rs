@@ -18,6 +18,7 @@ use uom::si::{
     ratio::ratio,
     thermodynamic_temperature::{degree_celsius, kelvin},
     velocity::knot,
+    Quantity,
 };
 
 pub mod low_pass_filter;
@@ -1027,6 +1028,40 @@ pub trait Resolution {
 impl Resolution for f64 {
     fn resolution(self, resolution: f64) -> f64 {
         (self / resolution).round() * resolution
+    }
+}
+
+pub trait Clamp {
+    /// Restrict a value to a certain interval unless it is NaN.
+    ///
+    /// Returns `max` if `self` is greater than `max`, and `min` if `self` is
+    /// less than `min`. Otherwise this returns `self`.
+    ///
+    /// Note that this function returns NaN if the initial value was NaN as
+    /// well.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `min > max`, `min` is NaN, or `max` is NaN.
+    fn clamp(self, min: Self, max: Self) -> Self;
+}
+
+// TODO: remove when uom implements clamp on floating point quantities
+impl<D: uom::si::Dimension + ?Sized, U: uom::si::Units<f64> + ?Sized> Clamp
+    for Quantity<D, U, f64>
+{
+    fn clamp(mut self, min: Self, max: Self) -> Self {
+        assert!(
+            min <= max,
+            "min > max, or either was NaN. min = {min:?}, max = {max:?}"
+        );
+        if self < min {
+            self = min;
+        }
+        if self > max {
+            self = max;
+        }
+        self
     }
 }
 

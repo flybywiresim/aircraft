@@ -5,7 +5,7 @@ use systems::{
         arinc429::{Arinc429Word, SignStatus},
         interpolation,
         low_pass_filter::LowPassFilter,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        Clamp, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         LgciuInterface,
     },
     simulation::{
@@ -1118,14 +1118,13 @@ impl BtvDecelScheduler {
         let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M);
 
         // Max distance clamped to end of rwy minus a margin
-        (distance_remaining_raw - distance_from_btv_exit)
-            .max(Length::default())
-            .min(
-                self.distance_to_rwy_end
-                    - Length::new::<meter>(
-                        Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS,
-                    ),
-            )
+        (distance_remaining_raw - distance_from_btv_exit).clamp(
+            Length::default(),
+            self.distance_to_rwy_end
+                - Length::new::<meter>(
+                    Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS,
+                ),
+        )
     }
 
     fn compute_decel(&mut self, ground_speed: Velocity) {
@@ -1268,7 +1267,7 @@ impl BtvDecelScheduler {
 
             // Magic statistical function: basic regression on a landing attempts database
             let rot_duration =
-                Duration::from_secs_f64((distance.get::<meter>() * 0.0335).min(200.).max(30.));
+                Duration::from_secs_f64((distance.get::<meter>() * 0.0335).clamp(30., 200.));
             Arinc429Word::new(rot_duration.as_secs(), SignStatus::NormalOperation)
         } else {
             Arinc429Word::new(0, SignStatus::NoComputedData)
