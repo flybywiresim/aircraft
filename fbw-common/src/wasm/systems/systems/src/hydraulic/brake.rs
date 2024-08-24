@@ -7,6 +7,7 @@ use crate::{
 };
 use std::{f64::consts::PI, time::Duration};
 use uom::si::{
+    angular_velocity::revolution_per_minute,
     area::square_meter,
     energy::joule,
     f64::{
@@ -65,7 +66,12 @@ impl<const N: usize> BrakeAssembly<N> {
         brake_fan_should_be_on: bool,
         gear_extended_phys: bool,
     ) {
-        let passed_length = brake_properties.get_passed_length(context, self.wheel_speed);
+        // For some reason the wheels do rotate a bit even when the plane is not moving.
+        let passed_length = if self.wheel_speed.get::<revolution_per_minute>() > 1e-1 {
+            brake_properties.get_passed_length(context, self.wheel_speed)
+        } else {
+            Length::default()
+        };
 
         let brake_fan_are_running = if let Some(brake_fans) = &mut self.brake_fans {
             let brake_fan_on = [false; N];
