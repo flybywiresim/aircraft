@@ -10,6 +10,7 @@ use uom::si::{
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
     velocity::knot,
     volume::{cubic_inch, gallon, liter},
     volume_rate::gallon_per_second,
@@ -49,9 +50,10 @@ use systems::{
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
         AdirsMeasurementOutputs, AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked,
-        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
+        ControllerSignal, DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle,
+        LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        SurfacesPositions,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1588,6 +1590,9 @@ pub(super) struct A380Hydraulic {
     left_body_brake_assembly: BrakeAssembly<4>,
     right_body_brake_assembly: BrakeAssembly<4>,
 
+    // FIXME: remove when CPIOM G is implemented
+    brake_temperature_ids: [VariableIdentifier; 16],
+
     ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController,
     ths: TrimmableHorizontalStabilizerActuator,
 
@@ -1930,6 +1935,12 @@ impl A380Hydraulic {
                 None,
             ),
 
+            brake_temperature_ids: (1..=16)
+                .into_iter()
+                .map(|index| context.get_identifier(format!("REPORTED_BRAKE_TEMPERATURE_{index}")))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
             ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController::new(
                 context,
             ),
@@ -3014,6 +3025,35 @@ impl SimulationElement for A380Hydraulic {
         self.tilting_gears.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let left_wing_brake_temperatures =
+            self.left_wing_brake_assembly.brake_temperature_sensors();
+        let right_wing_brake_temperatures =
+            self.right_wing_brake_assembly.brake_temperature_sensors();
+        let left_body_brake_temperatures =
+            self.left_body_brake_assembly.brake_temperature_sensors();
+        let right_body_brake_temperatures =
+            self.right_body_brake_assembly.brake_temperature_sensors();
+        let brake_temp_sensors = left_wing_brake_temperatures[..2]
+            .into_iter()
+            .chain(right_wing_brake_temperatures[..2].into_iter())
+            .chain(left_wing_brake_temperatures[2..].into_iter())
+            .chain(right_wing_brake_temperatures[2..].into_iter())
+            .chain(left_body_brake_temperatures[..2].into_iter())
+            .chain(right_body_brake_temperatures[..2].into_iter())
+            .chain(left_body_brake_temperatures[2..].into_iter())
+            .chain(right_body_brake_temperatures[2..].into_iter());
+        for (temp_sensor, id) in brake_temp_sensors.zip(&self.brake_temperature_ids) {
+            writer.write(
+                id,
+                temp_sensor
+                    .signal()
+                    .unwrap_or_default()
+                    .get::<degree_celsius>() as u32,
+            );
+        }
     }
 }
 
