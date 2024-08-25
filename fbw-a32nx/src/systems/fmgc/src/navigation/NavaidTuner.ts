@@ -294,7 +294,7 @@ export class NavaidTuner {
     }
 
     // All selections are reset upon entering the DONE phase after landing.
-    this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState());
+    this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState(false));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -763,7 +763,7 @@ export class NavaidTuner {
   }
 
   /** Reset all state e.g. when the nav database is switched */
-  public resetState(): void {
+  public resetState(withLockout = true): void {
     for (let i = 1; i <= 2; i++) {
       const n = i as 1 | 2;
       this.setManualAdf(n, null);
@@ -773,6 +773,8 @@ export class NavaidTuner {
     this.setManualIls(null);
     this.setIlsCourse(null);
 
-    this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    if (withLockout) {
+      this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    }
   }
 }
