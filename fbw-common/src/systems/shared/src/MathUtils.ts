@@ -551,4 +551,48 @@ export class MathUtils {
   public static round(value: number, quantum = 1): number {
     return Math.round(value / quantum) * quantum;
   }
+
+  static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
+    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
+  /**
+   * Bilinear interpolation on a table
+   * @param table
+   * @param i Value on row axis
+   * @param j Value on column axis
+   * @returns Interpolated value
+   */
+  public static tableInterpolation(table: number[][], i: number, j: number): number {
+    const numRows = table.length;
+    const numCols = table[0].length;
+    // Iterate through rows to find the upper bound to i
+    let r: number;
+    for (r = 1; r < numRows; r++) {
+      if (table[r][0] > i) {
+        break;
+      }
+    }
+
+    // Get lower bound to i
+    const r1 = Math.max(1, r - 1);
+    const r2 = Math.min(numRows - 1, r);
+    // Iterate through rows to find the upper bound to j
+    let c: number;
+    for (c = 1; c < numCols; c++) {
+      if (table[0][c] > j) {
+        break;
+      }
+    }
+    // Get the lower bound to j
+    const c1 = Math.max(1, c - 1);
+    const c2 = Math.min(numCols - 1, c);
+
+    const interpolatedRowAtC1 =
+      r1 === r2 ? table[r1][c1] : MathUtils.interpolate(i, table[r1][0], table[r2][0], table[r1][c1], table[r2][c1]);
+    const interpolatedRowAtC2 =
+      r1 === r2 ? table[r1][c2] : MathUtils.interpolate(i, table[r1][0], table[r2][0], table[r1][c2], table[r2][c2]);
+
+    return MathUtils.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
+  }
 }
