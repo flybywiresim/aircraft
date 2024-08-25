@@ -1345,7 +1345,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     }
 
     fn activate(&mut self) {
-        self.is_active = true;
+        self.is_active = !self.failure.is_active();
     }
 
     fn deactivate(&mut self) {
@@ -1437,7 +1437,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     }
 
     fn has_failed(&self) -> bool {
-        self.failure.is_active()
+        !self.is_active
     }
 
     #[cfg(test)]

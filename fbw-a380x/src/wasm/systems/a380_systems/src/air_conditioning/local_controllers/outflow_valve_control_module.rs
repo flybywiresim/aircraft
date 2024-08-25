@@ -104,12 +104,14 @@ impl OutflowValveControlModule {
         cabin_simulation: &impl CabinSimulation,
         cpiom_b: &impl CpcsShared,
         cpiom_b_failure: bool,
+        ocsm_cross_communication: Option<Velocity>,
         press_overhead: &impl PressurizationOverheadShared,
         safety_valve_open_amount: Ratio,
     ) {
         self.fault_determination();
 
-        self.acp.update(cpiom_b);
+        self.acp
+            .update(cpiom_b, cpiom_b_failure, ocsm_cross_communication);
 
         self.sop.update(self.epp.cabin_pressure(), press_overhead);
 
@@ -120,9 +122,11 @@ impl OutflowValveControlModule {
             cpiom_b.cabin_vertical_speed(),
             self.sop
                 .manual_target_vertical_speed()
-                .or_else(|| self.acp.auto_vertical_speed(cpiom_b_failure)),
+                .or_else(|| self.acp.auto_vertical_speed()),
             press_overhead,
-            cpiom_b.ofv_open_allowed() && !self.acp.should_close_ofv(),
+            cpiom_b.ofv_open_allowed()
+                && !self.acp.should_close_ofv()
+                && !matches!(&self.fault, Some(OcsmFault::BothChannelsFault)),
             cpiom_b.should_open_ofv(),
             safety_valve_open_amount,
         );
@@ -152,6 +156,11 @@ impl OutflowValveControlModule {
 
     fn switch_active_channel(&mut self) {
         std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
+    }
+
+    /// The OCSM can cross-communicate via an RS-422 bus (here we just use data)
+    pub fn auto_cabin_vertical_speed_demand(&self) -> Option<Velocity> {
+        self.acp.auto_vertical_speed()
     }
 }
 
@@ -194,6 +203,7 @@ impl SimulationElement for OutflowValveControlModule {
         self.active_channel.accept(visitor);
         self.stand_by_channel.accept(visitor);
         self.outflow_valve.accept(visitor);
+        self.acp.accept(visitor);
 
         visitor.visit(self);
     }
@@ -201,7 +211,7 @@ impl SimulationElement for OutflowValveControlModule {
 
 struct AutomaticControlPartition {
     outflow_valve_id: OcsmId,
-    cabin_target_vertical_speed: Velocity,
+    cabin_target_vertical_speed: Option<Velocity>,
     should_close_ofv: bool,
 
     failure: Failure,
@@ -211,27 +221,35 @@ impl AutomaticControlPartition {
     fn new(outflow_valve_id: OcsmId) -> Self {
         Self {
             outflow_valve_id,
-            cabin_target_vertical_speed: Velocity::default(),
+            cabin_target_vertical_speed: None,
             should_close_ofv: false,
 
             failure: Failure::new(FailureType::OcsmAutoPartition(outflow_valve_id)),
         }
     }
 
-    fn update(&mut self, cpiom_b: &impl CpcsShared) {
-        self.cabin_target_vertical_speed =
-            cpiom_b.cabin_target_vertical_speed().unwrap_or_default();
+    fn update(
+        &mut self,
+        cpiom_b: &impl CpcsShared,
+        cpiom_b_failure: bool,
+        ocsm_cross_communication: Option<Velocity>,
+    ) {
+        // If the auto pressurization fails we take the cross communication target (or None if all failed)
+        self.cabin_target_vertical_speed = if self.failure.is_active() || cpiom_b_failure {
+            ocsm_cross_communication
+        } else {
+            // Here we take the target vertical speed if we have it, or else the first available from the other OCSMs
+            cpiom_b
+                .cabin_target_vertical_speed()
+                .or(ocsm_cross_communication)
+        };
         self.should_close_ofv = (self.outflow_valve_id == OcsmId::Three
             || self.outflow_valve_id == OcsmId::Four)
             && cpiom_b.should_close_aft_ofv();
     }
 
-    fn auto_vertical_speed(&self, cpiom_b_failure: bool) -> Option<Velocity> {
-        if self.failure.is_active() || cpiom_b_failure {
-            None
-        } else {
-            Some(self.cabin_target_vertical_speed)
-        }
+    fn auto_vertical_speed(&self) -> Option<Velocity> {
+        self.cabin_target_vertical_speed
     }
 
     fn should_close_ofv(&self) -> bool {
@@ -240,6 +258,14 @@ impl AutomaticControlPartition {
 
     fn auto_failure(&self) -> bool {
         self.failure.is_active()
+    }
+}
+
+impl SimulationElement for AutomaticControlPartition {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -479,7 +505,7 @@ impl EmergencyPressurizationPartition {
         cabin_vertical_speed: Velocity,
     ) -> Velocity {
         let emergency_vertical_speed = self.emergency_vertical_speed_determination();
-        let target_vs = cabin_target_vs.unwrap_or_else(|| emergency_vertical_speed);
+        let target_vs = cabin_target_vs.unwrap_or(emergency_vertical_speed);
         if self.differential_pressure.get::<psi>()
             > A380PressurizationConstants::MAX_SAFETY_DELTA_P - 0.2
         {
@@ -499,8 +525,7 @@ impl EmergencyPressurizationPartition {
     fn emergency_vertical_speed_determination(&self) -> Velocity {
         // The safety partition acts in back up mode if the auto partition fails
         // Using the same constant as the CPIOM B
-
-        let target_velocity = if self
+        if self
             .exterior_vertical_speed
             .output()
             .get::<foot_per_minute>()
@@ -523,12 +548,10 @@ impl EmergencyPressurizationPartition {
             } else {
                 target_vs.get::<foot_per_minute>()
             })
-        };
-        target_velocity
+        }
     }
 
     fn get_ext_diff_with_ldg_elev(&self) -> Length {
-        // TODO: Replace constant target landing alt diff for pressure diff
         self.exterior_flight_altitude
             - Length::new::<foot>(Self::BACKUP_LANDING_ELEVATION_FT - Self::TARGET_LANDING_ALT_DIFF)
     }
