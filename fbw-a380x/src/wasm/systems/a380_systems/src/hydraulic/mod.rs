@@ -1936,7 +1936,6 @@ impl A380Hydraulic {
             ),
 
             brake_temperature_ids: (1..=16)
-                .into_iter()
                 .map(|index| context.get_identifier(format!("REPORTED_BRAKE_TEMPERATURE_{index}")))
                 .collect::<Vec<_>>()
                 .try_into()
@@ -3037,14 +3036,14 @@ impl SimulationElement for A380Hydraulic {
         let right_body_brake_temperatures =
             self.right_body_brake_assembly.brake_temperature_sensors();
         let brake_temp_sensors = left_wing_brake_temperatures[..2]
-            .into_iter()
-            .chain(right_wing_brake_temperatures[..2].into_iter())
-            .chain(left_wing_brake_temperatures[2..].into_iter())
-            .chain(right_wing_brake_temperatures[2..].into_iter())
-            .chain(left_body_brake_temperatures[..2].into_iter())
-            .chain(right_body_brake_temperatures[..2].into_iter())
-            .chain(left_body_brake_temperatures[2..].into_iter())
-            .chain(right_body_brake_temperatures[2..].into_iter());
+            .iter()
+            .chain(&right_wing_brake_temperatures[..2])
+            .chain(&left_wing_brake_temperatures[2..])
+            .chain(&right_wing_brake_temperatures[2..])
+            .chain(&left_body_brake_temperatures[..2])
+            .chain(&right_body_brake_temperatures[..2])
+            .chain(&left_body_brake_temperatures[2..])
+            .chain(&right_body_brake_temperatures[2..]);
         for (temp_sensor, id) in brake_temp_sensors.zip(&self.brake_temperature_ids) {
             writer.write(
                 id,
