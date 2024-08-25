@@ -324,6 +324,25 @@ impl Display for VcmId {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
+pub enum OcsmId {
+    One,
+    Two,
+    Three,
+    Four,
+}
+
+impl Display for OcsmId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OcsmId::One => write!(f, "1"),
+            OcsmId::Two => write!(f, "2"),
+            OcsmId::Three => write!(f, "3"),
+            OcsmId::Four => write!(f, "4"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum CpiomId {
     B1,
     B2,

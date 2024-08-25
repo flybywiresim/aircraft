@@ -63,8 +63,8 @@ impl CoreProcessingInputOutputModuleB {
             cpiom_is_active: false,
 
             ags_app: AirGenerationSystemApplication::new(context, cpiom_id),
-            tcs_app: TemperatureControlSystemApplication::new(context, cpiom_id, cabin_zones),
-            vcs_app: VentilationControlSystemApplication::new(context, cpiom_id),
+            tcs_app: TemperatureControlSystemApplication::new(cpiom_id, cabin_zones),
+            vcs_app: VentilationControlSystemApplication::new(cpiom_id),
             cpcs_app: CabinPressureControlSystemApplication::new(context, cpiom_id),
             // avionics_ventilation_system_app: AvionicsVentilationSystemApplication::new(),
         }
@@ -262,7 +262,9 @@ impl PackFlow for CoreProcessingInputOutputModuleB {
         {
             self.ags_app.pack_flow_demand(pack_id)
         } else {
-            MassRate::default()
+            // When both CPIOM controllers for a given pack fail, the control is degraded
+            // Here we simulate this by sending a flat mass rate demand, this is an assumption
+            MassRate::new::<kilogram_per_second>(1.)
         }
     }
 }
@@ -305,8 +307,6 @@ impl SimulationElement for CoreProcessingInputOutputModuleB {
 /// Determines the pack flow demand and sends it to the FDAC for actuation of the valves
 struct AirGenerationSystemApplication {
     pack_flow_id: [VariableIdentifier; 4],
-    pack_operational_id: [VariableIdentifier; 2],
-    ags_failure_id: VariableIdentifier,
 
     pax_number_fms_id: VariableIdentifier,
 
@@ -336,11 +336,7 @@ impl AirGenerationSystemApplication {
 
     fn new(context: &mut InitContext, cpiom_id: CpiomId) -> Self {
         Self {
-            pack_flow_id: Self::pack_flow_id(context),
-            pack_operational_id: [1, 2]
-                .map(|pack| context.get_identifier(format!("COND_PACK_{}_IS_OPERATING", pack))),
-            ags_failure_id: context
-                .get_identifier(format!("COND_CPIOM{}_AGS_APPLICATION_FAILURE", cpiom_id)),
+            pack_flow_id: Self::pack_flow_id(context, cpiom_id),
 
             pax_number_fms_id: context.get_identifier("FMS_PAX_NUMBER".to_owned()),
 
@@ -356,8 +352,9 @@ impl AirGenerationSystemApplication {
         }
     }
 
-    fn pack_flow_id(context: &mut InitContext) -> [VariableIdentifier; 4] {
-        [1, 2, 3, 4].map(|fcv| context.get_identifier(format!("COND_PACK_FLOW_{}", fcv)))
+    fn pack_flow_id(context: &mut InitContext, cpiom_id: CpiomId) -> [VariableIdentifier; 4] {
+        [1, 2, 3, 4]
+            .map(|fcv| context.get_identifier(format!("COND_PACK_FLOW_{}_{}", fcv, cpiom_id)))
     }
 
     fn update(
@@ -540,15 +537,16 @@ impl PackFlow for AirGenerationSystemApplication {
 
 impl SimulationElement for AirGenerationSystemApplication {
     fn write(&self, writer: &mut SimulatorWriter) {
-        self.pack_operational_id
-            .iter()
-            .zip(self.pack_operating)
-            .for_each(|(id, operating)| writer.write(id, operating));
+        let ssm = if self.has_failed() {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+
         self.pack_flow_id
             .iter()
             .zip(self.flow_ratio)
-            .for_each(|(id, flow)| writer.write(id, flow));
-        writer.write(&self.ags_failure_id, self.has_failed());
+            .for_each(|(id, flow)| writer.write_arinc429(id, flow, ssm));
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -563,10 +561,6 @@ impl SimulationElement for AirGenerationSystemApplication {
 }
 
 struct TemperatureControlSystemApplication {
-    hot_air_is_enabled_id: [VariableIdentifier; 2],
-    hot_air_is_open_id: [VariableIdentifier; 2],
-    tcs_failure_id: VariableIdentifier,
-
     zone_controllers: [ZoneController; 18],
     hot_air_is_enabled: [bool; 2],
     hot_air_is_open: [bool; 2],
@@ -574,28 +568,14 @@ struct TemperatureControlSystemApplication {
     failure: Failure,
 }
 impl TemperatureControlSystemApplication {
-    fn new(context: &mut InitContext, cpiom_id: CpiomId, cabin_zones: &[ZoneType; 18]) -> Self {
-        let hot_air_variable_identifiers = Self::hot_air_id_init(context);
+    fn new(cpiom_id: CpiomId, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
-            hot_air_is_enabled_id: hot_air_variable_identifiers[0],
-            hot_air_is_open_id: hot_air_variable_identifiers[1],
-            tcs_failure_id: context
-                .get_identifier(format!("COND_CPIOM{}_TCS_APPLICATION_FAILURE", cpiom_id)),
-
             zone_controllers: cabin_zones.map(ZoneController::new),
             hot_air_is_enabled: [false; 2],
             hot_air_is_open: [false; 2],
 
             failure: Failure::new(FailureType::TcsApp(cpiom_id)),
         }
-    }
-
-    fn hot_air_id_init(context: &mut InitContext) -> [[VariableIdentifier; 2]; 2] {
-        [
-            [1, 2].map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_ENABLED", id)),
-            [1, 2].map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_OPEN", id)),
-        ]
-        .map(|id_vec| id_vec.map(|st| context.get_identifier(st)))
     }
 
     fn update(
@@ -659,18 +639,6 @@ impl DuctTemperature for TemperatureControlSystemApplication {
 }
 
 impl SimulationElement for TemperatureControlSystemApplication {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        self.hot_air_is_enabled_id
-            .iter()
-            .zip(self.hot_air_is_enabled)
-            .for_each(|(id, is_enabled)| writer.write(id, is_enabled));
-        self.hot_air_is_open_id
-            .iter()
-            .zip(self.hot_air_is_open)
-            .for_each(|(id, is_open)| writer.write(id, is_open));
-        writer.write(&self.tcs_failure_id, self.has_failed());
-    }
-
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.failure.accept(visitor);
 
@@ -679,13 +647,6 @@ impl SimulationElement for TemperatureControlSystemApplication {
 }
 
 struct VentilationControlSystemApplication {
-    fwd_extraction_fan_id: VariableIdentifier,
-    fwd_isolation_valve_id: VariableIdentifier,
-    bulk_extraction_fan_id: VariableIdentifier,
-    bulk_isolation_valve_id: VariableIdentifier,
-    primary_fans_enabled_id: VariableIdentifier,
-    vcs_failure_id: VariableIdentifier,
-
     fwd_extraction_fan_is_on: bool,
     fwd_isolation_valve_is_open: bool,
     bulk_control_is_powered: bool,
@@ -703,19 +664,8 @@ impl VentilationControlSystemApplication {
     const TOTAL_MIXED_AIR_DEMAND: f64 = 5.1183; // kg/s
     const NUMBER_OF_FANS: f64 = 4.;
 
-    fn new(context: &mut InitContext, cpiom_id: CpiomId) -> Self {
+    fn new(cpiom_id: CpiomId) -> Self {
         Self {
-            fwd_extraction_fan_id: context.get_identifier("VENT_FWD_EXTRACTION_FAN_ON".to_owned()),
-            fwd_isolation_valve_id: context
-                .get_identifier("VENT_FWD_ISOLATION_VALVE_OPEN".to_owned()),
-            bulk_extraction_fan_id: context
-                .get_identifier("VENT_BULK_EXTRACTION_FAN_ON".to_owned()),
-            bulk_isolation_valve_id: context
-                .get_identifier("VENT_BULK_ISOLATION_VALVE_OPEN".to_owned()),
-            primary_fans_enabled_id: context.get_identifier("VENT_PRIMARY_FANS_ENABLED".to_owned()),
-            vcs_failure_id: context
-                .get_identifier(format!("COND_CPIOM{}_VCS_APPLICATION_FAILURE", cpiom_id)),
-
             fwd_extraction_fan_is_on: false,
             fwd_isolation_valve_is_open: false,
             bulk_control_is_powered: false,
@@ -820,7 +770,7 @@ impl VentilationControlSystemApplication {
 
 impl ControllerSignal<CabinFansSignal> for VentilationControlSystemApplication {
     fn signal(&self) -> Option<CabinFansSignal> {
-        if !self.bulk_control_is_powered {
+        if self.has_failed() {
             None
         } else if self.hp_cabin_fans_are_enabled {
             Some(CabinFansSignal::On(Some(
@@ -843,24 +793,6 @@ impl ControllerSignal<BulkHeaterSignal> for VentilationControlSystemApplication 
 }
 
 impl SimulationElement for VentilationControlSystemApplication {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.fwd_extraction_fan_id, self.fwd_extraction_fan_is_on);
-        writer.write(
-            &self.fwd_isolation_valve_id,
-            self.fwd_isolation_valve_is_open,
-        );
-        writer.write(&self.bulk_extraction_fan_id, self.bulk_extraction_fan_is_on);
-        writer.write(
-            &self.bulk_isolation_valve_id,
-            self.bulk_isolation_valve_is_open,
-        );
-        writer.write(
-            &self.primary_fans_enabled_id,
-            self.hp_cabin_fans_are_enabled,
-        );
-        writer.write(&self.vcs_failure_id, self.has_failed());
-    }
-
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.failure.accept(visitor);
 

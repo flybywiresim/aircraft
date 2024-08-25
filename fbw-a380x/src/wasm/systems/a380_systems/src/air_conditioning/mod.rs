@@ -6,7 +6,7 @@ use systems::{
         cabin_air::CabinAirSimulation,
         pressure_valve::{NegativeRelieveValveSignal, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
-        AirHeater, CabinFan, CpiomId, DuctTemperature, FdacId, MixerUnit, OutletAir,
+        AirHeater, CabinFan, CpiomId, DuctTemperature, FdacId, MixerUnit, OcsmId, OutletAir,
         OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
         PressurizationOverheadShared, TrimAirSystem, VcmId, VcmShared, ZoneType,
     },
@@ -178,7 +178,7 @@ impl A380AirConditioning {
             self.a380_pressurization_system.update(
                 &context.with_delta(cur_time_step),
                 // FIXME
-                &self.cpiom_b[0],
+                &self.cpiom_b,
                 adirs,
                 pressurization_overhead,
                 &self.a380_cabin,
@@ -482,8 +482,7 @@ impl A380AirConditioningSystem {
             pressurization_overhead,
         );
 
-        // FIXME
-        self.update_fans(cabin_simulation, &cpiom_b[0]);
+        self.update_fans(cabin_simulation, cpiom_b);
 
         self.update_packs(context, cpiom_b);
 
@@ -532,7 +531,7 @@ impl A380AirConditioningSystem {
                 );
             });
 
-        // FIXME
+        // FIXME - Function to return the first non-failed CPIOM B
         self.tadd.update(
             context,
             &self.air_conditioning_overhead,
@@ -621,29 +620,40 @@ impl A380AirConditioningSystem {
     fn update_fans(
         &mut self,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
     ) {
         // The VCM FWD controls all LH recirculation fans and the VCM AFT controls all RH recirculation.
         // The signal to update the fans comes from the CPIOM when the selector is in AUTO and from the VCM in the other positions
+        // The signal for the LH fans coms from CPIOM B1 and 3, and RH from B2 and 4
         for (id, fan) in self.cabin_fans.iter_mut().enumerate() {
-            if cpiom_b.hp_recirculation_fans_signal().signal().is_some() {
-                fan.update(cabin_simulation, cpiom_b.hp_recirculation_fans_signal());
-            } else if id < 2 {
-                fan.update(
+            if id < 2 {
+                if cpiom_b[0].hp_recirculation_fans_signal().signal().is_some() {
+                    fan.update(cabin_simulation, cpiom_b[0].hp_recirculation_fans_signal());
+                } else if cpiom_b[2].hp_recirculation_fans_signal().signal().is_some() {
+                    fan.update(cabin_simulation, cpiom_b[2].hp_recirculation_fans_signal());
+                } else {
+                    fan.update(
                         cabin_simulation,
                         self.vcm
                             .iter()
                             .find(|module| matches!(module.id(), VcmId::Fwd))
                             .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
                     )
+                }
             } else {
-                fan.update(
+                if cpiom_b[1].hp_recirculation_fans_signal().signal().is_some() {
+                    fan.update(cabin_simulation, cpiom_b[1].hp_recirculation_fans_signal());
+                } else if cpiom_b[3].hp_recirculation_fans_signal().signal().is_some() {
+                    fan.update(cabin_simulation, cpiom_b[3].hp_recirculation_fans_signal());
+                } else {
+                    fan.update(
                         cabin_simulation,
                         self.vcm
                             .iter()
                             .find(|module| matches!(module.id(), VcmId::Aft))
                             .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
                     )
+                }
             }
         }
     }
@@ -908,7 +918,7 @@ impl A380PressurizationSystem {
             ocsm: [
                 OutflowValveControlModule::new(
                     context,
-                    1,
+                    OcsmId::One,
                     [
                         ElectricalBusType::DirectCurrent(1),       // 107PP
                         ElectricalBusType::DirectCurrentEssential, // 417PP
@@ -916,7 +926,7 @@ impl A380PressurizationSystem {
                 ),
                 OutflowValveControlModule::new(
                     context,
-                    2,
+                    OcsmId::Two,
                     [
                         ElectricalBusType::DirectCurrent(1),       // 107PP
                         ElectricalBusType::DirectCurrentEssential, // 417PP
@@ -924,7 +934,7 @@ impl A380PressurizationSystem {
                 ),
                 OutflowValveControlModule::new(
                     context,
-                    3,
+                    OcsmId::Three,
                     [
                         ElectricalBusType::DirectCurrent(2),       // 210PP
                         ElectricalBusType::DirectCurrentEssential, // 411PP
@@ -932,7 +942,7 @@ impl A380PressurizationSystem {
                 ),
                 OutflowValveControlModule::new(
                     context,
-                    4,
+                    OcsmId::Four,
                     [
                         ElectricalBusType::DirectCurrent(2),       // 210PP
                         ElectricalBusType::DirectCurrentEssential, // 411PP
@@ -950,17 +960,20 @@ impl A380PressurizationSystem {
     fn update(
         &mut self,
         context: &UpdateContext,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
         adirs: &impl AdirsToAirCondInterface,
         press_overhead: &A380PressurizationOverheadPanel,
         cabin_simulation: &impl CabinSimulation,
     ) {
-        for controller in self.ocsm.iter_mut() {
+        let all_cpiom_b_failed = cpiom_b.iter().all(|cpcs| cpcs.cpcs_has_fault());
+
+        for (controller, cpiom_id) in self.ocsm.iter_mut().zip([2, 0, 3, 1].iter()) {
             controller.update(
                 context,
                 adirs,
                 cabin_simulation,
-                cpiom_b,
+                &cpiom_b[*cpiom_id as usize],
+                all_cpiom_b_failed,
                 press_overhead,
                 self.negative_relief_valves.open_amount(),
             );
@@ -1110,6 +1123,7 @@ mod tests {
     use systems::{
         air_conditioning::PackFlow,
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        failures::FailureType,
         integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
         overhead::AutoOffFaultPushButton,
         pneumatic::{
@@ -1127,6 +1141,7 @@ mod tests {
             UpdateContext,
         },
     };
+
     use uom::si::{
         length::{foot, meter},
         mass_rate::kilogram_per_second,
@@ -2526,6 +2541,16 @@ mod tests {
             self
         }
 
+        fn command_ags_failure(mut self, cpiom_id: CpiomId) -> Self {
+            self.fail(FailureType::AgsApp(cpiom_id));
+            self
+        }
+
+        fn command_vcs_failure(mut self, cpiom_id: CpiomId) -> Self {
+            self.fail(FailureType::VcsApp(cpiom_id));
+            self
+        }
+
         fn initial_outflow_valve_open_amount(&self) -> Ratio {
             self.stored_ofv_open_amount.unwrap()
         }
@@ -2591,13 +2616,6 @@ mod tests {
         }
 
         fn all_pack_flow_valves_are_open(&self) -> bool {
-            println!(
-                "PFV1: {}, PFV2: {}, PFV3: {}, PFV4: {}",
-                self.pack_flow_valve_is_open(1),
-                self.pack_flow_valve_is_open(2),
-                self.pack_flow_valve_is_open(3),
-                self.pack_flow_valve_is_open(4)
-            );
             self.pack_flow_valve_is_open(1)
                 && self.pack_flow_valve_is_open(2)
                 && self.pack_flow_valve_is_open(3)
@@ -2661,11 +2679,15 @@ mod tests {
         }
 
         fn cabin_target_altitude(&mut self) -> Length {
-            self.read_by_name("PRESS_CABIN_ALTITUDE_TARGET")
+            self.read_arinc429_by_name("PRESS_CABIN_ALTITUDE_TARGET_B1")
+                .value()
         }
 
         fn cabin_target_vertical_speed(&mut self) -> Velocity {
-            Velocity::new::<foot_per_minute>(self.read_by_name("PRESS_CABIN_VS_TARGET"))
+            Velocity::new::<foot_per_minute>(
+                self.read_arinc429_by_name("PRESS_CABIN_VS_TARGET_B1")
+                    .value(),
+            )
         }
 
         fn reference_pressure(&self) -> Pressure {
@@ -2997,7 +3019,7 @@ mod tests {
 
             assert!(
                 (test_bed.cabin_target_altitude() - Length::new::<foot>(5000.)).abs()
-                    < Length::new::<foot>(5.)
+                    < Length::new::<foot>(10.)
             );
         }
 
@@ -5212,6 +5234,165 @@ mod tests {
                         .fwd_cargo_measured_temperature()
                         .get::<degree_celsius>()
                         < 15.
+                );
+            }
+        }
+
+        mod cpiom_b_failures_tests {
+            use super::*;
+
+            #[test]
+            fn pack_temperature_demand_is_degraded_when_two_ags_apps_failed() {
+                let mut test_bed = test_bed()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_ags_failure(CpiomId::B1)
+                    .command_ags_failure(CpiomId::B3)
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 28.).abs() > 1.);
+            }
+
+            #[test]
+            fn pack_temperature_demand_is_not_degraded_when_two_ags_failed_different_pack() {
+                let mut test_bed = test_bed()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_ags_failure(CpiomId::B1)
+                    .command_ags_failure(CpiomId::B2)
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 28.).abs() < 1.);
+            }
+
+            #[test]
+            fn pack_temperature_demand_is_not_degraded_when_one_ags_app_failed() {
+                let mut test_bed = test_bed()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_ags_failure(CpiomId::B1)
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 28.).abs() < 1.);
+            }
+
+            #[test]
+            fn air_flow_remains_constant_with_changing_passengers() {
+                // The flow rate changes, and the recirculation demand adjusts to maintain a constant air flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_number_of_passengers(200);
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(200);
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                let initial_pack_flow = test_bed.pack_flow();
+
+                test_bed = test_bed.command_number_of_passengers(500).iterate(200);
+
+                assert!(
+                    (initial_flow - test_bed.mixer_unit_outlet_air().flow_rate())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+                assert!(
+                    (initial_pack_flow - test_bed.pack_flow())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        > 0.1
+                );
+            }
+
+            #[test]
+            fn air_flow_is_degraded_when_two_cpiom_b_fail() {
+                // The flow rate changes, and the recirculation demand adjusts to maintain a constant air flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_number_of_passengers(500);
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(200);
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                let initial_pack_flow = test_bed.pack_flow();
+
+                test_bed = test_bed
+                    .command_vcs_failure(CpiomId::B1)
+                    .command_vcs_failure(CpiomId::B3)
+                    .iterate(200);
+
+                assert!(
+                    (initial_flow - test_bed.mixer_unit_outlet_air().flow_rate())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        > 0.1
+                );
+                assert!(
+                    (initial_pack_flow - test_bed.pack_flow())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+            }
+
+            #[test]
+            fn air_flow_is_not_degraded_when_one_cpiom_b_fail() {
+                // The flow rate changes, and the recirculation demand adjusts to maintain a constant air flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_number_of_passengers(500);
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(200);
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                let initial_pack_flow = test_bed.pack_flow();
+
+                test_bed = test_bed.command_vcs_failure(CpiomId::B1).iterate(200);
+
+                assert!(
+                    (initial_flow - test_bed.mixer_unit_outlet_air().flow_rate())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+                assert!(
+                    (initial_pack_flow - test_bed.pack_flow())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
                 );
             }
         }

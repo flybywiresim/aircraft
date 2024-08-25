@@ -1,7 +1,7 @@
 use crate::air_conditioning::{
     acs_controller::AcscId, cabin_pressure_controller::CpcId, Channel, VcmId, ZoneType,
 };
-use crate::air_conditioning::{CpiomId, FdacId};
+use crate::air_conditioning::{CpiomId, FdacId, OcsmId};
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
     HydraulicColor, LgciuId, ProximityDetectorId,
@@ -24,6 +24,8 @@ pub enum FailureType {
     Fdac(FdacId, Channel),
     Tadd(Channel),
     Vcm(VcmId, Channel),
+    OcsmAutoPartition(OcsmId),
+    Ocsm(OcsmId, Channel),
     AgsApp(CpiomId),
     TcsApp(CpiomId),
     VcsApp(CpiomId),
