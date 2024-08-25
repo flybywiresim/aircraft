@@ -159,13 +159,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
     const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
-    const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
-
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
     if (this.index === FlightPlanIndex.Temporary) {
       turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
     }
-    turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+
+    const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint())
+      .withDefinitionFrom(targetLeg)
+      .withPilotEnteredDataFrom(targetLeg);
     // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
     turnEnd.ident = targetLeg.ident;
 
@@ -182,6 +183,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
 
+    this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
     this.setActiveLegIndex(turnEndLegIndexInPlan);
   }
 
