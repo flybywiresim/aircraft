@@ -1419,10 +1419,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg;
+  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg * 0.146189;
 
   prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
