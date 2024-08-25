@@ -954,6 +954,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             // Disco with same point before and after it
             this.mergeConstraints(previousElement, nextElement);
 
+            // Only keep one waypoint - see FBW-22-09
             this.removeRange(index, index + 2);
           } else {
             // Regular disco
@@ -971,11 +972,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 .withPilotEnteredDataFrom(nextElement);
 
               nextSegment.allLegs.splice(nextIndexInSegment, 1, newNextElement);
+
+              if (nextSegment !== segment) {
+                this.syncSegmentLegsChange(nextSegment);
+              }
             }
 
             // Remove disco
             segment.allLegs.splice(indexInSegment, 1);
           }
+
+          this.removeForcedTurnAt(index + 2);
         }
       } else {
         this.removeRange(index, index + numElementsToDelete);
@@ -1197,7 +1204,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected removeForcedTurnAt(index: number) {
     const leg = this.maybeElementAt(index);
     if (leg?.isDiscontinuity === false) {
+      if (LnavConfig.VERBOSE_FPM_LOG) {
+        console.log(`[fpm] removeForcedTurnAt - ${leg.ident}`);
+      }
+
       leg.definition.turnDirection = TurnDirection.Either;
+
+      this.syncLegDefinitionChange(index);
     }
   }
 
