@@ -48,8 +48,6 @@
             <LEFT_SINGLE_CODE/>
             <ANIM_DURATION>0.3</ANIM_DURATION>
             <TOGGLE_VAR>L:A32NX_FIRE_BUTTON_#TYPE##ID#</TOGGLE_VAR>
-            <!-- FIXME: Remove from here once fire guard clickspot is set up -->
-            <TOGGLE_COVER_VAR>L:A32NX_FIRE_GUARD_#TYPE##ID#</TOGGLE_COVER_VAR>
             <EMISSIVE_POWERED>1</EMISSIVE_POWERED>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -80,15 +78,8 @@
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) 0 == if{
-                        (#TOGGLE_COVER_VAR#) ! (&gt;#TOGGLE_COVER_VAR#)
-                    } els{
-                        (#TOGGLE_VAR#) 0 == if{
-                            (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
-                        } els{
-                            (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
-                            (#TOGGLE_COVER_VAR#) ! (&gt;#TOGGLE_COVER_VAR#)
-                        }
+                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) 1 == if{
+                        (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
                     }
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE/>
