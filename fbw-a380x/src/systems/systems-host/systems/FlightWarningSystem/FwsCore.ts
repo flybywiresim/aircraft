@@ -726,6 +726,10 @@ export class FwsCore implements Instrument {
 
   public readonly greenAPumpAuto = Subject.create(false);
 
+  public readonly greenAPumpFault = Subject.create(false);
+
+  public readonly greenBPumpFault = Subject.create(false);
+
   public readonly greenBPumpAuto = Subject.create(false);
 
   public readonly yellowAPumpOn = Subject.create(false);
@@ -735,6 +739,10 @@ export class FwsCore implements Instrument {
   public readonly yellowAPumpAuto = Subject.create(false);
 
   public readonly yellowBPumpAuto = Subject.create(false);
+
+  public readonly yellowAPumpFault = Subject.create(false);
+
+  public readonly yellowBPumpFault = Subject.create(false);
 
   public readonly eng1APumpAuto = Subject.create(false);
 
@@ -1743,6 +1751,7 @@ export class FwsCore implements Instrument {
     this.yellowAbnormLoPressure.set(yellowAbnormLoPressure);
     this.greenYellowAbnormLoPressure.set(greenAbnormLoPressure && yellowAbnormLoPressure);
 
+    // fixme OVHT signal should come from HSMU
     this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
     const yellowHydralicRsvLoAirPressure = SimVar.GetSimVarValue(
       'L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW',
@@ -1769,7 +1778,29 @@ export class FwsCore implements Instrument {
     this.yellowAPumpAuto.set(yellowAPumpAuto);
     this.yellowBPumpAuto.set(yellowBPumpAuto);
 
-    this.yellowElecAandBPumpOff.set(!yellowAPumpAuto && !yellowBPumpAuto && !yellowHydralicRsvLoAirPressure);
+    // fixme add fault signal condition of elec pump fault when implemented
+    const greenAPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_GA_EPUMP_LOW_PRESS', 'bool');
+    const greenAPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_GA_EPUMP_OVHT', 'bool');
+    this.greenAPumpFault.set(greenAPumpLoPress || greenAPumpOverheat);
+
+    const greenBPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_GB_EPUMP_LOW_PRESS', 'bool');
+    const greenBPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_GB_EPUMP_OVHT', 'bool');
+    this.greenBPumpFault.set(greenBPumpLoPress || greenBPumpOverheat);
+
+    const yelowAPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_YA_EPUMP_LOW_PRESS', 'bool');
+    const yelowAPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_YA_EPUMP_OVHT', 'bool');
+    this.yellowAPumpFault.set(yelowAPumpLoPress || yelowAPumpOverheat);
+
+    const yelowBPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_YB_EPUMP_LOW_PRESS', 'bool');
+    const yelowBPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_YB_EPUMP_OVHT', 'bool');
+    this.yellowBPumpFault.set(yelowBPumpLoPress || yelowBPumpOverheat);
+
+    this.yellowElecAandBPumpOff.set(
+      !yellowAPumpAuto &&
+        !yellowBPumpAuto &&
+        !yellowHydralicRsvLoAirPressure &&
+        (!this.yellowAPumpFault.get() || !this.yellowBPumpFault.get()),
+    );
 
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
@@ -2267,7 +2298,7 @@ export class FwsCore implements Instrument {
       !this.engine2Running.get() &&
       !this.engine3Running.get() &&
       !this.engine4Running.get();
-    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // Fix me core at above min idle
+    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // FIXME eng running should use core speed at above min idle
     const residualPressureSignal = SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_RESIDUAL_PR', 'bool');
     this.excessResidualPr.set(
       this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),

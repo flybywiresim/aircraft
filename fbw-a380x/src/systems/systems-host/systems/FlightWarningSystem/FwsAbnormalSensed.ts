@@ -1137,6 +1137,50 @@ export class FwsAbnormalSensed {
       inopSysAllPhases: () => [],
     },
     // 29 Hydraulic
+    290800001: {
+      // G ELEC PMP A FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.greenAPumpFault,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.greenAPumpAuto.get()],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => ['290300001'],
+    },
+    290800002: {
+      // G ELEC PMP B FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.greenBPumpFault,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.greenBPumpAuto.get()],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => ['290300002'],
+    },
+    290800003: {
+      // Y ELEC PMP A FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.yellowAPumpFault,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.yellowAPumpAuto.get()],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => ['290300003'],
+    },
+    290800004: {
+      // Y ELEC PMP B FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.yellowBPumpFault,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.yellowBPumpAuto.get()],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => ['290300004'],
+    },
     290800005: {
       // G ENG 1 PMP A PRESS LO
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
