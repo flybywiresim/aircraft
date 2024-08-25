@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- Copyright (c) 2024 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
@@ -12,7 +12,7 @@
 
     <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
         <UseTemplate Name="FBW_Push_Held">
-            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
+            <HOLD_SIMVAR>L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED</HOLD_SIMVAR>
             <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
             <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
         </UseTemplate>
@@ -28,14 +28,12 @@
 
     <Template Name="FBW_Airbus_FIRE_AGENT">
         <UseTemplate Name="FBW_Push_Toggle">
-            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) or</SEQ1_CODE>
-            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge) or</SEQ2_CODE>
-            <LEFT_SINGLE_CODE>
-                (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) if{
-                1 (&gt;L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge)
-                }
-            </LEFT_SINGLE_CODE>
-
+            <SEQ1_CODE>(L:A32NX_FIRE_SQUIB_#AGENT_ID#_#TYPE#_#ID#_IS_ARMED, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_SQUIB_#AGENT_ID#_#TYPE#_#ID#_IS_DISCHARGED, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>1
+                (&gt;L:A32NX_OVHD_FIRE_AGENT_#AGENT_ID#_#TYPE#_#ID#_IS_PRESSED)</LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE>0
+                (&gt;L:A32NX_OVHD_FIRE_AGENT_#AGENT_ID#_#TYPE#_#ID#_IS_PRESSED)</LEFT_LEAVE_CODE>
             <MOMENTARY/>
         </UseTemplate>
     </Template>
@@ -75,7 +73,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (A:ENG ON FIRE:#ID#, Bool) 1 == or (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_POWERED# and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:A32NX_FIRE_DETECTED_#BUTTON_ID#, Bool) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_POWERED# and</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
