@@ -347,8 +347,8 @@ export class BrakeToVacateUtils<T extends number> {
     this.remaininingDistToRwyEnd.set(-1);
 
     Arinc429Word.toSimVarValue('L:A32NX_BTV_ROT', 0, Arinc429SignStatusMatrix.NoComputedData);
-    Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_IDLE_REV', 0, Arinc429SignStatusMatrix.NoComputedData);
-    Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_MAX_REV', 0, Arinc429SignStatusMatrix.NoComputedData);
+    Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_IDLE_REVERSE', 0, Arinc429SignStatusMatrix.NoComputedData);
+    Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_MAX_REVERSE', 0, Arinc429SignStatusMatrix.NoComputedData);
   }
 
   updateRemainingDistances(pos: Position) {
