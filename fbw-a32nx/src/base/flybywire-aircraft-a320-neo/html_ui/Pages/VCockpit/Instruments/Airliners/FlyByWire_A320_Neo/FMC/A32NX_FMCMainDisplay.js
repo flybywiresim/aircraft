@@ -2586,7 +2586,7 @@ class FMCMainDisplay extends BaseAirliners {
         const newLevel = this.cruiseLevel;
         // Keep simvar in sync for the flight phase manager
         if (newLevel !== oldCruiseLevel) {
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
         }
     }
 
@@ -4677,7 +4677,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (plan) {
             this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level);
             // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
         }
     }
 
