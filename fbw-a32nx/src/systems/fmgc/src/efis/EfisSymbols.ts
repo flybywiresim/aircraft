@@ -32,7 +32,6 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
-import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
@@ -40,6 +39,8 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 export class EfisSymbols<T extends number> {
   private blockUpdate = false;
@@ -82,7 +83,13 @@ export class EfisSymbols<T extends number> {
     R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LONG'),
   };
 
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
   constructor(
+    private readonly bus: EventBus,
     guidanceController: GuidanceController,
     private readonly flightPlanService: FlightPlanService,
     private readonly navaidTuner: NavaidTuner,
@@ -521,7 +528,7 @@ export class EfisSymbols<T extends number> {
     const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
     const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
     const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
-    const flightPhase = getFlightPhaseManager().phase;
+    const flightPhase = this.flightPhase.get();
 
     const isPlanMode = mode === EfisNdMode.PLAN;
 
