@@ -33,8 +33,8 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"EXT PWR 4 On",             1026, false, 3000, "(A:EXTERNAL POWER ON:2, BOOL) !",                      "(A:EXTERNAL POWER ON:4, BOOL) ! if{ 4 (>K:TOGGLE_EXTERNAL_POWER) }"},
 
         // ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test)
-        ProcedureStep{"ENG Fire Test On",         1030, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",        "1 (>L:A32NX_FIRE_TEST_ENG1)"},
-        ProcedureStep{"ENG Fire Test Off",        1032, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",        "0 (>L:A32NX_FIRE_TEST_ENG1) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
+        ProcedureStep{"ENG Fire Test On",         1030, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",        "1 (>L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED)"},
+        ProcedureStep{"ENG Fire Test Off",        1032, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",        "0 (>L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
 
         // After fire test we start the APU
         ProcedureStep{"APU Master On",            1040, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
