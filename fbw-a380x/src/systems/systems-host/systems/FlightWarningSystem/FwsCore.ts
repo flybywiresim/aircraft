@@ -1051,9 +1051,7 @@ export class FwsCore implements Instrument {
 
   public readonly autoBrake = Subject.create(0);
 
-  public readonly fuel = Subject.create(0);
-
-  public readonly usrStartRefueling = Subject.create(0);
+  public readonly usrStartRefueling = Subject.create(false);
 
   public readonly engSelectorPosition = Subject.create(0);
 
@@ -1618,7 +1616,6 @@ export class FwsCore implements Instrument {
 
     this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
 
-    this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
     this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
     this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
     this.eng1AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:1', 'bool'));

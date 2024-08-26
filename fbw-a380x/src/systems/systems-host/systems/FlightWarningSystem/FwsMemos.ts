@@ -29,12 +29,7 @@ export class FwsMemos {
     '0000050': {
       // REFUELING
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([fuel, usrStartRefueling]) => !!(fuel === 100 || usrStartRefueling),
-        this.fws.fuel,
-        this.fws.usrStartRefueling,
-      ),
-
+      simVarIsActive: this.fws.usrStartRefueling,
       whichCodeToReturn: () => [0],
       codesToReturn: ['000005001'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
