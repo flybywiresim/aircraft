@@ -1,22 +1,30 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, Subject, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
 import { BtvDataArinc429, FmsOansData, FmsOansDataArinc429 } from '@flybywiresim/oanc';
 import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly fmsRwyIdent = ConsumerSubject.create<string | null>(null, null);
+  private readonly sub = this.props.bus.getArincSubscriber<FmsOansDataArinc429 & FmsOansData & BtvDataArinc429>();
 
-  private readonly runwayIdent = ConsumerSubject.create<string | null>(null, null);
+  private readonly fmsRwyIdent = ConsumerSubject.create(this.sub.on('fmsLandingRunway'), null);
 
-  private readonly runwayLength = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
+  private readonly runwayIdent = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
 
-  private readonly exitIdent = ConsumerSubject.create<string | null>(null, null);
+  private readonly runwayLength = ConsumerSubject.create(
+    this.sub.on('oansSelectedLandingRunwayLength').withArinc429Precision(1),
+    Arinc429Word.empty(),
+  );
 
-  private readonly exitDistance = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
+  private readonly exitIdent = ConsumerSubject.create(this.sub.on('oansSelectedExit'), null);
+
+  private readonly exitDistance = ConsumerSubject.create(
+    this.sub.on('oansRequestedStoppingDistance').withArinc429Precision(1),
+    Arinc429Word.empty(),
+  );
 
   private readonly runwayInfoString = MappedSubject.create(
     ([ident, length]) =>
@@ -27,7 +35,10 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     this.runwayLength,
   );
 
-  private readonly runwayBearing = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
+  private readonly runwayBearing = ConsumerSubject.create(
+    this.sub.on('oansSelectedLandingRunwayBearing').withArinc429Precision(1),
+    Arinc429Word.empty(),
+  );
 
   private readonly btvFmsDisagree = MappedSubject.create(
     ([btv, fms, exit]) => fms && btv && !exit && btv !== fms,
@@ -45,33 +56,27 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     this.exitDistance,
   );
 
-  private readonly rot = Subject.create<string | null>(null);
+  private readonly btvRot = ConsumerSubject.create(
+    this.sub.on('btvRot').withArinc429Precision(1),
+    Arinc429Word.empty(),
+  );
 
-  private readonly turnaroundMaxRev = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
+  private readonly rot = this.btvRot.map((rot) =>
+    rot.isNormalOperation() ? rot.value.toFixed(0).padStart(4, '\xa0') : '',
+  );
 
-  private readonly turnaroundIdleRev = ConsumerSubject.create<Arinc429Word>(null, Arinc429Word.empty());
+  private readonly turnaroundMaxRev = ConsumerSubject.create(
+    this.sub.on('btvTurnAroundMaxReverse').withArinc429Precision(1),
+    Arinc429Word.empty(),
+  );
+
+  private readonly turnaroundIdleRev = ConsumerSubject.create(
+    this.sub.on('btvTurnAroundIdleReverse').withArinc429Precision(1),
+    Arinc429Word.empty(),
+  );
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<FmsOansDataArinc429 & FmsOansData & BtvDataArinc429>();
-
-    this.fmsRwyIdent.setConsumer(sub.on('fmsLandingRunway'));
-    this.runwayIdent.setConsumer(sub.on('oansSelectedLandingRunway'));
-    this.runwayLength.setConsumer(sub.on('oansSelectedLandingRunwayLength').withArinc429Precision(1));
-    this.runwayBearing.setConsumer(sub.on('oansSelectedLandingRunwayBearing').withArinc429Precision(1));
-    this.exitIdent.setConsumer(sub.on('oansSelectedExit'));
-    this.exitDistance.setConsumer(sub.on('oansRequestedStoppingDistance').withArinc429Precision(1));
-
-    sub
-      .on('btvRot')
-      .whenChanged()
-      .handle((it) => {
-        this.rot.set(it.isNormalOperation() ? it.value.toFixed(0).padStart(4, '\xa0') : '');
-      });
-
-    this.turnaroundIdleRev.setConsumer(sub.on('btvTurnAroundIdleReverse').withArinc429Precision(1));
-    this.turnaroundMaxRev.setConsumer(sub.on('btvTurnAroundMaxReverse').withArinc429Precision(1));
   }
 
   render(): VNode | null {

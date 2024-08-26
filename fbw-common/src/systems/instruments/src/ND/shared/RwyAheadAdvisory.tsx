@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from '@flybywiresim/oanc';
 import { RopRowOansSimVars } from '../../MsfsAvionicsCommon/providers';
@@ -11,32 +11,24 @@ export interface RwyAheadAdvisoryProps {
 }
 
 export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
-  private readonly flagRef = FSComponent.createRef<SVGTextElement>();
+  private readonly sub = this.props.bus.getSubscriber<RopRowOansSimVars & FmsOansData>();
 
-  private readonly qfu = Subject.create<string>('');
+  private readonly ndRwyAheadQfu = ConsumerSubject.create(this.sub.on('ndRwyAheadQfu').whenChanged(), '');
+
+  private readonly oansWord1Raw = ConsumerSubject.create(this.sub.on('oansWord1Raw').whenChanged(), 0);
+
+  private readonly flagDisplay = this.oansWord1Raw.map((word) => {
+    const w = new Arinc429Word(word);
+    return w.getBitValueOr(11, false) ? 'block' : 'none';
+  });
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<RopRowOansSimVars & FmsOansData>();
-
-    sub
-      .on('oansWord1Raw')
-      .whenChanged()
-      .handle((it) => {
-        const w = new Arinc429Word(it);
-        this.flagRef.instance.style.display = w.getBitValueOr(11, false) ? 'block' : 'none';
-      });
-
-    sub
-      .on('ndRwyAheadQfu')
-      .whenChanged()
-      .handle((it) => this.qfu.set(it));
   }
 
   render(): VNode | null {
     return (
-      <g ref={this.flagRef} style="display: none;">
+      <g style={{ display: this.flagDisplay }}>
         <rect
           x="273"
           y="209"
@@ -53,7 +45,7 @@ export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
           class="FontLarge Yellow MiddleAlign RwyAheadAnimation TextOutline"
           style="stroke-width: 0.25mm;"
         >
-          {this.qfu}
+          {this.ndRwyAheadQfu}
         </text>
       </g>
     );
