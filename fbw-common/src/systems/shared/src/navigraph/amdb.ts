@@ -1,4 +1,7 @@
-﻿import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString } from '@flybywiresim/fbw-sdk';
+﻿// Copyright (c) 2021-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString } from '@flybywiresim/fbw-sdk';
 import { navigraphAuth } from '../../../instruments/src/navigraph';
 import { navigraphRequest } from 'navigraph/auth';
 
