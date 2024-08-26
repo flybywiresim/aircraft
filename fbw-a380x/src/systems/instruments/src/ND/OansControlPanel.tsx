@@ -540,8 +540,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
               additionalRightSpace={50}
             >
               <TopTabNavigatorPage>
-                <div style="flex: 1; display: flex; flex-direction: row; height: 100%;">
-                  <div style="flex: 1; display: flex: flex-direction: column; justify-content: stretch;">
+                <div class="oans-cp-map-data-tab">
+                  <div class="oans-cp-map-data-left">
                     <DropdownMenu
                       values={this.availableEntityList}
                       selectedIndex={this.selectedEntityIndex}
@@ -552,7 +552,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       hEventConsumer={this.hEventConsumer}
                       interactionMode={this.interactionMode}
                     />
-                    <div style="border-right: 2px solid lightgrey; height: 100%;">
+                    <div class="oans-cp-map-data-entitytype">
                       <RadioButtonGroup
                         values={this.availableEntityTypes}
                         valuesDisabled={Subject.create(Array(4).fill(true))}
@@ -561,19 +561,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    ref={this.mapDataLdgShiftPanelRef}
-                    style="display: none; flex: 3; flex-direction: column; margin: 5px 20px 5px 20px;"
-                  >
-                    <div style="flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
+                  <div ref={this.mapDataLdgShiftPanelRef} class="oans-cp-map-data-ldg-shift">
+                    <div class="oans-cp-map-data-ldg-shift-rwy">
                       <div class="mfd-label-value-container" style="padding: 15px;">
                         <span class="mfd-label mfd-spacing-right">RWY</span>
                         <span class="mfd-value">{this.selectedEntityString}</span>
                       </div>
                     </div>
-                    <div style="flex: 5; display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
-                      <div style="display: flex; flex-direction: column;">
-                        <div style="display: grid; grid-template-columns: 1fr auto; grid-template-rows: 50px 50px; align-items: center;">
+                    <div class="oans-cp-map-data-ldg-shift-1">
+                      <div class="oans-cp-map-data-ldg-shift-2">
+                        <div class="oans-cp-map-data-ldg-shift-3">
                           <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">
                             THRESHOLD SHIFT
                           </span>
@@ -595,7 +592,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             interactionMode={this.interactionMode}
                           />
                         </div>
-                        <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
+                        <div class="oans-cp-map-data-ldg-shift-return-button">
                           <Button
                             label="RETURN"
                             buttonStyle="padding: 7px 15px 5px 15px;"
@@ -605,11 +602,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       </div>
                     </div>
                   </div>
-                  <div
-                    ref={this.mapDataMainRef}
-                    style="display: flex; flex: 3; flex-direction: column; margin: 0px 20px 0px 20px;"
-                  >
-                    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                  <div ref={this.mapDataMainRef} class="oans-cp-map-data-main">
+                    <div class="oans-cp-map-data-main-2">
                       <Button
                         label="ADD CROSS"
                         onClick={() => console.log('ADD CROSS')}
@@ -629,7 +623,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         disabled={Subject.create(true)}
                       />
                     </div>
-                    <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
+                    <div class="oans-cp-map-data-main-center">
                       <Button
                         label={`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`}
                         onClick={() =>
@@ -649,16 +643,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       coordinate={Subject.create('----')}
                     />
                   </div>
-                  <div
-                    ref={this.mapDataBtvFallback}
-                    style="display: flex; flex: 3; flex-direction: column; margin: 0px 20px 0px 20px;"
-                  >
-                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px; margin-bottom: 40px;">
+                  <div ref={this.mapDataBtvFallback} class="oans-cp-map-data-btv-fallback">
+                    <div class="oans-cp-map-data-btv-button">
                       <div class="mfd-label" style="margin-right: 10px;">
                         BTV MANUAL CONTROL / FALLBACK
                       </div>
                     </div>
-                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
+                    <div class="oans-cp-map-data-btv-rwy-length">
                       <div class="mfd-label" style="margin-right: 10px;">
                         RUNWAY LENGTH
                       </div>
@@ -667,7 +658,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         <span style="color: rgb(33, 33, 255)">M</span>
                       </span>
                     </div>
-                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 10px;">
+                    <div class="oans-cp-map-data-btv-rwy-length">
                       <div class="mfd-label" style="margin-right: 10px;">
                         BTV STOP DISTANCE
                       </div>
@@ -706,8 +697,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                 </div>
               </TopTabNavigatorPage>
               <TopTabNavigatorPage>
-                <div style="flex: 1; display: flex; flex-direction: row; height: 100%;">
-                  <div style="width: 30%; display: flex: flex-direction: column; justify-content: stretch;">
+                <div class="oans-cp-arpt-sel">
+                  <div class="oans-cp-arpt-sel-2">
                     <div style="display: flex;">
                       <DropdownMenu
                         ref={this.airportSearchAirportDropdownRef}
@@ -729,7 +720,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         interactionMode={this.interactionMode}
                       />
                     </div>
-                    <div style="padding-top: 20px; margin-top: 2px; height: 100%;">
+                    <div class="oans-cp-arpt-sel-radio">
                       <RadioButtonGroup
                         values={['ICAO', 'IATA', 'CITY NAME']}
                         selectedIndex={this.store.airportSearchMode}
@@ -750,11 +741,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    id="ArptSelMiddle"
-                    style="display: flex; flex: 2; flex-direction: column; margin: 5px 20px 5px 20px;"
-                  >
-                    <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: center; margin: 10px;">
+                  <div id="ArptSelMiddle" class="oans-cp-arpt-sel-middle">
+                    <div class="oans-cp-arpt-sel-middle-1">
                       <span class="mfd-value">
                         {this.store.selectedAirport.map((it) => it?.name?.substring(0, 18).toUpperCase() ?? '')}
                       </span>
@@ -778,7 +766,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       </span>
                     </div>
                     <div style="flex-grow: 1;" />
-                    <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
+                    <div class="oans-cp-arpt-sel-display-arpt">
                       <Button
                         ref={this.displayAirportButtonRef}
                         label="DISPLAY AIRPORT"
@@ -787,11 +775,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    style="width: 20%; display: flex; flex-direction: column;
-                                    margin-top: 20px; margin-bottom: 20px; justify-content: space-between;
-                                    align-items: center; border-left: 2px solid lightgrey"
-                  >
+                  <div class="oans-cp-arpt-sel-fms">
                     <Button
                       label={this.fmsDataStore.origin.map((it) => (it ? <>{it}</> : <>ORIGIN</>))}
                       onClick={() => {
@@ -829,17 +813,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                 </div>
               </TopTabNavigatorPage>
               <TopTabNavigatorPage containerStyle="justify-content: space-between; align-content: space-between; justify-items: space-between;">
-                <div
-                  style="display: flex; flex-direction: row; border-bottom: 2px solid lightgray;
-                                padding-bottom: 25px; margin-left: 30px; margin-right: 30px;"
-                >
-                  <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
+                <div class="oans-cp-status">
+                  <div class="oans-cp-status-active">
                     <span class="mfd-label" style="margin-bottom: 10px;">
                       ACTIVE
                     </span>
                     <span class="mfd-value bigger">{this.activeDatabase}</span>
                   </div>
-                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                  <div class="oans-cp-status-2">
                     <Button
                       label="SWAP"
                       disabled={Subject.create(true)}
@@ -847,21 +828,18 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       buttonStyle="padding: 20px 30px 20px 30px;"
                     />
                   </div>
-                  <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
+                  <div class="oans-cp-status-second">
                     <span class="mfd-label" style="margin-bottom: 10px;">
                       SECOND
                     </span>
                     <span class="mfd-value smaller">{this.secondDatabase}</span>
                   </div>
                 </div>
-                <div
-                  style="display: flex; flex-direction: row; justify-content: space-between;
-                                border-bottom: 2px solid lightgray; margin: 0px 15px 0px 15px; padding: 25px 10px 25px 10px;"
-                >
+                <div class="oans-cp-status-db">
                   <span class="mfd-label">AIRPORT DATABASE</span>
                   <span class="mfd-value">{this.airportDatabase}</span>
                 </div>
-                <div style="display: flex; flex-direction: row; justify-content: space-between; justify-content: center; margin-top: 20px; height: 20px;">
+                <div class="oans-cp-status-1">
                   <span class="mfd-label bigger" />
                 </div>
               </TopTabNavigatorPage>
