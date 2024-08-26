@@ -459,11 +459,11 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
     const onGround = this.leftGearcompressed || this.rightGearCompressed;
     const oneEngineRunning = this.engOneRunning || this.engTwoRunning || this.engThreeRunning || this.engFourRunning;
 
-    if (!onGround && !oneEngineRunning) {
-      this.onGroundForVisibility.set('hidden');
-    } else {
+    if (onGround && oneEngineRunning) {
       this.onGroundForVisibility.set('visible');
       this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
+    } else {
+      this.onGroundForVisibility.set('hidden');
     }
   }
 
