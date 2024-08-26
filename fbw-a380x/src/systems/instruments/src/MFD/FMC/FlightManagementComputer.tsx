@@ -5,9 +5,9 @@ import {
   DataManager,
   EfisInterface,
   EfisSymbols,
+  FlightPhaseManager,
   FlightPlanIndex,
   Navigation,
-  getFlightPhaseManager,
 } from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { ArraySubject, EventBus, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
@@ -112,7 +112,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#guidanceController;
   }
 
-  #navigation = new Navigation(this.flightPlanService);
+  #navigation = new Navigation(this.bus, this.flightPlanService);
 
   get navigation() {
     return this.#navigation;
@@ -122,13 +122,17 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#navigation.getNavaidTuner();
   }
 
-  private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigation);
+  private navaidSelectionManager = new NavaidSelectionManager(this.bus, this.flightPlanService, this.navigation);
 
-  private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation);
+  private landingSystemSelectionManager = new LandingSystemSelectionManager(
+    this.bus,
+    this.flightPlanService,
+    this.navigation,
+  );
 
   private efisSymbols!: EfisSymbols<number>;
 
-  private flightPhaseManager = getFlightPhaseManager();
+  private readonly flightPhaseManager = new FlightPhaseManager(this.bus);
 
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
@@ -178,6 +182,7 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.flightPlanService.createFlightPlans();
       this.#guidanceController = new GuidanceController(
+        this.bus,
         this.fmgc,
         this.flightPlanService,
         this.efisInterfaces,
@@ -185,6 +190,7 @@ export class FlightManagementComputer implements FmcInterface {
         A380AircraftConfig,
       );
       this.efisSymbols = new EfisSymbols(
+        this.bus,
         this.#guidanceController,
         this.flightPlanService,
         this.navaidTuner,
