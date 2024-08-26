@@ -7,6 +7,7 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
   VNode,
@@ -26,6 +27,8 @@ export interface FmMessagesProps {
 export class FmMessages extends DisplayComponent<FmMessagesProps> {
   private readonly activeMessages = ArraySubject.create<FMMessage>([]);
 
+  private readonly activeMessagesCount = Subject.create(0);
+
   private readonly lastActiveMessage = Subject.create<FMMessage | null>(null);
 
   private readonly boxRef = FSComponent.createRef<SVGRectElement>();
@@ -36,21 +39,26 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
     (it) => it === EfisNdMode.ARC || it === EfisNdMode.ROSE_NAV,
   );
 
-  private readonly visible = this.props.mode.map((mode) => {
-    if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR || this.activeMessages.length === 0) {
-      return false;
-    }
+  private readonly visible = MappedSubject.create(
+    ([mode, activeMessages]) => {
+      if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR || activeMessages === 0) {
+        return false;
+      }
 
-    return true;
-  });
+      return true;
+    },
+    this.props.mode,
+    this.activeMessagesCount,
+  );
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<GenericFmsEvents>();
 
-    this.activeMessages.sub((_, type, ___, array) => {
+    this.activeMessages.sub((_, __, ___, array) => {
       this.lastActiveMessage.set(array[array.length - 1]);
+      this.activeMessagesCount.set(array.length);
     });
 
     sub
