@@ -1594,7 +1594,7 @@ impl A380Hydraulic {
         0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
     const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+        [0., 1.3, 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
 
     const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
@@ -1827,8 +1827,8 @@ impl A380Hydraulic {
                 context,
                 "FLAPS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(251.97),
+                AngularVelocity::new::<radian_per_second>(0.047),
+                Angle::new::<degree>(218.912),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -1840,8 +1840,8 @@ impl A380Hydraulic {
                 context,
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(334.16),
+                AngularVelocity::new::<radian_per_second>(0.08),
+                Angle::new::<degree>(284.66),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -9953,6 +9953,32 @@ mod tests {
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
+        }
+
+        #[test]
+        fn flap_full_transition_time_38s() {
+            let mut test_bed = test_bed_on_ground_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(37));
+
+            assert!(test_bed.is_flaps_moving());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+            assert!(!test_bed.is_flaps_moving());
+
+            assert!(test_bed.get_flaps_left_position_percent() >= 98.);
+            assert!(test_bed.get_flaps_right_position_percent() >= 98.);
+            assert!(test_bed.get_slats_left_position_percent() >= 98.);
+            assert!(test_bed.get_slats_right_position_percent() >= 98.);
         }
 
         #[test]
