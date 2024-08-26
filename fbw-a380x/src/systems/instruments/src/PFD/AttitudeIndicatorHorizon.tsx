@@ -218,7 +218,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           <path d="m23.906 80.823h90h0" class="NormalOutline" />
           <path d="m23.906 80.823h90h0" class="NormalStroke White" />
 
-          <g class="FontSmall White Fill EndAlign">
+          <g class="FontMediumSmaller White Fill EndAlign">
             <text x="55.729935" y="64.812828">
               10
             </text>
