@@ -3988,6 +3988,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             lgciu1,
             lgciu2,
             placeholder_ground_spoilers_out,
+            self.ground_speed,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
@@ -6193,6 +6194,8 @@ struct SpoilerGroup {
     spoiler_positions: [f64; 8],
 }
 impl SpoilerGroup {
+    const PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO: f64 = 0.55;
+
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
         Self {
             spoilers,
@@ -6278,8 +6281,15 @@ impl SpoilerGroup {
     }
 
     fn ground_spoilers_are_requested(&self) -> bool {
-        self.hydraulic_controllers[0].requested_position() > Ratio::new::<ratio>(0.1)
-            && self.hydraulic_controllers[1].requested_position() > Ratio::new::<ratio>(0.1)
+        // Placeholder to decide if ground spoilers are requested. TODO use actual signal from flight controls
+        self.hydraulic_controllers[0].requested_position()
+            > Ratio::new::<ratio>(
+                Self::PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO,
+            )
+            && self.hydraulic_controllers[1].requested_position()
+                > Ratio::new::<ratio>(
+                    Self::PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO,
+                )
     }
 }
 impl SimulationElement for SpoilerGroup {
@@ -9353,7 +9363,7 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_arms_in_flight_btv_to_hi() {
+        fn autobrakes_arms_in_flight_lo_to_hi() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -9362,11 +9372,12 @@ mod tests {
 
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
+            // BTV not programmed cannot arm
             test_bed = test_bed
                 .set_autobrake_btv()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::BTV);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
                 .set_autobrake_low()
@@ -9508,6 +9519,34 @@ mod tests {
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_activates_on_ground_and_deactivates_pressing_rto_again() {
+            let mut test_bed = test_bed_on_ground_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_rto()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+
+            test_bed = test_bed
+                .set_autobrake_rto()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
 
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
