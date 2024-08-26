@@ -89,6 +89,8 @@ export interface PFDSimvars {
   tcasFail: boolean;
   engOneRunning: boolean;
   engTwoRunning: boolean;
+  engThreeRunning: boolean;
+  engFourRunning: boolean;
   expediteMode: boolean;
   setHoldSpeed: boolean;
   trkFpaDeselectedTCAS: boolean;
@@ -250,6 +252,8 @@ export enum PFDVars {
   tcasFail = 'L:A32NX_TCAS_FAULT',
   engOneRunning = 'GENERAL ENG COMBUSTION:1',
   engTwoRunning = 'GENERAL ENG COMBUSTION:2',
+  engThreeRunning = 'GENERAL ENG COMBUSTION:3',
+  engFourRunning = 'GENERAL ENG COMBUSTION:4',
   expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
   trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
