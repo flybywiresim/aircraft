@@ -122,7 +122,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#navigation.getNavaidTuner();
   }
 
-  private navaidSelectionManager = new NavaidSelectionManager(this.bus, this.flightPlanService, this.navigation);
+  private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigation);
 
   private landingSystemSelectionManager = new LandingSystemSelectionManager(
     this.bus,
