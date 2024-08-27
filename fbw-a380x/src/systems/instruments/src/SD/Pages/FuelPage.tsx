@@ -369,10 +369,10 @@ export const FuelPage = () => {
             {/* Line.11 & Line.12 & Line.18 -> Engine2LPValve (via Junction.2) = ALWAYS ON */}
             <FuelLine x1={273} y1={191} x2={273} y2={137} active displayWhenInactive={showMore} />
             {/* Line.129 */}
-            <FuelLine x1={273} y1={152} x2={299} y2={152} active displayWhenInactive={showMore} />
+            <FuelLine x1={273} y1={148} x2={299} y2={148} active displayWhenInactive={showMore} />
 
             {/* Crossfeed valve 2 - Valve.47 */}
-            <Valve x={316} y={152} horizontal open={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
+            <Valve x={316} y={148} horizontal open={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
 
             {/* FEED TANK 3 */}
             <TankQuantity x={528} y={288} quantity={feed3TankWeight} hasFault={feed3TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG} />
@@ -388,10 +388,10 @@ export const FuelPage = () => {
             {/* Line.13 & Line.14 & Line.19 -> Engine3LPValve (via Junction.3) = ALWAYS ON */}
             <FuelLine x1={493} y1={191} x2={493} y2={137} active displayWhenInactive={showMore} />
             {/* Line.130 */}
-            <FuelLine x1={467} y1={152} x2={493} y2={152} active displayWhenInactive={showMore} />
+            <FuelLine x1={467} y1={148} x2={493} y2={148} active displayWhenInactive={showMore} />
 
             {/* Crossfeed valve 3 - Valve.48 */}
-            <Valve x={450} y={152} horizontal open={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
+            <Valve x={450} y={148} horizontal open={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} normallyClosed />
 
             {/* RIGHT INNER/MID/OUTER */}
             <TankQuantity x={548} y={430} quantity={rightInnerTankWeight} />
