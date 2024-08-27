@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  Phase,
-  PreFlightPhase,
-  TakeOffPhase,
+  ApproachPhase,
   ClimbPhase,
   CruisePhase,
   DescentPhase,
-  ApproachPhase,
-  GoAroundPhase,
   DonePhase,
+  GoAroundPhase,
+  Phase,
+  PreFlightPhase,
+  TakeOffPhase,
 } from '@fmgc/flightphase/Phase';
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -61,7 +61,8 @@ export class FlightPhaseManager {
     return SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number');
   }
 
-  constructor(private readonly bus: EventBus) {}init(): void {
+  constructor(private readonly bus: EventBus) {}
+  init(): void {
     console.log(`FMGC Flight Phase: ${this.phase}`);
     this.phases[this.phase].init();
     this.changePhase(this.phase);
@@ -85,7 +86,9 @@ export class FlightPhaseManager {
     }
   }
 
-  /** @deprecated Use {@link FlightPhaseManagerEvents} instead. */addOnPhaseChanged(cb: (prev: FmgcFlightPhase, next: FmgcFlightPhase) => void): void {
+  /** @deprecated Use {@link FlightPhaseManagerEvents} instead. */ addOnPhaseChanged(
+    cb: (prev: FmgcFlightPhase, next: FmgcFlightPhase) => void,
+  ): void {
     this.phaseChangeListeners.push(cb);
   }
 
