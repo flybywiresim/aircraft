@@ -128,7 +128,7 @@ class CDUNavaidPage {
         // 2R
         if (cat > 0) {
             template[3][1] = 'CATEGORY';
-            template[4][1] = `{green}${facility.category}{end}`;
+            template[4][1] = `{green}${cat}{end}`;
         }
 
         // 3R
