@@ -7,6 +7,7 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 export const FuelPage = () => {
     const CROSS_FEED_VALVE_CLOSED_THRESHOLD = 0.1;
     const TRANSFER_VALVE_CLOSED_THRESHOLD = 0.1;
+    const JETTISON_VALVE_CLOSED_THRESHOLD = 0.1;
 
     const [showMore] = useState(false);
 
@@ -271,6 +272,13 @@ export const FuelPage = () => {
         { x1: 592, y1: 346, x2: 602, y2: 362, active: true, displayWhenInactive: showMore }
     ];
 
+    // Jettison valves
+    const [leftJettisonValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:57', 'Percent over 100', 1000);
+    const isLeftJettisonValveOpen = leftJettisonValveOpen >= JETTISON_VALVE_CLOSED_THRESHOLD;
+    const [rightJettisonValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:58', 'Percent over 100', 1000);
+    const isRightJettisonValveOpen = rightJettisonValveOpen >= JETTISON_VALVE_CLOSED_THRESHOLD;
+    const isJettisonActive = false; // TODO
+
     // Tanks
     const [leftOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:1', 'kg');
     const [feed1TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:2', 'kg');
@@ -458,6 +466,47 @@ export const FuelPage = () => {
             {/* AFT transfer gallery */}
             <Gallery y={472} pumps={aftGalleryPumps} transferValves={aftGalleryTransferValves} otherLines={[]} showMore={showMore} />
 
+            {/* Jettison */}
+            <g>
+                <FuelLine
+                    x1={190}
+                    y1={500}
+                    x2={190}
+                    y2={522}
+                    active={isLeftJettisonValveOpen}
+                    displayWhenInactive={false}
+                    startArrow='in'
+                    startArrowSize={16}
+                    fillStartArrow={true}
+                    endArrow='out'
+                    endArrowSize={16}
+                    fillEndArrow={true}
+                    hasFault={isLeftJettisonValveOpen && !isJettisonActive}
+                />
+                {(isJettisonActive || isLeftJettisonValveOpen) &&
+                    <text x={134} y={562} className={`${isLeftJettisonValveOpen !== isJettisonActive ? 'Amber' : 'White'} T2`}>JETTISON</text>
+                }
+
+                <FuelLine
+                    x1={570}
+                    y1={500}
+                    x2={570}
+                    y2={522}
+                    active={isRightJettisonValveOpen}
+                    displayWhenInactive={false}
+                    startArrow='in'
+                    startArrowSize={16}
+                    fillStartArrow={true}
+                    endArrow='out'
+                    endArrowSize={16}
+                    fillEndArrow={true}
+                    hasFault={isRightJettisonValveOpen && !isJettisonActive}
+                />
+                {(isJettisonActive || isRightJettisonValveOpen) &&
+                    <text x={514} y={562} className={`${isRightJettisonValveOpen !== isJettisonActive ? 'Amber' : 'White'} T2`}>JETTISON</text>
+                }
+            </g>
+
             {/* Trim tank */}
             <g>
                 {/* Trim tank to AFT gallery */}
@@ -591,16 +640,31 @@ interface FuelLineProps {
     x2: number,
     y2: number,
     startArrow?: 'in' | 'out' | 'break',
+    fillStartArrow?: boolean,
+    startArrowSize?: number,
     endArrow?: 'in' | 'out' | 'break',
+    fillEndArrow?: boolean,
+    endArrowSize?: number,
     active: boolean,
     displayWhenInactive: boolean,
     hasFault?: boolean,
 }
 
-const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, active, displayWhenInactive, hasFault }) => {
-    const arrowWidth = 10;
-    const arrowHeight = 10;
-
+const FuelLine: FC<FuelLineProps> = ({
+    x1,
+    y1,
+    x2,
+    y2,
+    startArrow,
+    fillStartArrow = false,
+    startArrowSize = 10,
+    endArrow,
+    fillEndArrow = false,
+    endArrowSize = 10,
+    active = false,
+    displayWhenInactive,
+    hasFault = false,
+}) => {
     let color: string;
     if (hasFault) {
         color = 'Amber'
@@ -622,17 +686,17 @@ const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, act
     return (
         <g className={`${color} LineJoinRound LineRound`} strokeWidth={3}>
             {(startArrow === 'in' || startArrow === 'out') && <polygon
-                className='T4 LineJoinRound NoFill'
-                transform={`rotate(${startRotation} ${x1} ${y1}) translate(0 ${startArrow === 'in' ? arrowHeight : 0})`}
-                strokeWidth={3} points={`${x1 - arrowWidth / 2},${y1} ${x1 + arrowWidth / 2},${y1} ${x1},${y1 - arrowHeight}`}
+                className={`T4 LineJoinRound ${fillStartArrow ? (color + 'Fill') : 'NoFill'}`}
+                transform={`rotate(${startRotation} ${x1} ${y1}) translate(0 ${startArrow === 'in' ? startArrowSize : 0})`}
+                strokeWidth={3} points={`${x1 - endArrowSize / 2},${y1} ${x1 + endArrowSize / 2},${y1} ${x1},${y1 - startArrowSize}`}
             />}
             {startArrow === 'break' && <line x1={x1 - 3} y1={y1 + 6} x2={x1 + 3} y2={y1 - 6} transform={`rotate(${(startRotation + 90) % 360} ${x1} ${y1})`} />}
             <line x1={x1} y1={y1} x2={x2} y2={y2} />
             {endArrow === 'break' && <line x1={x2 - 3} y1={y2 + 6} x2={x2 + 3} y2={y2 - 6} transform={`rotate(${(endRotation + 90) % 360} ${x2} ${y2})`} />}
             {(endArrow === 'in' || endArrow === 'out') && <polygon
-                className='T4 LineJoinRound NoFill'
-                transform={`rotate(${endRotation} ${x2} ${y2}) translate(0 ${endArrow === 'in' ? arrowHeight : 0})`}
-                strokeWidth={3} points={`${x2 - arrowWidth / 2},${y2} ${x2 + arrowWidth / 2},${y2} ${x2},${y2 - arrowHeight}`}
+                className={`T4 LineJoinRound ${fillEndArrow ? (color + 'Fill') : 'NoFill'}`}
+                transform={`rotate(${endRotation} ${x2} ${y2}) translate(0 ${endArrow === 'in' ? endArrowSize : 0})`}
+                strokeWidth={3} points={`${x2 - endArrowSize / 2},${y2} ${x2 + endArrowSize / 2},${y2} ${x2},${y2 - endArrowSize}`}
             />}
         </g>
     );
