@@ -375,7 +375,9 @@ export class EfisSymbols<T extends number> {
           efisOption,
           mode,
           side,
-          () => true,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
         );
@@ -398,7 +400,9 @@ export class EfisSymbols<T extends number> {
             efisOption,
             mode,
             side,
-            () => true,
+            mapReferencePoint,
+            mapOrientation,
+            editArea,
             formatConstraintAlt,
             formatConstraintSpeed,
           );
@@ -422,7 +426,9 @@ export class EfisSymbols<T extends number> {
           efisOption,
           mode,
           side,
-          () => true,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
         );
@@ -446,7 +452,9 @@ export class EfisSymbols<T extends number> {
           efisOption,
           mode,
           side,
-          () => true,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
         );
@@ -469,7 +477,9 @@ export class EfisSymbols<T extends number> {
             efisOption,
             mode,
             side,
-            () => true,
+            mapReferencePoint,
+            mapOrientation,
+            editArea,
             formatConstraintAlt,
             formatConstraintSpeed,
           );
@@ -538,7 +548,9 @@ export class EfisSymbols<T extends number> {
     efisOption: EfisOption,
     mode: EfisNdMode,
     side: EfisSide,
-    withinEditArea: (ll) => boolean,
+    mapReferencePoint: Coordinates | null,
+    mapOrientation: number,
+    editArea: EditArea,
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
   ): NdSymbol[] {
@@ -621,7 +633,7 @@ export class EfisSymbols<T extends number> {
         continue;
       }
 
-      if (!withinEditArea(location)) {
+      if (!this.isWithinEditArea(location, mapReferencePoint, mapOrientation, editArea)) {
         continue;
       }
 
@@ -762,7 +774,7 @@ export class EfisSymbols<T extends number> {
       const databaseId = `A${airport.ident}${planAltnStr}${planIndexStr}${runwayIdentStr}`;
 
       if (runway) {
-        if (withinEditArea(runway.startLocation)) {
+        if (this.isWithinEditArea(runway.startLocation, mapReferencePoint, mapOrientation, editArea)) {
           ret.push({
             databaseId,
             ident: runway.ident,
@@ -772,7 +784,7 @@ export class EfisSymbols<T extends number> {
             type: NdSymbolTypeFlags.Runway,
           });
         }
-      } else if (withinEditArea(airport.location)) {
+      } else if (this.isWithinEditArea(airport.location, mapReferencePoint, mapOrientation, editArea)) {
         ret.push({
           databaseId,
           ident: airport.ident,
