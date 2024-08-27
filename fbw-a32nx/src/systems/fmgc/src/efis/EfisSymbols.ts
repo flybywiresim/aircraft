@@ -191,31 +191,31 @@ export class EfisSymbols<T extends number> {
         continue;
       }
 
-      const termination = this.findPlanCentreCoordinates(side);
-      if (termination) {
+      const mapReferencePoint = mode === EfisNdMode.PLAN ? this.findPlanCentreCoordinates(side) : ppos;
+      if (mapReferencePoint) {
         this.mapReferenceLatitude[side].setBnrValue(
-          termination.lat,
+          mapReferencePoint.lat,
           Arinc429SignStatusMatrix.NormalOperation,
           20,
           90,
           -90,
         );
         this.mapReferenceLongitude[side].setBnrValue(
-          termination.long,
+          mapReferencePoint.long,
           Arinc429SignStatusMatrix.NormalOperation,
           20,
           180,
           -180,
         );
       } else {
-        this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 90, -90);
-        this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 180, -180);
+        this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 90, -90);
+        this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 180, -180);
       }
 
       this.mapReferenceLatitude[side].writeToSimVarIfDirty();
       this.mapReferenceLongitude[side].writeToSimVarIfDirty();
 
-      if (mode === EfisNdMode.PLAN && !termination) {
+      if (mode === EfisNdMode.PLAN && !mapReferencePoint) {
         this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
         return;
       }
@@ -224,12 +224,12 @@ export class EfisSymbols<T extends number> {
 
       // eslint-disable-next-line no-loop-func
       const withinEditArea = (ll): boolean => {
-        if (!termination) {
-          return true;
+        if (!mapReferencePoint) {
+          return false;
         }
 
-        const dist = distanceTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
-        let bearing = bearingTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
+        const dist = distanceTo(mode === EfisNdMode.PLAN ? mapReferencePoint : ppos, ll);
+        let bearing = bearingTo(mode === EfisNdMode.PLAN ? mapReferencePoint : ppos, ll);
         if (mode !== EfisNdMode.PLAN) {
           bearing = MathUtils.normalise360(bearing - trueHeading);
         }
