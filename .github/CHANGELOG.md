@@ -112,6 +112,7 @@
 1. [GPWS] Fixed behaviour and trigger conditions for GPWS Mode 4 submodes - @LeechCZ (Leech)
 1. [FWS] Improved landing memo gear logic - @tracernz (Mike)
 1. [FMS] Selected navaids are now reset on entering the done flight phase - @tracernz (Mike)
+1. [FMS] Fix tailwind component of trip wind being treated as a headwind - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 
