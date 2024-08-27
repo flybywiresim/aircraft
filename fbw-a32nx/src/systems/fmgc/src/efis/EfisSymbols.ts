@@ -228,8 +228,8 @@ export class EfisSymbols<T extends number> {
           return false;
         }
 
-        const dist = distanceTo(mode === EfisNdMode.PLAN ? mapReferencePoint : ppos, ll);
-        let bearing = bearingTo(mode === EfisNdMode.PLAN ? mapReferencePoint : ppos, ll);
+        const dist = distanceTo(mapReferencePoint, ll);
+        let bearing = bearingTo(mapReferencePoint, ll);
         if (mode !== EfisNdMode.PLAN) {
           bearing = MathUtils.normalise360(bearing - trueHeading);
         }
