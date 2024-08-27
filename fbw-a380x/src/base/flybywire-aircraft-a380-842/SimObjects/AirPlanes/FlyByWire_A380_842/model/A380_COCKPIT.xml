@@ -111,15 +111,15 @@
 
                 0
 
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 0 == if{
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 1 == if{
                     4 |
                 }
 
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 1 == if{
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 2 == if{
                     2 |
                 }
 
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 2 == if{
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 3 == if{
                     8 |
                 }
 
@@ -137,15 +137,15 @@
 
                 0
 
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 0 == if{
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 1 == if{
                     4 |
                 }
 
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 1 == if{
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 2 == if{
                     2 |
                 }
 
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 2 == if{
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 3 == if{
                     8 |
                 }
 
