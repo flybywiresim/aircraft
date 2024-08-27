@@ -751,9 +751,9 @@
     - {side} = L or R
     - | State | Value |
       |-------|-------|
-      | WPT   | 0     |
-      | VORD  | 1     |
-      | NDB   | 2     |
+      | WPT   | 1     |
+      | VORD  | 2     |
+      | NDB   | 3     |
 
 - A380X_EFIS_{side}_ACTIVE_OVERLAY
     - Boolean
