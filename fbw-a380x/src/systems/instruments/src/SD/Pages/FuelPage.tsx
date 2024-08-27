@@ -118,12 +118,6 @@ export const FuelPage = () => {
     const [rightInnerFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:20', 'Percent over 100', 1000);
     const [rightMidFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:21', 'Percent over 100', 1000);
     const [rightOuterFwdTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:22', 'Percent over 100', 1000);
-    const isAnyFwdTransferValveOpen = leftInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
-        || leftMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
-        || leftOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
-        || rightInnerFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
-        || rightMidFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD
-        || rightOuterFwdTransferValveOpen >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     //  AFT
     //     Feed tanks
@@ -148,21 +142,19 @@ export const FuelPage = () => {
     const [leftOuterAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:39', 'Percent over 100', 1000);
     const isAnyLeftOuterAftTransferValveOpen = leftOuterAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftOuterAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [leftMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:32', 'Percent over 100'); // Into ta, 1000nk
-    const [leftMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:38', 'Percent over 100'); // Out of ta, 1000nk
-    const isAnyLeftMidAftTransferValveOpen = leftMidAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftMidAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
+    const [leftMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:32', 'Percent over 100', 1000); // Into tank
+    const [leftMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:38', 'Percent over 100', 1000); // Out of tank
 
-    const [leftInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:31', 'Percent over 100'); // Into tank (I thin, 1000k)
-    const [leftInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:37', 'Percent over 100'); // Out of tank (I thin, 1000k)
+    const [leftInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:31', 'Percent over 100', 1000); // Into tank (I think)
+    const [leftInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:37', 'Percent over 100', 1000); // Out of tank (I think)
     const isAnyLeftInnerAftTransferValveOpen = leftInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftInnerAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [rightInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:34', 'Percent over 100'); // Into tank (I thin, 1000k)
-    const [rightInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:40', 'Percent over 100'); // Out of tank (I thin, 1000k)
+    const [rightInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:34', 'Percent over 100', 1000); // Into tank (I think)
+    const [rightInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:40', 'Percent over 100', 1000); // Out of tank (I think)
     const isAnyRightInnerAftTransferValveOpen = rightInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || rightInnerAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-    const [rightMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:35', 'Percent over 100'); // Into ta, 1000nk
-    const [rightMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:41', 'Percent over 100'); // Out of ta, 1000nk
-    const isAnyRightMidAftTransferValveOpen = rightMidAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || rightMidAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
+    const [rightMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:35', 'Percent over 100', 1000); // Into tank
+    const [rightMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:41', 'Percent over 100', 1000); // Out of tank
 
     const [rightOuterAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:36', 'Percent over 100', 1000);
     const [rightOuterAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:42', 'Percent over 100', 1000);
