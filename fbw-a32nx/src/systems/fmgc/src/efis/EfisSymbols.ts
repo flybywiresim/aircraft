@@ -42,6 +42,11 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
+/**
+ * A map edit area in nautical miles, [ahead, behind, beside].
+ */
+type EditArea = [number, number, number];
+
 export class EfisSymbols<T extends number> {
   private blockUpdate = false;
 
@@ -102,6 +107,31 @@ export class EfisSymbols<T extends number> {
 
   init(): void {
     this.nearby.init();
+  }
+
+  /**
+   *
+   * @param ll The latitude/longitude to check.
+   * @param mrp The map reference point. If not defined nothing can be in the edit area as it is undefined.
+   * @param mapOrientation The direction of the top of the map in true degrees.
+   * @param editArea The map edit area in nautical miles, [ahead, behind, beside].
+   * @returns true if {@link ll} lies within the edit area.
+   */
+  private isWithinEditArea(
+    ll: Coordinates,
+    mrp: Coordinates | null,
+    mapOrientation: number,
+    editArea: EditArea,
+  ): boolean {
+    if (!mrp) {
+      return false;
+    }
+
+    const dist = distanceTo(mrp, ll);
+    const bearing = MathUtils.normalise360(bearingTo(mrp, ll) - mapOrientation) * MathUtils.DEGREES_TO_RADIANS;
+    const dx = dist * Math.sin(bearing);
+    const dy = dist * Math.cos(bearing);
+    return Math.abs(dx) < editArea[2] && dy > -editArea[1] && dy < editArea[0];
   }
 
   async update(deltaTime: number): Promise<void> {
@@ -220,24 +250,9 @@ export class EfisSymbols<T extends number> {
         return;
       }
 
-      const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
-
-      // eslint-disable-next-line no-loop-func
-      const withinEditArea = (ll): boolean => {
-        if (!mapReferencePoint) {
-          return false;
-        }
-
-        const dist = distanceTo(mapReferencePoint, ll);
-        let bearing = bearingTo(mapReferencePoint, ll);
-        if (mode !== EfisNdMode.PLAN) {
-          bearing = MathUtils.normalise360(bearing - trueHeading);
-        }
-        bearing = (bearing * Math.PI) / 180;
-        const dx = dist * Math.sin(bearing);
-        const dy = dist * Math.cos(bearing);
-        return Math.abs(dx) < editBeside && dy > -editBehind && dy < editAhead;
-      };
+      /** True bearing of the up direction of the map in degrees. */
+      const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
+      const editArea = this.calculateEditArea(range, mode);
 
       const symbols: NdSymbol[] = [];
 
@@ -279,7 +294,7 @@ export class EfisSymbols<T extends number> {
           if (symbolType === 0) {
             continue;
           }
-          if (withinEditArea(vor.location)) {
+          if (this.isWithinEditArea(vor.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
               databaseId: vor.databaseId,
               ident: vor.ident,
@@ -290,7 +305,7 @@ export class EfisSymbols<T extends number> {
         }
       } else if (efisOption === EfisOption.Ndbs) {
         for (const ndb of this.nearby.getNdbNavaids()) {
-          if (withinEditArea(ndb.location)) {
+          if (this.isWithinEditArea(ndb.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
               databaseId: ndb.databaseId,
               ident: ndb.ident,
@@ -301,7 +316,10 @@ export class EfisSymbols<T extends number> {
         }
       } else if (efisOption === EfisOption.Airports) {
         for (const ap of this.nearby.getAirports()) {
-          if (withinEditArea(ap.location) && hasSuitableRunway(ap)) {
+          if (
+            this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) &&
+            hasSuitableRunway(ap)
+          ) {
             upsertSymbol({
               databaseId: ap.databaseId,
               ident: ap.ident,
@@ -312,7 +330,7 @@ export class EfisSymbols<T extends number> {
         }
       } else if (efisOption === EfisOption.Waypoints) {
         for (const wp of this.nearby.getWaypoints()) {
-          if (withinEditArea(wp.location)) {
+          if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
               databaseId: wp.databaseId,
               ident: wp.ident,
