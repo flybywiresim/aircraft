@@ -415,7 +415,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <path class="NormalStroke White" d="m29.821 1.8143v13.506h-24.517v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="11.669141" y="14.351689">FLX</text>
-                                <text class="FontMedium MiddleAlign Cyan" x="20.599141" y="14.351689">+</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="20.599141" y="14.851689">+</text>
                                 <text class="FontMedium MiddleAlign Cyan" x="26.099141" y="14.351689">
                                 ${FlexText}
                                 </text>
