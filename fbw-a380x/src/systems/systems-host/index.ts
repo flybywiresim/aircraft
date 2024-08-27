@@ -139,7 +139,6 @@ class SystemsHost extends BaseInstrument {
     ]).then(([keyEventManager]) => {
       this.keyInterceptManager = keyEventManager;
       this.initLighting();
-      this.initFuelPumps();
     });
   }
 
@@ -232,25 +231,8 @@ class SystemsHost extends BaseInstrument {
     this.setPotentiometer(7, autoBrightness); // ambientLightLevel
   }
 
-  private initFuelPumps() {
-    console.log("Initializing fuel pumps' state");
-
-    this.setFuelPumpState(1, 1);
-    this.setFuelPumpState(2, 2);
-    this.setFuelPumpState(3, 1);
-    this.setFuelPumpState(4, 2);
-    this.setFuelPumpState(5, 1);
-    this.setFuelPumpState(6, 2);
-    this.setFuelPumpState(7, 1);
-    this.setFuelPumpState(8, 2);
-  }
-
   private setPotentiometer(potentiometer: number, brightness: number) {
     this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
-  }
-
-  private setFuelPumpState(pump: number, state: number) {
-    this.keyInterceptManager.triggerKey('FUELSYSTEM_PUMP_SET', false, pump, state);
   }
 }
 
