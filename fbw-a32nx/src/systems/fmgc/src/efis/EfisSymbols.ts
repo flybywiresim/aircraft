@@ -201,8 +201,7 @@ export class EfisSymbols<T extends number> {
       this.lastMode[side] = mode;
       const efisOptionChange = this.lastEfisOption[side] !== efisOption;
       this.lastEfisOption[side] = efisOption;
-      const nearbyOverlayChanged =
-        efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
+      const nearbyOverlayChanged = (efisOption & ~EfisOption.Constraints) > 0 && nearbyFacilitiesChanged;
       const efisInterfaceChanged = this.lastEfisInterfaceVersions[side] !== this.efisInterfaces[side].version;
       this.lastEfisInterfaceVersions[side] = this.efisInterfaces[side].version;
 
@@ -288,7 +287,7 @@ export class EfisSymbols<T extends number> {
       };
 
       // TODO ADIRs aligned (except in plan mode...?)
-      if (efisOption === EfisOption.VorDmes) {
+      if ((efisOption & EfisOption.VorDmes) > 0) {
         for (const vor of this.nearby.getVhfNavaids()) {
           const symbolType = this.vorDmeTypeFlag(vor.type);
           if (symbolType === 0) {
@@ -303,7 +302,8 @@ export class EfisSymbols<T extends number> {
             });
           }
         }
-      } else if (efisOption === EfisOption.Ndbs) {
+      }
+      if ((efisOption & EfisOption.Ndbs) > 0) {
         for (const ndb of this.nearby.getNdbNavaids()) {
           if (this.isWithinEditArea(ndb.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
@@ -314,7 +314,8 @@ export class EfisSymbols<T extends number> {
             });
           }
         }
-      } else if (efisOption === EfisOption.Airports) {
+      }
+      if ((efisOption & EfisOption.Airports) > 0) {
         for (const ap of this.nearby.getAirports()) {
           if (
             this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) &&
@@ -328,7 +329,8 @@ export class EfisSymbols<T extends number> {
             });
           }
         }
-      } else if (efisOption === EfisOption.Waypoints) {
+      }
+      if ((efisOption & EfisOption.Waypoints) > 0) {
         for (const wp of this.nearby.getWaypoints()) {
           if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
@@ -688,7 +690,7 @@ export class EfisSymbols<T extends number> {
         }
       }
 
-      if (efisOption === EfisOption.Constraints && !isBeforeActiveLeg) {
+      if ((efisOption & EfisOption.Constraints) > 0 && !isBeforeActiveLeg) {
         const descent = leg.constraintType === WaypointConstraintType.DES;
         switch (altConstraint?.altitudeDescriptor) {
           case AltitudeDescriptor.AtAlt1:
