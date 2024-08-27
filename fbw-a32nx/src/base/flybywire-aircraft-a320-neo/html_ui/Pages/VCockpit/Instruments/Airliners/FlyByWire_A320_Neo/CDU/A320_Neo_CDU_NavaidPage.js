@@ -72,7 +72,7 @@ class CDUNavaidPage {
 
             // 3L
             template[3][0] = '\xa0\xa0\xa0\xa0LAT/LONG';
-            template[4][0] = `{green}${new LatLong(latLon.lat, latLon.long).toShortDegreeString()}{end}`;
+            template[4][0] = `{green}${CDUPilotsWaypoint.formatLatLong(latLon)}{end}`;
 
             // 4L
             template[5][0] = '\xa0FREQ';
