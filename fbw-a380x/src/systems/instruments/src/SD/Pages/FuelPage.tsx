@@ -10,7 +10,7 @@ export const FuelPage = () => {
     const JETTISON_VALVE_CLOSED_THRESHOLD = 0.1;
     const FEED_TANK_LOW_LEVEL_THRESHOLD_KG = 1375;
 
-    const [showMore] = useState(true);
+    const [showMore] = useState(false);
 
     const [eng1FuelUsed] = useSimVar('L:A32NX_FUEL_USED:1', 'kg', 1000); // kg
     const [eng2FuelUsed] = useSimVar('L:A32NX_FUEL_USED:2', 'kg', 1000); // kg
@@ -149,11 +149,9 @@ export const FuelPage = () => {
 
     const [leftInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:31', 'Percent over 100', 1000); // Into tank (I think)
     const [leftInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:37', 'Percent over 100', 1000); // Out of tank (I think)
-    const isAnyLeftInnerAftTransferValveOpen = leftInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || leftInnerAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     const [rightInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:34', 'Percent over 100', 1000); // Into tank (I think)
     const [rightInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:40', 'Percent over 100', 1000); // Out of tank (I think)
-    const isAnyRightInnerAftTransferValveOpen = rightInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD || rightInnerAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
     const [rightMidAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:35', 'Percent over 100', 1000); // Into tank
     const [rightMidAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:41', 'Percent over 100', 1000); // Out of tank
@@ -240,7 +238,7 @@ export const FuelPage = () => {
         { x1: 154, y1: 452, x2: 154, y2: 472, active: leftMidAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD, startArrow: 'in', displayWhenInactive: showMore },
 
         // Left inner into tank
-        { x1: 232, y1: 472, x2: 232, y2: 452, active: isAnyLeftInnerAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
+        { x1: 232, y1: 472, x2: 232, y2: 452, active: leftInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
 
         // Feed tank 2 into tank
         { x1: 314, y1: 472, x2: 314, y2: 358, active: isAnyFeedTank2AftTransferValveOpen, endArrow: 'break-left', displayWhenInactive: showMore },
@@ -251,7 +249,7 @@ export const FuelPage = () => {
         { x1: 448, y1: 332, x2: 448, y2: 322, active: isAnyFeedTank3AftTransferValveOpen, startArrow: 'break-left', endArrow: 'out', displayWhenInactive: showMore },
 
         // Right inner into tank
-        { x1: 482, y1: 472, x2: 482, y2: 452, active: isAnyRightInnerAftTransferValveOpen, endArrow: 'out', displayWhenInactive: showMore },
+        { x1: 482, y1: 472, x2: 482, y2: 452, active: rightInnerAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
 
         // Right mid into tank
         { x1: 578, y1: 472, x2: 578, y2: 452, active: rightMidAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD, endArrow: 'out', displayWhenInactive: showMore },
@@ -339,10 +337,10 @@ export const FuelPage = () => {
                 // FEED TANK 1 collector cell (inop.)
                 <TankQuantity x={138} y={268} smallFont quantity={1200} />
             )}
-            <Pump x={95} y={227} running={feed1Pump1Active} />
-            {(showMore || !(feed1Pump1Active && !feed1Pump2Active)) && (
-                <Pump x={127} y={227} running={feed1Pump2Active} displayWhenInactive={feed1Pump1Active} />
-            )}
+            {/* Feed tank 1 main pump */}
+            <Pump x={95} y={227} running={feed1Pump1Active} hasFault={!feed1Pump1Active} />
+            {/* Feed tank 1 standby pump. TODO actually deactivate the pump when the main one is active  */}
+            <Pump x={127} y={227} running={feed1Pump2Active && !feed1Pump1Active} hasFault={!feed1Pump2Active} displayWhenInactive={showMore} />
 
             {/* Line.9 & Line.10 & Line.17 -> Engine1LPValve (via Junction.1) = ALWAYS ON */}
             <FuelLine x1={111} y1={212} x2={111} y2={164} active displayWhenInactive={showMore} />
@@ -363,10 +361,10 @@ export const FuelPage = () => {
                 // FEED TANK 2 collector cell (inop.)
                 <TankQuantity x={310} y={252} smallFont quantity={1200} />
             )}
-            <Pump x={258} y={208} running={feed2Pump1Active} />
-            {(showMore || !(feed2Pump1Active && !feed2Pump2Active)) && (
-                <Pump x={290} y={208} running={feed2Pump2Active} displayWhenInactive={feed2Pump1Active} />
-            )}
+            {/* Feed tank 2 main pump */}
+            <Pump x={258} y={208} running={feed2Pump1Active} hasFault={!feed2Pump1Active} />
+            {/* Feed tank 2 standby pump. TODO actually deactivate the pump when the main one is active */}
+            <Pump x={290} y={208} running={feed2Pump2Active && !feed2Pump1Active} hasFault={!feed2Pump2Active} displayWhenInactive={showMore} />
 
             {/* Line.11 & Line.12 & Line.18 -> Engine2LPValve (via Junction.2) = ALWAYS ON */}
             <FuelLine x1={273} y1={191} x2={273} y2={137} active displayWhenInactive={showMore} />
@@ -382,10 +380,10 @@ export const FuelPage = () => {
                 // FEED TANK 3 collector cell (inop.)
                 <TankQuantity x={518} y={252} smallFont quantity={1200} />
             )}
-            <Pump x={476} y={208} running={feed3Pump1Active} />
-            {(showMore || !(feed3Pump1Active && !feed3Pump2Active)) && (
-                <Pump x={508} y={208} running={feed3Pump2Active} displayWhenInactive={feed3Pump1Active} />
-            )}
+            {/* Feed tank 3 main pump */}
+            <Pump x={476} y={208} running={feed3Pump1Active} hasFault={!feed3Pump1Active} />
+            {/* Feed tank 3 standby pump. TODO actually deactivate the pump when the main one is active */}
+            <Pump x={508} y={208} running={feed3Pump2Active && !feed3Pump1Active} hasFault={!feed3Pump2Active} displayWhenInactive={showMore} />
 
             {/* Line.13 & Line.14 & Line.19 -> Engine3LPValve (via Junction.3) = ALWAYS ON */}
             <FuelLine x1={493} y1={191} x2={493} y2={137} active displayWhenInactive={showMore} />
@@ -406,10 +404,10 @@ export const FuelPage = () => {
                 // FEED TANK 4 collector cell (inop.)
                 <TankQuantity x={690} y={268} smallFont quantity={1200} />
             )}
-            <Pump x={639} y={227} running={feed4Pump1Active} />
-            {(showMore || !(feed4Pump1Active && !feed4Pump2Active)) && (
-                <Pump x={671} y={227} running={feed4Pump2Active} displayWhenInactive={feed4Pump1Active} />
-            )}
+            {/* Feed tank 4 main pump */}
+            <Pump x={639} y={227} running={feed4Pump1Active} hasFault={!feed4Pump1Active} />
+            {/* Feed tank 4 standby pump. TODO actually deactivate the pump when the main one is active */}
+            <Pump x={671} y={227} running={feed4Pump2Active && !feed4Pump1Active} hasFault={!feed4Pump2Active} displayWhenInactive={showMore} />
 
             {/* Line.15 & Line.16 & Line.20 -> Engine4LPValve (via Junction.4) = ALWAYS ON */}
             <FuelLine x1={655} y1={212} x2={655} y2={164} active displayWhenInactive={showMore} />
