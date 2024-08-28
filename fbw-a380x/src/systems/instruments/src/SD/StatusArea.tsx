@@ -4,6 +4,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { NXUnits } from '@shared/NXUnits';
 import { Layer } from '@instruments/common/utils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export const StatusArea = () => {
     const [airDataSwitchingKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum');
@@ -56,7 +57,7 @@ export const StatusArea = () => {
     };
 
     const [fuelWeight] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg');
-    const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + getPayloadWeight()));
+    const gw = NXUnits.kgToUser(emptyWeight + fuelWeight + getPayloadWeight());
 
     const [seconds] = useSimVar('E:ZULU TIME', 'seconds');
 
@@ -132,9 +133,9 @@ export const StatusArea = () => {
             <text x={529} y={724} className='F25 White'>GWCG</text>
             <text x={529} y={752} className='F25 White'>FOB</text>
 
-            <text x={705} y={696} className='F27 Green EndAlign'>{Math.round(gw)}</text>
+            <text x={705} y={696} className='F27 Green EndAlign'>{MathUtils.round(gw, 100)}</text>
             <text x={705} y={724} className='F27 Green EndAlign'>{Number.parseFloat(cg).toFixed(1)}</text>
-            <text x={705} y={752} className='F27 Green EndAlign'>{Math.round(fuelWeight)}</text>
+            <text x={705} y={752} className='F27 Green EndAlign'>{MathUtils.round(fuelWeight, 100)}</text>
 
             <text x={711} y={696} className='F22 Cyan'>{userWeightUnit}</text>
             <text x={711} y={724} className='F22 Cyan'>%</text>
