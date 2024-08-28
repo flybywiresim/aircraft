@@ -79,6 +79,8 @@ export interface PFDSimvars {
   metricAltToggle: boolean;
   tla1: number;
   tla2: number;
+  tla3: number;
+  tla4: number;
   landingElevation: number;
   tcasState: number;
   tcasCorrective: boolean;
@@ -243,6 +245,8 @@ export enum PFDVars {
   metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
   tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
   tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
+  tla3 = 'L:A32NX_AUTOTHRUST_TLA:3',
+  tla4 = 'L:A32NX_AUTOTHRUST_TLA:4',
   tcasState = 'L:A32NX_TCAS_STATE',
   tcasCorrective = 'L:A32NX_TCAS_RA_CORRECTIVE',
   tcasRedZoneL = 'L:A32NX_TCAS_VSPEED_RED:1',
