@@ -1342,16 +1342,16 @@ These variables are the interface between the 3D model and the systems/code.
         - R
 
 - A32NX_EFIS_{side}_OPTION
-    - Enum
-    - Provides the selected EFIS option/overlay
+    - Flags
+    - Provides a bitmask of the selected EFIS option/overlays
       Value | Meaning
       --- | ---
       0 | None
       1 | Constraints
       2 | VOR/DMEs
-      3 | Waypoints
-      4 | NDBs
-      5 | Airports
+      4 | Waypoints
+      8 | NDBs
+      16 | Airports
     - {side}
         - L
         - R
