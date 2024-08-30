@@ -120,7 +120,7 @@ class CDUVerticalRevisionPage {
             l3Cell = "";
             r5Cell = "";
         } else {
-            if (canHaveAltConstraint) {
+            if (canHaveAltConstraint && altitudeConstraint) {
                 r3Cell = `{magenta}${altitudeConstraint}{end}`;
             }
             if (speedConstraint) {
