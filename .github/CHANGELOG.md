@@ -113,6 +113,7 @@
 1. [FWS] Improved landing memo gear logic - @tracernz (Mike)
 1. [FMS] Selected navaids are now reset on entering the done flight phase - @tracernz (Mike)
 1. [FMS] Fix tailwind component of trip wind being treated as a headwind - @BlueberryKing (BlueberryKing)
+1. [FMS] Improved NAVAID page - @tracernz (Mike)
 
 ## 0.11.0
 
