@@ -673,7 +673,8 @@ export class EfisSymbols<T extends number> {
         !isBeforeActiveLeg &&
         altConstraint &&
         shouldShowConstraintCircleInPhase(flightPhase, leg) &&
-        !isAlternate
+        !isAlternate &&
+        !leg.isXA()
       ) {
         if (!isSelectedVerticalModeActive) {
           type |= NdSymbolTypeFlags.Constraint;
@@ -691,32 +692,34 @@ export class EfisSymbols<T extends number> {
       }
 
       if ((efisOption & EfisOption.Constraints) > 0 && !isBeforeActiveLeg) {
-        const descent = leg.constraintType === WaypointConstraintType.DES;
-        switch (altConstraint?.altitudeDescriptor) {
-          case AltitudeDescriptor.AtAlt1:
-          case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
-          case AltitudeDescriptor.AtAlt1AngleAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
-            break;
-          case AltitudeDescriptor.AtOrAboveAlt1:
-          case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
-          case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
-            break;
-          case AltitudeDescriptor.AtOrBelowAlt1:
-          case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
-            break;
-          case AltitudeDescriptor.BetweenAlt1Alt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
-            constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
-            break;
-          case AltitudeDescriptor.AtOrAboveAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
-            break;
-          default:
-            // No constraint
-            break;
+        if (!leg.isXA()) {
+          const descent = leg.constraintType === WaypointConstraintType.DES;
+          switch (altConstraint?.altitudeDescriptor) {
+            case AltitudeDescriptor.AtAlt1:
+            case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+            case AltitudeDescriptor.AtAlt1AngleAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
+              break;
+            case AltitudeDescriptor.AtOrAboveAlt1:
+            case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+            case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
+              break;
+            case AltitudeDescriptor.AtOrBelowAlt1:
+            case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+              break;
+            case AltitudeDescriptor.BetweenAlt1Alt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+              constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              break;
+            case AltitudeDescriptor.AtOrAboveAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              break;
+            default:
+              // No constraint
+              break;
+          }
         }
 
         const speedConstraint = leg.speedConstraint;
