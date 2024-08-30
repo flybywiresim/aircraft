@@ -11,12 +11,13 @@ import {
   AirportSubsectionCode,
   MathUtils,
 } from '@flybywiresim/fbw-sdk';
-import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { distanceTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
 
 export class LandingSystemSelectionManager {
   private static readonly DESTINATION_TUNING_DISTANCE = 300;
@@ -35,18 +36,20 @@ export class LandingSystemSelectionManager {
 
   private _selectedGsSlope: number | null = null;
 
-  private readonly flightPhaseManager: FlightPhaseManager;
+  private readonly flightPhase = ConsumerSubject.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   private readonly autotuneUpdateThrottler = new UpdateThrottler(30000);
 
   private inProcess = false;
 
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
     private readonly navigationProvider: NavigationProvider,
-  ) {
-    this.flightPhaseManager = getFlightPhaseManager();
-  }
+  ) {}
 
   async update(deltaTime: number): Promise<void> {
     const forceUpdate = this.flightPlanService.active.version !== this.flightPlanVersion;
@@ -59,7 +62,7 @@ export class LandingSystemSelectionManager {
       this.inProcess = true;
       try {
         this.updatePpos();
-        const phase = this.flightPhaseManager.phase;
+        const phase = this.flightPhase.get();
         if (phase <= FmgcFlightPhase.Takeoff) {
           await this.selectDepartureIls();
         } else if (phase >= FmgcFlightPhase.Descent) {

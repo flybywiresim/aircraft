@@ -626,6 +626,7 @@ declare global {
             on(name: string, callback: (...args: any[]) => void, context?: any): void;
             trigger(name: string, ...args: any[]): void;
             triggerToAllSubscribers(event: any, ...args: any[]): void;
+            call(arg0: string, arg1: string, arg2: string);
         }
 
         class ViewListenerMgr {
@@ -640,7 +641,7 @@ declare global {
 
     function RegisterViewListenerT<T>(name: string, callback: (() => void) | void, type: new() => T,
                                       requiresSingleton?: boolean): T;
-    function RegisterViewListener(name: string, callback?: () => void,
+    function RegisterViewListener(name: string, callback?: (listener: ViewListener.ViewListener) => void,
                                   requiresSingleton?: boolean): ViewListener.ViewListener;
 
     class Name_Z {
