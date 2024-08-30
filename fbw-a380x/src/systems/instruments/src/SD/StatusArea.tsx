@@ -57,7 +57,7 @@ export const StatusArea = () => {
     };
 
     const [fuelWeight] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg');
-    const gw = NXUnits.kgToUser(emptyWeight + fuelWeight + getPayloadWeight());
+    const gw = emptyWeight + fuelWeight + getPayloadWeight();
 
     const [seconds] = useSimVar('E:ZULU TIME', 'seconds');
 
@@ -133,9 +133,9 @@ export const StatusArea = () => {
             <text x={529} y={724} className='F25 White'>GWCG</text>
             <text x={529} y={752} className='F25 White'>FOB</text>
 
-            <text x={705} y={696} className='F27 Green EndAlign'>{MathUtils.round(gw, 100)}</text>
+            <text x={705} y={696} className='F27 Green EndAlign'>{MathUtils.round(NXUnits.kgToUser(gw), 100)}</text>
             <text x={705} y={724} className='F27 Green EndAlign'>{Number.parseFloat(cg).toFixed(1)}</text>
-            <text x={705} y={752} className='F27 Green EndAlign'>{MathUtils.round(fuelWeight, 100)}</text>
+            <text x={705} y={752} className='F27 Green EndAlign'>{MathUtils.round(NXUnits.kgToUser(fuelWeight), 100)}</text>
 
             <text x={711} y={696} className='F22 Cyan'>{userWeightUnit}</text>
             <text x={711} y={724} className='F22 Cyan'>%</text>
