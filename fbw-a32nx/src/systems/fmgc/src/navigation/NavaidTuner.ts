@@ -1,7 +1,7 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
@@ -16,7 +16,7 @@ import {
   VhfNavaidType,
 } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 
 interface NavRadioTuningStatus {
   frequency: number | null;
@@ -258,7 +258,10 @@ export class NavaidTuner {
 
   private tuningActive = false;
 
-  private readonly flightPhaseManager: FlightPhaseManager;
+  private readonly flightPhase = ConsumerSubject.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   /** FM 1 and 2 backbeam selection LVAR output. */
   private readonly backbeamOutput = [
@@ -272,12 +275,11 @@ export class NavaidTuner {
   private notificationManager = new NotificationManager();
 
   constructor(
+    private readonly bus: EventBus,
     private readonly navigationProvider: NavigationProvider,
     private readonly navaidSelectionManager: NavaidSelectionManager,
     private readonly landingSystemSelectionManager: LandingSystemSelectionManager,
-  ) {
-    this.flightPhaseManager = getFlightPhaseManager();
-  }
+  ) {}
 
   init(): void {
     this.resetAllReceivers();
@@ -290,6 +292,9 @@ export class NavaidTuner {
     for (const backbeam of this.backbeamOutput) {
       backbeam.selected.sub((v) => SimVar.SetSimVarValue(backbeam.localVar, SimVarValueType.Bool, v), true);
     }
+
+    // All selections are reset upon entering the DONE phase after landing.
+    this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState(false));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -589,7 +594,7 @@ export class NavaidTuner {
   /** check if MMR tuning is locked during final approach */
   public isMmrTuningLocked() {
     return (
-      this.flightPhaseManager.phase === FmgcFlightPhase.Approach &&
+      this.flightPhase.get() === FmgcFlightPhase.Approach &&
       (this.navigationProvider.getRadioHeight() ?? Infinity) < 700
     );
   }
@@ -758,7 +763,7 @@ export class NavaidTuner {
   }
 
   /** Reset all state e.g. when the nav database is switched */
-  public resetState(): void {
+  public resetState(withLockout = true): void {
     for (let i = 1; i <= 2; i++) {
       const n = i as 1 | 2;
       this.setManualAdf(n, null);
@@ -768,6 +773,8 @@ export class NavaidTuner {
     this.setManualIls(null);
     this.setIlsCourse(null);
 
-    this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    if (withLockout) {
+      this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    }
   }
 }
