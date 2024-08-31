@@ -50,7 +50,10 @@ enum OcsmFault {
 }
 
 pub struct OutflowValveControlModule {
-    ocsm_channel_failure_id: VariableIdentifier,
+    ocsm_id: OcsmId,
+
+    ocsm_channel_1_failure_id: VariableIdentifier,
+    ocsm_channel_2_failure_id: VariableIdentifier,
     ocsm_auto_partition_failure_id: VariableIdentifier,
 
     active_channel: OperatingChannel,
@@ -69,10 +72,14 @@ impl OutflowValveControlModule {
         powered_by: [ElectricalBusType; 2],
     ) -> Self {
         Self {
-            ocsm_channel_failure_id: context
-                .get_identifier(format!("PRESS_{}_OCSM_CHANNEL_FAILURE", outflow_valve_id)),
+            ocsm_id: outflow_valve_id,
+
+            ocsm_channel_1_failure_id: context
+                .get_identifier(format!("PRESS_OCSM_{}_CHANNEL_1_FAILURE", outflow_valve_id)),
+            ocsm_channel_2_failure_id: context
+                .get_identifier(format!("PRESS_OCSM_{}_CHANNEL_2_FAILURE", outflow_valve_id)),
             ocsm_auto_partition_failure_id: context.get_identifier(format!(
-                "PRESS_{}_OCSM_AUTO_PARTITION_FAILURE",
+                "PRESS_OCSM_{}_AUTO_PARTITION_FAILURE",
                 outflow_valve_id
             )),
 
@@ -88,7 +95,7 @@ impl OutflowValveControlModule {
             ),
             acp: AutomaticControlPartition::new(outflow_valve_id),
             sop: SafetyAndOverridePartition::new(),
-            epp: EmergencyPressurizationPartition::new(),
+            epp: EmergencyPressurizationPartition::new(context, outflow_valve_id),
             outflow_valve: OutflowValve::new(
                 powered_by.to_vec(),
                 vec![ElectricalBusType::DirectCurrentBattery],
@@ -104,6 +111,7 @@ impl OutflowValveControlModule {
         cabin_simulation: &impl CabinSimulation,
         cpiom_b: &impl CpcsShared,
         cpiom_b_failure: bool,
+        first_operating_ocsm: Option<usize>,
         ocsm_cross_communication: Option<Velocity>,
         press_overhead: &impl PressurizationOverheadShared,
         safety_valve_open_amount: Ratio,
@@ -127,8 +135,10 @@ impl OutflowValveControlModule {
             cpiom_b.ofv_open_allowed()
                 && !self.acp.should_close_ofv()
                 && !matches!(&self.fault, Some(OcsmFault::BothChannelsFault)),
-            cpiom_b.should_open_ofv(),
+            self.outflow_valve_open_amount(),
             safety_valve_open_amount,
+            cpiom_b.should_open_ofv(),
+            Some(self.ocsm_id.index()) == first_operating_ocsm,
         );
 
         self.outflow_valve
@@ -162,6 +172,10 @@ impl OutflowValveControlModule {
     pub fn auto_cabin_vertical_speed_demand(&self) -> Option<Velocity> {
         self.acp.auto_vertical_speed()
     }
+
+    pub fn has_failed(&self) -> bool {
+        matches!(self.fault, Some(OcsmFault::BothChannelsFault))
+    }
 }
 
 impl OcsmShared for OutflowValveControlModule {
@@ -187,12 +201,16 @@ impl OcsmShared for OutflowValveControlModule {
 
 impl SimulationElement for OutflowValveControlModule {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_id = match self.fault {
-            None => 0,
-            Some(OcsmFault::OneChannelFault) => self.stand_by_channel.id().into(),
-            Some(OcsmFault::BothChannelsFault) => 3,
+        let (channel_1_failure, channel_2_failure) = match self.fault {
+            None => (false, false),
+            Some(OcsmFault::OneChannelFault) => (
+                self.stand_by_channel.id() == Channel::ChannelOne,
+                self.stand_by_channel.id() == Channel::ChannelTwo,
+            ),
+            Some(OcsmFault::BothChannelsFault) => (true, true),
         };
-        writer.write(&self.ocsm_channel_failure_id, failure_id);
+        writer.write(&self.ocsm_channel_1_failure_id, channel_1_failure);
+        writer.write(&self.ocsm_channel_2_failure_id, channel_2_failure);
         writer.write(
             &self.ocsm_auto_partition_failure_id,
             self.acp.auto_failure(),
@@ -204,6 +222,7 @@ impl SimulationElement for OutflowValveControlModule {
         self.stand_by_channel.accept(visitor);
         self.outflow_valve.accept(visitor);
         self.acp.accept(visitor);
+        self.epp.accept(visitor);
 
         visitor.visit(self);
     }
@@ -367,6 +386,7 @@ struct EmergencyPressurizationPartition {
     exterior_vertical_speed: LowPassFilter<Velocity>,
     differential_pressure: Pressure,
     is_initialised: bool,
+    epp_emergency_signals: EppEmergencySignals,
 
     outflow_valve_controller: OutflowValveController,
     safety_valve_open_amount: Ratio,
@@ -380,7 +400,7 @@ impl EmergencyPressurizationPartition {
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
     const BACKUP_LANDING_ELEVATION_FT: f64 = 7000.;
 
-    fn new() -> Self {
+    fn new(context: &mut InitContext, outflow_valve_id: OcsmId) -> Self {
         Self {
             cabin_pressure: Pressure::new::<hectopascal>(Air::P_0),
             cabin_target_vertical_speed: Velocity::default(),
@@ -395,6 +415,7 @@ impl EmergencyPressurizationPartition {
             ),
             differential_pressure: Pressure::default(),
             is_initialised: false,
+            epp_emergency_signals: EppEmergencySignals::new(context, outflow_valve_id),
 
             outflow_valve_controller: OutflowValveController::new(
                 Self::OFV_CONTROLLER_KP,
@@ -413,8 +434,10 @@ impl EmergencyPressurizationPartition {
         cabin_target_vs: Option<Velocity>,
         press_overhead: &impl PressurizationOverheadShared,
         open_allowed: bool,
-        should_open_ofv: bool,
+        outflow_valve_open_amount: Ratio,
         safety_valve_open_amount: Ratio,
+        should_open_ofv: bool,
+        should_transmit_emergency_signals: bool,
     ) {
         self.update_ambient_conditions(context, adirs);
         self.cabin_pressure = cabin_simulation.cabin_pressure();
@@ -430,6 +453,17 @@ impl EmergencyPressurizationPartition {
             press_overhead,
             open_allowed && cabin_altitude_protection,
             should_open_ofv,
+        );
+
+        let manual_cabin_altitude =
+            InternationalStandardAtmosphere::altitude_from_pressure(self.cabin_pressure);
+        self.epp_emergency_signals.update(
+            manual_cabin_altitude,
+            self.differential_pressure,
+            cabin_vertical_speed,
+            manual_cabin_altitude > Length::new::<foot>(9550.),
+            outflow_valve_open_amount,
+            should_transmit_emergency_signals,
         );
     }
 
@@ -584,5 +618,98 @@ impl EmergencyPressurizationPartition {
 
     fn outflow_valve_controller(&self) -> &OutflowValveController {
         &self.outflow_valve_controller
+    }
+}
+
+impl SimulationElement for EmergencyPressurizationPartition {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.epp_emergency_signals.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+/// The Emergency Partition transmits cabin pressure, vertical speed, OFV open amount
+/// and the signal for excessive cabin altitude in case of system malfunction (ie CPIOM failure).
+/// Here we add the cabin altitude and delta pressure as neither the SDAC nor the DMC are modelled.
+/// When that is done, these should be removed from here.
+struct EppEmergencySignals {
+    cabin_altitude_man_id: VariableIdentifier,
+    cabin_delta_p_man_id: VariableIdentifier,
+    cabin_vertical_speed_man_id: VariableIdentifier,
+    fwc_excessive_cabin_altitude_man_id: VariableIdentifier,
+    outflow_valve_open_amount_man_id: VariableIdentifier,
+
+    cabin_altitude: Length,
+    cabin_delta_p: Pressure,
+    cabin_vertical_speed: Velocity,
+    fwc_excessive_cabin_altitude: bool,
+    outflow_valve_open_amount: Ratio,
+
+    // This prevents multiple OCSMs from overriding vars
+    should_transmit: bool,
+}
+
+impl EppEmergencySignals {
+    fn new(context: &mut InitContext, outflow_valve_id: OcsmId) -> Self {
+        Self {
+            cabin_altitude_man_id: context.get_identifier("PRESS_MAN_CABIN_ALTITUDE".to_owned()),
+            cabin_delta_p_man_id: context
+                .get_identifier("PRESS_MAN_CABIN_DELTA_PRESSURE".to_owned()),
+            cabin_vertical_speed_man_id: context.get_identifier("PRESS_MAN_CABIN_VS".to_owned()),
+            fwc_excessive_cabin_altitude_man_id: context
+                .get_identifier("PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE".to_owned()),
+            outflow_valve_open_amount_man_id: context.get_identifier(format!(
+                "PRESS_MAN_OUTFLOW_VALVE_{}_OPEN_PERCENTAGE",
+                outflow_valve_id
+            )),
+
+            cabin_altitude: Length::default(),
+            cabin_delta_p: Pressure::default(),
+            cabin_vertical_speed: Velocity::default(),
+            fwc_excessive_cabin_altitude: false,
+            outflow_valve_open_amount: Ratio::default(),
+
+            should_transmit: false,
+        }
+    }
+
+    fn update(
+        &mut self,
+        cabin_altitude: Length,
+        cabin_delta_pressure: Pressure,
+        cabin_vertical_speed: Velocity,
+        fwc_excessive_cabin_altitude: bool,
+        outflow_valve_open_amount: Ratio,
+        should_transmit: bool,
+    ) {
+        self.cabin_altitude = cabin_altitude;
+        self.cabin_delta_p = cabin_delta_pressure;
+        self.cabin_vertical_speed = cabin_vertical_speed;
+        self.fwc_excessive_cabin_altitude = fwc_excessive_cabin_altitude;
+        self.outflow_valve_open_amount = outflow_valve_open_amount;
+        self.should_transmit = should_transmit;
+    }
+}
+
+impl SimulationElement for EppEmergencySignals {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.should_transmit {
+            writer.write(&self.cabin_altitude_man_id, self.cabin_altitude);
+            writer.write(&self.cabin_delta_p_man_id, self.cabin_delta_p);
+            writer.write(
+                &self.cabin_vertical_speed_man_id,
+                self.cabin_vertical_speed.get::<foot_per_minute>(),
+            );
+            writer.write(
+                &self.fwc_excessive_cabin_altitude_man_id,
+                self.fwc_excessive_cabin_altitude,
+            );
+        }
+        // We always transmit the outflow valve open amount
+        writer.write(
+            &self.outflow_valve_open_amount_man_id,
+            self.outflow_valve_open_amount,
+        );
     }
 }

@@ -7,9 +7,35 @@ export const CruisePressure = () => {
     // TODO: Handle landing elevation invalid SSM
     const landingElev = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'Bool', 1000);
-    const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
-    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
+
+    const cpcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
+    const cpcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
+    const cpcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
+    const cpcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
+
+    let cpcsToUse;
+
+    if (cpcsB1DiscreteWord.isNormalOperation()) {
+        cpcsToUse = 1
+    } else if (cpcsB2DiscreteWord.isNormalOperation()) {
+        cpcsToUse = 2
+    } else if (cpcsB3DiscreteWord.isNormalOperation()) {
+        cpcsToUse = 3
+    } else if (cpcsB4DiscreteWord.isNormalOperation()) {
+        cpcsToUse = 4
+    } else {
+        cpcsToUse = 0
+    }
+
+    const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'feet', 500);
+    const cabinAlt = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUse}`, 500).valueOr(manCabinAlt);
+
+    const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'feet', 500);
+    const deltaPsi = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUse}`, 500).valueOr(manDeltaPsi);
+
+    const [mancabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute', 500);
+    const cabinVs = useArinc429Var(`L:A32NX_PRESS_CABIN_VS_B${cpcsToUse}`, 500).valueOr(mancabinVs);
+
 
     const vsx = 440;
     const y = 385;

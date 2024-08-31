@@ -1,4 +1,6 @@
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject } from '@microsoft/msfs-sdk';
+import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 
 interface BleedSupplyProps {
@@ -9,9 +11,12 @@ interface BleedSupplyProps {
 
 export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
+  private readonly subArinc = this.props.bus.getSubscriber<Arinc429Values>();
 
-  private readonly packs1 = ConsumerSubject.create(this.sub.on('packs1').whenChanged(), false);
-  private readonly packs2 = ConsumerSubject.create(this.sub.on('packs2').whenChanged(), false);
+  private readonly cpiomBAgsDiscrete = ConsumerSubject.create(
+    this.subArinc.on('cpiomBAgsDiscrete').whenChanged(),
+    Arinc429Word.empty(),
+  );
 
   private readonly nai1 = ConsumerSubject.create(this.sub.on('eng_anti_ice_1').whenChanged(), false);
   private readonly nai2 = ConsumerSubject.create(this.sub.on('eng_anti_ice_2').whenChanged(), false);
@@ -21,9 +26,9 @@ export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
   private readonly wai = ConsumerSubject.create(this.sub.on('wing_anti_ice').whenChanged(), false);
 
   private readonly bleedText = MappedSubject.create(
-    ([packs1, packs2, nai1, nai2, nai3, nai4, wai]) => {
+    ([cpiomB, nai1, nai2, nai3, nai4, wai]) => {
       const text = [];
-      if (packs1 || packs2) {
+      if (cpiomB.getBitValueOr(13, false) || cpiomB.getBitValueOr(14, false)) {
         text.push('PACKS');
       }
 
@@ -36,8 +41,7 @@ export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
       }
       return text.join('/');
     },
-    this.packs1,
-    this.packs2,
+    this.cpiomBAgsDiscrete,
     this.nai1,
     this.nai2,
     this.nai3,

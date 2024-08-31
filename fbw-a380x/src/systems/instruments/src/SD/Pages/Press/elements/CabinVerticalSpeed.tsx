@@ -1,11 +1,14 @@
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { GaugeComponent, GaugeMarkerComponent, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
-import { Position } from '@instruments/common/types';
+import { Position, ValidRedundantSystem } from '@instruments/common/types';
 import React from 'react';
 
-const CabinVerticalSpeed: React.FC<Position> = ({ x, y }) => {
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
-    const [cabinVsTarget] = useSimVar('L:A32NX_PRESS_CABIN_VS_TARGET', 'feet per minute', 500);
+const CabinVerticalSpeed: React.FC<Position & ValidRedundantSystem> = ({ x, y, system }) => {
+    const [mancabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute', 500);
+    const cabinVs = useArinc429Var(`L:A32NX_PRESS_CABIN_VS_B${system}`, 500).valueOr(mancabinVs);
+
+    const cabinVsTarget = useArinc429Var(`L:A32NX_PRESS_CABIN_VS_TARGET_B${system}`, 500).valueOr(null);
     const [cabVsAutoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO', 'bool', 500);
 
     const radius = 88;
@@ -113,7 +116,7 @@ const CabinVerticalSpeed: React.FC<Position> = ({ x, y }) => {
                         radius={radius}
                         startAngle={startAngle}
                         endAngle={endAngle}
-                        className={`SW3 NoFill ${cabVsAutoMode ? 'Magenta' : 'Cyan'}`}
+                        className={`SW3 NoFill ${cabVsAutoMode ? 'Magenta' : 'Cyan'} ${cabinVsTarget === null ? 'Hide' : 'Show'}`}
                         outerMultiplier={1.1}
                         donutRadius={6}
                     />

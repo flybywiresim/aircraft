@@ -102,14 +102,13 @@ impl CoreProcessingInputOutputModuleB {
                 context,
                 acs_overhead,
                 cabin_temperature,
-                self.cpiom_is_active, // Todo = replace with failure
+                self.cpiom_is_active,
                 &self.cpcs_app,
                 local_controllers,
             );
             self.vcs_app.update(
                 acs_overhead,
-                (self.cpiom_id == CpiomId::B1 || self.cpiom_id == CpiomId::B3)
-                    && !self.cpiom_has_fault(),
+                self.cpiom_is_active,
                 cabin_temperature,
                 cargo_door_open,
                 lgciu,
@@ -159,10 +158,6 @@ impl CoreProcessingInputOutputModuleB {
 
     pub(super) fn bulk_heater_on_signal(&self) -> &impl ControllerSignal<BulkHeaterSignal> {
         &self.vcs_app
-    }
-
-    pub(super) fn cpiom_has_fault(&self) -> bool {
-        !self.cpiom_is_active
     }
 
     pub(super) fn ags_has_fault(&self) -> bool {
@@ -1606,18 +1601,18 @@ impl CpiomBInterfaceUnit {
             self.discrete_word_cpcs = Arinc429Word::new(0, SignStatus::NormalOperation);
         }
 
-        self.discrete_word_vcs.set_bit(11, cpiom.cpcs_has_fault());
-        self.discrete_word_vcs
+        self.discrete_word_cpcs.set_bit(11, cpiom.cpcs_has_fault());
+        self.discrete_word_cpcs
             .set_bit(13, cpiom.excessive_cabin_alt());
-        self.discrete_word_vcs
+        self.discrete_word_cpcs
             .set_bit(14, cpiom.excessive_differential_pressure());
-        self.discrete_word_vcs
+        self.discrete_word_cpcs
             .set_bit(15, cpiom.excessive_negative_differential_pressure());
-        self.discrete_word_vcs
+        self.discrete_word_cpcs
             .set_bit(16, cpiom.high_differential_pressure());
-        self.discrete_word_vcs
+        self.discrete_word_cpcs
             .set_bit(17, cpiom.low_differential_pressure());
-        self.discrete_word_vcs
+        self.discrete_word_cpcs
             .set_bit(18, cpiom.excessive_residual_pressure());
     }
 }

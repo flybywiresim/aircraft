@@ -1,11 +1,18 @@
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
-import { Position } from '@instruments/common/types';
+import { Position, ValidRedundantSystem } from '@instruments/common/types';
 import React from 'react';
 
-export const DeltaP: React.FC<Position> = ({ x, y }) => {
-    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
+export const DeltaP: React.FC<Position & ValidRedundantSystem> = ({ x, y, system }) => {
+    const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'feet', 500);
+    const deltaPsi = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${system}`, 500).valueOr(manDeltaPsi);
+
     const deltaPress = splitDecimals(deltaPsi);
+
+    // Fixme: There is an edge case here where all CPIOM Bs have failed and the ADIRS are not sending data, that we would still have
+    // delta pressure available from the manual partition. Unsure how the aircraft handles this situation so this is left for future work.
+    const deltaPressNotAvail = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${system}`).isNoComputedData();
 
     let colour;
     if (deltaPsi < -0.72 || deltaPsi > 9.2) {
@@ -24,11 +31,14 @@ export const DeltaP: React.FC<Position> = ({ x, y }) => {
         <g id="DeltaPressure">
             <text className="F29 LS1 Center White" x={x - 51} y={y - 142}>DELTA P</text>
             <text className="F24 Center Cyan" x={x - 18} y={y - 105}>PSI</text>
-            <text className={`F35 End ${colour}`} x={x + 9} y={y + 48}>
+            <text className={`F35 End ${colour} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={x + 9} y={y + 48}>
                 {deltaPress[0]}
             </text>
-            <text className={`F35 End ${colour}`} x={x + 29} y={y + 48}>.</text>
-            <text className={`F35 End ${colour}`} x={x + 56} y={y + 48}>{deltaPress[1]}</text>
+            <text className={`F35 End ${colour} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={x + 29} y={y + 48}>.</text>
+            <text className={`F35 End ${colour} ${deltaPressNotAvail ? 'hide' : 'show'}`} x={x + 56} y={y + 48}>{deltaPress[1]}</text>
+            <text className={`F35 End Amber ${deltaPressNotAvail ? 'show' : 'hide'}`} x={x + 53} y={y + 35}>
+                XX
+            </text>
             <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="Gauge">
                 <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 15} endAngle={endAngle} visible className="GaugeComponent Gauge ThickRedLine" />
                 <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 30} endAngle={endAngle - 15} visible className="GaugeComponent Gauge ThickAmberLine" />
@@ -104,7 +114,7 @@ export const DeltaP: React.FC<Position> = ({ x, y }) => {
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className={`GaugeIndicator SW4 ${colour}`}
+                    className={`GaugeIndicator SW4 ${colour} ${deltaPressNotAvail ? 'hide' : 'show'}`}
                     indicator
                     multiplierOuter={1.01}
                 />

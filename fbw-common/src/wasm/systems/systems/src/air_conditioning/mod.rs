@@ -331,6 +331,17 @@ pub enum OcsmId {
     Four,
 }
 
+impl OcsmId {
+    pub fn index(&self) -> usize {
+        match self {
+            OcsmId::One => 0,
+            OcsmId::Two => 1,
+            OcsmId::Three => 2,
+            OcsmId::Four => 3,
+        }
+    }
+}
+
 impl Display for OcsmId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

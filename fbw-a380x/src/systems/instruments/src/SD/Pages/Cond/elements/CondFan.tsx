@@ -1,15 +1,32 @@
 import React, { FC } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { Position } from '@instruments/common/types';
 import { Triangle } from '@instruments/common/Shapes';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 
 export const CondFan = () => {
-    const [fwdCargoExtractFanIsOn] = useSimVar('L:A32NX_VENT_FWD_EXTRACTION_FAN_ON', 'bool', 1000);
-    const [bulkCargoExtractFanIsOn] = useSimVar('L:A32NX_VENT_BULK_EXTRACTION_FAN_ON', 'bool', 1000);
+    const vcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
+    const vcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
+    const vcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
+    const vcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
+
+    let vcsDiscreteWordToUse;
+
+    if (vcsB1DiscreteWord.isNormalOperation()) {
+        vcsDiscreteWordToUse = vcsB1DiscreteWord
+    } else if (vcsB2DiscreteWord.isNormalOperation()) {
+        vcsDiscreteWordToUse = vcsB2DiscreteWord
+    } else if (vcsB3DiscreteWord.isNormalOperation()) {
+        vcsDiscreteWordToUse = vcsB3DiscreteWord
+    } else {
+        vcsDiscreteWordToUse = vcsB4DiscreteWord
+    };
+
+    const fwdCargoExtractFanIsOn = vcsDiscreteWordToUse.getBitValueOr(13, false);
+    const bulkCargoExtractFanIsOn = vcsDiscreteWordToUse.getBitValueOr(15, false);
+    const cabinFansEnabled = vcsDiscreteWordToUse.getBitValueOr(17, false);
 
     return (
         <g>
-            <PrimaryFanGroup x={315} y={415} />
+            <PrimaryFanGroup x={315} y={415} cabinFansEnabled={cabinFansEnabled} />
 
             {/* Fwd Cargo Extraction Fan */}
             <Fan x={240} y={390} css={fwdCargoExtractFanIsOn ? 'Hide' : 'Show Amber Line'} />
@@ -21,8 +38,13 @@ export const CondFan = () => {
 
 }
 
-const PrimaryFanGroup: FC<Position> = ({ x, y }) => {
-    const [cabinFansEnabled] = useSimVar('L:A32NX_VENT_PRIMARY_FANS_ENABLED', 'bool', 1000);
+interface PrimaryFanGroupProps {
+    x: number,
+    y: number,
+    cabinFansEnabled: boolean,
+}
+
+const PrimaryFanGroup: FC<PrimaryFanGroupProps> = ({ x, y, cabinFansEnabled }) => {
     // TODO: Add vars for individual fan failures
     return (
         <g id="PrimaryFanGroup" className={cabinFansEnabled ? 'Hide' : 'Show'}>

@@ -20,7 +20,7 @@ export type IgnitionActive = { ignition: boolean; }
 
 export type n1Degraded = { n1Degraded: boolean; }
 
-export type PackNumber = { pack: 1 | 2}
+export type PackNumber = { pack: 1 | 2 }
 
 export type EGTProps = {
     engine: 1 | 2 | 3 | 4,
@@ -46,3 +46,5 @@ export type CargoDoorProps = {
 export type OnGround = {
     onGround: boolean
 }
+
+export type ValidRedundantSystem = { system: 0 | 1 | 2 | 3 | 4 }

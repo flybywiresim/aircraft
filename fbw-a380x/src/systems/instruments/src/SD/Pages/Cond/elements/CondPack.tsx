@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Triangle } from '@instruments/common/Shapes';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 
 interface CondPackProps {
     x: number,
@@ -9,7 +10,17 @@ interface CondPackProps {
 }
 
 const CondPack: FC<CondPackProps> = ({ x, y, pack }) => {
-    const [isPackOperative] = useSimVar(`L:A32NX_COND_PACK_${pack}_IS_OPERATING`, 'bool', 500);
+    const agsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
+    const agsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
+    const agsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
+    const agsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
+
+    const bitNumber = 12 + pack;
+    const isPackOperative = agsB1DiscreteWord.getBitValueOr(bitNumber,
+        agsB2DiscreteWord.getBitValueOr(bitNumber,
+            agsB3DiscreteWord.getBitValueOr(bitNumber,
+                agsB4DiscreteWord.getBitValueOr(bitNumber, false
+        ))));
 
     return (
         <g id={`CondPack-${pack}`}>

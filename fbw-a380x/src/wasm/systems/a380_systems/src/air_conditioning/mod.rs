@@ -531,14 +531,23 @@ impl A380AirConditioningSystem {
                 );
             });
 
-        // FIXME - Function to return the first non-failed CPIOM B
+        let cpiom_to_use = if cpiom_b[0].tcs_has_fault() {
+            &cpiom_b[0]
+        } else if cpiom_b[1].tcs_has_fault() {
+            &cpiom_b[1]
+        } else if cpiom_b[2].tcs_has_fault() {
+            &cpiom_b[2]
+        } else {
+            &cpiom_b[3]
+        };
+
         self.tadd.update(
             context,
             &self.air_conditioning_overhead,
-            &cpiom_b[0],
+            cpiom_to_use,
             &self.trim_air_system,
             pneumatic,
-            cpiom_b[0].should_close_taprv(),
+            cpiom_to_use.should_close_taprv(),
             &self.trim_air_system,
         );
 
@@ -973,6 +982,11 @@ impl A380PressurizationSystem {
             .or(self.ocsm[2].auto_cabin_vertical_speed_demand())
             .or(self.ocsm[3].auto_cabin_vertical_speed_demand());
 
+        let index_first_not_failed_ocsm = self
+            .ocsm
+            .iter()
+            .position(|controller| !controller.has_failed());
+
         for (controller, cpiom_id) in self.ocsm.iter_mut().zip([2, 0, 3, 1].iter()) {
             controller.update(
                 context,
@@ -980,6 +994,7 @@ impl A380PressurizationSystem {
                 cabin_simulation,
                 &cpiom_b[*cpiom_id as usize],
                 at_least_three_cpiom_failed,
+                index_first_not_failed_ocsm,
                 first_not_failed_auto_vs,
                 press_overhead,
                 self.negative_relief_valves.open_amount(),
