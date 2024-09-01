@@ -227,13 +227,13 @@ export class LegacyFwc {
     const eng4MCL = eng3TLA > 22.9;
     const eng4SupMCT = !(eng4TLA < 36.7);
 
-    const twoEnginesMcl = [eng1MCL, eng2MCL, eng3MCL, eng4MCL].filter(v => true).length >= 2;
+    const twoEnginesMcl = [eng1MCL, eng2MCL, eng3MCL, eng4MCL].filter(Boolean).length >= 2;
     const eng1TOPowerSignal = (eng1TLAFTO && eng1MCT) || eng1TLAFullPwr || eng1SupMCT; 
     const eng2TOPowerSignal = (eng2TLAFTO && eng2MCT) || eng2TLAFullPwr || eng2SupMCT; 
     const eng3TOPowerSignal = (eng3TLAFTO && eng3MCT) || eng3TLAFullPwr || eng3SupMCT; 
     const eng4TOPowerSignal = (eng4TLAFTO && eng4MCT) || eng4TLAFullPwr || eng4SupMCT; 
 
-    const twoEnginesTOPowerSignal = [eng1TOPowerSignal, eng2TOPowerSignal, eng3TOPowerSignal, eng4TOPowerSignal].fill(true).length >=2;
+    const twoEnginesTOPowerSignal = [eng1TOPowerSignal, eng2TOPowerSignal, eng3TOPowerSignal, eng4TOPowerSignal].filter(Boolean).length >=2;
 
 
     const twoEnginesTOPower = (
