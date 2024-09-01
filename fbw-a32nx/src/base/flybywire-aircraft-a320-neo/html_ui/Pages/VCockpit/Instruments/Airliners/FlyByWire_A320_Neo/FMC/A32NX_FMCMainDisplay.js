@@ -28,6 +28,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeReservedPercent = undefined;
         this.takeOffWeight = undefined;
         this.landingWeight = undefined;
+        // +ve for tailwind, -ve for headwind
         this.averageWind = undefined;
         this.perfApprQNH = undefined;
         this.perfApprTemp = undefined;
@@ -44,11 +45,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprFlaps3 = undefined;
         this._debug = undefined;
         this._checkFlightPlan = undefined;
-        this._windDirections = undefined;
         this._fuelPlanningPhases = undefined;
         this._zeroFuelWeightZFWCGEntered = undefined;
         this._taxiEntered = undefined;
-        this._windDir = undefined;
         this._DistanceToAlt = undefined;
         this._routeAltFuelWeight = undefined;
         this._routeAltFuelTime = undefined;
@@ -333,6 +332,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeReservedPercent = 5;
         this.takeOffWeight = NaN;
         this.landingWeight = NaN;
+        // +ve for tailwind, -ve for headwind
         this.averageWind = 0;
         this.perfApprQNH = NaN;
         this.perfApprTemp = NaN;
@@ -349,10 +349,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprFlaps3 = false;
         this._debug = 0;
         this._checkFlightPlan = 0;
-        this._windDirections = {
-            TAILWIND: "TL",
-            HEADWIND: "HD",
-        };
         this._fuelPlanningPhases = {
             PLANNING: 1,
             IN_PROGRESS: 2,
@@ -360,7 +356,6 @@ class FMCMainDisplay extends BaseAirliners {
         };
         this._zeroFuelWeightZFWCGEntered = false;
         this._taxiEntered = false;
-        this._windDir = this._windDirections.HEADWIND;
         this._DistanceToAlt = 0;
         this._routeAltFuelWeight = 0;
         this._routeAltFuelTime = 0;
@@ -2164,12 +2159,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelTime = 0;
         } else {
             const placeholderFl = 120;
-            let airDistance = 0;
-            if (this._windDir === this._windDirections.TAILWIND) {
-                airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), this.averageWind);
-            } else if (this._windDir === this._windDirections.HEADWIND) {
-                airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), -this.averageWind);
-            }
+            const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), this.averageWind);
 
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
             if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
@@ -2185,14 +2175,9 @@ class FMCMainDisplay extends BaseAirliners {
      * won't be updated.
      */
     tryUpdateRouteTrip(dynamic = false) {
-        let airDistance = 0;
         // TODO Use static distance for `dynamic = false` (fms-v2)
         const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-        if (this._windDir === this._windDirections.TAILWIND) {
-            airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
-        } else if (this._windDir === this._windDirections.HEADWIND) {
-            airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, -this.averageWind);
-        }
+        const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
 
         let altToUse = this.cruiseLevel;
         // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
@@ -3566,7 +3551,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    async trySetAverageWind(s) {
+    trySetAverageWind(s) {
         const validDelims = ["TL", "T", "+", "HD", "H", "-"];
         const matchedIndex = validDelims.findIndex(element => s.startsWith(element));
         const digits = matchedIndex >= 0 ? s.replace(validDelims[matchedIndex], "") : s;
@@ -3576,12 +3561,11 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const wind = parseInt(digits);
-        this._windDir = matchedIndex <= 2 ? this._windDirections.TAILWIND : this._windDirections.HEADWIND;
         if (wind > 250) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.averageWind = wind;
+        this.averageWind = matchedIndex <= 2 ? wind : -wind;
         return true;
     }
 
@@ -4827,7 +4811,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getTripWind() {
-        return this.averageWind;
+        // FIXME convert vnav to use +ve for tailwind, -ve for headwind, it's the other way around at the moment
+        return -this.averageWind;
     }
 
     getWinds() {
