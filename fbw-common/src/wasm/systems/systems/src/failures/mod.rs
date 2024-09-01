@@ -3,13 +3,14 @@ use crate::air_conditioning::{
 };
 use crate::air_conditioning::{CpiomId, FdacId, OcsmId};
 use crate::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
-    HydraulicColor, LgciuId, ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
+    FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
+    // ATA21
     Acsc(AcscId),
     CabinFan(usize),
     HotAir(usize),
@@ -35,22 +36,29 @@ pub enum FailureType {
     BulkIsolValve,
     BulkExtractFan,
     CargoHeater,
+    // ATA24
     Generator(usize),
     ApuGenerator(usize),
     TransformerRectifier(usize),
     StaticInverter,
     ElectricalBus(ElectricalBusType),
+    // ATA26
+    SetOnFire(FireDetectionZone),
+    FireDetectionLoop(FireDetectionLoopID, FireDetectionZone),
+    // ATA29
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
     EnginePumpOverheat(AirbusEngineDrivenPumpId),
     ElecPumpOverheat(AirbusElectricPumpId),
+    // ATA32
     LgciuPowerSupply(LgciuId),
     LgciuInternalError(LgciuId),
     GearProxSensorDamage(ProximityDetectorId),
     GearActuatorJammed(GearActuatorId),
     BrakeHydraulicLeak(HydraulicColor),
     BrakeAccumulatorGasLeak,
+    // ATA34
     RadioAltimeter(usize),
 }
 
@@ -68,6 +76,10 @@ impl Failure {
 
     pub fn is_active(&self) -> bool {
         self.is_active
+    }
+
+    pub fn failure_type(&self) -> FailureType {
+        self.failure_type
     }
 }
 impl SimulationElement for Failure {

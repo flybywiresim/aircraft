@@ -109,11 +109,11 @@ pub struct SteeringActuator {
     total_volume_to_reservoir: Volume,
 
     actuator_area: Area,
+
+    reference_pressure_for_max_speed: Pressure,
 }
 impl SteeringActuator {
     const MIN_PRESSURE_ALLOWING_STEERING_PSI: f64 = 300.;
-
-    const REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI: f64 = 2000.;
 
     const CURRENT_SPEED_FILTER_TIMECONST: Duration = Duration::from_millis(150);
 
@@ -129,6 +129,7 @@ impl SteeringActuator {
         nominal_speed: AngularVelocity,
         actuator_diameter: Length,
         angular_to_linear_ratio: Ratio,
+        reference_pressure_for_max_speed: Pressure,
     ) -> Self {
         Self {
             position_id: context.get_identifier("NOSE_WHEEL_POSITION_RATIO".to_owned()),
@@ -149,6 +150,8 @@ impl SteeringActuator {
             actuator_area: std::f64::consts::PI
                 * (actuator_diameter / 2.)
                 * (actuator_diameter / 2.),
+
+            reference_pressure_for_max_speed,
         }
     }
 
@@ -222,7 +225,7 @@ impl SteeringActuator {
     ) -> AngularVelocity {
         (if current_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWING_STEERING_PSI {
             self.nominal_speed * current_pressure.get::<psi>().sqrt()
-                / Self::REFERENCE_PRESS_FOR_NOMINAL_SPEED_PSI.sqrt()
+                / self.reference_pressure_for_max_speed.get::<psi>().sqrt()
         } else {
             AngularVelocity::default()
         })
@@ -678,6 +681,7 @@ mod tests {
             AngularVelocity::new::<radian_per_second>(0.35),
             Length::new::<meter>(0.05),
             Ratio::new::<ratio>(0.15),
+            Pressure::new::<psi>(2000.),
         )
     }
 

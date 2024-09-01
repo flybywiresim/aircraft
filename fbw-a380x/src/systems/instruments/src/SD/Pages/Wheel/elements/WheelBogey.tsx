@@ -19,9 +19,10 @@ interface WheelBogeyProps {
     y: number,
     position: WheelBogeyPosition,
     type: WheelBogeyType,
+    moreActive: boolean,
 }
 
-export const WheelBogey: FC<WheelBogeyProps> = ({ x, y, position, type }) => {
+export const WheelBogey: FC<WheelBogeyProps> = ({ x, y, position, type, moreActive }) => {
     let numberOfWheels;
     if (type === WheelBogeyType.Nose) {
         numberOfWheels = 2;
@@ -51,12 +52,13 @@ export const WheelBogey: FC<WheelBogeyProps> = ({ x, y, position, type }) => {
             number={type !== WheelBogeyType.Nose ? wheelNumber : null}
             hasBrake={wheelNumber < 17 && type !== WheelBogeyType.Nose}
             isLeftSide={wheelNumber % 2 !== 0}
+            moreActive={moreActive}
         />);
     }
 
     return (
         <g id={`bogey-${position}-${type}`} transform={`translate(${x} ${y})`}>
-            {type !== WheelBogeyType.Nose && (
+            {type !== WheelBogeyType.Nose && moreActive && (
                 <text className='F22 Green LS1' x={-43} y={-54}>A-SKID</text>
             )}
 
