@@ -199,47 +199,47 @@ export class LegacyFwc {
     const hAbv800 = radioHeight.isNoComputedData() || radioHeight.value > 800;
 
         // ESLD 1.0.79 + 1.0.80
-        const eng1TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
-        const eng1TLAFTO = SimVar.GetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'number') !== 0; // is a flex temp is set?
-        const eng1MCT = eng1TLA > 33.3 && eng1TLA < 36.7;
-        const eng1TLAFullPwr = eng1TLA > 43.3;
-        const eng1MCL = eng1TLA > 22.9;
-        const eng1SupMCT = !(eng1TLA < 36.7);
+    const eng1TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
+    const eng1TLAFTO = SimVar.GetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'number') !== 0; // is a flex temp is set?
+    const eng1MCT = eng1TLA > 33.3 && eng1TLA < 36.7;
+    const eng1TLAFullPwr = eng1TLA > 43.3;
+    const eng1MCL = eng1TLA > 22.9;
+    const eng1SupMCT = !(eng1TLA < 36.7);
 
-        const eng2TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number');
-        const eng2TLAFTO = eng1TLAFTO; // until we have proper FADECs
-        const eng2MCT = eng2TLA > 33.3 && eng2TLA < 36.7;
-        const eng2TLAFullPwr = eng2TLA > 43.3;
-        const eng2MCL = eng2TLA > 22.9;
-        const eng2SupMCT = !(eng2TLA < 36.7);
+    const eng2TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number');
+    const eng2TLAFTO = eng1TLAFTO; // until we have proper FADECs
+    const eng2MCT = eng2TLA > 33.3 && eng2TLA < 36.7;
+    const eng2TLAFullPwr = eng2TLA > 43.3;
+    const eng2MCL = eng2TLA > 22.9;
+    const eng2SupMCT = !(eng2TLA < 36.7);
 
-        const eng3TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number');
-        const eng3TLAFTO = eng1TLAFTO; // until we have proper FADECs
-        const eng3MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
-        const eng3TLAFullPwr = eng3TLA > 43.3;
-        const eng3MCL = eng3TLA > 22.9;
-        const eng3SupMCT = !(eng3TLA < 36.7);
+    const eng3TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number');
+    const eng3TLAFTO = eng1TLAFTO; // until we have proper FADECs
+    const eng3MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
+    const eng3TLAFullPwr = eng3TLA > 43.3;
+    const eng3MCL = eng3TLA > 22.9;
+    const eng3SupMCT = !(eng3TLA < 36.7);
 
-        const eng4TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:5', 'number');
-        const eng4TLAFTO = eng1TLAFTO; // until we have proper FADECs
-        const eng4MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
-        const eng4TLAFullPwr = eng3TLA > 43.3;
-        const eng4MCL = eng3TLA > 22.9;
-        const eng4SupMCT = !(eng4TLA < 36.7);
+    const eng4TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:5', 'number');
+    const eng4TLAFTO = eng1TLAFTO; // until we have proper FADECs
+    const eng4MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
+    const eng4TLAFullPwr = eng3TLA > 43.3;
+    const eng4MCL = eng3TLA > 22.9;
+    const eng4SupMCT = !(eng4TLA < 36.7);
 
-        const twoEnginesMcl = [eng1MCL, eng2MCL, eng3MCL, eng4MCL].filter(v => true).length >= 2;
-        const eng1TOPowerSignal = (eng1TLAFTO && eng1MCT) || eng1TLAFullPwr || eng1SupMCT; 
-        const eng2TOPowerSignal = (eng2TLAFTO && eng2MCT) || eng2TLAFullPwr || eng2SupMCT; 
-        const eng3TOPowerSignal = (eng3TLAFTO && eng3MCT) || eng3TLAFullPwr || eng3SupMCT; 
-        const eng4TOPowerSignal = (eng4TLAFTO && eng4MCT) || eng4TLAFullPwr || eng4SupMCT; 
+    const twoEnginesMcl = [eng1MCL, eng2MCL, eng3MCL, eng4MCL].filter(v => true).length >= 2;
+    const eng1TOPowerSignal = (eng1TLAFTO && eng1MCT) || eng1TLAFullPwr || eng1SupMCT; 
+    const eng2TOPowerSignal = (eng2TLAFTO && eng2MCT) || eng2TLAFullPwr || eng2SupMCT; 
+    const eng3TOPowerSignal = (eng3TLAFTO && eng3MCT) || eng3TLAFullPwr || eng3SupMCT; 
+    const eng4TOPowerSignal = (eng4TLAFTO && eng4MCT) || eng4TLAFullPwr || eng4SupMCT; 
 
-        const twoEnginesTOPowerSignal = [eng1TOPowerSignal, eng2TOPowerSignal, eng3TOPowerSignal, eng4TOPowerSignal].fill(true).length >=2;
+    const twoEnginesTOPowerSignal = [eng1TOPowerSignal, eng2TOPowerSignal, eng3TOPowerSignal, eng4TOPowerSignal].fill(true).length >=2;
 
 
-        const twoEnginesTOPower = (
-            twoEnginesTOPowerSignal
-            || (this.mctMemo.write(twoEnginesTOPowerSignal, _deltaTime) && !hAbv1500 && twoEnginesMcl)
-        );
+    const twoEnginesTOPower = (
+        twoEnginesTOPowerSignal
+        || (this.mctMemo.write(twoEnginesTOPowerSignal, _deltaTime) && !hAbv1500 && twoEnginesMcl)
+    );
 
     // ESLD 1.0.100
     const eng1FirePbOut = SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'Bool');
@@ -353,8 +353,8 @@ export class LegacyFwc {
 
     const eng1NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') < 15;
     const eng2NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') < 15;
-        const eng3NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:3', 'Percent') < 15;
-        const eng4NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:4', 'Percent') < 15;
+    const eng3NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:3', 'Percent') < 15;
+    const eng4NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:4', 'Percent') < 15;
     const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning && !eng3NotRunning && !eng4NotRunning, _deltaTime);
 
     this.toMemo = flightPhaseMemo || (this.flightPhase === FwcFlightPhase.FirstEngineStarted && toTimerElapsed);
