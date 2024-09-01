@@ -4,7 +4,7 @@ use systems::{
         AirConditioningOverheadShared, CabinFansSignal, Channel, OperatingChannel,
         PressurizationOverheadShared, VcmId, VcmShared,
     },
-    failures::FailureType,
+    failures::{Failure, FailureType},
     shared::{ControllerSignal, ElectricalBusType},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
@@ -123,6 +123,18 @@ impl VentilationControlModule {
         std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
     }
 
+    pub fn cargo_heater_has_failed(&self) -> bool {
+        self.bvcs.heater_has_failed()
+    }
+
+    pub fn fwd_isolation_valve_has_failed(&self) -> bool {
+        self.fcvcs.fwd_isolation_valve_has_failed()
+    }
+
+    pub fn bulk_isolation_valve_has_failed(&self) -> bool {
+        self.bvcs.bulk_isolation_valve_has_failed()
+    }
+
     pub fn id(&self) -> VcmId {
         self.id
     }
@@ -186,6 +198,8 @@ impl SimulationElement for VentilationControlModule {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.active_channel.accept(visitor);
         self.stand_by_channel.accept(visitor);
+        self.fcvcs.accept(visitor);
+        self.bvcs.accept(visitor);
 
         visitor.visit(self);
     }
@@ -194,6 +208,9 @@ impl SimulationElement for VentilationControlModule {
 struct ForwardCargoVentilationControlSystem {
     extraction_fan_is_on: bool,
     isolation_valves_open_allowed: bool,
+
+    fwd_isol_valve_failure: Failure,
+    fwd_extract_fan_failure: Failure,
 }
 
 impl ForwardCargoVentilationControlSystem {
@@ -201,6 +218,9 @@ impl ForwardCargoVentilationControlSystem {
         Self {
             extraction_fan_is_on: false,
             isolation_valves_open_allowed: false,
+
+            fwd_isol_valve_failure: Failure::new(FailureType::FwdIsolValve),
+            fwd_extract_fan_failure: Failure::new(FailureType::FwdExtractFan),
         }
     }
 
@@ -210,19 +230,33 @@ impl ForwardCargoVentilationControlSystem {
         acs_overhead: &impl AirConditioningOverheadShared,
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
-        // TODO: Add failures and smoke detection
         self.isolation_valves_open_allowed = acs_overhead.fwd_cargo_isolation_valve_is_on()
             && !pressurization_overhead.ditching_is_on()
-            && !active_channel_has_fault;
-        self.extraction_fan_is_on =
-            self.isolation_valves_open_allowed && !pressurization_overhead.ditching_is_on();
+            && !active_channel_has_fault
+            && !self.fwd_isol_valve_failure.is_active();
+        self.extraction_fan_is_on = self.isolation_valves_open_allowed
+            && !pressurization_overhead.ditching_is_on()
+            && !self.fwd_extract_fan_failure.is_active();
     }
 
     fn fwd_extraction_fan_is_on(&self) -> bool {
         self.extraction_fan_is_on
     }
+
     fn fwd_isolation_valves_open_allowed(&self) -> bool {
         self.isolation_valves_open_allowed
+    }
+
+    fn fwd_isolation_valve_has_failed(&self) -> bool {
+        self.fwd_isol_valve_failure.is_active()
+    }
+}
+
+impl SimulationElement for ForwardCargoVentilationControlSystem {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.fwd_isol_valve_failure.accept(visitor);
+        self.fwd_extract_fan_failure.accept(visitor);
+        visitor.visit(self);
     }
 }
 
@@ -230,6 +264,10 @@ struct BulkVentilationControlSystem {
     duct_heater_on_allowed: bool,
     extraction_fan_is_on: bool,
     isolation_valves_open_allowed: bool,
+
+    bulk_isol_valve_failure: Failure,
+    bulk_extract_fan_failure: Failure,
+    bulk_heater_failure: Failure,
 }
 
 impl BulkVentilationControlSystem {
@@ -238,6 +276,10 @@ impl BulkVentilationControlSystem {
             duct_heater_on_allowed: false,
             isolation_valves_open_allowed: false,
             extraction_fan_is_on: false,
+
+            bulk_isol_valve_failure: Failure::new(FailureType::BulkIsolValve),
+            bulk_extract_fan_failure: Failure::new(FailureType::BulkExtractFan),
+            bulk_heater_failure: Failure::new(FailureType::CargoHeater),
         }
     }
 
@@ -247,24 +289,45 @@ impl BulkVentilationControlSystem {
         acs_overhead: &impl AirConditioningOverheadShared,
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
-        // TODO: Add failures and smoke detection
         self.isolation_valves_open_allowed = acs_overhead.bulk_isolation_valve_is_on()
             && !pressurization_overhead.ditching_is_on()
-            && !active_channel_has_fault;
-        self.extraction_fan_is_on =
-            self.isolation_valves_open_allowed && !pressurization_overhead.ditching_is_on();
-        self.duct_heater_on_allowed =
-            acs_overhead.bulk_cargo_heater_is_on() && self.extraction_fan_is_on;
+            && !active_channel_has_fault
+            && !self.bulk_isol_valve_failure.is_active();
+        self.extraction_fan_is_on = self.isolation_valves_open_allowed
+            && !pressurization_overhead.ditching_is_on()
+            && !self.bulk_extract_fan_failure.is_active();
+        self.duct_heater_on_allowed = acs_overhead.bulk_cargo_heater_is_on()
+            && self.extraction_fan_is_on
+            && !self.bulk_heater_failure.is_active();
     }
 
     fn duct_heater_on_allowed(&self) -> bool {
         self.duct_heater_on_allowed
     }
+
     fn bulk_extraction_fan_is_on(&self) -> bool {
         self.extraction_fan_is_on
     }
+
     fn bulk_isolation_valves_open_allowed(&self) -> bool {
         self.isolation_valves_open_allowed
+    }
+
+    fn bulk_isolation_valve_has_failed(&self) -> bool {
+        self.bulk_isol_valve_failure.is_active()
+    }
+
+    fn heater_has_failed(&self) -> bool {
+        self.bulk_heater_failure.is_active()
+    }
+}
+
+impl SimulationElement for BulkVentilationControlSystem {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.bulk_isol_valve_failure.accept(visitor);
+        self.bulk_extract_fan_failure.accept(visitor);
+        self.bulk_heater_failure.accept(visitor);
+        visitor.visit(self);
     }
 }
 

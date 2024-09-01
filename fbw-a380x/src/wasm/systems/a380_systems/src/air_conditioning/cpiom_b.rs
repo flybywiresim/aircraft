@@ -24,9 +24,12 @@ use systems::{
 
 use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
 
-use super::local_controllers::{
-    outflow_valve_control_module::{CpcsShared, OcsmShared},
-    trim_air_drive_device::TaddShared,
+use super::{
+    local_controllers::{
+        outflow_valve_control_module::{CpcsShared, OcsmShared},
+        trim_air_drive_device::TaddShared,
+    },
+    A380AirConditioningSystem,
 };
 
 use uom::si::{
@@ -188,10 +191,6 @@ impl CoreProcessingInputOutputModuleB {
 
     fn pack_operating(&self, pack: Pack) -> bool {
         self.ags_app.pack_is_operating(pack)
-    }
-
-    fn hot_air_is_enabled(&self, hot_air: Pack) -> bool {
-        self.tcs_app.hot_air_is_enabled(hot_air)
     }
 
     fn hot_air_is_open(&self, hot_air: Pack) -> bool {
@@ -609,10 +608,6 @@ impl TemperatureControlSystemApplication {
         // This signal is used when there is an overheat or leak detection
         // At the moment we hard code it to false until failures are implemented
         [false; 2]
-    }
-
-    fn hot_air_is_enabled(&self, hot_air: Pack) -> bool {
-        self.hot_air_is_enabled[hot_air.to_index()]
     }
 
     fn hot_air_is_open(&self, hot_air: Pack) -> bool {
@@ -1548,7 +1543,11 @@ impl CpiomBInterfaceUnit {
         }
     }
 
-    pub(super) fn update(&mut self, cpiom: &CoreProcessingInputOutputModuleB) {
+    pub(super) fn update(
+        &mut self,
+        cpiom: &CoreProcessingInputOutputModuleB,
+        air_conditioning_system: &A380AirConditioningSystem,
+    ) {
         if cpiom.ags_has_fault() {
             self.discrete_word_ags = Arinc429Word::new(0, SignStatus::FailureWarning);
         } else {
@@ -1569,9 +1568,9 @@ impl CpiomBInterfaceUnit {
 
         self.discrete_word_tcs.set_bit(11, cpiom.tcs_has_fault());
         self.discrete_word_tcs
-            .set_bit(13, cpiom.hot_air_is_enabled(Pack(1)));
+            .set_bit(13, air_conditioning_system.hot_air_valve_disagrees(1));
         self.discrete_word_tcs
-            .set_bit(14, cpiom.hot_air_is_enabled(Pack(2)));
+            .set_bit(14, air_conditioning_system.hot_air_valve_disagrees(2));
         self.discrete_word_tcs
             .set_bit(15, cpiom.hot_air_is_open(Pack(1)));
         self.discrete_word_tcs
@@ -1594,6 +1593,16 @@ impl CpiomBInterfaceUnit {
             .set_bit(16, cpiom.bulk_isolation_valve_is_open());
         self.discrete_word_vcs
             .set_bit(17, cpiom.primary_fans_enabled());
+        self.discrete_word_vcs
+            .set_bit(18, air_conditioning_system.cabin_fan_has_failed(1));
+        self.discrete_word_vcs
+            .set_bit(19, air_conditioning_system.cabin_fan_has_failed(2));
+        self.discrete_word_vcs
+            .set_bit(20, air_conditioning_system.cabin_fan_has_failed(3));
+        self.discrete_word_vcs
+            .set_bit(21, air_conditioning_system.cabin_fan_has_failed(4));
+        self.discrete_word_vcs
+            .set_bit(22, air_conditioning_system.cargo_heater_has_failed());
 
         if cpiom.cpcs_has_fault() {
             self.discrete_word_cpcs = Arinc429Word::new(0, SignStatus::FailureWarning);

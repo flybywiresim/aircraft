@@ -12,8 +12,8 @@ interface BleedHotAirProps {
 }
 
 const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir, sdacDatum }) => {
-    const [packValveOpen1] = useSimVar(`L:A32NX_PNEU_ENG_${hotAir + (hotAir === 1 ? 0 : 1)}_HP_VALVE_OPEN`, 'bool', 500);
-    const [packValveOpen2] = useSimVar(`L:A32NX_PNEU_ENG_${hotAir + (hotAir === 1 ? 1 : 2)}_HP_VALVE_OPEN`, 'bool', 500);
+    const [packValveOpen1] = useSimVar(`L:A32NX_COND_PACK_${hotAir}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
+    const [packValveOpen2] = useSimVar(`L:A32NX_COND_PACK_${hotAir}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
     const anyPackValveOpen = packValveOpen1 || packValveOpen2;
 
     const tcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');

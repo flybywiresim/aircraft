@@ -137,7 +137,9 @@ impl A380AirConditioning {
         self.cpiom_b_interface
             .iter_mut()
             .zip(&self.cpiom_b)
-            .for_each(|(interface, cpiom)| interface.update(cpiom));
+            .for_each(|(interface, cpiom)| {
+                interface.update(cpiom, &self.a380_air_conditioning_system)
+            });
 
         self.a380_air_conditioning_system.update(
             context,
@@ -492,8 +494,7 @@ impl A380AirConditioningSystem {
 
         self.update_cargo_heater(cabin_simulation, cpiom_b);
 
-        self.air_conditioning_overhead
-            .set_pack_pushbutton_fault(self.pack_fault_determination());
+        self.update_overhead();
     }
 
     fn update_local_controllers(
@@ -619,6 +620,19 @@ impl A380AirConditioningSystem {
         );
     }
 
+    fn update_overhead(&mut self) {
+        self.air_conditioning_overhead
+            .set_pack_pushbutton_fault(self.pack_fault_determination());
+
+        self.air_conditioning_overhead.set_isol_valves_fault([
+            self.vcm[0].fwd_isolation_valve_has_failed(),
+            self.vcm[1].bulk_isolation_valve_has_failed(),
+        ]);
+
+        self.air_conditioning_overhead
+            .set_cargo_heater_fault(self.vcm[1].cargo_heater_has_failed());
+    }
+
     fn pack_fault_determination(&self) -> [bool; 2] {
         [
             self.fdac[0].fcv_status_determination(1) || self.fdac[0].fcv_status_determination(2),
@@ -671,6 +685,18 @@ impl A380AirConditioningSystem {
 
     fn air_conditioning_overhead(&self) -> &A380AirConditioningSystemOverhead {
         &self.air_conditioning_overhead
+    }
+
+    fn cabin_fan_has_failed(&self, fan_id: usize) -> bool {
+        self.cabin_fans[fan_id - 1].has_fault()
+    }
+
+    fn cargo_heater_has_failed(&self) -> bool {
+        self.vcm[1].cargo_heater_has_failed()
+    }
+
+    fn hot_air_valve_disagrees(&self, hot_air_id: usize) -> bool {
+        self.tadd.taprv_disagree_status_monitor(hot_air_id)
     }
 }
 
@@ -821,6 +847,17 @@ impl A380AirConditioningSystemOverhead {
             .iter_mut()
             .enumerate()
             .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
+    }
+
+    fn set_isol_valves_fault(&mut self, isol_valves_fault: [bool; 2]) {
+        self.isol_valves_pbs
+            .iter_mut()
+            .zip(isol_valves_fault)
+            .for_each(|(pushbutton, fault)| pushbutton.set_fault(fault));
+    }
+
+    fn set_cargo_heater_fault(&mut self, cargo_heater_fault: bool) {
+        self.cargo_heater_pb.set_fault(cargo_heater_fault);
     }
 }
 

@@ -21,19 +21,28 @@ const CondHotAir: FC<CondHotAirProps> = ({ x, y, hotAir }) => {
     const tcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
     const tcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
 
+    let tcsDiscreteWordToUse;
+
+    if (tcsB1DiscreteWord.isNormalOperation()) {
+        tcsDiscreteWordToUse = tcsB1DiscreteWord
+    } else if (tcsB2DiscreteWord.isNormalOperation()) {
+        tcsDiscreteWordToUse = tcsB2DiscreteWord
+    } else if (tcsB3DiscreteWord.isNormalOperation()) {
+        tcsDiscreteWordToUse = tcsB3DiscreteWord
+    } else {
+        tcsDiscreteWordToUse = tcsB4DiscreteWord
+    };
+
     const bitNumber = 14 + hotAir;
-    const hotAirValveOpen = tcsB1DiscreteWord.getBitValueOr(bitNumber,
-        tcsB2DiscreteWord.getBitValueOr(bitNumber,
-            tcsB3DiscreteWord.getBitValueOr(bitNumber,
-                tcsB4DiscreteWord.getBitValueOr(bitNumber, false
-        ))));
+    const hotAirValveOpen = tcsDiscreteWordToUse.getBitValueOr(bitNumber, false);
+    const hotAirValveDisagrees = tcsDiscreteWordToUse.getBitValueOr(bitNumber - 2, false);
 
     return (
         <g id={`CondHotAir-${hotAir}`}>
             <path className={`${anyPackValveOpen ? 'Green' : 'Amber'} Line`} d={`M${x},${y} l 0,-30`} />
             <path className={`${hotAirValveOpen ? 'Green' : 'Amber'} Line`} d={`M${x},${y - 58} l 0,-16`} />
-            <Triangle x={x} y={y - 90} colour={hotAirValveOpen ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.1} />
-            <Valve x={x} y={y - 39} radius={17} css={`SW2 ${hotAirValveOpen ? 'Green' : 'Amber'}`} position={hotAirValveOpen ? 'V' : 'H'} sdacDatum />
+            <Triangle x={x} y={y - 90} colour={hotAirValveOpen  ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.1} />
+            <Valve x={x} y={y - 39} radius={17} css={`SW2 ${(hotAirValveOpen && !hotAirValveDisagrees) ? 'Green' : 'Amber'}`} position={hotAirValveOpen ? 'V' : 'H'} sdacDatum />
         </g>
     )
 }

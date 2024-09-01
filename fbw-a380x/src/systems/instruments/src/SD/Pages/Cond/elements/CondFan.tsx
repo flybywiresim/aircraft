@@ -23,10 +23,21 @@ export const CondFan = () => {
     const fwdCargoExtractFanIsOn = vcsDiscreteWordToUse.getBitValueOr(13, false);
     const bulkCargoExtractFanIsOn = vcsDiscreteWordToUse.getBitValueOr(15, false);
     const cabinFansEnabled = vcsDiscreteWordToUse.getBitValueOr(17, false);
+    const fan1Failure = vcsDiscreteWordToUse.getBitValueOr(18, false);
+    const fan2Failure = vcsDiscreteWordToUse.getBitValueOr(19, false);
+    const fan3Failure = vcsDiscreteWordToUse.getBitValueOr(20, false);
+    const fan4Failure = vcsDiscreteWordToUse.getBitValueOr(21, false);
 
     return (
         <g>
-            <PrimaryFanGroup x={315} y={415} cabinFansEnabled={cabinFansEnabled} />
+            <PrimaryFanGroup
+                x={315} y={415}
+                cabinFansEnabled={cabinFansEnabled}
+                fan1Failure={fan1Failure}
+                fan2Failure={fan2Failure}
+                fan3Failure={fan3Failure}
+                fan4Failure={fan4Failure}
+            />
 
             {/* Fwd Cargo Extraction Fan */}
             <Fan x={240} y={390} css={fwdCargoExtractFanIsOn ? 'Hide' : 'Show Amber Line'} />
@@ -42,16 +53,20 @@ interface PrimaryFanGroupProps {
     x: number,
     y: number,
     cabinFansEnabled: boolean,
+    fan1Failure: boolean,
+    fan2Failure: boolean,
+    fan3Failure: boolean,
+    fan4Failure: boolean,
 }
 
-const PrimaryFanGroup: FC<PrimaryFanGroupProps> = ({ x, y, cabinFansEnabled }) => {
-    // TODO: Add vars for individual fan failures
+const PrimaryFanGroup: FC<PrimaryFanGroupProps> = ({ x, y, cabinFansEnabled, fan1Failure, fan2Failure, fan3Failure, fan4Failure }) => {
+    const anyFanFailure = fan1Failure || fan2Failure || fan3Failure || fan4Failure;
     return (
-        <g id="PrimaryFanGroup" className={cabinFansEnabled ? 'Hide' : 'Show'}>
-            <Fan x={x} y={y} css={`${cabinFansEnabled ? 'Green' : 'Amber'} Line`} />
-            <Fan x={x} y={y+15} css={`${cabinFansEnabled ? 'Green' : 'Amber'} Line`} />
-            <Fan x={x+120} y={y} css={`${cabinFansEnabled ? 'Green' : 'Amber'} Line`} />
-            <Fan x={x+120} y={y+15} css={`${cabinFansEnabled ? 'Green' : 'Amber'} Line`} />
+        <g id="PrimaryFanGroup" className={(cabinFansEnabled && !anyFanFailure) ? 'Hide' : 'Show'}>
+            <Fan x={x} y={y} css={`${(cabinFansEnabled && !fan1Failure) ? 'Green' : 'Amber'} Line`} />
+            <Fan x={x} y={y+15} css={`${(cabinFansEnabled && !fan2Failure) ? 'Green' : 'Amber'} Line`} />
+            <Fan x={x+120} y={y} css={`${(cabinFansEnabled && !fan3Failure) ? 'Green' : 'Amber'} Line`} />
+            <Fan x={x+120} y={y+15} css={`${(cabinFansEnabled && !fan4Failure) ? 'Green' : 'Amber'} Line`} />
 
             {/* Arrows into mixer unit */}
             <path className={`${cabinFansEnabled ? 'Green' : 'Amber'} Line`} d={`M340,468 l 0,-32`} />

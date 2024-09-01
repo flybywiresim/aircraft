@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use systems::{
     air_conditioning::{
         acs_controller::{TrimAirPressureRegulatingValveController, TrimAirValveController},
@@ -31,6 +33,10 @@ pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
     stand_by_channel: OperatingChannel,
     hot_air_is_enabled: [bool; 2],
     hot_air_is_open: [bool; 2],
+    taprv_open_disagrees: [bool; 2],
+    taprv_open_timer: [Duration; 2],
+    taprv_closed_disagrees: [bool; 2],
+    taprv_closed_timer: [Duration; 2],
     taprv_controllers: [TrimAirPressureRegulatingValveController; 2],
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 
@@ -38,6 +44,10 @@ pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES> {
+    const TAPRV_OPEN_COMMAND_DISAGREE_TIMER: f64 = 30.; // seconds
+    const TAPRV_CLOSE_COMMAND_DISAGREE_TIMER: f64 = 14.; // seconds
+    const TIMER_RESET: f64 = 1.2; // seconds
+
     pub fn new(context: &mut InitContext, powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
             tadd_channel_1_failure_id: context
@@ -57,6 +67,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
             ),
             hot_air_is_enabled: [false; 2],
             hot_air_is_open: [false; 2],
+            taprv_open_disagrees: [false; 2],
+            taprv_open_timer: [Duration::ZERO; 2],
+            taprv_closed_disagrees: [false; 2],
+            taprv_closed_timer: [Duration::ZERO; 2],
             taprv_controllers: [TrimAirPressureRegulatingValveController::new(); 2],
             trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
 
@@ -92,6 +106,11 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
 
         self.hot_air_is_open =
             [1, 2].map(|id| trim_air_system.trim_air_pressure_regulating_valve_is_open(id));
+
+        self.taprv_open_disagrees =
+            [1, 2].map(|hot_air_id| self.taprv_open_command_disagree_monitor(context, hot_air_id));
+        self.taprv_closed_disagrees = [1, 2]
+            .map(|hot_air_id| self.taprv_closed_command_disagree_monitor(context, hot_air_id));
 
         if !matches!(self.fault, Some(TaddFault::BothChannelsFault))
             && !self.active_channel.has_fault()
@@ -143,6 +162,72 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
             && !should_close_taprv
         // && !self.duct_overheat_monitor()
         // && !any_tav_has_fault
+    }
+
+    fn taprv_open_command_disagree_monitor(
+        &mut self,
+        context: &UpdateContext,
+        hot_air_id: usize,
+    ) -> bool {
+        let index = hot_air_id - 1;
+        if !self.hot_air_is_enabled[index] {
+            false
+        } else if !self.hot_air_is_open[index] && !self.taprv_open_disagrees[index] {
+            if self.taprv_open_timer[index]
+                > Duration::from_secs_f64(Self::TAPRV_OPEN_COMMAND_DISAGREE_TIMER)
+            {
+                self.taprv_open_timer[index] = Duration::default();
+                true
+            } else {
+                self.taprv_open_timer[index] += context.delta();
+                false
+            }
+        } else if self.hot_air_is_open[index] && self.taprv_open_disagrees[index] {
+            if self.taprv_open_timer[index] > Duration::from_secs_f64(Self::TIMER_RESET) {
+                self.taprv_open_timer[index] = Duration::default();
+                false
+            } else {
+                self.taprv_open_timer[index] += context.delta();
+                true
+            }
+        } else {
+            self.taprv_open_disagrees[index]
+        }
+    }
+
+    fn taprv_closed_command_disagree_monitor(
+        &mut self,
+        context: &UpdateContext,
+        hot_air_id: usize,
+    ) -> bool {
+        let index = hot_air_id - 1;
+        if self.hot_air_is_enabled[index] {
+            false
+        } else if self.hot_air_is_open[index] && !self.taprv_closed_disagrees[index] {
+            if self.taprv_closed_timer[index]
+                > Duration::from_secs_f64(Self::TAPRV_CLOSE_COMMAND_DISAGREE_TIMER)
+            {
+                self.taprv_closed_timer[index] = Duration::default();
+                true
+            } else {
+                self.taprv_closed_timer[index] += context.delta();
+                false
+            }
+        } else if !self.hot_air_is_open[index] && self.taprv_closed_disagrees[index] {
+            if self.taprv_closed_timer[index] > Duration::from_secs_f64(Self::TIMER_RESET) {
+                self.taprv_closed_timer[index] = Duration::default();
+                false
+            } else {
+                self.taprv_closed_timer[index] += context.delta();
+                true
+            }
+        } else {
+            self.taprv_closed_disagrees[index]
+        }
+    }
+
+    pub fn taprv_disagree_status_monitor(&self, hot_air_id: usize) -> bool {
+        self.taprv_open_disagrees[hot_air_id - 1] || self.taprv_closed_disagrees[hot_air_id - 1]
     }
 
     pub fn taprv_controller(&self) -> [TrimAirPressureRegulatingValveController; 2] {

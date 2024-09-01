@@ -133,8 +133,8 @@
       |:---:|:----------------------------------------------------:|
       | 11  | TCS Application INOP                                 |
       | 12  | Unused                                               |
-      | 13  | Hot Air 1 is enabled                                 |
-      | 14  | Hot Air 2 is enabled                                 |
+      | 13  | Hot Air 1 position disagrees                         |
+      | 14  | Hot Air 2 position disagrees                         |
       | 15  | Trim Air Pressure Regulating Valve 1 is open         |
       | 16  | Trim Air Pressure Regulating Valve 2 is open         |
 
@@ -151,6 +151,11 @@
       | 15  | Bulk Extraction fan is on                            |
       | 16  | Bulk isolation valve is open                         |
       | 17  | Primary fans are enabled                             |
+      | 18  | Primary Fan 1 Fault                                  |
+      | 19  | Primary Fan 2 Fault                                  |
+      | 20  | Primary Fan 3 Fault                                  |
+      | 21  | Primary Fan 4 Fault                                  |
+      | 22  | Bulk Heater Fault                                    |
 
 - A32NX_COND_CPIOM_B{id}_CPCS_DISCRETE_WORD
     - Arinc429<Discrete>
