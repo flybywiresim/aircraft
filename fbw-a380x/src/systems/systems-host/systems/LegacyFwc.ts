@@ -32,7 +32,7 @@ export class LegacyFwc {
 
   gndMemo: NXLogic_ConfirmNode;
 
-  eng1OrTwoRunningConf: NXLogic_ConfirmNode;
+  oneEngineRunningConf: NXLogic_ConfirmNode;
 
   speedAbove80KtsMemo: NXLogic_MemoryNode;
 
@@ -109,7 +109,7 @@ export class LegacyFwc {
     this.gndMemo = new NXLogic_ConfirmNode(1); // outptuts ZGND
 
     // ESDL 1. 0. 60
-    this.eng1OrTwoRunningConf = new NXLogic_ConfirmNode(30);
+    this.oneEngineRunningConf = new NXLogic_ConfirmNode(30);
 
     // ESDL 1. 0. 73
     this.speedAbove80KtsMemo = new NXLogic_MemoryNode(true);
@@ -176,11 +176,13 @@ export class LegacyFwc {
       radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData() ? radioHeight2 : radioHeight1;
     const eng1N1 = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent');
     const eng2N1 = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent');
+    const eng3N1 = SimVar.GetSimVarValue('ENG N1 RPM:3', 'Percent');
+    const eng4N1 = SimVar.GetSimVarValue('ENG N1 RPM:4', 'Percent');
     // TODO find a better source for the following value ("core speed at or above idle")
     // Note that N1 starts below idle on spawn on the runway, so this should be below 16 to not jump back to phase 1
-    const oneEngRunning = eng1N1 > 15 || eng2N1 > 15;
-    const eng1Or2Running = this.eng1OrTwoRunningConf.write(oneEngRunning, _deltaTime);
-    const engOneAndTwoNotRunning = !eng1Or2Running;
+    const oneEngRunning = eng1N1 > 15 || eng2N1 > 15 || eng3N1 > 15 || eng4N1 > 15;
+    const oneEngineRunning = this.oneEngineRunningConf.write(oneEngRunning, _deltaTime);
+    const noEngineRunning = !oneEngineRunning;
     const hFail = radioHeight1.isFailureWarning() && radioHeight2.isFailureWarning();
     const adcTestInhib = false;
 
@@ -228,7 +230,7 @@ export class LegacyFwc {
       acSpeedAbove80kts;
 
     const phase34Cond = ground && eng1Or2TOPower;
-    const phase3 = !acSpeedAbove80kts && eng1Or2Running && phase34Cond;
+    const phase3 = !acSpeedAbove80kts && oneEngRunning && phase34Cond;
     const phase4 = acSpeedAbove80kts && phase34Cond;
 
     const setPhase9Nvm = phase3 || phase8;
@@ -242,10 +244,10 @@ export class LegacyFwc {
     const phase9Nvm = this.phase9Nvm.write(setPhase9Nvm, resetPhase9Nvm); // S* / R (NVM)
     const phase29Cond = ground && !eng1Or2TOPower && !acSpeedAbove80kts;
     const phase9 = oneEngRunning && phase9Nvm && phase29Cond;
-    const phase2 = phase29Cond && !phase9Nvm && eng1Or2Running;
+    const phase2 = phase29Cond && !phase9Nvm && oneEngRunning;
 
     const phase110MemoA = this.firePBClear10.write(phase9, resetFirePbClear10); // S / R*
-    const phase110Cond = !phase9 && engOneAndTwoNotRunning && groundImmediate;
+    const phase110Cond = !phase9 && noEngineRunning && groundImmediate;
     const phase110Memo = this.phase110Memo.write(phase110MemoA && phase110Cond, _deltaTime); // MTRIG 03
     const phase1 = phase110Cond && !phase110Memo;
     const phase10 = phase110Cond && phase110Memo;
@@ -322,16 +324,18 @@ export class LegacyFwc {
 
   _updateTakeoffMemo(_deltaTime: number) {
     /// FWC ESLD 1.0.180
-    const setFlightPhaseMemo = this.flightPhase === 2 && this.toConfigTest;
+    const setFlightPhaseMemo = this.flightPhase === FwcFlightPhase.FirstEngineStarted && this.toConfigTest;
     const resetFlightPhaseMemo =
-      this.flightPhase === 10 || this.flightPhase === 3 || this.flightPhase === 1 || this.flightPhase === 6;
+      this.flightPhase === FwcFlightPhase.EnginesShutdown || this.flightPhase === FwcFlightPhase.FirstEngineTakeOffPower || this.flightPhase === FwcFlightPhase.ElecPwr || this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet;
     const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
 
     const eng1NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') < 15;
     const eng2NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') < 15;
-    const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning, _deltaTime);
+        const eng3NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:3', 'Percent') < 15;
+        const eng4NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:4', 'Percent') < 15;
+    const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning && !eng3NotRunning && !eng4NotRunning, _deltaTime);
 
-    this.toMemo = flightPhaseMemo || (this.flightPhase === 2 && toTimerElapsed);
+    this.toMemo = flightPhaseMemo || (this.flightPhase === FwcFlightPhase.FirstEngineStarted && toTimerElapsed);
     SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', this.toMemo);
   }
 
@@ -353,17 +357,17 @@ export class LegacyFwc {
       resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid,
       _deltaTime,
     );
-    const resetInhibitMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
+    const resetInhibitMemo = !(this.flightPhase === FwcFlightPhase.AtOrBelow800Feet || this.flightPhase === FwcFlightPhase.TouchDown || this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet);
     const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
 
-    const showInApproach = memo1 && memo2 && this.flightPhase === 6;
+    const showInApproach = memo1 && memo2 && this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet;
 
     const invalidRadioMemo = this.memoLdgMemo_conf02.write(
-      radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6,
+      radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet,
       _deltaTime,
     );
 
-    this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
+    this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === FwcFlightPhase.TouchDown || this.flightPhase === FwcFlightPhase.AtOrBelow800Feet;
     SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
   }
 
