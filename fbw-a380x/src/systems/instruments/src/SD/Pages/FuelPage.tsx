@@ -50,19 +50,31 @@ export const FuelPage = () => {
 
     // Transfer pumps
     const [isLeftOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:9', 'Bool', 1000);
+    const [leftOuterTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:9', 'Enum', 1000);
     const [isLeftMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:10', 'Bool', 1000);
+    const [leftMidTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:10', 'Enum', 1000);
     const [isLeftMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:11', 'Bool', 1000);
+    const [leftMidTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:11', 'Enum', 1000);
     const [isLeftInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:12', 'Bool', 1000);
+    const [leftInnerTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:12', 'Enum', 1000);
     const [isRightInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:13', 'Bool', 1000);
+    const [rightInnerTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:13', 'Enum', 1000);
     const [isRightOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:14', 'Bool', 1000);
+    const [rightOuterTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:14', 'Enum', 1000);
     const [isRightMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:15', 'Bool', 1000);
+    const [rightMidTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:15', 'Enum', 1000);
     const [isRightMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:16', 'Bool', 1000);
+    const [rightMidTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:16', 'Enum', 1000);
     const [isLeftInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:17', 'Bool', 1000);
+    const [leftInnerTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:17', 'Enum', 1000);
     const [isRightInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:18', 'Bool', 1000);
+    const [rightInnerTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:18', 'Enum', 1000);
 
     // Trim tank pumps
     const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
+    const [leftTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:19', 'Enum', 1000);
     const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
+    const [rightTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:19', 'Enum', 1000);
 
     // Crossfeed valves
     const [crossFeed1ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:46', 'Percent over 100', 1000);
@@ -167,28 +179,28 @@ export const FuelPage = () => {
 
     const fwdGalleryPumps: PumpProps[] = [
         // Pump.9
-        { x: 84, y: 384, running: isLeftOuterTankPumpActive, displayWhenInactive: showMore, },
+        { x: 84, y: 384, running: isLeftOuterTankPumpActive, hasFault: !leftOuterTankPumpSwitch, displayWhenInactive: showMore },
         // Pump.10
-        { x: 140, y: 384, running: isLeftMidTankPumpFwdActive, displayWhenInactive: showMore, },
+        { x: 140, y: 384, running: isLeftMidTankPumpFwdActive, hasFault: !leftMidTankPumpFwdSwitch, displayWhenInactive: showMore },
         // Pump.12
-        { x: 232, y: 384, running: isLeftInnerTankPumpFwdActive, displayWhenInactive: showMore, },
+        { x: 232, y: 384, running: isLeftInnerTankPumpFwdActive, hasFault: !leftInnerTankPumpFwdSwitch, displayWhenInactive: showMore },
         // Pump.13
-        { x: 482, y: 384, running: isRightInnerTankPumpFwdActive, displayWhenInactive: showMore, },
+        { x: 482, y: 384, running: isRightInnerTankPumpFwdActive, hasFault: !rightInnerTankPumpFwdSwitch, displayWhenInactive: showMore },
         // Pump.15
-        { x: 584, y: 384, running: isRightMidTankPumpFwdActive, displayWhenInactive: showMore, },
+        { x: 584, y: 384, running: isRightMidTankPumpFwdActive, hasFault: !rightMidTankPumpFwdSwitch, displayWhenInactive: showMore },
         // Pump.14
-        { x: 680, y: 384, running: isRightOuterTankPumpActive, displayWhenInactive: showMore, },
+        { x: 680, y: 384, running: isRightOuterTankPumpActive, hasFault: !rightOuterTankPumpSwitch, displayWhenInactive: showMore },
     ]
 
     const aftGalleryPumps: PumpProps[] = [
         // Pump.11
-        { x: 182, y: 452, running: isLeftMidTankPumpAftActive, displayWhenInactive: showMore, },
+        { x: 182, y: 452, running: isLeftMidTankPumpAftActive, hasFault: !leftMidTankPumpAftSwitch, displayWhenInactive: showMore },
         // Pump.16
-        { x: 274, y: 452, running: isLeftInnerTankPumpAftActive, displayWhenInactive: showMore, },
+        { x: 274, y: 452, running: isLeftInnerTankPumpAftActive, hasFault: !leftInnerTankPumpAftSwitch, displayWhenInactive: showMore },
         // Pump.17
-        { x: 524, y: 452, running: isRightInnerTankPumpAftActive, displayWhenInactive: showMore, },
+        { x: 524, y: 452, running: isRightInnerTankPumpAftActive, hasFault: !rightInnerTankPumpAftSwitch, displayWhenInactive: showMore },
         // Pump.18
-        { x: 626, y: 452, running: isRightMidTankPumpAftActive, displayWhenInactive: showMore, },
+        { x: 626, y: 452, running: isRightMidTankPumpAftActive, hasFault: !rightMidTankPumpAftSwitch, displayWhenInactive: showMore },
     ]
 
     const fwdGalleryTransferValves: FuelLineProps[] = [
@@ -521,9 +533,9 @@ export const FuelPage = () => {
                 </g>
 
                 <FuelLine x1={298} y1={596} x2={298} y2={568} active={false} displayWhenInactive={showMore} />
-                <Pump running={isLeftTrimTankPumpActive} x={298} y={610} />
+                <Pump x={298} y={610} running={isLeftTrimTankPumpActive} hasFault={!leftTrimTankPumpSwitch} displayWhenInactive={showMore} />
                 <FuelLine x1={468} y1={596} x2={468} y2={568} active={false} displayWhenInactive={showMore} />
-                <Pump running={isRightTrimTankPumpActive} x={468} y={610} />
+                <Pump x={468} y={610} running={isRightTrimTankPumpActive} hasFault={!rightTrimTankPumpSwitch} displayWhenInactive={showMore} />
 
                 <FuelLine x1={298} y1={568} x2={468} y2={568} active={false} displayWhenInactive={showMore} />
 

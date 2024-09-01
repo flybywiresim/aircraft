@@ -192,25 +192,15 @@
     </Template>
 
     <Template Name="FBW_Airbus_Fuel_Pump">
-        <DefaultTemplateParameters>
-            <CIRCUIT_CONNECTED_TO_BUS>1 (>A:BUS LOOKUP INDEX, Number) (A:CIRCUIT CONNECTION ON:#CIRCUIT_ID#, Bool)</CIRCUIT_CONNECTED_TO_BUS>
-        </DefaultTemplateParameters>
-
         <UseTemplate Name="FBW_Push_Toggle">
-            <LEFT_SINGLE_CODE>#CIRCUIT_ID# 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FUELSYSTEM_PUMP_TOGGLE)</LEFT_SINGLE_CODE>
 
-            <SEQ2_CODE>#CIRCUIT_CONNECTED_TO_BUS# 0 ==</SEQ2_CODE>
+            <SEQ2_CODE>(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==</SEQ2_CODE>
 
-            <DOWN_CODE>#CIRCUIT_CONNECTED_TO_BUS# 1 ==</DOWN_CODE>
+            <DOWN_CODE>(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 1 ==</DOWN_CODE>
 
-            <TOOLTIPID>%((#CIRCUIT_CONNECTED_TO_BUS# 0 ==))%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+            <TOOLTIPID>%((A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
         </UseTemplate>
-
-        <Update Once="True">
-            (L:A32NX_START_STATE, Bool) 2 == #CIRCUIT_CONNECTED_TO_BUS# 1 == and if{
-                #CIRCUIT_ID# 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
-            }
-        </Update>
     </Template>
 
     <Template Name="FBW_Airbus_Fuel_Crossfeed">
