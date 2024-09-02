@@ -46,27 +46,29 @@ export class LegacyFwc {
 
   firePBOutMemo: NXLogic_TriggeredMonostableNode;
 
-  firePBClear10: NXLogic_MemoryNode;
+  firePBClear12: NXLogic_MemoryNode;
 
-  phase110Memo: NXLogic_TriggeredMonostableNode;
+  phase112Memo: NXLogic_TriggeredMonostableNode;
 
-  phase8GroundMemo: NXLogic_TriggeredMonostableNode;
+  phase10GroundMemo: NXLogic_TriggeredMonostableNode;
 
   ac80KtsMemo: NXLogic_TriggeredMonostableNode;
 
-  prevPhase9InvertMemo: NXLogic_TriggeredMonostableNode;
+  prevPhase11InvertMemo: NXLogic_TriggeredMonostableNode;
 
-  eng1Or2TOPowerInvertMemo: NXLogic_TriggeredMonostableNode;
+  twoEnginesTOPowerInvertMemo: NXLogic_TriggeredMonostableNode;
 
   phase9Nvm: NXLogic_MemoryNode;
 
-  prevPhase9: boolean;
+  prevPhase11: boolean;
 
   groundImmediateMemo: NXLogic_TriggeredMonostableNode;
 
-  phase5Memo: NXLogic_TriggeredMonostableNode;
+  phase6Memo: NXLogic_TriggeredMonostableNode;
 
-  phase67Memo: NXLogic_TriggeredMonostableNode;
+  phase7Memo: NXLogic_TriggeredMonostableNode;
+
+  phase89Memo: NXLogic_TriggeredMonostableNode;
 
   memoTo_conf01: NXLogic_ConfirmNode;
 
@@ -126,19 +128,20 @@ export class LegacyFwc {
     // ESDL 1. 0.100
     this.firePBOutConf = new NXLogic_ConfirmNode(0.2); // CONF01
     this.firePBOutMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 05
-    this.firePBClear10 = new NXLogic_MemoryNode(false);
-    this.phase110Memo = new NXLogic_TriggeredMonostableNode(300); // MTRIG 03
-    this.phase8GroundMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 06
+    this.firePBClear12 = new NXLogic_MemoryNode(false);
+    this.phase112Memo = new NXLogic_TriggeredMonostableNode(300); // MTRIG 03
+    this.phase10GroundMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 06
     this.ac80KtsMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 04
-    this.prevPhase9InvertMemo = new NXLogic_TriggeredMonostableNode(3, false); // MTRIG 02
-    this.eng1Or2TOPowerInvertMemo = new NXLogic_TriggeredMonostableNode(1, false); // MTRIG 01
+    this.prevPhase11InvertMemo = new NXLogic_TriggeredMonostableNode(3, false); // MTRIG 02
+    this.twoEnginesTOPowerInvertMemo = new NXLogic_TriggeredMonostableNode(1, false); // MTRIG 01
     this.phase9Nvm = new NXLogic_MemoryNode(true, true);
-    this.prevPhase9 = false;
+    this.prevPhase11 = false;
 
     // ESDL 1. 0.110
     this.groundImmediateMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 03
-    this.phase5Memo = new NXLogic_TriggeredMonostableNode(120); // MTRIG 01
-    this.phase67Memo = new NXLogic_TriggeredMonostableNode(180); // MTRIG 02
+    this.phase6Memo = new NXLogic_TriggeredMonostableNode(15);
+    this.phase7Memo = new NXLogic_TriggeredMonostableNode(120);
+    this.phase89Memo = new NXLogic_TriggeredMonostableNode(180); // MTRIG 02
 
     // ESDL 1. 0.180
     this.memoTo_conf01 = new NXLogic_ConfirmNode(120, true); // CONF 01
@@ -270,53 +273,58 @@ export class LegacyFwc {
     // ESLD 1.0.100
     const eng1FirePbOut = SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'Bool');
     const eng1FirePbMemo = this.firePBOutMemo.write(this.firePBOutConf.write(eng1FirePbOut, _deltaTime), _deltaTime);
-    const resetFirePbClear10 = eng1FirePbMemo && ground;
+    const resetFirePbClear12 = eng1FirePbMemo && ground;
 
-    const phase8 =
-      (this.phase8GroundMemo.write(groundImmediate, _deltaTime) || groundImmediate) &&
+    const phase10 =
+      (this.phase10GroundMemo.write(groundImmediate, _deltaTime) || groundImmediate) &&
       !twoEnginesTOPower &&
       acSpeedAbove80kts;
 
-    const phase34Cond = ground && twoEnginesTOPower;
-    const phase3 = !acSpeedAbove80kts && oneEngRunning && phase34Cond;
-    const phase4 = acSpeedAbove80kts && phase34Cond;
+    const phase345Cond = ground && twoEnginesTOPower;
+    const phase3 = !acSpeedAbove80kts && oneEngRunning && phase345Cond;
+    const phase4 = acSpeedAbove80kts && phase345Cond;
+    const phase5 = acSpeedAbove80kts && phase345Cond && acAboveV1;
 
-    const setPhase9Nvm = phase3 || phase8;
-    const resetPhase9Nvm =
+    const setPhase11Nvm = phase3 || phase10;
+    const resetPhase11Nvm =
       (!this.ac80KtsMemo.write(!acSpeedAbove80kts, _deltaTime) &&
-        ((ground && this.prevPhase9InvertMemo.write(this.prevPhase9, _deltaTime)) ||
-          resetFirePbClear10 ||
-          (ground && this.eng1Or2TOPowerInvertMemo.write(twoEnginesTOPower, _deltaTime))) &&
-        !this.prevPhase9) ||
+        ((ground && this.prevPhase11InvertMemo.write(this.prevPhase11, _deltaTime)) ||
+          resetFirePbClear12 ||
+          (ground && this.twoEnginesTOPowerInvertMemo.write(twoEnginesTOPower, _deltaTime))) &&
+        !this.prevPhase11) ||
       adcTestInhib;
-    const phase9Nvm = this.phase9Nvm.write(setPhase9Nvm, resetPhase9Nvm); // S* / R (NVM)
-    const phase29Cond = ground && !twoEnginesTOPower && !acSpeedAbove80kts;
-    const phase9 = oneEngRunning && phase9Nvm && phase29Cond;
-    const phase2 = phase29Cond && !phase9Nvm && oneEngRunning;
+    const phase11Nvm = this.phase9Nvm.write(setPhase11Nvm, resetPhase11Nvm); // S* / R (NVM)
+    const phase211Cond = ground && !twoEnginesTOPower && !acSpeedAbove80kts;
+    const phase11 = oneEngRunning && phase11Nvm && phase211Cond;
+    const phase2 = phase211Cond && !phase11Nvm && oneEngRunning;
 
-    const phase110MemoA = this.firePBClear10.write(phase9, resetFirePbClear10); // S / R*
-    const phase110Cond = !phase9 && noEngineRunning && groundImmediate;
-    const phase110Memo = this.phase110Memo.write(phase110MemoA && phase110Cond, _deltaTime); // MTRIG 03
-    const phase1 = phase110Cond && !phase110Memo;
-    const phase10 = phase110Cond && phase110Memo;
+    const phase112MemoA = this.firePBClear12.write(phase11, resetFirePbClear12); // S / R*
+    const phase112Cond = !phase11 && noEngineRunning && groundImmediate;
+    const phase112Memo = this.phase112Memo.write(phase112MemoA && phase112Cond, _deltaTime); // MTRIG 03
+    const phase1 = phase112Cond && !phase112Memo;
+    const phase12 = phase112Cond && phase112Memo;
 
-    this.prevPhase9 = phase9;
+    this.prevPhase11 = phase11;
 
     // ESLD 1.0.110
     const ground2sMemorized = this.groundImmediateMemo.write(groundImmediate, _deltaTime) || groundImmediate;
-    const phase5Cond = !hAbv1500 && twoEnginesTOPower && !hFail && !ground2sMemorized;
-    const phase5 = this.phase5Memo.write(phase5Cond, _deltaTime) && phase5Cond;
 
-    const phase67Cond = !ground2sMemorized && !hFail && !twoEnginesTOPower && !hAbv1500 && !hAbv800;
-    const phase67Memo = this.phase67Memo.write(phase67Cond, _deltaTime) && phase67Cond;
+    const phase6Cond = !hAbv400 && twoEnginesTOPower && !hFail && !ground2sMemorized;
+    const phase6 = this.phase6Memo.write(phase6Cond, _deltaTime) && phase6Cond;
 
-    const phase6 = !phase5 && !ground2sMemorized && !phase67Memo;
-    const phase7 = phase67Memo && !phase8;
+    const phase7Cond = !phase6 && !hAbv1500 && twoEnginesTOPower && !hFail && !ground2sMemorized;
+    const phase7 = this.phase7Memo.write(phase7Cond, _deltaTime) && phase7Cond;
+
+    const phase89Cond = !ground2sMemorized && !hFail && !twoEnginesTOPower && !hAbv1500 && !hAbv800;
+    const phase89Memo = this.phase89Memo.write(phase89Cond, _deltaTime) && phase89Cond;
+
+    const phase8 = !phase7 && !ground2sMemorized && !phase89Memo;
+    const phase9 = phase89Memo && !phase10;
 
     /** * End of ESLD logic ** */
 
     // consolidate into single variable (just to be safe)
-    const phases = [phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8, phase9, phase10];
+    const phases = [phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8, phase9, phase10, phase11, phase12];
 
     if (this.flightPhase === null && phases.indexOf(true) !== -1) {
       // if we aren't initialized, just grab the first one that is valid
