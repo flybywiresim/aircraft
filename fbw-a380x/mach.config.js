@@ -53,7 +53,7 @@ function msfsAvionicsInstrument(name, folder = name) {
             templateId: `A380X_${name}`,
             mountElementId: `${name}_CONTENT`,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js', '/JS/fbw-a32nx/A32NX_Util.js'],
+            imports: ['/JS/dataStorage.js', '/JS/fbw-a380x/A32NX_Util.js'],
         },
     };
 }
