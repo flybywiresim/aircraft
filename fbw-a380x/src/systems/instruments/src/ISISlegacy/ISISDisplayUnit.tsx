@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk';
-import { PressureIndicator } from 'instruments/src/ISIS/PressureIndicator';
+import { PressureIndicator } from 'instruments/src/ISISlegacy/PressureIndicator';
 
 enum DisplayUnitState {
   On,
