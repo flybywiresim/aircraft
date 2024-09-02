@@ -404,15 +404,21 @@ export class LegacyFwc {
   _updateLandingMemo(_deltaTime: number) {
     const radioHeight1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioHeight2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
+    const radioHeight3 = Arinc429Word.fromSimVarValue('L:A32NX_RA_3_RADIO_ALTITUDE');
     const radioHeight1Invalid = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData();
     const radioHeight2Invalid = radioHeight2.isFailureWarning() || radioHeight2.isNoComputedData();
+    const radioHeight3Invalid = radioHeight3.isFailureWarning() || radioHeight3.isNoComputedData();
     const gearDownlocked = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
 
     // FWC ESLD 1.0.190
     const setBelow2000ft =
-      (radioHeight1.value < 2000 && !radioHeight1Invalid) || (radioHeight2.value < 2000 && !radioHeight2Invalid);
+      (radioHeight1.value < 2000 && !radioHeight1Invalid) ||
+      (radioHeight2.value < 2000 && !radioHeight2Invalid) ||
+      (radioHeight3.value < 2000 && !radioHeight3Invalid);
     const resetBelow2000ft =
-      (radioHeight1.value > 2200 || radioHeight1Invalid) && (radioHeight2.value > 2200 || radioHeight2Invalid);
+      (radioHeight1.value > 2200 || radioHeight1Invalid) &&
+      (radioHeight2.value > 2200 || radioHeight2Invalid) &&
+      (radioHeight3.value > 2200 || radioHeight3Invalid);
     const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
 
     const setInhibitMemo = this.memoLdgMemo_conf01.write(
