@@ -688,7 +688,7 @@ export class FwsMemos {
   ewdToLdgMemos: EwdMemoDict = {
     '0000010': {
       // T.O MEMO
-      flightPhaseInhib: [1, 3, 6, 10],
+      flightPhaseInhib: [1, 3, 8, 12],
       simVarIsActive: this.fws.toMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
@@ -723,7 +723,7 @@ export class FwsMemos {
     },
     '0000020': {
       // LANDING MEMO
-      flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 11, 12],
       simVarIsActive: this.fws.ldgMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,

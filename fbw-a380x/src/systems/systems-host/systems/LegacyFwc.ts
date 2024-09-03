@@ -422,7 +422,7 @@ export class LegacyFwc {
     const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
 
     const setInhibitMemo = this.memoLdgMemo_conf01.write(
-      resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid,
+      resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid && !radioHeight3Invalid,
       _deltaTime,
     );
     const resetInhibitMemo = !(
@@ -437,6 +437,7 @@ export class LegacyFwc {
     const invalidRadioMemo = this.memoLdgMemo_conf02.write(
       radioHeight1Invalid &&
         radioHeight2Invalid &&
+        radioHeight3Invalid &&
         gearDownlocked &&
         this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet,
       _deltaTime,
