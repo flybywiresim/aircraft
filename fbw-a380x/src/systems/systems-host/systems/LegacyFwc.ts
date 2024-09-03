@@ -11,7 +11,7 @@ enum FwcFlightPhase {
   AtOrAboveV1 = 5,
   LiftOff = 6,
   AtOrAbove400Feet = 7,
-  AtOrAbove1500Feet = 8,
+  AtOrAbove1500FeetTo800Feet = 8,
   AtOrBelow800Feet = 9,
   TouchDown = 10,
   AtOrBelowEightyKnots = 11,
@@ -282,7 +282,7 @@ export class LegacyFwc {
 
     const phase345Cond = ground && twoEnginesTOPower;
     const phase3 = !acSpeedAbove80kts && oneEngRunning && phase345Cond;
-    const phase4 = acSpeedAbove80kts && phase345Cond;
+    const phase4 = acSpeedAbove80kts && phase345Cond && !acAboveV1;
     const phase5 = acSpeedAbove80kts && phase345Cond && acAboveV1;
 
     const setPhase11Nvm = phase3 || phase10;
@@ -385,7 +385,7 @@ export class LegacyFwc {
       this.flightPhase === FwcFlightPhase.EnginesShutdown ||
       this.flightPhase === FwcFlightPhase.SecondEngineTakeOffPower ||
       this.flightPhase === FwcFlightPhase.ElecPwr ||
-      this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet;
+      this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
     const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
 
     const eng1NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') < 15;
@@ -428,18 +428,18 @@ export class LegacyFwc {
     const resetInhibitMemo = !(
       this.flightPhase === FwcFlightPhase.AtOrBelow800Feet ||
       this.flightPhase === FwcFlightPhase.TouchDown ||
-      this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet
+      this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet
     );
     const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
 
-    const showInApproach = memo1 && memo2 && this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet;
+    const showInApproach = memo1 && memo2 && this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
 
     const invalidRadioMemo = this.memoLdgMemo_conf02.write(
       radioHeight1Invalid &&
         radioHeight2Invalid &&
         radioHeight3Invalid &&
         gearDownlocked &&
-        this.flightPhase === FwcFlightPhase.AtOrAbove1500Feet,
+        this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet,
       _deltaTime,
     );
 
