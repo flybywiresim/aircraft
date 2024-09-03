@@ -1,44 +1,77 @@
+use std::time::Duration;
+
 use systems::{
     fuel::FuelPayload,
-    shared::SurfacesPositions,
+    shared::{
+        local_acceleration_at_plane_coordinate,
+        low_pass_filter::{HighPassFilter, LowPassFilter},
+        random_from_range, SurfacesPositions,
+    },
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
-    structural_flex::elevator_flex::FlexibleElevators,
-    structural_flex::engine_wobble::EnginesFlexiblePhysics,
-    structural_flex::wing_flex::{
-        FlexPhysicsNG, WingAnimationMapper, WingFuelNodeMapper, WingLift, WingRootAcceleration,
+    structural_flex::{
+        elevator_flex::FlexibleElevators,
+        engine_wobble::EnginesFlexiblePhysics,
+        wing_flex::{
+            FlexPhysicsNG, WingAnimationMapper, WingFuelNodeMapper, WingLift, WingRootAcceleration,
+        },
+        SurfaceVibrationGenerator,
     },
-    structural_flex::SurfaceVibrationGenerator,
 };
 
 use crate::fuel::A380FuelTankType;
 
-use uom::si::{f64::*, force::newton, mass::kilogram, ratio::ratio};
+use uom::si::{
+    acceleration::meter_per_second_squared,
+    f64::*,
+    force::newton,
+    heat_flux_density::megawatt_per_square_meter,
+    mass::kilogram,
+    ratio::ratio,
+    velocity::{knot, meter_per_second},
+};
 
 use nalgebra::{Vector3, Vector5};
 
 pub struct A380StructuralFlex {
+    ground_speed_id: VariableIdentifier,
     ground_weight_ratio_id: VariableIdentifier,
+    cockpit_rumble_id: VariableIdentifier,
 
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     elevators_flex_physics: FlexibleElevators,
     wing_flex: WingFlexA380,
 
     surface_vibrations: SurfaceVibrationGenerator,
+
+    last_y_accel: f64,
+    cockpit_rumble: LowPassFilter<f64>,
+    filetered_cockpit_accel: LowPassFilter<f64>,
+    high_filetered_cockpit_accel: HighPassFilter<f64>,
+    ground_speed: Velocity,
 }
 impl A380StructuralFlex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
+            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             ground_weight_ratio_id: context
                 .get_identifier("GROUND_WEIGHT_ON_WHEELS_RATIO".to_owned()),
+            cockpit_rumble_id: context.get_identifier("_GLARESHIELD__FLEX_CTR".to_owned()),
 
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             elevators_flex_physics: FlexibleElevators::new(context),
             wing_flex: WingFlexA380::new(context),
 
             surface_vibrations: SurfaceVibrationGenerator::default_generator(),
+
+            last_y_accel: 0.,
+            cockpit_rumble: LowPassFilter::new(Duration::from_millis(1)),
+            filetered_cockpit_accel: LowPassFilter::new(Duration::from_millis(300)),
+            high_filetered_cockpit_accel: HighPassFilter::new(Duration::from_millis(20)),
+
+            ground_speed: Velocity::default(),
         }
     }
 
@@ -50,6 +83,53 @@ impl A380StructuralFlex {
         surfaces_positions: &impl SurfacesPositions,
         fuel_mass: &impl FuelPayload,
     ) {
+        let new_accel_y =
+            local_acceleration_at_plane_coordinate(context, Vector3::new(0., 0.5, 33.5))[1];
+
+        let delta_accel = (self.last_y_accel - new_accel_y).abs();
+
+        let delta_accel_time = (delta_accel / context.delta_as_secs_f64()).clamp(0., 50.);
+
+        self.filetered_cockpit_accel
+            .update(context.delta(), delta_accel_time / 50.);
+
+        self.high_filetered_cockpit_accel
+            .update(context.delta(), delta_accel_time / 50.);
+
+        let weight_ratio = (self.wing_flex.ground_weight_ratio().get::<ratio>()).clamp(0., 1.);
+
+        let speed_factor = (self.ground_speed.get::<knot>() / 130.).clamp(0., 1.);
+
+        let accel_ratio = self.filetered_cockpit_accel.output().clamp(0., 1.);
+
+        println!(
+            "filtered {:.3} / WR {:.2} / speed_factor {:.2} / accel ratio {:.2} Sine {:.2}",
+            self.filetered_cockpit_accel.output(),
+            weight_ratio,
+            speed_factor,
+            accel_ratio,
+            ((2. + (context.simulation_time() * 45.).sin()
+                + (context.simulation_time() * 24.).sin())
+                / 5.
+                * speed_factor
+                * weight_ratio
+                * accel_ratio)
+                .clamp(0., 0.5)
+        );
+
+        self.cockpit_rumble.update(
+            context.delta(),
+            ((2. + (context.simulation_time() * 45.).sin()
+                + (context.simulation_time() * 24.).sin())
+                / 5.
+                * speed_factor
+                * weight_ratio
+                * accel_ratio)
+                .clamp(0., 0.5),
+        );
+
+        self.last_y_accel = new_accel_y;
+
         self.elevators_flex_physics.update(
             context,
             outer_inner_elevator_aero_torques,
@@ -85,6 +165,12 @@ impl SimulationElement for A380StructuralFlex {
             &self.ground_weight_ratio_id,
             self.wing_flex.ground_weight_ratio().get::<ratio>(),
         );
+
+        writer.write(&self.cockpit_rumble_id, self.cockpit_rumble.output());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.ground_speed = reader.read(&self.ground_speed_id);
     }
 }
 

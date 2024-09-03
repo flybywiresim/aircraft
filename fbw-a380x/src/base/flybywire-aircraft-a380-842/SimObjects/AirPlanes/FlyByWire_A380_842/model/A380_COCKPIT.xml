@@ -65,6 +65,14 @@
 
         <!-- External Components -->
 
+        <Component ID="VIBRATION">
+			<!-- ENG1 WOBBLE -->
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>A380X_GLARESHIELD__FLEX_CTR</ANIM_NAME>
+				<ANIM_CODE>(L:A32NX_ENGINE_1_WOBBLE_X_POSITION, number) 100 *</ANIM_CODE>
+			</UseTemplate>
+		</Component>
+
         <Component ID="OVHD">
             <Component ID="CARGO_AIR_COND">
                 <UseTemplate Name="FBW_A380X_Components_OVHD_CARGO_AIR_COND" />
