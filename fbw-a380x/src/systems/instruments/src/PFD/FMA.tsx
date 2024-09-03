@@ -410,12 +410,13 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       case 3: {
         this.displayModeChangedPath(true);
         const FlexTemp = Math.round(this.flexTemp);
-        const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
+        const FlexText = FlexTemp.toString();
         text = `<g>
-                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
+                                <path class="NormalStroke White" d="m29.821 1.8143v13.506h-24.517v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
-                                <text class="FontMedium MiddleAlign Cyan" x="24.099141" y="14.351689">
+                                <text class="FontMedium MiddleAlign White" x="11.669141" y="14.351689">FLX</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="20.599141" y="14.851689">+</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="26.099141" y="14.351689">
                                 ${FlexText}
                                 </text>
                             </g>`;

@@ -17,6 +17,7 @@
         "@atsu/*": ["./atsu/src/*"],
         "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
         "@flybywiresim/failures": ["failures"],
+        "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
         "@tcas/*": ["./tcas/src/*"],
         "@typings/*": ["../typings"],
         "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
