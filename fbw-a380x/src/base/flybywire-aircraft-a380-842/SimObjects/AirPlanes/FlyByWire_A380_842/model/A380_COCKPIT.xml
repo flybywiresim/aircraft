@@ -32,6 +32,7 @@
         <Include RelativeFile="behaviour\overhead\ovhd-inputs.xml" />
         <Include RelativeFile="behaviour\overhead\electrical.xml" />
         <Include RelativeFile="behaviour\overhead\cargo-air-cond.xml" />
+        <Include RelativeFile="behaviour\overhead\fire.xml" />
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
@@ -108,47 +109,55 @@
                 (L:A380X_EFIS_L_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_1_FILTER_ACTIVE)
                 (L:A380X_EFIS_R_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_2_FILTER_ACTIVE)
 
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 0 == if{
-                    3 (&gt;L:A32NX_EFIS_L_OPTION)
-                }
+                0
 
                 (L:A380X_EFIS_L_ACTIVE_FILTER) 1 == if{
-                    2 (&gt;L:A32NX_EFIS_L_OPTION)
+                    4 |
                 }
 
                 (L:A380X_EFIS_L_ACTIVE_FILTER) 2 == if{
-                    4 (&gt;L:A32NX_EFIS_L_OPTION)
+                    2 |
+                }
+
+                (L:A380X_EFIS_L_ACTIVE_FILTER) 3 == if{
+                    8 |
                 }
 
                 (L:A380X_EFIS_L_ARPT_BUTTON_IS_ON) 1 == if{
-                    5 (&gt;L:A32NX_EFIS_L_OPTION)
+                    16 |
                 }
 
                 (L:A380X_EFIS_L_CSTR_BUTTON_IS_ON) 1 == if{
-                    1 (&gt;L:A32NX_EFIS_L_OPTION)
+                    1 |
                 }
+
+                (&gt;L:A32NX_EFIS_L_OPTION)
 
                 (L:A380X_EFIS_L_ACTIVE_OVERLAY) 2 == (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)
 
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 0 == if{
-                    3 (&gt;L:A32NX_EFIS_R_OPTION)
-                }
+                0
 
                 (L:A380X_EFIS_R_ACTIVE_FILTER) 1 == if{
-                    2 (&gt;L:A32NX_EFIS_R_OPTION)
+                    4 |
                 }
 
                 (L:A380X_EFIS_R_ACTIVE_FILTER) 2 == if{
-                    4 (&gt;L:A32NX_EFIS_R_OPTION)
+                    2 |
+                }
+
+                (L:A380X_EFIS_R_ACTIVE_FILTER) 3 == if{
+                    8 |
                 }
 
                 (L:A380X_EFIS_R_ARPT_BUTTON_IS_ON) 1 == if{
-                    5 (&gt;L:A32NX_EFIS_R_OPTION)
+                    16 |
                 }
 
                 (L:A380X_EFIS_R_CSTR_BUTTON_IS_ON) 1 == if{
-                    1 (&gt;L:A32NX_EFIS_R_OPTION)
+                    1 |
                 }
+
+                (&gt;L:A32NX_EFIS_R_OPTION)
 
                 (L:A380X_EFIS_R_ACTIVE_OVERLAY) 2 == (&gt;L:A32NX_EFIS_TERR_R_ACTIVE)
 
@@ -4013,8 +4022,10 @@
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
                             <ID>1</ID>
+                            <BUTTON_ID>ENG1</BUTTON_ID>
                         </DefaultTemplateParameters>
 
+                        <!-- Only one fire test pushbutton on the overhead panel -->
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                             <NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
                             <PART_ID>Fire_test_eng1</PART_ID>
@@ -4043,8 +4054,8 @@
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
-                            <NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
-                            <PART_ID>LOCK_OVHD_ENG1</PART_ID>
+                            <NODE_ID>A380X_OVHD_ENG1_FIRE_GUARD</NODE_ID>
+                            <PART_ID>A380X_OVHD_ENG1_FIRE_GUARD</PART_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
@@ -4067,12 +4078,9 @@
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
                             <ID>2</ID>
+                            <BUTTON_ID>ENG2</BUTTON_ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
-                            <NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
-                            <PART_ID>Fire_test_eng1</PART_ID>
-                        </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
                             <PART_ID>FIRE_ENG2_AGENT1</PART_ID>
@@ -4097,8 +4105,8 @@
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
-                            <NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
-                            <PART_ID>LOCK_OVHD_ENG2</PART_ID>
+                            <NODE_ID>A380X_OVHD_ENG2_FIRE_GUARD</NODE_ID>
+                            <PART_ID>A380X_OVHD_ENG2_FIRE_GUARD</PART_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
@@ -4121,12 +4129,9 @@
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
                             <ID>3</ID>
+                            <BUTTON_ID>ENG3</BUTTON_ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
-                            <NODE_ID>PUSH_FIRE_ENG_TEST</NODE_ID>
-                            <PART_ID>Fire_test_eng1</PART_ID>
-                        </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG3_AGENT1</NODE_ID>
                             <PART_ID>FIRE_ENG3_AGENT1</PART_ID>
@@ -4151,8 +4156,8 @@
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
-                            <NODE_ID>LOCK_OVHD_ENG3</NODE_ID>
-                            <PART_ID>LOCK_OVHD_ENG3</PART_ID>
+                            <NODE_ID>A380X_OVHD_ENG3_FIRE_GUARD</NODE_ID>
+                            <PART_ID>A380X_OVHD_ENG3_FIRE_GUARD</PART_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG3</NODE_ID>
@@ -4175,12 +4180,9 @@
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
                             <ID>4</ID>
+                            <BUTTON_ID>ENG4</BUTTON_ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
-                            <NODE_ID>PUSH_FIRE_ENG_TEST</NODE_ID>
-                            <PART_ID>Fire_test_eng1</PART_ID>
-                        </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG4_AGENT1</NODE_ID>
                             <PART_ID>FIRE_ENG4_AGENT1</PART_ID>
@@ -4205,8 +4207,8 @@
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
-                            <NODE_ID>LOCK_OVHD_ENG4</NODE_ID>
-                            <PART_ID>LOCK_OVHD_ENG4</PART_ID>
+                            <NODE_ID>A380X_OVHD_ENG4_FIRE_GUARD</NODE_ID>
+                            <PART_ID>A380X_OVHD_ENG4_FIRE_GUARD</PART_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG4</NODE_ID>
@@ -4229,12 +4231,9 @@
                         <DefaultTemplateParameters>
                             <TYPE>APU</TYPE>
                             <ID>1</ID>
+                            <BUTTON_ID>APU</BUTTON_ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
-                            <NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
-                            <PART_ID>Fire_test_eng1</PART_ID>
-                        </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>
@@ -4260,8 +4259,8 @@
                                 (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) or</EMISSIVE_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
-                            <NODE_ID>LOCK_OVHD_APU</NODE_ID>
-                            <PART_ID>LOCK_OVHD_APU</PART_ID>
+                            <NODE_ID>A380X_OVHD_APU_FIRE_GUARD</NODE_ID>
+                            <PART_ID>A380X_OVHD_APU_FIRE_GUARD</PART_ID>
                         </UseTemplate>
                     </Component>
 

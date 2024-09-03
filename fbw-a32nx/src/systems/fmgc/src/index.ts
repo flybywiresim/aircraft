@@ -10,7 +10,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { FlightPlanService } from './flightplanning/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
-import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
+import { FlightPhaseManager } from './flightphase';
 import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
 import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
@@ -47,7 +47,6 @@ export {
   NavigationDatabaseService,
   FlightPlanIndex,
   FlightPhaseManager,
-  getFlightPhaseManager,
   GuidanceController,
   initFmgcLoop,
   updateFmgcLoop,

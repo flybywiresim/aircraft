@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -50,8 +49,8 @@ export enum FmsOansSimVars {
     oansRemainingDistToRwyEndRaw = 'L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END',
     oansRemainingDistToExitRaw = 'L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT',
     btvRotRaw = 'L:A32NX_BTV_ROT',
-    btvTurnAroundIdleReverseRaw = 'L:A32NX_BTV_TURNAROUND_IDLE_REV',
-    btvTurnAroundMaxReverseRaw = 'L:A32NX_BTV_TURNAROUND_MAX_REV',
+    btvTurnAroundIdleReverseRaw = 'L:A32NX_BTV_TURNAROUND_IDLE_REVERSE',
+    btvTurnAroundMaxReverseRaw = 'L:A32NX_BTV_TURNAROUND_MAX_REVERSE',
 }
 
 /** A publisher to poll and publish nav/com simvars. */

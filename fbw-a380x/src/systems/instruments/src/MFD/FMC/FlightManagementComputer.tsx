@@ -5,9 +5,9 @@ import {
   DataManager,
   EfisInterface,
   EfisSymbols,
+  FlightPhaseManager,
   FlightPlanIndex,
   Navigation,
-  getFlightPhaseManager,
 } from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { ArraySubject, EventBus, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
@@ -27,8 +27,6 @@ import {
   Waypoint,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
-import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
-import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import {
   McduMessage,
   NXFictionalMessages,
@@ -112,23 +110,25 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#guidanceController;
   }
 
-  #navigation = new Navigation(this.flightPlanService);
+  #navigation = new Navigation(this.bus, this.flightPlanService);
 
   get navigation() {
+    if (this.instance !== FmcIndex.FmcA) {
+      throw new Error('Multiple navigation instances not supported!');
+    }
     return this.#navigation;
   }
 
   get navaidTuner() {
+    if (this.instance !== FmcIndex.FmcA) {
+      throw new Error('Multiple navaid tuners not supported!');
+    }
     return this.#navigation.getNavaidTuner();
   }
 
-  private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigation);
-
-  private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation);
-
   private efisSymbols!: EfisSymbols<number>;
 
-  private flightPhaseManager = getFlightPhaseManager();
+  private readonly flightPhaseManager = new FlightPhaseManager(this.bus);
 
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
@@ -161,6 +161,8 @@ export class FlightManagementComputer implements FmcInterface {
         ? A380Failure.FmcB
         : A380Failure.FmcC;
 
+  private readonly legacyFmsIsHealthy = Subject.create(false);
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
@@ -178,6 +180,7 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.flightPlanService.createFlightPlans();
       this.#guidanceController = new GuidanceController(
+        this.bus,
         this.fmgc,
         this.flightPlanService,
         this.efisInterfaces,
@@ -185,6 +188,7 @@ export class FlightManagementComputer implements FmcInterface {
         A380AircraftConfig,
       );
       this.efisSymbols = new EfisSymbols(
+        this.bus,
         this.#guidanceController,
         this.flightPlanService,
         this.navaidTuner,
@@ -192,7 +196,7 @@ export class FlightManagementComputer implements FmcInterface {
         a380EfisRangeSettings,
       );
 
-      this.navaidTuner.init();
+      this.#navigation.init();
       this.efisSymbols.init();
       this.flightPhaseManager.init();
       this.#guidanceController.init();
@@ -212,6 +216,11 @@ export class FlightManagementComputer implements FmcInterface {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
           }
         }),
+        this.legacyFmsIsHealthy.sub((v) => {
+          // FIXME some of the systems require the A320 FMS health bits, need to refactor/split FMS stuff
+          SimVar.SetSimVarValue('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean', v);
+          SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
+        }, true),
       );
     }
 
@@ -846,6 +855,7 @@ export class FlightManagementComputer implements FmcInterface {
         SimVarValueType.Bool,
         false,
       );
+      this.legacyFmsIsHealthy.set(false);
       return;
     } else {
       SimVar.SetSimVarValue(
@@ -853,6 +863,7 @@ export class FlightManagementComputer implements FmcInterface {
         SimVarValueType.Bool,
         true,
       );
+      this.legacyFmsIsHealthy.set(true);
     }
 
     // Stop early, if not FmcA
@@ -861,9 +872,6 @@ export class FlightManagementComputer implements FmcInterface {
     }
 
     this.flightPhaseManager.shouldActivateNextPhase(dt);
-    this.navaidSelectionManager.update(dt);
-    this.landingSystemSelectionManager.update(dt);
-    this.navaidTuner.update(dt);
 
     const throttledDt = this.fmsUpdateThrottler.canUpdate(dt);
 
