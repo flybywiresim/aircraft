@@ -215,7 +215,7 @@ export class LegacyFwc {
     const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
     const acSpeedAbove80kts = this.speedAbove80KtsMemo.write(ias > 83, ias < 77);
 
-    const v1 = SimVar.GetSimVarValue('AIRLINER_V1_SPEED', 'knots');
+    const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
     let acAboveV1;
     if (v1) {
       acAboveV1 = this.speedAboveV1Memo.write(ias > v1 + 3, ias < v1 - 3);
