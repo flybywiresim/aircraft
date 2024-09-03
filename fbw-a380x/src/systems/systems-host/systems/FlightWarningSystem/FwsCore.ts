@@ -623,7 +623,7 @@ export class FwsCore implements Instrument {
 
   public readonly trimDisagreeMcduStabConf = new NXLogicConfirmNode(1, true);
 
-  public readonly rudderTrimConfigInPhase3or4Sr = new NXLogicMemoryNode(true);
+  public readonly rudderTrimConfigInPhase3or4or5Sr = new NXLogicMemoryNode(true);
 
   public readonly rudderTrimNotTo = Subject.create(false);
 
@@ -2163,7 +2163,7 @@ export class FwsCore implements Instrument {
       (fcdc1DiscreteWord1.getBitValueOr(20, false) || fcdc2DiscreteWord1.getBitValueOr(20, false));
     const elac1FaultCondition =
       !(
-        [1, 10].includes(this.fwcFlightPhase.get()) &&
+        [1, 12].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false))
       ) &&
       this.dcESSBusPowered.get() &&
@@ -2185,7 +2185,7 @@ export class FwsCore implements Instrument {
       (fcdc1DiscreteWord1.getBitValueOr(22, false) || fcdc2DiscreteWord1.getBitValueOr(22, false));
     const elac2FaultCondition =
       !(
-        [1, 10].includes(this.fwcFlightPhase.get()) &&
+        [1, 12].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false))
       ) &&
       this.dc2BusPowered.get() &&
@@ -2260,13 +2260,13 @@ export class FwsCore implements Instrument {
     // ALTN LAW 2 computation
     const SPA2 = fcdc1DiscreteWord1.getBitValueOr(13, false) || fcdc2DiscreteWord1.getBitValueOr(13, false);
     this.altn2LawConfirmNodeOutput.set(
-      this.altn2LawConfirmNode.write(SPA2 && ![1, 10].includes(this.fwcFlightPhase.get()), deltaTime),
+      this.altn2LawConfirmNode.write(SPA2 && ![1, 12].includes(this.fwcFlightPhase.get()), deltaTime),
     );
 
     // ALTN LAW 1 computation
     const SPA1 = fcdc1DiscreteWord1.getBitValueOr(12, false) || fcdc2DiscreteWord1.getBitValueOr(12, false);
     this.altn1LawConfirmNodeOutput.set(
-      this.altn1LawConfirmNode.write(SPA1 && ![1, 10].includes(this.fwcFlightPhase.get()), deltaTime),
+      this.altn1LawConfirmNode.write(SPA1 && ![1, 12].includes(this.fwcFlightPhase.get()), deltaTime),
     );
 
     // DIRECT LAW computation
@@ -2274,7 +2274,7 @@ export class FwsCore implements Instrument {
       (false && SFCDC12FT) ||
       fcdc1DiscreteWord1.getBitValueOr(15, false) ||
       fcdc2DiscreteWord1.getBitValueOr(15, false);
-    this.directLawCondition.set(SPBUL && ![1, 10].includes(this.fwcFlightPhase.get()));
+    this.directLawCondition.set(SPBUL && ![1, 12].includes(this.fwcFlightPhase.get()));
 
     // L+R ELEV FAULT computation
     const lhElevBlueFail =
@@ -2440,13 +2440,13 @@ export class FwsCore implements Instrument {
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
       this.toConfigTestHeldMin1s5Pulse.get() && this.flightPhase1211.get() && rudderTrimConfig;
-    const rudderTrimConfigInPhase3or4 = this.flightPhase345.get() && rudderTrimConfig;
-    this.rudderTrimConfigInPhase3or4Sr.write(
-      rudderTrimConfigInPhase3or4,
-      this.fwcFlightPhase.get() === 5 || !rudderTrimConfig,
+    const rudderTrimConfigInPhase3or4or5 = this.flightPhase345.get() && rudderTrimConfig;
+    this.rudderTrimConfigInPhase3or4or5Sr.write(
+      rudderTrimConfigInPhase3or4or5,
+      this.fwcFlightPhase.get() === 6 || !rudderTrimConfig,
     );
-    this.rudderTrimNotToAudio.set(rudderTrimConfigTestInPhase129 || rudderTrimConfigInPhase3or4);
-    this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4Sr.read());
+    this.rudderTrimNotToAudio.set(rudderTrimConfigTestInPhase129 || rudderTrimConfigInPhase3or4or5);
+    this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4or5Sr.read());
 
     // flaps lvr not zero
     this.flapsLeverNotZeroWarning.set(
