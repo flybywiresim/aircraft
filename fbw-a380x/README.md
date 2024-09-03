@@ -95,6 +95,7 @@ These systems are currently not operational / these features are missing and sha
 - BTV simplified logic only
   - Basic braking distance calculations
   - No glide slope adaptation
+  - No handling of brakes/OANS errors
 
 ### ATA 33 Lights
 

@@ -1,3 +1,4 @@
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { FC } from 'react';
 
 export enum PowerSupplyType {
@@ -6,14 +7,14 @@ export enum PowerSupplyType {
 }
 
 export enum HydraulicPowerSource {
-    Green,
-    Yellow,
+    Green = 'GREEN',
+    Yellow = 'YELLOW',
 }
 
 export enum ElecPowerSource {
-    Ac2,
-    Ac3,
-    Ac4,
+    Ac2 = 'AC_2',
+    Ac3 = 'AC_3',
+    Ac4 = 'AC_4',
 }
 
 interface PowerSupplyIndicationProps {
@@ -25,7 +26,9 @@ interface PowerSupplyIndicationProps {
 
 export const PowerSupplyIndication: FC<PowerSupplyIndicationProps> = ({ x, y, type, powerSource }) => {
     const powerSourceInfoAvail = true;
-    const powerSourceFailed = false;
+
+    const [powerAvailable]: [boolean, (v: boolean) => void] = useSimVar(['GREEN', 'YELLOW'].includes(powerSource) ? `L:A32NX_HYD_${powerSource}_SYSTEM_1_SECTION_PRESSURE_SWITCH` : `L:A32NX_ELEC_${powerSource}_BUS_IS_POWERED`, 'boolean', 1000);
+    const powerSourceFailed = !powerAvailable;
 
     return (
         <g transform={`translate(${x} ${y})`}>
