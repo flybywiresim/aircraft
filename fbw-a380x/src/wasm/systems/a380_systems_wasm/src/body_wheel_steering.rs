@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use systems::shared::normalise_angle;
 use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
 use systems_wasm::Variable;
 
@@ -64,14 +65,4 @@ pub(super) fn body_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     );
 
     Ok(())
-}
-
-fn normalise_angle(angle: f64) -> f64 {
-    let raw = angle % 360.;
-
-    if raw > 0. {
-        raw
-    } else {
-        raw + 360.
-    }
 }
