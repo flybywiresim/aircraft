@@ -4287,7 +4287,7 @@
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>WPT</BASE_NAME>
-                <OPTION_ID>3</OPTION_ID>
+                <OPTION_ID>4</OPTION_ID>
             </UseTemplate>
 
             <!-- FCU NDB L -->
@@ -4296,7 +4296,7 @@
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>NDB</BASE_NAME>
-                <OPTION_ID>4</OPTION_ID>
+                <OPTION_ID>8</OPTION_ID>
             </UseTemplate>
 
             <!-- FCU ARPT L -->
@@ -4305,7 +4305,7 @@
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>ARPT</BASE_NAME>
-                <OPTION_ID>5</OPTION_ID>
+                <OPTION_ID>16</OPTION_ID>
             </UseTemplate>
         </Component>
 
@@ -4389,7 +4389,7 @@
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>WPT</BASE_NAME>
-                <OPTION_ID>3</OPTION_ID>
+                <OPTION_ID>4</OPTION_ID>
             </UseTemplate>
 
             <!-- FCU NDB R -->
@@ -4398,7 +4398,7 @@
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>NDB</BASE_NAME>
-                <OPTION_ID>4</OPTION_ID>
+                <OPTION_ID>8</OPTION_ID>
             </UseTemplate>
 
             <!-- FCU ARPT R -->
@@ -4407,7 +4407,7 @@
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>ARPT</BASE_NAME>
-                <OPTION_ID>5</OPTION_ID>
+                <OPTION_ID>16</OPTION_ID>
             </UseTemplate>
         </Component>
 

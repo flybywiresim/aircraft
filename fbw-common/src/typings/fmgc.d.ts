@@ -1,7 +1,7 @@
 import type {
     GuidanceController as GuidanceController_,
+    FlightPhaseManager as FlightPhaseManager_,
     FlightPlanService as FlightPlanService_,
-    getFlightPhaseManager as getFlightPhaseManager_,
     EfisSymbols as EfisSymbols_,
 } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { a320EfisRangeSettings as a320EfisRangeSettings_ } from "../systems/instruments/src/NavigationDisplay"
@@ -17,9 +17,7 @@ declare global {
 
         const EfisSymbols: typeof EfisSymbols_
 
-        const getFlightPhaseManager: typeof getFlightPhaseManager_
-
-        const FlightPhaseManager: ReturnType<typeof getFlightPhaseManager_>
+        const FlightPhaseManager: typeof FlightPhaseManager_
 
         const a320EfisRangeSettings: typeof a320EfisRangeSettings_
     }

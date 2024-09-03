@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "typeRoots": [
