@@ -3910,6 +3910,50 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 0
         - 1
 
+- A32NX_TCAS_RA_TYPE
+    - Enum
+    - Read-only
+    - The type of currently active RA
+      Description | Value
+        --- | ---
+        None of the following | 0
+        Crossing | 1
+        Reversal | 2
+        Increase | 3
+        Maintain | 4
+
+- A32NX_TCAS_RA_RATE_TO_MAINTAIN
+    - Feet per minute
+    - Read-only
+    - The rate to maintain (green sector) of the currently active RA. 0 if up/down advisory status is neither Climb nor Descend or no RA is present
+
+- A32NX_TCAS_RA_UP_ADVISORY_STATUS
+    - Enum
+    - Read-only
+    - The up advisory status of the currently active RA
+      Description | Value
+        --- | ---
+        No Up Advisory       | 0
+        Climb                | 1
+        Don't Descend        | 2
+        Don't Descend > 500  | 3
+        Don't Descend > 1000 | 4
+        Don't Descend > 2000 | 5
+
+- A32NX_TCAS_RA_DOWN_ADVISORY_STATUS
+    - Enum
+    - Read-only
+    - The down advisory status of the currently active RA
+      Description | Value
+        --- | ---
+        No Down Advisory   | 0
+        Descend            | 1
+        Don't Climb        | 2
+        Don't Climb > 500  | 3
+        Don't Climb > 1000 | 4
+        Don't Climb > 2000 | 5
+
+
 ## Radio Altimeter (ATA 34)
 
 - A32NX_RA_{number}_RADIO_ALTITUDE
