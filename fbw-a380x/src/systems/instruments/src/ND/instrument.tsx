@@ -117,7 +117,7 @@ class NDInstrument implements FsInstrument {
 
   private readonly controlPanelVisible = Subject.create(false);
 
-  private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly oansMessageScreenRef = FSComponent.createRef<HTMLDivElement>();
 
   private oansContextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
     {
@@ -260,14 +260,14 @@ class NDInstrument implements FsInstrument {
             class="oanc-container"
             style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}
           >
-            <div ref={this.waitScreenRef} class="oanc-waiting-screen" style="visibility: hidden;">
+            <div ref={this.oansMessageScreenRef} class="oanc-message-screen" style="visibility: hidden;">
               PLEASE WAIT
             </div>
             <Oanc
               bus={this.bus}
               side={this.efisSide}
               ref={this.oansRef}
-              waitScreenRef={this.waitScreenRef}
+              messageScreenRef={this.oansMessageScreenRef}
               contextMenuVisible={this.contextMenuVisible}
               contextMenuX={this.contextMenuX}
               contextMenuY={this.contextMenuY}
