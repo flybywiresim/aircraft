@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';
 import { MoreLabel, PageTitle } from './Generic/PageTitle';
@@ -73,8 +73,8 @@ export const FuelPage = () => {
     // Trim tank pumps
     const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
     const [leftTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:19', 'Enum', 1000);
-    const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
-    const [rightTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:19', 'Enum', 1000);
+    const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:20', 'Bool', 1000);
+    const [rightTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:20', 'Enum', 1000);
 
     // Crossfeed valves
     const [crossFeed1ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:46', 'Percent over 100', 1000);
@@ -82,7 +82,7 @@ export const FuelPage = () => {
     const [crossFeed3ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:48', 'Percent over 100', 1000);
     const [crossFeed4ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:49', 'Percent over 100', 1000);
 
-    const isAnyCrossFeedValveNotClosed = crossFeed1ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD;
+    const isSideToSideFuelTransferActive = (crossFeed1ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD) && (crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD || crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD);
 
     // Emergency transfer valves
     const [leftOuterEmerTransferValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:52', 'Percent over 100', 1000);
@@ -290,6 +290,17 @@ export const FuelPage = () => {
     const isRightJettisonValveOpen = rightJettisonValveOpen >= JETTISON_VALVE_CLOSED_THRESHOLD;
     const isJettisonActive = false; // TODO
 
+    // Collector cells
+    const collectorCell1Weight = 1200;
+    const isCollectorCell1NotFull = useCollectorCellState(collectorCell1Weight);
+    const collectorCell2Weight = 1200;
+    const isCollectorCell2NotFull = useCollectorCellState(collectorCell2Weight);
+    const collectorCell3Weight = 1200;
+    const isCollectorCell3NotFull = useCollectorCellState(collectorCell3Weight);
+    const collectorCell4Weight = 1200;
+    const isCollectorCell4NotFull = useCollectorCellState(collectorCell4Weight);
+    const isAnyCollectorCellNotFull = isCollectorCell1NotFull || isCollectorCell2NotFull || isCollectorCell3NotFull || isCollectorCell4NotFull;
+
     // Tanks
     const [leftOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:1', 'kg');
     const [feed1TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:2', 'kg');
@@ -345,9 +356,9 @@ export const FuelPage = () => {
 
             {/* FEED TANK 1 */}
             <TankQuantity x={154} y={300} quantity={feed1TankWeight} hasFault={feed1TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG} />
-            {showMore && (
+            {(showMore || isAnyCollectorCellNotFull) && (
                 // FEED TANK 1 collector cell (inop.)
-                <TankQuantity x={138} y={268} smallFont quantity={1200} />
+                <TankQuantity x={138} y={268} smallFont quantity={collectorCell1Weight} hasFault={isCollectorCell1NotFull} />
             )}
             {/* Feed tank 1 main pump */}
             <Pump x={95} y={227} running={feed1Pump1Active} hasFault={!feed1Pump1Active} />
@@ -369,9 +380,9 @@ export const FuelPage = () => {
 
             {/* FEED TANK 2 */}
             <TankQuantity x={322} y={288} quantity={feed2TankWeight} hasFault={feed2TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG} />
-            {showMore && (
+            {(showMore || isAnyCollectorCellNotFull) && (
                 // FEED TANK 2 collector cell (inop.)
-                <TankQuantity x={310} y={252} smallFont quantity={1200} />
+                <TankQuantity x={310} y={252} smallFont quantity={collectorCell2Weight} hasFault={isCollectorCell2NotFull} />
             )}
             {/* Feed tank 2 main pump */}
             <Pump x={258} y={208} running={feed2Pump1Active} hasFault={!feed2Pump1Active} />
@@ -388,9 +399,9 @@ export const FuelPage = () => {
 
             {/* FEED TANK 3 */}
             <TankQuantity x={528} y={288} quantity={feed3TankWeight} hasFault={feed3TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG} />
-            {showMore && (
+            {(showMore || isAnyCollectorCellNotFull) && (
                 // FEED TANK 3 collector cell (inop.)
-                <TankQuantity x={518} y={252} smallFont quantity={1200} />
+                <TankQuantity x={518} y={252} smallFont quantity={collectorCell3Weight} hasFault={isCollectorCell3NotFull} />
             )}
             {/* Feed tank 3 main pump */}
             <Pump x={476} y={208} running={feed3Pump1Active} hasFault={!feed3Pump1Active} />
@@ -412,9 +423,9 @@ export const FuelPage = () => {
 
             {/* FEED TANK 4 */}
             <TankQuantity x={696} y={300} quantity={feed4TankWeight} hasFault={feed4TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG} />
-            {showMore && (
+            {(showMore || isAnyCollectorCellNotFull) && (
                 // FEED TANK 4 collector cell (inop.)
-                <TankQuantity x={690} y={268} smallFont quantity={1200} />
+                <TankQuantity x={690} y={268} smallFont quantity={collectorCell4Weight} hasFault={isCollectorCell4NotFull} />
             )}
             {/* Feed tank 4 main pump */}
             <Pump x={639} y={227} running={feed4Pump1Active} hasFault={!feed4Pump1Active} />
@@ -441,21 +452,23 @@ export const FuelPage = () => {
             <g>
                 {/* Horizontal lines Line.132 & Line.134 & Line.136 */}
                 <g>
-                    <FuelLine x1={171} y1={175} x2={258} y2={175} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} endArrow='break-right' />
-                    <FuelLine x1={290} y1={175} x2={476} y2={175} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break-right' endArrow='break-right' />
-                    <FuelLine x1={508} y1={175} x2={595} y2={175} active={isAnyCrossFeedValveNotClosed} displayWhenInactive={showMore} startArrow='break-right' />
+                    <FuelLine x1={171} y1={175} x2={258} y2={175} active={crossFeed1ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} endArrow='break-right' />
+                    <FuelLine x1={290} y1={175} x2={352} y2={175} active={crossFeed1ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} startArrow='break-right' />
+                    <FuelLine x1={352} y1={175} x2={414} y2={175} active={isSideToSideFuelTransferActive} displayWhenInactive={showMore} />
+                    <FuelLine x1={414} y1={175} x2={476} y2={175} active={crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} endArrow='break-right' />
+                    <FuelLine x1={508} y1={175} x2={595} y2={175} active={crossFeed4ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} startArrow='break-right' />
                 </g>
 
                 {/* Lines to crossfeed 2 Line.133 */}
                 <g>
-                    <FuelLine x1={333} y1={152} x2={352} y2={152} active={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
-                    <FuelLine x1={352} y1={152} x2={352} y2={175} active={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
+                    <FuelLine x1={333} y1={148} x2={352} y2={148} active={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
+                    <FuelLine x1={352} y1={148} x2={352} y2={175} active={crossFeed2ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
                 </g>
 
                 {/* Lines to crossfeed 3 Line.135 */}
                 <g>
-                    <FuelLine x1={433} y1={152} x2={414} y2={152} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
-                    <FuelLine x1={414} y1={152} x2={414} y2={175} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
+                    <FuelLine x1={433} y1={148} x2={414} y2={148} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
+                    <FuelLine x1={414} y1={148} x2={414} y2={175} active={crossFeed3ValveOpen >= CROSS_FEED_VALVE_CLOSED_THRESHOLD} displayWhenInactive={showMore} />
                 </g>
             </g>
 
@@ -847,4 +860,18 @@ const ApuIndication: FC<ApuIndicationProps> = ({ x1, x2, y, showMore }) => {
             }
         </g>
     )
+}
+
+const useCollectorCellState = (weight: number) => {
+    const [isCollectorCellNotFull, setCollectorCellNotFull] = useState(false);
+
+    useEffect(() => {
+        if (!isCollectorCellNotFull && weight < 780) {
+            setCollectorCellNotFull(true);
+        } else if (isCollectorCellNotFull && weight > 940) {
+            setCollectorCellNotFull(false);
+        }
+    }, [weight]);
+
+    return isCollectorCellNotFull;
 }
