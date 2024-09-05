@@ -31,6 +31,12 @@
   pointer-events: none;
 }
 
+.vd-svg {
+  background: transparent;
+  font-family: "Ecam", monospace !important;
+  pointer-events: none;
+}
+
 .nd-canvas-map {
   transform: rotateX(0deg);
 }

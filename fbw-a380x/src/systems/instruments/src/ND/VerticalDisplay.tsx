@@ -64,6 +64,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
     return (
       <svg
         ref={this.topRef}
+        class="vd-svg"
         viewBox="0 0 768 1024"
         xmlns="http://www.w3.org/2000/svg"
         style={{ display: this.visible }}
@@ -82,6 +83,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             y2={this.currentAltitude.map((a) => this.altToY(a))}
             stroke="yellow"
             stroke-width="4"
+            visibility={this.currentAltitude.map((a) => (a < 24000 ? 'visible' : 'hidden'))}
           />
         </g>
         <g>
@@ -93,19 +95,19 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <line x1="690" x2="690" y1="800" y2="1000" stroke="white" stroke-width="2" />
         </g>
         <g>
-          <text x="150" y="798" class="Cyan FontSmallest MiddleAlign">
+          <text x="150" y="797" class="Cyan FontSmallest MiddleAlign">
             0
           </text>
-          <text x="285" y="798" class="Cyan FontSmallest MiddleAlign">
+          <text x="285" y="797" class="Cyan FontSmallest MiddleAlign">
             {this.ndRangeSetting.map((value) => (value / 4) * 1)}
           </text>
-          <text x="420" y="798" class="Cyan FontSmallest MiddleAlign">
+          <text x="420" y="797" class="Cyan FontSmallest MiddleAlign">
             {this.ndRangeSetting.map((value) => (value / 4) * 2)}
           </text>
-          <text x="555" y="798" class="Cyan FontSmallest MiddleAlign">
+          <text x="555" y="797" class="Cyan FontSmallest MiddleAlign">
             {this.ndRangeSetting.map((value) => (value / 4) * 3)}
           </text>
-          <text x="690" y="798" class="Cyan FontSmallest MiddleAlign">
+          <text x="690" y="797" class="Cyan FontSmallest MiddleAlign">
             {this.ndRangeSetting.map((value) => (value / 4) * 4)}
           </text>
         </g>

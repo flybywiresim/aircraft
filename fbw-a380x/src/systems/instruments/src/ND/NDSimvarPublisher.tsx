@@ -59,7 +59,7 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
     ['showSelectedHeading', { name: NDVars.showSelectedHeading, type: SimVarValueType.Bool }],
     ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
     ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
-    ['pposAlt', { name: NDVars.pposAlt, type: SimVarValueType.Number }],
+    ['pposAlt', { name: NDVars.pposAlt, type: SimVarValueType.Feet }],
     ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],
     ['kccuOnL', { name: NDVars.kccuOnL, type: SimVarValueType.Bool }],
     ['kccuOnR', { name: NDVars.kccuOnR, type: SimVarValueType.Bool }],
