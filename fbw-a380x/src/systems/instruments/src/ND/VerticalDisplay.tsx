@@ -7,6 +7,8 @@
 } from '@flybywiresim/fbw-sdk';
 import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 
+import './style.scss';
+
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
   side: EfisSide;
@@ -25,7 +27,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
   private ndRangeSetting: A380EfisNdRangeValue = 10;
 
   private updateVisibility() {
-    if (this.ndMode === EfisNdMode.PLAN) {
+    if ([EfisNdMode.PLAN, EfisNdMode.ROSE_ILS, EfisNdMode.ROSE_VOR].includes(this.ndMode)) {
       this.topRef.instance.style.display = 'none';
     } else if (this.ndRangeSetting === -1) {
       this.topRef.instance.style.display = 'none';
@@ -75,6 +77,11 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <line x1="420" x2="420" y1="800" y2="1000" stroke="white" stroke-width="2" stroke-dasharray="8" />
           <line x1="555" x2="555" y1="800" y2="1000" stroke="white" stroke-width="2" stroke-dasharray="8" />
           <line x1="690" x2="690" y1="800" y2="1000" stroke="white" stroke-width="2" />
+        </g>
+        <g>
+          <text x="105" y="800" class="Cyan FontSmallest">
+            80
+          </text>
         </g>
       </svg>
     );
