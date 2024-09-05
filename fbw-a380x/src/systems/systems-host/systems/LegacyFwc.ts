@@ -6,14 +6,16 @@ import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 enum FwcFlightPhase {
   ElecPwr = 1,
   FirstEngineStarted = 2,
-  FirstEngineTakeOffPower = 3,
+  SecondEngineTakeOffPower = 3,
   AtOrAboveEightyKnots = 4,
-  LiftOff = 5,
-  AtOrAbove1500Feet = 6,
-  AtOrBelow800Feet = 7,
-  TouchDown = 8,
-  AtOrBelowEightyKnots = 9,
-  EnginesShutdown = 10,
+  AtOrAboveV1 = 5,
+  LiftOff = 6,
+  AtOrAbove400Feet = 7,
+  AtOrAbove1500FeetTo800Feet = 8,
+  AtOrBelow800Feet = 9,
+  TouchDown = 10,
+  AtOrBelowEightyKnots = 11,
+  EnginesShutdown = 12,
 }
 
 /**
@@ -32,9 +34,11 @@ export class LegacyFwc {
 
   gndMemo: NXLogic_ConfirmNode;
 
-  eng1OrTwoRunningConf: NXLogic_ConfirmNode;
+  oneEngineRunningConf: NXLogic_ConfirmNode;
 
   speedAbove80KtsMemo: NXLogic_MemoryNode;
+
+  speedAboveV1Memo: NXLogic_MemoryNode;
 
   mctMemo: NXLogic_ConfirmNode;
 
@@ -42,27 +46,29 @@ export class LegacyFwc {
 
   firePBOutMemo: NXLogic_TriggeredMonostableNode;
 
-  firePBClear10: NXLogic_MemoryNode;
+  firePBClear12: NXLogic_MemoryNode;
 
-  phase110Memo: NXLogic_TriggeredMonostableNode;
+  phase112Memo: NXLogic_TriggeredMonostableNode;
 
-  phase8GroundMemo: NXLogic_TriggeredMonostableNode;
+  phase10GroundMemo: NXLogic_TriggeredMonostableNode;
 
   ac80KtsMemo: NXLogic_TriggeredMonostableNode;
 
-  prevPhase9InvertMemo: NXLogic_TriggeredMonostableNode;
+  prevPhase11InvertMemo: NXLogic_TriggeredMonostableNode;
 
-  eng1Or2TOPowerInvertMemo: NXLogic_TriggeredMonostableNode;
+  twoEnginesTOPowerInvertMemo: NXLogic_TriggeredMonostableNode;
 
   phase9Nvm: NXLogic_MemoryNode;
 
-  prevPhase9: boolean;
+  prevPhase11: boolean;
 
   groundImmediateMemo: NXLogic_TriggeredMonostableNode;
 
-  phase5Memo: NXLogic_TriggeredMonostableNode;
+  phase6Memo: NXLogic_TriggeredMonostableNode;
 
-  phase67Memo: NXLogic_TriggeredMonostableNode;
+  phase7Memo: NXLogic_TriggeredMonostableNode;
+
+  phase89Memo: NXLogic_TriggeredMonostableNode;
 
   memoTo_conf01: NXLogic_ConfirmNode;
 
@@ -109,10 +115,12 @@ export class LegacyFwc {
     this.gndMemo = new NXLogic_ConfirmNode(1); // outptuts ZGND
 
     // ESDL 1. 0. 60
-    this.eng1OrTwoRunningConf = new NXLogic_ConfirmNode(30);
+    this.oneEngineRunningConf = new NXLogic_ConfirmNode(30);
 
     // ESDL 1. 0. 73
     this.speedAbove80KtsMemo = new NXLogic_MemoryNode(true);
+
+    this.speedAboveV1Memo = new NXLogic_MemoryNode();
 
     // ESDL 1. 0. 79 / ESDL 1. 0. 80
     this.mctMemo = new NXLogic_ConfirmNode(60, false);
@@ -120,19 +128,20 @@ export class LegacyFwc {
     // ESDL 1. 0.100
     this.firePBOutConf = new NXLogic_ConfirmNode(0.2); // CONF01
     this.firePBOutMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 05
-    this.firePBClear10 = new NXLogic_MemoryNode(false);
-    this.phase110Memo = new NXLogic_TriggeredMonostableNode(300); // MTRIG 03
-    this.phase8GroundMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 06
+    this.firePBClear12 = new NXLogic_MemoryNode(false);
+    this.phase112Memo = new NXLogic_TriggeredMonostableNode(300); // MTRIG 03
+    this.phase10GroundMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 06
     this.ac80KtsMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 04
-    this.prevPhase9InvertMemo = new NXLogic_TriggeredMonostableNode(3, false); // MTRIG 02
-    this.eng1Or2TOPowerInvertMemo = new NXLogic_TriggeredMonostableNode(1, false); // MTRIG 01
+    this.prevPhase11InvertMemo = new NXLogic_TriggeredMonostableNode(3, false); // MTRIG 02
+    this.twoEnginesTOPowerInvertMemo = new NXLogic_TriggeredMonostableNode(1, false); // MTRIG 01
     this.phase9Nvm = new NXLogic_MemoryNode(true, true);
-    this.prevPhase9 = false;
+    this.prevPhase11 = false;
 
     // ESDL 1. 0.110
     this.groundImmediateMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 03
-    this.phase5Memo = new NXLogic_TriggeredMonostableNode(120); // MTRIG 01
-    this.phase67Memo = new NXLogic_TriggeredMonostableNode(180); // MTRIG 02
+    this.phase6Memo = new NXLogic_TriggeredMonostableNode(15);
+    this.phase7Memo = new NXLogic_TriggeredMonostableNode(120);
+    this.phase89Memo = new NXLogic_TriggeredMonostableNode(180); // MTRIG 02
 
     // ESDL 1. 0.180
     this.memoTo_conf01 = new NXLogic_ConfirmNode(120, true); // CONF 01
@@ -172,16 +181,30 @@ export class LegacyFwc {
   _updateFlightPhase(_deltaTime: number) {
     const radioHeight1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioHeight2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
-    const radioHeight =
-      radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData() ? radioHeight2 : radioHeight1;
+    const radioHeight3 = Arinc429Word.fromSimVarValue('L:A32NX_RA_3_RADIO_ALTITUDE');
+
+    const raHeight1InValid = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData();
+    const raHeight2InValid = radioHeight2.isFailureWarning() || radioHeight2.isNoComputedData();
+    let radioHeight;
+    if (raHeight1InValid) {
+      if (raHeight2InValid) {
+        radioHeight = radioHeight3;
+      } else {
+        radioHeight = radioHeight2;
+      }
+    } else {
+      radioHeight = radioHeight1;
+    }
     const eng1N1 = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent');
     const eng2N1 = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent');
+    const eng3N1 = SimVar.GetSimVarValue('ENG N1 RPM:3', 'Percent');
+    const eng4N1 = SimVar.GetSimVarValue('ENG N1 RPM:4', 'Percent');
     // TODO find a better source for the following value ("core speed at or above idle")
     // Note that N1 starts below idle on spawn on the runway, so this should be below 16 to not jump back to phase 1
-    const oneEngRunning = eng1N1 > 15 || eng2N1 > 15;
-    const eng1Or2Running = this.eng1OrTwoRunningConf.write(oneEngRunning, _deltaTime);
-    const engOneAndTwoNotRunning = !eng1Or2Running;
-    const hFail = radioHeight1.isFailureWarning() && radioHeight2.isFailureWarning();
+    const oneEngRunning = eng1N1 > 15 || eng2N1 > 15 || eng3N1 > 15 || eng4N1 > 15;
+    const oneEngineRunning = this.oneEngineRunningConf.write(oneEngRunning, _deltaTime);
+    const noEngineRunning = !oneEngineRunning;
+    const hFail = radioHeight1.isFailureWarning() && radioHeight2.isFailureWarning() && radioHeight3.isFailureWarning();
     const adcTestInhib = false;
 
     // ESLD 1.0.60
@@ -192,81 +215,116 @@ export class LegacyFwc {
     const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
     const acSpeedAbove80kts = this.speedAbove80KtsMemo.write(ias > 83, ias < 77);
 
+    const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
+    let acAboveV1;
+    if (v1) {
+      acAboveV1 = this.speedAboveV1Memo.write(ias > v1 + 3, ias < v1 - 3);
+    } else {
+      acAboveV1 = false;
+    }
+
     // ESLD 1.0.90
     const hAbv1500 = radioHeight.isNoComputedData() || radioHeight.value > 1500;
     const hAbv800 = radioHeight.isNoComputedData() || radioHeight.value > 800;
+    const hAbv400 = radioHeight.isNoComputedData() || radioHeight.value > 400;
 
     // ESLD 1.0.79 + 1.0.80
     const eng1TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
     const eng1TLAFTO = SimVar.GetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'number') !== 0; // is a flex temp is set?
     const eng1MCT = eng1TLA > 33.3 && eng1TLA < 36.7;
     const eng1TLAFullPwr = eng1TLA > 43.3;
+    const eng1MCL = eng1TLA > 22.9;
+    const eng1SupMCT = !(eng1TLA < 36.7);
+
     const eng2TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number');
     const eng2TLAFTO = eng1TLAFTO; // until we have proper FADECs
     const eng2MCT = eng2TLA > 33.3 && eng2TLA < 36.7;
     const eng2TLAFullPwr = eng2TLA > 43.3;
-    const eng1OrEng2SupMCT = !(eng1TLA < 36.7) || !(eng2TLA < 36.7);
-    const eng1AndEng2MCL = eng1TLA > 22.9 && eng2TLA > 22.9;
-    const eng1Or2TOPowerSignal =
-      (eng1TLAFTO && eng1MCT) ||
-      (eng2TLAFTO && eng2MCT) ||
-      eng1OrEng2SupMCT ||
-      eng1OrEng2SupMCT ||
-      eng1TLAFullPwr ||
-      eng2TLAFullPwr;
-    const eng1Or2TOPower =
-      eng1Or2TOPowerSignal || (this.mctMemo.write(eng1Or2TOPowerSignal, _deltaTime) && !hAbv1500 && eng1AndEng2MCL);
+    const eng2MCL = eng2TLA > 22.9;
+    const eng2SupMCT = !(eng2TLA < 36.7);
+
+    const eng3TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number');
+    const eng3TLAFTO = eng1TLAFTO; // until we have proper FADECs
+    const eng3MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
+    const eng3TLAFullPwr = eng3TLA > 43.3;
+    const eng3MCL = eng3TLA > 22.9;
+    const eng3SupMCT = !(eng3TLA < 36.7);
+
+    const eng4TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:5', 'number');
+    const eng4TLAFTO = eng1TLAFTO; // until we have proper FADECs
+    const eng4MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
+    const eng4TLAFullPwr = eng3TLA > 43.3;
+    const eng4MCL = eng3TLA > 22.9;
+    const eng4SupMCT = !(eng4TLA < 36.7);
+
+    const twoEnginesMcl = [eng1MCL, eng2MCL, eng3MCL, eng4MCL].filter(Boolean).length >= 2;
+    const eng1TOPowerSignal = (eng1TLAFTO && eng1MCT) || eng1TLAFullPwr || eng1SupMCT;
+    const eng2TOPowerSignal = (eng2TLAFTO && eng2MCT) || eng2TLAFullPwr || eng2SupMCT;
+    const eng3TOPowerSignal = (eng3TLAFTO && eng3MCT) || eng3TLAFullPwr || eng3SupMCT;
+    const eng4TOPowerSignal = (eng4TLAFTO && eng4MCT) || eng4TLAFullPwr || eng4SupMCT;
+
+    const twoEnginesTOPowerSignal =
+      [eng1TOPowerSignal, eng2TOPowerSignal, eng3TOPowerSignal, eng4TOPowerSignal].filter(Boolean).length >= 2;
+
+    const twoEnginesTOPower =
+      twoEnginesTOPowerSignal ||
+      (this.mctMemo.write(twoEnginesTOPowerSignal, _deltaTime) && !hAbv1500 && twoEnginesMcl);
 
     // ESLD 1.0.100
     const eng1FirePbOut = SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'Bool');
     const eng1FirePbMemo = this.firePBOutMemo.write(this.firePBOutConf.write(eng1FirePbOut, _deltaTime), _deltaTime);
-    const resetFirePbClear10 = eng1FirePbMemo && ground;
+    const resetFirePbClear12 = eng1FirePbMemo && ground;
 
-    const phase8 =
-      (this.phase8GroundMemo.write(groundImmediate, _deltaTime) || groundImmediate) &&
-      !eng1Or2TOPower &&
+    const phase10 =
+      (this.phase10GroundMemo.write(groundImmediate, _deltaTime) || groundImmediate) &&
+      !twoEnginesTOPower &&
       acSpeedAbove80kts;
 
-    const phase34Cond = ground && eng1Or2TOPower;
-    const phase3 = !acSpeedAbove80kts && eng1Or2Running && phase34Cond;
-    const phase4 = acSpeedAbove80kts && phase34Cond;
+    const phase345Cond = ground && twoEnginesTOPower;
+    const phase3 = !acSpeedAbove80kts && oneEngRunning && phase345Cond;
+    const phase4 = acSpeedAbove80kts && phase345Cond && !acAboveV1;
+    const phase5 = acSpeedAbove80kts && phase345Cond && acAboveV1;
 
-    const setPhase9Nvm = phase3 || phase8;
-    const resetPhase9Nvm =
+    const setPhase11Nvm = phase3 || phase10;
+    const resetPhase11Nvm =
       (!this.ac80KtsMemo.write(!acSpeedAbove80kts, _deltaTime) &&
-        ((ground && this.prevPhase9InvertMemo.write(this.prevPhase9, _deltaTime)) ||
-          resetFirePbClear10 ||
-          (ground && this.eng1Or2TOPowerInvertMemo.write(eng1Or2TOPower, _deltaTime))) &&
-        !this.prevPhase9) ||
+        ((ground && this.prevPhase11InvertMemo.write(this.prevPhase11, _deltaTime)) ||
+          resetFirePbClear12 ||
+          (ground && this.twoEnginesTOPowerInvertMemo.write(twoEnginesTOPower, _deltaTime))) &&
+        !this.prevPhase11) ||
       adcTestInhib;
-    const phase9Nvm = this.phase9Nvm.write(setPhase9Nvm, resetPhase9Nvm); // S* / R (NVM)
-    const phase29Cond = ground && !eng1Or2TOPower && !acSpeedAbove80kts;
-    const phase9 = oneEngRunning && phase9Nvm && phase29Cond;
-    const phase2 = phase29Cond && !phase9Nvm && eng1Or2Running;
+    const phase11Nvm = this.phase9Nvm.write(setPhase11Nvm, resetPhase11Nvm); // S* / R (NVM)
+    const phase211Cond = ground && !twoEnginesTOPower && !acSpeedAbove80kts;
+    const phase11 = oneEngRunning && phase11Nvm && phase211Cond;
+    const phase2 = phase211Cond && !phase11Nvm && oneEngRunning;
 
-    const phase110MemoA = this.firePBClear10.write(phase9, resetFirePbClear10); // S / R*
-    const phase110Cond = !phase9 && engOneAndTwoNotRunning && groundImmediate;
-    const phase110Memo = this.phase110Memo.write(phase110MemoA && phase110Cond, _deltaTime); // MTRIG 03
-    const phase1 = phase110Cond && !phase110Memo;
-    const phase10 = phase110Cond && phase110Memo;
+    const phase112MemoA = this.firePBClear12.write(phase11, resetFirePbClear12); // S / R*
+    const phase112Cond = !phase11 && noEngineRunning && groundImmediate;
+    const phase112Memo = this.phase112Memo.write(phase112MemoA && phase112Cond, _deltaTime); // MTRIG 03
+    const phase1 = phase112Cond && !phase112Memo;
+    const phase12 = phase112Cond && phase112Memo;
 
-    this.prevPhase9 = phase9;
+    this.prevPhase11 = phase11;
 
     // ESLD 1.0.110
     const ground2sMemorized = this.groundImmediateMemo.write(groundImmediate, _deltaTime) || groundImmediate;
-    const phase5Cond = !hAbv1500 && eng1Or2TOPower && !hFail && !ground2sMemorized;
-    const phase5 = this.phase5Memo.write(phase5Cond, _deltaTime) && phase5Cond;
 
-    const phase67Cond = !ground2sMemorized && !hFail && !eng1Or2TOPower && !hAbv1500 && !hAbv800;
-    const phase67Memo = this.phase67Memo.write(phase67Cond, _deltaTime) && phase67Cond;
+    const phase6Cond = !hAbv400 && twoEnginesTOPower && !hFail && !ground2sMemorized;
+    const phase6 = this.phase6Memo.write(phase6Cond, _deltaTime) && phase6Cond;
 
-    const phase6 = !phase5 && !ground2sMemorized && !phase67Memo;
-    const phase7 = phase67Memo && !phase8;
+    const phase7Cond = !phase6 && !hAbv1500 && twoEnginesTOPower && !hFail && !ground2sMemorized;
+    const phase7 = this.phase7Memo.write(phase7Cond, _deltaTime) && phase7Cond;
+
+    const phase89Cond = !ground2sMemorized && !hFail && !twoEnginesTOPower && !hAbv1500 && !hAbv800;
+    const phase89Memo = this.phase89Memo.write(phase89Cond, _deltaTime) && phase89Cond;
+
+    const phase8 = !phase7 && !ground2sMemorized && !phase89Memo;
+    const phase9 = phase89Memo && !phase10;
 
     /** * End of ESLD logic ** */
 
     // consolidate into single variable (just to be safe)
-    const phases = [phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8, phase9, phase10];
+    const phases = [phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8, phase9, phase10, phase11, phase12];
 
     if (this.flightPhase === null && phases.indexOf(true) !== -1) {
       // if we aren't initialized, just grab the first one that is valid
@@ -322,48 +380,74 @@ export class LegacyFwc {
 
   _updateTakeoffMemo(_deltaTime: number) {
     /// FWC ESLD 1.0.180
-    const setFlightPhaseMemo = this.flightPhase === 2 && this.toConfigTest;
+    const setFlightPhaseMemo = this.flightPhase === FwcFlightPhase.FirstEngineStarted && this.toConfigTest;
     const resetFlightPhaseMemo =
-      this.flightPhase === 10 || this.flightPhase === 3 || this.flightPhase === 1 || this.flightPhase === 6;
+      this.flightPhase === FwcFlightPhase.EnginesShutdown ||
+      this.flightPhase === FwcFlightPhase.SecondEngineTakeOffPower ||
+      this.flightPhase === FwcFlightPhase.ElecPwr ||
+      this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
     const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
 
     const eng1NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') < 15;
     const eng2NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') < 15;
-    const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning, _deltaTime);
+    const eng3NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:3', 'Percent') < 15;
+    const eng4NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:4', 'Percent') < 15;
+    const toTimerElapsed = this.memoTo_conf01.write(
+      !eng1NotRunning && !eng2NotRunning && !eng3NotRunning && !eng4NotRunning,
+      _deltaTime,
+    );
 
-    this.toMemo = flightPhaseMemo || (this.flightPhase === 2 && toTimerElapsed);
+    this.toMemo = flightPhaseMemo || (this.flightPhase === FwcFlightPhase.FirstEngineStarted && toTimerElapsed);
     SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', this.toMemo);
   }
 
   _updateLandingMemo(_deltaTime: number) {
     const radioHeight1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioHeight2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
+    const radioHeight3 = Arinc429Word.fromSimVarValue('L:A32NX_RA_3_RADIO_ALTITUDE');
     const radioHeight1Invalid = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData();
     const radioHeight2Invalid = radioHeight2.isFailureWarning() || radioHeight2.isNoComputedData();
+    const radioHeight3Invalid = radioHeight3.isFailureWarning() || radioHeight3.isNoComputedData();
     const gearDownlocked = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
 
     // FWC ESLD 1.0.190
     const setBelow2000ft =
-      (radioHeight1.value < 2000 && !radioHeight1Invalid) || (radioHeight2.value < 2000 && !radioHeight2Invalid);
+      (radioHeight1.value < 2000 && !radioHeight1Invalid) ||
+      (radioHeight2.value < 2000 && !radioHeight2Invalid) ||
+      (radioHeight3.value < 2000 && !radioHeight3Invalid);
     const resetBelow2000ft =
-      (radioHeight1.value > 2200 || radioHeight1Invalid) && (radioHeight2.value > 2200 || radioHeight2Invalid);
+      (radioHeight1.value > 2200 || radioHeight1Invalid) &&
+      (radioHeight2.value > 2200 || radioHeight2Invalid) &&
+      (radioHeight3.value > 2200 || radioHeight3Invalid);
     const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
 
     const setInhibitMemo = this.memoLdgMemo_conf01.write(
-      resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid,
+      resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid && !radioHeight3Invalid,
       _deltaTime,
     );
-    const resetInhibitMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
+    const resetInhibitMemo = !(
+      this.flightPhase === FwcFlightPhase.AtOrBelow800Feet ||
+      this.flightPhase === FwcFlightPhase.TouchDown ||
+      this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet
+    );
     const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
 
-    const showInApproach = memo1 && memo2 && this.flightPhase === 6;
+    const showInApproach = memo1 && memo2 && this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
 
     const invalidRadioMemo = this.memoLdgMemo_conf02.write(
-      radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6,
+      radioHeight1Invalid &&
+        radioHeight2Invalid &&
+        radioHeight3Invalid &&
+        gearDownlocked &&
+        this.flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet,
       _deltaTime,
     );
 
-    this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
+    this.ldgMemo =
+      showInApproach ||
+      invalidRadioMemo ||
+      this.flightPhase === FwcFlightPhase.TouchDown ||
+      this.flightPhase === FwcFlightPhase.AtOrBelow800Feet;
     SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
   }
 
