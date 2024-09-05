@@ -21,9 +21,11 @@ export type NDSimvars = AdirsSimVars &
     showSelectedHeading: boolean;
     pposLat: Degrees;
     pposLong: Degrees;
+    pposAlt: number;
     absoluteTime: Seconds;
     kccuOnL: boolean;
     kccuOnR: boolean;
+    baroMode: boolean;
   };
 
 export enum NDVars {
@@ -34,11 +36,13 @@ export enum NDVars {
   ilsCourse = 'L:A32NX_FM_LS_COURSE',
   selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
   showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
-  pposLat = 'PLANE LATITUDE', // TODO replace with fm position
-  pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
+  pposLat = 'PLANE LATITUDE', // FIXME replace with fm position
+  pposLong = 'PLANE LONGITUDE', // FIXME replace with fm position
+  pposAlt = 'PLANE ALTITUDE', // FIXME replace with fm position
   absoluteTime = 'E:ABSOLUTE TIME',
   kccuOnL = 'L:A32NX_KCCU_L_KBD_ON_OFF',
   kccuOnR = 'L:A32NX_KCCU_R_KBD_ON_OFF',
+  baroMode = 'KOHLSMAN SETTING STD',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -55,9 +59,11 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
     ['showSelectedHeading', { name: NDVars.showSelectedHeading, type: SimVarValueType.Bool }],
     ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
     ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
+    ['pposAlt', { name: NDVars.pposAlt, type: SimVarValueType.Number }],
     ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],
     ['kccuOnL', { name: NDVars.kccuOnL, type: SimVarValueType.Bool }],
     ['kccuOnR', { name: NDVars.kccuOnR, type: SimVarValueType.Bool }],
+    ['baroMode', { name: NDVars.baroMode, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

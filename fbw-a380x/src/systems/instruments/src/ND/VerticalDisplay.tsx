@@ -5,7 +5,15 @@
   EfisSide,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
-import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  ConsumerSubject,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 
 import './style.scss';
 
@@ -20,55 +28,61 @@ export interface GenericFcuEvents {
 }
 
 export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps> {
+  private readonly minAlt = -500;
+  private readonly maxAlt = 24000;
+
+  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & NDSimvars>();
+
   private topRef = FSComponent.createRef<SVGElement>();
 
-  private ndMode: EfisNdMode = EfisNdMode.ARC;
+  private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode').whenChanged(), EfisNdMode.ARC);
 
-  private ndRangeSetting: A380EfisNdRangeValue = 10;
+  private readonly ndRangeSetting = ConsumerSubject.create(this.sub.on('ndRangeSetting').whenChanged(), 10).map(
+    (r) => a380EfisRangeSettings[r],
+  );
 
-  private updateVisibility() {
-    if ([EfisNdMode.PLAN, EfisNdMode.ROSE_ILS, EfisNdMode.ROSE_VOR].includes(this.ndMode)) {
-      this.topRef.instance.style.display = 'none';
-    } else if (this.ndRangeSetting === -1) {
-      this.topRef.instance.style.display = 'none';
-    } else {
-      this.topRef.instance.style.display = 'block';
-    }
-  }
+  private readonly visible = MappedSubject.create(
+    ([mode, range]) =>
+      [EfisNdMode.PLAN, EfisNdMode.ROSE_ILS, EfisNdMode.ROSE_VOR].includes(mode) || range === -1 ? 'none' : 'block',
+    this.ndMode,
+    this.ndRangeSetting,
+  );
+
+  private readonly baroModeIsStd = ConsumerSubject.create(this.sub.on('baroMode').whenChanged(), false);
+
+  private readonly currentAltitude = ConsumerSubject.create(this.sub.on('pposAlt').whenChanged(), 0);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+  }
 
-    const sub = this.props.bus.getSubscriber<GenericFcuEvents>();
-
-    sub
-      .on('ndMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.ndMode = mode;
-        this.updateVisibility();
-      });
-
-    sub
-      .on('ndRangeSetting')
-      .whenChanged()
-      .handle((range) => {
-        this.ndRangeSetting = a380EfisRangeSettings[range];
-        this.updateVisibility();
-      });
+  private altToY(alt: number) {
+    return 800 + (this.maxAlt - alt) / ((this.maxAlt - this.minAlt) / 200);
   }
 
   render(): VNode {
     return (
-      <svg ref={this.topRef} viewBox="0 0 768 1024" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        ref={this.topRef}
+        viewBox="0 0 768 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ display: this.visible }}
+      >
         <g>
           <line x1="105" x2="105" y1="800" y2="1000" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1="820" y2="820" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1="850" y2="850" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1="880" y2="880" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1="910" y2="910" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1="940" y2="940" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1="970" y2="970" stroke="white" stroke-width="2" />
+          <line x1="105" x2="120" y1={this.altToY(20000)} y2={this.altToY(20000)} stroke="white" stroke-width="2" />
+          <line x1="105" x2="120" y1={this.altToY(15000)} y2={this.altToY(15000)} stroke="white" stroke-width="2" />
+          <line x1="105" x2="120" y1={this.altToY(10000)} y2={this.altToY(10000)} stroke="white" stroke-width="2" />
+          <line x1="105" x2="120" y1={this.altToY(5000)} y2={this.altToY(5000)} stroke="white" stroke-width="2" />
+          <line x1="105" x2="120" y1={this.altToY(0)} y2={this.altToY(0)} stroke="white" stroke-width="2" />
+          <line
+            x1="97"
+            x2="115"
+            y1={this.currentAltitude.map((a) => this.altToY(a))}
+            y2={this.currentAltitude.map((a) => this.altToY(a))}
+            stroke="yellow"
+            stroke-width="4"
+          />
         </g>
         <g>
           <line x1="150" x2="690" y1="800" y2="800" stroke="white" stroke-width="2" />
@@ -79,8 +93,39 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <line x1="690" x2="690" y1="800" y2="1000" stroke="white" stroke-width="2" />
         </g>
         <g>
-          <text x="105" y="800" class="Cyan FontSmallest">
-            80
+          <text x="150" y="798" class="Cyan FontSmallest MiddleAlign">
+            0
+          </text>
+          <text x="285" y="798" class="Cyan FontSmallest MiddleAlign">
+            {this.ndRangeSetting.map((value) => (value / 4) * 1)}
+          </text>
+          <text x="420" y="798" class="Cyan FontSmallest MiddleAlign">
+            {this.ndRangeSetting.map((value) => (value / 4) * 2)}
+          </text>
+          <text x="555" y="798" class="Cyan FontSmallest MiddleAlign">
+            {this.ndRangeSetting.map((value) => (value / 4) * 3)}
+          </text>
+          <text x="690" y="798" class="Cyan FontSmallest MiddleAlign">
+            {this.ndRangeSetting.map((value) => (value / 4) * 4)}
+          </text>
+        </g>
+        <g>
+          <text x="95" y={this.altToY(0) + 7.5} class="White FontSmallest EndAlign">
+            0
+          </text>
+          <text x="95" y={this.altToY(10000) + 7.5} class="White FontSmallest EndAlign">
+            {this.baroModeIsStd.map((m) => (m ? '100' : '10000'))}
+          </text>
+          <text x="95" y={this.altToY(20000) + 7.5} class="White FontSmallest EndAlign">
+            {this.baroModeIsStd.map((m) => (m ? '200' : '20000'))}
+          </text>
+          <text
+            x="10"
+            y="900"
+            class="White FontSmallest"
+            visibility={this.baroModeIsStd.map((s) => (s ? 'visible' : 'hidden'))}
+          >
+            FL
           </text>
         </g>
       </svg>
