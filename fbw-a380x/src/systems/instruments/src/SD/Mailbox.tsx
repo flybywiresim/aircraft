@@ -25,8 +25,8 @@ export const Mailbox = () => {
 
             {/* Message area */}
             <text className='F26 Green' x={110} y={795} />
-            <text className='F26 Amber' x={110} y={833}>ATC DATALINK COM</text>
-            <text className='F26 Amber' x={110} y={870}>NOT AVAIL</text>
+            {/*<text className='F26 Amber' x={110} y={833}>ATC DATALINK COM</text>
+            <text className='F26 Amber' x={110} y={870}>NOT AVAIL</text>*/}
 
             {/* Buttons */}
             <Layer x={0} y={970}>
