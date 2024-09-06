@@ -2566,7 +2566,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK1_MAIN</NODE_ID>
                     <PART_ID>OVHD_FUEL_LFEEDTK1_MAIN</PART_ID>
-                    <ID>1</ID>
+                    <CIRCUIT_ID>2</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2577,7 +2577,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK1_STBY</NODE_ID>
                     <PART_ID>OVHD_FUEL_FEEDTK1_STBY</PART_ID>
-                    <ID>2</ID>
+                    <CIRCUIT_ID>3</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2590,7 +2590,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK2_MAIN</NODE_ID>
                     <PART_ID>OVHD_FUEL_FEEDTK2_MAIN</PART_ID>
-                    <ID>3</ID>
+                    <CIRCUIT_ID>64</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2601,7 +2601,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK2_STBY</NODE_ID>
                     <PART_ID>OVHD_FUEL_PFEDTK2_STBY</PART_ID>
-                    <ID>4</ID>
+                    <CIRCUIT_ID>65</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2614,7 +2614,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK3_MAIN</NODE_ID>
                     <PART_ID>OVHD_FUEL_FEEDTK3_MAIN</PART_ID>
-                    <ID>5</ID>
+                    <CIRCUIT_ID>66</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2625,7 +2625,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK3_STBY</NODE_ID>
                     <PART_ID>OVHD_FUEL_PFEDTK3_STBY</PART_ID>
-                    <ID>6</ID>
+                    <CIRCUIT_ID>67</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2638,7 +2638,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK4_MAIN</NODE_ID>
                     <PART_ID>OVHD_FUEL_FEEDTK4_MAIN</PART_ID>
-                    <ID>7</ID>
+                    <CIRCUIT_ID>68</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2649,7 +2649,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK4_STBY</NODE_ID>
                     <PART_ID>OVHD_FUEL_PFEDTK4_STBY</PART_ID>
-                    <ID>8</ID>
+                    <CIRCUIT_ID>69</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2662,7 +2662,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_LOUTR_PMP</NODE_ID>
                     <PART_ID>OVHD_FUEL_LOUTR_PMP</PART_ID>
-                    <ID>9</ID>
+                    <CIRCUIT_ID>70</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2677,7 +2677,7 @@
                     <PART_ID>OVHD_FUEL_LMIDTK_FWD</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>10</ID>
+                    <CIRCUIT_ID>71</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2688,7 +2688,7 @@
                     <PART_ID>OVHD_FUEL_LMIDTK_AFT</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>11</ID>
+                    <CIRCUIT_ID>72</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2701,7 +2701,7 @@
                     <PART_ID>OVHD_FUEL_LINRTK_FWD</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>12</ID>
+                    <CIRCUIT_ID>73</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2712,7 +2712,7 @@
                     <PART_ID>OVHD_FUEL_LINRTK_AFT</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>17</ID>
+                    <CIRCUIT_ID>74</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2725,7 +2725,7 @@
                     <PART_ID>OVHD_FUEL_RINRTK_FWD</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>13</ID>
+                    <CIRCUIT_ID>78</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2736,7 +2736,7 @@
                     <PART_ID>OVHD_FUEL_RINRTK_AFT</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>18</ID>
+                    <CIRCUIT_ID>79</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2749,7 +2749,7 @@
                     <PART_ID>OVHD_FUEL_RMIDTK_FWD</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>15</ID>
+                    <CIRCUIT_ID>76</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2760,7 +2760,7 @@
                     <PART_ID>OVHD_FUEL_RMIDTK_AFT</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>16</ID>
+                    <CIRCUIT_ID>77</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2771,7 +2771,7 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_ROUTR_PMP</NODE_ID>
                     <PART_ID>OVHD_FUEL_ROUTR_PMP</PART_ID>
-                    <ID>14</ID>
+                    <CIRCUIT_ID>75</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2786,7 +2786,7 @@
                     <PART_ID>OVHD_FUEL_TRIMTK_L</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>19</ID>
+                    <CIRCUIT_ID>80</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2797,7 +2797,7 @@
                     <PART_ID>OVHD_FUEL_TRIMTK_R</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
-                    <ID>20</ID>
+                    <CIRCUIT_ID>81</CIRCUIT_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
