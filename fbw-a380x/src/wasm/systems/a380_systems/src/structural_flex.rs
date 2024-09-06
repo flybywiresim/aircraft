@@ -46,9 +46,20 @@ pub struct CockpitVibration {
 
 impl CockpitVibration {
     // Déclaration des constantes
-    const CENTERLINE_LIGHTS_SPACING_METERS: f64 = 25.0;
+    const CENTERLINE_LIGHTS_SPACING_METERS: f64 = 20.0;
 
     const IMPACT_DURATION_S: f64 = 0.1;
+
+    const POSITION_OFFSET_AT_0_VIBRATION: f64 = 0.1;
+
+    const GROUND_NOISE_MIN_MAGNITUDE: f64 = 0. - Self::POSITION_OFFSET_AT_0_VIBRATION;
+    const GROUND_NOISE_MAX_MAGNITUDE: f64 = 0.13;
+    const GROUND_NOISE_MIN_SPEED_FOR_MAX_MAGNITUDE_KNOT: f64 = 40.;
+
+    const MIN_NOSE_WEIGHT_FOR_MAX_IMPACT_AMPLITUDE_KG: f64 = 10000.;
+
+    const IMPACT_NOISE_MAGNITUDE_GAIN: f64 = 0.13;
+    const IMPACT_MIN_RANDOM_MAGNITUDE: f64 = 0.8; // Max is fixed to 1, scaled with IMPACT_NOISE_MAGNITUDE_GAIN
 
     pub fn default() -> Self {
         CockpitVibration {
@@ -66,64 +77,75 @@ impl CockpitVibration {
         ground_weight_ratio: Ratio,
         nose_ground_weight: Mass,
     ) {
-        let current_time = context.simulation_time();
-
-        let ground_noise =
-            random_from_range(-0.1, 0.13) * (current_speed.get::<knot>() / 50.0).min(1.);
-
-        // Composante d'impact
-        let impact_signal_raw = if current_speed > Velocity::default() {
-            let time_between_impacts =
-                Self::CENTERLINE_LIGHTS_SPACING_METERS / current_speed.get::<meter_per_second>();
-
-            self.square_pulse(current_time, time_between_impacts)
-        } else {
-            0.0
-        };
-
-        let nose_mass_ratio = (nose_ground_weight.get::<kilogram>() / 10000.).clamp(0., 1.);
-        let impact_signal_from_nose = impact_signal_raw * nose_mass_ratio * 0.13;
-
-        // Facteur de vitesse pour moduler l'intensité globale
+        // Speed factor so vibration kicks in from an empirical ground speed function
         let speed_factor = f64::min(
             1.0,
             f64::max(0.0, 0.00001 * current_speed.get::<knot>().powi(3)),
         );
 
-        // Signal total
-        self.output = 0.1
-            + (ground_noise + impact_signal_from_nose)
+        let ground_noise = self.ground_noise_amplitude(current_speed);
+        let runway_lights_impact_amplitude =
+            self.runway_lights_impact_amplitude(context, current_speed, nose_ground_weight);
+
+        self.output = Self::POSITION_OFFSET_AT_0_VIBRATION
+            + (ground_noise + runway_lights_impact_amplitude)
                 * speed_factor
                 * ground_weight_ratio.get::<ratio>();
 
         println!(
-            "T={:.2} Gnoise {:.3} Impact {:.3} GroundNose {:.2} TOTAL raw {:.3} Final {:.2}",
-            current_time,
-            ground_noise,
-            impact_signal_raw,
-            nose_mass_ratio,
-            (ground_noise + impact_signal_raw),
-            self.output
+            "Gnoise {:.3} Impact {:.3}  Final {:.2}",
+            ground_noise, runway_lights_impact_amplitude, self.output
         );
     }
 
-    fn square_pulse(&mut self, current_time: f64, time_between_impacts: f64) -> f64 {
-        if self.impact_active {
-            // Si l'impact est actif, vérifie si on doit le terminer
-            if current_time - self.last_impact_time.unwrap_or(0.0) > Self::IMPACT_DURATION_S {
-                self.impact_active = false; // Fin de l'impact
-            }
-            return random_from_range(0.8, 1.); // Impact en cours
+    fn ground_noise_amplitude(&self, current_speed: Velocity) -> f64 {
+        random_from_range(
+            Self::GROUND_NOISE_MIN_MAGNITUDE,
+            Self::GROUND_NOISE_MAX_MAGNITUDE,
+        ) * (current_speed.get::<knot>() / Self::GROUND_NOISE_MIN_SPEED_FOR_MAX_MAGNITUDE_KNOT)
+            .min(1.)
+    }
+
+    // TODO figure a way to compute if we are on a runway centerline
+    fn runway_lights_impact_amplitude(
+        &mut self,
+        context: &UpdateContext,
+        current_speed: Velocity,
+        nose_ground_weight: Mass,
+    ) -> f64 {
+        let impact_signal_raw = if current_speed > Velocity::default() {
+            let time_between_impacts =
+                Self::CENTERLINE_LIGHTS_SPACING_METERS / current_speed.get::<meter_per_second>();
+
+            self.square_pulse(context, time_between_impacts)
         } else {
-            // Si l'impact n'est pas actif, vérifie s'il est temps d'en commencer un nouveau
-            if self.last_impact_time.is_none()
-                || current_time - self.last_impact_time.unwrap() >= time_between_impacts
+            0.0
+        };
+
+        let nose_mass_ratio = (nose_ground_weight.get::<kilogram>()
+            / Self::MIN_NOSE_WEIGHT_FOR_MAX_IMPACT_AMPLITUDE_KG)
+            .clamp(0., 1.);
+        impact_signal_raw * nose_mass_ratio * Self::IMPACT_NOISE_MAGNITUDE_GAIN
+    }
+
+    fn square_pulse(&mut self, context: &UpdateContext, time_between_impacts: f64) -> f64 {
+        if self.impact_active {
+            if context.simulation_time() - self.last_impact_time.unwrap_or(0.0)
+                > Self::IMPACT_DURATION_S
             {
-                self.last_impact_time = Some(current_time); // Démarre un nouvel impact
+                self.impact_active = false;
+            }
+            return random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.);
+        } else {
+            if self.last_impact_time.is_none()
+                || context.simulation_time() - self.last_impact_time.unwrap()
+                    >= time_between_impacts
+            {
+                self.last_impact_time = Some(context.simulation_time());
                 self.impact_active = true;
-                return random_from_range(0.8, 1.); // Début de l'impact
+                return random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.);
             } else {
-                return 0.0; // Pas d'impact en cours
+                return 0.0;
             }
         }
     }
