@@ -31,16 +31,11 @@ use nalgebra::{Vector3, Vector5};
 pub struct CockpitVibration {
     output: f64,
 
-    last_impact_time: Option<f64>, // Temps du dernier impact
-    impact_active: bool,           // État actuel de l'impact (actif ou non)
+    last_impact_time: Option<f64>,
+    impact_in_progress: bool,
 }
 
 impl CockpitVibration {
-    // Déclaration des constantes
-    const CENTERLINE_LIGHTS_SPACING_METERS: f64 = 20.0;
-
-    const IMPACT_DURATION_S: f64 = 0.1;
-
     const POSITION_OFFSET_AT_0_VIBRATION: f64 = 0.1;
 
     const GROUND_NOISE_MIN_MAGNITUDE: f64 = 0. - Self::POSITION_OFFSET_AT_0_VIBRATION;
@@ -51,13 +46,15 @@ impl CockpitVibration {
 
     const IMPACT_NOISE_MAGNITUDE_GAIN: f64 = 0.13;
     const IMPACT_MIN_RANDOM_MAGNITUDE: f64 = 0.8; // Max is fixed to 1, scaled with IMPACT_NOISE_MAGNITUDE_GAIN
+    const CENTERLINE_LIGHTS_SPACING_METERS: f64 = 20.0;
+    const IMPACT_DURATION_S: f64 = 0.1;
 
     pub fn default() -> Self {
         CockpitVibration {
             output: 0.,
 
-            last_impact_time: None, // Temps du dernier impact
-            impact_active: false,   // État actuel de l'impact (actif ou non)
+            last_impact_time: None,
+            impact_in_progress: false,
         }
     }
 
@@ -115,18 +112,18 @@ impl CockpitVibration {
     }
 
     fn square_pulse(&mut self, context: &UpdateContext, time_between_impacts: f64) -> f64 {
-        if self.impact_active {
+        if self.impact_in_progress {
             if context.simulation_time() - self.last_impact_time.unwrap_or(0.0)
                 > Self::IMPACT_DURATION_S
             {
-                self.impact_active = false;
+                self.impact_in_progress = false;
             }
             random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.)
         } else if self.last_impact_time.is_none()
             || context.simulation_time() - self.last_impact_time.unwrap() >= time_between_impacts
         {
             self.last_impact_time = Some(context.simulation_time());
-            self.impact_active = true;
+            self.impact_in_progress = true;
             random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.)
         } else {
             0.
