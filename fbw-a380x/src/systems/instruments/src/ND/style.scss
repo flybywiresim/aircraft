@@ -1,10 +1,13 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 @import "../MsfsAvionicsCommon/definitions.scss";
 @import "animations";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -12,7 +15,7 @@
 @font-face {
   font-family: "NDChrono";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/NDChrono.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/NDChrono.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -25,6 +28,7 @@
   height: 768px;
   background: transparent;
   font-family: "Ecam", monospace !important;
+  pointer-events: none;
 }
 
 .nd-canvas-map {

@@ -8,6 +8,8 @@ import { A380FailureDefinitions } from "../../../failures";
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a380xSyncedSettings } from 'instruments/src/EFB/settingsSync';
 
+import './Efb.scss';
+
 function aircraftEfbSetup(): void {
   syncSettingsFromPersistentStorage(a380xSyncedSettings);
 }
