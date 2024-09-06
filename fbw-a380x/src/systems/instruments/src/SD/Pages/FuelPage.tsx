@@ -868,16 +868,18 @@ interface ApuIndicationProps {
 const ApuIndication: FC<ApuIndicationProps> = ({ x1, x2, y, showMore }) => {
     const APU_VALVE_CLOSED_THRESHOLD = 0.1;
 
+    const [apuFuelPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:21', 'Bool');
+    const isApuFuelPumpActive = apuFuelPumpActive === 1;
+
+    // TODO hacks! The LP valve and isolation valve is always open in our fuel system
+    // We pretend it's only open when the fuel pump is running so we don't get amber indications
     const [apuIsolationValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:50', 'Percent over 100');
-    const isApuIsolationValveOpen = apuIsolationValveOpen >= APU_VALVE_CLOSED_THRESHOLD;
+    const isApuIsolationValveOpen = isApuFuelPumpActive && (apuIsolationValveOpen >= APU_VALVE_CLOSED_THRESHOLD);
     const [apuLpValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:51', 'Percent over 100');
-    const isApuLpValveOpen = apuLpValveOpen >= APU_VALVE_CLOSED_THRESHOLD;
+    const isApuLpValveOpen = isApuFuelPumpActive && (apuLpValveOpen >= APU_VALVE_CLOSED_THRESHOLD);
 
-    const [isApuFuelPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:21', 'Bool');
-
-    // TODO figure out what these should be
-    const shouldApuIsolationValveBeOpen = isApuFuelPumpActive === 1;
-    const shouldApuLpValveBeOpen = isApuFuelPumpActive === 1;
+    const shouldApuIsolationValveBeOpen = isApuFuelPumpActive;
+    const shouldApuLpValveBeOpen = isApuFuelPumpActive;
 
     const areBothValvesOpen = isApuIsolationValveOpen && isApuLpValveOpen;
     const areBothValvesClosed = !isApuIsolationValveOpen && !isApuLpValveOpen;
