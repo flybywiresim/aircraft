@@ -1,11 +1,6 @@
-use std::{task::Context, time::Duration};
-
 use systems::{
     fuel::FuelPayload,
-    shared::{
-        local_acceleration_at_plane_coordinate, low_pass_filter::LowPassFilter, random_from_range,
-        SurfacesPositions,
-    },
+    shared::{random_from_range, SurfacesPositions},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -24,18 +19,14 @@ use systems::{
 use crate::fuel::A380FuelTankType;
 
 use uom::si::{
-    acceleration::meter_per_second_squared,
     f64::*,
     force::newton,
-    heat_flux_density::megawatt_per_square_meter,
     mass::kilogram,
     ratio::ratio,
     velocity::{knot, meter_per_second},
 };
 
 use nalgebra::{Vector3, Vector5};
-
-use std::f64::consts::PI;
 
 pub struct CockpitVibration {
     output: f64,
@@ -91,11 +82,6 @@ impl CockpitVibration {
             + (ground_noise + runway_lights_impact_amplitude)
                 * speed_factor
                 * ground_weight_ratio.get::<ratio>();
-
-        println!(
-            "Gnoise {:.3} Impact {:.3}  Final {:.2}",
-            ground_noise, runway_lights_impact_amplitude, self.output
-        );
     }
 
     fn ground_noise_amplitude(&self, current_speed: Velocity) -> f64 {
@@ -135,18 +121,15 @@ impl CockpitVibration {
             {
                 self.impact_active = false;
             }
-            return random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.);
+            random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.)
+        } else if self.last_impact_time.is_none()
+            || context.simulation_time() - self.last_impact_time.unwrap() >= time_between_impacts
+        {
+            self.last_impact_time = Some(context.simulation_time());
+            self.impact_active = true;
+            random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.)
         } else {
-            if self.last_impact_time.is_none()
-                || context.simulation_time() - self.last_impact_time.unwrap()
-                    >= time_between_impacts
-            {
-                self.last_impact_time = Some(context.simulation_time());
-                self.impact_active = true;
-                return random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.);
-            } else {
-                return 0.0;
-            }
+            0.
         }
     }
 
