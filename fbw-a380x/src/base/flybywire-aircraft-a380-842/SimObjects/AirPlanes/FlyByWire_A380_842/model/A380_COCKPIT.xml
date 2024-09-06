@@ -66,10 +66,10 @@
         <!-- External Components -->
 
         <Component ID="VIBRATION">
-			<!-- ENG1 WOBBLE -->
+			<!-- Glare shield vibrations -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>A380X_GLARESHIELD__FLEX_CTR</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ENGINE_1_WOBBLE_X_POSITION, number) 100 *</ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_GLARESHIELD_FLEX_CTR, number) 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 

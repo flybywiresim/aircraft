@@ -158,7 +158,7 @@ impl A380StructuralFlex {
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             ground_weight_ratio_id: context
                 .get_identifier("GROUND_WEIGHT_ON_WHEELS_RATIO".to_owned()),
-            cockpit_rumble_id: context.get_identifier("_GLARESHIELD__FLEX_CTR".to_owned()),
+            cockpit_rumble_id: context.get_identifier("GLARESHIELD_FLEX_CTR".to_owned()),
 
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             elevators_flex_physics: FlexibleElevators::new(context),
