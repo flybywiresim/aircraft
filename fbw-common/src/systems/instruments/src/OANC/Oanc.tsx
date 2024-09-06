@@ -922,6 +922,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
+    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos, bboxPolygon(bbox(this.data))));
+
     const distToArpt = this.ppos && this.arpCoordinates ? distanceTo(this.ppos, this.arpCoordinates) : 9999;
 
     // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
