@@ -919,7 +919,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.updatePosition();
 
     this.aircraftOnGround.set(
-      ![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
+      ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
     this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos, bboxPolygon(bbox(this.data))));

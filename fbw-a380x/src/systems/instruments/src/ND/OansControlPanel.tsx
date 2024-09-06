@@ -431,7 +431,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       return;
     }
     // If on ground, and no airport is loaded, find current airport.
-    if (![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number))) {
+    if (![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number))) {
       // Go through all airports, load if distance <20NM
       const nearestAirports = this.store.airports
         .getArray()
