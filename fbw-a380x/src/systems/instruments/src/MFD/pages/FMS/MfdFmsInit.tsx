@@ -126,6 +126,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           return true;
         });
       });
+
+    this.props.fmcService.master?.fmgc.data.atcCallsign.sub((c) => {
+      if (c) {
+        this.connectToNetworks(c);
+      } else {
+        this.disconnectFromNetworks();
+      }
+    });
   }
 
   protected onNewData() {
@@ -280,13 +288,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field">FLT NBR</div>
               <InputField<string>
                 dataEntryFormat={new LongAlphanumericFormat()}
-                dataHandlerDuringValidation={async (v) => {
-                  if (v) {
-                    await this.connectToNetworks(v);
-                  } else {
-                    await this.disconnectFromNetworks();
-                  }
-                }}
                 mandatory={Subject.create(true)}
                 value={this.props.fmcService.master.fmgc.data.atcCallsign}
                 containerStyle="width: 200px; margin-right: 5px;"
