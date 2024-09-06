@@ -1,11 +1,10 @@
-use std::time::Duration;
+use std::{task::Context, time::Duration};
 
 use systems::{
     fuel::FuelPayload,
     shared::{
-        local_acceleration_at_plane_coordinate,
-        low_pass_filter::{HighPassFilter, LowPassFilter},
-        random_from_range, SurfacesPositions,
+        local_acceleration_at_plane_coordinate, low_pass_filter::LowPassFilter, random_from_range,
+        SurfacesPositions,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -15,7 +14,8 @@ use systems::{
         elevator_flex::FlexibleElevators,
         engine_wobble::EnginesFlexiblePhysics,
         wing_flex::{
-            FlexPhysicsNG, WingAnimationMapper, WingFuelNodeMapper, WingLift, WingRootAcceleration,
+            FlexPhysicsNG, GearStrutId, WingAnimationMapper, WingFuelNodeMapper, WingLift,
+            WingRootAcceleration,
         },
         SurfaceVibrationGenerator,
     },
@@ -35,6 +35,104 @@ use uom::si::{
 
 use nalgebra::{Vector3, Vector5};
 
+use std::f64::consts::PI;
+
+pub struct CockpitVibration {
+    output: f64,
+
+    last_impact_time: Option<f64>, // Temps du dernier impact
+    impact_active: bool,           // État actuel de l'impact (actif ou non)
+}
+
+impl CockpitVibration {
+    // Déclaration des constantes
+    const CENTERLINE_LIGHTS_SPACING_METERS: f64 = 25.0;
+
+    const IMPACT_DURATION_S: f64 = 0.1;
+
+    pub fn default() -> Self {
+        CockpitVibration {
+            output: 0.,
+
+            last_impact_time: None, // Temps du dernier impact
+            impact_active: false,   // État actuel de l'impact (actif ou non)
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        current_speed: Velocity,
+        ground_weight_ratio: Ratio,
+        nose_ground_weight: Mass,
+    ) {
+        let current_time = context.simulation_time();
+
+        let ground_noise =
+            random_from_range(-0.1, 0.13) * (current_speed.get::<knot>() / 50.0).min(1.);
+
+        // Composante d'impact
+        let impact_signal_raw = if current_speed > Velocity::default() {
+            let time_between_impacts =
+                Self::CENTERLINE_LIGHTS_SPACING_METERS / current_speed.get::<meter_per_second>();
+
+            self.square_pulse(current_time, time_between_impacts)
+        } else {
+            0.0
+        };
+
+        let nose_mass_ratio = (nose_ground_weight.get::<kilogram>() / 10000.).clamp(0., 1.);
+        let impact_signal_from_nose = impact_signal_raw * nose_mass_ratio * 0.13;
+
+        // Facteur de vitesse pour moduler l'intensité globale
+        let speed_factor = f64::min(
+            1.0,
+            f64::max(0.0, 0.00001 * current_speed.get::<knot>().powi(3)),
+        );
+
+        // Signal total
+        self.output = 0.1
+            + (ground_noise + impact_signal_from_nose)
+                * speed_factor
+                * ground_weight_ratio.get::<ratio>();
+
+        println!(
+            "T={:.2} Gnoise {:.3} Impact {:.3} GroundNose {:.2} TOTAL raw {:.3} Final {:.2}",
+            current_time,
+            ground_noise,
+            impact_signal_raw,
+            nose_mass_ratio,
+            (ground_noise + impact_signal_raw),
+            self.output
+        );
+    }
+
+    fn square_pulse(&mut self, current_time: f64, time_between_impacts: f64) -> f64 {
+        if self.impact_active {
+            // Si l'impact est actif, vérifie si on doit le terminer
+            if current_time - self.last_impact_time.unwrap_or(0.0) > Self::IMPACT_DURATION_S {
+                self.impact_active = false; // Fin de l'impact
+            }
+            return random_from_range(0.8, 1.); // Impact en cours
+        } else {
+            // Si l'impact n'est pas actif, vérifie s'il est temps d'en commencer un nouveau
+            if self.last_impact_time.is_none()
+                || current_time - self.last_impact_time.unwrap() >= time_between_impacts
+            {
+                self.last_impact_time = Some(current_time); // Démarre un nouvel impact
+                self.impact_active = true;
+                return random_from_range(0.8, 1.); // Début de l'impact
+            } else {
+                return 0.0; // Pas d'impact en cours
+            }
+        }
+    }
+
+    fn output(&self) -> f64 {
+        self.output
+    }
+}
+
 pub struct A380StructuralFlex {
     ground_speed_id: VariableIdentifier,
     ground_weight_ratio_id: VariableIdentifier,
@@ -46,10 +144,7 @@ pub struct A380StructuralFlex {
 
     surface_vibrations: SurfaceVibrationGenerator,
 
-    last_y_accel: f64,
-    cockpit_rumble: LowPassFilter<f64>,
-    filetered_cockpit_accel: LowPassFilter<f64>,
-    high_filetered_cockpit_accel: HighPassFilter<f64>,
+    cockpit_rumble: CockpitVibration,
     ground_speed: Velocity,
 }
 impl A380StructuralFlex {
@@ -66,10 +161,7 @@ impl A380StructuralFlex {
 
             surface_vibrations: SurfaceVibrationGenerator::default_generator(),
 
-            last_y_accel: 0.,
-            cockpit_rumble: LowPassFilter::new(Duration::from_millis(1)),
-            filetered_cockpit_accel: LowPassFilter::new(Duration::from_millis(300)),
-            high_filetered_cockpit_accel: HighPassFilter::new(Duration::from_millis(20)),
+            cockpit_rumble: CockpitVibration::default(),
 
             ground_speed: Velocity::default(),
         }
@@ -83,52 +175,12 @@ impl A380StructuralFlex {
         surfaces_positions: &impl SurfacesPositions,
         fuel_mass: &impl FuelPayload,
     ) {
-        let new_accel_y =
-            local_acceleration_at_plane_coordinate(context, Vector3::new(0., 0.5, 33.5))[1];
-
-        let delta_accel = (self.last_y_accel - new_accel_y).abs();
-
-        let delta_accel_time = (delta_accel / context.delta_as_secs_f64()).clamp(0., 50.);
-
-        self.filetered_cockpit_accel
-            .update(context.delta(), delta_accel_time / 50.);
-
-        self.high_filetered_cockpit_accel
-            .update(context.delta(), delta_accel_time / 50.);
-
-        let weight_ratio = (self.wing_flex.ground_weight_ratio().get::<ratio>()).clamp(0., 1.);
-
-        let speed_factor = (self.ground_speed.get::<knot>() / 130.).clamp(0., 1.);
-
-        let accel_ratio = self.filetered_cockpit_accel.output().clamp(0., 1.);
-
-        println!(
-            "filtered {:.3} / WR {:.2} / speed_factor {:.2} / accel ratio {:.2} Sine {:.2}",
-            self.filetered_cockpit_accel.output(),
-            weight_ratio,
-            speed_factor,
-            accel_ratio,
-            ((2. + (context.simulation_time() * 45.).sin()
-                + (context.simulation_time() * 24.).sin())
-                / 5.
-                * speed_factor
-                * weight_ratio
-                * accel_ratio)
-                .clamp(0., 0.5)
-        );
-
         self.cockpit_rumble.update(
-            context.delta(),
-            ((2. + (context.simulation_time() * 45.).sin()
-                + (context.simulation_time() * 24.).sin())
-                / 5.
-                * speed_factor
-                * weight_ratio
-                * accel_ratio)
-                .clamp(0., 0.5),
+            context,
+            self.ground_speed,
+            self.wing_flex.ground_weight_ratio(),
+            self.wing_flex.ground_weight_per_wheel(GearStrutId::Nose),
         );
-
-        self.last_y_accel = new_accel_y;
 
         self.elevators_flex_physics.update(
             context,
@@ -451,6 +503,10 @@ impl WingFlexA380 {
 
     pub fn ground_weight_ratio(&self) -> Ratio {
         self.wing_lift.ground_weight_ratio()
+    }
+
+    pub fn ground_weight_per_wheel(&self, wheel_id: GearStrutId) -> Mass {
+        self.wing_lift.ground_weight_per_wheel(wheel_id)
     }
 
     // Accelerations (vertical) of engines pylons from eng1 to eng4
