@@ -3,6 +3,7 @@ import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';
 import { MoreLabel, PageTitle } from './Generic/PageTitle';
 import { useArinc429Var } from '@instruments/common/arinc429';
+import { useInterval } from '@flybywiresim/fbw-sdk';
 
 export const FuelPage = () => {
     const CROSS_FEED_VALVE_CLOSED_THRESHOLD = 0.1;
@@ -40,41 +41,78 @@ export const FuelPage = () => {
 
     // Feed pumps
     const [feed1Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Bool', 1000);
+    const [isFeed1Pump1SwitchOff, setIsFeed1Pump1SwitchOff] = useState(false); // circuit 2
     const [feed1Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Bool', 1000);
+    const [isFeed1Pump2SwitchOff, setIsFeed1Pump2SwitchOff] = useState(false); // circuit 3
     const [feed2Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Bool', 1000);
+    const [isFeed2Pump1SwitchOff, setIsFeed2Pump1SwitchOff] = useState(false); // circuit 64
     const [feed2Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Bool', 1000);
+    const [isFeed2Pump2SwitchOff, setIsFeed2Pump2SwitchOff] = useState(false); // circuit 65
     const [feed3Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Bool', 1000);
+    const [isFeed3Pump1SwitchOff, setIsFeed3Pump1SwitchOff] = useState(false); // circuit 66
     const [feed3Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Bool', 1000);
+    const [isFeed3Pump2SwitchOff, setIsFeed3Pump2SwitchOff] = useState(false); // circuit 67
     const [feed4Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:7', 'Bool', 1000);
+    const [isFeed4Pump1SwitchOff, setIsFeed4Pump1SwitchOff] = useState(false); // circuit 68
     const [feed4Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:8', 'Bool', 1000);
+    const [isFeed4Pump2SwitchOff, setIsFeed4Pump2SwitchOff] = useState(false); // circuit 69
 
     // Transfer pumps
     const [isLeftOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:9', 'Bool', 1000);
-    const [leftOuterTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:9', 'Enum', 1000);
+    const [isLeftOuterTankPumpSwitchOff, setIsLeftOuterTankPumpSwitchOff] = useState(false); // circuit 70
     const [isLeftMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:10', 'Bool', 1000);
-    const [leftMidTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:10', 'Enum', 1000);
+    const [isLeftMidTankPumpFwdSwitchOff, setIsLeftMidTankPumpFwdSwitchOff] = useState(false); // circuit 71
     const [isLeftMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:11', 'Bool', 1000);
-    const [leftMidTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:11', 'Enum', 1000);
+    const [isLeftMidTankPumpAftSwitchOff, setIsLeftMidTankPumpAftSwitchOff] = useState(false); // circuit 72
     const [isLeftInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:12', 'Bool', 1000);
-    const [leftInnerTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:12', 'Enum', 1000);
+    const [isLeftInnerTankPumpFwdSwitchOff, setIsLeftInnerTankPumpFwdSwitchOff] = useState(false); // circuit 73
     const [isRightInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:13', 'Bool', 1000);
-    const [rightInnerTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:13', 'Enum', 1000);
+    const [isRightInnerTankPumpFwdSwitchOff, setIsRightInnerTankPumpFwdSwitchOff] = useState(false); // circuit 78
     const [isRightOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:14', 'Bool', 1000);
-    const [rightOuterTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:14', 'Enum', 1000);
+    const [isRightOuterTankPumpSwitchOff, setIsRightOuterTankPumpSwitchOff] = useState(false);  // circuit 75
     const [isRightMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:15', 'Bool', 1000);
-    const [rightMidTankPumpFwdSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:15', 'Enum', 1000);
+    const [isRightMidTankPumpFwdSwitchOff, setIsRightMidTankPumpFwdSwitchOff] = useState(false); // circuit 76
     const [isRightMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:16', 'Bool', 1000);
-    const [rightMidTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:16', 'Enum', 1000);
+    const [isRightMidTankPumpAftSwitchOff, setIsRightMidTankPumpAftSwitchOff] = useState(false); // circuit 77
     const [isLeftInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:17', 'Bool', 1000);
-    const [leftInnerTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:17', 'Enum', 1000);
+    const [isLeftInnerTankPumpAftSwitchOff, setIsLeftInnerTankPumpAftSwitchOff] = useState(false); // circuit 74
     const [isRightInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:18', 'Bool', 1000);
-    const [rightInnerTankPumpAftSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:18', 'Enum', 1000);
+    const [isRightInnerTankPumpAftSwitchOff, setIsRightInnerTankPumpAftSwitchOff] = useState(false); // circuit 79
 
     // Trim tank pumps
     const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
-    const [leftTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:19', 'Enum', 1000);
+    const [isLeftTrimTankPumpSwitchOff, setIsLeftTrimTankPumpSwitchOff] = useState(false); // circuit 80
     const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:20', 'Bool', 1000);
-    const [rightTrimTankPumpSwitch] = useSimVar('FUELSYSTEM PUMP SWITCH:20', 'Enum', 1000);
+    const [isRightTrimTankPumpSwitchOff, setIsRightTrimTankPumpSwitchOff] = useState(false); // circuit 81
+
+    useInterval(async () => {
+        SimVar.SetSimVarValue("BUS LOOKUP INDEX", "Number", 1).then(() => {
+            setIsFeed1Pump1SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:2", "Bool") === 0);
+            setIsFeed1Pump2SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:3", "Bool") === 0);
+            setIsFeed2Pump1SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:64", "Bool") === 0);
+            setIsFeed2Pump2SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:65", "Bool") === 0);
+            setIsFeed3Pump1SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:66", "Bool") === 0);
+            setIsFeed3Pump2SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:67", "Bool") === 0);
+            setIsFeed4Pump1SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:68", "Bool") === 0);
+            setIsFeed4Pump2SwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:69", "Bool") === 0);
+
+            setIsLeftOuterTankPumpSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:70", "Bool") === 0);
+            setIsLeftMidTankPumpFwdSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:71", "Bool") === 0);
+            setIsLeftMidTankPumpAftSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:72", "Bool") === 0);
+            setIsLeftInnerTankPumpFwdSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:73", "Bool") === 0);
+            setIsRightInnerTankPumpFwdSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:78", "Bool") === 0);
+            setIsRightOuterTankPumpSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:75", "Bool") === 0);
+            setIsRightMidTankPumpFwdSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:76", "Bool") === 0);
+            setIsRightMidTankPumpAftSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:77", "Bool") === 0);
+            setIsLeftInnerTankPumpAftSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:74", "Bool") === 0);
+            setIsRightInnerTankPumpAftSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:79", "Bool") === 0);
+
+            setIsLeftTrimTankPumpSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:80", "Bool") === 0);
+            setIsRightTrimTankPumpSwitchOff(SimVar.GetSimVarValue("CIRCUIT CONNECTION ON:81", "Bool") === 0);
+        }).catch(() => {
+            console.error("Failed to set BUS LOOKUP INDEX to 1");
+        });
+    }, 1000, { runOnStart: true });
 
     // Crossfeed valves
     const [crossFeed1ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:46', 'Percent over 100', 1000);
@@ -179,28 +217,28 @@ export const FuelPage = () => {
 
     const fwdGalleryPumps: PumpProps[] = [
         // Pump.9
-        { x: 84, y: 384, running: isLeftOuterTankPumpActive, hasFault: !leftOuterTankPumpSwitch, displayWhenInactive: showMore },
+        { x: 84, y: 384, running: isLeftOuterTankPumpActive, hasFault: isLeftOuterTankPumpSwitchOff, displayWhenInactive: showMore },
         // Pump.10
-        { x: 140, y: 384, running: isLeftMidTankPumpFwdActive, hasFault: !leftMidTankPumpFwdSwitch, displayWhenInactive: showMore },
+        { x: 140, y: 384, running: isLeftMidTankPumpFwdActive, hasFault: isLeftMidTankPumpFwdSwitchOff, displayWhenInactive: showMore },
         // Pump.12
-        { x: 232, y: 384, running: isLeftInnerTankPumpFwdActive, hasFault: !leftInnerTankPumpFwdSwitch, displayWhenInactive: showMore },
+        { x: 232, y: 384, running: isLeftInnerTankPumpFwdActive, hasFault: isLeftInnerTankPumpFwdSwitchOff, displayWhenInactive: showMore },
         // Pump.13
-        { x: 482, y: 384, running: isRightInnerTankPumpFwdActive, hasFault: !rightInnerTankPumpFwdSwitch, displayWhenInactive: showMore },
+        { x: 482, y: 384, running: isRightInnerTankPumpFwdActive, hasFault: isRightInnerTankPumpFwdSwitchOff, displayWhenInactive: showMore },
         // Pump.15
-        { x: 584, y: 384, running: isRightMidTankPumpFwdActive, hasFault: !rightMidTankPumpFwdSwitch, displayWhenInactive: showMore },
+        { x: 584, y: 384, running: isRightMidTankPumpFwdActive, hasFault: isRightMidTankPumpFwdSwitchOff, displayWhenInactive: showMore },
         // Pump.14
-        { x: 680, y: 384, running: isRightOuterTankPumpActive, hasFault: !rightOuterTankPumpSwitch, displayWhenInactive: showMore },
+        { x: 680, y: 384, running: isRightOuterTankPumpActive, hasFault: isRightOuterTankPumpSwitchOff, displayWhenInactive: showMore },
     ]
 
     const aftGalleryPumps: PumpProps[] = [
         // Pump.11
-        { x: 182, y: 452, running: isLeftMidTankPumpAftActive, hasFault: !leftMidTankPumpAftSwitch, displayWhenInactive: showMore },
+        { x: 182, y: 452, running: isLeftMidTankPumpAftActive, hasFault: isLeftMidTankPumpAftSwitchOff, displayWhenInactive: showMore },
         // Pump.16
-        { x: 274, y: 452, running: isLeftInnerTankPumpAftActive, hasFault: !leftInnerTankPumpAftSwitch, displayWhenInactive: showMore },
+        { x: 274, y: 452, running: isLeftInnerTankPumpAftActive, hasFault: isLeftInnerTankPumpAftSwitchOff, displayWhenInactive: showMore },
         // Pump.17
-        { x: 524, y: 452, running: isRightInnerTankPumpAftActive, hasFault: !rightInnerTankPumpAftSwitch, displayWhenInactive: showMore },
+        { x: 524, y: 452, running: isRightInnerTankPumpAftActive, hasFault: isRightInnerTankPumpAftSwitchOff, displayWhenInactive: showMore },
         // Pump.18
-        { x: 626, y: 452, running: isRightMidTankPumpAftActive, hasFault: !rightMidTankPumpAftSwitch, displayWhenInactive: showMore },
+        { x: 626, y: 452, running: isRightMidTankPumpAftActive, hasFault: isRightMidTankPumpAftSwitchOff, displayWhenInactive: showMore },
     ]
 
     const fwdGalleryTransferValves: FuelLineProps[] = [
@@ -361,9 +399,9 @@ export const FuelPage = () => {
                 <TankQuantity x={138} y={268} smallFont quantity={collectorCell1Weight} hasFault={isCollectorCell1NotFull} />
             )}
             {/* Feed tank 1 main pump */}
-            <Pump x={95} y={227} running={feed1Pump1Active} hasFault={!feed1Pump1Active} />
+            <Pump x={95} y={227} running={feed1Pump1Active} hasFault={isFeed1Pump1SwitchOff} />
             {/* Feed tank 1 standby pump. TODO actually deactivate the pump when the main one is active  */}
-            <Pump x={127} y={227} running={feed1Pump2Active && !feed1Pump1Active} hasFault={!feed1Pump2Active} displayWhenInactive={showMore} />
+            <Pump x={127} y={227} running={feed1Pump2Active && !feed1Pump1Active} hasFault={isFeed1Pump2SwitchOff} displayWhenInactive={showMore} />
 
             {/* Line.9 & Line.10 & Line.17 -> Engine1LPValve (via Junction.1) = ALWAYS ON */}
             <FuelLine x1={111} y1={212} x2={111} y2={164} active displayWhenInactive={showMore} />
@@ -385,9 +423,9 @@ export const FuelPage = () => {
                 <TankQuantity x={310} y={252} smallFont quantity={collectorCell2Weight} hasFault={isCollectorCell2NotFull} />
             )}
             {/* Feed tank 2 main pump */}
-            <Pump x={258} y={208} running={feed2Pump1Active} hasFault={!feed2Pump1Active} />
+            <Pump x={258} y={208} running={feed2Pump1Active} hasFault={isFeed2Pump1SwitchOff} />
             {/* Feed tank 2 standby pump. TODO actually deactivate the pump when the main one is active */}
-            <Pump x={290} y={208} running={feed2Pump2Active && !feed2Pump1Active} hasFault={!feed2Pump2Active} displayWhenInactive={showMore} />
+            <Pump x={290} y={208} running={feed2Pump2Active && !feed2Pump1Active} hasFault={isFeed2Pump2SwitchOff} displayWhenInactive={showMore} />
 
             {/* Line.11 & Line.12 & Line.18 -> Engine2LPValve (via Junction.2) = ALWAYS ON */}
             <FuelLine x1={273} y1={191} x2={273} y2={137} active displayWhenInactive={showMore} />
@@ -404,9 +442,9 @@ export const FuelPage = () => {
                 <TankQuantity x={518} y={252} smallFont quantity={collectorCell3Weight} hasFault={isCollectorCell3NotFull} />
             )}
             {/* Feed tank 3 main pump */}
-            <Pump x={476} y={208} running={feed3Pump1Active} hasFault={!feed3Pump1Active} />
+            <Pump x={476} y={208} running={feed3Pump1Active} hasFault={isFeed3Pump1SwitchOff} />
             {/* Feed tank 3 standby pump. TODO actually deactivate the pump when the main one is active */}
-            <Pump x={508} y={208} running={feed3Pump2Active && !feed3Pump1Active} hasFault={!feed3Pump2Active} displayWhenInactive={showMore} />
+            <Pump x={508} y={208} running={feed3Pump2Active && !feed3Pump1Active} hasFault={isFeed3Pump2SwitchOff} displayWhenInactive={showMore} />
 
             {/* Line.13 & Line.14 & Line.19 -> Engine3LPValve (via Junction.3) = ALWAYS ON */}
             <FuelLine x1={493} y1={191} x2={493} y2={137} active displayWhenInactive={showMore} />
@@ -428,9 +466,9 @@ export const FuelPage = () => {
                 <TankQuantity x={690} y={268} smallFont quantity={collectorCell4Weight} hasFault={isCollectorCell4NotFull} />
             )}
             {/* Feed tank 4 main pump */}
-            <Pump x={639} y={227} running={feed4Pump1Active} hasFault={!feed4Pump1Active} />
+            <Pump x={639} y={227} running={feed4Pump1Active} hasFault={isFeed4Pump1SwitchOff} />
             {/* Feed tank 4 standby pump. TODO actually deactivate the pump when the main one is active */}
-            <Pump x={671} y={227} running={feed4Pump2Active && !feed4Pump1Active} hasFault={!feed4Pump2Active} displayWhenInactive={showMore} />
+            <Pump x={671} y={227} running={feed4Pump2Active && !feed4Pump1Active} hasFault={isFeed4Pump2SwitchOff} displayWhenInactive={showMore} />
 
             {/* Line.15 & Line.16 & Line.20 -> Engine4LPValve (via Junction.4) = ALWAYS ON */}
             <FuelLine x1={655} y1={212} x2={655} y2={164} active displayWhenInactive={showMore} />
@@ -546,9 +584,9 @@ export const FuelPage = () => {
                 </g>
 
                 <FuelLine x1={298} y1={596} x2={298} y2={568} active={false} displayWhenInactive={showMore} />
-                <Pump x={298} y={610} running={isLeftTrimTankPumpActive} hasFault={!leftTrimTankPumpSwitch} displayWhenInactive={showMore} />
+                <Pump x={298} y={610} running={isLeftTrimTankPumpActive} hasFault={isLeftTrimTankPumpSwitchOff} displayWhenInactive={showMore} />
                 <FuelLine x1={468} y1={596} x2={468} y2={568} active={false} displayWhenInactive={showMore} />
-                <Pump x={468} y={610} running={isRightTrimTankPumpActive} hasFault={!rightTrimTankPumpSwitch} displayWhenInactive={showMore} />
+                <Pump x={468} y={610} running={isRightTrimTankPumpActive} hasFault={isRightTrimTankPumpSwitchOff} displayWhenInactive={showMore} />
 
                 <FuelLine x1={298} y1={568} x2={468} y2={568} active={false} displayWhenInactive={showMore} />
 
