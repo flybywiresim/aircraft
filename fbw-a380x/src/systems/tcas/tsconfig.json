@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "node",
-    "target": "ESNext",
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
     "noEmit": true,
     "typeRoots": [
       "../../typings",

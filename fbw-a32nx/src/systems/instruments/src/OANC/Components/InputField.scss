@@ -1,0 +1,120 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../../Common/definitions";
+
+$display-mfd-dark-grey: magenta;
+$display-light-grey: magenta;
+
+.mfd-input-field-root {
+    display: flex;
+    flex-direction: row;
+    justify-items: flex-start;
+    align-items: baseline;
+}
+
+.mfd-input-field-container {
+    display: flex;
+    flex-direction: row;
+    justify-items: center;
+    align-items: baseline;
+    padding: 4px 2px;
+    background-color: $display-background;
+    border: 2px inset $display-light-grey;
+    overflow: visible;
+    height: 37px;
+}
+
+.mfd-input-field-container.inactive {
+    border: 2px inset transparent !important;
+    background-color: $display-background !important;
+}
+
+.mfd-input-field-container.disabled {
+    background-color: $display-mfd-dark-grey;
+}
+
+.mfd-input-field-container:hover {
+    border: 2px inset $display-cyan;
+}
+
+.mfd-input-field-text-input {
+    background-color: $display-background;
+    border: none;
+    font-family: "Ecam", monospace;
+    font-size: 27px;
+    line-height: 27px;
+    color: $display-cyan;
+    padding: 0px;
+}
+
+.mfd-input-field-text-input.inactive {
+    background-color: $display-background !important;
+    color: $display-green !important;
+}
+
+.mfd-input-field-text-input.tmpy {
+    color: $display-yellow;
+}
+
+.mfd-input-field-text-input.validating {
+    color: $display-light-grey;
+}
+
+.mfd-input-field-text-input.disabled {
+    background-color: $display-mfd-dark-grey;
+    color: $display-light-grey;
+}
+
+.mfd-input-field-text-input.mandatory {
+    color: $display-amber;
+}
+
+.mfd-input-field-text-input.valueSelected {
+    background-color: $display-cyan;
+    color: $display-background;
+}
+
+.mfd-input-field-text-input.tmpy.valueSelected {
+    background-color: $display-yellow;
+    color: $display-background;
+}
+
+.mfd-input-field-text-input.editing {
+    font-size: 27px !important;
+}
+
+.mfd-input-field-text-input.computedByFms {
+    font-size: 22px;
+}
+
+.mfd-input-field-caret {
+    animation: blinking 1s step-start infinite;
+    height: 27px;
+    width: 18px;
+    background-color: $display-cyan;
+    color: $display-background;
+    font-family: "Ecam", monospace;
+    font-size: 27px;
+    text-align: center;
+    vertical-align: center;
+}
+
+@keyframes blinking {
+    50% {
+        background-color: $display-background;
+        color: $display-cyan;
+    }
+}
+
+.mfd-input-field-unit {
+    align-self: center;
+}
+
+.mfd-input-field-text-input-container {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    align-self: center;
+    align-items: center;
+}

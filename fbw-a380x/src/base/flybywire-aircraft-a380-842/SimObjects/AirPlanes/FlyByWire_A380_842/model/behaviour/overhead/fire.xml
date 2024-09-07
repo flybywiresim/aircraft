@@ -1,0 +1,144 @@
+<!-- Copyright (c) 2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_FIRE_TEST_LIGHTS">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool)</SEQ2_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
+        <UseTemplate Name="FBW_Push_Held">
+            <HOLD_SIMVAR>L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED</HOLD_SIMVAR>
+            <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_CARGOSMOKE_TEST_BUTTON">
+        <UseTemplate Name="FBW_Push_Held">
+            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_AGENT">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE>(L:A32NX_FIRE_SQUIB_#AGENT_ID#_#TYPE#_#ID#_IS_ARMED, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_SQUIB_#AGENT_ID#_#TYPE#_#ID#_IS_DISCHARGED, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>1
+                (&gt;L:A32NX_OVHD_FIRE_AGENT_#AGENT_ID#_#TYPE#_#ID#_IS_PRESSED)</LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE>0
+                (&gt;L:A32NX_OVHD_FIRE_AGENT_#AGENT_ID#_#TYPE#_#ID#_IS_PRESSED)</LEFT_LEAVE_CODE>
+            <MOMENTARY/>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_BUTTON">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <LEFT_LEAVE_CODE/>
+            <LEFT_SINGLE_CODE/>
+            <ANIM_DURATION>0.3</ANIM_DURATION>
+            <TOGGLE_VAR>L:A32NX_FIRE_BUTTON_#TYPE##ID#</TOGGLE_VAR>
+            <EMISSIVE_POWERED>1</EMISSIVE_POWERED>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+
+            <Update Frequency="10">
+                (#TOGGLE_VAR#)
+                if{
+                (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
+                } els{
+                (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
+                }
+            </Update>
+
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <Condition Check="OVERRIDE_ANIM_CODE">
+                    <True>
+                        <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                    </True>
+                    <False>
+                        <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <EMISSIVE_CODE>(L:A32NX_FIRE_DETECTED_#BUTTON_ID#, Bool) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_POWERED# and</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) 1 == if{
+                        (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
+                    }
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE/>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>firepb</WWISE_EVENT>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_GUARD">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <LEFT_SINGLE_CODE/>
+            <LEFT_LEAVE_CODE/>
+            <ANIM_DURATION>0.3</ANIM_DURATION>
+
+            <TOGGLE_VAR>L:A32NX_FIRE_GUARD_#TYPE##ID#</TOGGLE_VAR>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+
+            <Update Frequency="10">
+                (#TOGGLE_VAR#) if{
+                    (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
+                } els{
+                    (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
+                }
+            </Update>
+
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <Condition Check="OVERRIDE_ANIM_CODE">
+                    <True>
+                        <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                    </True>
+                    <False>
+                        <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_FIRE_BUTTON_#TYPE##ID#) 0 == if{
+                        (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
+                    } #LEFT_SINGLE_CODE#
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE/>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>firepbguard</WWISE_EVENT>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

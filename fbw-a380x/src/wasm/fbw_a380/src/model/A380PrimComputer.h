@@ -38,7 +38,7 @@ class A380PrimComputer final
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_MATLABFunction_A380PrimComputer_j_T {
+  struct rtDW_MATLABFunction_A380PrimComputer_o_T {
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };
@@ -67,14 +67,15 @@ class A380PrimComputer final
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     boolean_T Delay1_DSTATE_b;
-    boolean_T Delay_DSTATE_f;
+    boolean_T Delay2_DSTATE;
+    boolean_T Delay3_DSTATE;
     boolean_T Delay_DSTATE_e;
     uint8_T is_active_c28_A380PrimComputer;
     uint8_T is_c28_A380PrimComputer;
     boolean_T Memory_PreviousInput;
-    boolean_T Memory_PreviousInput_j;
+    boolean_T Memory_PreviousInput_a;
     boolean_T Memory_PreviousInput_d;
-    boolean_T Memory_PreviousInput_jw;
+    boolean_T Memory_PreviousInput_j;
     boolean_T icLoad;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
@@ -87,11 +88,11 @@ class A380PrimComputer final
     boolean_T eventTime_not_empty_e;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_dmh;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_ky;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_dmh;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_ky;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_al4;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_nu;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_g4;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_nu;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_g4;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_g24;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_lf;
@@ -104,10 +105,10 @@ class A380PrimComputer final
     rtDW_MATLABFunction_A380PrimComputer_c_T sf_MATLABFunction_nj;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_kq;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_cx;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_jj;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_ej;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_ja;
-    rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_mb;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_ny;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_gc;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_m1;
+    rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_ff;
     rtDW_LagFilter_A380PrimComputer_T sf_LagFilter_a;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_ph;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_cda;
@@ -264,6 +265,8 @@ class A380PrimComputer final
     real_T BitfromLabel3_bit_g;
     real_T BitfromLabel4_bit_e;
     real_T BitfromLabel5_bit_a;
+    real_T BitfromLabel_bit_l;
+    real_T BitfromLabel1_bit_cm;
     real_T BitfromLabel_bit_e;
     real_T BitfromLabel1_bit_d;
     real_T BitfromLabel2_bit_pt;
@@ -272,7 +275,7 @@ class A380PrimComputer final
     real_T BitfromLabel_bit_g;
     real_T BitfromLabel6_bit_l;
     real_T BitfromLabel5_bit_as;
-    real_T BitfromLabel_bit_l;
+    real_T BitfromLabel_bit_la;
     real_T BitfromLabel_bit_p;
     real_T BitfromLabel1_bit_h;
     real_T BitfromLabel2_bit_fv;
@@ -293,31 +296,30 @@ class A380PrimComputer final
     real_T CompareToConstant1_const;
     real_T CompareToConstant2_const;
     real_T CompareToConstant_const_n;
-    real_T CompareToConstant23_const;
-    real_T CompareToConstant21_const;
-    real_T CompareToConstant22_const;
-    real_T CompareToConstant24_const;
-    real_T CompareToConstant_const_m;
-    real_T CompareToConstant15_const;
-    real_T CompareToConstant1_const_p;
-    real_T CompareToConstant2_const_i;
-    real_T CompareToConstant3_const_e;
-    real_T CompareToConstant4_const_c;
     real_T CompareToConstant13_const;
+    real_T CompareToConstant9_const;
+    real_T CompareToConstant10_const;
     real_T CompareToConstant14_const;
+    real_T CompareToConstant_const_m;
+    real_T CompareToConstant26_const;
+    real_T CompareToConstant11_const;
+    real_T CompareToConstant27_const;
     real_T CompareToConstant5_const;
     real_T CompareToConstant6_const;
-    real_T CompareToConstant19_const;
-    real_T CompareToConstant20_const;
-    real_T CompareToConstant10_const;
-    real_T CompareToConstant7_const;
+    real_T CompareToConstant12_const;
+    real_T CompareToConstant15_const;
+    real_T CompareToConstant29_const;
     real_T CompareToConstant16_const;
     real_T CompareToConstant17_const;
     real_T CompareToConstant18_const;
+    real_T CompareToConstant7_const;
     real_T CompareToConstant8_const;
-    real_T CompareToConstant9_const;
+    real_T CompareToConstant3_const_n;
+    real_T CompareToConstant4_const_k;
+    real_T CompareToConstant1_const_a;
+    real_T CompareToConstant2_const_k;
     real_T CompareToConstant_const_c;
-    real_T CompareToConstant1_const_pc;
+    real_T CompareToConstant1_const_p;
     real_T CompareToConstant_const_m4;
     real_T CompareToConstant_const_f;
     real_T CompareToConstant2_const_f;
@@ -417,8 +419,8 @@ class A380PrimComputer final
     a380_pitch_efcs_law EnumeratedConstant_Value_b;
     real32_T CompareToConstant_const_ll;
     boolean_T SRFlipFlop_initial_condition;
-    boolean_T SRFlipFlop_initial_condition_c;
     boolean_T SRFlipFlop1_initial_condition;
+    boolean_T SRFlipFlop1_initial_condition_i;
     boolean_T SRFlipFlop_initial_condition_i;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
@@ -431,12 +433,13 @@ class A380PrimComputer final
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
     boolean_T ConfirmNode_isRisingEdge_c;
-    boolean_T PulseNode3_isRisingEdge;
-    boolean_T PulseNode2_isRisingEdge;
-    boolean_T PulseNode1_isRisingEdge_c;
-    boolean_T PulseNode_isRisingEdge_n;
+    boolean_T PulseNode7_isRisingEdge;
+    boolean_T PulseNode6_isRisingEdge;
+    boolean_T PulseNode5_isRisingEdge;
+    boolean_T PulseNode4_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_n;
-    boolean_T PulseNode2_isRisingEdge_g;
+    boolean_T PulseNode2_isRisingEdge;
+    uint8_T CompareToConstant19_const;
     prim_outputs out_Y0;
     base_prim_out_bus Constant4_Value;
     real_T Constant5_Value;
@@ -555,12 +558,12 @@ class A380PrimComputer final
     boolean_T Logic_table[16];
     boolean_T Logic_table_h[16];
     boolean_T Delay1_InitialCondition_n;
-    boolean_T Delay_InitialCondition_d;
+    boolean_T Delay2_InitialCondition;
+    boolean_T Delay3_InitialCondition;
     boolean_T Delay_InitialCondition_o;
     boolean_T Logic_table_j[16];
     boolean_T Logic_table_n[16];
     boolean_T reset_Value_f;
-    boolean_T Constant7_Value_n;
     boolean_T reset_Value_l;
     boolean_T Constant1_Value_f;
     boolean_T Constant_Value_ba;
@@ -615,9 +618,9 @@ class A380PrimComputer final
   static void A380PrimComputer_LagFilter_Reset(rtDW_LagFilter_A380PrimComputer_T *localDW);
   static void A380PrimComputer_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_A380PrimComputer_T *localDW);
-  static void A380PrimComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380PrimComputer_j_T *localDW);
-  static void A380PrimComputer_MATLABFunction_m(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_A380PrimComputer_j_T *localDW);
+  static void A380PrimComputer_MATLABFunction_c_Reset(rtDW_MATLABFunction_A380PrimComputer_o_T *localDW);
+  static void A380PrimComputer_MATLABFunction_f(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_A380PrimComputer_o_T *localDW);
   static void A380PrimComputer_MATLABFunction_ge_Reset(rtDW_MATLABFunction_A380PrimComputer_hg_T *localDW);
   static void A380PrimComputer_MATLABFunction_c(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputer_hg_T *localDW);
