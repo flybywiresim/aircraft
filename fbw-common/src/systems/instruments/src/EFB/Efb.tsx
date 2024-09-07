@@ -55,7 +55,7 @@ import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { setAircraftChecklists, addTrackingChecklists } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
-import './Assets/Efb.scss';
+// './Assets/Efb.scss' is imported by the aircraft EFB instrument the wraps this file
 import './Assets/Theme.css';
 import './Assets/Slider.scss';
 
