@@ -4186,6 +4186,21 @@
             </UseTemplate>
 
             <CameraTitle>PA</CameraTitle>
+
+            <!-- Screw on bottom-left corner of FCU to indicate build edition. -->
+            <UseTemplate Name="Asobo_GT_Anim">
+                <ANIM_NAME>A32NX_FCU_SCREW_EDITION</ANIM_NAME>
+                <ANIM_LENGTH>2</ANIM_LENGTH>
+                <ANIM_DURATION>1</ANIM_DURATION>
+                <!-- screw slot is vertical for dev, horizontal for stable, or 45 deg for unknown/other -->
+                <ANIM_CODE>
+                    (L:FBW_BUILD_EDITION, Bool) s0 2 == if{
+                        0
+                    } els{
+                        2 1 1 l0 == ?
+                    }
+                </ANIM_CODE>
+            </UseTemplate>
         </Component>
 
         <Component ID="EFIS_L">

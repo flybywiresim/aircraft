@@ -4411,6 +4411,17 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 ## Non-Systems Related
 
+- `L:FBW_BUILD_EDITION`
+    - Enum
+    - Read-Only
+    - Current aircraft build edition (same meaning as package.json edition property).
+      Description | Value
+      ------------ | -
+      Unknown      | 0
+      Stable       | 1
+      Development  | 2
+      Experimental | 3
+
 - `L:FBW_PILOT_SEAT`
   - Enum
   - Which seat the user/pilot occupies in the flight deck.
