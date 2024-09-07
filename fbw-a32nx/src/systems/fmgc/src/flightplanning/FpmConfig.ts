@@ -43,7 +43,7 @@ export class FpmConfigs {
     TMPY_ON_INSERT_WAYPOINT: true,
     ALLOW_REVISIONS_ON_TMPY: true,
     ALLOW_NON_ACTIVE_FIX_INFOS: false,
-    MAX_NUM_LEGS: 250,
+    MAX_NUM_LEGS: 200,
     CHECK_VIA_COMPATIBILITY: true,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: true,
   };
