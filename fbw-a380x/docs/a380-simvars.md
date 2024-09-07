@@ -7,6 +7,7 @@
   - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Auto Flight System ATA 22](#afs-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
+  - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
@@ -514,6 +515,114 @@
         - 3
         - 4
 
+## Fire and Smoke Protection ATA 26
+
+- A32NX_FIRE_FDU_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the Fire Detection Unit (assumed)
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Fire detected ENG 1                                  |
+      | 12  | Fire detected ENG 2                                  |
+      | 13  | Fire detected ENG 3                                  |
+      | 14  | Fire detected ENG 4                                  |
+      | 15  | Fire detected APU                                    |
+      | 16  | Fire detected MLG                                    |
+      | 17  | Not used                                             |
+      | 18  | ENG 1 LOOP A fault                                   |
+      | 19  | ENG 1 LOOP B fault                                   |
+      | 20  | ENG 2 LOOP A fault                                   |
+      | 21  | ENG 2 LOOP B fault                                   |
+      | 22  | ENG 3 LOOP A fault                                   |
+      | 23  | ENG 3 LOOP B fault                                   |
+      | 24  | ENG 4 LOOP A fault                                   |
+      | 25  | ENG 4 LOOP B fault                                   |
+      | 26  | APU LOOP A fault                                     |
+      | 27  | APU LOOP B fault                                     |
+      | 28  | MLG LOOP A fault                                     |
+      | 29  | MLG LOOP B fault                                     |
+
+- A32NX_{zone}_ON_FIRE
+    - Bool
+    - True when a fire is present in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_FIRE_DETECTED_ENG{number}
+    - Bool
+    - True when fire is detected on engine
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_DETECTED_{zone}
+    - Bool
+    - True when fire is detected in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_OVHD_FIRE_AGENT_{bottle}_{zone}_{number}_IS_PRESSED
+    - Bool
+    - True when the overhead pushbutton for the corresponding fire extinguishing bottle agent is pressed. Momentary PB. Note APU uses 1_APU_1
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_ARMED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle squibs are armed.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_DISCHARGED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle has been discharged into the engine.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_BUTTON_ENG{number}
+    - Bool
+    - True when the overhead fire pushbutton has been released
+
+- A32NX_FIRE_BUTTON_APU
+    - Bool
+    - True when the overhead apu pushbutton has been released
+
+- A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED
+    - Bool
+    - True when the overhead fire test pushbutton is pressed
+
+
 ## Flaps / Slats (ATA 27)
 
 - A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
@@ -541,6 +650,7 @@
       | 27  | Spoiler Limit Demand                     |
       | 28  | Slat System Jam                          |
       | 29  | Flap System Jam                          |
+
 
 ## Indicating-Recording ATA 31
 
@@ -641,9 +751,9 @@
     - {side} = L or R
     - | State | Value |
       |-------|-------|
-      | WPT   | 0     |
-      | VORD  | 1     |
-      | NDB   | 2     |
+      | WPT   | 1     |
+      | VORD  | 2     |
+      | NDB   | 3     |
 
 - A380X_EFIS_{side}_ACTIVE_OVERLAY
     - Boolean
@@ -714,6 +824,11 @@
 - A32NX_APU_FUEL_USED
   - `Arinc429Word<Mass>`
   - The APU fuel used, in kilograms
+
+## Engines ATA 70
+  - L:A32NX_OVHD_FADEC_{ENG}
+  - The powered status of the associated engine's FADEC dependant on the button on the OVHD
+  - {ENG} = 1, 2, 3, 4
 
 ## Hydraulics
 
