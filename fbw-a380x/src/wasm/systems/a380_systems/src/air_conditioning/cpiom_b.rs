@@ -133,6 +133,13 @@ impl CoreProcessingInputOutputModuleB {
         ocsm: [&impl OcsmShared; 4],
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
+        let ocsm_to_use = match self.cpiom_id {
+            CpiomId::B1 => 1,
+            CpiomId::B2 => 3,
+            CpiomId::B3 => 0,
+            CpiomId::B4 => 2,
+        };
+
         self.cpcs_app.update(
             context,
             adirs,
@@ -140,6 +147,7 @@ impl CoreProcessingInputOutputModuleB {
             lgciu,
             pressurization_overhead,
             ocsm,
+            ocsm_to_use,
         );
     }
 
@@ -920,13 +928,14 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         lgciu: [&impl LgciuWeightOnWheels; 2],
         press_overhead: &impl PressurizationOverheadShared,
         ocsm: [&impl OcsmShared; 4],
+        ocsm_to_use: usize,
     ) {
         self.adirs_data_is_valid = [1, 2, 3]
             .iter()
             .any(|&adr| adirs.ambient_static_pressure(adr).is_normal_operation());
 
-        self.cabin_pressure = ocsm[0].cabin_pressure(); // TODO Add check for failure
-        self.cabin_delta_pressure = ocsm[0].cabin_delta_pressure(); // TODO Add check for failure
+        self.cabin_pressure = ocsm[ocsm_to_use].cabin_pressure();
+        self.cabin_delta_pressure = ocsm[ocsm_to_use].cabin_delta_pressure();
         self.outflow_valve_open_amount = ocsm.map(|ocsm| ocsm.outflow_valve_open_amount());
 
         if let Some(manager) = self.pressure_schedule_manager.take() {
@@ -943,7 +952,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         let target_vertical_speed = self.calculate_cabin_target_vs(context);
         self.cabin_target_vertical_speed
             .update(context.delta(), target_vertical_speed);
-        self.cabin_target_vertical_speed_ocsm = ocsm[0].cabin_target_vertical_speed(); // TODO Add check for failure
+        self.cabin_target_vertical_speed_ocsm = ocsm[ocsm_to_use].cabin_target_vertical_speed();
         self.cabin_target_altitude = self.calculate_cabin_target_altitude(ocsm);
 
         let new_reference_pressure = self.calculate_reference_pressure(adirs, press_overhead);
@@ -1050,7 +1059,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     }
 
     fn calculate_cabin_target_vs(&mut self, context: &UpdateContext) -> Velocity {
-        let error_margin = Pressure::new::<hectopascal>(1.);
+        let error_margin = Pressure::new::<hectopascal>(10.);
 
         match self.pressure_schedule_manager {
             Some(PressureScheduleManager::Ground(_)) => {
@@ -1475,12 +1484,6 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
                 .get::<foot_per_minute>(),
             ssm,
         );
-        writer.write_arinc429(
-            &self.cabin_vs_target_id,
-            self.cabin_vertical_speed_out(self.cabin_target_vertical_speed_ocsm)
-                .get::<foot_per_minute>(),
-            ssm,
-        );
         for (id, ofv) in self.outflow_valve_open_percentage_id.iter().enumerate() {
             writer.write_arinc429(
                 ofv,
@@ -1488,6 +1491,13 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
                 ssm,
             );
         }
+        // We don't send target vs nor delta p when we don't have adirs data
+        writer.write_arinc429(
+            &self.cabin_vs_target_id,
+            self.cabin_vertical_speed_out(self.cabin_target_vertical_speed_ocsm)
+                .get::<foot_per_minute>(),
+            delta_p_ssm,
+        );
         writer.write_arinc429(
             &self.cabin_delta_pressure_id,
             self.cabin_delta_p_out(),
