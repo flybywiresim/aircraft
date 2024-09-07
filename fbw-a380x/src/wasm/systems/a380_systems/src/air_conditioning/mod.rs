@@ -179,7 +179,6 @@ impl A380AirConditioning {
             });
             self.a380_pressurization_system.update(
                 &context.with_delta(cur_time_step),
-                // FIXME
                 &self.cpiom_b,
                 adirs,
                 pressurization_overhead,

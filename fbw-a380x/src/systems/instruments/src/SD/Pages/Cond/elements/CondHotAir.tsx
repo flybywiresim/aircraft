@@ -41,7 +41,7 @@ const CondHotAir: FC<CondHotAirProps> = ({ x, y, hotAir }) => {
         <g id={`CondHotAir-${hotAir}`}>
             <path className={`${anyPackValveOpen ? 'Green' : 'Amber'} Line`} d={`M${x},${y} l 0,-30`} />
             <path className={`${hotAirValveOpen ? 'Green' : 'Amber'} Line`} d={`M${x},${y - 58} l 0,-16`} />
-            <Triangle x={x} y={y - 90} colour={hotAirValveOpen  ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.1} />
+            <Triangle x={x} y={y - 90} colour={hotAirValveOpen ? 'Green' : 'Amber'} fill={0} orientation={0} scale={1.1} />
             <Valve x={x} y={y - 39} radius={17} css={`SW2 ${(hotAirValveOpen && !hotAirValveDisagrees) ? 'Green' : 'Amber'}`} position={hotAirValveOpen ? 'V' : 'H'} sdacDatum />
         </g>
     )
