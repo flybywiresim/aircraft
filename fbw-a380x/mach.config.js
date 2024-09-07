@@ -37,7 +37,9 @@ module.exports = {
 
         reactInstrument('BAT'),
         reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
+        reactInstrument('ISISlegacy'),
         reactInstrument('OIT'),
+        reactInstrument('RTPI'),
         reactInstrument('SD'),
     ],
 };
@@ -51,7 +53,7 @@ function msfsAvionicsInstrument(name, folder = name) {
             templateId: `A380X_${name}`,
             mountElementId: `${name}_CONTENT`,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js', '/JS/fbw-a32nx/A32NX_Util.js'],
+            imports: ['/JS/dataStorage.js', '/JS/fbw-a380x/A32NX_Util.js'],
         },
     };
 }

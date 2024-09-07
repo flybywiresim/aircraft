@@ -18,9 +18,13 @@ import {
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ConsumerSubject, EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 
-interface NavRadioTuningStatus {
+export interface NavRadioTuningStatus {
   frequency: number | null;
   ident: string | null;
+  /**
+   * Whether either the frequency or ident was set manually by the pilot.
+   * Whether it was manually set by frequency or ident can be determined by the presence of a facility.
+   */
   manual: boolean;
   facility?: VhfNavaid | NdbNavaid | IlsNavaid;
 }
@@ -619,6 +623,14 @@ export class NavaidTuner {
     return this.navaidSelectionManager.deselectedNavaids;
   }
 
+  /**
+   * Sets the manually (pilot) selected VOR
+   * @param index Index of the VOR receiver to set
+   * @param vor Any of:
+   *   - A VHF navaid if selected by ident
+   *   - A frequency if selected by frequency
+   *   - null to reset the selection
+   */
   setManualVor(index: 1 | 2, vor: VhfNavaid | number | null): void {
     const vorStatus = this.vorTuningStatus[index - 1];
     if (vor === null) {
@@ -646,13 +658,20 @@ export class NavaidTuner {
   /**
    * Set a VOR course
    * @param index Index of the receiver
-   * @param course null to clear
+   * @param course The course in degrees (must be an integral value), or null to clear.
    */
   setVorCourse(index: 1 | 2, course: number | null) {
     const vorStatus = this.vorTuningStatus[index - 1];
     vorStatus.course = course;
   }
 
+  /**
+   * Sets the manually (pilot) selected ILS
+   * @param ils Any of:
+   *   - A VHF navaid if selected by ident
+   *   - A frequency if selected by frequency
+   *   - null to reset the selection
+   */
   async setManualIls(ils: IlsNavaid | number | null): Promise<void> {
     for (const mmrStatus of this.mmrTuningStatus) {
       if (ils === null) {
