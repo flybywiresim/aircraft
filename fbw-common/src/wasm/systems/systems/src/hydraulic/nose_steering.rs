@@ -111,6 +111,8 @@ pub struct SteeringActuator {
     actuator_area: Area,
 
     reference_pressure_for_max_speed: Pressure,
+
+    is_steered_by_tug: bool,
 }
 impl SteeringActuator {
     const MIN_PRESSURE_ALLOWING_STEERING_PSI: f64 = 300.;
@@ -125,14 +127,16 @@ impl SteeringActuator {
 
     pub fn new(
         context: &mut InitContext,
+        wheel_id: &str,
         max_half_angle: Angle,
         nominal_speed: AngularVelocity,
         actuator_diameter: Length,
         angular_to_linear_ratio: Ratio,
         reference_pressure_for_max_speed: Pressure,
+        is_steered_by_tug: bool,
     ) -> Self {
         Self {
-            position_id: context.get_identifier("NOSE_WHEEL_POSITION_RATIO".to_owned()),
+            position_id: context.get_identifier(format!("{}_POSITION_RATIO", wheel_id)),
 
             current_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::CURRENT_SPEED_FILTER_TIMECONST,
@@ -152,6 +156,8 @@ impl SteeringActuator {
                 * (actuator_diameter / 2.),
 
             reference_pressure_for_max_speed,
+
+            is_steered_by_tug,
         }
     }
 
@@ -163,7 +169,7 @@ impl SteeringActuator {
         pushback_tug: &impl Pushback,
         bypass_pin: &BypassPin,
     ) {
-        if !bypass_pin.is_nose_wheel_steering_pin_inserted() {
+        if !bypass_pin.is_nose_wheel_steering_pin_inserted() || !self.is_steered_by_tug {
             let limited_requested_angle = steering_controller
                 .requested_position()
                 .min(self.max_half_angle)
@@ -176,6 +182,14 @@ impl SteeringActuator {
             self.update_speed_position_during_pushback(pushback_tug);
         }
 
+        if !self.is_steered_by_tug {
+            println!(
+                "BW STEERING ANGLE {:.2} RATIO {:.2} PRESSURE {:.0}",
+                self.current_position.get::<degree>(),
+                self.position_normalized().get::<ratio>(),
+                section_pressure.pressure().get::<psi>()
+            );
+        }
         self.update_flow(context, bypass_pin);
     }
 
@@ -677,11 +691,13 @@ mod tests {
     fn steering_actuator(context: &mut InitContext) -> SteeringActuator {
         SteeringActuator::new(
             context,
+            "NOSE_WHEEL",
             Angle::new::<degree>(75.),
             AngularVelocity::new::<radian_per_second>(0.35),
             Length::new::<meter>(0.05),
             Ratio::new::<ratio>(0.15),
             Pressure::new::<psi>(2000.),
+            true,
         )
     }
 

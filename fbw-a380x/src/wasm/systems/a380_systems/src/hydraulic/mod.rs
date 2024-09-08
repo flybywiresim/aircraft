@@ -32,7 +32,8 @@ use systems::{
             LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
         nose_steering::{
-            SteeringActuator, SteeringAngleLimiter, SteeringController, SteeringRatioToAngle,
+            Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
+            SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
         pushback::PushbackTug,
@@ -1641,29 +1642,35 @@ impl A380Hydraulic {
         A380Hydraulic {
             nose_steering: SteeringActuator::new(
                 context,
+                "NOSE_WHEEL",
                 Angle::new::<degree>(75.),
                 AngularVelocity::new::<radian_per_second>(0.2618), // Reference is 15 deg/s
                 Length::new::<meter>(0.11), // Diameter of 0.11 gives correct A380 flow of around 35 lpm at full speed
                 Ratio::new::<ratio>(0.18),
                 Pressure::new::<psi>(4000.),
+                true,
             ),
 
             body_wheel_steering_left: SteeringActuator::new(
                 context,
+                "LEFT_BODY_STEERING",
                 Angle::new::<degree>(15.),
                 AngularVelocity::new::<radian_per_second>(0.07854), // Reference is 4.5 deg/s
                 Length::new::<meter>(0.11),                         // TODO
                 Ratio::new::<ratio>(0.18),                          // TODO
                 Pressure::new::<psi>(4000.),
+                false,
             ),
 
             body_wheel_steering_right: SteeringActuator::new(
                 context,
+                "RIGHT_BODY_STEERING",
                 Angle::new::<degree>(15.),
                 AngularVelocity::new::<radian_per_second>(0.07854), // Reference is 4.5 deg/s
                 Length::new::<meter>(0.11),                         // TODO
                 Ratio::new::<ratio>(0.18),                          // TODO
                 Pressure::new::<psi>(4000.),
+                false,
             ),
 
             core_hydraulic_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
@@ -2244,6 +2251,21 @@ impl A380Hydraulic {
             &self.bypass_pin,
         );
 
+        self.body_wheel_steering_left.update(
+            context,
+            self.yellow_circuit.system_section(),
+            self.brake_steer_computer.left_body_steering_controller(),
+            &self.pushback_tug,
+            &self.bypass_pin,
+        );
+        self.body_wheel_steering_right.update(
+            context,
+            self.yellow_circuit.system_section(),
+            self.brake_steer_computer.right_body_steering_controller(),
+            &self.pushback_tug,
+            &self.bypass_pin,
+        );
+
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.brake_steer_computer.update(
             context,
@@ -2257,6 +2279,7 @@ impl A380Hydraulic {
             adirs,
             self.left_spoilers.ground_spoilers_are_requested()
                 && self.right_spoilers.ground_spoilers_are_requested(),
+            &self.pushback_tug,
         );
 
         self.pushback_tug.update(context);
@@ -2309,7 +2332,8 @@ impl A380Hydraulic {
             context,
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
-            &self.bypass_pin,
+            self.brake_steer_computer
+                .should_pressurise_for_body_steering(),
             overhead_panel,
         );
     }
@@ -2929,6 +2953,9 @@ impl SimulationElement for A380Hydraulic {
         self.braking_force.accept(visitor);
 
         self.nose_steering.accept(visitor);
+        self.body_wheel_steering_left.accept(visitor);
+        self.body_wheel_steering_right.accept(visitor);
+
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
         self.slat_system.accept(visitor);
@@ -3478,14 +3505,14 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        bypass_pin: &BypassPin,
+        is_body_steering_active: bool,
         overhead: &A380HydraulicOverheadPanel,
     ) {
         self.update_auto_run_logic(
             context,
             forward_cargo_door_controller,
             aft_cargo_door_controller,
-            bypass_pin,
+            is_body_steering_active,
         );
 
         self.select_pump_in_use(overhead);
@@ -3496,7 +3523,7 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        bypass_pin: &BypassPin,
+        is_body_steering_active: bool,
     ) {
         self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
 
@@ -3510,7 +3537,7 @@ impl A380ElectricPumpAutoLogic {
             self.is_required_for_body_steering_operation.output();
 
         self.is_required_for_body_steering_operation
-            .update(context, bypass_pin.is_nose_wheel_steering_pin_inserted());
+            .update(context, is_body_steering_active);
     }
 
     fn select_pump_in_use(&mut self, overhead: &A380HydraulicOverheadPanel) {
@@ -3801,6 +3828,167 @@ impl BrakeCircuitController for A380BrakeSystemOutputs {
     }
 }
 
+struct BodyWheelSteeringController {
+    requested_position: Angle,
+    is_left_side: bool,
+}
+impl BodyWheelSteeringController {
+    const NOSE_ANGLE_INPUT_DEGREES: [f64; 4] = [-70., -20., 20., 70.];
+    const BODY_STEERING_DEMAND_DEGREES: [f64; 4] = [15., 0., 0., -11.];
+
+    fn new(is_left_side: bool) -> Self {
+        Self {
+            requested_position: Angle::default(),
+            is_left_side,
+        }
+    }
+
+    fn update(
+        &mut self,
+        nose_steering_angle: Angle,
+        ground_speed: Velocity,
+        pushback_tug: &impl Pushback,
+    ) {
+        if nose_steering_angle.get::<degree>().abs() > 20. && ground_speed.get::<knot>() < 30.
+            || pushback_tug.steering_angle().get::<degree>().abs() > 5.
+        {
+            let steering_angle_map_input = if pushback_tug.is_nose_wheel_steering_pin_inserted() {
+                pushback_tug.steering_angle()
+            } else {
+                nose_steering_angle
+            };
+
+            self.requested_position = if self.is_left_side {
+                Angle::new::<degree>(interpolation(
+                    &Self::NOSE_ANGLE_INPUT_DEGREES,
+                    &Self::BODY_STEERING_DEMAND_DEGREES,
+                    steering_angle_map_input.get::<degree>(),
+                ))
+            } else {
+                -Angle::new::<degree>(interpolation(
+                    &Self::NOSE_ANGLE_INPUT_DEGREES,
+                    &Self::BODY_STEERING_DEMAND_DEGREES,
+                    -steering_angle_map_input.get::<degree>(),
+                ))
+            };
+
+            if self.is_left_side {
+                println!(
+                    "LEFT STEERING input{:.2} output {:.2}",
+                    steering_angle_map_input.get::<degree>(),
+                    self.requested_position.get::<degree>()
+                );
+            } else {
+                println!(
+                    "RIGHT STEERING input{:.2} output {:.2}",
+                    steering_angle_map_input.get::<degree>(),
+                    self.requested_position.get::<degree>()
+                );
+            }
+        } else {
+            self.requested_position = Angle::default();
+        }
+    }
+}
+impl SteeringController for BodyWheelSteeringController {
+    fn requested_position(&self) -> Angle {
+        self.requested_position
+    }
+}
+
+struct BodyWheelSteeringControl {
+    left_controller: BodyWheelSteeringController,
+    right_controller: BodyWheelSteeringController,
+}
+impl BodyWheelSteeringControl {
+    fn default() -> Self {
+        Self {
+            left_controller: BodyWheelSteeringController::new(true),
+            right_controller: BodyWheelSteeringController::new(false),
+        }
+    }
+
+    fn update(
+        &mut self,
+        nose_steering_angle: Angle,
+        ground_speed: Velocity,
+        pushback_tug: &impl Pushback,
+    ) {
+        self.left_controller
+            .update(nose_steering_angle, ground_speed, pushback_tug);
+        self.right_controller
+            .update(nose_steering_angle, ground_speed, pushback_tug);
+    }
+
+    fn left_controller(&self) -> &impl SteeringController {
+        &self.left_controller
+    }
+
+    fn right_controller(&self) -> &impl SteeringController {
+        &self.right_controller
+    }
+
+    fn is_requesting_steering(&self) -> bool {
+        self.left_controller
+            .requested_position()
+            .get::<degree>()
+            .abs()
+            > 0.1
+            || self
+                .right_controller
+                .requested_position()
+                .get::<degree>()
+                .abs()
+                > 0.1
+    }
+}
+
+struct PedalSteeringDynamicLimiter {
+    pedal_steering_limiter_landing: SteeringAngleLimiter<5>,
+    pedal_steering_limiter_takeoff: SteeringAngleLimiter<5>,
+    is_landing_mode: bool,
+}
+impl PedalSteeringDynamicLimiter {
+    const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 100., 150., 1500.0, 2800.0];
+    const STEERING_ANGLE_FOR_PEDAL_ACTION_TAKEOFF_RATIO: [f64; 5] = [1., 1., 0.333, 0.333, 0.333]; // Used in takeoff mode only
+    const STEERING_ANGLE_FOR_PEDAL_ACTION_LANDING_RATIO: [f64; 5] = [1., 1., 0., 0., 0.]; // Used in landing mode only
+
+    fn default() -> Self {
+        Self {
+            pedal_steering_limiter_landing: SteeringAngleLimiter::new(
+                Self::SPEED_MAP_FOR_PEDAL_ACTION_KNOT,
+                Self::STEERING_ANGLE_FOR_PEDAL_ACTION_LANDING_RATIO,
+            ),
+            pedal_steering_limiter_takeoff: SteeringAngleLimiter::new(
+                Self::SPEED_MAP_FOR_PEDAL_ACTION_KNOT,
+                Self::STEERING_ANGLE_FOR_PEDAL_ACTION_TAKEOFF_RATIO,
+            ),
+            is_landing_mode: false,
+        }
+    }
+
+    fn update(&mut self, ground_speed: Velocity, lgciu: &impl LgciuWeightOnWheels) {
+        if !lgciu.left_and_right_gear_compressed(false) {
+            self.is_landing_mode = true;
+        }
+        if ground_speed.get::<knot>() < 100. && lgciu.left_and_right_gear_compressed(false) {
+            self.is_landing_mode = false;
+        }
+
+        println!("RUDDER MODE IS_LANDING {:?}", self.is_landing_mode);
+    }
+
+    fn angle_from_speed(&self, speed: Velocity, angle_demand: Angle) -> Angle {
+        if self.is_landing_mode {
+            self.pedal_steering_limiter_landing
+                .angle_from_speed(speed, angle_demand)
+        } else {
+            self.pedal_steering_limiter_takeoff
+                .angle_from_speed(speed, angle_demand)
+        }
+    }
+}
+
 struct A380HydraulicBrakeSteerComputerUnit {
     park_brake_lever_pos_id: VariableIdentifier,
 
@@ -3833,11 +4021,13 @@ struct A380HydraulicBrakeSteerComputerUnit {
     rudder_pedal_position: Ratio,
     autopilot_nosewheel_demand: Ratio,
 
-    pedal_steering_limiter: SteeringAngleLimiter<5>,
+    pedal_steering_limiter: PedalSteeringDynamicLimiter,
     pedal_input_map: SteeringRatioToAngle<6>,
     tiller_steering_limiter: SteeringAngleLimiter<5>,
     tiller_input_map: SteeringRatioToAngle<6>,
     final_steering_position_request: Angle,
+
+    body_wheel_steering_control: BodyWheelSteeringControl,
 
     ground_speed: Velocity,
 }
@@ -3847,9 +4037,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
     const RUDDER_PEDAL_INPUT_CURVE_MAP: [f64; 6] = [0., 0., 2., 6.4, 6.4, 6.4];
     const MAX_RUDDER_INPUT_INCLUDING_AUTOPILOT_DEGREE: f64 = 6.;
 
-    const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 100., 150., 1500.0, 2800.0];
-    const STEERING_ANGLE_FOR_PEDAL_ACTION_DEGREE: [f64; 5] = [1., 1., 0.333, 0.333, 0.333]; // TODO this is for takeoff phase only coeff is 0 for landing
-
     const TILLER_INPUT_GAIN: f64 = 75.;
     const TILLER_INPUT_MAP: [f64; 6] = [0., 1., 20., 40., 66., 75.];
     const TILLER_INPUT_CURVE_MAP: [f64; 6] = [0., 0., 4., 15., 45., 74.];
@@ -3857,7 +4044,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
     const AUTOPILOT_STEERING_INPUT_GAIN: f64 = 6.;
 
     const SPEED_MAP_FOR_TILLER_ACTION_KNOT: [f64; 5] = [0., 40., 100., 1500.0, 2800.0];
-    const STEERING_ANGLE_FOR_TILLER_ACTION_DEGREE: [f64; 5] = [1., 1., 0., 0., 0.];
+    const STEERING_ANGLE_FOR_TILLER_ACTION_RATIO: [f64; 5] = [1., 1., 0., 0., 0.];
 
     const MAX_STEERING_ANGLE_DEMAND_DEGREES: f64 = 70.;
 
@@ -3908,10 +4095,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             rudder_pedal_position: Ratio::new::<ratio>(0.),
             autopilot_nosewheel_demand: Ratio::new::<ratio>(0.),
 
-            pedal_steering_limiter: SteeringAngleLimiter::new(
-                Self::SPEED_MAP_FOR_PEDAL_ACTION_KNOT,
-                Self::STEERING_ANGLE_FOR_PEDAL_ACTION_DEGREE,
-            ),
+            pedal_steering_limiter: PedalSteeringDynamicLimiter::default(),
             pedal_input_map: SteeringRatioToAngle::new(
                 Ratio::new::<ratio>(Self::RUDDER_PEDAL_INPUT_GAIN),
                 Self::RUDDER_PEDAL_INPUT_MAP,
@@ -3919,7 +4103,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             ),
             tiller_steering_limiter: SteeringAngleLimiter::new(
                 Self::SPEED_MAP_FOR_TILLER_ACTION_KNOT,
-                Self::STEERING_ANGLE_FOR_TILLER_ACTION_DEGREE,
+                Self::STEERING_ANGLE_FOR_TILLER_ACTION_RATIO,
             ),
             tiller_input_map: SteeringRatioToAngle::new(
                 Ratio::new::<ratio>(Self::TILLER_INPUT_GAIN),
@@ -3927,6 +4111,8 @@ impl A380HydraulicBrakeSteerComputerUnit {
                 Self::TILLER_INPUT_CURVE_MAP,
             ),
             final_steering_position_request: Angle::new::<degree>(0.),
+
+            body_wheel_steering_control: BodyWheelSteeringControl::default(),
 
             ground_speed: Velocity::new::<knot>(0.),
         }
@@ -3994,8 +4180,18 @@ impl A380HydraulicBrakeSteerComputerUnit {
         engine2: &impl Engine,
         adirs: &impl AdirsMeasurementOutputs,
         placeholder_ground_spoilers_out: bool,
+        pushback_tug: &impl Pushback,
     ) {
+        // TODO split steering part from braking part in two different computers instances
         self.update_steering_demands(lgciu1, engine1, engine2);
+        self.body_wheel_steering_control.update(
+            self.final_steering_position_request,
+            self.ground_speed,
+            pushback_tug,
+        );
+
+        self.pedal_steering_limiter
+            .update(self.ground_speed, lgciu1); // TODO check which lgciu input is used for mode determination
 
         self.update_normal_braking_availability(current_pressure.pressure());
         self.update_brake_pressure_limitation();
@@ -4133,6 +4329,18 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
     fn alternate_controller(&self) -> &impl BrakeCircuitController {
         &self.alternate_brake_outputs
+    }
+
+    fn left_body_steering_controller(&self) -> &impl SteeringController {
+        self.body_wheel_steering_control.left_controller()
+    }
+
+    fn right_body_steering_controller(&self) -> &impl SteeringController {
+        self.body_wheel_steering_control.right_controller()
+    }
+
+    fn should_pressurise_for_body_steering(&self) -> bool {
+        self.body_wheel_steering_control.is_requesting_steering()
     }
 }
 impl SimulationElement for A380HydraulicBrakeSteerComputerUnit {
@@ -7257,6 +7465,14 @@ mod tests {
 
             fn get_nose_steering_ratio(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
+            }
+
+            fn get_left_body_steering_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("LEFT_BODY_STEERING_POSITION_RATIO"))
+            }
+
+            fn get_right_body_steering_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("RIGHT_BODY_STEERING_POSITION_RATIO"))
             }
 
             fn _is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -10483,7 +10699,7 @@ mod tests {
         }
 
         #[test]
-        fn yellow_epump_buildup_system_section_when_pushback() {
+        fn yellow_epump_buildup_system_section_when_pushback_turns_nose_more_than_20_degrees() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -10492,6 +10708,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(40.))
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
@@ -10584,6 +10801,80 @@ mod tests {
 
             assert!(test_bed.is_cargo_fwd_door_locked_up());
             assert!(test_bed.is_cargo_aft_door_locked_up());
+        }
+
+        #[test]
+        fn pushback_steering_full_left_turns_body_steering() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(-80.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Left BWS should be at max right steer (15°) for left turn
+            assert!(
+                test_bed
+                    .get_left_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    >= 0.97
+            );
+
+            // Right BWS should be at (11°) right steer for left turn
+            let expected_right_angle = 11. / 15.;
+            assert!(
+                test_bed
+                    .get_right_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    < 0.9
+            );
+            assert!(
+                test_bed
+                    .get_right_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    > expected_right_angle - 0.05
+            );
+        }
+
+        #[test]
+        fn pushback_steering_full_right_turns_body_steering() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(80.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Right BWS should be at max left steer (15°) for right turn
+            assert!(
+                test_bed
+                    .get_right_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    <= -0.97
+            );
+
+            // Left BWS should be at (11°) left steer for right turn
+            let expected_right_angle = -11. / 15.;
+            assert!(
+                test_bed
+                    .get_left_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    > -0.9
+            );
+            assert!(
+                test_bed
+                    .get_left_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    < expected_right_angle + 0.05
+            );
         }
     }
 }
