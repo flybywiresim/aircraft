@@ -7,7 +7,7 @@ import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedP
 import { ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
 import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { Predictions, StepResults } from '../Predictions';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';

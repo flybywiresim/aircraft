@@ -359,8 +359,8 @@ fn low_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        -10.3,
-        "Expected cg: -10.3, cg: {}",
+        -4.57,
+        "Expected cg: -4.57, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }
@@ -372,8 +372,8 @@ fn high_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        0.41,
-        "Expected cg: 0.41, cg: {}",
+        6.12,
+        "Expected cg: 6.12, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }

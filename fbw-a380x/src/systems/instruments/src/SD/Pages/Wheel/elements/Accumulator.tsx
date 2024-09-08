@@ -4,9 +4,10 @@ import React, { FC } from 'react';
 interface AccumulatorProps {
     x: number,
     y: number,
+    moreActive: boolean,
 }
 
-export const Accumulator: FC<AccumulatorProps> = ({ x, y }) => {
+export const Accumulator: FC<AccumulatorProps> = ({ x, y, moreActive }) => {
     const AMBER_ARC_MAX = 3480;
     const GREEN_ARC_MIN = 4872;
     const GREEN_ARC_MAX = 5300;
@@ -25,7 +26,7 @@ export const Accumulator: FC<AccumulatorProps> = ({ x, y }) => {
     const gaugeMarkerTextClassName = 'White F24';
 
     return (
-        <g id='wing-accu' transform={`translate(${x} ${y})`}>
+        <g id='wing-accu' transform={`translate(${x} ${y})`} visibility={moreActive ? 'visible' : 'hidden'}>
             <GaugeComponent x={0} y={0} radius={GAUGE_RADIUS} startAngle={GAUGE_START} endAngle={GAUGE_END} visible className='SW2 White NoFill'>
                 <GaugeComponent x={0} y={0} radius={GAUGE_RADIUS - 2} startAngle={GAUGE_START} endAngle={AMBER_ARC_MAX_ANGLE} largeArc={0} visible className='SW6 Amber NoFill'>
                     <GaugeComponent x={0} y={0} radius={GAUGE_RADIUS - 2} startAngle={GREEN_ARC_MIN_ANGLE} endAngle={GREEN_ARC_MAX_ANGLE} visible className='SW6 Green NoFill'>

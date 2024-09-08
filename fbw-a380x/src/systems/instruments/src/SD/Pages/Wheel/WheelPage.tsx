@@ -8,13 +8,16 @@ import { BrakingSupply } from './elements/BrakingSupply';
 import { ControlSystem, ControlSystemType } from './elements/ControlSystem';
 import { Accumulator } from './elements/Accumulator';
 
-export const WheelPage = () => (
+export const WheelPage = () => {
+    const moreActive = false;
+
+    return(
     <>
         <PageTitle x={6} y={29}>WHEEL</PageTitle>
 
-        <MoreLabel x={157} y={28} moreActive />
+        <MoreLabel x={157} y={28} moreActive={moreActive} />
 
-        <g id='brk-control'>
+        <g id='brk-control' visibility={moreActive ? 'visible' : 'hidden'}>
             <text className='F22 White LS1' x={9} y={110}>BRK CTL</text>
             <text className='F28 White' x={128} y={112}>:</text>
             <ControlSystem x={145} y={114} type={ControlSystemType.Braking} number={1} />
@@ -24,7 +27,7 @@ export const WheelPage = () => (
             <text className='F26 Amber' x={9} y={144}>AUTO BRAKE</text>
         </g>
 
-        <g id='steering-control'>
+        <g id='steering-control' visibility={moreActive ? 'visible' : 'hidden'}>
             <text className='F22 White LS1' x={482} y={110}>STEER CTL</text>
             <text className='F28 White' x={631} y={112}>:</text>
             <ControlSystem x={650} y={114} type={ControlSystemType.Braking} number={1} />
@@ -34,9 +37,9 @@ export const WheelPage = () => (
         <g id='lgers'>
             <Gear x={351} y={59} position={GearPosition.Nose} type={GearType.Nose} />
 
-            <text className='F22 Green WS-6' x={216} y={210}>L/G GRVTY EXTN IN PROGRESS</text>
+            <text className='F22 Green WS-6' x={216} y={210} visibility={'hidden'}>L/G GRVTY EXTN IN PROGRESS</text>
 
-            <text className='F26 Amber' x={482} y={144}>L/G CTL</text>
+            <text className='F26 Amber' x={482} y={144} visibility={'hidden'}>L/G CTL</text>
 
             <path
                 className='Grey SW2 NoFill'
@@ -51,11 +54,11 @@ export const WheelPage = () => (
         <g id='wheels'>
             <text className='F24 Cyan' x={370} y={580}>°C</text>
             <text className='F22 Cyan' x={367} y={634}>PSI</text>
-            <WheelBogey x={384} y={140} position={WheelBogeyPosition.Nose} type={WheelBogeyType.Nose} />
-            <WheelBogey x={81} y={403} position={WheelBogeyPosition.Left} type={WheelBogeyType.WLG} />
-            <WheelBogey x={257} y={417} position={WheelBogeyPosition.Left} type={WheelBogeyType.BLG} />
-            <WheelBogey x={513} y={417} position={WheelBogeyPosition.Right} type={WheelBogeyType.BLG} />
-            <WheelBogey x={690} y={403} position={WheelBogeyPosition.Right} type={WheelBogeyType.WLG} />
+            <WheelBogey x={384} y={140} position={WheelBogeyPosition.Nose} type={WheelBogeyType.Nose} moreActive={moreActive} />
+            <WheelBogey x={81} y={403} position={WheelBogeyPosition.Left} type={WheelBogeyType.WLG} moreActive={moreActive} />
+            <WheelBogey x={257} y={417} position={WheelBogeyPosition.Left} type={WheelBogeyType.BLG} moreActive={moreActive} />
+            <WheelBogey x={513} y={417} position={WheelBogeyPosition.Right} type={WheelBogeyType.BLG} moreActive={moreActive} />
+            <WheelBogey x={690} y={403} position={WheelBogeyPosition.Right} type={WheelBogeyType.WLG} moreActive={moreActive} />
         </g>
 
         <g id='braking'>
@@ -70,6 +73,7 @@ export const WheelPage = () => (
             <BrakingSupply x={690} y={328} type={WheelBogeyType.WLG} />
         </g>
 
-        <Accumulator x={687} y={602} />
+        <Accumulator x={687} y={602} moreActive={moreActive} />
     </>
 );
+}
