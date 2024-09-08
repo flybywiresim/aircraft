@@ -241,6 +241,12 @@ impl RefuelApplication {
         &mut self,
         total_desired_fuel: Mass,
     ) -> HashMap<A380FuelTankType, Mass> {
+        // Note: Does not account for unusable fuel, or non-fixed H-ARM
+        // Also needs to be refactored into a look up table or some kind of easier to modify configuration file
+
+        // Currently uses default (non-entered) data for ZFW at all times
+        // The default values are ZFW = 300 000 kg (661 386 lb), and ZFCG = 36.5 %RC.
+
         let a = Mass::new::<kilogram>(18000.);
         let b = Mass::new::<kilogram>(26000.);
         let c = Mass::new::<kilogram>(36000.);
@@ -264,6 +270,8 @@ impl RefuelApplication {
             x if x <= h + (trim_max - trim_2) => trim_2 + total_desired_fuel - h,
             _ => trim_max,
         };
+
+        // TODO: Account for AGT (Auto Ground Transfer), disable when 2 engines are running
 
         let wing_fuel = total_desired_fuel - trim_fuel;
 
@@ -324,7 +332,6 @@ impl RefuelApplication {
             x if x <= h => mid_tank_f,
             _ => mid_tank_f + (wing_fuel - h) / 10.,
         };
-        // TODO: maximum amount per tick and use efb refueling rate
 
         [
             (A380FuelTankType::LeftOuter, outer_tank),
