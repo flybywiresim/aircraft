@@ -332,8 +332,7 @@ impl RefuelApplication {
     ) -> Mass {
         let total_desired_fuel_rounded =
             ((total_desired_fuel.get::<kilogram>() / 1000.0).floor() * 1000.0) as u32;
-        let zero_fuel_weight_cg_rounded =
-            ((zero_fuel_weight_cg_percent_mac / 10.0).floor() * 10.0) as u32;
+        let zero_fuel_weight_cg_rounded = (zero_fuel_weight_cg_percent_mac).floor() as u32;
 
         let mut trim_fuel = Mass::default();
 
