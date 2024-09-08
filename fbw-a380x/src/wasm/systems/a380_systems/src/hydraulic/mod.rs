@@ -7463,6 +7463,11 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_RUD_DEFLECTION"))
             }
 
+            fn set_rudder_input(mut self, steer_ratio: Ratio) -> Self {
+                self.write_by_name("RUDDER_PEDAL_POSITION_RATIO", steer_ratio.get::<ratio>());
+                self
+            }
+
             fn get_nose_steering_ratio(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
             }
@@ -7530,13 +7535,20 @@ mod tests {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
+
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
                     .start_eng3(Ratio::new::<percent>(80.))
                     .start_eng4(Ratio::new::<percent>(80.))
+                    .set_ground_speed(Velocity::new::<knot>(180.))
                     .set_gear_lever_up()
                     .set_park_brake(false)
                     .external_power(false)
+            }
+
+            fn set_ground_speed(mut self, ground_speed: Velocity) -> Self {
+                self.write_by_name("GPS GROUND SPEED", ground_speed.get::<knot>());
+                self
             }
 
             fn adirs_not_aligned(mut self) -> Self {
@@ -10875,6 +10887,62 @@ mod tests {
                     .get::<ratio>()
                     < expected_right_angle + 0.05
             );
+        }
+
+        #[test]
+        fn takeoff_mode_limits_nose_steering_to_2_degrees_after_150_knot() {
+            let mut test_bed = test_bed_on_ground_with()
+                .start_eng1(Ratio::new::<percent>(95.))
+                .start_eng2(Ratio::new::<percent>(95.))
+                .start_eng3(Ratio::new::<percent>(95.))
+                .start_eng4(Ratio::new::<percent>(95.))
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(15.))
+                .set_rudder_input(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Expecting around 6 degrees, so ratio with 0.5 margin should be 5.5/75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() >= 5.5 / 75.);
+
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(155.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Expecting around 2 degrees, so ratio with 0.5 margin should be 2.5/75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() <= 2.5 / 75.);
+        }
+
+        #[test]
+        fn landing_mode_limits_nose_steering_to_0_degrees_after_150_knot() {
+            let mut test_bed = test_bed_on_ground_with()
+                .start_eng1(Ratio::new::<percent>(95.))
+                .start_eng2(Ratio::new::<percent>(95.))
+                .start_eng3(Ratio::new::<percent>(95.))
+                .start_eng4(Ratio::new::<percent>(95.))
+                .in_flight()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(160.))
+                .on_the_ground()
+                .set_rudder_input(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Expecting  0 degrees, so ratio with 0.5 margin should be 0.5/75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() < 0.5 / 75.);
+
+            // At lower speed in landing mode should get 6 degrees range
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(100.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Expecting around 6 degrees, so ratio with .5 margin should be 5./75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() > 5.5 / 75.);
         }
     }
 }
