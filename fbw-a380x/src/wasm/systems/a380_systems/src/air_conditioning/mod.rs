@@ -1193,13 +1193,13 @@ mod tests {
 
         fn get_message_identifier(
             &mut self,
-            name: String,
+            _name: String,
         ) -> systems::integrated_modular_avionics::AvionicsDataCommunicationNetworkMessageIdentifier
         {
             unimplemented!()
         }
 
-        fn get_endpoint(&'_ self, id: u8) -> Self::NetworkEndpointRef {
+        fn get_endpoint(&'_ self, _id: u8) -> Self::NetworkEndpointRef {
             unimplemented!()
         }
 
@@ -1214,7 +1214,7 @@ mod tests {
 
         fn get_iom(
             &self,
-            name: &str,
+            _name: &str,
         ) -> &InputOutputModule<A380AvionicsDataCommunicationNetworkMessageData> {
             unimplemented!()
         }
