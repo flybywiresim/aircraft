@@ -1,0 +1,79 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../../Common/definitions";
+
+.mfd-radio-button {
+    -webkit-appearance: none; /* WebKit */
+    -moz-appearance: none; /* Mozilla */
+    -o-appearance: none; /* Opera */
+    -ms-appearance: none; /* Internet Explorer */
+    appearance: none; /* CSS3 */
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    border: 0.15em solid transparent;
+}
+
+.mfd-radio-button + .mfd-radio-button {
+    margin-top: 3px;
+}
+
+.mfd-radio-button input[type="radio"] {
+    font-size: inherit;
+
+    background-color: $display-background;
+    width: 1.15em;
+    //width: 30px;
+    height: 1.15em;
+    //height: 30px;
+    border: 0.07em inset lightgray;
+    //border: 2px inset lightgray;
+    border-radius: 50%;
+    margin-right: 0.57em;
+    //margin-right: 15px;
+    display: grid;
+    place-content: center;
+}
+
+.mfd-radio-button input[type="radio"]::after {
+    display: none;
+}
+
+
+.mfd-radio-button input[type="radio"]:checked {
+    background: $display-cyan;
+    box-shadow: inset 0 0 0 0.15em black;
+    //box-shadow: inset 0 0 0px 4px black;
+}
+
+.mfd-radio-button.tmpy input[type="radio"]:checked {
+    background: $display-yellow;
+}
+
+.mfd-radio-button input[type="radio"]:disabled {
+    background: $display-grey !important;
+}
+
+
+.mfd-radio-button input[type="radio"]:checked {
+    background: $display-cyan;
+    box-shadow: inset 0 0 0 0.15em black;
+    //box-shadow: inset 0 0 0px 4px black;
+}
+
+.mfd-radio-button input[type="radio"]:checked ~ * {
+    color: $display-cyan;
+}
+
+.mfd-radio-button.tmpy input[type="radio"]:checked ~ * {
+    color: $display-yellow;
+}
+
+.mfd-radio-button input[type="radio"]:disabled ~ * {
+    color: $display-grey !important;
+}
+
+.mfd-radio-button:hover {
+    border-color: $display-cyan;
+}

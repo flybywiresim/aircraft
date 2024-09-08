@@ -1098,7 +1098,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <span style="width: 175px; display: inline; margin-left: 15px;">
                       <RadioButtonGroup
                         values={['TOGA', 'FLEX', 'DERATED']}
-                        valuesDisabled={this.activeFlightPhase.map(() => Array(3).fill(true))} // was it >= FmgcFlightPhase.Takeoff
+                        valuesDisabled={this.activeFlightPhase.map((it) => [
+                          ...Array(2).fill(it >= FmgcFlightPhase.Takeoff),
+                          true,
+                        ])}
                         onModified={(val) => this.toThrustSettingChanged(val)}
                         selectedIndex={this.toSelectedThrustSettingIndex}
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_toThrustSettingRadio`}

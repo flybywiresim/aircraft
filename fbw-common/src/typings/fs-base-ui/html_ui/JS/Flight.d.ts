@@ -14,12 +14,6 @@ declare global {
         Free
     }
 
-    class AirportInfos {
-    }
-
-    class WaypointInfos {
-    }
-
     class POIInfos {
     }
 
