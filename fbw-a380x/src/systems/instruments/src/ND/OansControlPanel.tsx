@@ -72,7 +72,6 @@ export enum EntityTypes {
 }
 
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
@@ -137,6 +136,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly reqStoppingDistance = Subject.create<number | null>(null);
 
+  private readonly fmsLandingRunwayVisibility = this.fmsDataStore.landingRunway.map((rwy) =>
+    rwy ? 'inherit' : 'hidden',
+  );
+
   private arpCoordinates: Coordinates | undefined;
 
   private landingRunwayNavdata: Runway | undefined;
@@ -191,8 +194,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       this.activeDatabase.set(`${from.getDay()}${months[from.getMonth()]}-${to.getDay()}${months[to.getMonth()]}`);
     });
 
-    NXDataStore.subscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
-    this.loadOansDb();
+    NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
 
     this.subs.push(
       this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
@@ -467,52 +469,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
   }
 
-  private findNewMonthIndex(index: number) {
-    if (index === 0) {
-      return 11;
-    }
-    return index - 1;
-  }
-
-  private lessThan10(num: number) {
-    if (num < 10) {
-      return `0${num}`;
-    }
-    return num;
-  }
-
-  private calculateSecDate(date: string): string {
-    if (date.length === 13) {
-      const primStartMonth = date.slice(0, 3);
-      const primStartDay = Number(date.slice(3, 5));
-
-      const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
-
-      if (primStartMonthIndex === -1) {
-        return 'ERR';
-      }
-
-      let newEndMonth = primStartMonth;
-      let newEndDay = primStartDay - 1;
-
-      let newStartDay = newEndDay - 27;
-      let newStartMonth = primStartMonth;
-
-      if (newEndDay === 0) {
-        newEndMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
-        newEndDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)];
-      }
-
-      if (newStartDay <= 0) {
-        newStartMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
-        newStartDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)] + newStartDay;
-      }
-
-      return `${this.lessThan10(newStartDay)}${newStartMonth}-${this.lessThan10(newEndDay)}${newEndMonth}`;
-    }
-    return 'ERR';
-  }
-
   render(): VNode {
     return (
       <>
@@ -644,7 +600,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div
                       class="oans-cp-map-data-btv-rwy-length"
-                      style={{ visibility: this.fmsDataStore.landingRunway.map((rwy) => (rwy ? 'inherit' : 'hidden')) }}
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
                     >
                       <div class="mfd-label" style="margin-right: 10px;">
                         RUNWAY LENGTH
@@ -656,7 +612,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div
                       class="oans-cp-map-data-btv-rwy-length"
-                      style={{ visibility: this.fmsDataStore.landingRunway.map((rwy) => (rwy ? 'inherit' : 'hidden')) }}
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
                     >
                       <div class="mfd-label" style="margin-right: 10px;">
                         BTV STOP DISTANCE
@@ -694,7 +650,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div
                       class="oans-cp-map-data-btv-rwy-length"
-                      style={{ visibility: this.fmsDataStore.landingRunway.map((rwy) => (rwy ? 'hidden' : 'inherit')) }}
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
                     >
                       <div class="mfd-label amber" style="margin-right: 10px;">
                         SELECT LANDING RUNWAY IN FMS
@@ -831,15 +787,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <Button
                       label="SWAP"
                       disabled={this.navigraphAvailable}
-                      onClick={() => {
-                        this.amdbClient
-                          .searchForAirports('')
-                          .then((airports) => {
-                            this.store.airports.set(airports);
-                            this.navigraphAvailable.set(true);
-                          })
-                          .catch(() => this.navigraphAvailable.set(false));
-                      }}
+                      onClick={() => this.loadOansDb()}
                       buttonStyle="padding: 20px 30px 20px 30px;"
                     />
                   </div>

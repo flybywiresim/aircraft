@@ -1,5 +1,6 @@
 ﻿import {
   A380EfisNdRangeValue,
+  Arinc429RegisterSubject,
   ArincEventBus,
   EfisNdMode,
   EfisSide,
@@ -31,7 +32,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
   private readonly minAlt = -500;
   private readonly maxAlt = 24000;
 
-  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & NDSimvars>();
+  private readonly sub = this.props.bus.getArincSubscriber<GenericFcuEvents & NDSimvars>();
 
   private topRef = FSComponent.createRef<SVGElement>();
 
@@ -50,10 +51,17 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
 
   private readonly baroModeIsStd = ConsumerSubject.create(this.sub.on('baroMode').whenChanged(), false);
 
-  private readonly currentAltitude = ConsumerSubject.create(this.sub.on('pposAlt').whenChanged(), 0);
+  private readonly baroCorrectedAltitudeRaw = ConsumerSubject.create(
+    this.sub.on('baroCorrectedAltitude').whenChanged(),
+    0,
+  );
+
+  private readonly baroCorrectedAltitude = Arinc429RegisterSubject.createEmpty();
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.baroCorrectedAltitudeRaw.sub((w) => this.baroCorrectedAltitude.setWord(w));
   }
 
   private altToY(alt: number) {
@@ -79,11 +87,13 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <line
             x1="97"
             x2="115"
-            y1={this.currentAltitude.map((a) => this.altToY(a))}
-            y2={this.currentAltitude.map((a) => this.altToY(a))}
+            y1={this.baroCorrectedAltitude.map((a) => (a.isNormalOperation() ? this.altToY(a.value) : 0))}
+            y2={this.baroCorrectedAltitude.map((a) => (a.isNormalOperation() ? this.altToY(a.value) : 0))}
             stroke="yellow"
             stroke-width="4"
-            visibility={this.currentAltitude.map((a) => (a < 24000 ? 'visible' : 'hidden'))}
+            visibility={this.baroCorrectedAltitude.map((a) =>
+              a.isNormalOperation() && a.value < 24000 ? 'visible' : 'hidden',
+            )}
           />
         </g>
         <g>
