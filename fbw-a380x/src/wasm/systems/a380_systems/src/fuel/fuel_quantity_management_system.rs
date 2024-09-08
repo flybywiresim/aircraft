@@ -2,6 +2,7 @@ use std::{collections::HashMap, time::Duration};
 
 use crate::systems::simulation::SimulationElement;
 use nalgebra::Vector3;
+use serde::Deserialize;
 use systems::{
     fuel::{self, FuelInfo, FuelSystem, FuelTank, RefuelRate},
     pneumatic::EngineState,
@@ -19,6 +20,8 @@ use uom::si::{
 
 use super::A380FuelTankType;
 
+use serde_with::{serde_as, DisplayFromStr};
+
 #[derive(Clone, Copy)]
 enum ModeSelect {
     AutoRefuel,
@@ -26,6 +29,31 @@ enum ModeSelect {
     _ManualRefuel,
     _Defuel,
     _Transfer,
+}
+
+#[derive(Deserialize)]
+struct ZfwParams {
+    target_zfw_cg: Vec<u32>,
+    target_zfw: Vec<ZfwRange>,
+}
+
+#[derive(Deserialize)]
+struct ZfwRange {
+    start: u32,
+    end: u32,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+struct TrimTankTables {
+    #[serde_as(as = "Vec<HashMap<DisplayFromStr, _>>")]
+    tables: Vec<HashMap<u32, Vec<u32>>>,
+}
+
+#[derive(Deserialize)]
+struct TrimTankMapping {
+    params: ZfwParams,
+    trim_tank_targets: TrimTankTables,
 }
 
 pub struct RefuelPanelInput {
@@ -177,13 +205,17 @@ impl SimulationElement for IntegratedRefuelPanel {
     }
 }
 
+const TRIM_TANK_TOML: &str = include_str!("./trim_tank_targets.toml");
 pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
+    trim_tank_map: TrimTankMapping,
 }
 impl RefuelApplication {
     pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
         Self {
             refuel_driver: RefuelDriver::new(),
+            trim_tank_map: toml::from_str(TRIM_TANK_TOML)
+                .expect("Failed to parse trim tank TOML file"),
         }
     }
 
@@ -194,8 +226,12 @@ impl RefuelApplication {
         refuel_panel_input: &mut IntegratedRefuelPanel,
     ) {
         // Automatic Refueling
-        let desired_quantities =
-            self.calculate_auto_refuel(refuel_panel_input.total_desired_fuel());
+        let desired_quantities = self.calculate_auto_refuel(
+            refuel_panel_input.total_desired_fuel(),
+            // TODO FIXME: Add values from either MFD (or EFB)
+            Mass::new::<kilogram>(370000.),
+            36.5,
+        );
 
         // TODO: Uncomment when IS_SIM_READY variable is implemented
         // if !context.is_sim_ready() {
@@ -237,9 +273,91 @@ impl RefuelApplication {
         }
     }
 
+    fn lookup_trim_fuel_from_target_fuel_range(
+        &mut self,
+        category_index: usize,
+        total_fuel_desired_rounded: u32,
+        zero_fuel_weight_cg_rounded: u32,
+    ) -> Mass {
+        let zfw_category = &self.trim_tank_map.trim_tank_targets.tables[category_index];
+        let target_fuel_range = zfw_category.get(&total_fuel_desired_rounded).unwrap();
+
+        if let Some(cg_index) = self
+            .trim_tank_map
+            .params
+            .target_zfw_cg
+            .iter()
+            .position(|&x| x == zero_fuel_weight_cg_rounded)
+        {
+            return Mass::new::<kilogram>(target_fuel_range[cg_index] as f64);
+        } else {
+            return Mass::new::<kilogram>(target_fuel_range[0] as f64);
+        }
+    }
+
+    fn lookup_trim_fuel_from_mapping(
+        &mut self,
+        category_index: usize,
+        total_desired_fuel_rounded: u32,
+        zero_fuel_weight_cg_rounded: u32,
+    ) -> Mass {
+        let zfw_category = &self.trim_tank_map.trim_tank_targets.tables[category_index];
+        let lowest_fuel_desired = *(zfw_category.keys().min().unwrap());
+        let largest_fuel_desired = *(zfw_category.keys().max().unwrap());
+
+        match total_desired_fuel_rounded {
+            x if x < lowest_fuel_desired => self.lookup_trim_fuel_from_target_fuel_range(
+                category_index,
+                lowest_fuel_desired,
+                zero_fuel_weight_cg_rounded,
+            ),
+            x if x > largest_fuel_desired => self.lookup_trim_fuel_from_target_fuel_range(
+                category_index,
+                largest_fuel_desired,
+                zero_fuel_weight_cg_rounded,
+            ),
+            _ => self.lookup_trim_fuel_from_target_fuel_range(
+                category_index,
+                total_desired_fuel_rounded,
+                zero_fuel_weight_cg_rounded,
+            ),
+        }
+    }
+
+    fn calculate_trim_fuel(
+        &mut self,
+        total_desired_fuel: Mass,
+        zero_fuel_weight: Mass,
+        zero_fuel_weight_cg_percent_mac: f64,
+    ) -> Mass {
+        let total_desired_fuel_rounded =
+            ((total_desired_fuel.get::<kilogram>() / 1000.0).floor() * 1000.0) as u32;
+        let zero_fuel_weight_cg_rounded =
+            ((zero_fuel_weight_cg_percent_mac / 10.0).floor() * 10.0) as u32;
+
+        let mut trim_fuel = Mass::default();
+
+        for (index, range) in self.trim_tank_map.params.target_zfw.iter().enumerate() {
+            if zero_fuel_weight >= Mass::new::<kilogram>(range.start as f64)
+                && zero_fuel_weight <= Mass::new::<kilogram>(range.end as f64)
+            {
+                trim_fuel = self.lookup_trim_fuel_from_mapping(
+                    index,
+                    total_desired_fuel_rounded,
+                    zero_fuel_weight_cg_rounded,
+                );
+                break;
+            }
+        }
+
+        trim_fuel
+    }
+
     pub fn calculate_auto_refuel(
         &mut self,
         total_desired_fuel: Mass,
+        zero_fuel_weight: Mass,
+        zero_fuel_weight_cg_percent_mac: f64,
     ) -> HashMap<A380FuelTankType, Mass> {
         // Note: Does not account for unusable fuel, or non-fixed H-ARM
         // Also needs to be refactored into a look up table or some kind of easier to modify configuration file
@@ -256,22 +374,11 @@ impl RefuelApplication {
         let g = Mass::new::<kilogram>(215702.);
         let h = Mass::new::<kilogram>(223028.);
 
-        let trim_1 = Mass::new::<kilogram>(4000.);
-        let trim_2 = Mass::new::<kilogram>(8000.);
-        let trim_max = Mass::new::<kilogram>(19026.);
-
-        // TODO: Trim tank logic
-        let trim_fuel = match total_desired_fuel {
-            x if x <= f => Mass::default(),
-            x if x <= f + trim_1 => x - f,
-            x if x <= g => trim_1,
-            x if x <= g + trim_2 => trim_1 + total_desired_fuel - g,
-            x if x <= h => trim_2,
-            x if x <= h + (trim_max - trim_2) => trim_2 + total_desired_fuel - h,
-            _ => trim_max,
-        };
-
-        // TODO: Account for AGT (Auto Ground Transfer), disable when 2 engines are running
+        let trim_fuel = self.calculate_trim_fuel(
+            total_desired_fuel,
+            zero_fuel_weight,
+            zero_fuel_weight_cg_percent_mac,
+        );
 
         let wing_fuel = total_desired_fuel - trim_fuel;
 
@@ -374,6 +481,8 @@ impl RefuelDriver {
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
+        // TODO: Account for AGT (Auto Ground Transfer) logic, disable when 2 engines are running (only when realistic setting is used)
+
         let speed_multi = if is_fast { Self::FAST_SPEED_FACTOR } else { 1. };
 
         let t = delta_time.as_secs_f64();
