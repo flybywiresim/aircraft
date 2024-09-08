@@ -5001,11 +5001,10 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     getGW() {
         let fmGW = 0;
+        const currFob = this.getFOB();
         //Simplified to just checking fuelWeight as GetFOB handles what fuel level to use (block vs tank reading)
-        if (isFinite(this.zeroFuelWeight) && this.blockFuel) {
-            fmGW = (this.getFOB() + this.zeroFuelWeight);
-        } else {
-            fmGW = 0;
+        if (Number.isFinite(this.zeroFuelWeight) && Number.isFinite(currFob)) {
+            fmGW = (currFob + this.zeroFuelWeight);
         }
         SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
         return fmGW;
