@@ -229,7 +229,7 @@ impl RefuelApplication {
         let desired_quantities = self.calculate_auto_refuel(
             refuel_panel_input.total_desired_fuel(),
             // TODO FIXME: Add values from either MFD (or EFB)
-            Mass::new::<kilogram>(370000.),
+            Mass::new::<kilogram>(300000.),
             36.5,
         );
 
