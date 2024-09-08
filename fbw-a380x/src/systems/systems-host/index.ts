@@ -104,7 +104,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Amu2', this.amu2, true);
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
-    this.backplane.addInstrument('AtsuSystem', this.atsu,  true);
+    this.backplane.addInstrument('AtsuSystem', this.atsu);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
