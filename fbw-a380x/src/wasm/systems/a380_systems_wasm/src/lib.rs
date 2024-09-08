@@ -1,5 +1,6 @@
 mod ailerons;
 mod autobrakes;
+mod body_wheel_steering;
 mod brakes;
 mod cargo_doors;
 mod elevators;
@@ -17,6 +18,7 @@ mod trimmable_horizontal_stabilizer;
 use a380_systems::A380;
 use ailerons::ailerons;
 use autobrakes::autobrakes;
+use body_wheel_steering::body_wheel_steering;
 use brakes::brakes;
 use cargo_doors::cargo_doors;
 use elevators::elevators;
@@ -493,6 +495,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(cargo_doors)?
     .with_aspect(autobrakes)?
     .with_aspect(nose_wheel_steering)?
+    .with_aspect(body_wheel_steering)?
     .with_aspect(fire)?
     .with_aspect(flaps)?
     .with_aspect(spoilers)?

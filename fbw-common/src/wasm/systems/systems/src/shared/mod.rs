@@ -711,6 +711,17 @@ pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
 }
 
+/// Normalise angle degrees value between 0 and 360
+pub fn normalise_angle(angle_degrees: f64) -> f64 {
+    let raw = angle_degrees % 360.;
+
+    if raw >= 0. {
+        raw
+    } else {
+        raw + 360.
+    }
+}
+
 /// Returns the height over the ground of any point of the plane considering its current attitude
 /// Offset parameter is the position of the point in plane reference with respect to datum reference point
 /// X positive from left to right
