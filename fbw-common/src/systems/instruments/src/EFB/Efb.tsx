@@ -62,6 +62,7 @@ import './Assets/Slider.scss';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
 import { NavigraphAuthProvider } from '../react/navigraph';
+import { HandleFuel } from 'instruments/src/EFB/handleFuel/handleFuel';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -442,6 +443,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                     <Route path="/presets" component={Presets} />
                     <Route path="/settings" component={Settings} />
                     <Route path="/settings/flypad" component={FlyPadPage} />
+                    <Route path= "/handleFuel" component={HandleFuel} />
                   </Switch>
                 </div>
               </div>
