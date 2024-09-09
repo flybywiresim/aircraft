@@ -88,7 +88,8 @@ class CDUSelectedNavaids {
 
             const lineRow = 2 * i + 2;
 
-            template[lineRow][1] = `{cyan}${WayPoint.formatIdentFromIcao(icao)}{end}`;
+            // FIXME take facilities rather than database idents
+            template[lineRow][1] = `{cyan}${icao.substring(7).trim()}{end}`;
 
             mcdu.onRightInput[i] = (text, scratchpadCallback) => {
                 if (text === FMCMainDisplay.clrValue) {
