@@ -2507,6 +2507,12 @@ impl A380Hydraulic {
             .update_system_actuator_volumes(&mut self.nose_steering);
 
         self.yellow_circuit
+            .update_system_actuator_volumes(&mut self.body_wheel_steering_left);
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(&mut self.body_wheel_steering_right);
+
+        self.yellow_circuit
             .update_system_actuator_volumes(self.right_elevator.actuator(
                 ElevatorActuatorPosition::Outward,
                 ElevatorPanelPosition::Outward,
