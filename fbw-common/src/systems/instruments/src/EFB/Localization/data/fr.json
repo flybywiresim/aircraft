@@ -718,5 +718,13 @@
       "StatusBarWarning": "Veuillez mettre à jour votre avion à l'aide du programme d'installation FlyByWire."
     },
     "Title": "Nouvelle version disponible"
+  },
+  "HandleFuel": {
+    "Title": "Gestion du carburant",
+    "Fuel": "Carburant",
+    "CurrentFuel": {
+      "Title": "Carburant actuel",
+      "CurrentFuel": "Carburant actuel :"
+    }
   }
 }
