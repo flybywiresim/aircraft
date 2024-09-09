@@ -79,6 +79,8 @@ export interface PFDSimvars {
   metricAltToggle: boolean;
   tla1: number;
   tla2: number;
+  tla3: number;
+  tla4: number;
   landingElevation: number;
   tcasState: number;
   tcasCorrective: boolean;
@@ -89,6 +91,8 @@ export interface PFDSimvars {
   tcasFail: boolean;
   engOneRunning: boolean;
   engTwoRunning: boolean;
+  engThreeRunning: boolean;
+  engFourRunning: boolean;
   expediteMode: boolean;
   setHoldSpeed: boolean;
   trkFpaDeselectedTCAS: boolean;
@@ -241,6 +245,8 @@ export enum PFDVars {
   metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
   tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
   tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
+  tla3 = 'L:A32NX_AUTOTHRUST_TLA:3',
+  tla4 = 'L:A32NX_AUTOTHRUST_TLA:4',
   tcasState = 'L:A32NX_TCAS_STATE',
   tcasCorrective = 'L:A32NX_TCAS_RA_CORRECTIVE',
   tcasRedZoneL = 'L:A32NX_TCAS_VSPEED_RED:1',
@@ -250,6 +256,8 @@ export enum PFDVars {
   tcasFail = 'L:A32NX_TCAS_FAULT',
   engOneRunning = 'GENERAL ENG COMBUSTION:1',
   engTwoRunning = 'GENERAL ENG COMBUSTION:2',
+  engThreeRunning = 'GENERAL ENG COMBUSTION:3',
+  engFourRunning = 'GENERAL ENG COMBUSTION:4',
   expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
   trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',

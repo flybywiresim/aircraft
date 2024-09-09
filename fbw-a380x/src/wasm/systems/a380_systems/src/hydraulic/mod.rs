@@ -1594,7 +1594,7 @@ impl A380Hydraulic {
         0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
     const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+        [0., 1.3, 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
 
     const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
@@ -1827,8 +1827,8 @@ impl A380Hydraulic {
                 context,
                 "FLAPS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(251.97),
+                AngularVelocity::new::<radian_per_second>(0.047),
+                Angle::new::<degree>(218.912),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -1840,8 +1840,8 @@ impl A380Hydraulic {
                 context,
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(334.16),
+                AngularVelocity::new::<radian_per_second>(0.08),
+                Angle::new::<degree>(284.66),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -4014,6 +4014,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             lgciu1,
             lgciu2,
             placeholder_ground_spoilers_out,
+            self.ground_speed,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
@@ -6219,6 +6220,8 @@ struct SpoilerGroup {
     spoiler_positions: [f64; 8],
 }
 impl SpoilerGroup {
+    const PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO: f64 = 0.55;
+
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
         Self {
             spoilers,
@@ -6304,8 +6307,15 @@ impl SpoilerGroup {
     }
 
     fn ground_spoilers_are_requested(&self) -> bool {
-        self.hydraulic_controllers[0].requested_position() > Ratio::new::<ratio>(0.1)
-            && self.hydraulic_controllers[1].requested_position() > Ratio::new::<ratio>(0.1)
+        // Placeholder to decide if ground spoilers are requested. TODO use actual signal from flight controls
+        self.hydraulic_controllers[0].requested_position()
+            > Ratio::new::<ratio>(
+                Self::PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO,
+            )
+            && self.hydraulic_controllers[1].requested_position()
+                > Ratio::new::<ratio>(
+                    Self::PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO,
+                )
     }
 }
 impl SimulationElement for SpoilerGroup {
@@ -9379,7 +9389,7 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_arms_in_flight_btv_to_hi() {
+        fn autobrakes_arms_in_flight_lo_to_hi() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -9388,11 +9398,12 @@ mod tests {
 
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
+            // BTV not programmed cannot arm
             test_bed = test_bed
                 .set_autobrake_btv()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::BTV);
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
                 .set_autobrake_low()
@@ -9534,6 +9545,34 @@ mod tests {
             assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_activates_on_ground_and_deactivates_pressing_rto_again() {
+            let mut test_bed = test_bed_on_ground_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_rto()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+
+            test_bed = test_bed
+                .set_autobrake_rto()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
 
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
@@ -9940,6 +9979,32 @@ mod tests {
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
+        }
+
+        #[test]
+        fn flap_full_transition_time_38s() {
+            let mut test_bed = test_bed_on_ground_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(37));
+
+            assert!(test_bed.is_flaps_moving());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+            assert!(!test_bed.is_flaps_moving());
+
+            assert!(test_bed.get_flaps_left_position_percent() >= 98.);
+            assert!(test_bed.get_flaps_right_position_percent() >= 98.);
+            assert!(test_bed.get_slats_left_position_percent() >= 98.);
+            assert!(test_bed.get_slats_right_position_percent() >= 98.);
         }
 
         #[test]

@@ -97,8 +97,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
         this.squawkCode.set(code);
       });
 
-    this.xpdrState.sub(() => this.xpdrStatusChanged());
-    this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged());
+    this.xpdrState.sub(() => this.xpdrStatusChanged(), true);
+    this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true);
 
     sub
       .on('gpwsTerrOff')

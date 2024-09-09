@@ -1,3 +1,6 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsDataStatus.scss';
@@ -19,7 +22,7 @@ const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
   private selectedPageIndex = Subject.create<number>(0);
 
-  private navDatabase = Subject.create('LH72301001');
+  private navDatabase = Subject.create('FBW2301001');
 
   private activeDatabase = Subject.create('30DEC-27JAN');
 
