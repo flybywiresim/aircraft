@@ -123,13 +123,13 @@
                 <NODE_IS_INDICATOR />
             </UseTemplate>
 
-            <!-- VOR NEEDLE -->
+            <!-- VOR1 NEEDLE -->
             <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
                 <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_VOR</NODE_ID>
-                <TOOLTIPID>TOGGLE VOR NEEDLES ON ND (INOP.)</TOOLTIPID>
-
+                <TOOLTIPID>TOGGLE VOR1 NEEDLE ON ND</TOOLTIPID>
+                <BUTTON_CODE>0 2 (L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE) 2 == ? (&gt;L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE)</BUTTON_CODE>
+                <INDICATOR_CODE>(L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE) 2 ==</INDICATOR_CODE>
                 <NODE_IS_INDICATOR />
-                <INOP />
             </UseTemplate>
 
             <!-- WX -->
@@ -161,13 +161,13 @@
                 <NODE_IS_INDICATOR />
             </UseTemplate>
 
-            <!-- ADF NEEDLE -->
+            <!-- VOR2 NEEDLE -->
             <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
                 <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_ADF</NODE_ID>
-                <TOOLTIPID>TOGGLE ADF NEEDLES ON ND (INOP.)</TOOLTIPID>
-
+                <TOOLTIPID>TOGGLE VOR2 NEEDLE ON ND</TOOLTIPID>
+                <BUTTON_CODE>0 2 (L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE) 2 == ? (&gt;L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE)</BUTTON_CODE>
+                <INDICATOR_CODE>(L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE) 2 ==</INDICATOR_CODE>
                 <NODE_IS_INDICATOR />
-                <INOP />
             </UseTemplate>
 
             <!-- Baro Unit -->
