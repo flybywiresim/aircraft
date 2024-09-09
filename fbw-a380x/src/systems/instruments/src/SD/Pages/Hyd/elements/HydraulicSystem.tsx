@@ -80,7 +80,8 @@ const ElecPump = ({ x, y, label, side, systemPressureSwitch }: ElecPumpProps) =>
     const [isElecPumpActive] = useSimVar(`L:A32NX_HYD_${side[0]}${label}_EPUMP_ACTIVE`, 'boolean', 1000);
     const [pumpPressureSwitch] = useSimVar(`L:A32NX_HYD_${side}_PUMP_${label === 'A' ? 5 : 6}_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
     const [offPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_EPUMP${side[0]}${label}_OFF_PB_IS_AUTO`, 'boolean', 1000);
-    const isOverheat = false;
+    const [isOverheat] = useSimVar(`L:A32NX_HYD_${side[0]}${label}_EPUMP_OVHT`, 'boolean', 500);
+
 
     let triangleColor = '';
     if (offPbIsAuto && !isElecPumpActive) {
