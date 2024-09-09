@@ -22,6 +22,8 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
+import { AtsuStatusCodes } from '@datalink/common';
+import { FmsRouterMessages } from '@datalink/router';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -111,6 +113,27 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.props.bus
+      .getSubscriber<FmsRouterMessages>()
+      .on('routerManagementResponse')
+      .handle((data) => {
+        this.routerResponseCallbacks.every((callback, index) => {
+          if (callback(data.status, data.requestId)) {
+            this.routerResponseCallbacks.splice(index, 1);
+            return false;
+          }
+          return true;
+        });
+      });
+
+    this.props.fmcService.master?.fmgc.data.atcCallsign.sub((c) => {
+      if (c) {
+        this.connectToNetworks(c);
+      } else {
+        this.disconnectFromNetworks();
+      }
+    });
   }
 
   protected onNewData() {
@@ -217,6 +240,41 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(false);
+  }
+
+  private requestId = 0;
+
+  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+
+  private async connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
+    const publisher = this.props.bus.getPublisher<FmsRouterMessages>();
+    return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+      const disconnectRequestId = this.requestId++;
+      publisher.pub('routerDisconnect', disconnectRequestId, true, false);
+      this.routerResponseCallbacks.push((_code: AtsuStatusCodes, id: number) => {
+        if (id === disconnectRequestId) {
+          const connectRequestId = this.requestId++;
+          publisher.pub('routerConnect', { callsign, requestId: connectRequestId }, true, false);
+          this.routerResponseCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            if (id === connectRequestId) resolve(code);
+            return id === connectRequestId;
+          });
+        }
+        return id === disconnectRequestId;
+      });
+    });
+  }
+
+  private async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
+    const publisher = this.props.bus.getPublisher<FmsRouterMessages>();
+    return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+      const disconnectRequestId = this.requestId++;
+      publisher.pub('routerDisconnect', disconnectRequestId, true, false);
+      this.routerResponseCallbacks.push((code: AtsuStatusCodes, id: number) => {
+        if (id === disconnectRequestId) resolve(code);
+        return id === disconnectRequestId;
+      });
+    });
   }
 
   render(): VNode {
