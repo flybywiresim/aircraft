@@ -615,39 +615,42 @@ impl AirDataInertialReferenceUnit {
         self.adr.is_valid()
     }
 
-    // If above speed threshold OR if data is unavailable: all discrete are set to TRUE
+    // When the ADR is unpowered (i.e. knob is set to OFF), all discretes go to open circuit (false).
+    // Discrete #4 is inverted, so ground when below 260kts, OC otherwise.
+    // When CAS is invalid but the ADR is otherwise powered (currently only possible when ADR p/b is off),
+    // 1-3 remain in their previous state, and 4 goes OC.
     fn update_discrete_outputs(&mut self) {
         let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
 
-        if speed_knot < 100. {
+        if speed_knot < 100. && self.adr.is_on {
             self.low_speed_warning_1_104kts = false;
-        } else if speed_knot > 104. {
+        } else if speed_knot > 104. && self.adr.is_on {
             self.low_speed_warning_1_104kts = true;
         }
 
-        if speed_knot < 50. {
+        if speed_knot < 50. && self.adr.is_on {
             self.low_speed_warning_2_54kts = false;
-        } else if speed_knot > 54. {
+        } else if speed_knot > 54. && self.adr.is_on {
             self.low_speed_warning_2_54kts = true;
         }
 
-        if speed_knot < 155. {
+        if speed_knot < 155. && self.adr.is_on {
             self.low_speed_warning_3_159kts = false;
-        } else if speed_knot > 159. {
+        } else if speed_knot > 159. && self.adr.is_on {
             self.low_speed_warning_3_159kts = true;
         }
 
-        if speed_knot < 260. {
+        if speed_knot < 260. && self.adr.is_on {
+            self.low_speed_warning_4_260kts = true;
+        } else if speed_knot > 264. || !self.adr.is_on {
             self.low_speed_warning_4_260kts = false;
-        } else if speed_knot > 264. {
-            self.low_speed_warning_4_260kts = true;
         }
 
-        if !self.adr_is_valid() {
-            self.low_speed_warning_1_104kts = true;
-            self.low_speed_warning_2_54kts = true;
-            self.low_speed_warning_3_159kts = true;
-            self.low_speed_warning_4_260kts = true;
+        if !self.adr.is_initialised() {
+            self.low_speed_warning_1_104kts = false;
+            self.low_speed_warning_2_54kts = false;
+            self.low_speed_warning_3_159kts = false;
+            self.low_speed_warning_4_260kts = false;
         }
     }
 
