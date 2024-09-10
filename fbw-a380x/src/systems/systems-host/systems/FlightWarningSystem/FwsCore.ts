@@ -1790,22 +1790,26 @@ export class FwsCore implements Instrument {
     const greenAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_LOW_PRESS', 'bool');
     const greenAPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_OVHT', 'bool');
     this.greenAPumpLoPressConfNode.write(greenAPumpLoPress, deltaTime);
-    this.greenAPumpFault.set(this.greenAPumpLoPressConfNode.read() || greenAPumpOverheat);
+    this.greenAPumpFault.set(this.ac1BusPowered.get() && (this.greenAPumpLoPressConfNode.read() || greenAPumpOverheat));
 
     const greenBPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_LOW_PRESS', 'bool');
     const greenBPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_OVHT', 'bool');
     this.greenBPumpLoPressConfNode.write(greenBPumpLoPress, deltaTime);
-    this.greenBPumpFault.set(this.greenBPumpLoPressConfNode.read() || greenBPumpOverheat);
+    this.greenBPumpFault.set(this.ac2BusPowered.get() && (this.greenBPumpLoPressConfNode.read() || greenBPumpOverheat));
 
     const yelowAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_LOW_PRESS', 'bool');
     const yelowAPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_OVHT', 'bool');
     this.yellowAPumpLoPressConfNode.write(yelowAPumpLoPress, deltaTime);
-    this.yellowAPumpFault.set(this.yellowAPumpLoPressConfNode.read() || yelowAPumpOverheat);
+    this.yellowAPumpFault.set(
+      this.ac3BusPowered.get() && (this.yellowAPumpLoPressConfNode.read() || yelowAPumpOverheat),
+    );
 
     const yelowBPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_LOW_PRESS', 'bool');
     const yelowBPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_OVHT', 'bool');
     this.yellowBPumpLoPressConfNode.write(yelowBPumpLoPress, deltaTime);
-    this.yellowBPumpFault.set(this.yellowBPumpLoPressConfNode.read() || yelowBPumpOverheat);
+    this.yellowBPumpFault.set(
+      this.ac4BusPowered.get() && (this.yellowBPumpLoPressConfNode.read() || yelowBPumpOverheat),
+    );
 
     this.yellowElecAandBPumpOff.set(
       !yellowAPumpAuto &&
