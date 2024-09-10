@@ -81,11 +81,11 @@
       "CostIndex": "Maliyet Endeksi",
       "CruiseAlt": "Seyir İrtifası",
       "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
-      "NoImportDueToBoardingOrRefuel": "No import possible due to boarding or refuel in progress!",
+      "NoImportDueToBoardingOrRefuel": "Biniş veya yakıt ikmali devam ettiği için indirme mümkün değildir!",
       "Route": "Rota",
       "SimBriefDataNotYetLoaded": "SimBrief verileri henüz yüklenmedi.",
       "Title": "Uçuşunuz",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastFuelPayloadImported": "Yakıt ve Yük ithal edildi!",
       "ToastWrongAircraftType": "SimBrief - Invalid aircraft type detected. Check that aircraft type in SimBrief OFP is correct.",
       "ZFW": "ZFW"
     }
@@ -134,7 +134,7 @@
       "Defueling": "Yakıt Boşaltma",
       "EstimatedDuration": "Tahmini süre (dakika)",
       "EstimatedTime": "Tahmini süre",
-      "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "GSXFuelSyncEnabled": "GSX Yakıt Senkronizasyonu Etkin",
       "LeftInnerTank": "Sol İç Tank",
       "LeftOuterTank": "Sol Dış Tank",
       "ReadyToStart": "Başlamaya Hazır",
@@ -160,14 +160,14 @@
       "DeboardConfirmationConfirm": "Yolcuları İndir",
       "DeboardConfirmationTitle": "Tüm yolcular indirilsin mi?",
       "EstimatedDurationUnit": "dakika",
-      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
+      "GSXPayloadSyncEnabled": "GSX Yük Senkronizasyonu Etkin",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
       "SelectItem": {
-        "CargoDeck": "Cargo",
+        "CargoDeck": "Kargo",
         "MainDeck": "Main",
         "UpperDeck": "Upper"
       },
@@ -193,7 +193,7 @@
       "Title": "Geri itme"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "Hava Başlatıcı Ünitesi",
       "BaggageTruck": "Bagaj Kamyonu",
       "CateringTruck": "Yemek Servis Aracı",
       "Cones": "Emniyet Konileri",
@@ -236,8 +236,8 @@
       "AirportDoesNotExist": "Havaalanı Mevcut Değil",
       "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "3. Taraf Ayarları",
+        "Title": "Navigraph hesabını bağlamak için 3. Taraf Seçenekleri'ne gidin"
       },
       "InsufficientEnv": "Yetersiz .env dosyası",
       "IntoYourBrowserAndEnterTheCodeBelow": "tarayıcınıza girin ve aşağıdaki kodu girin\n",
@@ -384,7 +384,7 @@
       "ColdDark": "Cold & Dark",
       "ConfirmationDialogMsg": "Lütfen hazır ayarın yüklenmesini onaylayın.",
       "CurrentProcedureStep": "Mevcut Prosedür Adımı",
-      "ExpediteLoading": "Fast loading (unrealistic):",
+      "ExpediteLoading": "Hızlı yükleme (gerçekçi değil):",
       "PleaseConfirmLoadingOfPreset": "Lütfen hazır ayarın yüklenmesini onaylayın.",
       "Powered": "Elektrikli",
       "ReadyPushback": "Pushback için hazır",
@@ -474,14 +474,14 @@
     "OnScreenKeyboard": "Ekran Klavyesi",
     "PauseAtTod": "Pause at Top of Descent",
     "PauseAtTodArmed": "Armed",
-    "PauseAtTodInactive": "Inactive",
+    "PauseAtTodInactive": "Aktif değil",
     "PauseAtTodStandby": "Standby",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Bağlandı",
     "SimBridgeConnecting": "Bağlanıyor...",
     "SimBridgeOff": "Kapalı",
     "SimBridgeOffline": "Mevcut değil",
-    "Simrate": "Simrate",
+    "Simrate": "Sim Hızı",
     "TT": {
       "AlignAdirs": "ADIRS'i anında hizalayın",
       "AutoBrightness": "Otomatik Parlaklığı Açma/Kapatma",
@@ -510,7 +510,7 @@
       "PaxSigns": "Yolcu İşaretleri",
       "RmpVhfSpacing": "RMP VHF Aralığı",
       "Satcom": "Satcom",
-      "Select": "Select",
+      "Select": "Seç",
       "ThrustReductionHeight": "İtki Azaltma İrtifası (ft)",
       "Title": "Uçak Seçenekleri / Pin Programları",
       "WeightUnit": "Ağırlık Birimi"
@@ -549,10 +549,10 @@
       "WindInteriorVolume": "Rüzgar iç ses seviyesi"
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "Reset": "Reset",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Title": "Automatic Call Outs"
+      "FiveHundredGlide": "Kayma Eğimi Yakalandığında Engellendi",
+      "Reset": "Sıfırla",
+      "ResetStandardConfig": "Standart Yapılandırmaya Sıfırla",
+      "Title": "Otomatik Çağrılar"
     },
     "Fast": "Hızlı",
     "Instant": "Anında",
@@ -596,10 +596,10 @@
       "Side": "Side",
       "SimBridgeIp": "Harici SimBridge Ana Bilgisayar Adresi",
       "SimBridgePort": "Harici SimBridge Bağlantı Noktası",
-      "SimbridgeEmptyAddress": "SimBridge Remote IP Address cannot be empty!",
-      "SimbridgeLocal": "This PC",
-      "SimbridgeMachine": "Simbridge Host Machine",
-      "SimbridgeRemote": "Remote PC",
+      "SimbridgeEmptyAddress": "SimBridge Uzak IP Adresi boş bırakılamaz!",
+      "SimbridgeLocal": "Bu Bilgisayar",
+      "SimbridgeMachine": "Simbridge Ana Bilgisayar",
+      "SimbridgeRemote": "Uzak Bilgisayar",
       "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
       "ThrottleDetents": "Gaz Mandalları",
       "Title": "Simülasyon Seçenekleri",
@@ -611,39 +611,39 @@
       "GsxFuelEnabled": "GSX Yakıt Senkronizasyonu",
       "GsxPayloadEnabled": "GSX Yük Senkronizasyonu",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "Bağlandı",
+        "Link": "Hesabı bağla",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Navigraph Hesap Girişi"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Navigraph Hesap Bağlantısı",
         "SubscriptionStatus": {
-          "None": "None",
-          "Unknown": "Unknown",
+          "None": "Yok",
+          "Unknown": "Bilinmeyen",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Hesaptan Çıkış Yap"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "SimBrief Kullanıcı Kimliğini geçersiz kıl",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Lütfen SimBrief kullanıcı adınızı veya pilot ID'nizi doğru girdiğinizden emin olun.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "Bağlı Navigraph Hesabı yerine kullanılacak alternatif SimBrief kullanıcı kimliği"
       },
       "Title": "3. Parti Ayarları",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief PilotID geçersiz kılma doğrulandı ve şu şekilde güncellendi"
     },
     "ThrottleConfig": {
       "Apply": "Uygula",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Geçerli gaz yapılandırma ayarlarınızı varsayılan durumlarına sıfırlamak istediğinizden emin misiniz? Bu eylem geri döndürülemez.",
       "Axis": "Eksen",
-      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "AxisDescription": "Gaz Kelebeği için Eksen $axis $throttles",
       "Back": "Geri",
       "ConfigureEnd": "Sonu Yapılandır",
       "ConfigureStart": "Başlat",
       "CurrentValue": "Geçerli Değer",
       "Deadband": "Ölü bant",
       "ErrorOverlapMsg": "ile örtüşen",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "FourThrottleWarning": "MSFS'yi Gaz Kelebeği 1+2 için Eksen 1'i ve Gaz Kelebeği 3+4 için Eksen 2'yi kullanacak şekilde yapılandırmayı unutmayın.",
       "IndependentAxis": "Bağımsız Eksen",
       "LoadFromFile": "Dosyadan Yükle",
       "PleaseEnterAValidDeadzone": "Lütfen geçerli bir ölü bölge girin",
@@ -654,7 +654,7 @@
       "SaveAndApply": "Kaydet ve Uygula",
       "SetFromThrottle": "Throttle'dan ayarla",
       "ThrottleConfigurationReset": "Throttle Yapılandırmasını Sıfırla",
-      "TogaOnAxis": "TOGA On Axis"
+      "TogaOnAxis": "TOGA Eksende"
     },
     "Title": "Ayarlar",
     "Unrealistic": "Gerçekçi olmayan",
