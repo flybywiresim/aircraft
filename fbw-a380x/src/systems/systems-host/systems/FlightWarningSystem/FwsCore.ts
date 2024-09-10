@@ -726,7 +726,11 @@ export class FwsCore implements Instrument {
 
   public readonly greenAPumpAuto = Subject.create(false);
 
+  private readonly greenAPumpLoPressConfNode = new NXLogicConfirmNode(3);
+
   public readonly greenAPumpFault = Subject.create(false);
+
+  private readonly greenBPumpLoPressConfNode = new NXLogicConfirmNode(3);
 
   public readonly greenBPumpFault = Subject.create(false);
 
@@ -742,7 +746,11 @@ export class FwsCore implements Instrument {
 
   public readonly yellowAPumpFault = Subject.create(false);
 
+  private readonly yellowAPumpLoPressConfNode = new NXLogicConfirmNode(3);
+
   public readonly yellowBPumpFault = Subject.create(false);
+
+  private readonly yellowBPumpLoPressConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng1APumpAuto = Subject.create(false);
 
@@ -1779,21 +1787,25 @@ export class FwsCore implements Instrument {
     this.yellowBPumpAuto.set(yellowBPumpAuto);
 
     // fixme add fault signal condition of elec pump fault when implemented
-    const greenAPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_GA_EPUMP_LOW_PRESS', 'bool');
-    const greenAPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_GA_EPUMP_OVHT', 'bool');
-    this.greenAPumpFault.set(greenAPumpLoPress || greenAPumpOverheat);
+    const greenAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_LOW_PRESS', 'bool');
+    const greenAPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_OVHT', 'bool');
+    this.greenAPumpLoPressConfNode.write(greenAPumpLoPress, deltaTime);
+    this.greenAPumpFault.set(this.greenAPumpLoPressConfNode.read() || greenAPumpOverheat);
 
-    const greenBPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_GB_EPUMP_LOW_PRESS', 'bool');
-    const greenBPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_GB_EPUMP_OVHT', 'bool');
-    this.greenBPumpFault.set(greenBPumpLoPress || greenBPumpOverheat);
+    const greenBPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_LOW_PRESS', 'bool');
+    const greenBPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_OVHT', 'bool');
+    this.greenBPumpLoPressConfNode.write(greenBPumpLoPress, deltaTime);
+    this.greenBPumpFault.set(this.greenBPumpLoPressConfNode.read() || greenBPumpOverheat);
 
-    const yelowAPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_YA_EPUMP_LOW_PRESS', 'bool');
-    const yelowAPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_YA_EPUMP_OVHT', 'bool');
-    this.yellowAPumpFault.set(yelowAPumpLoPress || yelowAPumpOverheat);
+    const yelowAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_LOW_PRESS', 'bool');
+    const yelowAPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_OVHT', 'bool');
+    this.yellowAPumpLoPressConfNode.write(yelowAPumpLoPress, deltaTime);
+    this.yellowAPumpFault.set(this.yellowAPumpLoPressConfNode.read() || yelowAPumpOverheat);
 
-    const yelowBPumpLoPress = SimVar.GetSimVarValue('A32NX_HYD_YB_EPUMP_LOW_PRESS', 'bool');
-    const yelowBPumpOverheat = SimVar.GetSimVarValue('A32NX_HYD_YB_EPUMP_OVHT', 'bool');
-    this.yellowBPumpFault.set(yelowBPumpLoPress || yelowBPumpOverheat);
+    const yelowBPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_LOW_PRESS', 'bool');
+    const yelowBPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_OVHT', 'bool');
+    this.yellowBPumpLoPressConfNode.write(yelowBPumpLoPress, deltaTime);
+    this.yellowBPumpFault.set(this.yellowBPumpLoPressConfNode.read() || yelowBPumpOverheat);
 
     this.yellowElecAandBPumpOff.set(
       !yellowAPumpAuto &&
