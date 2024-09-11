@@ -329,6 +329,7 @@ class SimConnectInterface {
   bool setClientDataLgciu(base_lgciu_bus output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus output, int sfccIndex);
   bool setClientDataIls(base_ils_bus output, int ilsIndex);
+  bool setClientDataTcas(base_tcas_bus output);
   bool setClientDataFadec(base_ecu_bus output, int fadecIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
@@ -394,6 +395,7 @@ class SimConnectInterface {
     SFCC_2_BUS,
     ILS_1_BUS,
     ILS_2_BUS,
+    TCAS_BUS,
   };
 
   bool isConnected = false;
