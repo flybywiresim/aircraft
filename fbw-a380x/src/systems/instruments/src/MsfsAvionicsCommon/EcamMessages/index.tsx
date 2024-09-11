@@ -224,7 +224,7 @@ export const EcamInfos: { [n: string]: string } = {
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
-export const EcamLimitations: { [n: number]: string } = {
+export const EcamLimitations: { [n: string]: string } = {
   220400001: '\x1b<5mNO AUTOLAND',
   230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',

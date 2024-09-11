@@ -1797,18 +1797,18 @@ export class FwsCore implements Instrument {
     this.greenBPumpLoPressConfNode.write(greenBPumpLoPress, deltaTime);
     this.greenBPumpFault.set(this.ac2BusPowered.get() && (this.greenBPumpLoPressConfNode.read() || greenBPumpOverheat));
 
-    const yelowAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_LOW_PRESS', 'bool');
-    const yelowAPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_OVHT', 'bool');
-    this.yellowAPumpLoPressConfNode.write(yelowAPumpLoPress, deltaTime);
+    const yellowAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_LOW_PRESS', 'bool');
+    const yellowAPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_OVHT', 'bool');
+    this.yellowAPumpLoPressConfNode.write(yellowAPumpLoPress, deltaTime);
     this.yellowAPumpFault.set(
-      this.ac3BusPowered.get() && (this.yellowAPumpLoPressConfNode.read() || yelowAPumpOverheat),
+      this.ac3BusPowered.get() && (this.yellowAPumpLoPressConfNode.read() || yellowAPumpOverheat),
     );
 
-    const yelowBPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_LOW_PRESS', 'bool');
-    const yelowBPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_OVHT', 'bool');
-    this.yellowBPumpLoPressConfNode.write(yelowBPumpLoPress, deltaTime);
+    const yellowBPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_LOW_PRESS', 'bool');
+    const yellowBPumpOverheat = SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_OVHT', 'bool');
+    this.yellowBPumpLoPressConfNode.write(yellowBPumpLoPress, deltaTime);
     this.yellowBPumpFault.set(
-      this.ac4BusPowered.get() && (this.yellowBPumpLoPressConfNode.read() || yelowBPumpOverheat),
+      this.ac4BusPowered.get() && (this.yellowBPumpLoPressConfNode.read() || yellowBPumpOverheat),
     );
 
     this.yellowElecAandBPumpOff.set(
