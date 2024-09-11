@@ -72,6 +72,11 @@ base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
   false,
   false,
   false,
+  0.0,
+  false,
+  tcas_submode::VS,
+  false,
+  false,
   false,
   false,
   false,
@@ -173,9 +178,16 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   14.0,
   15.0,
   22.0,
+  25.0,
   26.0,
   27.0,
   29.0,
+  18.0,
+  19.0,
+  20.0,
+  17.0,
+  20.0,
+  24.0,
   15.0,
   11.0,
   20.0,
@@ -211,9 +223,12 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   19.0,
   21.0,
   13.0,
+  20.0,
   19.0,
   20.0,
+  20.0,
   23.0,
+  20.0,
   17.0,
   18.0,
   19.0,
@@ -241,6 +256,10 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   20.0,
   22.0,
   12.0,
+  13.0,
+  20.0,
+  20.0,
+  12.0,
   11.0,
   20.0,
   12.0,
@@ -257,6 +276,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   18.0,
   20.0,
   29.0,
+  900.0,
   700.0,
   20.0,
   36.7,
@@ -296,6 +316,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.8,
   0.133,
   0.133,
+  250.0,
   30.0,
   0.0,
   0.0,
@@ -318,11 +339,18 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   24.0,
   24.0,
   40.0,
+  500.0,
+  500.0,
   0.0,
   0.0,
   0.0,
   0.0,
   0.0,
+  0.0,
+  0.0,
+  1.0,
+  1.0,
+  1.0,
   1.0,
   1.0,
   1.0,
@@ -331,6 +359,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   1.0,
   1.0,
   -2.0,
+  0.0,
+  0.0,
+  0.0,
   0.0,
   0.0,
   0.0,
@@ -381,13 +412,18 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.72,
   0.72,
   0.72,
+  0.72,
+  5.0,
+  0.72,
+  0.72,
   5.0,
   0.72,
   0.72,
   0.72,
-  0.72,
-  0.72,
   3.0,
+  10.0,
+  10.0,
+  10.0,
   0.9,
   0.72,
   3.0,
@@ -441,6 +477,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
+  24.0F,
+  24.0F,
   0.0F,
   0.0F,
   0.0F,
@@ -548,6 +586,17 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  tcas_submode::ALT_ACQ,
+  tcas_submode::ALT_HOLD,
+  tcas_submode::VS,
+  tcas_submode::ALT_ACQ,
+  tcas_submode::ALT_ACQ,
+  false,
   false,
   false,
   false,
@@ -570,6 +619,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   true,
+  false,
+  false,
+  false,
   false,
   false,
   false,
@@ -592,12 +644,16 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   false,
+  false,
+  false,
   true,
   true,
   true,
   true,
   true,
   false,
+  true,
+  true,
   true,
   true,
   true,
@@ -690,6 +746,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   true,
   false,
   true,
+  false,
+  true,
   true,
   false,
   true,
@@ -697,6 +755,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   true,
   true,
+  true,
   false,
   true,
   true,
@@ -707,6 +766,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   true,
   true,
   false,
+  true,
+  true,
   true,
   true,
   true,
@@ -737,6 +798,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       },
 
       {
+        false,
         false,
         false,
         false,
@@ -2291,6 +2353,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
@@ -2390,6 +2457,18 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
             0.0F
           },
 
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          }
+        },
+
+        {
           {
             0U,
             0.0F
@@ -2797,7 +2876,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         }
       },
       false,
-      0.0
+      0.0,
+      false,
+      false
     },
 
     {
@@ -2872,6 +2953,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       false,
       false,
       false,
+      0.0,
+      false,
+      tcas_submode::VS,
+      false,
+      false,
       false,
       false,
       false,
@@ -2937,6 +3023,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
     {
       {
+        {
+          0U,
+          0.0F
+        },
+
         {
           0U,
           0.0F
@@ -3591,11 +3682,18 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       }
     },
     false,
-    0.0
+    0.0,
+    false,
+    false
   },
 
   {
     {
+      {
+        0U,
+        0.0F
+      },
+
       {
         0U,
         0.0F
@@ -3927,6 +4025,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     false,
     false,
     false,
+    0.0,
+    false,
+    tcas_submode::VS,
+    false,
+    false,
     false,
     false,
     false,
@@ -3995,6 +4098,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0,
   0.0,
   0.0,
+  0.0,
   9.81,
   9.81,
   -1.0,
@@ -4032,8 +4136,10 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
   -1.0F,
   0.0F,
+  0.0F,
   -2.0F,
   4.0F,
+  -20.0F,
   0.0174532924F,
   0.0174532924F,
   10.0F,
@@ -4054,6 +4160,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
@@ -4120,6 +4229,14 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
@@ -4140,6 +4257,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
   true,
   false,
@@ -4149,5 +4268,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   false,
+  false,
+  true,
   false
 };

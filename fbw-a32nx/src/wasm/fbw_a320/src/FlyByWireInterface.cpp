@@ -117,6 +117,8 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateAdirs(i);
   }
 
+  result &= updateTcas();
+
   result &= updateFcu(calculatedSampleTime);
 
   result &= updateFcuShim();
@@ -352,10 +354,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTaOnly = std::make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
   idTcasState = std::make_unique<LocalVariable>("A32NX_TCAS_STATE");
   idTcasRaCorrective = std::make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
-  idTcasTargetGreenMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
-  idTcasTargetGreenMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
-  idTcasTargetRedMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
-  idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
+  idTcasRaType = std::make_unique<LocalVariable>("A32NX_TCAS_RA_TYPE");
+  idTcasRaRateToMaintain = std::make_unique<LocalVariable>("A32NX_TCAS_RA_RATE_TO_MAINTAIN");
+  idTcasRaUpAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_UP_ADVISORY_STATUS");
+  idTcasRaDownAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_DOWN_ADVISORY_STATUS");
+  idTcasSensitivityLevel = std::make_unique<LocalVariable>("A32NX_TCAS_SENSITIVITY");
 
   idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -736,6 +739,11 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcABusDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_1");
     idFmgcABusDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_2");
     idFmgcABusDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_6");
+    idFmgcABusDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_3");
+    idFmgcABusDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_1");
+    idFmgcABusDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_2");
+    idFmgcABusDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_6");
+    idFmgcABusDiscreteWord7[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_7");
   }
 
   idStickLockActive = std::make_unique<LocalVariable>("A32NX_STICK_LOCK_ACTIVE");
@@ -1295,6 +1303,46 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateTcas() {
+  uint8_t mode = 0;
+  if (idTcasMode->get() == 0) {
+    mode = 0;
+  } else if (idTcasTaOnly->get()) {
+    mode = 0b0100;
+  } else {
+    mode = 0b1100;
+  }
+
+  tcasBusOutputs.sensitivity_level.SSM = Arinc429SignStatus::NormalOperation;
+  tcasBusOutputs.sensitivity_level.Data = static_cast<float>(((idTcasMode->get() == 0 ? 1 : 0) << 24) | (mode << 25));
+
+  auto rateToMaintain = idTcasRaRateToMaintain->get();
+  uint8_t uintRateToMaintain = static_cast<uint8_t>(std::abs(rateToMaintain) / 100) & 0b00111111;
+  uint8_t combinedControl = 0;
+  if (idTcasState->get() < 2) {
+    combinedControl = 0;
+  } else if (idTcasRaCorrective->get() == 1) {
+    combinedControl = rateToMaintain > 0 ? 4 : 5;
+  } else if (idTcasRaCorrective->get() == 0) {
+    combinedControl = 6;
+  }
+  uint8_t verticalControl = static_cast<uint8_t>(idTcasRaType->get()) & 0b00000111;
+  uint8_t upAdvisory = static_cast<uint8_t>(idTcasRaUpAdvStatus->get()) & 0b00000111;
+  uint8_t downAdvisory = static_cast<uint8_t>(idTcasRaDownAdvStatus->get()) & 0b00000111;
+
+  tcasBusOutputs.vertical_resolution_advisory.SSM =
+      idTcasMode->get() < 2 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
+  tcasBusOutputs.vertical_resolution_advisory.Data =
+      static_cast<float>((uintRateToMaintain << 10) | (rateToMaintain < 0 ? 1u << 16 : 0) | (combinedControl << 17) |
+                         (verticalControl << 20) | (upAdvisory << 23) | (downAdvisory << 26));
+
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataTcas(tcasBusOutputs);
+  }
+
+  return true;
+}
+
 bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   // do not further process when active pause is on
   if (simConnectInterface.isSimInActivePause()) {
@@ -1717,6 +1765,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
       !(fmgcIndex == 0 ? simData.engine_combustion_2 : simData.engine_combustion_1);
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.eng_own_stop =
       !(fmgcIndex == 0 ? simData.engine_combustion_1 : simData.engine_combustion_2);
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.tcas_ta_display = idTcasState->get() == 1;
 
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fm_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
@@ -1772,6 +1821,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.ils_own_bus = ilsBusOutputs[fmgcIndex];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fmgc_opp_bus = fmgcsBusOutputs[oppFmgcIndex].fmgc_a_bus;
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fcu_bus = fcuBusOutputs;
+  fmgcs[fmgcIndex].modelInputs.in.bus_inputs.tcas_bus = tcasBusOutputs;
 
   if (fmgcIndex == fmgcDisabled) {
     simConnectInterface.setClientDataFmgcDiscretes(fmgcs[fmgcIndex].modelInputs.in.discrete_inputs);
@@ -1817,6 +1867,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcABusDiscreteWord1[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_1));
   idFmgcABusDiscreteWord2[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_2));
   idFmgcABusDiscreteWord6[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_6));
+  idFmgcABusDiscreteWord7[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_7));
 
   // Set the stick lock var (for sounds), after both FMGCs have updated
   if (fmgcIndex == 1) {
@@ -2651,23 +2702,4 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
 
   // result
   return true;
-}
-
-double FlyByWireInterface::getTcasModeAvailable() {
-  auto state = idTcasMode->get();
-  auto isTaOnly = idTcasTaOnly->get();
-
-  // TA/RA active and TCAS not in TA only mode
-  return state == 2 && !isTaOnly;
-}
-
-double FlyByWireInterface::getTcasAdvisoryState() {
-  auto state = idTcasState->get();
-  auto isCorrective = idTcasRaCorrective->get();
-
-  if (state == 2 && isCorrective) {
-    state = 3;
-  }
-
-  return state;
 }

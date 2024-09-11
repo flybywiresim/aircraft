@@ -18,6 +18,18 @@ enum class fmgc_flight_phase
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_tcas_submode_
+#define DEFINED_TYPEDEF_FOR_tcas_submode_
+
+enum class tcas_submode
+  : int32_T {
+  VS = 0,
+  ALT_ACQ,
+  ALT_HOLD
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
@@ -67,6 +79,33 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+
+struct base_fmgc_b_bus
+{
+  base_arinc_429 fac_weight_lbs;
+  base_arinc_429 fm_weight_lbs;
+  base_arinc_429 fac_cg_percent;
+  base_arinc_429 fm_cg_percent;
+  base_arinc_429 fg_radio_height_ft;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 approach_spd_target_kn;
+  base_arinc_429 delta_p_ail_cmd_deg;
+  base_arinc_429 delta_p_splr_cmd_deg;
+  base_arinc_429 delta_r_cmd_deg;
+  base_arinc_429 delta_nose_wheel_cmd_deg;
+  base_arinc_429 delta_q_cmd_deg;
+  base_arinc_429 n1_left_percent;
+  base_arinc_429 n1_right_percent;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
 #define DEFINED_TYPEDEF_FOR_base_ils_bus_
 
@@ -76,6 +115,49 @@ struct base_ils_bus
   base_arinc_429 ils_frequency_mhz;
   base_arinc_429 localizer_deviation_deg;
   base_arinc_429 glideslope_deviation_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
+
+struct base_fmgc_a_bus
+{
+  base_arinc_429 pfd_sel_spd_kts;
+  base_arinc_429 runway_hdg_memorized_deg;
+  base_arinc_429 preset_mach_from_mcdu;
+  base_arinc_429 preset_speed_from_mcdu_kts;
+  base_arinc_429 roll_fd_command;
+  base_arinc_429 pitch_fd_command;
+  base_arinc_429 yaw_fd_command;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 fm_alt_constraint_ft;
+  base_arinc_429 altitude_ft;
+  base_arinc_429 mach;
+  base_arinc_429 cas_kts;
+  base_arinc_429 flx_to_temp_deg_c;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 ats_fma_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_6;
+  base_arinc_429 synchro_spd_mach_value;
+  base_arinc_429 low_target_speed_margin_kts;
+  base_arinc_429 high_target_speed_margin_kts;
+  base_arinc_429 delta_p_ail_voted_cmd_deg;
+  base_arinc_429 delta_p_splr_voted_cmd_deg;
+  base_arinc_429 delta_r_voted_cmd_deg;
+  base_arinc_429 delta_nosewheel_voted_cmd_deg;
+  base_arinc_429 delta_q_voted_cmd_deg;
+  base_arinc_429 track_deg;
+  base_arinc_429 heading_deg;
+  base_arinc_429 fpa_deg;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 vertical_speed_ft_min;
+  base_arinc_429 discrete_word_7;
 };
 
 #endif
@@ -111,59 +193,6 @@ enum class vertical_law
   FLARE,
   SRS,
   VPATH
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-
-struct base_fmgc_b_bus
-{
-  base_arinc_429 fac_weight_lbs;
-  base_arinc_429 fm_weight_lbs;
-  base_arinc_429 fac_cg_percent;
-  base_arinc_429 fm_cg_percent;
-  base_arinc_429 fg_radio_height_ft;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 approach_spd_target_kn;
-  base_arinc_429 delta_p_ail_cmd_deg;
-  base_arinc_429 delta_p_splr_cmd_deg;
-  base_arinc_429 delta_r_cmd_deg;
-  base_arinc_429 delta_nose_wheel_cmd_deg;
-  base_arinc_429 delta_q_cmd_deg;
-  base_arinc_429 n1_left_percent;
-  base_arinc_429 n1_right_percent;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_time_
-#define DEFINED_TYPEDEF_FOR_base_time_
-
-struct base_time
-{
-  real_T dt;
-  real_T simulation_time;
-  real_T monotonic_time;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sim_data_
-#define DEFINED_TYPEDEF_FOR_base_sim_data_
-
-struct base_sim_data
-{
-  boolean_T slew_on;
-  boolean_T pause_on;
-  boolean_T tracking_mode_on_override;
-  boolean_T tailstrike_protection_on;
-  boolean_T computer_running;
 };
 
 #endif
@@ -207,6 +236,33 @@ struct base_fmgc_discrete_inputs
   boolean_T elac_own_ap_disc;
   boolean_T eng_opp_stop;
   boolean_T eng_own_stop;
+  boolean_T tcas_ta_display;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_time_
+#define DEFINED_TYPEDEF_FOR_base_time_
+
+struct base_time
+{
+  real_T dt;
+  real_T simulation_time;
+  real_T monotonic_time;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sim_data_
+#define DEFINED_TYPEDEF_FOR_base_sim_data_
+
+struct base_sim_data
+{
+  boolean_T slew_on;
+  boolean_T pause_on;
+  boolean_T tracking_mode_on_override;
+  boolean_T tailstrike_protection_on;
+  boolean_T computer_running;
 };
 
 #endif
@@ -412,48 +468,6 @@ struct base_ra_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-
-struct base_fmgc_a_bus
-{
-  base_arinc_429 pfd_sel_spd_kts;
-  base_arinc_429 runway_hdg_memorized_deg;
-  base_arinc_429 preset_mach_from_mcdu;
-  base_arinc_429 preset_speed_from_mcdu_kts;
-  base_arinc_429 roll_fd_command;
-  base_arinc_429 pitch_fd_command;
-  base_arinc_429 yaw_fd_command;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 fm_alt_constraint_ft;
-  base_arinc_429 altitude_ft;
-  base_arinc_429 mach;
-  base_arinc_429 cas_kts;
-  base_arinc_429 flx_to_temp_deg_c;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_6;
-  base_arinc_429 synchro_spd_mach_value;
-  base_arinc_429 low_target_speed_margin_kts;
-  base_arinc_429 high_target_speed_margin_kts;
-  base_arinc_429 delta_p_ail_voted_cmd_deg;
-  base_arinc_429 delta_p_splr_voted_cmd_deg;
-  base_arinc_429 delta_r_voted_cmd_deg;
-  base_arinc_429 delta_nosewheel_voted_cmd_deg;
-  base_arinc_429 delta_q_voted_cmd_deg;
-  base_arinc_429 track_deg;
-  base_arinc_429 heading_deg;
-  base_arinc_429 fpa_deg;
-  base_arinc_429 n1_command_percent;
-  base_arinc_429 vertical_speed_ft_min;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_
 #define DEFINED_TYPEDEF_FOR_base_fcu_bus_
 
@@ -484,6 +498,17 @@ struct base_fcu_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_tcas_bus_
+#define DEFINED_TYPEDEF_FOR_base_tcas_bus_
+
+struct base_tcas_bus
+{
+  base_arinc_429 sensitivity_level;
+  base_arinc_429 vertical_resolution_advisory;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_bus_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_bus_inputs_
 
@@ -507,6 +532,7 @@ struct base_fmgc_bus_inputs
   base_ils_bus ils_own_bus;
   base_fmgc_a_bus fmgc_opp_bus;
   base_fcu_bus fcu_bus;
+  base_tcas_bus tcas_bus;
 };
 
 #endif
@@ -565,6 +591,8 @@ struct base_fmgc_logic_outputs
   base_ils_bus ils_computation_data;
   boolean_T ils_tune_inhibit;
   real_T rwy_hdg_memo;
+  boolean_T tcas_failure;
+  boolean_T tcas_mode_available;
 };
 
 #endif
@@ -667,6 +695,11 @@ struct base_fmgc_ap_fd_logic_outputs
   boolean_T roll_fd_bars_flashing;
   boolean_T loc_bc_selection;
   boolean_T vs_target_not_held;
+  real_T tcas_vs_target;
+  boolean_T tcas_ra_corrective;
+  tcas_submode active_tcas_submode;
+  boolean_T tcas_alt_acq_cond;
+  boolean_T tcas_alt_hold_cond;
   boolean_T tcas_ra_inhibited;
   boolean_T trk_fpa_deselected;
   boolean_T longi_large_box_tcas;
