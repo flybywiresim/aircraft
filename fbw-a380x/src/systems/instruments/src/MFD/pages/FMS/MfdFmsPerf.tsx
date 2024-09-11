@@ -380,6 +380,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private transFlIsPilotEntered = Subject.create<boolean>(true);
 
   // APPR page subjects, refs and methods
+
+  private precisionApproachSelected = Subject.create<boolean>(false);
+
   private apprIdent = Subject.create<string>('');
 
   private apprHeadwind = Subject.create<string>('');
@@ -391,6 +394,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprLandingWeight = Subject.create<number | null>(null);
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
+
+  private apprRadioText = '-----';
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -520,6 +525,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     if (this.loadedFlightPlan.approach) {
       this.apprIdent.set(this.loadedFlightPlan.approach.ident);
+      this.precisionApproachSelected.set(
+        this.loadedFlightPlan.approach.type === 5 || this.loadedFlightPlan.approach.type === 6,
+      ); // ILS or GLS
+      this.apprRadioText = 'RADIO';
+    } else {
+      this.apprRadioText = '-----';
+      this.precisionApproachSelected.set(false);
     }
 
     if (fm.approachFlapConfig) {
@@ -855,7 +867,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
@@ -2442,25 +2454,31 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         />
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
-                        <span class="mfd-label mfd-spacing-right perf-appr-weather">RADIO</span>
-                        <InputField<number>
-                          dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
-                          dataHandlerDuringValidation={async (v) => {
-                            if (v === undefined) {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                            } else if (v === null) {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
-                            } else {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
-                            }
-                          }}
-                          mandatory={Subject.create(false)}
-                          value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
-                          containerStyle="width: 150px;"
-                          alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                          hEventConsumer={this.props.mfd.hEventConsumer}
-                          interactionMode={this.props.mfd.interactionMode}
+                        <span class="mfd-label mfd-spacing-right perf-appr-weather">{this.apprRadioText}</span>
+                        <ConditionalComponent
+                          condition={this.precisionApproachSelected}
+                          componentIfTrue={
+                            <InputField<number>
+                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                              dataHandlerDuringValidation={async (v) => {
+                                if (v === undefined) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
+                                } else if (v === null) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                } else {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                }
+                              }}
+                              mandatory={Subject.create(false)}
+                              value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
+                              containerStyle="width: 150px;"
+                              alignText="flex-end"
+                              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                              hEventConsumer={this.props.mfd.hEventConsumer}
+                              interactionMode={this.props.mfd.interactionMode}
+                            />
+                          }
+                          componentIfFalse={<></>}
                         />
                       </div>
                     </div>
