@@ -3026,6 +3026,31 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 26  | ROLLOUT Submode                   |
       | 28  | Roll FD Bars Flashing             |
 
+- A32NX_FMGC_{number}_DISCRETE_WORD_7
+    - Arinc429<Discrete>
+    - Bits marked with ? are not guessed/unknown
+      | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | AP/FD TCAS mode installed         |
+      | 12  | TCAS mode armed                   |
+      | 13  | TCAS mode active                  |
+      | 14  | TCAS mode fault                   |
+      | 15  | ?                                 |
+      | 16  | ?                                 |
+      | 17  | ?                                 |
+      | 18  | TCAS Large box on FMA             |
+      | 19  | ?                                 |
+      | 20  | SOFT GA Inop                      |
+      | 21  | ?                                 |
+      | 22  | ?                                 |
+      | 23  | ?                                 |
+      | 24  | TCAS RA Inhibited message         |
+      | 25  | TRK FPA Deselected message        |
+      | 26  | ?                                 |
+      | 27  | ? TCAS RA Corrective              |
+      | 28  | TCAS RA Nose Up                   |
+      | 29  | ? TCAS RA Nose Down               |
+
 - A32NX_STICK_LOCK_ACTIVE
     - Indicates if the stick lock is active (when AP engaged).
         Currently used only for sounds.

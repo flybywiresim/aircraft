@@ -56,7 +56,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private fmgcDiscreteWord4 = new Arinc429Word(0);
 
-  private tcasArmed = false;
+  private fmgcDiscreteWord7 = new Arinc429Word(0);
 
   private athrModeMessage = 0;
 
@@ -69,10 +69,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private tdReached = false;
 
   private checkSpeedMode = false;
-
-  private tcasRaInhibited = Subject.create(false);
-
-  private trkFpaDeselected = Subject.create(false);
 
   private fcdcDiscreteWord1 = new Arinc429Word(0);
 
@@ -97,10 +93,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     const BC3Message =
       getBC3Message(
         this.props.isAttExcessive.get(),
-        this.tcasArmed,
+        this.fmgcDiscreteWord7,
         this.setHoldSpeed,
-        this.trkFpaDeselected.get(),
-        this.tcasRaInhibited.get(),
         this.fcdcDiscreteWord1,
         this.fwcFlightPhase,
         this.tdReached,
@@ -168,7 +162,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       .on('fmgcDiscreteWord7')
       .whenChanged()
       .handle((word) => {
-        this.tcasArmed = word.getBitValueOr(12, false);
+        this.fmgcDiscreteWord7 = word;
         this.handleFMABorders();
       });
 
@@ -968,7 +962,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
     }
 
-    const bigBoxDisplayed = this.fmgcDiscreteWord7.getBitValueOr(18, false);
+    const bigBoxDisplayed = tcasMode && this.fmgcDiscreteWord7.getBitValueOr(18, false);
     const boxPathString =
       tcasMode && bigBoxDisplayed ? 'm35.756 1.8143h27.918v13.506h-27.918z' : 'm35.756 1.8143h27.918v6.0476h-27.918z';
 
@@ -1461,10 +1455,8 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
 
 const getBC3Message = (
   isAttExcessive: boolean,
-  TCASArmed: boolean,
+  fmgcDiscreteWord7: Arinc429Word,
   setHoldSpeed: boolean,
-  trkFpaDeselectedTCAS: boolean,
-  tcasRaInhibited: boolean,
   fcdcWord1: Arinc429Word,
   fwcFlightPhase: number,
   tdReached: boolean,
@@ -1472,6 +1464,10 @@ const getBC3Message = (
 ) => {
   const flightPhaseForWarning =
     fwcFlightPhase >= 2 && fwcFlightPhase <= 9 && fwcFlightPhase !== 4 && fwcFlightPhase !== 5;
+
+  const TCASArmed = fmgcDiscreteWord7.getBitValueOr(12, false);
+  const tcasRaInhibited = fmgcDiscreteWord7.getBitValueOr(24, false);
+  const trkFpaDeselectedTCAS = fmgcDiscreteWord7.getBitValueOr(25, false);
 
   let text: string;
   let className: string;
@@ -1545,13 +1541,9 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private isAttExcessive = false;
 
-  private tcasArmed = false;
+  private fmgcDiscreteWord7 = new Arinc429Word(0);
 
   private setHoldSpeed = false;
-
-  private tcasRaInhibited = false;
-
-  private trkFpaDeselected = false;
 
   private fcdcDiscreteWord1 = new Arinc429Word(0);
 
@@ -1564,10 +1556,8 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
       this.isAttExcessive,
-      this.tcasArmed,
+      this.fmgcDiscreteWord7,
       this.setHoldSpeed,
-      this.trkFpaDeselected,
-      this.tcasRaInhibited,
       this.fcdcDiscreteWord1,
       this.fwcFlightPhase,
       this.tdReached,
@@ -1595,7 +1585,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       .on('fmgcDiscreteWord7')
       .whenChanged()
       .handle((word) => {
-        this.tcasArmed = word.getBitValueOr(12, false);
+        this.fmgcDiscreteWord7 = word;
         this.fillBC3Cell();
       });
 
