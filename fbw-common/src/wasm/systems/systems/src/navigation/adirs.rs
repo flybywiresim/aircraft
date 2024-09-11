@@ -4613,13 +4613,13 @@ mod tests {
             test_bed.run();
 
             assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
             );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
             test_bed.run();
             assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
             );
         }
 
@@ -4633,19 +4633,19 @@ mod tests {
             test_bed.run();
 
             assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
             );
 
             assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
             );
 
             assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
             );
 
             assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
             );
         }
     }
