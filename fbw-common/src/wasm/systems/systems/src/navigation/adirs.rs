@@ -611,10 +611,6 @@ impl AirDataInertialReferenceUnit {
         self.ir.has_fault()
     }
 
-    fn adr_is_valid(&self) -> bool {
-        self.adr.is_valid()
-    }
-
     // When the ADR is unpowered (i.e. knob is set to OFF), all discretes go to open circuit (false).
     // Discrete #4 is inverted, so ground when below 260kts, OC otherwise.
     // When CAS is invalid but the ADR is otherwise powered (currently only possible when ADR p/b is off),
