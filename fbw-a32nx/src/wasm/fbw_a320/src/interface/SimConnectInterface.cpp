@@ -681,6 +681,17 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_TCAS_BUS", ClientData::TCAS_BUS);
+  // create client data
+  result &=
+      SimConnect_CreateClientData(hSimConnect, ClientData::TCAS_BUS, sizeof(base_tcas_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &=
+      SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::TCAS_BUS, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_tcas_bus));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
   for (int i = 0; i < 2; i++) {
     auto defineId = ClientData::FADEC_1_BUS + i;
     // map client id
@@ -899,10 +910,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::FMGC_DISCRETE_INPUTS, sizeof(base_fmgc_discrete_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 34; i++) {
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
-  }
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_fmgc_discrete_inputs));
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -943,10 +952,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_fmgc_a_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 33; i++) {
-      result &=
-          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-    }
+
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_fmgc_a_bus));
 
     // request data to be updated when set
     if (i == fmgcDisabled) {
@@ -1382,6 +1389,10 @@ bool SimConnectInterface::setClientDataSfcc(base_sfcc_bus output, int sfccIndex)
 
 bool SimConnectInterface::setClientDataIls(base_ils_bus output, int ilsIndex) {
   return sendClientData(ClientData::ILS_1_BUS + ilsIndex, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataTcas(base_tcas_bus output) {
+  return sendClientData(ClientData::TCAS_BUS, sizeof(output), &output);
 }
 
 bool SimConnectInterface::setClientDataFadec(base_ecu_bus output, int fadecIndex) {

@@ -91,10 +91,12 @@ class FcuComputer final
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_lq;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_e1;
     rtDW_EFISFilterLogic_FcuComputer_T sf_EFISFilterLogic;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_df;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ar;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kw;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ch;
     rtDW_MATLABFunction1_FcuComputer_T sf_MATLABFunction1_o;
+    rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_ey;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_hh;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hb;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ma;
@@ -137,13 +139,14 @@ class FcuComputer final
   struct Parameters_FcuComputer_T {
     real_T BitfromLabel1_bit;
     real_T BitfromLabel2_bit;
+    real_T BitfromLabel5_bit;
     real_T BitfromLabel3_bit;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit_e;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel3_bit_g;
     real_T BitfromLabel6_bit;
-    real_T BitfromLabel5_bit;
+    real_T BitfromLabel5_bit_i;
     real_T BitfromLabel8_bit;
     real_T BitfromLabel7_bit;
     real_T BitfromLabel9_bit;
@@ -177,7 +180,12 @@ class FcuComputer final
     real_T BitfromLabel7_bit_b;
     real_T BitfromLabel8_bit_g;
     real_T BitfromLabel1_bit_g;
+    real_T BitfromLabel_bit_g;
+    real_T BitfromLabel1_bit_d;
+    real_T BitfromLabel2_bit_f;
+    real_T BitfromLabel3_bit_o;
     real_T BitfromLabel2_bit_o;
+    real_T BitfromLabel5_bit_n;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode1_isRisingEdge;
     real_T MTrigNode2_isRisingEdge;
@@ -195,6 +203,7 @@ class FcuComputer final
     real_T MTrigNode2_isRisingEdge_p;
     real_T MTrigNode3_isRisingEdge;
     real_T MTrigNode_isRisingEdge_kt;
+    real_T MTrigNode1_isRisingEdge_d;
     real_T MTrigNode_isRisingEdge_i;
     real_T MTrigNode1_isRisingEdge_m;
     real_T MTrigNode2_isRisingEdge_hp;
@@ -216,6 +225,7 @@ class FcuComputer final
     real_T MTrigNode2_retriggerable_c;
     real_T MTrigNode3_retriggerable;
     real_T MTrigNode_retriggerable_m;
+    real_T MTrigNode1_retriggerable_ji;
     real_T MTrigNode_retriggerable_k;
     real_T MTrigNode1_retriggerable_p;
     real_T MTrigNode2_retriggerable_k;
@@ -229,6 +239,7 @@ class FcuComputer final
     real_T MTrigNode2_triggerDuration;
     real_T MTrigNode3_triggerDuration;
     real_T MTrigNode_triggerDuration_k;
+    real_T MTrigNode1_triggerDuration_g;
     real_T MTrigNode_triggerDuration_m;
     real_T MTrigNode1_triggerDuration_h;
     real_T MTrigNode2_triggerDuration_a;
@@ -299,12 +310,13 @@ class FcuComputer final
     boolean_T PulseNode_isRisingEdge_h;
     boolean_T PulseNode1_isRisingEdge_e;
     boolean_T PulseNode2_isRisingEdge_k;
+    boolean_T PulseNode3_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_d;
     boolean_T PulseNode_isRisingEdge_i;
     boolean_T PulseNode_isRisingEdge_g;
     boolean_T PulseNode1_isRisingEdge_i;
     boolean_T PulseNode2_isRisingEdge_m;
-    boolean_T PulseNode3_isRisingEdge;
+    boolean_T PulseNode3_isRisingEdge_c;
     boolean_T PulseNode4_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_i1;
     boolean_T PulseNode_isRisingEdge_gp;

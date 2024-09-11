@@ -129,6 +129,8 @@ class FlyByWireInterface {
   base_adr_bus adrBusOutputs[3] = {};
   base_ir_bus irBusOutputs[3] = {};
 
+  base_tcas_bus tcasBusOutputs = {};
+
   Elac elacs[2] = {Elac(true), Elac(false)};
   base_elac_discrete_outputs elacsDiscreteOutputs[2] = {};
   base_elac_analog_outputs elacsAnalogOutputs[2] = {};
@@ -210,10 +212,11 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTcasTaOnly;
   std::unique_ptr<LocalVariable> idTcasState;
   std::unique_ptr<LocalVariable> idTcasRaCorrective;
-  std::unique_ptr<LocalVariable> idTcasTargetGreenMin;
-  std::unique_ptr<LocalVariable> idTcasTargetGreenMax;
-  std::unique_ptr<LocalVariable> idTcasTargetRedMin;
-  std::unique_ptr<LocalVariable> idTcasTargetRedMax;
+  std::unique_ptr<LocalVariable> idTcasRaType;
+  std::unique_ptr<LocalVariable> idTcasRaRateToMaintain;
+  std::unique_ptr<LocalVariable> idTcasRaUpAdvStatus;
+  std::unique_ptr<LocalVariable> idTcasRaDownAdvStatus;
+  std::unique_ptr<LocalVariable> idTcasSensitivityLevel;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
@@ -580,6 +583,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord6[2];
+  std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord7[2];
 
   std::unique_ptr<LocalVariable> idStickLockActive;
 
@@ -702,6 +706,8 @@ class FlyByWireInterface {
 
   bool updateAdirs(int adirsIndex);
 
+  bool updateTcas();
+
   bool updateElac(double sampleTime, int elacIndex);
 
   bool updateSec(double sampleTime, int secIndex);
@@ -723,8 +729,4 @@ class FlyByWireInterface {
   bool updateSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
-
-  double getTcasModeAvailable();
-
-  double getTcasAdvisoryState();
 };
