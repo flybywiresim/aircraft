@@ -6,7 +6,7 @@ import { Instrument, Publisher } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 export interface FgBus {
   fdEngaged: boolean;
