@@ -41,7 +41,7 @@ class HeadingBug extends DisplayComponent<{
 
   private fcuDiscreteWord1 = new Arinc429Word(0);
 
-  private heading = new Arinc429Word(0);
+  private heading: Arinc429WordData = new Arinc429Word(0);
 
   private bugVisible = Subject.create(false);
 
