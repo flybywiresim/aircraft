@@ -37,6 +37,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -521,7 +522,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
 
     if (this.loadedFlightPlan.approach) {
-      this.apprIdent.set(this.loadedFlightPlan.approach.ident);
+      this.apprIdent.set(ApproachUtils.longApproachName(this.loadedFlightPlan.approach));
     }
 
     if (fm.approachFlapConfig) {
