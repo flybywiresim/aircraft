@@ -245,7 +245,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_ha;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_fa;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_op;
-    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_fo;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_fo0;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_cr;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mq;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_j2;
@@ -329,6 +329,8 @@ class FmgcComputer final
     real_T BitfromLabel12_bit;
     real_T BitfromLabel2_bit_l;
     real_T BitfromLabel8_bit_c;
+    real_T BitfromLabel1_bit_aq;
+    real_T BitfromLabel2_bit_f;
     real_T BitfromLabel_bit_n;
     real_T BitfromLabel1_bit_i;
     real_T BitfromLabel_bit_g;
@@ -347,7 +349,7 @@ class FmgcComputer final
     real_T BitfromLabel2_bit_b;
     real_T BitfromLabel1_bit_l;
     real_T BitfromLabel_bit_ff;
-    real_T BitfromLabel2_bit_f;
+    real_T BitfromLabel2_bit_ft;
     real_T BitfromLabel_bit_l;
     real_T BitfromLabel2_bit_e;
     real_T BitfromLabel1_bit_o;
