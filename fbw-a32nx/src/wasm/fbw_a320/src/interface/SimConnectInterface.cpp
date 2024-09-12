@@ -405,8 +405,11 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_HOLD, "AP_VS_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ATT_HOLD, "AP_ATT_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_HOLD, "AP_MACH_HOLD", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC, "BAROMETRIC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_INC, "KOHLSMAN_INC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_DEC, "KOHLSMAN_DEC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC_STD_PRESSURE, "BAROMETRIC_STD_PRESSURE", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC, "BAROMETRIC", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
@@ -2075,6 +2078,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     }
 
     // TODO Unsync EFIS baro
+    case Events::KOHLSMANN_INC:
     case Events::A32NX_FCU_EFIS_L_BARO_INC: {
       fcuEfisPanelInputs[0].baro_knob.turns = 1;
       fcuEfisPanelInputs[1].baro_knob.turns = 1;
@@ -2082,6 +2086,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
+    case Events::KOHLSMANN_DEC:
     case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
       fcuEfisPanelInputs[0].baro_knob.turns = -1;
       fcuEfisPanelInputs[1].baro_knob.turns = -1;
@@ -2089,10 +2094,18 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
+    case Events::KOHLSMANN_SET:
     case Events::A32NX_FCU_EFIS_L_BARO_SET: {
       simInputAutopilot.baro_left_set = data0;
       simInputAutopilot.baro_right_set = data0;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET" << std::endl;
+      break;
+    }
+
+    case Events::BAROMETRIC_STD_PRESSURE: {
+      simInputAutopilot.baro_left_set = 1013;
+      simInputAutopilot.baro_right_set = 1013;
+      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE" << std::endl;
       break;
     }
 
