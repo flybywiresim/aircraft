@@ -1308,9 +1308,9 @@ bool FlyByWireInterface::updateTcas() {
   if (idTcasMode->get() == 0) {
     mode = 0;
   } else if (idTcasTaOnly->get()) {
-    mode = 0b0100;
+    mode = 0b0010;
   } else {
-    mode = 0b1100;
+    mode = 0b0011;
   }
 
   tcasBusOutputs.sensitivity_level.SSM = Arinc429SignStatus::NormalOperation;
@@ -1936,7 +1936,7 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   bool fpaMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 18, false);
   bool vsMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 17, false);
   bool finalDesMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 23, false);
-  bool tcasMode = false;
+  bool tcasMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_7, 13, false);
 
   bool navMode = Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 12, false);
 

@@ -181,6 +181,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   25.0,
   26.0,
   27.0,
+  26.0,
+  27.0,
   29.0,
   18.0,
   19.0,
