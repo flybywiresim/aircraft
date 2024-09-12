@@ -141,6 +141,8 @@ base_fmgc_discrete_outputs rtP_fmgc_discrete_output_MATLABStruct{
 } ;
 
 FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
+  { 0.0, 20.0, 45.0, 100.0 },
+
   { 0.0, 1.0 },
   1.0,
   2.0,
@@ -159,6 +161,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   1.0,
   0.0,
   0.0,
+
+  { 5.0, 5.0, 1.0, 1.0 },
 
   { 1.0, 0.01 },
   11.0,
@@ -468,11 +472,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { -100.0F, -20.0F, 0.0F, 10.0F, 100.0F },
 
-  { 0.0F, 20.0F, 45.0F, 100.0F },
-
   { 1.8F, 1.8F, 1.0F, 1.2F, 1.2F },
-
-  { 5.0F, 5.0F, 1.0F, 1.0F },
   20.0F,
   250.0F,
   40.0F,
@@ -481,8 +481,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   24.0F,
   24.0F,
-  0.0F,
-  0.0F,
   0.0F,
   0.0F,
   0.0F,
@@ -4130,6 +4128,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.5144,
   1.9440124416796269,
   -1.0,
+  0.0,
   3.0F,
   10.0F,
 
