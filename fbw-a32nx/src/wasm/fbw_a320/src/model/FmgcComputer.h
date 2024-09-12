@@ -58,6 +58,7 @@ class FmgcComputer final
     real_T DelayInput1_DSTATE;
     real_T DelayInput1_DSTATE_n;
     real_T Delay_DSTATE_i;
+    real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_f;
     real_T vMemoEo;
     real_T vMemoGa;
@@ -257,7 +258,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mb;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_fw;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_ag;
-    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_e5p;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_e5;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_ga;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_d4;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_jt;
@@ -292,6 +293,7 @@ class FmgcComputer final
   };
 
   struct Parameters_FmgcComputer_T {
+    real_T ScheduledGain2_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
     real_T LagFilter_C1;
     real_T WashoutFilter_C1;
@@ -310,6 +312,7 @@ class FmgcComputer final
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
+    real_T ScheduledGain2_Table[4];
     real_T ScheduledGain4_Table[2];
     real_T BitfromLabel_bit;
     real_T BitfromLabel2_bit;
@@ -616,9 +619,7 @@ class FmgcComputer final
     fmgc_flight_phase EnumeratedConstant_Value_by;
     fmgc_flight_phase EnumeratedConstant1_Value_e;
     real32_T ScheduledGain1_BreakpointsForDimension1[5];
-    real32_T ScheduledGain2_BreakpointsForDimension1[4];
     real32_T ScheduledGain1_Table[5];
-    real32_T ScheduledGain2_Table[4];
     real32_T CompareToConstant2_const_b;
     real32_T CompareToConstant1_const_hi;
     real32_T CompareToConstant_const_mh;
@@ -736,8 +737,6 @@ class FmgcComputer final
     real32_T A429ValueOrDefault3_defaultValue_bv;
     real32_T A429ValueOrDefault1_defaultValue_fg;
     real32_T A429ValueOrDefault2_defaultValue_mp;
-    real32_T A429ValueOrDefault6_defaultValue_e;
-    real32_T A429ValueOrDefault7_defaultValue_e;
     real32_T DetectDecrease_vinit;
     tcas_submode EnumeratedConstant3_Value_l;
     tcas_submode EnumeratedConstant3_Value_p;
@@ -979,6 +978,7 @@ class FmgcComputer final
     real_T ktstomps_Gain_m;
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
+    real_T Delay_InitialCondition_p;
     real32_T Gain3_Gain_k;
     real32_T Gain1_Gain_g;
     real32_T uDLookupTable_tableData[7];
