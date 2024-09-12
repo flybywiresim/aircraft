@@ -6,7 +6,6 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { ApproachType } from '@fmgc/index';
-import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,
@@ -154,7 +153,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         let isFirstMatch = true;
         sortedApproaches.forEach((el, idx) => {
           appr.push({
-            label: ApproachUtils.longApproachName(el),
+            label: el.ident,
             action: async () => {
               await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
                 el.runwayIdent ?? '',
@@ -186,7 +185,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }
 
       if (flightPlan.approach) {
-        this.appr.set(ApproachUtils.longApproachName(flightPlan.approach));
+        this.appr.set(flightPlan.approach.ident);
         this.rwyFreq.set(flightPlan.destinationRunway.lsFrequencyChannel?.toFixed(2) ?? '');
 
         if (flightPlan.availableApproachVias.length > 0) {

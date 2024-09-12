@@ -37,11 +37,12 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
+
   private activateApprButton = FSComponent.createRef<HTMLDivElement>();
 
   private managedSpeedActive = Subject.create<boolean>(false);
@@ -522,7 +523,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
 
     if (this.loadedFlightPlan.approach) {
-      this.apprIdent.set(ApproachUtils.longApproachName(this.loadedFlightPlan.approach));
+      this.apprIdent.set(this.loadedFlightPlan.approach.ident);
     }
 
     if (fm.approachFlapConfig) {
@@ -2689,6 +2690,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   onClick={() => this.props.mfd.uiService.navigateTo('back')}
                   buttonStyle="margin-right: 5px;"
                 />
+                <ConfirmationDialog
+                  visible={this.approachPhaseConfirmationDialogVisible}
+                  cancelAction={() => {
+                    this.approachPhaseConfirmationDialogVisible.set(false);
+                  }}
+                  confirmAction={() => {
+                    this.approachPhaseConfirmationDialogVisible.set(false);
+                    this.props.fmcService.master?.tryGoInApproachPhase();
+                  }}
+                  contentContainerStyle="width: 280px; height: 165px; bottom: -6px; left: -5px;"
+                  amberLabel={true}
+                >
+                  {'ACTIVATE APPR ?'}
+                </ConfirmationDialog>
               </div>
               <div ref={this.activateApprButton} style="margin-right: 5px;">
                 <Button
@@ -2702,7 +2717,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>,
                   )}
-                  onClick={() => this.props.fmcService.master?.tryGoInApproachPhase()}
+                  onClick={() => this.approachPhaseConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
               </div>
