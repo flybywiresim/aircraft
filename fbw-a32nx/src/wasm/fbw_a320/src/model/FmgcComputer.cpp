@@ -339,12 +339,12 @@ void FmgcComputer::step()
   real32_T rtb_irComputationBus_roll_angle_deg_Data;
   real32_T rtb_irComputationBus_track_angle_true_deg_Data;
   real32_T rtb_raComputationData;
-  real32_T rtb_y_fo;
+  real32_T rtb_y_el;
+  real32_T rtb_y_fd;
+  real32_T rtb_y_fy;
   real32_T rtb_y_gl;
-  real32_T rtb_y_lt;
-  real32_T rtb_y_m;
-  real32_T rtb_y_nk;
-  real32_T rtb_y_px;
+  real32_T rtb_y_hnn;
+  real32_T rtb_y_lc;
   uint32_T rtb_DataTypeConversion1_e;
   uint32_T rtb_DataTypeConversion1_j;
   uint32_T rtb_Switch_center_of_gravity_pos_percent_SSM;
@@ -383,14 +383,12 @@ void FmgcComputer::step()
   boolean_T fdOppOff;
   boolean_T fdOwnOff;
   boolean_T guard1;
-  boolean_T in_land_or_ga_tmp;
   boolean_T rowIdx_tmp;
   boolean_T rowIdx_tmp_0;
   boolean_T rowIdx_tmp_tmp;
-  boolean_T rtb_AND10_b;
-  boolean_T rtb_AND12;
   boolean_T rtb_AND1_c0;
   boolean_T rtb_AND8;
+  boolean_T rtb_AND_cf;
   boolean_T rtb_AND_iz;
   boolean_T rtb_BusAssignment_b_logic_ils_tune_inhibit;
   boolean_T rtb_BusAssignment_h_logic_engine_running;
@@ -404,7 +402,9 @@ void FmgcComputer::step()
   boolean_T rtb_Compare_j3;
   boolean_T rtb_GreaterThan3_tmp;
   boolean_T rtb_GreaterThan3_tmp_0;
+  boolean_T rtb_GreaterThan3_tmp_1;
   boolean_T rtb_Logic_d_idx_0_tmp;
+  boolean_T rtb_Logic_d_idx_0_tmp_tmp;
   boolean_T rtb_Logic_gj_idx_0_tmp_tmp;
   boolean_T rtb_Logic_gj_idx_0_tmp_tmp_tmp;
   boolean_T rtb_NOT1_i;
@@ -416,7 +416,7 @@ void FmgcComputer::step()
   boolean_T rtb_OR2_l_tmp;
   boolean_T rtb_OR_bg;
   boolean_T rtb_OR_m4;
-  boolean_T rtb_TmpSignalConversionAtSFunctionInport3_idx_1;
+  boolean_T rtb_TmpSignalConversionAtSFunctionInport3_idx_0;
   boolean_T rtb_TmpSignalConversionAtSFunctionInport3_idx_2;
   boolean_T rtb_adr3Invalid;
   boolean_T rtb_adrOppInvalid;
@@ -439,28 +439,29 @@ void FmgcComputer::step()
   boolean_T rtb_fmgcOppPriority_tmp;
   boolean_T rtb_ir3Invalid;
   boolean_T rtb_irOwnInvalid;
-  boolean_T rtb_y_a22;
-  boolean_T rtb_y_adj;
+  boolean_T rtb_y_am;
+  boolean_T rtb_y_ap;
+  boolean_T rtb_y_aq;
+  boolean_T rtb_y_b4i;
   boolean_T rtb_y_bo;
-  boolean_T rtb_y_bs;
-  boolean_T rtb_y_d4;
-  boolean_T rtb_y_e2;
   boolean_T rtb_y_ed;
   boolean_T rtb_y_f5;
   boolean_T rtb_y_ft;
+  boolean_T rtb_y_g;
+  boolean_T rtb_y_gj;
   boolean_T rtb_y_h;
-  boolean_T rtb_y_hn;
   boolean_T rtb_y_hq;
   boolean_T rtb_y_if;
+  boolean_T rtb_y_iz;
+  boolean_T rtb_y_k;
+  boolean_T rtb_y_n2;
   boolean_T rtb_y_n5;
-  boolean_T rtb_y_nw;
   boolean_T rtb_y_os;
   boolean_T rtb_y_p;
   boolean_T rtb_y_p3;
   boolean_T rtb_y_p5;
-  boolean_T rtb_y_pp;
-  athr_fma_message rtb_y_en;
-  athr_fma_mode rtb_y_e;
+  athr_fma_message rtb_y_e;
+  athr_fma_mode rtb_y_j;
   lateral_law rtb_active_lateral_law;
   tcas_submode rtb_mode;
   vertical_law rtb_active_longitudinal_law;
@@ -608,12 +609,12 @@ void FmgcComputer::step()
       FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_hw);
       FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_ee);
       FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_dt);
-      FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_cx);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_fed);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_bbb);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_jc);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_nd);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_dsw);
+      FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_cz);
       FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_gbq);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_p3z);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_dfk);
@@ -1046,14 +1047,14 @@ void FmgcComputer::step()
                         (SignStatusMatrix::FailureWarning));
     rtb_ir3Invalid = (FmgcComputer_U.in.bus_inputs.ra_opp_bus.radio_height_ft.SSM == static_cast<uint32_T>
                       (SignStatusMatrix::FailureWarning));
-    rtb_y_a22 = !rtb_ir3Invalid;
-    rtb_y_hn = !rtb_irOwnInvalid;
-    rtb_OR_bg = (rtb_y_hn && rtb_y_a22);
+    rtb_y_ap = !rtb_ir3Invalid;
+    rtb_y_n2 = !rtb_irOwnInvalid;
+    rtb_OR_bg = (rtb_y_n2 && rtb_y_ap);
     if (rtb_OR_bg) {
       rtb_raComputationData = FmgcComputer_U.in.bus_inputs.ra_own_bus.radio_height_ft.Data;
-    } else if (rtb_irOwnInvalid && rtb_y_a22) {
+    } else if (rtb_irOwnInvalid && rtb_y_ap) {
       rtb_raComputationData = FmgcComputer_U.in.bus_inputs.ra_opp_bus.radio_height_ft.Data;
-    } else if (rtb_y_hn && rtb_ir3Invalid) {
+    } else if (rtb_y_n2 && rtb_ir3Invalid) {
       rtb_raComputationData = FmgcComputer_U.in.bus_inputs.ra_own_bus.radio_height_ft.Data;
     } else {
       rtb_raComputationData = 250.0F;
@@ -1066,9 +1067,9 @@ void FmgcComputer::step()
                         (SignStatusMatrix::NormalOperation)));
     if (rtb_OR_bg) {
       rtb_Phi_c_deg = FmgcComputer_U.in.bus_inputs.ra_own_bus.radio_height_ft.Data;
-    } else if (rtb_irOwnInvalid && rtb_y_a22) {
+    } else if (rtb_irOwnInvalid && rtb_y_ap) {
       rtb_Phi_c_deg = FmgcComputer_U.in.bus_inputs.ra_opp_bus.radio_height_ft.Data;
-    } else if (rtb_y_hn && rtb_ir3Invalid) {
+    } else if (rtb_y_n2 && rtb_ir3Invalid) {
       rtb_Phi_c_deg = FmgcComputer_U.in.bus_inputs.ra_own_bus.radio_height_ft.Data;
     } else {
       rtb_Phi_c_deg = 250.0;
@@ -1172,31 +1173,32 @@ void FmgcComputer::step()
 
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_own_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit, &rtb_y_ha);
-    rtb_AND10_b = (rtb_y_ha != 0U);
+    rtb_irOwnInvalid = (rtb_y_ha != 0U);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel2_bit, &rtb_y_ha);
-    rtb_irOwnInvalid = (rtb_AND10_b || (rtb_y_ha != 0U));
+    rtb_irOwnInvalid = (rtb_irOwnInvalid || (rtb_y_ha != 0U));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_own_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel1_bit, &rtb_y_ha);
     rtb_y_ed = (rtb_y_ha != 0U);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel3_bit, &rtb_y_ha);
-    rtb_irOwnInvalid = ((!rtb_irOwnInvalid) || ((!rtb_y_ed) && (rtb_y_ha == 0U)) || (!FmgcComputer_P.Constant_Value_a) ||
-                        ((!FmgcComputer_U.in.discrete_inputs.fac_own_healthy) &&
-                         (!FmgcComputer_U.in.discrete_inputs.fac_opp_healthy)));
+    rtb_ir3Invalid = ((!rtb_irOwnInvalid) || ((!rtb_y_ed) && (rtb_y_ha == 0U)) || (!FmgcComputer_P.Constant_Value_a) ||
+                      ((!FmgcComputer_U.in.discrete_inputs.fac_own_healthy) &&
+                       (!FmgcComputer_U.in.discrete_inputs.fac_opp_healthy)));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_own_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel4_bit, &rtb_y_ha);
-    rtb_AND10_b = (rtb_y_ha != 0U);
+    rtb_irOwnInvalid = (rtb_y_ha != 0U);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel6_bit, &rtb_y_ha);
-    rtb_AND10_b = (rtb_AND10_b || (rtb_y_ha != 0U));
+    rtb_irOwnInvalid = (rtb_irOwnInvalid || (rtb_y_ha != 0U));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_own_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel5_bit, &rtb_y_ha);
     rtb_y_bo = (rtb_y_ha != 0U);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel7_bit, &rtb_y_ha);
-    rtb_ir3Invalid = (FmgcComputer_U.in.discrete_inputs.fac_opp_healthy &&
-                      FmgcComputer_U.in.discrete_inputs.fac_own_healthy && rtb_AND10_b && (rtb_y_bo || (rtb_y_ha != 0U)));
+    rtb_irOwnInvalid = (FmgcComputer_U.in.discrete_inputs.fac_opp_healthy &&
+                        FmgcComputer_U.in.discrete_inputs.fac_own_healthy && rtb_irOwnInvalid && (rtb_y_bo || (rtb_y_ha
+      != 0U)));
     rtb_BusAssignment_lz_logic_chosen_fac_bus_discrete_word_5.SSM = rtb_Switch_discrete_word_5_SSM;
     rtb_BusAssignment_lz_logic_chosen_fac_bus_discrete_word_5.Data = rtb_Switch_discrete_word_5_Data;
     FmgcComputer_MATLABFunction_i(&rtb_BusAssignment_lz_logic_chosen_fac_bus_discrete_word_5,
@@ -1304,8 +1306,8 @@ void FmgcComputer::step()
       FmgcComputer_P.CompareToConstant_const_o)));
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_f_logic_ils_computation_data_runway_heading_deg,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue, &rtb_y_gl);
-    rtb_y_a22 = !rtb_y_p;
-    if (rtb_y_a22) {
+    rtb_y_ap = !rtb_y_p;
+    if (rtb_y_ap) {
       FmgcComputer_B.u_lyjj = rtb_y_gl;
     }
 
@@ -1313,10 +1315,10 @@ void FmgcComputer::step()
     rtb_BusAssignment_b_logic_ir_computation_data_heading_true_deg.Data = rtb_irComputationBus_heading_true_deg_Data;
     rtb_BusAssignment_b_logic_ra_computation_data_ft = rtb_raComputationData;
     rtb_BusAssignment_b_logic_ils_tune_inhibit = rtb_y_p;
-    in_land_or_ga_tmp = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active ||
-                         FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active);
-    rtb_ap_fd_athr_condition = ((!rtb_doubleAdrFault) && (!rtb_adr3Invalid) && ((!rtb_y_os) || in_land_or_ga_tmp) &&
-      (FmgcComputer_U.in.fms_inputs.fm_valid || in_land_or_ga_tmp ||
+    rtb_AND_cf = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active ||
+                  FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active);
+    rtb_ap_fd_athr_condition = ((!rtb_doubleAdrFault) && (!rtb_adr3Invalid) && ((!rtb_y_os) || rtb_AND_cf) &&
+      (FmgcComputer_U.in.fms_inputs.fm_valid || rtb_AND_cf ||
        (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active && (rtb_Phi_c_deg < 700.0))));
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_b_logic_ir_computation_data_heading_true_deg,
       FmgcComputer_P.A429ValueOrDefault_defaultValue, &rtb_y_gl);
@@ -1328,13 +1330,13 @@ void FmgcComputer::step()
     rtb_ap_fd_condition_tmp_0 = !rtb_dualRaFailure;
     rtb_ap_fd_condition_tmp_1 = !FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed;
     rtb_ap_fd_condition_tmp_2 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active;
-    rtb_y_pp = !FmgcComputer_P.Constant1_Value.fac_speeds_failure;
-    rtb_y_adj = !FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active;
+    rtb_y_g = !FmgcComputer_P.Constant1_Value.fac_speeds_failure;
+    rtb_y_k = !FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active;
     rtb_ap_fd_condition_tmp_3 = !FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active;
-    rtb_ap_fd_condition = (((!FmgcComputer_P.Constant1_Value.fac_weights_failure) || in_land_or_ga_tmp) && (rtb_y_pp ||
+    rtb_ap_fd_condition = (((!FmgcComputer_P.Constant1_Value.fac_weights_failure) || rtb_AND_cf) && (rtb_y_g ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (rtb_ap_fd_condition_tmp_0 ||
-      (rtb_ap_fd_condition_tmp_1 && rtb_y_adj && rtb_ap_fd_condition_tmp_3 && rtb_ap_fd_condition_tmp_2)) &&
-      (rtb_ap_fd_condition_tmp || in_land_or_ga_tmp) && (!rtb_y_ft));
+      (rtb_ap_fd_condition_tmp_1 && rtb_y_k && rtb_ap_fd_condition_tmp_3 && rtb_ap_fd_condition_tmp_2)) &&
+      (rtb_ap_fd_condition_tmp || rtb_AND_cf) && (!rtb_y_ft));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_n, &rtb_DataTypeConversion1_j);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
@@ -1365,7 +1367,7 @@ void FmgcComputer::step()
     rtb_y_p = (rtb_y_gl >= FmgcComputer_P.CompareToConstant3_const);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue, &rtb_y_gl);
-    rtb_NOT_j = !rtb_irOwnInvalid;
+    rtb_NOT_j = !rtb_ir3Invalid;
     rtb_appCapability_idx_2 = !FmgcComputer_U.in.discrete_inputs.elac_own_ap_disc;
     apCondition_tmp = !FmgcComputer_U.in.discrete_inputs.elac_opp_ap_disc;
     apCondition = ((!FmgcComputer_U.in.discrete_inputs.ap_instinctive_disc) && (rtb_appCapability_idx_2 ||
@@ -1409,7 +1411,7 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_p, &rtb_y_gl);
     FmgcComputer_MATLABFunction_g((rtb_y_ft && (rtb_y_gl < FmgcComputer_P.CompareToConstant1_const)),
-      FmgcComputer_P.PulseNode2_isRisingEdge_n, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_d4);
+      FmgcComputer_P.PulseNode2_isRisingEdge_n, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_d4);
     FmgcComputer_MATLABFunction_i(&rtb_BusAssignment_i_logic_chosen_fac_bus_discrete_word_5,
       FmgcComputer_P.BitfromLabel_bit_g, &rtb_y_ha);
     FmgcComputer_MATLABFunction_g((rtb_y_ha != 0U), FmgcComputer_P.PulseNode3_isRisingEdge_a, &rtb_y_bo,
@@ -1419,25 +1421,25 @@ void FmgcComputer::step()
       &FmgcComputer_DWork.sf_MATLABFunction_e5);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active,
       FmgcComputer_P.PulseNode5_isRisingEdge, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_ag);
-    rtb_y_pp = ((FmgcComputer_DWork.Delay_DSTATE.manual_spd_control_active ||
-                 FmgcComputer_DWork.Delay_DSTATE.auto_spd_control_active) &&
-                (!FmgcComputer_DWork.Memory_PreviousInput_g1) && rtb_ap_fd_condition_tmp && rtb_y_pp);
-    rtb_ap_fd_condition_tmp = (rtb_y_if || (!rtb_y_pp));
+    rtb_y_g = ((FmgcComputer_DWork.Delay_DSTATE.manual_spd_control_active ||
+                FmgcComputer_DWork.Delay_DSTATE.auto_spd_control_active) && (!FmgcComputer_DWork.Memory_PreviousInput_g1)
+               && rtb_ap_fd_condition_tmp && rtb_y_g);
+    rtb_ap_fd_condition_tmp = (rtb_y_if || (!rtb_y_g));
     FmgcComputer_DWork.Delay_DSTATE_k = FmgcComputer_P.Logic_table_n[(((static_cast<uint32_T>(rtb_ap_fd_athr_condition &&
-      rtb_y_pp && ((rtb_y_ed && ((rtb_raComputationData > 100.0F) || rtb_dualRaFailure)) || rtb_Compare_bj || rtb_y_bo ||
-                   rtb_y_p3)) << 1) + (rtb_ap_fd_condition_tmp || rtb_y_hq || (FmgcComputer_DWork.Delay_DSTATE_k &&
+      rtb_y_g && ((rtb_y_ed && ((rtb_raComputationData > 100.0F) || rtb_dualRaFailure)) || rtb_Compare_bj || rtb_y_bo ||
+                  rtb_y_p3)) << 1) + (rtb_ap_fd_condition_tmp || rtb_y_hq || (FmgcComputer_DWork.Delay_DSTATE_k &&
       rtb_y_ed && (!rtP_fmgc_ap_fd_logic_output_MATLABStruct.lateral_modes.land_active)) ||
-      FmgcComputer_U.in.discrete_inputs.athr_instinctive_disc || rtb_AND10_b)) << 1) +
+      FmgcComputer_U.in.discrete_inputs.athr_instinctive_disc || rtb_y_aq)) << 1) +
       FmgcComputer_DWork.Memory_PreviousInput_p];
     rtb_fmgcOppPriority_tmp = !rtb_Logic_a2[0];
     rtb_y_if = !fdOwnOff;
-    rtb_y_pp = !FmgcComputer_DWork.Delay_DSTATE_k;
+    rtb_y_g = !FmgcComputer_DWork.Delay_DSTATE_k;
     rtb_y_ft = (FmgcComputer_U.in.discrete_inputs.ap_opp_engaged || FmgcComputer_U.in.discrete_inputs.fd_opp_engaged);
     rtb_OR2_l = (rtb_y_ft || FmgcComputer_U.in.discrete_inputs.athr_opp_engaged);
     rtb_fmgcOppPriority = ((rtb_fmgcOppPriority || (rtb_fmgcOppPriority_tmp &&
-      (FmgcComputer_U.in.discrete_inputs.ap_opp_engaged || rtb_y_if) && (rtb_y_ft || rtb_y_pp) && rtb_OR2_l)) &&
+      (FmgcComputer_U.in.discrete_inputs.ap_opp_engaged || rtb_y_if) && (rtb_y_ft || rtb_y_g) && rtb_OR2_l)) &&
       (FmgcComputer_U.in.discrete_inputs.is_unit_1 || ((rtb_fmgcOppPriority_tmp ||
-      FmgcComputer_U.in.discrete_inputs.ap_opp_engaged) && (rtb_y_ft || rtb_y_if) && (rtb_OR2_l || rtb_y_pp) &&
+      FmgcComputer_U.in.discrete_inputs.ap_opp_engaged) && (rtb_y_ft || rtb_y_if) && (rtb_OR2_l || rtb_y_g) &&
       (rtb_Logic_a2[0] || fdOwnOff || FmgcComputer_DWork.Delay_DSTATE_k ||
        (!FmgcComputer_U.in.discrete_inputs.fmgc_opp_healthy)))));
     rtb_y_bo = !FmgcComputer_U.in.discrete_inputs.ap_opp_engaged;
@@ -1479,12 +1481,12 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_m_logic_adr_computation_data_vertical_speed_ft_min,
-      FmgcComputer_P.A429ValueOrDefault3_defaultValue_c, &rtb_y_px);
+      FmgcComputer_P.A429ValueOrDefault3_defaultValue_c, &rtb_y_hnn);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.tcas_bus.vertical_resolution_advisory,
       FmgcComputer_P.BitfromLabel5_bit_b, &rtb_DataTypeConversion1_e);
-    rtb_y_hn = !rtb_y_p;
-    if (rtb_y_hn || (rtb_DataTypeConversion1_e == 0U)) {
-      FmgcComputer_B.u_lyjjlj = rtb_y_px;
+    rtb_y_n2 = !rtb_y_p;
+    if (rtb_y_n2 || (rtb_DataTypeConversion1_e == 0U)) {
+      FmgcComputer_B.u_lyjjlj = rtb_y_hnn;
     }
 
     if (rtb_y_p) {
@@ -1527,21 +1529,21 @@ void FmgcComputer::step()
       rtb_adrComputationBus_altitude_corrected_ft_Data;
     apCondition = rtb_y_p;
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_m, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_m, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_j_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_c, &rtb_y_gl);
-    rtb_y_d4 = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active ||
+    rtb_y_gj = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_hold_active);
     rtb_appInop_idx_0 = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active ||
                          FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
                          FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active);
-    rtb_AND_iz = (rtb_y_d4 && FmgcComputer_DWork.Delay_DSTATE.alt_cstr_applicable && rtb_appInop_idx_0 &&
+    rtb_AND_iz = (rtb_y_gj && FmgcComputer_DWork.Delay_DSTATE.alt_cstr_applicable && rtb_appInop_idx_0 &&
                   FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid);
-    if (rtb_y_lt > rtb_y_gl) {
-      rtb_OR_bg = ((FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft < rtb_y_lt) &&
+    if (rtb_y_fd > rtb_y_gl) {
+      rtb_OR_bg = ((FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft < rtb_y_fd) &&
                    ((FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft + 250.0 > rtb_y_gl) || rtb_AND_iz));
     } else {
-      rtb_OR_bg = ((FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft > rtb_y_lt) &&
+      rtb_OR_bg = ((FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft > rtb_y_fd) &&
                    ((FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft - 250.0 < rtb_y_gl) || rtb_AND_iz));
     }
 
@@ -1553,7 +1555,7 @@ void FmgcComputer::step()
     if (rtb_AND_iz) {
       rtb_altCstrOrFcu = FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft;
     } else {
-      rtb_altCstrOrFcu = rtb_y_lt;
+      rtb_altCstrOrFcu = rtb_y_fd;
     }
 
     rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target = rtb_Phi_c_deg;
@@ -1566,24 +1568,24 @@ void FmgcComputer::step()
       FmgcComputer_P.A429ValueOrDefault_defaultValue_l2, &rtb_y_gl);
     rtb_y_p3 = (rtb_y_gl < FmgcComputer_P.CompareToConstant3_const_n);
     rtb_NOT3 = !rtb_y_p3;
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_flex_temp_deg, &rtb_y_nw);
-    rtb_y_nw = (rtb_y_p3 && (rtb_y_gl > FmgcComputer_P.CompareToConstant4_const) && rtb_y_nw);
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_flex_temp_deg, &rtb_y_b4i);
+    rtb_y_b4i = (rtb_y_p3 && (rtb_y_gl > FmgcComputer_P.CompareToConstant4_const) && rtb_y_b4i);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_b, &rtb_y_gl);
     rtb_y_p3 = (rtb_y_gl < FmgcComputer_P.CompareToConstant5_const_a);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_flex_temp_deg, &rtb_y_e2);
-    FmgcComputer_MATLABFunction_g((rtb_NOT3 || rtb_y_nw || (!rtb_y_p3) || (rtb_y_p3 && (rtb_y_gl >
-      FmgcComputer_P.CompareToConstant6_const) && rtb_y_e2)), FmgcComputer_P.PulseNode_isRisingEdge_p, &rtb_AND10_b,
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_flex_temp_deg, &rtb_y_iz);
+    FmgcComputer_MATLABFunction_g((rtb_NOT3 || rtb_y_b4i || (!rtb_y_p3) || (rtb_y_p3 && (rtb_y_gl >
+      FmgcComputer_P.CompareToConstant6_const) && rtb_y_iz)), FmgcComputer_P.PulseNode_isRisingEdge_p, &rtb_y_aq,
       &FmgcComputer_DWork.sf_MATLABFunction_gk);
-    rtb_y_e2 = !rtb_y_if;
+    rtb_y_iz = !rtb_y_if;
     rtb_appInop_idx_2 = !FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active;
-    rtb_AND1_c0 = (rtb_y_e2 && rtb_appInop_idx_2 && rtb_OR2_l_tmp);
+    rtb_AND1_c0 = (rtb_y_iz && rtb_appInop_idx_2 && rtb_OR2_l_tmp);
     rtb_NOT3 = (((FmgcComputer_U.in.fms_inputs.v_2_kts > FmgcComputer_P.CompareToConstant1_const_k) &&
                  (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_AND1_c0 && rtb_Compare_bj &&
       (FmgcComputer_U.in.fms_inputs.v_2_kts > FmgcComputer_P.CompareToConstant2_const) && (rtb_handleIndex >=
-      FmgcComputer_P.CompareToConstant_const_b) && rtb_AND10_b));
+      FmgcComputer_P.CompareToConstant_const_b) && rtb_y_aq));
     FmgcComputer_MATLABFunction_a(rtb_NOT3, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_c,
-      FmgcComputer_P.ConfirmNode_timeDelay_h, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_fx);
+      FmgcComputer_P.ConfirmNode_timeDelay_h, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_fx);
     rtb_OR_bg = !rtb_y_ft;
     rtb_TmpSignalConversionAtSFunctionInport3_idx_2 = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.vs_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.fpa_active);
@@ -1603,7 +1605,7 @@ void FmgcComputer::step()
     rtb_y_p = (rtb_Logic_gj_idx_0_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
                FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active);
     FmgcComputer_DWork.Memory_PreviousInput_k = FmgcComputer_P.Logic_table_b[(((rtb_OR_bg || ((rtb_y_p ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (static_cast<uint32_T>(rtb_NOT3) <<
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (static_cast<uint32_T>(rtb_NOT3) <<
       1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_k];
     rtb_BusAssignment_f4_logic_ir_computation_data_heading_magnetic_deg.SSM =
       rtb_irComputationBus_heading_magnetic_deg_SSM;
@@ -1620,12 +1622,12 @@ void FmgcComputer::step()
       FmgcComputer_P.BitfromLabel1_bit_g, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_a(FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active,
       FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode1_isRisingEdge_f, FmgcComputer_P.ConfirmNode1_timeDelay_e,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_ngt);
+      &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_ngt);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_f4_logic_ils_computation_data_runway_heading_deg,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_m, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_m, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_f4_logic_ir_computation_data_heading_magnetic_deg,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue, &rtb_y_gl);
-    rtb_DataTypeConversion2_kb = std::abs(rtb_y_lt - rtb_y_gl);
+    rtb_DataTypeConversion2_kb = std::abs(rtb_y_fd - rtb_y_gl);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg,
       FmgcComputer_P.A429ValueOrDefault_defaultValue_e, &rtb_y_gl);
     FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg, &rtb_NOT3);
@@ -1637,15 +1639,15 @@ void FmgcComputer::step()
       rtb_DataTypeConversion1_d = rtb_y_gl;
     }
 
-    rtb_NOT3 = ((rtb_y_p3 && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
+    rtb_NOT3 = ((rtb_y_p3 && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
       (!FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_loc_submode_active) && ((rtb_handleIndex >=
-      FmgcComputer_P.CompareToConstant_const_cq) && rtb_AND10_b && (rtb_DataTypeConversion2_kb <=
+      FmgcComputer_P.CompareToConstant_const_cq) && rtb_y_aq && (rtb_DataTypeConversion2_kb <=
       FmgcComputer_P.CompareToConstant2_const_b) && (rtb_DataTypeConversion1_d <
       FmgcComputer_P.CompareToConstant1_const_i) && FmgcComputer_P.Constant_Value_j && rtb_NOT3 && rtb_Compare_bj)));
     FmgcComputer_MATLABFunction_a(rtb_NOT3, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_l,
-      FmgcComputer_P.ConfirmNode_timeDelay_f, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_jl);
-    FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg, &rtb_y_nw);
-    FmgcComputer_DWork.Memory_PreviousInput_c = FmgcComputer_P.Logic_table_hz[(((((!rtb_AND10_b) &&
+      FmgcComputer_P.ConfirmNode_timeDelay_f, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_jl);
+    FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg, &rtb_y_b4i);
+    FmgcComputer_DWork.Memory_PreviousInput_c = FmgcComputer_P.Logic_table_hz[(((((!rtb_y_aq) &&
       (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_trk_submode_active ||
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active ||
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active ||
@@ -1653,7 +1655,7 @@ void FmgcComputer::step()
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active ||
-       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active)) || rtb_OR_bg || (!rtb_y_nw)) + (static_cast<uint32_T>
+       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active)) || rtb_OR_bg || (!rtb_y_b4i)) + (static_cast<uint32_T>
       (rtb_NOT3) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_c];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_f, &rtb_DataTypeConversion1_e);
@@ -1661,16 +1663,16 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel1_bit_n, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_j((rtb_raComputationData >= FmgcComputer_P.CompareToConstant_const_l),
-      FmgcComputer_U.in.time.dt, &rtb_AND10_b, FmgcComputer_P.MTrigNode_isRisingEdge_jv,
+      FmgcComputer_U.in.time.dt, &rtb_y_aq, FmgcComputer_P.MTrigNode_isRisingEdge_jv,
       FmgcComputer_P.MTrigNode_retriggerable_p, FmgcComputer_P.MTrigNode_triggerDuration_n,
       &FmgcComputer_DWork.sf_MATLABFunction_mnt);
-    rtb_TmpSignalConversionAtSFunctionInport3_idx_1 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active;
-    rtb_NOT3 = ((rtb_y_p3 && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
-      (rtb_TmpSignalConversionAtSFunctionInport3_idx_1 && (!FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed)) &&
-      rtb_AND10_b));
+    rtb_TmpSignalConversionAtSFunctionInport3_idx_0 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active;
+    rtb_NOT3 = ((rtb_y_p3 && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
+      (rtb_TmpSignalConversionAtSFunctionInport3_idx_0 && (!FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed)) &&
+      rtb_y_aq));
     FmgcComputer_MATLABFunction_a(rtb_NOT3, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_hu,
-      FmgcComputer_P.ConfirmNode_timeDelay_j, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_kz1);
-    FmgcComputer_DWork.Memory_PreviousInput_b = FmgcComputer_P.Logic_table_d[(((((!rtb_AND10_b) &&
+      FmgcComputer_P.ConfirmNode_timeDelay_j, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_kz1);
+    FmgcComputer_DWork.Memory_PreviousInput_b = FmgcComputer_P.Logic_table_d[(((((!rtb_y_aq) &&
       (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_loc_submode_active ||
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active ||
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active ||
@@ -1681,7 +1683,7 @@ void FmgcComputer::step()
        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active)) || rtb_OR_bg) + (static_cast<uint32_T>(rtb_NOT3) << 1))
       << 1) + FmgcComputer_DWork.Memory_PreviousInput_b];
     rtb_NOT3 = rtb_y_ed;
-    rtb_y_nw = (FmgcComputer_DWork.Memory_PreviousInput_c || FmgcComputer_DWork.Memory_PreviousInput_b);
+    rtb_y_b4i = (FmgcComputer_DWork.Memory_PreviousInput_c || FmgcComputer_DWork.Memory_PreviousInput_b);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_k, &rtb_DataTypeConversion1_e);
     rtb_y_f5 = ((rtb_DataTypeConversion1_e != 0U) && rtb_y_if);
@@ -1690,28 +1692,28 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_l, &rtb_y_ed,
       &FmgcComputer_DWork.sf_MATLABFunction_hh);
     FmgcComputer_MATLABFunction_a(FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed, FmgcComputer_U.in.time.dt,
-      FmgcComputer_P.ConfirmNode_isRisingEdge_f, FmgcComputer_P.ConfirmNode_timeDelay_d, &rtb_AND10_b,
+      FmgcComputer_P.ConfirmNode_isRisingEdge_f, FmgcComputer_P.ConfirmNode_timeDelay_d, &rtb_y_aq,
       &FmgcComputer_DWork.sf_MATLABFunction_ha);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.ils_opp_bus.ils_frequency_mhz,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_ek, &rtb_y_px);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_ek, &rtb_y_hnn);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.ils_own_bus.ils_frequency_mhz,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_f, &rtb_y_fo);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_f, &rtb_y_fy);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.ils_opp_bus.runway_heading_deg,
-      FmgcComputer_P.A429ValueOrDefault2_defaultValue_c, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault2_defaultValue_c, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.ils_own_bus.runway_heading_deg,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_o, &rtb_y_gl);
     rtb_y_hq = !rtb_BusAssignment_h_logic_engine_running;
     rtb_GreaterThan3_tmp = !rtb_BusAssignment_o_logic_ils_failure;
     rtb_Compare_bj = !FmgcComputer_P.Constant2_Value_p;
     rtb_GreaterThan3_tmp_0 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_active;
-    rtb_AND12 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active;
+    rtb_GreaterThan3_tmp_1 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active;
     rtb_Compare_j3 = !FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active;
-    rtb_y_p3 = (rtb_ap_fd_condition_tmp_2 && (rtb_y_f5 || (rtb_y_e2 && (FmgcComputer_P.Constant_Value_l &&
+    rtb_y_p3 = (rtb_ap_fd_condition_tmp_2 && (rtb_y_f5 || (rtb_y_iz && (FmgcComputer_P.Constant_Value_l &&
       rtb_GreaterThan3_tmp && (rtb_y_hq || (rtb_raComputationData >= FmgcComputer_P.CompareToConstant_const_g)) &&
-      rtb_ap_fd_condition_tmp_0 && rtb_y_ed && (!rtb_AND10_b) && (rtb_Compare_j3 &&
+      rtb_ap_fd_condition_tmp_0 && rtb_y_ed && (!rtb_y_aq) && (rtb_Compare_j3 &&
       (!FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed))) && rtb_appInop_idx_2 && rtb_OR2_l_tmp &&
-      rtb_GreaterThan3_tmp_0 && rtb_AND12 && rtb_Compare_bj && rtb_Compare_bj && (((rtb_y_px == rtb_y_fo) && (rtb_y_lt ==
-      rtb_y_gl)) || (!rtb_BusAssignment_o_logic_both_ils_valid)))));
+      rtb_GreaterThan3_tmp_0 && rtb_GreaterThan3_tmp_1 && rtb_Compare_bj && rtb_Compare_bj && (((rtb_y_hnn == rtb_y_fy) &&
+      (rtb_y_fd == rtb_y_gl)) || (!rtb_BusAssignment_o_logic_both_ils_valid)))));
     rtb_NOT_b = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active ||
                  FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active);
     rtb_appInop_idx_1 = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
@@ -1725,16 +1727,16 @@ void FmgcComputer::step()
       &rtb_Compare_bj, &FmgcComputer_DWork.sf_MATLABFunction_kb);
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active), FmgcComputer_P.PulseNode3_isRisingEdge_j, &rtb_AND10_b,
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active), FmgcComputer_P.PulseNode3_isRisingEdge_j, &rtb_y_aq,
       &FmgcComputer_DWork.sf_MATLABFunction_eb2);
-    rtb_AND8 = (rtb_appInop_idx_1 && rtb_AND10_b);
+    rtb_AND8 = (rtb_appInop_idx_1 && rtb_y_aq);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel1_bit_l, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_c,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_es);
-    FmgcComputer_DWork.Memory_PreviousInput_l = FmgcComputer_P.Logic_table_k[(((in_land_or_ga_tmp || ((!rtb_NOT_b) &&
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_c, &rtb_y_aq,
+      &FmgcComputer_DWork.sf_MATLABFunction_es);
+    FmgcComputer_DWork.Memory_PreviousInput_l = FmgcComputer_P.Logic_table_k[(((rtb_AND_cf || ((!rtb_NOT_b) &&
       (!rtb_appInop_idx_1) && FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed) || ((rtb_NOT_b && rtb_Compare_bj) ||
-      rtb_AND8) || (rtb_y_ed && FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed) || rtb_AND10_b || rtb_OR_bg ||
+      rtb_AND8) || (rtb_y_ed && FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed) || rtb_y_aq || rtb_OR_bg ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active) + (static_cast<uint32_T>(rtb_y_p3) << 1)) << 1) +
       FmgcComputer_DWork.Memory_PreviousInput_l];
     FmgcComputer_MATLABFunction_a(!FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active, FmgcComputer_U.in.time.dt,
@@ -1744,30 +1746,30 @@ void FmgcComputer::step()
       FmgcComputer_P.BitfromLabel_bit_ff, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_a((rtb_raComputationData < FmgcComputer_P.CompareToConstant_const_d),
       FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode1_isRisingEdge_g, FmgcComputer_P.ConfirmNode1_timeDelay_d,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_cr);
-    rtb_y_ed = (rtb_Compare_bj && (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
+      &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_cr);
+    rtb_AND_cf = (rtb_Compare_bj && (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active &&
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active && rtb_AND10_b)));
-    FmgcComputer_MATLABFunction_a(rtb_y_ed, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_d,
-      FmgcComputer_P.ConfirmNode_timeDelay_a, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_op);
-    rtb_y_f5 = !rtb_AND10_b;
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active && rtb_y_aq)));
+    FmgcComputer_MATLABFunction_a(rtb_AND_cf, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_d,
+      FmgcComputer_P.ConfirmNode_timeDelay_a, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_op);
+    rtb_y_ed = !rtb_y_aq;
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel2_bit_ft, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_a,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_fa);
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_a, &rtb_y_aq,
+      &FmgcComputer_DWork.sf_MATLABFunction_fa);
     FmgcComputer_MATLABFunction_a(rtb_y_p5, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode2_isRisingEdge_l,
       FmgcComputer_P.ConfirmNode2_timeDelay_b, &rtb_Compare_bj, &FmgcComputer_DWork.sf_MATLABFunction_fo0);
-    rtb_AND8 = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_active ||
-                FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active);
-    in_land_or_ga_tmp = (rtb_AND8 || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
-                         FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active);
-    rtb_Logic_d_idx_0_tmp = (in_land_or_ga_tmp || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
+    rtb_Logic_d_idx_0_tmp_tmp = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_active ||
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active);
+    rtb_AND8 = (rtb_Logic_d_idx_0_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
+                FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active);
+    rtb_Logic_d_idx_0_tmp = (rtb_AND8 || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active);
     FmgcComputer_DWork.Memory_PreviousInput_d = FmgcComputer_P.Logic_table_p[(((((rtb_y_p ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active || (rtb_Logic_d_idx_0_tmp ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active)) && rtb_y_f5) ||
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active)) && rtb_y_ed) ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active || (rtb_fmgcOppPriority_tmp && rtb_y_bo &&
-      rtb_AND10_b && rtb_Compare_bj) || rtb_OR_bg) + (static_cast<uint32_T>(rtb_y_ed) << 1)) << 1) +
+      rtb_y_aq && rtb_Compare_bj) || rtb_OR_bg) + (static_cast<uint32_T>(rtb_AND_cf) << 1)) << 1) +
       FmgcComputer_DWork.Memory_PreviousInput_d];
     rtb_y_f5 = (FmgcComputer_U.in.discrete_inputs.bscu_opp_valid || FmgcComputer_U.in.discrete_inputs.bscu_own_valid);
     FmgcComputer_MATLABFunction_a((FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active && (rtb_raComputationData <=
@@ -1779,31 +1781,31 @@ void FmgcComputer::step()
       rtb_ap_fd_condition_tmp_2) << 1) + FmgcComputer_DWork.Memory_PreviousInput_m];
     rtb_NOT_j = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active && (rtb_raComputationData <=
       FmgcComputer_P.CompareToConstant1_const_h) && rtb_NOT_j);
-    FmgcComputer_MATLABFunction_a((FmgcComputer_DWork.Delay2_DSTATE.flare_law.condition_Flare &&
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active), FmgcComputer_U.in.time.dt,
-      FmgcComputer_P.ConfirmNode1_isRisingEdge_d, FmgcComputer_P.ConfirmNode1_timeDelay_dj, &rtb_y_bo,
-      &FmgcComputer_DWork.sf_MATLABFunction_j2);
+    rtb_AND_cf = (rtb_ap_fd_condition_tmp_0 && FmgcComputer_DWork.Delay2_DSTATE.flare_law.condition_Flare &&
+                  FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active);
+    FmgcComputer_MATLABFunction_a(rtb_AND_cf, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode1_isRisingEdge_d,
+      FmgcComputer_P.ConfirmNode1_timeDelay_dj, &rtb_y_bo, &FmgcComputer_DWork.sf_MATLABFunction_j2);
     FmgcComputer_DWork.Memory_PreviousInput_bc = FmgcComputer_P.Logic_table_bp[(((static_cast<uint32_T>(rtb_y_bo) << 1)
       + rtb_ap_fd_condition_tmp_2) << 1) + FmgcComputer_DWork.Memory_PreviousInput_bc];
+    rtb_AND_cf = (rtb_AND_cf || FmgcComputer_DWork.Memory_PreviousInput_bc);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_l, &rtb_DataTypeConversion1_e);
     rtb_y_p3 = ((rtb_DataTypeConversion1_e != 0U) && rtb_y_if);
-    rtb_y_bs = (rtb_y_hq || (rtb_raComputationData >= FmgcComputer_P.CompareToConstant_const_lj) || rtb_dualRaFailure);
-    rtb_AND10_b = rtb_OR2_l_tmp;
+    rtb_y_am = (rtb_y_hq || (rtb_raComputationData >= FmgcComputer_P.CompareToConstant_const_lj) || rtb_dualRaFailure);
     FmgcComputer_MATLABFunction_a(FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed, FmgcComputer_U.in.time.dt,
-      FmgcComputer_P.ConfirmNode_isRisingEdge_le, FmgcComputer_P.ConfirmNode_timeDelay_n, &rtb_AND10_b,
+      FmgcComputer_P.ConfirmNode_isRisingEdge_le, FmgcComputer_P.ConfirmNode_timeDelay_n, &rtb_y_aq,
       &FmgcComputer_DWork.sf_MATLABFunction_pu);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel2_bit_e, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_h, &rtb_y_hq,
       &FmgcComputer_DWork.sf_MATLABFunction_d3);
-    rtb_y_p = (rtb_y_e2 && FmgcComputer_U.in.fms_inputs.lateral_flight_plan_valid);
+    rtb_y_p = (rtb_y_iz && FmgcComputer_U.in.fms_inputs.lateral_flight_plan_valid);
     rtb_y_f5 = (rtb_y_p && FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && FmgcComputer_P.Constant_Value_hg &&
-                rtb_y_bs && rtb_ap_fd_condition_tmp_1 && (rtb_appInop_idx_2 && rtb_GreaterThan3_tmp_0 && rtb_OR2_l_tmp &&
-      rtb_AND12 && rtb_Compare_j3 && (!rtb_AND10_b) && rtb_y_hq));
+                rtb_y_am && rtb_ap_fd_condition_tmp_1 && (rtb_appInop_idx_2 && rtb_GreaterThan3_tmp_0 && rtb_OR2_l_tmp &&
+      rtb_GreaterThan3_tmp_1 && rtb_Compare_j3 && (!rtb_y_aq) && rtb_y_hq));
     rtb_NOT_b = (rtb_ap_fd_condition_tmp_2 && (rtb_y_p3 || rtb_y_f5));
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active), FmgcComputer_P.PulseNode3_isRisingEdge_k, &rtb_AND10_b,
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active), FmgcComputer_P.PulseNode3_isRisingEdge_k, &rtb_y_aq,
       &FmgcComputer_DWork.sf_MATLABFunction_bbv);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel1_bit_o, &rtb_DataTypeConversion1_e);
@@ -1812,13 +1814,13 @@ void FmgcComputer::step()
     rtb_y_bo = !FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid;
     FmgcComputer_DWork.Memory_PreviousInput_dv = FmgcComputer_P.Logic_table_c
       [(((FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active ||
-          FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active || rtb_y_bo || rtb_AND10_b ||
-          (rtb_y_hq && FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed) || rtb_y_f5 || rtb_OR_bg ||
+          FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active || rtb_y_bo || rtb_y_aq || (rtb_y_hq &&
+           FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed) || rtb_y_f5 || rtb_OR_bg ||
           FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active) + (static_cast<uint32_T>(rtb_NOT_b) << 1)) <<
         1) + FmgcComputer_DWork.Memory_PreviousInput_dv];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel_bit_a, &rtb_DataTypeConversion1_e);
-    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
+    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active &&
       FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed && FmgcComputer_U.in.fms_inputs.final_app_can_engage &&
       (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant_Value_i5)));
@@ -1846,7 +1848,7 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel_bit_cs, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_a(rtb_y_p5, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_m,
-      FmgcComputer_P.ConfirmNode_timeDelay_j5, &rtb_y_bs, &FmgcComputer_DWork.sf_MATLABFunction_hvs);
+      FmgcComputer_P.ConfirmNode_timeDelay_j5, &rtb_y_am, &FmgcComputer_DWork.sf_MATLABFunction_hvs);
     rtb_y_f5 = (rtb_handleIndex >= FmgcComputer_P.CompareToConstant_const_ja);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg,
       FmgcComputer_P.A429ValueOrDefault_defaultValue_p, &rtb_y_gl);
@@ -1854,25 +1856,25 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_d, &rtb_y_gl);
     FmgcComputer_MATLABFunction_g((rtb_Compare_bj || (rtb_y_gl >= FmgcComputer_P.CompareToConstant5_const_k)),
-      FmgcComputer_P.PulseNode_isRisingEdge_c, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_fn);
-    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_AND1_c0 && (!rtb_y_bs) && rtb_y_f5 &&
-      rtb_AND10_b));
+      FmgcComputer_P.PulseNode_isRisingEdge_c, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_fn);
+    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_AND1_c0 && (!rtb_y_am) && rtb_y_f5 &&
+      rtb_y_aq));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_hj,
-      FmgcComputer_P.ConfirmNode_timeDelay_a3, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_lm);
+      FmgcComputer_P.ConfirmNode_timeDelay_a3, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_lm);
     FmgcComputer_DWork.Memory_PreviousInput_i = FmgcComputer_P.Logic_table_o[((((rtb_OR_bg ||
       (rtb_Logic_gj_idx_0_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active ||
        FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active ||
-       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active)) && (!rtb_AND10_b)) + (static_cast<uint32_T>
+       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active)) && (!rtb_y_aq)) + (static_cast<uint32_T>
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_i];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_e, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active,
-      FmgcComputer_P.PulseNode_isRisingEdge_f, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_pn);
-    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 && (rtb_AND12 &&
-      rtb_TmpSignalConversionAtSFunctionInport3_idx_1 && (!FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active) &&
-      (!FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active) && rtb_AND10_b)));
+      FmgcComputer_P.PulseNode_isRisingEdge_f, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_pn);
+    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz && (rtb_GreaterThan3_tmp_1 &&
+      rtb_TmpSignalConversionAtSFunctionInport3_idx_0 && (!FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active) &&
+      (!FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active) && rtb_y_aq)));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_mf,
-      FmgcComputer_P.ConfirmNode_timeDelay_dw, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_mtz);
+      FmgcComputer_P.ConfirmNode_timeDelay_dw, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_mtz);
     FmgcComputer_DWork.Memory_PreviousInput_el = FmgcComputer_P.Logic_table_c2[(((rtb_OR_bg ||
       ((FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_active ||
         FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active ||
@@ -1880,36 +1882,36 @@ void FmgcComputer::step()
         FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active ||
         FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
         FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active ||
-        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (static_cast<uint32_T>
+        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (static_cast<uint32_T>
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_el];
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active), FmgcComputer_P.PulseNode3_isRisingEdge_l, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_gb);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel4_bit_k, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_j((rtb_DataTypeConversion1_e != 0U), FmgcComputer_U.in.time.dt, &rtb_AND10_b,
+    FmgcComputer_MATLABFunction_j((rtb_DataTypeConversion1_e != 0U), FmgcComputer_U.in.time.dt, &rtb_y_aq,
       FmgcComputer_P.MTrigNode_isRisingEdge_g, FmgcComputer_P.MTrigNode_retriggerable_f,
       FmgcComputer_P.MTrigNode_triggerDuration_bm, &FmgcComputer_DWork.sf_MATLABFunction_aw);
-    rtb_y_ed = (rtb_GreaterThan3_tmp_0 && rtb_AND12);
-    rtb_Compare_bj = (rtb_appInop_idx_1 && rtb_y_f5 && (rtb_y_ed && rtb_TmpSignalConversionAtSFunctionInport3_idx_1 &&
-      rtb_ap_fd_condition_tmp_2) && (!rtb_AND10_b));
+    rtb_y_ed = (rtb_GreaterThan3_tmp_0 && rtb_GreaterThan3_tmp_1);
+    rtb_Compare_bj = (rtb_appInop_idx_1 && rtb_y_f5 && (rtb_y_ed && rtb_TmpSignalConversionAtSFunctionInport3_idx_0 &&
+      rtb_ap_fd_condition_tmp_2) && (!rtb_y_aq));
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active), FmgcComputer_P.PulseNode5_isRisingEdge_h,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_aj);
+      &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_aj);
     rtb_y_hq = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active;
     rtb_GreaterThan3_tmp_0 = !FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active;
-    rtb_y_ed = (rtb_AND10_b && FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active && (rtb_y_ed && rtb_y_hq &&
+    rtb_y_ed = (rtb_y_aq && FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active && (rtb_y_ed && rtb_y_hq &&
       rtb_GreaterThan3_tmp_0 && rtb_ap_fd_condition_tmp_2));
     rtb_NOT_b = rtb_appInop_idx_1;
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode2_isRisingEdge_b,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_at);
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode2_isRisingEdge_b, &rtb_y_aq,
+      &FmgcComputer_DWork.sf_MATLABFunction_at);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel5_bit_f, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_j,
       &rtb_NOT_b, &FmgcComputer_DWork.sf_MATLABFunction_o3);
     rtb_AND1_c0 = !FmgcComputer_U.in.fms_inputs.lateral_flight_plan_valid;
     rtb_Compare_bj = ((FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active && rtb_AND1_c0 && rtb_Compare_j3) ||
-                      rtb_Compare_bj || rtb_y_ed || (rtb_appInop_idx_1 && rtb_NOT_ou && rtb_AND10_b) ||
+                      rtb_Compare_bj || rtb_y_ed || (rtb_appInop_idx_1 && rtb_NOT_ou && rtb_y_aq) ||
                       (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active &&
                        FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active && rtb_NOT_b));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
@@ -1920,28 +1922,28 @@ void FmgcComputer::step()
     rtb_y_ed = (rtb_y_ed || (rtb_DataTypeConversion1_e != 0U));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel2_bit_i, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_i,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_di2);
-    rtb_y_p3 = (rtb_y_h && rtb_AND10_b && rtb_ap_fd_condition_tmp_2 && (rtb_AND12 || (rtb_raComputationData >=
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_i, &rtb_y_aq,
+      &FmgcComputer_DWork.sf_MATLABFunction_di2);
+    rtb_y_p3 = (rtb_y_h && rtb_y_aq && rtb_ap_fd_condition_tmp_2 && (rtb_GreaterThan3_tmp_1 || (rtb_raComputationData >=
       FmgcComputer_P.CompareToConstant_const_a)));
     rtb_y_f5 = rtb_OR_m4;
-    FmgcComputer_MATLABFunction_g(rtb_y_ft, FmgcComputer_P.PulseNode4_isRisingEdge_e, &rtb_AND10_b,
+    FmgcComputer_MATLABFunction_g(rtb_y_ft, FmgcComputer_P.PulseNode4_isRisingEdge_e, &rtb_y_aq,
       &FmgcComputer_DWork.sf_MATLABFunction_a5);
     rtb_NOT_b = !FmgcComputer_DWork.Delay_DSTATE.any_lateral_mode_engaged;
-    rtb_y_bs = (rtb_NOT_b && rtb_OR2_l_tmp);
-    rtb_y_ed = ((rtb_y_ed && rtb_y_if) || (rtb_y_e2 && (rtb_y_p3 || (rtb_OR_m4 && rtb_AND10_b && rtb_y_bs) ||
+    rtb_y_am = (rtb_NOT_b && rtb_OR2_l_tmp);
+    rtb_y_ed = ((rtb_y_ed && rtb_y_if) || (rtb_y_iz && (rtb_y_p3 || (rtb_OR_m4 && rtb_y_aq && rtb_y_am) ||
       rtb_Compare_bj)));
     FmgcComputer_MATLABFunction_a(rtb_y_ed, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_a,
-      FmgcComputer_P.ConfirmNode_timeDelay_a2, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_hdw);
-    FmgcComputer_DWork.Memory_PreviousInput_f2 = FmgcComputer_P.Logic_table_i[(((((!rtb_AND10_b) && (in_land_or_ga_tmp ||
+      FmgcComputer_P.ConfirmNode_timeDelay_a2, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_hdw);
+    FmgcComputer_DWork.Memory_PreviousInput_f2 = FmgcComputer_P.Logic_table_i[(((((!rtb_y_aq) && (rtb_AND8 ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active)) || rtb_OR_bg) + (static_cast<uint32_T>(rtb_y_ed) << 1))
       << 1) + FmgcComputer_DWork.Memory_PreviousInput_f2];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel3_bit_k, &rtb_DataTypeConversion1_e);
     rtb_ap_fd_condition_tmp_1 = ((rtb_DataTypeConversion1_e != 0U) && FmgcComputer_DWork.Memory_PreviousInput_f2);
-    in_land_or_ga_tmp = (FmgcComputer_DWork.Memory_PreviousInput_f2 && (rtb_DataTypeConversion1_e == 0U));
-    rtb_Logic_gj_idx_0_tmp_tmp = rtb_Compare_bj;
+    rtb_Logic_gj_idx_0_tmp_tmp = (FmgcComputer_DWork.Memory_PreviousInput_f2 && (rtb_DataTypeConversion1_e == 0U));
+    rtb_AND8 = rtb_Compare_bj;
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_fu, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_DataTypeConversion1_e != 0U);
@@ -1950,60 +1952,60 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_j, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_m1w);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_hdg_deg, &rtb_y_ed);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_trk_deg, &rtb_y_bs);
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_trk_deg, &rtb_y_am);
     FmgcComputer_MATLABFunction_g(FmgcComputer_U.in.fms_inputs.lateral_flight_plan_valid,
-      FmgcComputer_P.PulseNode3_isRisingEdge_e, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_hu);
+      FmgcComputer_P.PulseNode3_isRisingEdge_e, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_hu);
     rtb_y_p3 = (rtb_NOT_b || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_loc_submode_active);
-    rtb_NOT_b = (rtb_y_p5 && (((!rtb_y_ed) && (!rtb_y_bs)) || rtb_AND10_b) && rtb_y_p3);
+    rtb_NOT_b = (rtb_y_p5 && (((!rtb_y_ed) && (!rtb_y_am)) || rtb_y_aq) && rtb_y_p3);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.armed_modes.final_des_armed,
       FmgcComputer_P.PulseNode4_isRisingEdge_b, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_id);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active,
-      FmgcComputer_P.PulseNode7_isRisingEdge, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_bj);
+      FmgcComputer_P.PulseNode7_isRisingEdge, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_bj);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_hdg_deg, &rtb_y_ed);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_trk_deg, &rtb_y_bs);
-    rtb_y_ed = (rtb_y_ed || rtb_y_bs);
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_trk_deg, &rtb_y_am);
+    rtb_y_ed = (rtb_y_ed || rtb_y_am);
     rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_p && ((rtb_y_hq && rtb_GreaterThan3_tmp_0 &&
-      rtb_ap_fd_condition_tmp_2 && rtb_y_f5) || rtb_NOT_b || rtb_y_p3 || (rtb_AND10_b && (!rtb_y_ed)))));
+      rtb_ap_fd_condition_tmp_2 && rtb_y_f5) || rtb_NOT_b || rtb_y_p3 || (rtb_y_aq && (!rtb_y_ed)))));
     FmgcComputer_MATLABFunction_g(rtb_y_ed, FmgcComputer_P.PulseNode2_isRisingEdge_i, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_h0);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel1_bit_p, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_k, &rtb_y_bs,
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_k, &rtb_y_am,
       &FmgcComputer_DWork.sf_MATLABFunction_jle);
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active ||
       FmgcComputer_DWork.Delay_DSTATE.armed_modes.loc_armed || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active),
-      FmgcComputer_P.PulseNode6_isRisingEdge, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_jd);
+      FmgcComputer_P.PulseNode6_isRisingEdge, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_jd);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Memory_PreviousInput_dv, FmgcComputer_P.PulseNode5_isRisingEdge_a,
       &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_ew);
-    FmgcComputer_DWork.Memory_PreviousInput_i1 = FmgcComputer_P.Logic_table_g[(((rtb_y_f5 || rtb_y_bs || rtb_AND10_b ||
+    FmgcComputer_DWork.Memory_PreviousInput_i1 = FmgcComputer_P.Logic_table_g[(((rtb_y_f5 || rtb_y_am || rtb_y_aq ||
       rtb_AND1_c0 || rtb_y_p3 || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active || rtb_OR_bg) +
       (static_cast<uint32_T>(rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_i1];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_nk, &rtb_DataTypeConversion1_e);
-    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
+    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
       FmgcComputer_U.in.fms_inputs.nav_capture_condition && (FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed ||
       FmgcComputer_U.in.fms_inputs.direct_to_nav_engage) && ((rtb_raComputationData >=
-      FmgcComputer_P.CompareToConstant_const_oh) || rtb_dualRaFailure) && (rtb_AND12 || (rtb_raComputationData >=
-      FmgcComputer_P.CompareToConstant1_const_b))));
+      FmgcComputer_P.CompareToConstant_const_oh) || rtb_dualRaFailure) && (rtb_GreaterThan3_tmp_1 ||
+      (rtb_raComputationData >= FmgcComputer_P.CompareToConstant1_const_b))));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_co,
-      FmgcComputer_P.ConfirmNode_timeDelay_d1, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_ge4);
+      FmgcComputer_P.ConfirmNode_timeDelay_d1, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_ge4);
     FmgcComputer_DWork.Memory_PreviousInput_ip = FmgcComputer_P.Logic_table_a[(((rtb_AND1_c0 || rtb_OR_bg ||
-      ((rtb_Logic_d_idx_0_tmp || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (
+      ((rtb_Logic_d_idx_0_tmp || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (
       static_cast<uint32_T>(rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_ip];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_o, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_DataTypeConversion1_e != 0U);
-    rtb_y_ed = rtb_y_e2;
+    rtb_y_ed = rtb_y_iz;
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active), FmgcComputer_P.PulseNode1_isRisingEdge_cs, &rtb_y_p,
       &FmgcComputer_DWork.sf_MATLABFunction_ma);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel1_bit_ls, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode2_isRisingEdge_o,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_k4c);
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode2_isRisingEdge_o, &rtb_y_aq,
+      &FmgcComputer_DWork.sf_MATLABFunction_k4c);
     rtb_NOT_b = rtb_GreaterThan3_tmp;
-    rtb_AND1_c0 = (rtb_AND10_b && rtb_GreaterThan3_tmp && (rtb_raComputationData >=
+    rtb_AND1_c0 = (rtb_y_aq && rtb_GreaterThan3_tmp && (rtb_raComputationData >=
       FmgcComputer_P.CompareToConstant_const_m) && ((FmgcComputer_P.EnumeratedConstant_Value_a !=
       FmgcComputer_U.in.fms_inputs.fms_flight_phase) && (FmgcComputer_U.in.fms_inputs.fms_flight_phase !=
       FmgcComputer_P.EnumeratedConstant1_Value_dg)));
@@ -2011,14 +2013,14 @@ void FmgcComputer::step()
       FmgcComputer_P.ConfirmNode_timeDelay_g, &rtb_NOT_b, &FmgcComputer_DWork.sf_MATLABFunction_ah);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed,
       FmgcComputer_P.PulseNode_isRisingEdge_g, &rtb_y_ed, &FmgcComputer_DWork.sf_MATLABFunction_ol);
-    rtb_NOT_ou = (rtb_NOT_ou && rtb_AND10_b && FmgcComputer_DWork.Delay_DSTATE.armed_modes.loc_armed);
+    rtb_NOT_ou = (rtb_NOT_ou && rtb_y_aq && FmgcComputer_DWork.Delay_DSTATE.armed_modes.loc_armed);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed,
-      FmgcComputer_P.PulseNode3_isRisingEdge_d, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_mne);
+      FmgcComputer_P.PulseNode3_isRisingEdge_d, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_mne);
     FmgcComputer_DWork.Memory_PreviousInput_a = FmgcComputer_P.Logic_table_ku[(((((!rtb_NOT_b) && rtb_y_ed) ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active ||
-      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active || rtb_NOT_ou || rtb_AND10_b) + (
-      static_cast<uint32_T>((rtb_Compare_bj && rtb_y_if) || (rtb_y_e2 && (rtb_y_p || rtb_AND1_c0))) << 1)) << 1) +
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active || rtb_NOT_ou || rtb_y_aq) + (
+      static_cast<uint32_T>((rtb_Compare_bj && rtb_y_if) || (rtb_y_iz && (rtb_y_p || rtb_AND1_c0))) << 1)) << 1) +
       FmgcComputer_DWork.Memory_PreviousInput_a];
     rtb_BusAssignment_k_logic_ir_computation_data_heading_magnetic_deg.SSM =
       rtb_irComputationBus_heading_magnetic_deg_SSM;
@@ -2033,9 +2035,9 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_k_logic_ir_computation_data_heading_magnetic_deg,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_j, &rtb_y_gl);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_k_logic_ils_computation_data_localizer_deviation_deg,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_o, &rtb_y_fo);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_o, &rtb_y_fy);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_k_logic_ir_computation_data_roll_angle_deg,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_o, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_o, &rtb_y_fd);
     rtb_y_gl = (rtb_y_gl - static_cast<real32_T>(FmgcComputer_B.u_lyjj + 360.0)) + 360.0F;
     if (rtb_y_gl == 0.0F) {
       rtb_DataTypeConversion2_kb = 0.0F;
@@ -2079,13 +2081,13 @@ void FmgcComputer::step()
       rtb_DataTypeConversion1_d = std::abs(FmgcComputer_DWork.Delay2_DSTATE.Phi_loc_c);
       guard1 = false;
       if (rtb_DataTypeConversion1_d > 5.0) {
-        if (std::abs(rtb_y_lt) <= 5.0F) {
+        if (std::abs(rtb_y_fd) <= 5.0F) {
           rtb_Compare_bj = true;
         } else {
-          if (rtb_y_lt < 0.0F) {
+          if (rtb_y_fd < 0.0F) {
             low_ip1 = -1;
           } else {
-            low_ip1 = (rtb_y_lt > 0.0F);
+            low_ip1 = (rtb_y_fd > 0.0F);
           }
 
           if (absVsTarget != low_ip1) {
@@ -2099,13 +2101,13 @@ void FmgcComputer::step()
       }
 
       if (guard1) {
-        if (rtb_y_lt < 0.0F) {
+        if (rtb_y_fd < 0.0F) {
           low_ip1 = -1;
         } else {
-          low_ip1 = (rtb_y_lt > 0.0F);
+          low_ip1 = (rtb_y_fd > 0.0F);
         }
 
-        rtb_Compare_bj = ((rtb_DataTypeConversion1_d >= std::abs(rtb_y_lt)) && (absVsTarget == low_ip1));
+        rtb_Compare_bj = ((rtb_DataTypeConversion1_d >= std::abs(rtb_y_fd)) && (absVsTarget == low_ip1));
       }
     } else {
       rtb_Compare_bj = false;
@@ -2113,16 +2115,16 @@ void FmgcComputer::step()
 
     rtb_DataTypeConversion2_kb = std::abs(rtb_y_gl);
     if (rtb_DataTypeConversion2_kb < 115.0F) {
-      rtb_y_lt = std::abs(rtb_y_fo);
-      if (rtb_y_fo < 0.0F) {
+      rtb_y_fd = std::abs(rtb_y_fy);
+      if (rtb_y_fy < 0.0F) {
         absVsTarget = -1;
       } else {
-        absVsTarget = (rtb_y_fo > 0.0F);
+        absVsTarget = (rtb_y_fy > 0.0F);
       }
 
-      if (((rtb_DataTypeConversion2_kb > 25.0F) && ((rtb_y_lt < 10.0F) && ((low_i != absVsTarget) && rtb_Compare_bj))) ||
-          (rtb_y_lt < 1.92)) {
-        rtb_Compare_bj = (rtb_Compare_bj || ((rtb_DataTypeConversion2_kb < 15.0F) && (rtb_y_lt < 1.1)));
+      if (((rtb_DataTypeConversion2_kb > 25.0F) && ((rtb_y_fd < 10.0F) && ((low_i != absVsTarget) && rtb_Compare_bj))) ||
+          (rtb_y_fd < 1.92)) {
+        rtb_Compare_bj = (rtb_Compare_bj || ((rtb_DataTypeConversion2_kb < 15.0F) && (rtb_y_fd < 1.1)));
       } else {
         rtb_Compare_bj = false;
       }
@@ -2131,12 +2133,12 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_k_logic_ils_computation_data_localizer_deviation_deg, &rtb_y_ed);
-    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
+    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
       FmgcComputer_DWork.Delay_DSTATE.armed_modes.loc_armed && rtb_Compare_bj && rtb_y_ed));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_at,
-      FmgcComputer_P.ConfirmNode_timeDelay_h4, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_p4);
-    rtb_y_ed = (rtb_AND8 || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active);
-    FmgcComputer_DWork.Memory_PreviousInput_cv = FmgcComputer_P.Logic_table_g4[(((((!rtb_AND10_b) && (rtb_y_ed ||
+      FmgcComputer_P.ConfirmNode_timeDelay_h4, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_p4);
+    rtb_y_ed = (rtb_Logic_d_idx_0_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active);
+    FmgcComputer_DWork.Memory_PreviousInput_cv = FmgcComputer_P.Logic_table_g4[(((((!rtb_y_aq) && (rtb_y_ed ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active ||
@@ -2154,12 +2156,12 @@ void FmgcComputer::step()
 
     FmgcComputer_MATLABFunction_a((rtb_DataTypeConversion1_d < FmgcComputer_P.CompareToConstant1_const_n),
       FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_nd, FmgcComputer_P.ConfirmNode_timeDelay_e,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_is);
-    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active && rtb_AND10_b));
+      &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_is);
+    rtb_Compare_bj = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active && rtb_y_aq));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_ea,
-      FmgcComputer_P.ConfirmNode_timeDelay_es, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_pr);
-    FmgcComputer_DWork.Memory_PreviousInput_lq = FmgcComputer_P.Logic_table_j[(((((!rtb_AND10_b) && (rtb_y_ed ||
+      FmgcComputer_P.ConfirmNode_timeDelay_es, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_pr);
+    FmgcComputer_DWork.Memory_PreviousInput_lq = FmgcComputer_P.Logic_table_j[(((((!rtb_y_aq) && (rtb_y_ed ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active ||
@@ -2174,8 +2176,8 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_c5, &rtb_y_gl);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_pm, &rtb_y_px);
-    rtb_DataTypeConversion2_kb = rtb_y_gl - rtb_y_px;
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_pm, &rtb_y_hnn);
+    rtb_DataTypeConversion2_kb = rtb_y_gl - rtb_y_hnn;
     rtb_DataTypeConversion2_bh = std::abs(rtb_DataTypeConversion2_kb);
     FmgcComputer_DWork.Memory_PreviousInput_n = FmgcComputer_P.Logic_table_pk[(((static_cast<uint32_T>
       ((rtb_DataTypeConversion1_e != 0U) || (rtb_DataTypeConversion2_bh > FmgcComputer_P.CompareToConstant1_const_hi)) <<
@@ -2184,16 +2186,16 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_et, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_vz_ft_min,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_j, &rtb_y_fo);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_j, &rtb_y_fy);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_fpa_deg,
-      FmgcComputer_P.A429ValueOrDefault2_defaultValue_jm, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault2_defaultValue_jm, &rtb_y_fd);
     if (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.vs_active) {
-      rtb_y_lt = rtb_y_fo;
+      rtb_y_fd = rtb_y_fy;
     } else if (!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.fpa_active) {
-      if (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active && rtb_y_hn) {
-        rtb_y_lt = static_cast<real32_T>(rtb_Phi_c_deg);
+      if (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active && rtb_y_n2) {
+        rtb_y_fd = static_cast<real32_T>(rtb_Phi_c_deg);
       } else {
-        rtb_y_lt = 0.0F;
+        rtb_y_fd = 0.0F;
       }
     }
 
@@ -2202,15 +2204,15 @@ void FmgcComputer::step()
     rtb_BusAssignment_gt_logic_ir_computation_data_inertial_vertical_speed_ft_s.Data =
       rtb_irComputationBus_inertial_vertical_speed_ft_s_Data;
     if (rtb_DataTypeConversion2_kb < 0.0F) {
-      rtb_y_hn = (rtb_y_lt <= 0.0F);
+      rtb_y_n2 = (rtb_y_fd <= 0.0F);
     } else {
-      rtb_y_hn = ((rtb_DataTypeConversion2_kb > 0.0F) && (rtb_y_lt >= 0.0F));
+      rtb_y_n2 = ((rtb_DataTypeConversion2_kb > 0.0F) && (rtb_y_fd >= 0.0F));
     }
 
-    rtb_NOT_ou = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 &&
+    rtb_NOT_ou = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz &&
       (!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active) &&
-      (!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_hold_active) && rtb_y_adj && rtb_ap_fd_condition_tmp_3 &&
-      rtb_Compare_j3 && rtb_ap_fd_condition_tmp_2 && ((!rtb_y_hn) ||
+      (!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_hold_active) && rtb_y_k && rtb_ap_fd_condition_tmp_3 &&
+      rtb_Compare_j3 && rtb_ap_fd_condition_tmp_2 && ((!rtb_y_n2) ||
       ((!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.vs_active) &&
        (!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.fpa_active) && rtb_Compare_dw)) &&
       (((!FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active) &&
@@ -2224,12 +2226,12 @@ void FmgcComputer::step()
     rtb_Compare_bj = (rtb_Compare_bj && (rtb_DataTypeConversion1_e != 0U));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel3_bit_f, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_j((rtb_DataTypeConversion1_e != 0U), FmgcComputer_U.in.time.dt, &rtb_AND10_b,
+    FmgcComputer_MATLABFunction_j((rtb_DataTypeConversion1_e != 0U), FmgcComputer_U.in.time.dt, &rtb_y_aq,
       FmgcComputer_P.MTrigNode_isRisingEdge_k, FmgcComputer_P.MTrigNode_retriggerable_pd,
       FmgcComputer_P.MTrigNode_triggerDuration_bh, &FmgcComputer_DWork.sf_MATLABFunction_bq);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_gt_logic_ir_computation_data_inertial_vertical_speed_ft_s,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_h, &rtb_y_lt);
-    rtb_y_gl = std::abs(rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_h, &rtb_y_fd);
+    rtb_y_gl = std::abs(rtb_y_fd);
     absVsTarget = 7;
     low_i = 0;
     low_ip1 = 2;
@@ -2244,37 +2246,37 @@ void FmgcComputer::step()
     }
 
     rtb_DataTypeConversion2_kb = rtb_y_gl - static_cast<real32_T>(b[low_i]);
-    rtb_y_fo = rtb_y_lt * 0.00508F;
+    rtb_y_fy = rtb_y_fd * 0.00508F;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_d, &rtb_y_gl);
     rtb_Phi_c_deg = rtb_altCstrOrFcu - rtb_y_gl;
-    rtb_y_p3 = (std::fmin(3000.0F, std::fmax(80.0F, rtb_y_fo * rtb_y_fo / ((((rtb_DataTypeConversion2_kb *
-      static_cast<real32_T>(c[low_i]) + static_cast<real32_T>(c[low_i + 6])) * rtb_DataTypeConversion2_kb +
-      static_cast<real32_T>(c[low_i + 12])) * rtb_DataTypeConversion2_kb + static_cast<real32_T>(c[low_i + 18])) * 9.81F)
-      * 3.28084F)) > std::abs(rtb_Phi_c_deg));
+    rtb_y_p3 = (std::fmin(3000.0F, std::fmax(80.0F, rtb_y_fy * rtb_y_fy / ((((rtb_DataTypeConversion2_kb * static_cast<
+      real32_T>(c[low_i]) + static_cast<real32_T>(c[low_i + 6])) * rtb_DataTypeConversion2_kb + static_cast<real32_T>
+      (c[low_i + 12])) * rtb_DataTypeConversion2_kb + static_cast<real32_T>(c[low_i + 18])) * 9.81F) * 3.28084F)) > std::
+                abs(rtb_Phi_c_deg));
     if (rtb_Phi_c_deg < 0.0) {
       rtb_Phi_c_deg = -1.0;
     } else {
       rtb_Phi_c_deg = (rtb_Phi_c_deg > 0.0);
     }
 
-    if (rtb_y_lt < 0.0F) {
+    if (rtb_y_fd < 0.0F) {
       absVsTarget = -1;
     } else {
-      absVsTarget = (rtb_y_lt > 0.0F);
+      absVsTarget = (rtb_y_fd > 0.0F);
     }
 
-    rtb_NOT_b = (FmgcComputer_DWork.Delay_DSTATE.armed_modes.alt_acq_armed && (!rtb_AND10_b) && (rtb_y_p3 && (
-      static_cast<int32_T>(rtb_Phi_c_deg) == absVsTarget)));
+    rtb_NOT_b = (FmgcComputer_DWork.Delay_DSTATE.armed_modes.alt_acq_armed && (!rtb_y_aq) && (rtb_y_p3 && (static_cast<
+      int32_T>(rtb_Phi_c_deg) == absVsTarget)));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.tcas_bus.vertical_resolution_advisory,
       FmgcComputer_P.BitfromLabel7_bit_j, &rtb_DataTypeConversion1_e);
-    rtb_y_bs = rtb_y_n5;
-    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_e2 && rtb_NOT_b && ((rtb_raComputationData >=
+    rtb_y_am = rtb_y_n5;
+    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_iz && rtb_NOT_b && ((rtb_raComputationData >=
       FmgcComputer_P.CompareToConstant_const_l5) || (rtb_OR2_l_tmp && rtb_appInop_idx_2)) && (rtb_Compare_dw ||
       ((rtb_DataTypeConversion1_e == 0U) && (FmgcComputer_DWork.Delay_DSTATE.active_tcas_submode ==
       FmgcComputer_P.EnumeratedConstant3_Value_l) && (!rtb_y_n5)))));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_hux,
-      FmgcComputer_P.ConfirmNode_timeDelay_lk, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_hw);
+      FmgcComputer_P.ConfirmNode_timeDelay_lk, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_hw);
     FmgcComputer_DWork.Memory_PreviousInput_ne = FmgcComputer_P.Logic_table_nz[(((rtb_OR_bg || ((rowIdx_tmp ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
@@ -2288,9 +2290,9 @@ void FmgcComputer::step()
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (static_cast<uint32_T>
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (static_cast<uint32_T>
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_ne];
-    rtb_AND8 = rtb_NOT_b;
+    rtb_Logic_d_idx_0_tmp_tmp = rtb_NOT_b;
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel1_bit_p2, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_DataTypeConversion1_e != 0U);
@@ -2301,15 +2303,15 @@ void FmgcComputer::step()
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_g, &rtb_y_gl);
     FmgcComputer_MATLABFunction_a((std::abs(rtb_altCstrOrFcu - rtb_y_gl) < FmgcComputer_P.CompareToConstant_const_f),
       FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_nf, FmgcComputer_P.ConfirmNode_timeDelay_at,
-      &rtb_y_bs, &FmgcComputer_DWork.sf_MATLABFunction_ee);
+      &rtb_y_am, &FmgcComputer_DWork.sf_MATLABFunction_ee);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.tcas_bus.vertical_resolution_advisory,
       FmgcComputer_P.BitfromLabel7_bit_k, &rtb_DataTypeConversion1_e);
-    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_e2 &&
-      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active && rtb_y_bs && (rtb_Compare_dw ||
+    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_iz &&
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active && rtb_y_am && (rtb_Compare_dw ||
       ((rtb_DataTypeConversion1_e == 0U) && (FmgcComputer_DWork.Delay_DSTATE.active_tcas_submode ==
       FmgcComputer_P.EnumeratedConstant3_Value_p) && rtb_NOT1_i))));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_lj,
-      FmgcComputer_P.ConfirmNode_timeDelay_b, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_dt);
+      FmgcComputer_P.ConfirmNode_timeDelay_b, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_dt);
     FmgcComputer_DWork.Memory_PreviousInput_cb = FmgcComputer_P.Logic_table_ob[(((rtb_OR_bg ||
       ((rtb_Logic_gj_idx_0_tmp_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
         FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
@@ -2323,13 +2325,14 @@ void FmgcComputer::step()
         FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
         FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active ||
         FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active ||
-        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (static_cast<uint32_T>
+        FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (static_cast<uint32_T>
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_cb];
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_m, &rtb_y_gl);
+    rtb_y_ed = (std::abs(FmgcComputer_U.in.fms_inputs.cruise_alt_ft - rtb_y_gl) <
+                FmgcComputer_P.CompareToConstant1_const_a);
     rtb_AND1_c0 = !rtb_AND_iz;
-    rtb_Compare_dw = (FmgcComputer_DWork.Memory_PreviousInput_cb && rtb_AND1_c0 && (std::abs
-      (FmgcComputer_U.in.fms_inputs.cruise_alt_ft - rtb_y_gl) < FmgcComputer_P.CompareToConstant1_const_a));
+    rtb_Compare_dw = (FmgcComputer_DWork.Memory_PreviousInput_cb && rtb_AND1_c0 && rtb_y_ed);
     rtb_BusAssignment_o3_logic_adr_computation_data_airspeed_computed_kn.SSM =
       rtb_adrComputationBus_airspeed_computed_kn_SSM;
     rtb_BusAssignment_o3_logic_adr_computation_data_airspeed_computed_kn.Data = rtb_Max_a;
@@ -2337,17 +2340,13 @@ void FmgcComputer::step()
     rtb_BusAssignment_o3_logic_chosen_fac_bus_v_ls_kn.Data = rtb_Switch_v_ls_kn_Data;
     rtb_BusAssignment_o3_logic_chosen_fac_bus_v_max_kn.SSM = rtb_Switch_v_max_kn_SSM;
     rtb_BusAssignment_o3_logic_chosen_fac_bus_v_max_kn.Data = rtb_Switch_v_max_kn_Data;
-    rtb_Logic_gj_idx_0_tmp_tmp_tmp = rtb_y_bs;
-    FmgcComputer_MATLABFunction_g((rtb_Logic_a2[0] || FmgcComputer_U.in.discrete_inputs.ap_opp_engaged),
-      FmgcComputer_P.PulseNode2_isRisingEdge_bh, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_cx);
-    rtb_GreaterThan3_tmp = !FmgcComputer_DWork.Delay_DSTATE.any_longitudinal_mode_engaged;
-    rtb_y_ed = rtb_GreaterThan3_tmp;
+    rtb_Logic_gj_idx_0_tmp_tmp_tmp = rtb_y_am;
     rtb_Compare_bj = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active ||
                       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active);
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active), FmgcComputer_P.PulseNode3_isRisingEdge_n, &rtb_y_ed,
       &FmgcComputer_DWork.sf_MATLABFunction_fed);
-    rtb_AND12 = (rtb_Compare_bj && rtb_y_ed);
+    rtb_y_aq = (rtb_Compare_bj && rtb_y_ed);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active,
       FmgcComputer_P.PulseNode4_isRisingEdge_f, &rtb_y_ed, &FmgcComputer_DWork.sf_MATLABFunction_bbb);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
@@ -2359,40 +2358,39 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_mr, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_mr, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_oi, &rtb_y_gl);
-    rtb_DataTypeConversion2_bh = rtb_y_lt - rtb_y_gl;
+    rtb_DataTypeConversion2_bh = rtb_y_fd - rtb_y_gl;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_o3_logic_chosen_fac_bus_v_ls_kn,
       FmgcComputer_P.A429ValueOrDefault5_defaultValue, &rtb_y_gl);
     rtb_DataTypeConversion2_kb = rtb_y_gl + FmgcComputer_P.Bias_Bias_e;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_o3_logic_adr_computation_data_airspeed_computed_kn,
-      FmgcComputer_P.A429ValueOrDefault6_defaultValue, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault6_defaultValue, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_o3_logic_chosen_fac_bus_v_max_kn,
       FmgcComputer_P.A429ValueOrDefault7_defaultValue, &rtb_y_gl);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.tcas_bus.vertical_resolution_advisory,
       FmgcComputer_P.BitfromLabel7_bit_o, &rtb_DataTypeConversion1_e);
     rtb_y_p = (rtb_y_n5 || (FmgcComputer_DWork.Delay_DSTATE.active_tcas_submode ==
                 FmgcComputer_P.EnumeratedConstant3_Value_ls));
-    rtb_y_f5 = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
-                FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_des_active ||
-                FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_des_active);
-    rtb_y_p3 = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
-                FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
-                FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active);
-    rtb_y_hn = (rtb_TmpSignalConversionAtSFunctionInport3_idx_1 && rtb_y_hq && rtb_GreaterThan3_tmp_0);
-    rtb_Compare_bj = ((rtb_OR_m4 && rtb_AND10_b && rtb_GreaterThan3_tmp) || rtb_AND12 ||
-                      (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active && (rtb_y_ed ||
+    rtb_GreaterThan3_tmp = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_des_active ||
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_des_active);
+    rtb_GreaterThan3_tmp_1 = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active);
+    rtb_y_n2 = (rtb_TmpSignalConversionAtSFunctionInport3_idx_0 && rtb_y_hq && rtb_GreaterThan3_tmp_0);
+    rtb_Compare_bj = (rtb_y_aq || (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active && (rtb_y_ed ||
       rtb_Compare_bj)) || (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active &&
       ((FmgcComputer_P.EnumeratedConstant_Value_p == FmgcComputer_U.in.fms_inputs.fms_flight_phase) ||
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant1_Value_m) ||
-       (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant2_Value) || rtb_y_hn ||
+       (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant2_Value) || rtb_y_n2 ||
        rtb_y_bo)) || (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active && (std::abs(FmgcComputer_B.u_ly
-      - rtb_altCstrOrFcu) >= FmgcComputer_P.CompareToConstant_const_omz)) || (rtb_y_f5 && (rtb_DataTypeConversion2_bh >
-      FmgcComputer_P.CompareToConstant1_const_o)) || (rtb_y_p3 && (rtb_DataTypeConversion2_bh <
-      FmgcComputer_P.CompareToConstant2_const_g)) || ((rtb_y_f5 ||
-      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active) && (rtb_DataTypeConversion2_kb > rtb_y_lt) &&
-      rtb_fmgcOppPriority_tmp && FmgcComputer_DWork.Delay_DSTATE_k) || (rtb_y_p3 && (rtb_y_lt > rtb_y_gl +
+      - rtb_altCstrOrFcu) >= FmgcComputer_P.CompareToConstant_const_omz)) || (rtb_GreaterThan3_tmp &&
+      (rtb_DataTypeConversion2_bh > FmgcComputer_P.CompareToConstant1_const_o)) || (rtb_GreaterThan3_tmp_1 &&
+      (rtb_DataTypeConversion2_bh < FmgcComputer_P.CompareToConstant2_const_g)) || ((rtb_GreaterThan3_tmp ||
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active) && (rtb_DataTypeConversion2_kb > rtb_y_fd) &&
+      rtb_fmgcOppPriority_tmp && FmgcComputer_DWork.Delay_DSTATE_k) || (rtb_GreaterThan3_tmp_1 && (rtb_y_fd > rtb_y_gl +
       FmgcComputer_P.Bias1_Bias) && rtb_fmgcOppPriority_tmp && FmgcComputer_DWork.Delay_DSTATE_k) ||
                       (((rtb_DataTypeConversion1_e == 0U) || rtb_y_n5) &&
                        FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active && rtb_y_p));
@@ -2413,11 +2411,15 @@ void FmgcComputer::step()
     rtb_y_p3 = (rtb_y_h && rtb_y_f5 && rtb_ap_fd_condition_tmp_2);
     FmgcComputer_MATLABFunction_g(rtb_y_ft, FmgcComputer_P.PulseNode1_isRisingEdge_ky, &rtb_y_p,
       &FmgcComputer_DWork.sf_MATLABFunction_dsw);
-    rtb_y_ed = ((rtb_y_ed && rtb_y_if) || (rtb_y_e2 && (rtb_y_p3 || (rtb_OR_m4 && rtb_y_p && rtb_GreaterThan3_tmp) ||
-      rtb_Compare_bj)));
+    rtb_NOT_b = !FmgcComputer_DWork.Delay_DSTATE.any_longitudinal_mode_engaged;
+    rtb_y_am = rtb_NOT_b;
+    FmgcComputer_MATLABFunction_a(rtb_OR_m4, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_ld,
+      FmgcComputer_P.ConfirmNode_timeDelay_op, &rtb_y_am, &FmgcComputer_DWork.sf_MATLABFunction_cz);
+    rtb_y_ed = ((rtb_y_ed && rtb_y_if) || (rtb_y_iz && (rtb_y_p3 || (rtb_OR_m4 && rtb_y_p && rtb_NOT_b) || (rtb_y_am &&
+      rtb_NOT_b) || rtb_Compare_bj)));
     FmgcComputer_MATLABFunction_a(rtb_y_ed, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_lu,
       FmgcComputer_P.ConfirmNode_timeDelay_ll, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_gbq);
-    FmgcComputer_DWork.Memory_PreviousInput_fg = FmgcComputer_P.Logic_table_ny[(((rtb_OR_bg || ((rtb_y_d4 ||
+    FmgcComputer_DWork.Memory_PreviousInput_fg = FmgcComputer_P.Logic_table_ny[(((rtb_OR_bg || ((rtb_y_gj ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
@@ -2436,27 +2438,27 @@ void FmgcComputer::step()
       FmgcComputer_P.BitfromLabel3_bit_e, &rtb_DataTypeConversion1_e);
     rtb_fmgcOppPriority_tmp = ((rtb_DataTypeConversion1_e != 0U) && FmgcComputer_DWork.Memory_PreviousInput_fg);
     rtb_GreaterThan3_tmp = (FmgcComputer_DWork.Memory_PreviousInput_fg && (rtb_DataTypeConversion1_e == 0U));
-    rtb_AND12 = rtb_Compare_bj;
+    rtb_GreaterThan3_tmp_1 = rtb_Compare_bj;
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_jh, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_DataTypeConversion1_e != 0U);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_et, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_et, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_oj, &rtb_y_gl);
-    rtb_y_f5 = (rtb_y_lt > rtb_y_gl);
+    rtb_y_f5 = (rtb_y_fd > rtb_y_gl);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel2_bit_px, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_b,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_p3z);
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_b, &rtb_y_aq,
+      &FmgcComputer_DWork.sf_MATLABFunction_p3z);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault5_defaultValue_c, &rtb_y_gl);
-    rtb_y_p = (rtb_y_d4 && rtb_AND_iz);
+    rtb_y_p = (rtb_y_gj && rtb_AND_iz);
     rtb_NOT_b = (rtb_OR_m4 && ((FmgcComputer_U.in.fms_inputs.fms_flight_phase !=
       FmgcComputer_P.EnumeratedConstant1_Value_f) && (FmgcComputer_U.in.fms_inputs.fms_flight_phase !=
       FmgcComputer_P.EnumeratedConstant2_Value_p)) && FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active &&
-                 rtb_y_f5 && FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && (rtb_y_p || (rtb_AND10_b &&
-      rtb_y_d4 && (rtb_AND_iz && (std::abs(rtb_altCstrOrFcu - rtb_y_gl) <= FmgcComputer_P.CompareToConstant2_const_d)))));
+                 rtb_y_f5 && FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && (rtb_y_p || (rtb_y_aq &&
+      rtb_y_gj && (rtb_AND_iz && (std::abs(rtb_altCstrOrFcu - rtb_y_gl) <= FmgcComputer_P.CompareToConstant2_const_d)))));
     rtb_y_p3 = (rtb_y_p5 || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
@@ -2470,7 +2472,7 @@ void FmgcComputer::step()
                 ((!rtP_fmgc_ap_fd_logic_output_MATLABStruct.any_lateral_mode_engaged) ||
                  FmgcComputer_DWork.Memory_PreviousInput_c));
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault2_defaultValue_jt, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault2_defaultValue_jt, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_os, &rtb_y_gl);
     rowIdx_tmp = (rtb_TmpSignalConversionAtSFunctionInport3_idx_2 ||
@@ -2485,11 +2487,11 @@ void FmgcComputer::step()
        FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_des_active ||
        ((FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_hold_active ||
          FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.alt_acq_active) && rtb_AND1_c0) ||
-       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active) || (rtb_y_lt < rtb_y_gl) || (rtb_y_d4 &&
-      (rtb_AND1_c0 || rtb_TmpSignalConversionAtSFunctionInport3_idx_1 || rtb_y_bo)) ||
+       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active) || (rtb_y_fd < rtb_y_gl) || (rtb_y_gj &&
+      (rtb_AND1_c0 || rtb_TmpSignalConversionAtSFunctionInport3_idx_0 || rtb_y_bo)) ||
       ((FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant3_Value) ||
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant4_Value)) || rtb_OR_bg) + (
-      static_cast<uint32_T>((rtb_Compare_bj && rtb_y_if) || (rtb_y_e2 && (rtb_NOT_b || (rtb_y_p3 && rtb_y_f5)))) << 1)) <<
+      static_cast<uint32_T>((rtb_Compare_bj && rtb_y_if) || (rtb_y_iz && (rtb_NOT_b || (rtb_y_p3 && rtb_y_f5)))) << 1)) <<
       1) + FmgcComputer_DWork.Memory_PreviousInput_ma];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel1_bit_g3, &rtb_DataTypeConversion1_e);
@@ -2498,35 +2500,35 @@ void FmgcComputer::step()
       FmgcComputer_P.BitfromLabel2_bit_is, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_Compare_bj && (rtb_DataTypeConversion1_e == 0U));
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_h, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_h, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_n, &rtb_y_gl);
-    rtb_y_p3 = (rtb_y_lt > rtb_y_gl);
+    rtb_y_p3 = (rtb_y_fd > rtb_y_gl);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_j4, &rtb_y_gl);
     FmgcComputer_MATLABFunction_g((rtb_y_gl > FmgcComputer_U.in.fms_inputs.acceleration_alt_ft),
-      FmgcComputer_P.PulseNode_isRisingEdge_bg, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_dfk);
-    rtb_y_bs = (rtb_AND10_b || (FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft != FmgcComputer_DWork.DelayInput1_DSTATE));
+      FmgcComputer_P.PulseNode_isRisingEdge_bg, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_dfk);
+    rtb_y_am = (rtb_y_aq || (FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft != FmgcComputer_DWork.DelayInput1_DSTATE));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel3_bit_p, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_j4,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_dd);
+      &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_dd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault5_defaultValue_d, &rtb_y_gl);
     rtb_y_ed = (rtb_AND1_c0 || (std::abs(rtb_altCstrOrFcu - rtb_y_gl) > FmgcComputer_P.CompareToConstant2_const_a));
-    rtb_TmpSignalConversionAtSFunctionInport3_idx_2 = (rtb_y_e2 &&
+    rtb_TmpSignalConversionAtSFunctionInport3_idx_2 = (rtb_y_iz &&
       FmgcComputer_DWork.Delay_DSTATE.armed_modes.alt_acq_arm_possible && rtb_y_h);
-    rtb_GreaterThan3_tmp_0 = !rtb_y_d4;
+    rtb_GreaterThan3_tmp_0 = !rtb_y_gj;
     rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_TmpSignalConversionAtSFunctionInport3_idx_2 &&
       (rtb_ap_fd_condition_tmp_2 && rtb_ap_fd_condition_tmp_3) &&
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active &&
       FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && rtb_y_p3 &&
       ((FmgcComputer_P.EnumeratedConstant_Value_pq != FmgcComputer_U.in.fms_inputs.fms_flight_phase) &&
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase != FmgcComputer_P.EnumeratedConstant1_Value_i)) &&
-      ((FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed && rtb_y_bs) || (rtb_AND10_b && (rtb_GreaterThan3_tmp_0 ||
-      (rtb_y_d4 && (!FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed) && rtb_y_ed))))));
+      ((FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed && rtb_y_am) || (rtb_y_aq && (rtb_GreaterThan3_tmp_0 ||
+      (rtb_y_gj && (!FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed) && rtb_y_ed))))));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_fc,
-      FmgcComputer_P.ConfirmNode_timeDelay_nn, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_ir);
+      FmgcComputer_P.ConfirmNode_timeDelay_nn, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_ir);
     rtb_y_hq = (rowIdx_tmp_0 || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_des_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active ||
@@ -2538,29 +2540,29 @@ void FmgcComputer::step()
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (static_cast<uint32_T>
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (static_cast<uint32_T>
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_ec];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_cq, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_DataTypeConversion1_e != 0U);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_nh, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_nh, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_mc, &rtb_y_gl);
-    rtb_y_p3 = (rtb_y_lt < rtb_y_gl);
+    rtb_y_p3 = (rtb_y_fd < rtb_y_gl);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel2_bit_nq, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_f, &rtb_y_ed,
       &FmgcComputer_DWork.sf_MATLABFunction_mrk);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault5_defaultValue_k, &rtb_y_gl);
-    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_e2 && ((FmgcComputer_U.in.fms_inputs.fms_flight_phase !=
+    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_y_iz && ((FmgcComputer_U.in.fms_inputs.fms_flight_phase !=
       FmgcComputer_P.EnumeratedConstant1_Value_c) && (FmgcComputer_U.in.fms_inputs.fms_flight_phase !=
       FmgcComputer_P.EnumeratedConstant2_Value_pi) && rtb_y_p3 && rtb_appInop_idx_0 &&
-      FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && (rtb_y_p || (rtb_y_ed && rtb_y_d4 && (rtb_AND_iz &&
+      FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && (rtb_y_p || (rtb_y_ed && rtb_y_gj && (rtb_AND_iz &&
       (std::abs(rtb_altCstrOrFcu - rtb_y_gl) <= FmgcComputer_P.CompareToConstant2_const_e)))))));
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault2_defaultValue_cj, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault2_defaultValue_cj, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_b, &rtb_y_gl);
     FmgcComputer_DWork.Memory_PreviousInput_nt = FmgcComputer_P.Logic_table_he[(((rowIdx_tmp ||
@@ -2571,11 +2573,11 @@ void FmgcComputer::step()
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_des_active ||
-      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active || (rtb_y_lt > rtb_y_gl) || rtb_y_hn ||
+      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active || (rtb_y_fd > rtb_y_gl) || rtb_y_n2 ||
       ((FmgcComputer_P.EnumeratedConstant_Value_b == FmgcComputer_U.in.fms_inputs.fms_flight_phase) ||
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant5_Value) ||
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant6_Value)) || rtb_y_bo ||
-      (rtb_y_d4 && rtb_AND1_c0) || rtb_OR_bg) + (static_cast<uint32_T>(rtb_Compare_bj) << 1)) << 1) +
+      (rtb_y_gj && rtb_AND1_c0) || rtb_OR_bg) + (static_cast<uint32_T>(rtb_Compare_bj) << 1)) << 1) +
       FmgcComputer_DWork.Memory_PreviousInput_nt];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel1_bit_mi, &rtb_DataTypeConversion1_e);
@@ -2584,14 +2586,14 @@ void FmgcComputer::step()
       FmgcComputer_P.BitfromLabel2_bit_j, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = (rtb_Compare_bj && (rtb_DataTypeConversion1_e == 0U));
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_mo, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_mo, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_b5, &rtb_y_gl);
-    rtb_y_f5 = (rtb_y_lt < rtb_y_gl);
+    rtb_y_f5 = (rtb_y_fd < rtb_y_gl);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel3_bit_a, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode1_isRisingEdge_fq,
-      &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_kd);
+      &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_kd);
     rtb_y_ed = !FmgcComputer_DWork.Delay_DSTATE.armed_modes.des_armed;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault5_defaultValue_m, &rtb_y_gl);
@@ -2603,15 +2605,15 @@ void FmgcComputer::step()
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase != FmgcComputer_P.EnumeratedConstant1_Value_k) &&
        (FmgcComputer_U.in.fms_inputs.fms_flight_phase != FmgcComputer_P.EnumeratedConstant2_Value_pw)) &&
       ((FmgcComputer_DWork.Delay_DSTATE.armed_modes.des_armed && (FmgcComputer_U.in.fms_inputs.next_alt_cstr_ft !=
-      FmgcComputer_DWork.DelayInput1_DSTATE_n)) || (rtb_AND10_b && (rtb_GreaterThan3_tmp_0 || (rtb_y_d4 && rtb_y_ed &&
+      FmgcComputer_DWork.DelayInput1_DSTATE_n)) || (rtb_y_aq && (rtb_GreaterThan3_tmp_0 || (rtb_y_gj && rtb_y_ed &&
       (rtb_AND1_c0 || (std::abs(rtb_altCstrOrFcu - rtb_y_gl) > FmgcComputer_P.CompareToConstant2_const_l))))))));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_j,
-      FmgcComputer_P.ConfirmNode_timeDelay_dy, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_n5);
-    rtb_y_hn = (rowIdx_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
+      FmgcComputer_P.ConfirmNode_timeDelay_dy, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_n5);
+    rtb_y_n2 = (rowIdx_tmp_tmp || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_des_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active);
-    rtb_AND1_c0 = (rtb_y_hn || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active ||
+    rtb_AND1_c0 = (rtb_y_n2 || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active ||
                    FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active ||
                    FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active);
     FmgcComputer_DWork.Memory_PreviousInput_b3 = FmgcComputer_P.Logic_table_cv[(((rtb_OR_bg || ((rtb_AND1_c0 ||
@@ -2619,7 +2621,7 @@ void FmgcComputer::step()
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active ||
-      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_AND10_b))) + (static_cast<uint32_T>
+      FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_aq))) + (static_cast<uint32_T>
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_b3];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel1_bit_nv, &rtb_DataTypeConversion1_e);
@@ -2629,33 +2631,33 @@ void FmgcComputer::step()
     rtb_Compare_bj = (rtb_Compare_bj && (rtb_DataTypeConversion1_e != 0U));
     rtb_NOT_b = rtb_ap_fd_condition_tmp_2;
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_ht, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_ht, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_d2, &rtb_y_gl);
-    rtb_y_p3 = (rtb_y_lt > rtb_y_gl);
+    rtb_y_p3 = (rtb_y_fd > rtb_y_gl);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel4_bit_d, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_n, &rtb_y_ed,
       &FmgcComputer_DWork.sf_MATLABFunction_f0h);
-    rtb_y_p = rtb_TmpSignalConversionAtSFunctionInport3_idx_1;
-    rtb_y_bs = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
+    rtb_y_p = rtb_TmpSignalConversionAtSFunctionInport3_idx_0;
+    rtb_y_am = (FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_clb_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
                 FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_takeoff_active);
-    FmgcComputer_MATLABFunction_a((FmgcComputer_DWork.Delay_DSTATE.manual_spd_control_active && rtb_y_bs),
+    FmgcComputer_MATLABFunction_a((FmgcComputer_DWork.Delay_DSTATE.manual_spd_control_active && rtb_y_am),
       FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_jo, FmgcComputer_P.ConfirmNode_timeDelay_jo,
-      &rtb_y_bs, &FmgcComputer_DWork.sf_MATLABFunction_moh);
+      &rtb_y_am, &FmgcComputer_DWork.sf_MATLABFunction_moh);
     rtb_y_f5 = ((FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.clb_active &&
                  ((FmgcComputer_P.EnumeratedConstant_Value_c == FmgcComputer_U.in.fms_inputs.fms_flight_phase) ||
                   (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant1_Value_c5) ||
-                  rtb_TmpSignalConversionAtSFunctionInport3_idx_1 || rtb_y_bo)) || rtb_y_bs);
+                  rtb_TmpSignalConversionAtSFunctionInport3_idx_0 || rtb_y_bo)) || rtb_y_am);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_e, &rtb_y_gl);
     FmgcComputer_MATLABFunction_g((rtb_y_gl > FmgcComputer_U.in.fms_inputs.acceleration_alt_ft),
       FmgcComputer_P.PulseNode1_isRisingEdge_g, &rtb_y_p, &FmgcComputer_DWork.sf_MATLABFunction_lva);
-    rtb_y_bs = (rtb_y_ed || rtb_y_f5 || (rtb_y_p && FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed &&
-      (rtb_TmpSignalConversionAtSFunctionInport3_idx_1 || rtb_y_bo)));
+    rtb_y_am = (rtb_y_ed || rtb_y_f5 || (rtb_y_p && FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed &&
+      (rtb_TmpSignalConversionAtSFunctionInport3_idx_0 || rtb_y_bo)));
     rtb_GreaterThan3_tmp_0 = (rtb_TmpSignalConversionAtSFunctionInport3_idx_2 && rtb_ap_fd_condition_tmp_2);
-    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_GreaterThan3_tmp_0 && rtb_y_p3 && rtb_y_bs));
+    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_GreaterThan3_tmp_0 && rtb_y_p3 && rtb_y_am));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_ca,
       FmgcComputer_P.ConfirmNode_timeDelay_ib, &rtb_NOT_b, &FmgcComputer_DWork.sf_MATLABFunction_go);
     FmgcComputer_DWork.Memory_PreviousInput_ae = FmgcComputer_P.Logic_table_jq[(((rtb_OR_bg || ((rtb_y_hq ||
@@ -2675,7 +2677,7 @@ void FmgcComputer::step()
     rtb_Compare_bj = (rtb_Compare_bj && (rtb_DataTypeConversion1_e != 0U));
     rtb_NOT_b = rtb_ap_fd_condition_tmp_2;
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_i, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_i, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_dp, &rtb_y_gl);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
@@ -2684,10 +2686,10 @@ void FmgcComputer::step()
       &FmgcComputer_DWork.sf_MATLABFunction_ms);
     FmgcComputer_MATLABFunction_a((FmgcComputer_DWork.Delay_DSTATE.manual_spd_control_active &&
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.exp_des_active), FmgcComputer_U.in.time.dt,
-      FmgcComputer_P.ConfirmNode_isRisingEdge_fq, FmgcComputer_P.ConfirmNode_timeDelay_lp, &rtb_y_bs,
+      FmgcComputer_P.ConfirmNode_isRisingEdge_fq, FmgcComputer_P.ConfirmNode_timeDelay_lp, &rtb_y_am,
       &FmgcComputer_DWork.sf_MATLABFunction_hj);
-    rtb_y_f5 = (rtb_y_f5 || rtb_y_bs);
-    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_GreaterThan3_tmp_0 && (rtb_y_lt < rtb_y_gl) && rtb_y_f5));
+    rtb_y_f5 = (rtb_y_f5 || rtb_y_am);
+    rtb_Compare_bj = ((rtb_Compare_bj && rtb_y_if) || (rtb_GreaterThan3_tmp_0 && (rtb_y_fd < rtb_y_gl) && rtb_y_f5));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_ep,
       FmgcComputer_P.ConfirmNode_timeDelay_ob, &rtb_NOT_b, &FmgcComputer_DWork.sf_MATLABFunction_khd);
     FmgcComputer_DWork.Memory_PreviousInput_ev = FmgcComputer_P.Logic_table_lw[(((rtb_OR_bg || ((rtb_AND1_c0 ||
@@ -2699,17 +2701,16 @@ void FmgcComputer::step()
       (rtb_Compare_bj) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_ev];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_b, &rtb_DataTypeConversion1_e);
-    rtb_y_ed = rtb_y_e2;
+    rtb_y_ed = rtb_y_iz;
     FmgcComputer_MATLABFunction_g((FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed ||
       FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active), FmgcComputer_P.PulseNode1_isRisingEdge_b, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_pe);
     FmgcComputer_MATLABFunction_g(FmgcComputer_DWork.Delay_DSTATE.armed_modes.land_armed,
       FmgcComputer_P.PulseNode_isRisingEdge_lz, &rtb_y_ed, &FmgcComputer_DWork.sf_MATLABFunction_iv);
     FmgcComputer_DWork.Memory_PreviousInput_fm = FmgcComputer_P.Logic_table_dr[(((static_cast<uint32_T>
-      (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 && (rtb_y_f5 && rtb_y_adj &&
-      rtb_ap_fd_condition_tmp_3))) << 1) + (rtb_y_ed ||
-      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active ||
-      FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active)) << 1) +
+      (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz && (rtb_y_f5 && rtb_y_k && rtb_ap_fd_condition_tmp_3)))
+      << 1) + (rtb_y_ed || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active ||
+               FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active)) << 1) +
       FmgcComputer_DWork.Memory_PreviousInput_fm];
     rtb_BusAssignment_b0_logic_ils_computation_data_glideslope_deviation_deg.SSM =
       rtb_Switch_i_glideslope_deviation_deg_SSM;
@@ -2732,15 +2733,15 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_b0_logic_ils_computation_data_glideslope_deviation_deg, &rtb_y_ed);
-    rtb_y_ed = (rtb_y_e2 && FmgcComputer_DWork.Delay_DSTATE.armed_modes.glide_armed && rtb_appInop_idx_1 &&
+    rtb_y_ed = (rtb_y_iz && FmgcComputer_DWork.Delay_DSTATE.armed_modes.glide_armed && rtb_appInop_idx_1 &&
                 (((rtb_DataTypeConversion2_kb < FmgcComputer_DWork.DelayInput1_DSTATE_b) && (rtb_Nosewheel_c <
       FmgcComputer_P.CompareToConstant1_const_n2)) || (rtb_Nosewheel_c < FmgcComputer_P.CompareToConstant2_const_iq)) &&
                 rtb_y_ed);
     rtb_Compare_bj = ((rtb_Compare_bj && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || rtb_y_ed);
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_g,
       FmgcComputer_P.ConfirmNode_timeDelay_a3g, &rtb_y_ed, &FmgcComputer_DWork.sf_MATLABFunction_bs);
-    rtb_y_adj = (rtb_y_hn || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_des_active);
-    FmgcComputer_DWork.Memory_PreviousInput_nu = FmgcComputer_P.Logic_table_d3[(((((!rtb_y_ed) && (rtb_y_adj ||
+    rtb_y_k = (rtb_y_n2 || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_des_active);
+    FmgcComputer_DWork.Memory_PreviousInput_nu = FmgcComputer_P.Logic_table_d3[(((((!rtb_y_ed) && (rtb_y_k ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
@@ -2754,7 +2755,7 @@ void FmgcComputer::step()
     rtb_Compare_bj = (rtb_DataTypeConversion1_e != 0U);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel3_bit_g, &rtb_DataTypeConversion1_e);
-    rtb_y_ed = rtb_y_e2;
+    rtb_y_ed = rtb_y_iz;
     FmgcComputer_MATLABFunction_a(FmgcComputer_DWork.Memory_PreviousInput_nu, FmgcComputer_U.in.time.dt,
       FmgcComputer_P.ConfirmNode_isRisingEdge_gr, FmgcComputer_P.ConfirmNode_timeDelay_m, &rtb_NOT_b,
       &FmgcComputer_DWork.sf_MATLABFunction_muf);
@@ -2766,12 +2767,12 @@ void FmgcComputer::step()
       rtb_DataTypeConversion1_d = rtb_y_gl;
     }
 
-    rtb_Compare_bj = ((rtb_Compare_bj && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_e2 && rtb_NOT_b &&
+    rtb_Compare_bj = ((rtb_Compare_bj && (rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_iz && rtb_NOT_b &&
       (rtb_DataTypeConversion1_d < FmgcComputer_P.CompareToConstant2_const_h)));
     FmgcComputer_MATLABFunction_a(rtb_Compare_bj, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_o,
       FmgcComputer_P.ConfirmNode_timeDelay_mu, &rtb_y_ed, &FmgcComputer_DWork.sf_MATLABFunction_db);
-    rtb_y_adj = (rtb_y_adj || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active);
-    FmgcComputer_DWork.Memory_PreviousInput_as = FmgcComputer_P.Logic_table_fi[(((((!rtb_y_ed) && (rtb_y_adj ||
+    rtb_y_k = (rtb_y_k || FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active);
+    FmgcComputer_DWork.Memory_PreviousInput_as = FmgcComputer_P.Logic_table_fi[(((((!rtb_y_ed) && (rtb_y_k ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.pitch_goaround_active ||
@@ -2782,7 +2783,7 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_7,
       FmgcComputer_P.BitfromLabel_bit_h, &rtb_DataTypeConversion1_e);
     rtb_NOT_b = FmgcComputer_DWork.Memory_PreviousInput_n0;
-    rtb_y_ed = (rtb_y_e2 && rtb_NOT1_i);
+    rtb_y_ed = (rtb_y_iz && rtb_NOT1_i);
     FmgcComputer_DWork.Memory_PreviousInput_n0 = FmgcComputer_P.Logic_table_id[(((static_cast<uint32_T>
       (((rtb_DataTypeConversion1_e != 0U) && rtb_y_if) || (rtb_y_ed && FmgcComputer_U.in.discrete_inputs.tcas_ta_display))
       << 1) + ((!FmgcComputer_U.in.discrete_inputs.tcas_ta_display) || rtb_y_n5 ||
@@ -2799,7 +2800,7 @@ void FmgcComputer::step()
     rtb_Compare_bj = rtb_OR_bg;
     FmgcComputer_MATLABFunction_a(rtb_y_ed, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_jj,
       FmgcComputer_P.ConfirmNode_timeDelay_ae, &rtb_Compare_bj, &FmgcComputer_DWork.sf_MATLABFunction_jrd);
-    low_i = static_cast<int32_T>(((((rtb_OR_bg || (rtb_y_adj ||
+    low_i = static_cast<int32_T>(((((rtb_OR_bg || (rtb_y_k ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.op_clb_active ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.des_active ||
@@ -2820,7 +2821,7 @@ void FmgcComputer::step()
     rtb_y_p3 = FmgcComputer_DWork.Memory_PreviousInput_h;
     FmgcComputer_DWork.Memory_PreviousInput_h = FmgcComputer_P.Logic_table_oq[((((std::abs(FmgcComputer_B.u_lyj -
       rtb_altCstrOrFcu) >= FmgcComputer_P.CompareToConstant_const_gh) || rtb_Compare_bj || rtb_y_ed) +
-      (static_cast<uint32_T>(rtb_AND8) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_h];
+      (static_cast<uint32_T>(rtb_Logic_d_idx_0_tmp_tmp) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_h];
     rtb_NOT_b = ((FmgcComputer_P.EnumeratedConstant1_Value_eq == FmgcComputer_DWork.Delay_DSTATE.active_tcas_submode) &&
                  rtb_Logic_gj_idx_0_tmp_tmp_tmp);
     rtb_y_ed = (rtb_y_ed || rtb_Compare_bj);
@@ -2850,32 +2851,32 @@ void FmgcComputer::step()
     rtb_BusAssignment_kc_logic_chosen_fac_bus_v_max_kn.SSM = rtb_Switch_v_max_kn_SSM;
     rtb_BusAssignment_kc_logic_chosen_fac_bus_v_max_kn.Data = rtb_Switch_v_max_kn_Data;
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_fpa_deg,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_hd, &rtb_y_nk);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_hd, &rtb_y_el);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_kc_logic_ir_computation_data_flight_path_angle_deg,
-      FmgcComputer_P.A429ValueOrDefault3_defaultValue_i, &rtb_y_px);
+      FmgcComputer_P.A429ValueOrDefault3_defaultValue_i, &rtb_y_hnn);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_vz_ft_min,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_pc, &rtb_y_m);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_pc, &rtb_y_lc);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_kc_logic_ir_computation_data_inertial_vertical_speed_ft_s,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_g, &rtb_DataTypeConversion2_bh);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_kc_logic_chosen_fac_bus_v_ls_kn,
       FmgcComputer_P.A429ValueOrDefault6_defaultValue_d, &rtb_y_gl);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_kc_logic_chosen_fac_bus_v_max_kn,
-      FmgcComputer_P.A429ValueOrDefault4_defaultValue_b, &rtb_y_fo);
+      FmgcComputer_P.A429ValueOrDefault4_defaultValue_b, &rtb_y_fy);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_kc_logic_adr_computation_data_airspeed_computed_kn,
-      FmgcComputer_P.A429ValueOrDefault5_defaultValue_f, &rtb_y_lt);
-    rtb_AND10_b = (rtb_fmgcOppPriority_tmp || rtb_GreaterThan3_tmp);
+      FmgcComputer_P.A429ValueOrDefault5_defaultValue_f, &rtb_y_fd);
+    rtb_y_aq = (rtb_fmgcOppPriority_tmp || rtb_GreaterThan3_tmp);
     if (rtb_fmgcOppPriority_tmp) {
-      rtb_DataTypeConversion2_bh -= rtb_y_m;
+      rtb_DataTypeConversion2_bh -= rtb_y_lc;
       rtb_Nosewheel_c = 50.0;
     } else {
-      rtb_DataTypeConversion2_bh = rtb_y_px - rtb_y_nk;
+      rtb_DataTypeConversion2_bh = rtb_y_hnn - rtb_y_el;
       rtb_Nosewheel_c = 0.1;
     }
 
-    rtb_Compare_bj = (rtb_Logic_a2[0] && rtb_AND10_b);
-    rtb_y_adj = ((rtb_Compare_bj && (rtb_y_lt < rtb_y_gl + 3.0F) && (rtb_DataTypeConversion2_bh < -rtb_Nosewheel_c)) ||
-                 (rtb_Compare_bj && (rtb_y_lt > rtb_y_fo - 3.0F) && (rtb_DataTypeConversion2_bh > rtb_Nosewheel_c)));
-    FmgcComputer_MATLABFunction_j((rtb_y_adj || rtb_OR2_l_tmp || rtb_AND12 || rtb_Logic_gj_idx_0_tmp_tmp),
+    rtb_Compare_bj = (rtb_Logic_a2[0] && rtb_y_aq);
+    rtb_y_k = ((rtb_Compare_bj && (rtb_y_fd < rtb_y_gl + 3.0F) && (rtb_DataTypeConversion2_bh < -rtb_Nosewheel_c)) ||
+               (rtb_Compare_bj && (rtb_y_fd > rtb_y_fy - 3.0F) && (rtb_DataTypeConversion2_bh > rtb_Nosewheel_c)));
+    FmgcComputer_MATLABFunction_j((rtb_y_k || rtb_OR2_l_tmp || rtb_GreaterThan3_tmp_1 || rtb_AND8),
       FmgcComputer_U.in.time.dt, &rtb_NOT_b, FmgcComputer_P.MTrigNode2_isRisingEdge_p,
       FmgcComputer_P.MTrigNode2_retriggerable_i, FmgcComputer_P.MTrigNode2_triggerDuration_f,
       &FmgcComputer_DWork.sf_MATLABFunction_hdx);
@@ -2883,17 +2884,17 @@ void FmgcComputer::step()
       &FmgcComputer_DWork.sf_MATLABFunction_h0f);
     rtb_AND1_c0 = !rtb_Logic_ac[0];
     rtb_Compare_bj = (rtb_y_ed && rtb_AND1_c0);
-    FmgcComputer_MATLABFunction_j((rtb_AND12 || rtb_Compare_bj), FmgcComputer_U.in.time.dt, &rtb_y_ed,
+    FmgcComputer_MATLABFunction_j((rtb_GreaterThan3_tmp_1 || rtb_Compare_bj), FmgcComputer_U.in.time.dt, &rtb_y_ed,
       FmgcComputer_P.MTrigNode_isRisingEdge_jn, FmgcComputer_P.MTrigNode_retriggerable_n,
       FmgcComputer_P.MTrigNode_triggerDuration_c, &FmgcComputer_DWork.sf_MATLABFunction_ppo);
-    FmgcComputer_MATLABFunction_j((rtb_Logic_gj_idx_0_tmp_tmp || rtb_Compare_bj), FmgcComputer_U.in.time.dt,
-      &rtb_Compare_bj, FmgcComputer_P.MTrigNode1_isRisingEdge_g, FmgcComputer_P.MTrigNode1_retriggerable_h,
+    FmgcComputer_MATLABFunction_j((rtb_AND8 || rtb_Compare_bj), FmgcComputer_U.in.time.dt, &rtb_Compare_bj,
+      FmgcComputer_P.MTrigNode1_isRisingEdge_g, FmgcComputer_P.MTrigNode1_retriggerable_h,
       FmgcComputer_P.MTrigNode1_triggerDuration_m, &FmgcComputer_DWork.sf_MATLABFunction_hd1);
     rtb_ap_fd_condition_tmp_3 = rtb_NOT_b;
     rtb_ap_fd_condition_tmp_2 = rtb_y_ed;
     rtb_y_n5 = rtb_Compare_bj;
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_hdg_deg, &rtb_y_hn);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_trk_deg, &rtb_y_d4);
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_hdg_deg, &rtb_y_n2);
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_trk_deg, &rtb_y_gj);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_2,
       FmgcComputer_P.BitfromLabel2_bit_gy, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_a(FmgcComputer_DWork.Memory_PreviousInput_i1, FmgcComputer_U.in.time.dt,
@@ -2902,7 +2903,7 @@ void FmgcComputer::step()
     rtb_Compare_bj = (FmgcComputer_DWork.Memory_PreviousInput_cv || FmgcComputer_DWork.Memory_PreviousInput_lq ||
                       FmgcComputer_DWork.Memory_PreviousInput_d || rtb_Logic_b[0] ||
                       FmgcComputer_DWork.Memory_PreviousInput_el || FmgcComputer_DWork.Memory_PreviousInput_b);
-    FmgcComputer_MATLABFunction_g(((rtb_y_hn || rtb_y_d4 || (rtb_DataTypeConversion1_e != 0U)) && (rtb_y_ed ||
+    FmgcComputer_MATLABFunction_g(((rtb_y_n2 || rtb_y_gj || (rtb_DataTypeConversion1_e != 0U)) && (rtb_y_ed ||
       rtb_Compare_bj)), FmgcComputer_P.PulseNode_isRisingEdge_py, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_esv);
     rtb_NOT_b = rtb_ap_fd_condition_tmp_0;
     rtb_Compare_bj = (rtb_Compare_bj || rtb_y_p5 || ((rtb_raComputationData < FmgcComputer_P.CompareToConstant_const_c) &&
@@ -2915,8 +2916,8 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_a(rtb_OR_bg, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_nz,
       FmgcComputer_P.ConfirmNode_timeDelay_a5, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_k0);
     FmgcComputer_DWork.Memory_PreviousInput_bw = FmgcComputer_P.Logic_table_bs[((((!rtb_Compare_bj) ||
-      rtb_ap_fd_condition_tmp_1 || in_land_or_ga_tmp || FmgcComputer_DWork.Memory_PreviousInput_ip || rtb_NOT_b ||
-      rtb_y_p3) + (static_cast<uint32_T>(rtb_y_ed) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_bw];
+      rtb_ap_fd_condition_tmp_1 || rtb_Logic_gj_idx_0_tmp_tmp || FmgcComputer_DWork.Memory_PreviousInput_ip || rtb_NOT_b
+      || rtb_y_p3) + (static_cast<uint32_T>(rtb_y_ed) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_bw];
     rtb_BusAssignment_ks_logic_adr_computation_data_altitude_corrected_ft.SSM =
       rtb_adrComputationBus_altitude_corrected_ft_SSM;
     rtb_BusAssignment_ks_logic_adr_computation_data_altitude_corrected_ft.Data =
@@ -2924,7 +2925,7 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_5,
       FmgcComputer_P.BitfromLabel1_bit_aw, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = ((rtb_DataTypeConversion1_e != 0U) && rtb_y_if);
-    rtb_y_ed = rtb_y_e2;
+    rtb_y_ed = rtb_y_iz;
     FmgcComputer_MATLABFunction_a(rtb_OR_m4, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode1_isRisingEdge_b4,
       FmgcComputer_P.ConfirmNode1_timeDelay_h, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_hjm);
     FmgcComputer_MATLABFunction_g(rtb_y_p3, FmgcComputer_P.PulseNode3_isRisingEdge_ko, &rtb_y_bo,
@@ -2941,23 +2942,23 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_ks_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_a, &rtb_y_gl);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_mh, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_mh, &rtb_y_fd);
     rtb_y_hq = !FmgcComputer_DWork.Memory_PreviousInput_k;
-    rtb_y_p3 = (FmgcComputer_U.in.fms_inputs.preset_spd_mach_activate && (rtb_y_hq || (rtb_y_gl <= rtb_y_lt)));
+    rtb_y_p3 = (FmgcComputer_U.in.fms_inputs.preset_spd_mach_activate && (rtb_y_hq || (rtb_y_gl <= rtb_y_fd)));
     FmgcComputer_MATLABFunction_g((FmgcComputer_U.in.fms_inputs.v_managed_kts ==
       FmgcComputer_P.CompareToConstant1_const_e), FmgcComputer_P.PulseNode4_isRisingEdge_a, &rtb_y_p,
       &FmgcComputer_DWork.sf_MATLABFunction_aag);
     rtb_y_f5 = rtb_OR_m4;
     rtb_ap_fd_condition_tmp_0 = !FmgcComputer_DWork.Memory_PreviousInput_i;
-    rtb_y_bs = (rtb_y_hq && rtb_ap_fd_condition_tmp_0 && (!FmgcComputer_DWork.Memory_PreviousInput_nu) &&
+    rtb_y_am = (rtb_y_hq && rtb_ap_fd_condition_tmp_0 && (!FmgcComputer_DWork.Memory_PreviousInput_nu) &&
                 (!FmgcComputer_DWork.Memory_PreviousInput_as) && (!FmgcComputer_DWork.Memory_PreviousInput_d));
     FmgcComputer_MATLABFunction_g(rtb_Logic_ac[0], FmgcComputer_P.PulseNode7_isRisingEdge_h, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_itu);
-    rtb_y_hn = (rtb_Compare_bj || (rtb_y_e2 && (((FmgcComputer_P.Constant_Value_k !=
+    rtb_y_n2 = (rtb_Compare_bj || (rtb_y_iz && (((FmgcComputer_P.Constant_Value_k !=
       FmgcComputer_DWork.DelayInput1_DSTATE_f) && rtb_OR_m4) || ((FmgcComputer_U.in.fms_inputs.v_managed_kts ==
-      FmgcComputer_P.CompareToConstant_const_dy) && rtb_y_bo && rtb_y_bs) || rtb_y_ed || rtb_NOT_b || rtb_y_p3 ||
-      (rtb_y_p && rtb_OR_m4 && rtb_y_bs) || rtb_y_f5)));
-    FmgcComputer_MATLABFunction_a(rtb_y_hn, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_ch,
+      FmgcComputer_P.CompareToConstant_const_dy) && rtb_y_bo && rtb_y_am) || rtb_y_ed || rtb_NOT_b || rtb_y_p3 ||
+      (rtb_y_p && rtb_OR_m4 && rtb_y_am) || rtb_y_f5)));
+    FmgcComputer_MATLABFunction_a(rtb_y_n2, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_ch,
       FmgcComputer_P.ConfirmNode_timeDelay_ht, &rtb_Compare_bj, &FmgcComputer_DWork.sf_MATLABFunction_jcu);
     FmgcComputer_MATLABFunction_g(rtb_BusAssignment_h_logic_engine_running, FmgcComputer_P.PulseNode6_isRisingEdge_j,
       &rtb_y_ed, &FmgcComputer_DWork.sf_MATLABFunction_abn);
@@ -2965,7 +2966,7 @@ void FmgcComputer::step()
       &FmgcComputer_DWork.sf_MATLABFunction_kzm);
     FmgcComputer_DWork.Memory_PreviousInput_cu = FmgcComputer_P.Logic_table_kg
       [((((FmgcComputer_DWork.Delay_DSTATE.auto_spd_control_active && (!rtb_Compare_bj)) || (rtb_y_p5 && (rtb_y_ed ||
-            rtb_NOT_b))) + (static_cast<uint32_T>(rtb_y_hn) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_cu];
+            rtb_NOT_b))) + (static_cast<uint32_T>(rtb_y_n2) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_cu];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_5,
       FmgcComputer_P.BitfromLabel_bit_kq, &rtb_DataTypeConversion1_e);
     rtb_Compare_bj = ((rtb_DataTypeConversion1_e != 0U) && rtb_y_if);
@@ -2978,20 +2979,20 @@ void FmgcComputer::step()
       &FmgcComputer_DWork.sf_MATLABFunction_ft);
     rtb_y_p3 = (rtb_y_ft && rtb_y_p3);
     rtb_NOT_b = ((rtb_y_f5 && rtb_y_ed) || (rtb_NOT_b && rtb_y_ed && rtb_y_ft) || rtb_y_p3);
-    rtb_y_hn = (FmgcComputer_DWork.Memory_PreviousInput_i || FmgcComputer_DWork.Memory_PreviousInput_k);
-    FmgcComputer_MATLABFunction_g(rtb_y_hn, FmgcComputer_P.PulseNode3_isRisingEdge_i, &rtb_y_f5,
+    rtb_y_n2 = (FmgcComputer_DWork.Memory_PreviousInput_i || FmgcComputer_DWork.Memory_PreviousInput_k);
+    FmgcComputer_MATLABFunction_g(rtb_y_n2, FmgcComputer_P.PulseNode3_isRisingEdge_i, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_mrn);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel2_bit_ie, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_jp, &rtb_y_bs,
+    FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_jp, &rtb_y_am,
       &FmgcComputer_DWork.sf_MATLABFunction_ih);
     FmgcComputer_MATLABFunction_g((rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_clb_active ||
       rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_des_active),
       FmgcComputer_P.PulseNode4_isRisingEdge_n, &rtb_y_p3, &FmgcComputer_DWork.sf_MATLABFunction_lr);
-    rtb_y_ed = ((rtb_y_p5 && rtb_NOT_b) || (rtb_y_f5 || rtb_y_bs || rtb_y_p3));
+    rtb_y_ed = ((rtb_y_p5 && rtb_NOT_b) || (rtb_y_f5 || rtb_y_am || rtb_y_p3));
     rtb_NOT_b = (FmgcComputer_U.in.fms_inputs.v_managed_kts != FmgcComputer_P.CompareToConstant2_const_m);
     rtb_y_p3 = (FmgcComputer_U.in.fms_inputs.v_2_kts != FmgcComputer_P.CompareToConstant3_const_j);
-    rtb_y_ed = (rtb_Compare_bj || (rtb_y_e2 && rtb_y_ed && (rtb_NOT_b || rtb_y_p3)));
+    rtb_y_ed = (rtb_Compare_bj || (rtb_y_iz && rtb_y_ed && (rtb_NOT_b || rtb_y_p3)));
     FmgcComputer_MATLABFunction_a(rtb_y_ed, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_h2,
       FmgcComputer_P.ConfirmNode_timeDelay_gz, &rtb_Compare_bj, &FmgcComputer_DWork.sf_MATLABFunction_j3h);
     FmgcComputer_MATLABFunction_g((FmgcComputer_U.in.fms_inputs.v_2_kts == FmgcComputer_P.CompareToConstant1_const_m),
@@ -3030,25 +3031,25 @@ void FmgcComputer::step()
     rtb_BusAssignment_dc_logic_chosen_fac_bus_v_max_kn.Data = rtb_Switch_v_max_kn_Data;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_adr_computation_data_corrected_average_static_pressure,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_b, &rtb_y_gl);
-    rtb_y_m = std::pow((std::pow(FmgcComputer_U.in.bus_inputs.fcu_bus.selected_mach.Data *
+    rtb_y_lc = std::pow((std::pow(FmgcComputer_U.in.bus_inputs.fcu_bus.selected_mach.Data *
       FmgcComputer_U.in.bus_inputs.fcu_bus.selected_mach.Data * 0.2F + 1.0F, 3.5F) - 1.0F) * (rtb_y_gl / 1013.25F) +
-                       1.0F, 0.285714298F);
-    if (rtb_y_a22) {
+                        1.0F, 0.285714298F);
+    if (rtb_y_ap) {
       FmgcComputer_B.u_l = FmgcComputer_U.in.fms_inputs.v_managed_kts;
     }
 
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_chosen_fac_bus_v_man_kn,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_h, &rtb_y_gl);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_chosen_fac_bus_v_4_kn,
-      FmgcComputer_P.A429ValueOrDefault4_defaultValue_c, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault4_defaultValue_c, &rtb_y_fd);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_chosen_fac_bus_v_3_kn,
-      FmgcComputer_P.A429ValueOrDefault5_defaultValue_j, &rtb_y_fo);
+      FmgcComputer_P.A429ValueOrDefault5_defaultValue_j, &rtb_y_fy);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_adr_computation_data_airspeed_computed_kn,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_m, &rtb_DataTypeConversion2_bh);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_chosen_fac_bus_v_ls_kn,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_i, &rtb_y_nk);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_i, &rtb_y_el);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_dc_logic_chosen_fac_bus_v_max_kn,
-      FmgcComputer_P.A429ValueOrDefault3_defaultValue_cz, &rtb_y_px);
+      FmgcComputer_P.A429ValueOrDefault3_defaultValue_cz, &rtb_y_hnn);
     if (!FmgcComputer_DWork.vMemoEo_not_empty) {
       FmgcComputer_DWork.vMemoEo = rtb_DataTypeConversion2_bh;
       FmgcComputer_DWork.vMemoEo_not_empty = true;
@@ -3075,9 +3076,9 @@ void FmgcComputer::step()
         absVsTarget = 25;
       }
 
-      rtb_Nosewheel_c = rtb_y_nk + static_cast<real_T>(absVsTarget);
-      rtb_pfdTarget = rtb_y_px - 5.0;
-      if (rtb_y_px - 5.0 > rtb_Nosewheel_c) {
+      rtb_Nosewheel_c = rtb_y_el + static_cast<real_T>(absVsTarget);
+      rtb_pfdTarget = rtb_y_hnn - 5.0;
+      if (rtb_y_hnn - 5.0 > rtb_Nosewheel_c) {
         rtb_pfdTarget = rtb_Nosewheel_c;
       }
 
@@ -3099,10 +3100,10 @@ void FmgcComputer::step()
     if (FmgcComputer_DWork.Memory_PreviousInput_hk) {
       if (FmgcComputer_DWork.Memory_PreviousInput_d || FmgcComputer_DWork.Memory_PreviousInput_l ||
           (FmgcComputer_U.in.fms_inputs.fms_flight_phase == FmgcComputer_P.EnumeratedConstant_Value_n)) {
-        rtb_Switch_e[0] = std::fmax(std::fmax(std::fmax(static_cast<real_T>(rtb_y_gl), static_cast<real_T>(rtb_y_lt)),
-          static_cast<real_T>(rtb_y_fo)), FmgcComputer_B.u_l);
+        rtb_Switch_e[0] = std::fmax(std::fmax(std::fmax(static_cast<real_T>(rtb_y_gl), static_cast<real_T>(rtb_y_fd)),
+          static_cast<real_T>(rtb_y_fy)), FmgcComputer_B.u_l);
         rtb_Switch_e[1] = FmgcComputer_B.u_l;
-      } else if (rtb_y_hn) {
+      } else if (rtb_y_n2) {
         rtb_Switch_e[0] = rtb_Nosewheel_c;
         rtb_Switch_e[1] = rtb_pfdTarget;
       } else {
@@ -3111,16 +3112,16 @@ void FmgcComputer::step()
       }
     } else {
       if (FmgcComputer_DWork.Delay_DSTATE_c) {
-        rtb_y_lt = std::sqrt(rtb_y_m - 1.0F) * 1479.1F;
+        rtb_y_fd = std::sqrt(rtb_y_lc - 1.0F) * 1479.1F;
       } else {
-        rtb_y_lt = FmgcComputer_U.in.bus_inputs.fcu_bus.selected_spd_kts.Data;
+        rtb_y_fd = FmgcComputer_U.in.bus_inputs.fcu_bus.selected_spd_kts.Data;
       }
 
-      rtb_Switch_e[0] = rtb_y_lt;
-      rtb_Switch_e[1] = rtb_y_lt;
+      rtb_Switch_e[0] = rtb_y_fd;
+      rtb_Switch_e[1] = rtb_y_fd;
     }
 
-    rtb_y_ed = (rtb_AND10_b || FmgcComputer_DWork.Memory_PreviousInput_cb || FmgcComputer_DWork.Memory_PreviousInput_ne ||
+    rtb_y_ed = (rtb_y_aq || FmgcComputer_DWork.Memory_PreviousInput_cb || FmgcComputer_DWork.Memory_PreviousInput_ne ||
                 FmgcComputer_DWork.Memory_PreviousInput_ec || FmgcComputer_DWork.Memory_PreviousInput_b3 ||
                 rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_clb_active ||
                 rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_des_active || rtb_Logic_b[0] ||
@@ -3138,14 +3139,14 @@ void FmgcComputer::step()
       rtb_active_lateral_law = lateral_law::LOC_CPT;
     } else if (FmgcComputer_DWork.Memory_PreviousInput_ip) {
       rtb_active_lateral_law = lateral_law::HPATH;
-    } else if (in_land_or_ga_tmp || FmgcComputer_DWork.Memory_PreviousInput_b ||
+    } else if (rtb_Logic_gj_idx_0_tmp_tmp || FmgcComputer_DWork.Memory_PreviousInput_b ||
                FmgcComputer_DWork.Memory_PreviousInput_el) {
       rtb_active_lateral_law = lateral_law::TRACK;
     } else if (rtb_ap_fd_condition_tmp_1) {
       rtb_active_lateral_law = lateral_law::HDG;
     }
 
-    if (FmgcComputer_DWork.Memory_PreviousInput_bc) {
+    if (rtb_AND_cf) {
       rtb_active_longitudinal_law = vertical_law::FLARE;
     } else if (FmgcComputer_DWork.Memory_PreviousInput_nu || FmgcComputer_DWork.Memory_PreviousInput_as ||
                FmgcComputer_DWork.Memory_PreviousInput_d) {
@@ -3187,9 +3188,9 @@ void FmgcComputer::step()
       }
     }
 
-    rtb_ap_fd_condition_tmp_0 = (rtb_y_nw || FmgcComputer_DWork.Memory_PreviousInput_el ||
+    rtb_ap_fd_condition_tmp_0 = (rtb_y_b4i || FmgcComputer_DWork.Memory_PreviousInput_el ||
       FmgcComputer_DWork.Memory_PreviousInput_cv || FmgcComputer_DWork.Memory_PreviousInput_lq ||
-      rtb_ap_fd_condition_tmp_1 || in_land_or_ga_tmp || FmgcComputer_DWork.Memory_PreviousInput_ip ||
+      rtb_ap_fd_condition_tmp_1 || rtb_Logic_gj_idx_0_tmp_tmp || FmgcComputer_DWork.Memory_PreviousInput_ip ||
       FmgcComputer_DWork.Memory_PreviousInput_d);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_3,
       FmgcComputer_P.BitfromLabel_bit_i, &rtb_DataTypeConversion1_e);
@@ -3197,15 +3198,15 @@ void FmgcComputer::step()
     rtb_Compare_bj = ((rtb_DataTypeConversion1_e != 0U) && rtb_Compare_bj);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4,
       FmgcComputer_P.BitfromLabel1_bit_i5, &rtb_DataTypeConversion1_e);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4, &rtb_y_hn);
-    rtb_Compare_bj = ((rtb_Compare_bj || ((rtb_DataTypeConversion1_e != 0U) && rtb_y_hn)) &&
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4, &rtb_y_n2);
+    rtb_Compare_bj = ((rtb_Compare_bj || ((rtb_DataTypeConversion1_e != 0U) && rtb_y_n2)) &&
                       FmgcComputer_U.in.discrete_inputs.ap_opp_engaged);
-    rtb_y_hn = (rtb_Logic_a2[0] && (FmgcComputer_DWork.Memory_PreviousInput_l ||
+    rtb_y_n2 = (rtb_Logic_a2[0] && (FmgcComputer_DWork.Memory_PreviousInput_l ||
       FmgcComputer_DWork.Memory_PreviousInput_d));
     rtb_appInop_idx_0 = ((!fdOppOff) && (FmgcComputer_U.in.discrete_inputs.fwc_own_valid ||
       FmgcComputer_U.in.discrete_inputs.fwc_opp_valid) && FmgcComputer_U.in.discrete_inputs.pfd_own_valid &&
                          FmgcComputer_U.in.discrete_inputs.pfd_opp_valid && rtb_BusAssignment_o_logic_both_ils_valid);
-    rtb_AND10_b = (rtb_appInop_idx_0 && (!rtb_ap_fd_condition_tmp) && rtb_bothRaValid);
+    rtb_y_aq = (rtb_appInop_idx_0 && (!rtb_ap_fd_condition_tmp) && rtb_bothRaValid);
     rtb_appInop_idx_2 = (FmgcComputer_U.in.discrete_inputs.fwc_own_valid &&
                          FmgcComputer_U.in.discrete_inputs.fwc_opp_valid &&
                          FmgcComputer_U.in.discrete_inputs.powersupply_split &&
@@ -3213,17 +3214,17 @@ void FmgcComputer::step()
                          FmgcComputer_U.in.discrete_inputs.pfd_opp_valid && rtb_appCapability_idx_2 && apCondition_tmp &&
                          rtb_bothRaValid && rtb_BusAssignment_o_logic_both_ils_valid && rtb_adrOppInvalid &&
                          rtb_adrOwnInvalid && FmgcComputer_U.in.discrete_inputs.bscu_own_valid &&
-                         FmgcComputer_U.in.discrete_inputs.bscu_opp_valid && rtb_ir3Invalid);
-    rtb_appCapability_idx_2 = (FmgcComputer_DWork.pLand3FailOp || (rtb_appInop_idx_2 && rtb_y_hn && rtb_Compare_bj &&
+                         FmgcComputer_U.in.discrete_inputs.bscu_opp_valid && rtb_irOwnInvalid);
+    rtb_appCapability_idx_2 = (FmgcComputer_DWork.pLand3FailOp || (rtb_appInop_idx_2 && rtb_y_n2 && rtb_Compare_bj &&
       FmgcComputer_DWork.Delay_DSTATE_k));
-    rtb_y_d4 = !rtb_appCapability_idx_2;
-    apCondition_tmp = (FmgcComputer_DWork.pLand3FailPass || (rtb_AND10_b && rtb_y_hn &&
-      FmgcComputer_DWork.Delay_DSTATE_k && rtb_y_d4));
-    rtb_y_d4 = (rtb_appInop_idx_0 && rtb_y_hn && (!apCondition_tmp) && rtb_y_d4);
+    rtb_y_gj = !rtb_appCapability_idx_2;
+    apCondition_tmp = (FmgcComputer_DWork.pLand3FailPass || (rtb_y_aq && rtb_y_n2 && FmgcComputer_DWork.Delay_DSTATE_k &&
+      rtb_y_gj));
+    rtb_y_gj = (rtb_appInop_idx_0 && rtb_y_n2 && (!apCondition_tmp) && rtb_y_gj);
     rtb_appInop_idx_0 = !rtb_appInop_idx_0;
-    rtb_appInop_idx_1 = !rtb_AND10_b;
+    rtb_appInop_idx_1 = !rtb_y_aq;
     rtb_appInop_idx_2 = !rtb_appInop_idx_2;
-    if ((rtb_raComputationData < 100.0F) && (rtb_y_hn || rtb_Compare_bj)) {
+    if ((rtb_raComputationData < 100.0F) && (rtb_y_n2 || rtb_Compare_bj)) {
       FmgcComputer_DWork.pLand3FailOp = rtb_appCapability_idx_2;
       FmgcComputer_DWork.pLand3FailPass = apCondition_tmp;
     } else {
@@ -3234,22 +3235,22 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4,
       FmgcComputer_P.BitfromLabel2_bit_o, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4, &rtb_Compare_bj);
-    rtb_y_bo = ((rtb_DataTypeConversion1_e != 0U) && rtb_Compare_bj);
+    rtb_TmpSignalConversionAtSFunctionInport3_idx_0 = ((rtb_DataTypeConversion1_e != 0U) && rtb_Compare_bj);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4,
       FmgcComputer_P.BitfromLabel3_bit_l, &rtb_DataTypeConversion1_e);
-    rtb_TmpSignalConversionAtSFunctionInport3_idx_1 = ((rtb_DataTypeConversion1_e != 0U) && rtb_Compare_bj);
+    rtb_y_bo = ((rtb_DataTypeConversion1_e != 0U) && rtb_Compare_bj);
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_4,
       FmgcComputer_P.BitfromLabel4_bit_f, &rtb_DataTypeConversion1_e);
     rtb_TmpSignalConversionAtSFunctionInport3_idx_2 = ((rtb_DataTypeConversion1_e != 0U) && rtb_Compare_bj);
     if (rtb_Logic_a2[0] && FmgcComputer_U.in.discrete_inputs.ap_opp_engaged) {
       if (FmgcComputer_U.in.discrete_inputs.is_unit_1) {
-        rtb_y_bo = rtb_y_d4;
-        rtb_TmpSignalConversionAtSFunctionInport3_idx_1 = apCondition_tmp;
+        rtb_TmpSignalConversionAtSFunctionInport3_idx_0 = rtb_y_gj;
+        rtb_y_bo = apCondition_tmp;
         rtb_TmpSignalConversionAtSFunctionInport3_idx_2 = rtb_appCapability_idx_2;
       }
     } else if (!rtb_fmgcOppPriority) {
-      rtb_y_bo = rtb_y_d4;
-      rtb_TmpSignalConversionAtSFunctionInport3_idx_1 = apCondition_tmp;
+      rtb_TmpSignalConversionAtSFunctionInport3_idx_0 = rtb_y_gj;
+      rtb_y_bo = apCondition_tmp;
       rtb_TmpSignalConversionAtSFunctionInport3_idx_2 = rtb_appCapability_idx_2;
     }
 
@@ -3278,8 +3279,8 @@ void FmgcComputer::step()
     rtb_DataTypeConversion7 = rtb_Cos_h;
     rtb_DataTypeConversion9 = rtb_adrComputationBus_aoa_corrected_deg_Data;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jm_logic_chosen_fac_bus_estimated_sideslip_deg,
-      FmgcComputer_P.A429ValueOrDefault4_defaultValue_h, &rtb_y_lt);
-    rtb_DataTypeConversion27 = rtb_y_lt;
+      FmgcComputer_P.A429ValueOrDefault4_defaultValue_h, &rtb_y_fd);
+    rtb_DataTypeConversion27 = rtb_y_fd;
     rtb_DataTypeConversion11 = rtb_adrComputationBus_altitude_standard_ft_Data;
     rtb_DataTypeConversion12 = rtb_adrComputationBus_altitude_corrected_ft_Data;
     rtb_DataTypeConversion13 = rtb_irComputationBus_inertial_vertical_speed_ft_s_Data;
@@ -3291,23 +3292,23 @@ void FmgcComputer::step()
     rtb_Gain1 = FmgcComputer_P.Gain1_Gain * rtb_irComputationBus_body_lat_accel_g_Data;
     rtb_Nosewheel_c = rtb_irComputationBus_body_normal_accel_g_Data;
     rtb_Gain2 = (rtb_irComputationBus_body_normal_accel_g_Data + FmgcComputer_P.Bias_Bias) * FmgcComputer_P.Gain2_Gain;
-    if (rtb_y_a22) {
+    if (rtb_y_ap) {
       FmgcComputer_B.u = FmgcComputer_U.in.fms_inputs.fms_loc_distance;
     }
 
     rtb_DataTypeConversion25 = rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg.Data;
-    FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_jm_logic_ils_computation_data_glideslope_deviation_deg, &rtb_y_a22);
+    FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_jm_logic_ils_computation_data_glideslope_deviation_deg, &rtb_y_ap);
     rtb_DataTypeConversion23 = rtb_Switch_i_glideslope_deviation_deg_Data;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jm_logic_chosen_fac_bus_v_ls_kn,
-      FmgcComputer_P.A429ValueOrDefault5_defaultValue_p, &rtb_y_m);
-    rtb_DataTypeConversion32 = rtb_y_m;
+      FmgcComputer_P.A429ValueOrDefault5_defaultValue_p, &rtb_y_lc);
+    rtb_DataTypeConversion32 = rtb_y_lc;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jm_logic_chosen_fac_bus_v_max_kn,
-      FmgcComputer_P.A429ValueOrDefault6_defaultValue_i, &rtb_y_nk);
-    rtb_DataTypeConversion26 = rtb_y_nk;
+      FmgcComputer_P.A429ValueOrDefault6_defaultValue_i, &rtb_y_el);
+    rtb_DataTypeConversion26 = rtb_y_el;
     rtb_Gain3 = FmgcComputer_P.Gain3_Gain * FmgcComputer_U.in.fms_inputs.fms_weight_lbs;
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_hdg_deg,
-      FmgcComputer_P.A429ValueOrDefault3_defaultValue_j, &rtb_y_fo);
-    rtb_DataTypeConversion39 = rtb_y_fo;
+      FmgcComputer_P.A429ValueOrDefault3_defaultValue_j, &rtb_y_fy);
+    rtb_DataTypeConversion39 = rtb_y_fy;
     rtb_Compare_bj = (FmgcComputer_DWork.Memory_PreviousInput_el || FmgcComputer_DWork.Memory_PreviousInput_b);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jm_logic_ir_computation_data_track_angle_magnetic_deg,
       FmgcComputer_P.A429ValueOrDefault8_defaultValue, &rtb_DataTypeConversion2_bh);
@@ -3324,17 +3325,17 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_vz_ft_min,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_fc, &rtb_y_px);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_fc, &rtb_y_hnn);
     if (rtb_Logic_ac[0]) {
       rtb_Switch1 = rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target;
     } else {
-      rtb_Switch1 = rtb_y_px;
+      rtb_Switch1 = rtb_y_hnn;
     }
 
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_fpa_deg,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_f, &rtb_DataTypeConversion2_bh);
     rtb_DataTypeConversion42 = rtb_DataTypeConversion2_bh;
-    rtb_y_hn = (FmgcComputer_DWork.Memory_PreviousInput_as || FmgcComputer_DWork.Memory_PreviousInput_d);
+    rtb_y_n2 = (FmgcComputer_DWork.Memory_PreviousInput_as || FmgcComputer_DWork.Memory_PreviousInput_d);
     LawMDLOBJ1.step(&FmgcComputer_U.in.time.dt, &FmgcComputer_U.in.time.simulation_time, &rtb_pfdTarget,
                     &rtb_DataTypeConversion1_d, &rtb_DataTypeConversion8, &rtb_DataTypeConversion2_i,
                     &rtb_DataTypeConversion3, &rtb_DataTypeConversion4, &rtb_DataTypeConversion5,
@@ -3344,7 +3345,7 @@ void FmgcComputer::step()
                     &rtb_DataTypeConversion14, &rtb_DataTypeConversion15, &rtb_DataTypeConversion16,
                     &rtb_DataTypeConversion20, &rtb_Gain, &rtb_Gain1, &rtb_Gain2, &FmgcComputer_B.u_lyjj,
                     &FmgcComputer_P.Constant_Value_m, &FmgcComputer_B.u, (const_cast<real_T*>(&FmgcComputer_RGND)),
-                    &rtb_DataTypeConversion25, &rtb_y_a22, &rtb_DataTypeConversion23,
+                    &rtb_DataTypeConversion25, &rtb_y_ap, &rtb_DataTypeConversion23,
                     &FmgcComputer_U.in.fms_inputs.xtk_nmi, &FmgcComputer_U.in.fms_inputs.tke_deg,
                     &FmgcComputer_U.in.fms_inputs.phi_c_deg, &FmgcComputer_U.in.fms_inputs.phi_limit_deg,
                     &FmgcComputer_U.in.fms_inputs.alt_profile_tgt_ft, &FmgcComputer_U.in.fms_inputs.vs_target_ft_min,
@@ -3353,7 +3354,7 @@ void FmgcComputer::step()
                     &rtb_DataTypeConversion39, &rtb_DataTypeConversion10, &rtb_altCstrOrFcu, &rtb_Switch1,
                     &rtb_DataTypeConversion42, &(&rtb_Switch_e[0])[0],
                     &rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.cruise_active, &(&rtb_Logic_ac[0])[0],
-                    &(&rtb_Logic_b[0])[0], &rtb_y_hn, &rtb_Phi_loc_c, &rtb_Nosewheel_c, &rtb_Theta_c_deg, &rtb_Phi_c_deg,
+                    &(&rtb_Logic_b[0])[0], &rtb_y_n2, &rtb_Phi_loc_c, &rtb_Nosewheel_c, &rtb_Theta_c_deg, &rtb_Phi_c_deg,
                     &rtb_Beta_c_deg, &rtb_Product_p2, &rtb_Switch1_a, &rtb_Beta_c_deg_e, &rtb_Compare_bj,
                     &rtb_H_dot_radio_fpm, &rtb_H_dot_c_fpm, &rtb_delta_Theta_H_dot_deg, &rtb_delta_Theta_bz_deg,
                     &rtb_delta_Theta_bx_deg, &rtb_delta_Theta_beta_c_deg);
@@ -3366,48 +3367,48 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_p, &rtb_DataTypeConversion2_bh);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault3_defaultValue_k, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault3_defaultValue_k, &rtb_y_fd);
     FmgcComputer_MATLABFunction_g(rtb_Logic_ac[0], FmgcComputer_P.PulseNode3_isRisingEdge_l4, &rtb_y_f5,
       &FmgcComputer_DWork.sf_MATLABFunction_g);
     low_i = static_cast<int32_T>((((rtb_AND1_c0 || (rtb_y_hq && ((rtb_DataTypeConversion2_bh <
-      FmgcComputer_P.CompareToConstant_const_j) || (rtb_y_lt < FmgcComputer_P.CompareToConstant1_const_d)))) + (
+      FmgcComputer_P.CompareToConstant_const_j) || (rtb_y_fd < FmgcComputer_P.CompareToConstant1_const_d)))) + (
       static_cast<uint32_T>(rtb_y_f5) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_j);
     FmgcComputer_MATLABFunction_i(&rtb_BusAssignment_fo_logic_chosen_fac_bus_discrete_word_5,
       FmgcComputer_P.BitfromLabel_bit_cb, &rtb_y_ha);
     FmgcComputer_MATLABFunction_g((FmgcComputer_P.Logic_table_lwo[static_cast<uint32_T>(low_i) + 8U] && (rtb_y_ha != 0U)),
-      FmgcComputer_P.PulseNode3_isRisingEdge_ng, &rtb_AND10_b, &FmgcComputer_DWork.sf_MATLABFunction_k);
-    FmgcComputer_DWork.Memory_PreviousInput_hu = FmgcComputer_P.Logic_table_lm[(((static_cast<uint32_T>(rtb_AND10_b) <<
-      1) + rtb_y_pp) << 1) + FmgcComputer_DWork.Memory_PreviousInput_hu];
+      FmgcComputer_P.PulseNode3_isRisingEdge_ng, &rtb_y_aq, &FmgcComputer_DWork.sf_MATLABFunction_k);
+    FmgcComputer_DWork.Memory_PreviousInput_hu = FmgcComputer_P.Logic_table_lm[(((static_cast<uint32_T>(rtb_y_aq) << 1)
+      + rtb_y_g) << 1) + FmgcComputer_DWork.Memory_PreviousInput_hu];
     rtb_BusAssignment_b_logic_ra_computation_data_ft = rtb_Switch1_a;
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_hw, &rtb_y_lt);
-    rtb_y_a22 = (rtb_y_lt >= FmgcComputer_P.CompareToConstant_const_hq);
-    rtb_y_hn = (rtb_y_lt <= FmgcComputer_P.CompareToConstant2_const_di);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_hw, &rtb_y_fd);
+    rtb_y_ap = (rtb_y_fd >= FmgcComputer_P.CompareToConstant_const_hq);
+    rtb_y_n2 = (rtb_y_fd <= FmgcComputer_P.CompareToConstant2_const_di);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault1_defaultValue_o2, &rtb_y_lt);
-    rtb_AND10_b = (rtb_y_lt >= FmgcComputer_P.CompareToConstant1_const_h4);
-    rtb_Compare_j3 = (rtb_y_lt <= FmgcComputer_P.CompareToConstant3_const_d);
+      FmgcComputer_P.A429ValueOrDefault1_defaultValue_o2, &rtb_y_fd);
+    rtb_y_aq = (rtb_y_fd >= FmgcComputer_P.CompareToConstant1_const_h4);
+    rtb_Compare_j3 = (rtb_y_fd <= FmgcComputer_P.CompareToConstant3_const_d);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_flex_temp_deg, &rtb_y_f5);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_flex_temp_deg, &rtb_y_p3);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault2_defaultValue_k, &rtb_y_lt);
-    rtb_y_p = (rtb_y_lt > FmgcComputer_P.CompareToConstant4_const_p);
-    rtb_NOT_b = (rtb_y_lt <= FmgcComputer_P.CompareToConstant6_const_h);
+      FmgcComputer_P.A429ValueOrDefault2_defaultValue_k, &rtb_y_fd);
+    rtb_NOT_b = (rtb_y_fd > FmgcComputer_P.CompareToConstant4_const_p);
+    rtb_y_p = (rtb_y_fd <= FmgcComputer_P.CompareToConstant6_const_h);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault3_defaultValue_l, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault3_defaultValue_l, &rtb_y_fd);
     rtb_pfdTarget = rtb_Product_p2;
-    rtb_AND10_b = (FmgcComputer_DWork.Delay_DSTATE_k && (FmgcComputer_DWork.Memory_PreviousInput_hu || (rtb_y_a22 &&
-      rtb_y_hn && rtb_AND10_b && rtb_Compare_j3) || ((!rtb_y_f5) && (!rtb_y_p3) &&
-      rtb_BusAssignment_h_logic_one_engine_out && (rtb_y_p && rtb_NOT_b && (rtb_y_lt >
-      FmgcComputer_P.CompareToConstant5_const_av) && (rtb_y_lt <= FmgcComputer_P.CompareToConstant7_const)))));
+    rtb_y_aq = (FmgcComputer_DWork.Delay_DSTATE_k && (FmgcComputer_DWork.Memory_PreviousInput_hu || (rtb_y_ap &&
+      rtb_y_n2 && rtb_y_aq && rtb_Compare_j3) || ((!rtb_y_f5) && (!rtb_y_p3) && rtb_BusAssignment_h_logic_one_engine_out
+      && (rtb_NOT_b && rtb_y_p && (rtb_y_fd > FmgcComputer_P.CompareToConstant5_const_av) && (rtb_y_fd <=
+      FmgcComputer_P.CompareToConstant7_const)))));
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault4_defaultValue_m, &rtb_y_lt);
-    rtb_Switch1_a = rtb_y_lt;
-    rtb_y_a22 = (rtb_y_lt < FmgcComputer_P.CompareToConstant8_const);
+      FmgcComputer_P.A429ValueOrDefault4_defaultValue_m, &rtb_y_fd);
+    rtb_Switch1_a = rtb_y_fd;
+    rtb_y_ap = (rtb_y_fd < FmgcComputer_P.CompareToConstant8_const);
     FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg,
-      FmgcComputer_P.A429ValueOrDefault5_defaultValue_fk, &rtb_y_lt);
-    rtb_Compare_j3 = (rtb_AND10_b && ((rtb_Switch1_a < FmgcComputer_P.CompareToConstant10_const) || (rtb_y_lt <
-      FmgcComputer_P.CompareToConstant11_const) || (rtb_BusAssignment_h_logic_one_engine_out && (rtb_y_a22 || (rtb_y_lt <
+      FmgcComputer_P.A429ValueOrDefault5_defaultValue_fk, &rtb_y_fd);
+    rtb_Compare_j3 = (rtb_y_aq && ((rtb_Switch1_a < FmgcComputer_P.CompareToConstant10_const) || (rtb_y_fd <
+      FmgcComputer_P.CompareToConstant11_const) || (rtb_BusAssignment_h_logic_one_engine_out && (rtb_y_ap || (rtb_y_fd <
       FmgcComputer_P.CompareToConstant9_const)))));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.ats_discrete_word,
       FmgcComputer_P.BitfromLabel_bit_b2, &rtb_y_ha);
@@ -3416,13 +3417,13 @@ void FmgcComputer::step()
       (FmgcComputer_U.in.fms_inputs.requested_des_submode == fmgc_des_submode::VPATH_THRUST))) &&
       FmgcComputer_DWork.Delay_DSTATE_k), FmgcComputer_P.PulseNode_isRisingEdge_o, &rtb_y_hq,
       &FmgcComputer_DWork.sf_MATLABFunction_j);
-    rtb_y_a22 = !FmgcComputer_DWork.Memory_PreviousInput_hu;
-    rtb_y_f5 = (((rtb_y_ha != 0U) && rtb_y_if) || (rtb_y_e2 && rtb_y_hq && rtb_y_a22));
+    rtb_y_ap = !FmgcComputer_DWork.Memory_PreviousInput_hu;
+    rtb_y_f5 = (((rtb_y_ha != 0U) && rtb_y_if) || (rtb_y_iz && rtb_y_hq && rtb_y_ap));
     FmgcComputer_MATLABFunction_a(rtb_y_f5, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_b,
       FmgcComputer_P.ConfirmNode_timeDelay_gu, &rtb_y_hq, &FmgcComputer_DWork.sf_MATLABFunction_ay);
-    rtb_y_hn = (FmgcComputer_DWork.Delay1_DSTATE.alpha_floor_mode_active ||
+    rtb_y_n2 = (FmgcComputer_DWork.Delay1_DSTATE.alpha_floor_mode_active ||
                 FmgcComputer_DWork.Delay1_DSTATE.retard_mode_active);
-    FmgcComputer_DWork.Memory_PreviousInput_bh = FmgcComputer_P.Logic_table_ac[(((rtb_y_pp || ((rtb_y_hn ||
+    FmgcComputer_DWork.Memory_PreviousInput_bh = FmgcComputer_P.Logic_table_ac[(((rtb_y_g || ((rtb_y_n2 ||
       FmgcComputer_DWork.Delay1_DSTATE.speed_mach_mode_active) && (!rtb_y_hq))) + (static_cast<uint32_T>(rtb_y_f5) << 1))
       << 1) + FmgcComputer_DWork.Memory_PreviousInput_bh];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.ats_discrete_word,
@@ -3435,19 +3436,19 @@ void FmgcComputer::step()
       vertical_law::VPATH) && ((FmgcComputer_U.in.fms_inputs.requested_des_submode == fmgc_des_submode::VPATH_SPEED) ||
       rtb_Logic_b[0]))) && FmgcComputer_DWork.Delay_DSTATE_k), FmgcComputer_P.PulseNode_isRisingEdge_fz, &rtb_y_hq,
       &FmgcComputer_DWork.sf_MATLABFunction_ge);
-    rtb_OR_m4 = (((rtb_y_ha != 0U) && rtb_y_if) || (rtb_y_e2 && rtb_y_hq && rtb_y_a22));
+    rtb_OR_m4 = (((rtb_y_ha != 0U) && rtb_y_if) || (rtb_y_iz && rtb_y_hq && rtb_y_ap));
     FmgcComputer_MATLABFunction_a(rtb_OR_m4, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_k,
       FmgcComputer_P.ConfirmNode_timeDelay_ez, &rtb_y_hq, &FmgcComputer_DWork.sf_MATLABFunction_ig);
-    FmgcComputer_DWork.Memory_PreviousInput_cm = FmgcComputer_P.Logic_table_ma[(((rtb_y_pp || ((rtb_y_hn ||
+    FmgcComputer_DWork.Memory_PreviousInput_cm = FmgcComputer_P.Logic_table_ma[(((rtb_y_g || ((rtb_y_n2 ||
       FmgcComputer_DWork.Delay1_DSTATE.thrust_mode_active) && (!rtb_y_hq))) + (static_cast<uint32_T>(rtb_OR_m4) << 1)) <<
       1) + FmgcComputer_DWork.Memory_PreviousInput_cm];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.ats_discrete_word,
       FmgcComputer_P.BitfromLabel_bit_hy, &rtb_y_ha);
-    rtb_OR_m4 = (((rtb_y_ha != 0U) && rtb_y_if) || (rtb_y_e2 && FmgcComputer_DWork.Memory_PreviousInput_d &&
-      rtb_Logic_a2[0] && (rtb_raComputationData <= FmgcComputer_P.CompareToConstant_const_e3) && rtb_y_a22));
+    rtb_OR_m4 = (((rtb_y_ha != 0U) && rtb_y_if) || (rtb_y_iz && FmgcComputer_DWork.Memory_PreviousInput_d &&
+      rtb_Logic_a2[0] && (rtb_raComputationData <= FmgcComputer_P.CompareToConstant_const_e3) && rtb_y_ap));
     FmgcComputer_MATLABFunction_a(rtb_OR_m4, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_cs,
       FmgcComputer_P.ConfirmNode_timeDelay_br, &rtb_y_hq, &FmgcComputer_DWork.sf_MATLABFunction_kh);
-    FmgcComputer_DWork.Memory_PreviousInput_o = FmgcComputer_P.Logic_table_acc[(((rtb_y_pp ||
+    FmgcComputer_DWork.Memory_PreviousInput_o = FmgcComputer_P.Logic_table_acc[(((rtb_y_g ||
       ((FmgcComputer_DWork.Delay1_DSTATE.alpha_floor_mode_active || FmgcComputer_DWork.Delay1_DSTATE.thrust_mode_active ||
         FmgcComputer_DWork.Delay1_DSTATE.speed_mach_mode_active) && (!rtb_y_hq))) + (static_cast<uint32_T>(rtb_OR_m4) <<
       1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_o];
@@ -3458,9 +3459,9 @@ void FmgcComputer::step()
     rtb_BusAssignment_i2_logic_chosen_fac_bus_v_max_kn.Data = rtb_Switch_v_max_kn_Data;
     rtb_BusAssignment_i2_logic_chosen_fac_bus_discrete_word_5.SSM = rtb_Switch_discrete_word_5_SSM;
     rtb_BusAssignment_i2_logic_chosen_fac_bus_discrete_word_5.Data = rtb_Switch_discrete_word_5_Data;
-    rtb_y_e2 = (FmgcComputer_DWork.Memory_PreviousInput_b3 || FmgcComputer_DWork.Memory_PreviousInput_ev ||
+    rtb_y_iz = (FmgcComputer_DWork.Memory_PreviousInput_b3 || FmgcComputer_DWork.Memory_PreviousInput_ev ||
                 rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_des_active);
-    rtb_OR_m4 = (rtb_y_e2 || rtb_Logic_b[0]);
+    rtb_OR_m4 = (rtb_y_iz || rtb_Logic_b[0]);
     FmgcComputer_DWork.Memory_PreviousInput_kr = FmgcComputer_P.Logic_table_b3[(((static_cast<uint32_T>
       (((rtb_adrComputationBus_altitude_corrected_ft_Data >= FmgcComputer_U.in.fms_inputs.thrust_reduction_alt_ft) ||
         FmgcComputer_DWork.Memory_PreviousInput_ne || FmgcComputer_DWork.Memory_PreviousInput_cb ||
@@ -3480,11 +3481,11 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_i2_logic_adr_computation_data_airspeed_computed_kn,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_e, &rtb_DataTypeConversion2_bh);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_i2_logic_chosen_fac_bus_v_max_kn,
-      FmgcComputer_P.A429ValueOrDefault4_defaultValue_l, &rtb_y_lt);
-    rtb_y_p = !rtb_AND10_b;
-    rtb_y_en = athr_fma_message::NONE;
-    rtb_y_a22 = (FmgcComputer_DWork.Delay_DSTATE_k && rtb_y_a22);
-    if (rtb_y_a22 && ((FmgcComputer_DWork.Memory_PreviousInput_kr && ((rtb_DataTypeConversion2_bh > rtb_y_lt +
+      FmgcComputer_P.A429ValueOrDefault4_defaultValue_l, &rtb_y_fd);
+    rtb_y_p = !rtb_y_aq;
+    rtb_y_e = athr_fma_message::NONE;
+    rtb_y_ap = (FmgcComputer_DWork.Delay_DSTATE_k && rtb_y_ap);
+    if (rtb_y_ap && ((FmgcComputer_DWork.Memory_PreviousInput_kr && ((rtb_DataTypeConversion2_bh > rtb_y_fd +
             FmgcComputer_P.Bias_Bias_d) || (rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target <=
             FmgcComputer_P.CompareToConstant_const_eq) || rtb_AND1_c0 || (!rtb_y_p))) || (rtb_Logic_ac[0] && rtb_y_p &&
           (rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target <= FmgcComputer_P.CompareToConstant1_const_ik))) &&
@@ -3492,66 +3493,66 @@ void FmgcComputer::step()
           (FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data < 24.0F)) ||
          (FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data > 26.0F) ||
          (FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data > 26.0F))) {
-      rtb_y_en = athr_fma_message::LVR_CLB;
-    } else if (rtb_y_a22 && FmgcComputer_DWork.Memory_PreviousInput_km &&
+      rtb_y_e = athr_fma_message::LVR_CLB;
+    } else if (rtb_y_ap && FmgcComputer_DWork.Memory_PreviousInput_km &&
                (FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data < 34.0F) &&
                (FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data < 34.0F)) {
-      rtb_y_en = athr_fma_message::LVR_MCT;
-    } else if (rtb_y_a22 && rtb_OR_bg && (((FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data > 24.0F) &&
-      (FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data < 26.0F) &&
+      rtb_y_e = athr_fma_message::LVR_MCT;
+    } else if (rtb_y_ap && rtb_OR_bg && (((FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data > 24.0F) &&
+                 (FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data < 26.0F) &&
                  ((FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data < 24.0F) ||
                   (FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data > 26.0F))) ||
                 ((FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data > 24.0F) &&
                  (FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data < 26.0F) &&
                  ((FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data < 24.0F) ||
                   (FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data > 26.0F))))) {
-      rtb_y_en = athr_fma_message::LVR_ASYM;
+      rtb_y_e = athr_fma_message::LVR_ASYM;
     }
 
     FmgcComputer_MATLABFunction_i(&rtb_BusAssignment_i2_logic_chosen_fac_bus_discrete_word_5,
       FmgcComputer_P.BitfromLabel_bit_am, &rtb_y_ha);
     rtb_Max_a = std::fmax(FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_tla_deg.Data,
                           FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_tla_deg.Data);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_flex_temp_deg, &rtb_y_a22);
-    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_flex_temp_deg, &rtb_y_hn);
-    rtb_OR_bg = (rtb_y_a22 || rtb_y_hn);
-    rtb_y_e = athr_fma_mode::NONE;
-    rtb_y_a22 = (FmgcComputer_DWork.Delay_DSTATE_k && rtb_y_p);
-    if (rtb_y_a22 && (rtb_Max_a > 44.0F)) {
-      rtb_y_e = athr_fma_mode::MAN_TOGA;
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_opp_bus.selected_flex_temp_deg, &rtb_y_ap);
+    FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fadec_own_bus.selected_flex_temp_deg, &rtb_y_n2);
+    rtb_OR_bg = (rtb_y_ap || rtb_y_n2);
+    rtb_y_j = athr_fma_mode::NONE;
+    rtb_y_ap = (FmgcComputer_DWork.Delay_DSTATE_k && rtb_y_p);
+    if (rtb_y_ap && (rtb_Max_a > 44.0F)) {
+      rtb_y_j = athr_fma_mode::MAN_TOGA;
     } else {
-      rtb_y_hn = (rtb_y_a22 && (rtb_Max_a > 34.0F) && (rtb_Max_a < 36.0F));
-      if (rtb_y_hn && rtb_OR_bg) {
-        rtb_y_e = athr_fma_mode::MAN_FLEX;
-      } else if (rtb_y_hn && (!rtb_OR_bg)) {
-        rtb_y_e = athr_fma_mode::MAN_MCT;
-      } else if (rtb_y_a22 && (rtb_Max_a > 24.0F)) {
-        rtb_y_e = athr_fma_mode::MAN_THR;
+      rtb_y_n2 = (rtb_y_ap && (rtb_Max_a > 34.0F) && (rtb_Max_a < 36.0F));
+      if (rtb_y_n2 && rtb_OR_bg) {
+        rtb_y_j = athr_fma_mode::MAN_FLEX;
+      } else if (rtb_y_n2 && (!rtb_OR_bg)) {
+        rtb_y_j = athr_fma_mode::MAN_MCT;
+      } else if (rtb_y_ap && (rtb_Max_a > 24.0F)) {
+        rtb_y_j = athr_fma_mode::MAN_THR;
       } else {
-        rtb_y_a22 = (FmgcComputer_DWork.Delay_DSTATE_k && rtb_AND10_b);
-        rtb_y_hn = (rtb_y_a22 && FmgcComputer_DWork.Memory_PreviousInput_cm);
-        if (rtb_y_hn && (!FmgcComputer_DWork.Delay_DSTATE_c)) {
-          rtb_y_e = athr_fma_mode::SPEED;
-        } else if (rtb_y_hn && FmgcComputer_DWork.Delay_DSTATE_c) {
-          rtb_y_e = athr_fma_mode::MACH;
+        rtb_y_ap = (FmgcComputer_DWork.Delay_DSTATE_k && rtb_y_aq);
+        rtb_y_n2 = (rtb_y_ap && FmgcComputer_DWork.Memory_PreviousInput_cm);
+        if (rtb_y_n2 && (!FmgcComputer_DWork.Delay_DSTATE_c)) {
+          rtb_y_j = athr_fma_mode::SPEED;
+        } else if (rtb_y_n2 && FmgcComputer_DWork.Delay_DSTATE_c) {
+          rtb_y_j = athr_fma_mode::MACH;
         } else {
-          rtb_y_hn = (rtb_y_a22 && FmgcComputer_DWork.Memory_PreviousInput_bh);
+          rtb_y_n2 = (rtb_y_ap && FmgcComputer_DWork.Memory_PreviousInput_bh);
           rtb_OR_bg = !rtb_OR_m4;
-          if (rtb_y_hn && (rtb_Max_a > 34.0F) && rtb_OR_bg) {
-            rtb_y_e = athr_fma_mode::THR_MCT;
-          } else if (rtb_y_hn && (rtb_Max_a > 24.0F) && rtb_OR_bg) {
-            rtb_y_e = athr_fma_mode::THR_CLB;
-          } else if (rtb_y_hn && (rtb_Max_a < 25.0F) && rtb_OR_bg) {
-            rtb_y_e = athr_fma_mode::THR_LVR;
-          } else if (rtb_y_a22 && ((FmgcComputer_DWork.Memory_PreviousInput_bh && rtb_OR_m4) ||
-                      FmgcComputer_DWork.Memory_PreviousInput_o)) {
-            rtb_y_e = athr_fma_mode::THR_IDLE;
+          if (rtb_y_n2 && (rtb_Max_a > 34.0F) && rtb_OR_bg) {
+            rtb_y_j = athr_fma_mode::THR_MCT;
+          } else if (rtb_y_n2 && (rtb_Max_a > 24.0F) && rtb_OR_bg) {
+            rtb_y_j = athr_fma_mode::THR_CLB;
+          } else if (rtb_y_n2 && (rtb_Max_a < 25.0F) && rtb_OR_bg) {
+            rtb_y_j = athr_fma_mode::THR_LVR;
+          } else if (rtb_y_ap && ((FmgcComputer_DWork.Memory_PreviousInput_bh && rtb_OR_m4) ||
+                                  FmgcComputer_DWork.Memory_PreviousInput_o)) {
+            rtb_y_j = athr_fma_mode::THR_IDLE;
           } else {
-            rtb_y_a22 = (rtb_y_a22 && FmgcComputer_DWork.Memory_PreviousInput_hu);
-            if (rtb_y_a22 && (rtb_y_ha != 0U)) {
-              rtb_y_e = athr_fma_mode::A_FLOOR;
-            } else if (rtb_y_a22 && (rtb_y_ha == 0U)) {
-              rtb_y_e = athr_fma_mode::TOGA_LK;
+            rtb_y_ap = (rtb_y_ap && FmgcComputer_DWork.Memory_PreviousInput_hu);
+            if (rtb_y_ap && (rtb_y_ha != 0U)) {
+              rtb_y_j = athr_fma_mode::A_FLOOR;
+            } else if (rtb_y_ap && (rtb_y_ha == 0U)) {
+              rtb_y_j = athr_fma_mode::TOGA_LK;
             }
           }
         }
@@ -3578,51 +3579,51 @@ void FmgcComputer::step()
     rtb_BusAssignment_jc_logic_chosen_fac_bus_v_ls_kn.SSM = rtb_Switch_v_ls_kn_SSM;
     rtb_BusAssignment_jc_logic_chosen_fac_bus_v_ls_kn.Data = rtb_Switch_v_ls_kn_Data;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_i2_logic_adr_computation_data_airspeed_computed_kn,
-      FmgcComputer_P.A429ValueOrDefault_defaultValue_km, &rtb_y_nk);
+      FmgcComputer_P.A429ValueOrDefault_defaultValue_km, &rtb_y_el);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_chosen_fac_bus_v_ls_kn,
       FmgcComputer_P.A429ValueOrDefault4_defaultValue_hv, &rtb_DataTypeConversion2_bh);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_i2_logic_chosen_fac_bus_v_max_kn,
-      FmgcComputer_P.A429ValueOrDefault5_defaultValue_i, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault5_defaultValue_i, &rtb_y_fd);
     v[0] = rtb_DataTypeConversion2_bh;
     v[1] = static_cast<real32_T>(rtb_Switch_e[0]);
-    v[2] = rtb_y_lt;
+    v[2] = rtb_y_fd;
     if (rtb_DataTypeConversion2_bh < static_cast<real32_T>(rtb_Switch_e[0])) {
-      if (static_cast<real32_T>(rtb_Switch_e[0]) < rtb_y_lt) {
+      if (static_cast<real32_T>(rtb_Switch_e[0]) < rtb_y_fd) {
         absVsTarget = 1;
-      } else if (rtb_DataTypeConversion2_bh < rtb_y_lt) {
+      } else if (rtb_DataTypeConversion2_bh < rtb_y_fd) {
         absVsTarget = 2;
       } else {
         absVsTarget = 0;
       }
-    } else if (rtb_DataTypeConversion2_bh < rtb_y_lt) {
+    } else if (rtb_DataTypeConversion2_bh < rtb_y_fd) {
       absVsTarget = 0;
-    } else if (static_cast<real32_T>(rtb_Switch_e[0]) < rtb_y_lt) {
+    } else if (static_cast<real32_T>(rtb_Switch_e[0]) < rtb_y_fd) {
       absVsTarget = 2;
     } else {
       absVsTarget = 1;
     }
 
-    rtb_DataTypeConversion2_bh = v[absVsTarget] - rtb_y_nk;
+    rtb_DataTypeConversion2_bh = v[absVsTarget] - rtb_y_el;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_pitch_angle_deg,
-      FmgcComputer_P.A429ValueOrDefault11_defaultValue, &rtb_y_lt);
-    rtb_DataTypeConversion1_d = FmgcComputer_P.Gain1_Gain_a * rtb_y_lt;
+      FmgcComputer_P.A429ValueOrDefault11_defaultValue, &rtb_y_fd);
+    rtb_DataTypeConversion1_d = FmgcComputer_P.Gain1_Gain_a * rtb_y_fd;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_inertial_vertical_speed_ft_s,
-      FmgcComputer_P.A429ValueOrDefault10_defaultValue, &rtb_y_lt);
-    rtb_DataTypeConversion8 = FmgcComputer_P.fpmtoms_Gain * rtb_y_lt;
+      FmgcComputer_P.A429ValueOrDefault10_defaultValue, &rtb_y_fd);
+    rtb_DataTypeConversion8 = FmgcComputer_P.fpmtoms_Gain * rtb_y_fd;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_ground_speed_kn,
-      FmgcComputer_P.A429ValueOrDefault8_defaultValue_i, &rtb_y_lt);
-    rtb_Switch1_a = rtb_y_lt;
-    rtb_DataTypeConversion2_i = FmgcComputer_P.kntoms_Gain * rtb_y_lt;
+      FmgcComputer_P.A429ValueOrDefault8_defaultValue_i, &rtb_y_fd);
+    rtb_Switch1_a = rtb_y_fd;
+    rtb_DataTypeConversion2_i = FmgcComputer_P.kntoms_Gain * rtb_y_fd;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_roll_angle_deg,
-      FmgcComputer_P.A429ValueOrDefault12_defaultValue, &rtb_y_lt);
-    rtb_Product_p2 = FmgcComputer_P.Gain1_Gain_h * rtb_y_lt;
+      FmgcComputer_P.A429ValueOrDefault12_defaultValue, &rtb_y_fd);
+    rtb_Product_p2 = FmgcComputer_P.Gain1_Gain_h * rtb_y_fd;
     rtb_DataTypeConversion3 = std::cos(rtb_Product_p2);
     rtb_DataTypeConversion4 = std::sin(rtb_Product_p2);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_heading_magnetic_deg,
-      FmgcComputer_P.A429ValueOrDefault13_defaultValue, &rtb_y_lt);
-    rtb_DataTypeConversion5 = FmgcComputer_P.Gain1_Gain_f * rtb_y_lt;
+      FmgcComputer_P.A429ValueOrDefault13_defaultValue, &rtb_y_fd);
+    rtb_DataTypeConversion5 = FmgcComputer_P.Gain1_Gain_f * rtb_y_fd;
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_track_angle_magnetic_deg,
-      FmgcComputer_P.A429ValueOrDefault14_defaultValue, &rtb_y_lt);
+      FmgcComputer_P.A429ValueOrDefault14_defaultValue, &rtb_y_fd);
     if (rtb_Switch1_a > FmgcComputer_P.Saturation_UpperSat_jq) {
       rtb_Switch1_a = FmgcComputer_P.Saturation_UpperSat_jq;
     } else if (rtb_Switch1_a < FmgcComputer_P.Saturation_LowerSat_b) {
@@ -3652,17 +3653,17 @@ void FmgcComputer::step()
       (FmgcComputer_P.Gain_Gain_j * ((rtb_DataTypeConversion1_d - FmgcComputer_P.Gain1_Gain_ak *
       (FmgcComputer_P.Gain_Gain_b * std::atan(rtb_DataTypeConversion8 / rtb_DataTypeConversion2_i))) *
       (FmgcComputer_P.Constant_Value_hx - rtb_DataTypeConversion3) + rtb_DataTypeConversion4 * std::sin
-      (FmgcComputer_P.Gain1_Gain_p * rtb_y_lt - rtb_DataTypeConversion5)))), FmgcComputer_P.HighPassFilter_C1,
+      (FmgcComputer_P.Gain1_Gain_p * rtb_y_fd - rtb_DataTypeConversion5)))), FmgcComputer_P.HighPassFilter_C1,
       FmgcComputer_P.HighPassFilter_C2, FmgcComputer_P.HighPassFilter_C3, FmgcComputer_P.HighPassFilter_C4,
       FmgcComputer_U.in.time.dt, &rtb_Product_p2, &FmgcComputer_DWork.sf_LeadLagFilter);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_i2_logic_adr_computation_data_airspeed_computed_kn,
-      FmgcComputer_P.A429ValueOrDefault9_defaultValue, &rtb_y_lt);
-    if (rtb_y_lt > FmgcComputer_P.Saturation1_UpperSat_l) {
+      FmgcComputer_P.A429ValueOrDefault9_defaultValue, &rtb_y_fd);
+    if (rtb_y_fd > FmgcComputer_P.Saturation1_UpperSat_l) {
       rtb_Switch1_a = FmgcComputer_P.Saturation1_UpperSat_l;
-    } else if (rtb_y_lt < FmgcComputer_P.Saturation1_LowerSat_i) {
+    } else if (rtb_y_fd < FmgcComputer_P.Saturation1_LowerSat_i) {
       rtb_Switch1_a = FmgcComputer_P.Saturation1_LowerSat_i;
     } else {
-      rtb_Switch1_a = rtb_y_lt;
+      rtb_Switch1_a = rtb_y_fd;
     }
 
     FmgcComputer_LeadLagFilter(FmgcComputer_P.ktstomps_Gain_m * rtb_Switch1_a, FmgcComputer_P.LowPassFilter_C1,
@@ -3690,13 +3691,13 @@ void FmgcComputer::step()
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_body_normal_accel_g,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_bv, &rtb_DataTypeConversion2_bh);
     FmgcComputer_LagFilter(rtb_DataTypeConversion2_bh, FmgcComputer_P.LagFilter1_C1, FmgcComputer_U.in.time.dt,
-      &rtb_y_lt, &FmgcComputer_DWork.sf_LagFilter_g);
+      &rtb_y_fd, &FmgcComputer_DWork.sf_LagFilter_g);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_pitch_angle_deg,
       FmgcComputer_P.A429ValueOrDefault1_defaultValue_fg, &rtb_DataTypeConversion2_bh);
     rtb_Cos_h = std::cos(FmgcComputer_P.Gain1_Gain_hk * rtb_DataTypeConversion2_bh);
     FmgcComputer_MATLABFunction(&rtb_BusAssignment_jc_logic_ir_computation_data_roll_angle_deg,
       FmgcComputer_P.A429ValueOrDefault2_defaultValue_mp, &rtb_DataTypeConversion2_bh);
-    rtb_Cos_h = rtb_y_lt - rtb_Cos_h / std::cos(FmgcComputer_P.Gain1_Gain_go * rtb_DataTypeConversion2_bh);
+    rtb_Cos_h = rtb_y_fd - rtb_Cos_h / std::cos(FmgcComputer_P.Gain1_Gain_go * rtb_DataTypeConversion2_bh);
     rtb_Gain2_f = FmgcComputer_P.Gain2_Gain_o * rtb_Cos_h;
     if ((!FmgcComputer_DWork.pY_not_empty) || (!FmgcComputer_DWork.pU_not_empty)) {
       FmgcComputer_DWork.pU_c = rtb_Gain2_f;
@@ -3756,7 +3757,7 @@ void FmgcComputer::step()
 
     rtb_Switch1_a = FmgcComputer_P.DiscreteTimeIntegratorVariableTsLimit_Gain * rtb_Switch1_a *
       FmgcComputer_U.in.time.dt;
-    FmgcComputer_DWork.icLoad = (rtb_y_pp || rtb_y_p || FmgcComputer_DWork.Memory_PreviousInput_hu ||
+    FmgcComputer_DWork.icLoad = (rtb_y_g || rtb_y_p || FmgcComputer_DWork.Memory_PreviousInput_hu ||
       FmgcComputer_DWork.icLoad);
     if (FmgcComputer_DWork.icLoad) {
       FmgcComputer_DWork.Delay_DSTATE_f = std::fmax
@@ -3782,7 +3783,7 @@ void FmgcComputer::step()
 
     rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg.SSM = rtb_y;
     rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg.Data = rtb_Switch_i_runway_heading_deg_Data;
-    FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg, &rtb_y_pp);
+    FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg, &rtb_y_g);
     rtb_VectorConcatenate[0] = FmgcComputer_P.Constant10_Value;
     rtb_VectorConcatenate[1] = FmgcComputer_P.Constant10_Value;
     rtb_VectorConcatenate[2] = FmgcComputer_P.Constant10_Value;
@@ -3809,25 +3810,25 @@ void FmgcComputer::step()
     rtb_VectorConcatenate[2] = fdOwnOff;
     rtb_VectorConcatenate[3] = FmgcComputer_DWork.Memory_PreviousInput_d;
     rtb_VectorConcatenate[4] = FmgcComputer_P.Constant3_Value;
-    rtb_VectorConcatenate[5] = rtb_y_d4;
+    rtb_VectorConcatenate[5] = rtb_y_gj;
     rtb_VectorConcatenate[6] = apCondition_tmp;
     rtb_VectorConcatenate[7] = rtb_appCapability_idx_2;
     rtb_VectorConcatenate[8] = fdOppOff;
     rtb_VectorConcatenate[9] = rtb_appInop_idx_0;
     rtb_VectorConcatenate[10] = rtb_appInop_idx_1;
     rtb_VectorConcatenate[11] = rtb_appInop_idx_2;
-    rtb_VectorConcatenate[12] = rtb_y_bo;
-    rtb_VectorConcatenate[13] = rtb_TmpSignalConversionAtSFunctionInport3_idx_1;
+    rtb_VectorConcatenate[12] = rtb_TmpSignalConversionAtSFunctionInport3_idx_0;
+    rtb_VectorConcatenate[13] = rtb_y_bo;
     rtb_VectorConcatenate[14] = rtb_TmpSignalConversionAtSFunctionInport3_idx_2;
     rtb_VectorConcatenate[15] = rtb_BusAssignment_b_logic_ils_tune_inhibit;
     rtb_VectorConcatenate[16] = FmgcComputer_P.Constant3_Value;
     rtb_VectorConcatenate[17] = rtb_ap_fd_condition_tmp_3;
-    rtb_VectorConcatenate[18] = rtb_y_adj;
+    rtb_VectorConcatenate[18] = rtb_y_k;
     FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate, &rtb_DataTypeConversion2_bh);
     rtb_VectorConcatenate[0] = FmgcComputer_P.Constant4_Value_g;
     rtb_VectorConcatenate[1] = FmgcComputer_P.Constant4_Value_g;
     rtb_VectorConcatenate[2] = FmgcComputer_DWork.Delay_DSTATE_k;
-    rtb_VectorConcatenate[3] = rtb_AND10_b;
+    rtb_VectorConcatenate[3] = rtb_y_aq;
     rtb_VectorConcatenate[4] = FmgcComputer_P.Constant4_Value_g;
     rtb_VectorConcatenate[5] = FmgcComputer_P.Constant4_Value_g;
     rtb_VectorConcatenate[6] = FmgcComputer_U.in.discrete_inputs.athr_instinctive_disc;
@@ -3843,28 +3844,28 @@ void FmgcComputer::step()
     rtb_VectorConcatenate[16] = FmgcComputer_P.Constant4_Value_g;
     rtb_VectorConcatenate[17] = FmgcComputer_P.Constant4_Value_g;
     rtb_VectorConcatenate[18] = FmgcComputer_P.Constant4_Value_g;
-    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate, &rtb_y_nk);
-    rtb_VectorConcatenate_bw[0] = (rtb_y_e == athr_fma_mode::MAN_TOGA);
-    rtb_VectorConcatenate_bw[1] = ((rtb_y_e == athr_fma_mode::MAN_MCT) || (rtb_y_e == athr_fma_mode::THR_MCT));
-    rtb_VectorConcatenate_bw[2] = (rtb_y_e == athr_fma_mode::MAN_FLEX);
-    rtb_VectorConcatenate_bw[3] = (rtb_y_e == athr_fma_mode::THR_CLB);
-    rtb_VectorConcatenate_bw[4] = ((rtb_y_e == athr_fma_mode::MAN_THR) || (rtb_y_e == athr_fma_mode::THR_LVR));
-    rtb_VectorConcatenate_bw[5] = (rtb_y_e == athr_fma_mode::THR_IDLE);
-    rtb_VectorConcatenate_bw[6] = (rtb_y_e == athr_fma_mode::A_FLOOR);
-    rtb_VectorConcatenate_bw[7] = (rtb_y_e == athr_fma_mode::TOGA_LK);
-    rtb_VectorConcatenate_bw[8] = (rtb_y_e == athr_fma_mode::SPEED);
-    rtb_VectorConcatenate_bw[9] = (rtb_y_e == athr_fma_mode::MACH);
-    rtb_VectorConcatenate_bw[10] = (rtb_y_en == athr_fma_message::LVR_ASYM);
-    rtb_VectorConcatenate_bw[11] = (rtb_y_en == athr_fma_message::LVR_CLB);
-    rtb_VectorConcatenate_bw[12] = (rtb_y_en == athr_fma_message::LVR_MCT);
+    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate, &rtb_y_el);
+    rtb_VectorConcatenate_bw[0] = (rtb_y_j == athr_fma_mode::MAN_TOGA);
+    rtb_VectorConcatenate_bw[1] = ((rtb_y_j == athr_fma_mode::MAN_MCT) || (rtb_y_j == athr_fma_mode::THR_MCT));
+    rtb_VectorConcatenate_bw[2] = (rtb_y_j == athr_fma_mode::MAN_FLEX);
+    rtb_VectorConcatenate_bw[3] = (rtb_y_j == athr_fma_mode::THR_CLB);
+    rtb_VectorConcatenate_bw[4] = ((rtb_y_j == athr_fma_mode::MAN_THR) || (rtb_y_j == athr_fma_mode::THR_LVR));
+    rtb_VectorConcatenate_bw[5] = (rtb_y_j == athr_fma_mode::THR_IDLE);
+    rtb_VectorConcatenate_bw[6] = (rtb_y_j == athr_fma_mode::A_FLOOR);
+    rtb_VectorConcatenate_bw[7] = (rtb_y_j == athr_fma_mode::TOGA_LK);
+    rtb_VectorConcatenate_bw[8] = (rtb_y_j == athr_fma_mode::SPEED);
+    rtb_VectorConcatenate_bw[9] = (rtb_y_j == athr_fma_mode::MACH);
+    rtb_VectorConcatenate_bw[10] = (rtb_y_e == athr_fma_message::LVR_ASYM);
+    rtb_VectorConcatenate_bw[11] = (rtb_y_e == athr_fma_message::LVR_CLB);
+    rtb_VectorConcatenate_bw[12] = (rtb_y_e == athr_fma_message::LVR_MCT);
     rtb_VectorConcatenate_bw[13] = FmgcComputer_P.Constant5_Value;
     rtb_VectorConcatenate_bw[14] = FmgcComputer_P.Constant5_Value;
     rtb_VectorConcatenate_bw[15] = FmgcComputer_P.Constant5_Value;
     rtb_VectorConcatenate_bw[16] = FmgcComputer_P.Constant5_Value;
     rtb_VectorConcatenate_bw[17] = FmgcComputer_P.Constant5_Value;
     rtb_VectorConcatenate_bw[18] = FmgcComputer_P.Constant5_Value;
-    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_bw, &rtb_y_m);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.ats_fma_discrete_word.Data = rtb_y_m;
+    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_bw, &rtb_y_lc);
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.ats_fma_discrete_word.Data = rtb_y_lc;
     rtb_VectorConcatenate_bw[0] = FmgcComputer_DWork.Memory_PreviousInput_bw;
     rtb_VectorConcatenate_bw[1] = rtb_NOT_ou;
     rtb_VectorConcatenate_bw[2] = FmgcComputer_DWork.Memory_PreviousInput_n;
@@ -3884,11 +3885,11 @@ void FmgcComputer::step()
     rtb_VectorConcatenate_bw[16] = FmgcComputer_P.Constant6_Value;
     rtb_VectorConcatenate_bw[17] = FmgcComputer_P.Constant6_Value;
     rtb_VectorConcatenate_bw[18] = FmgcComputer_P.Constant6_Value;
-    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_bw, &rtb_y_m);
+    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_bw, &rtb_y_lc);
     rtb_VectorConcatenate_f[0] = (FmgcComputer_DWork.Memory_PreviousInput_ec ||
       FmgcComputer_DWork.Memory_PreviousInput_ae ||
       rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_clb_active);
-    rtb_VectorConcatenate_f[1] = rtb_y_e2;
+    rtb_VectorConcatenate_f[1] = rtb_y_iz;
     rtb_VectorConcatenate_f[2] = FmgcComputer_P.Constant7_Value;
     rtb_VectorConcatenate_f[3] = (FmgcComputer_DWork.Memory_PreviousInput_ae ||
       FmgcComputer_DWork.Memory_PreviousInput_ev);
@@ -3907,20 +3908,20 @@ void FmgcComputer::step()
     rtb_VectorConcatenate_f[12] = rtb_Logic_b[0];
     rtb_VectorConcatenate_f[13] = (rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_des_active ||
       rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.exp_clb_active);
-    rtb_VectorConcatenate_f[14] = FmgcComputer_DWork.Memory_PreviousInput_bc;
+    rtb_VectorConcatenate_f[14] = rtb_AND_cf;
     rtb_VectorConcatenate_f[15] = rtb_Compare_dw;
     rtb_VectorConcatenate_f[16] = ((FmgcComputer_U.in.fms_inputs.preset_mach > FmgcComputer_P.CompareToConstant3_const_p)
       || (FmgcComputer_U.in.fms_inputs.preset_spd_kts > FmgcComputer_P.CompareToConstant4_const_n));
     rtb_VectorConcatenate_f[17] = FmgcComputer_P.Constant7_Value;
     rtb_VectorConcatenate_f[18] = FmgcComputer_P.Constant7_Value;
-    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f, &rtb_y_lt);
-    rtb_VectorConcatenate_f[0] = rtb_y_nw;
+    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f, &rtb_y_fd);
+    rtb_VectorConcatenate_f[0] = rtb_y_b4i;
     rtb_VectorConcatenate_f[1] = FmgcComputer_DWork.Memory_PreviousInput_ip;
     rtb_VectorConcatenate_f[2] = FmgcComputer_DWork.Memory_PreviousInput_cv;
     rtb_VectorConcatenate_f[3] = FmgcComputer_DWork.Memory_PreviousInput_lq;
     rtb_VectorConcatenate_f[4] = FmgcComputer_DWork.Memory_PreviousInput_el;
     rtb_VectorConcatenate_f[5] = rtb_ap_fd_condition_tmp_1;
-    rtb_VectorConcatenate_f[6] = in_land_or_ga_tmp;
+    rtb_VectorConcatenate_f[6] = rtb_Logic_gj_idx_0_tmp_tmp;
     rtb_VectorConcatenate_f[7] = FmgcComputer_P.Constant8_Value;
     rtb_VectorConcatenate_f[8] = FmgcComputer_P.Constant8_Value;
     rtb_VectorConcatenate_f[9] = FmgcComputer_DWork.Memory_PreviousInput_c;
@@ -3933,7 +3934,7 @@ void FmgcComputer::step()
     rtb_VectorConcatenate_f[16] = FmgcComputer_P.Constant8_Value;
     rtb_VectorConcatenate_f[17] = rtb_y_n5;
     rtb_VectorConcatenate_f[18] = FmgcComputer_P.Constant8_Value;
-    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f, &rtb_y_fo);
+    FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f, &rtb_y_fy);
     rtb_VectorConcatenate_f[0] = FmgcComputer_P.Constant9_Value;
     rtb_VectorConcatenate_f[1] = FmgcComputer_P.Constant9_Value;
     rtb_VectorConcatenate_f[2] = FmgcComputer_P.Constant9_Value;
@@ -4053,8 +4054,8 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.logic.flap_slat_lever_position = rtb_handleIndex;
     FmgcComputer_Y.out.logic.fac_speeds_failure = FmgcComputer_P.Constant1_Value.fac_speeds_failure;
     FmgcComputer_Y.out.logic.fac_weights_failure = FmgcComputer_P.Constant1_Value.fac_weights_failure;
-    FmgcComputer_Y.out.logic.fac_rudder_control_failure = rtb_irOwnInvalid;
-    FmgcComputer_Y.out.logic.both_fac_rudder_valid = rtb_ir3Invalid;
+    FmgcComputer_Y.out.logic.fac_rudder_control_failure = rtb_ir3Invalid;
+    FmgcComputer_Y.out.logic.both_fac_rudder_valid = rtb_irOwnInvalid;
     FmgcComputer_Y.out.logic.chosen_fac_bus.total_weight_lbs.SSM = rtb_Switch_total_weight_lbs_SSM;
     FmgcComputer_Y.out.logic.chosen_fac_bus.total_weight_lbs.Data = rtb_Switch_total_weight_lbs_Data;
     FmgcComputer_Y.out.logic.chosen_fac_bus.center_of_gravity_pos_percent.SSM =
@@ -4088,13 +4089,13 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.logic.ils_tune_inhibit = rtb_BusAssignment_b_logic_ils_tune_inhibit;
     FmgcComputer_Y.out.logic.rwy_hdg_memo = FmgcComputer_B.u_lyjj;
     FmgcComputer_Y.out.logic.tcas_mode_available = rtb_NOT1_i;
-    FmgcComputer_Y.out.ap_fd_logic.lateral_modes.rwy_active = rtb_y_nw;
+    FmgcComputer_Y.out.ap_fd_logic.lateral_modes.rwy_active = rtb_y_b4i;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.nav_active = FmgcComputer_DWork.Memory_PreviousInput_ip;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.loc_cpt_active = FmgcComputer_DWork.Memory_PreviousInput_cv;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.loc_trk_active = FmgcComputer_DWork.Memory_PreviousInput_lq;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.roll_goaround_active = FmgcComputer_DWork.Memory_PreviousInput_el;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.hdg_active = rtb_ap_fd_condition_tmp_1;
-    FmgcComputer_Y.out.ap_fd_logic.lateral_modes.trk_active = in_land_or_ga_tmp;
+    FmgcComputer_Y.out.ap_fd_logic.lateral_modes.trk_active = rtb_Logic_gj_idx_0_tmp_tmp;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.rwy_loc_submode_active = FmgcComputer_DWork.Memory_PreviousInput_c;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.rwy_trk_submode_active = FmgcComputer_DWork.Memory_PreviousInput_b;
     FmgcComputer_Y.out.ap_fd_logic.lateral_modes.land_active = FmgcComputer_DWork.Memory_PreviousInput_d;
@@ -4118,7 +4119,7 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.gs_capt_active = FmgcComputer_DWork.Memory_PreviousInput_nu;
     FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.gs_trk_active = FmgcComputer_DWork.Memory_PreviousInput_as;
     FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.final_des_active = rtb_Logic_b[0];
-    FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.flare_active = FmgcComputer_DWork.Memory_PreviousInput_bc;
+    FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.flare_active = rtb_AND_cf;
     FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.cruise_active =
       rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.cruise_active;
     FmgcComputer_Y.out.ap_fd_logic.longitudinal_modes.tcas_active = rtb_Logic_ac[0];
@@ -4147,29 +4148,29 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.ap_fd_logic.any_longitudinal_mode_engaged = rtb_y_ed;
     FmgcComputer_Y.out.ap_fd_logic.hdg_trk_preset_available = FmgcComputer_DWork.Memory_PreviousInput_bw;
     FmgcComputer_Y.out.ap_fd_logic.ap_fd_mode_reversion = rtb_ap_fd_condition_tmp_3;
-    FmgcComputer_Y.out.ap_fd_logic.lateral_mode_reversion = rtb_Logic_gj_idx_0_tmp_tmp;
-    FmgcComputer_Y.out.ap_fd_logic.longitudinal_mode_reversion_vs = rtb_AND12;
+    FmgcComputer_Y.out.ap_fd_logic.lateral_mode_reversion = rtb_AND8;
+    FmgcComputer_Y.out.ap_fd_logic.longitudinal_mode_reversion_vs = rtb_GreaterThan3_tmp_1;
     FmgcComputer_Y.out.ap_fd_logic.longitudinal_mode_reversion_op_clb = rtb_OR2_l_tmp;
     FmgcComputer_Y.out.ap_fd_logic.pitch_fd_bars_flashing = rtb_ap_fd_condition_tmp_2;
     FmgcComputer_Y.out.ap_fd_logic.roll_fd_bars_flashing = rtb_y_n5;
     FmgcComputer_Y.out.ap_fd_logic.loc_bc_selection = rtP_fmgc_ap_fd_logic_output_MATLABStruct.loc_bc_selection;
-    FmgcComputer_Y.out.ap_fd_logic.vs_target_not_held = rtb_y_adj;
+    FmgcComputer_Y.out.ap_fd_logic.vs_target_not_held = rtb_y_k;
     FmgcComputer_Y.out.ap_fd_logic.tcas_vs_target = rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target;
     FmgcComputer_Y.out.ap_fd_logic.tcas_ra_corrective = apCondition;
     FmgcComputer_Y.out.ap_fd_logic.active_tcas_submode = rtb_mode;
-    FmgcComputer_Y.out.ap_fd_logic.tcas_alt_acq_cond = rtb_AND8;
+    FmgcComputer_Y.out.ap_fd_logic.tcas_alt_acq_cond = rtb_Logic_d_idx_0_tmp_tmp;
     FmgcComputer_Y.out.ap_fd_logic.tcas_alt_hold_cond = rtb_Logic_gj_idx_0_tmp_tmp_tmp;
     FmgcComputer_Y.out.ap_fd_logic.tcas_ra_inhibited = rtb_OR2_l;
     FmgcComputer_Y.out.ap_fd_logic.trk_fpa_deselected = rtb_NOT3;
     FmgcComputer_Y.out.ap_fd_logic.longi_large_box_tcas = rtb_BusAssignment_hk_ap_fd_logic_longi_large_box_tcas;
-    FmgcComputer_Y.out.ap_fd_logic.land_2_capability = rtb_y_d4;
+    FmgcComputer_Y.out.ap_fd_logic.land_2_capability = rtb_y_gj;
     FmgcComputer_Y.out.ap_fd_logic.land_3_fail_passive_capability = apCondition_tmp;
     FmgcComputer_Y.out.ap_fd_logic.land_3_fail_op_capability = rtb_appCapability_idx_2;
     FmgcComputer_Y.out.ap_fd_logic.land_2_inop = rtb_appInop_idx_0;
     FmgcComputer_Y.out.ap_fd_logic.land_3_fail_passive_inop = rtb_appInop_idx_1;
     FmgcComputer_Y.out.ap_fd_logic.land_3_fail_op_inop = rtb_appInop_idx_2;
-    FmgcComputer_Y.out.ap_fd_logic.land_2_capacity = rtb_y_bo;
-    FmgcComputer_Y.out.ap_fd_logic.land_3_fail_passive_capacity = rtb_TmpSignalConversionAtSFunctionInport3_idx_1;
+    FmgcComputer_Y.out.ap_fd_logic.land_2_capacity = rtb_TmpSignalConversionAtSFunctionInport3_idx_0;
+    FmgcComputer_Y.out.ap_fd_logic.land_3_fail_passive_capacity = rtb_y_bo;
     FmgcComputer_Y.out.ap_fd_logic.land_3_fail_op_capacity = rtb_TmpSignalConversionAtSFunctionInport3_idx_2;
     FmgcComputer_Y.out.ap_fd_outer_loops.Phi_loc_c = rtb_Phi_loc_c;
     FmgcComputer_Y.out.ap_fd_outer_loops.Nosewheel_c = rtb_Nosewheel_c;
@@ -4186,15 +4187,15 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.ap_fd_outer_loops.flare_law.delta_Theta_bz_deg = rtb_delta_Theta_bz_deg;
     FmgcComputer_Y.out.ap_fd_outer_loops.flare_law.delta_Theta_bx_deg = rtb_delta_Theta_bx_deg;
     FmgcComputer_Y.out.ap_fd_outer_loops.flare_law.delta_Theta_beta_c_deg = rtb_delta_Theta_beta_c_deg;
-    FmgcComputer_Y.out.athr.athr_active = rtb_AND10_b;
+    FmgcComputer_Y.out.athr.athr_active = rtb_y_aq;
     FmgcComputer_Y.out.athr.athr_limited = rtb_Compare_j3;
     FmgcComputer_Y.out.athr.alpha_floor_mode_active = FmgcComputer_DWork.Memory_PreviousInput_hu;
     FmgcComputer_Y.out.athr.thrust_mode_active = FmgcComputer_DWork.Memory_PreviousInput_bh;
     FmgcComputer_Y.out.athr.thrust_target_idle = rtb_OR_m4;
     FmgcComputer_Y.out.athr.speed_mach_mode_active = FmgcComputer_DWork.Memory_PreviousInput_cm;
     FmgcComputer_Y.out.athr.retard_mode_active = FmgcComputer_DWork.Memory_PreviousInput_o;
-    FmgcComputer_Y.out.athr.fma_mode = rtb_y_e;
-    FmgcComputer_Y.out.athr.fma_message = rtb_y_en;
+    FmgcComputer_Y.out.athr.fma_mode = rtb_y_j;
+    FmgcComputer_Y.out.athr.fma_message = rtb_y_e;
     FmgcComputer_Y.out.athr.n1_c_percent = rtb_Switch1_a;
     FmgcComputer_Y.out.discrete_outputs.athr_own_engaged = FmgcComputer_DWork.Delay_DSTATE_k;
     FmgcComputer_Y.out.discrete_outputs.fd_own_engaged = fdOwnOff;
@@ -4211,7 +4212,7 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.pfd_sel_spd_kts.Data = static_cast<real32_T>(rtb_Switch_e[1]);
-    if (rtb_y_pp || rtb_BusAssignment_b_logic_ils_tune_inhibit) {
+    if (rtb_y_g || rtb_BusAssignment_b_logic_ils_tune_inhibit) {
       FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.runway_hdg_memorized_deg.SSM = static_cast<uint32_T>
         (FmgcComputer_P.EnumeratedConstant1_Value);
     } else {
@@ -4241,8 +4242,8 @@ void FmgcComputer::step()
 
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.preset_speed_from_mcdu_kts.Data = static_cast<real32_T>
       (FmgcComputer_U.in.fms_inputs.preset_spd_kts);
-    rtb_y_a22 = !FmgcComputer_DWork.Memory_PreviousInput_m;
-    if (rtb_ap_fd_condition_tmp_0 && (!FmgcComputer_DWork.Memory_PreviousInput_c) && rtb_y_a22) {
+    rtb_y_ap = !FmgcComputer_DWork.Memory_PreviousInput_m;
+    if (rtb_ap_fd_condition_tmp_0 && (!FmgcComputer_DWork.Memory_PreviousInput_c) && rtb_y_ap) {
       FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.roll_fd_command.SSM = static_cast<uint32_T>
         (FmgcComputer_P.EnumeratedConstant1_Value);
     } else {
@@ -4251,7 +4252,7 @@ void FmgcComputer::step()
     }
 
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.roll_fd_command.Data = static_cast<real32_T>(rtb_Phi_c_deg);
-    if (rtb_y_ed && rtb_y_a22) {
+    if (rtb_y_ed && rtb_y_ap) {
       FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.pitch_fd_command.SSM = static_cast<uint32_T>
         (FmgcComputer_P.EnumeratedConstant1_Value);
     } else {
@@ -4302,18 +4303,18 @@ void FmgcComputer::step()
       (FmgcComputer_U.in.fms_inputs.flex_temp_deg_c);
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.ats_discrete_word.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.ats_discrete_word.Data = rtb_y_nk;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.ats_discrete_word.Data = rtb_y_el;
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.ats_fma_discrete_word.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_3.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_3.Data = rtb_y_m;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_3.Data = rtb_y_lc;
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_1.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_1.Data = rtb_y_lt;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_1.Data = rtb_y_fd;
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_2.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_2.Data = rtb_y_fo;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_2.Data = rtb_y_fy;
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_6.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.synchro_spd_mach_value.SSM = static_cast<uint32_T>
@@ -4381,16 +4382,16 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_4.Data = rtb_DataTypeConversion2_bh;
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.ats_discrete_word.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.ats_discrete_word.Data = rtb_y_nk;
+    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.ats_discrete_word.Data = rtb_y_el;
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_3.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_3.Data = rtb_y_m;
+    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_3.Data = rtb_y_lc;
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_1.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_1.Data = rtb_y_lt;
+    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_1.Data = rtb_y_fd;
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_2.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_2.Data = rtb_y_fo;
+    FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.discrete_word_2.Data = rtb_y_fy;
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.approach_spd_target_kn.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value_d);
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.approach_spd_target_kn.Data = FmgcComputer_P.Constant11_Value;
@@ -4417,13 +4418,13 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.n1_right_percent.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value_d);
     FmgcComputer_Y.out.bus_outputs.fmgc_b_bus.n1_right_percent.Data = FmgcComputer_P.Constant2_Value_n;
-    FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_active = rtb_y_nw;
+    FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_active = rtb_y_b4i;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active = FmgcComputer_DWork.Memory_PreviousInput_ip;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active = FmgcComputer_DWork.Memory_PreviousInput_cv;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.loc_trk_active = FmgcComputer_DWork.Memory_PreviousInput_lq;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.roll_goaround_active = FmgcComputer_DWork.Memory_PreviousInput_el;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.hdg_active = rtb_ap_fd_condition_tmp_1;
-    FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active = in_land_or_ga_tmp;
+    FmgcComputer_DWork.Delay_DSTATE.lateral_modes.trk_active = rtb_Logic_gj_idx_0_tmp_tmp;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_loc_submode_active = FmgcComputer_DWork.Memory_PreviousInput_c;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_trk_submode_active = FmgcComputer_DWork.Memory_PreviousInput_b;
     FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active = FmgcComputer_DWork.Memory_PreviousInput_d;
@@ -4447,7 +4448,7 @@ void FmgcComputer::step()
     FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_capt_active = FmgcComputer_DWork.Memory_PreviousInput_nu;
     FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.gs_trk_active = FmgcComputer_DWork.Memory_PreviousInput_as;
     FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active = rtb_Logic_b[0];
-    FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.flare_active = FmgcComputer_DWork.Memory_PreviousInput_bc;
+    FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.flare_active = rtb_AND_cf;
     FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.cruise_active =
       rtP_fmgc_ap_fd_logic_output_MATLABStruct.longitudinal_modes.cruise_active;
     FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active = rtb_Logic_ac[0];
@@ -4475,29 +4476,29 @@ void FmgcComputer::step()
     FmgcComputer_DWork.Delay_DSTATE.any_lateral_mode_engaged = rtb_ap_fd_condition_tmp_0;
     FmgcComputer_DWork.Delay_DSTATE.hdg_trk_preset_available = FmgcComputer_DWork.Memory_PreviousInput_bw;
     FmgcComputer_DWork.Delay_DSTATE.ap_fd_mode_reversion = rtb_ap_fd_condition_tmp_3;
-    FmgcComputer_DWork.Delay_DSTATE.lateral_mode_reversion = rtb_Logic_gj_idx_0_tmp_tmp;
-    FmgcComputer_DWork.Delay_DSTATE.longitudinal_mode_reversion_vs = rtb_AND12;
+    FmgcComputer_DWork.Delay_DSTATE.lateral_mode_reversion = rtb_AND8;
+    FmgcComputer_DWork.Delay_DSTATE.longitudinal_mode_reversion_vs = rtb_GreaterThan3_tmp_1;
     FmgcComputer_DWork.Delay_DSTATE.longitudinal_mode_reversion_op_clb = rtb_OR2_l_tmp;
     FmgcComputer_DWork.Delay_DSTATE.pitch_fd_bars_flashing = rtb_ap_fd_condition_tmp_2;
     FmgcComputer_DWork.Delay_DSTATE.roll_fd_bars_flashing = rtb_y_n5;
     FmgcComputer_DWork.Delay_DSTATE.loc_bc_selection = rtP_fmgc_ap_fd_logic_output_MATLABStruct.loc_bc_selection;
-    FmgcComputer_DWork.Delay_DSTATE.vs_target_not_held = rtb_y_adj;
+    FmgcComputer_DWork.Delay_DSTATE.vs_target_not_held = rtb_y_k;
     FmgcComputer_DWork.Delay_DSTATE.tcas_vs_target = rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target;
     FmgcComputer_DWork.Delay_DSTATE.tcas_ra_corrective = apCondition;
     FmgcComputer_DWork.Delay_DSTATE.active_tcas_submode = rtb_mode;
-    FmgcComputer_DWork.Delay_DSTATE.tcas_alt_acq_cond = rtb_AND8;
+    FmgcComputer_DWork.Delay_DSTATE.tcas_alt_acq_cond = rtb_Logic_d_idx_0_tmp_tmp;
     FmgcComputer_DWork.Delay_DSTATE.tcas_alt_hold_cond = rtb_Logic_gj_idx_0_tmp_tmp_tmp;
     FmgcComputer_DWork.Delay_DSTATE.tcas_ra_inhibited = rtb_OR2_l;
     FmgcComputer_DWork.Delay_DSTATE.trk_fpa_deselected = rtb_NOT3;
     FmgcComputer_DWork.Delay_DSTATE.longi_large_box_tcas = rtb_BusAssignment_hk_ap_fd_logic_longi_large_box_tcas;
-    FmgcComputer_DWork.Delay_DSTATE.land_2_capability = rtb_y_d4;
+    FmgcComputer_DWork.Delay_DSTATE.land_2_capability = rtb_y_gj;
     FmgcComputer_DWork.Delay_DSTATE.land_3_fail_passive_capability = apCondition_tmp;
     FmgcComputer_DWork.Delay_DSTATE.land_3_fail_op_capability = rtb_appCapability_idx_2;
     FmgcComputer_DWork.Delay_DSTATE.land_2_inop = rtb_appInop_idx_0;
     FmgcComputer_DWork.Delay_DSTATE.land_3_fail_passive_inop = rtb_appInop_idx_1;
     FmgcComputer_DWork.Delay_DSTATE.land_3_fail_op_inop = rtb_appInop_idx_2;
-    FmgcComputer_DWork.Delay_DSTATE.land_2_capacity = rtb_y_bo;
-    FmgcComputer_DWork.Delay_DSTATE.land_3_fail_passive_capacity = rtb_TmpSignalConversionAtSFunctionInport3_idx_1;
+    FmgcComputer_DWork.Delay_DSTATE.land_2_capacity = rtb_TmpSignalConversionAtSFunctionInport3_idx_0;
+    FmgcComputer_DWork.Delay_DSTATE.land_3_fail_passive_capacity = rtb_y_bo;
     FmgcComputer_DWork.Delay_DSTATE.land_3_fail_op_capacity = rtb_TmpSignalConversionAtSFunctionInport3_idx_2;
     FmgcComputer_DWork.Delay_DSTATE_p = rtb_Logic_a2[0];
     FmgcComputer_DWork.Memory_PreviousInput_g = rtb_Logic_a2[0];
@@ -4523,15 +4524,15 @@ void FmgcComputer::step()
     FmgcComputer_DWork.DelayInput1_DSTATE_f = FmgcComputer_P.Constant_Value_k;
     FmgcComputer_DWork.Memory_PreviousInput_bo = FmgcComputer_DWork.Delay_DSTATE_c;
     FmgcComputer_DWork.Memory_PreviousInput_j = FmgcComputer_P.Logic_table_lwo[static_cast<uint32_T>(low_i)];
-    FmgcComputer_DWork.Delay1_DSTATE.athr_active = rtb_AND10_b;
+    FmgcComputer_DWork.Delay1_DSTATE.athr_active = rtb_y_aq;
     FmgcComputer_DWork.Delay1_DSTATE.athr_limited = rtb_Compare_j3;
     FmgcComputer_DWork.Delay1_DSTATE.alpha_floor_mode_active = FmgcComputer_DWork.Memory_PreviousInput_hu;
     FmgcComputer_DWork.Delay1_DSTATE.thrust_mode_active = FmgcComputer_DWork.Memory_PreviousInput_bh;
     FmgcComputer_DWork.Delay1_DSTATE.thrust_target_idle = rtb_OR_m4;
     FmgcComputer_DWork.Delay1_DSTATE.speed_mach_mode_active = FmgcComputer_DWork.Memory_PreviousInput_cm;
     FmgcComputer_DWork.Delay1_DSTATE.retard_mode_active = FmgcComputer_DWork.Memory_PreviousInput_o;
-    FmgcComputer_DWork.Delay1_DSTATE.fma_mode = rtb_y_e;
-    FmgcComputer_DWork.Delay1_DSTATE.fma_message = rtb_y_en;
+    FmgcComputer_DWork.Delay1_DSTATE.fma_mode = rtb_y_j;
+    FmgcComputer_DWork.Delay1_DSTATE.fma_message = rtb_y_e;
     FmgcComputer_DWork.Delay1_DSTATE.n1_c_percent = rtb_Switch1_a;
     FmgcComputer_DWork.icLoad = false;
     FmgcComputer_DWork.Delay_DSTATE_f = FmgcComputer_DWork.Delay_DSTATE_l;
