@@ -37,6 +37,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { ApproachType } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -395,7 +396,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
 
-  private apprRadioText = Subject.create<string>('-----');
+  private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -526,16 +527,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
       this.apprIdent.set(this.loadedFlightPlan.approach.ident);
-      precisionApproach = this.loadedFlightPlan.approach.type === 5 || this.loadedFlightPlan.approach.type === 6; // ILS or GLS
+      precisionApproach =
+        this.loadedFlightPlan.approach.type === ApproachType.Ils ||
+        this.loadedFlightPlan.approach.type === ApproachType.Gls;
     }
 
-    if (precisionApproach) {
-      this.precisionApproachSelected.set(true);
-      this.apprRadioText.set('RADIO');
-    } else {
-      this.apprRadioText.set('-----');
-      this.precisionApproachSelected.set(false);
-    }
+    this.precisionApproachSelected.set(precisionApproach);
 
     if (fm.approachFlapConfig) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
