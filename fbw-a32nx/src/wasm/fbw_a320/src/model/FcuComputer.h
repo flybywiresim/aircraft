@@ -98,7 +98,6 @@ class FcuComputer final
     rtDW_MATLABFunction1_FcuComputer_T sf_MATLABFunction1_o;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_ey;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_hh;
-    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hb;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ma;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_a4;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kl;
@@ -303,13 +302,12 @@ class FcuComputer final
     boolean_T TFlipFlop1_init;
     boolean_T TFlipFlop1_init_c;
     boolean_T PulseNode_isRisingEdge;
-    boolean_T PulseNode2_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_l;
     boolean_T PulseNode1_isRisingEdge_d;
     boolean_T PulseNode_isRisingEdge_h;
     boolean_T PulseNode1_isRisingEdge_e;
-    boolean_T PulseNode2_isRisingEdge_k;
+    boolean_T PulseNode2_isRisingEdge;
     boolean_T PulseNode3_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_d;
     boolean_T PulseNode_isRisingEdge_i;

@@ -384,8 +384,6 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
 
   true,
 
-  true,
-
   0,
 
   0,
