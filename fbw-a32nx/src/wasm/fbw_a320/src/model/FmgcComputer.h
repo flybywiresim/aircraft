@@ -171,10 +171,10 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_jc;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_bbb;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_fed;
-    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_cx;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_dsw;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_nd;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_gbq;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_cz;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_owv;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_jrd;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_ms;
@@ -555,6 +555,7 @@ class FmgcComputer final
     real_T ConfirmNode_timeDelay_lk;
     real_T ConfirmNode_timeDelay_at;
     real_T ConfirmNode_timeDelay_b;
+    real_T ConfirmNode_timeDelay_op;
     real_T ConfirmNode_timeDelay_ll;
     real_T ConfirmNode_timeDelay_nn;
     real_T ConfirmNode_timeDelay_dy;
@@ -864,12 +865,12 @@ class FmgcComputer final
     boolean_T ConfirmNode_isRisingEdge_hux;
     boolean_T ConfirmNode_isRisingEdge_nf;
     boolean_T ConfirmNode_isRisingEdge_lj;
-    boolean_T PulseNode2_isRisingEdge_bh;
     boolean_T PulseNode3_isRisingEdge_n;
     boolean_T PulseNode4_isRisingEdge_f;
     boolean_T PulseNode5_isRisingEdge_p;
     boolean_T PulseNode_isRisingEdge_d;
     boolean_T PulseNode1_isRisingEdge_ky;
+    boolean_T ConfirmNode_isRisingEdge_ld;
     boolean_T ConfirmNode_isRisingEdge_lu;
     boolean_T PulseNode_isRisingEdge_b;
     boolean_T PulseNode_isRisingEdge_bg;
