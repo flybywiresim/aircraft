@@ -36,12 +36,7 @@ void DisplayBase::render(sGaugeDrawData* pDrawData) {
   nvgBeginFrame(this->_context, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight), ratio);
   {
     if (this->_configuration.powered) {
-      if ((this->_nanovgImage == 0 || helper::Math::almostEqual(this->_configuration.potentiometer, 0.0f))) {
-        nvgFillColor(this->_context, nvgRGBA(4, 4, 4, 255));
-        nvgBeginPath(this->_context);
-        nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
-        nvgFill(this->_context);
-      } else {
+      if ((this->_nanovgImage != 0 && !helper::Math::almostEqual(this->_configuration.potentiometer, 0.0f))) {
         // draw the image
         nvgBeginPath(this->_context);
         NVGpaint imagePaint =
@@ -51,11 +46,6 @@ void DisplayBase::render(sGaugeDrawData* pDrawData) {
         nvgFillPaint(this->_context, imagePaint);
         nvgFill(this->_context);
       }
-    } else {
-      nvgFillColor(this->_context, nvgRGBA(0, 0, 0, 255));
-      nvgBeginPath(this->_context);
-      nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
-      nvgFill(this->_context);
     }
   }
   nvgEndFrame(this->_context);
