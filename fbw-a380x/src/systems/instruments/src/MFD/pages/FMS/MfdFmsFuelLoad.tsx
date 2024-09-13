@@ -81,8 +81,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       return;
     }
 
-    console.time('FUEL_LOAD:onNewData');
-
     if (this.loadedFlightPlan.performanceData.costIndex) {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
     }
@@ -102,8 +100,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(650);
 
     this.updateDestAndAltnPredictions();
-
-    console.timeEnd('FUEL_LOAD:onNewData');
   }
 
   updateDestAndAltnPredictions() {
