@@ -187,10 +187,6 @@ export class Geometry {
   }
 
   static getLegPredictedTas(leg: Leg, currentTas: number) {
-    if (Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, leg.predictedTas ?? currentTas) === 0) {
-      console.warn(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, leg.predictedTas, currentTas);
-      throw new Error('TAS 0');
-    }
     return Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, leg.predictedTas ?? currentTas);
   }
 
@@ -244,9 +240,6 @@ export class Geometry {
           const prevLegPredictedLegGs = Geometry.getLegPredictedGs(prevLeg, gs);
 
           newInboundTransition.setNeighboringGuidables(prevLeg, nextLeg);
-          if (prevLegPredictedLegTas === 0) {
-            throw new Error('TAS 0');
-          }
           newInboundTransition.recomputeWithParameters(
             activeLegIdx === index,
             prevLegPredictedLegTas,
@@ -260,9 +253,6 @@ export class Geometry {
         const nextLegPredictedLegGs = Geometry.getLegPredictedGs(nextLeg, gs);
 
         nextLeg.setNeighboringGuidables(newInboundTransition ?? prevLeg, newOutboundTransition ?? nextNextLeg);
-        if (nextLegPredictedLegTas === 0) {
-          throw new Error('TAS 0');
-        }
         nextLeg.recomputeWithParameters(
           activeLegIdx === index,
           nextLegPredictedLegTas,
@@ -273,12 +263,6 @@ export class Geometry {
 
         if (newOutboundTransition) {
           newOutboundTransition.setNeighboringGuidables(nextLeg, nextNextLeg);
-          if (nextLegPredictedLegTas === 0) {
-            throw new Error('TAS 0');
-          }
-          if (nextLegPredictedLegTas === 0) {
-            throw new Error('TAS 0');
-          }
           newOutboundTransition.recomputeWithParameters(
             activeLegIdx === index + 1,
             nextLegPredictedLegTas,
@@ -304,9 +288,6 @@ export class Geometry {
 
       inboundTransition.setNeighboringGuidables(prevLeg, leg);
       inboundTransition.setNeighboringLegs(prevLeg, leg);
-      if (prevLegPredictedLegTas === 0) {
-        throw new Error('TAS 0');
-      }
       inboundTransition.recomputeWithParameters(
         activeLegIdx === index,
         prevLegPredictedLegTas,
@@ -325,9 +306,6 @@ export class Geometry {
       const chosenNextLeg = shouldSkipNextLeg ? nextNextLeg : nextLeg;
 
       leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition ?? chosenNextLeg);
-      if (legPredictedTas === 0) {
-        throw new Error('TAS 0');
-      }
       leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
 
       if (chosenOutboundTransition && chosenNextLeg) {
@@ -343,9 +321,6 @@ export class Geometry {
 
         // Since the outbound transition can have TAD, we recompute the leg again to make sure the end point is at the right place for this cycle
         leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition);
-        if (legPredictedTas === 0) {
-          throw new Error('TAS 0');
-        }
         leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
       }
     }
