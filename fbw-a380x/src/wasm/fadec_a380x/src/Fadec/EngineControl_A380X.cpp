@@ -800,10 +800,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
       }
     }
 
-    const double fuelFeedOne   = fuelFeedOnePre - (fuelBurn1 * Fadec::KGS_TO_LBS);    // Pounds
-    const double fuelFeedTwo   = fuelFeedTwoPre - (fuelBurn2 * Fadec::KGS_TO_LBS);    // Pounds
-    const double fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * Fadec::KGS_TO_LBS);  // Pounds
-    const double fuelFeedFour  = fuelFeedFourPre - (fuelBurn4 * Fadec::KGS_TO_LBS);   // Pounds
+    const double fuelFeedOne   = (std::max)(feedOneQty - (fuelBurn1 * Fadec::KGS_TO_LBS),0.0);    // Pounds
+    const double fuelFeedTwo   = (std::max)(feedTwoQty - (fuelBurn2 * Fadec::KGS_TO_LBS),0.0);    // Pounds
+    const double fuelFeedThree = (std::max)(feedThreeQty - (fuelBurn3 * Fadec::KGS_TO_LBS),0.0);  // Pounds
+    const double fuelFeedFour  = (std::max)(feedFourQty - (fuelBurn4 * Fadec::KGS_TO_LBS),0.0);   // Pounds
 
     // Setting new pre-cycle conditions
     simData.enginePreFF[E1]->set(engine1FF);
