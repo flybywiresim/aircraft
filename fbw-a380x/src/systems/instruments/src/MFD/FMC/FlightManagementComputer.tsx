@@ -799,6 +799,15 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
+  clearCheckSpeedModeMessage() {
+    const checkSpeedModeMessageActive =
+      this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
+    if (checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+      SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
+    }
+  }
+
   private checkDestData(): void {
     const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
     if (
