@@ -16,7 +16,7 @@
 struct SimUnit {
  public:
   const char* name;
-  const ENUM id;
+  const ENUM  id;
   [[maybe_unused]] explicit SimUnit(const char* nameInSim) : name(nameInSim), id(get_units_enum(name)) {
     // LOG_INFO("SimUnit::SimUnit() " + std::string(name) + " = " + std::to_string(id));
   }

@@ -30,7 +30,6 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/Pushback_A32NX.h
     ${FBW_COMMON}/cpp-msfs-framework/Example/ExampleModule.h
     ${FBW_COMMON}/cpp-msfs-framework/Example/longtext.h
-    ${FBW_COMMON}/extra-backend/Pushback/InertialDampener.hpp
     ${FBW_COMMON}/extra-backend/Pushback/Pushback.h
     ${FBW_COMMON}/extra-backend/AircraftPresets/AircraftPresets.h
     ${FBW_COMMON}/extra-backend/AircraftPresets/PresetProcedures.h
