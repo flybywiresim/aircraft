@@ -118,6 +118,7 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_cu;
     boolean_T Memory_PreviousInput_hk;
     boolean_T Memory_PreviousInput_bo;
+    boolean_T Memory_PreviousInput_ak;
     boolean_T Memory_PreviousInput_j;
     boolean_T Memory_PreviousInput_hu;
     boolean_T Memory_PreviousInput_bh;
@@ -256,6 +257,9 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_pu;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mm;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mb;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_oe;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_hi;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_nj;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_fw;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_ag;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_e5;
@@ -421,6 +425,7 @@ class FmgcComputer final
     real_T BitfromLabel_bit_kq;
     real_T BitfromLabel2_bit_ie;
     real_T BitfromLabel_bit_as;
+    real_T BitfromLabel3_bit_mz;
     real_T BitfromLabel_bit_i;
     real_T BitfromLabel1_bit_i5;
     real_T BitfromLabel2_bit_o;
@@ -481,6 +486,8 @@ class FmgcComputer final
     real_T CompareToConstant1_const_m;
     real_T CompareToConstant1_const_b3;
     real_T CompareToConstant_const_l3;
+    real_T CompareToConstant_const_hh;
+    real_T CompareToConstant1_const_c;
     real_T CompareToConstant_const_hq;
     real_T CompareToConstant2_const_di;
     real_T CompareToConstant1_const_h4;
@@ -572,6 +579,9 @@ class FmgcComputer final
     real_T ConfirmNode1_timeDelay_h;
     real_T ConfirmNode_timeDelay_ht;
     real_T ConfirmNode_timeDelay_gz;
+    real_T ConfirmNode1_timeDelay_df;
+    real_T ConfirmNode2_timeDelay_i;
+    real_T ConfirmNode_timeDelay_mf;
     real_T ConfirmNode_timeDelay_a0;
     real_T ConfirmNode_timeDelay_gu;
     real_T ConfirmNode_timeDelay_ez;
@@ -617,6 +627,7 @@ class FmgcComputer final
     fmgc_flight_phase EnumeratedConstant1_Value_c5;
     fmgc_flight_phase EnumeratedConstant_Value_ad;
     fmgc_flight_phase EnumeratedConstant_Value_n;
+    fmgc_flight_phase EnumeratedConstant_Value_a4;
     fmgc_flight_phase EnumeratedConstant_Value_by;
     fmgc_flight_phase EnumeratedConstant1_Value_e;
     real32_T ScheduledGain1_BreakpointsForDimension1[5];
@@ -707,6 +718,7 @@ class FmgcComputer final
     real32_T A429ValueOrDefault2_defaultValue_m;
     real32_T A429ValueOrDefault1_defaultValue_i;
     real32_T A429ValueOrDefault3_defaultValue_cz;
+    real32_T A429ValueOrDefault6_defaultValue_g;
     real32_T A429ValueOrDefault4_defaultValue_h;
     real32_T A429ValueOrDefault5_defaultValue_p;
     real32_T A429ValueOrDefault6_defaultValue_i;
@@ -787,6 +799,7 @@ class FmgcComputer final
     boolean_T SRFlipFlop1_initial_condition_on;
     boolean_T SRFlipFlop_initial_condition_n1;
     boolean_T SRFlipFlop_initial_condition_e5;
+    boolean_T SRFlipFlop_initial_condition_er;
     boolean_T SRFlipFlop1_initial_condition_d;
     boolean_T SRFlipFlop_initial_condition_nm;
     boolean_T SRFlipFlop1_initial_condition_l;
@@ -916,6 +929,9 @@ class FmgcComputer final
     boolean_T ConfirmNode_isRisingEdge_h2;
     boolean_T PulseNode6_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_c2;
+    boolean_T ConfirmNode1_isRisingEdge_i;
+    boolean_T ConfirmNode2_isRisingEdge_i;
+    boolean_T ConfirmNode_isRisingEdge_dh;
     boolean_T ConfirmNode_isRisingEdge_oa;
     boolean_T PulseNode3_isRisingEdge_l4;
     boolean_T PulseNode3_isRisingEdge_ng;
@@ -950,9 +966,10 @@ class FmgcComputer final
     real_T Y_Y0_h;
     real_T Y_Y0_g;
     real_T Y_Y0_c;
+    real_T Bias_Bias;
     real_T Gain_Gain_h;
     real_T Gain1_Gain;
-    real_T Bias_Bias;
+    real_T Bias_Bias_p;
     real_T Gain2_Gain;
     real_T Constant_Value_m;
     real_T Gain3_Gain;
@@ -1052,6 +1069,7 @@ class FmgcComputer final
     boolean_T Logic_table_ds[16];
     boolean_T Delay_InitialCondition_a;
     boolean_T Logic_table_ap[16];
+    boolean_T Logic_table_am[16];
     boolean_T Logic_table_lwo[16];
     boolean_T Logic_table_lm[16];
     boolean_T Logic_table_ac[16];

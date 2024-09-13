@@ -79,49 +79,6 @@ struct base_arinc_429
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-
-struct base_fmgc_a_bus
-{
-  base_arinc_429 pfd_sel_spd_kts;
-  base_arinc_429 runway_hdg_memorized_deg;
-  base_arinc_429 preset_mach_from_mcdu;
-  base_arinc_429 preset_speed_from_mcdu_kts;
-  base_arinc_429 roll_fd_command;
-  base_arinc_429 pitch_fd_command;
-  base_arinc_429 yaw_fd_command;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 fm_alt_constraint_ft;
-  base_arinc_429 altitude_ft;
-  base_arinc_429 mach;
-  base_arinc_429 cas_kts;
-  base_arinc_429 flx_to_temp_deg_c;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_6;
-  base_arinc_429 synchro_spd_mach_value;
-  base_arinc_429 low_target_speed_margin_kts;
-  base_arinc_429 high_target_speed_margin_kts;
-  base_arinc_429 delta_p_ail_voted_cmd_deg;
-  base_arinc_429 delta_p_splr_voted_cmd_deg;
-  base_arinc_429 delta_r_voted_cmd_deg;
-  base_arinc_429 delta_nosewheel_voted_cmd_deg;
-  base_arinc_429 delta_q_voted_cmd_deg;
-  base_arinc_429 track_deg;
-  base_arinc_429 heading_deg;
-  base_arinc_429 fpa_deg;
-  base_arinc_429 n1_command_percent;
-  base_arinc_429 vertical_speed_ft_min;
-  base_arinc_429 discrete_word_7;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
 #define DEFINED_TYPEDEF_FOR_base_ils_bus_
 
@@ -131,68 +88,6 @@ struct base_ils_bus
   base_arinc_429 ils_frequency_mhz;
   base_arinc_429 localizer_deviation_deg;
   base_arinc_429 glideslope_deviation_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-
-struct base_fmgc_b_bus
-{
-  base_arinc_429 fac_weight_lbs;
-  base_arinc_429 fm_weight_lbs;
-  base_arinc_429 fac_cg_percent;
-  base_arinc_429 fm_cg_percent;
-  base_arinc_429 fg_radio_height_ft;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 approach_spd_target_kn;
-  base_arinc_429 delta_p_ail_cmd_deg;
-  base_arinc_429 delta_p_splr_cmd_deg;
-  base_arinc_429 delta_r_cmd_deg;
-  base_arinc_429 delta_nose_wheel_cmd_deg;
-  base_arinc_429 delta_q_cmd_deg;
-  base_arinc_429 n1_left_percent;
-  base_arinc_429 n1_right_percent;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
-#define DEFINED_TYPEDEF_FOR_lateral_law_
-
-enum class lateral_law
-  : int32_T {
-  NONE = 0,
-  HDG,
-  TRACK,
-  HPATH,
-  LOC_CPT,
-  LOC_TRACK,
-  ROLL_OUT
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
-#define DEFINED_TYPEDEF_FOR_vertical_law_
-
-enum class vertical_law
-  : int32_T {
-  NONE = 0,
-  ALT_HOLD,
-  ALT_ACQ,
-  SPD_MACH,
-  VS,
-  FPA,
-  GS,
-  FLARE,
-  SRS,
-  VPATH
 };
 
 #endif
@@ -237,6 +132,111 @@ struct base_fmgc_discrete_inputs
   boolean_T eng_opp_stop;
   boolean_T eng_own_stop;
   boolean_T tcas_ta_display;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+
+struct base_fmgc_b_bus
+{
+  base_arinc_429 fac_weight_lbs;
+  base_arinc_429 fm_weight_lbs;
+  base_arinc_429 fac_cg_percent;
+  base_arinc_429 fm_cg_percent;
+  base_arinc_429 fg_radio_height_ft;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 approach_spd_target_kn;
+  base_arinc_429 delta_p_ail_cmd_deg;
+  base_arinc_429 delta_p_splr_cmd_deg;
+  base_arinc_429 delta_r_cmd_deg;
+  base_arinc_429 delta_nose_wheel_cmd_deg;
+  base_arinc_429 delta_q_cmd_deg;
+  base_arinc_429 n1_left_percent;
+  base_arinc_429 n1_right_percent;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
+
+struct base_fmgc_a_bus
+{
+  base_arinc_429 pfd_sel_spd_kts;
+  base_arinc_429 runway_hdg_memorized_deg;
+  base_arinc_429 preset_mach_from_mcdu;
+  base_arinc_429 preset_speed_from_mcdu_kts;
+  base_arinc_429 roll_fd_command;
+  base_arinc_429 pitch_fd_command;
+  base_arinc_429 yaw_fd_command;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 fm_alt_constraint_ft;
+  base_arinc_429 altitude_ft;
+  base_arinc_429 mach;
+  base_arinc_429 cas_kts;
+  base_arinc_429 flx_to_temp_deg_c;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 ats_fma_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_6;
+  base_arinc_429 synchro_spd_mach_value;
+  base_arinc_429 low_target_speed_margin_kts;
+  base_arinc_429 high_target_speed_margin_kts;
+  base_arinc_429 delta_p_ail_voted_cmd_deg;
+  base_arinc_429 delta_p_splr_voted_cmd_deg;
+  base_arinc_429 delta_r_voted_cmd_deg;
+  base_arinc_429 delta_nosewheel_voted_cmd_deg;
+  base_arinc_429 delta_q_voted_cmd_deg;
+  base_arinc_429 track_deg;
+  base_arinc_429 heading_deg;
+  base_arinc_429 fpa_deg;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 vertical_speed_ft_min;
+  base_arinc_429 discrete_word_7;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
+#define DEFINED_TYPEDEF_FOR_lateral_law_
+
+enum class lateral_law
+  : int32_T {
+  NONE = 0,
+  HDG,
+  TRACK,
+  HPATH,
+  LOC_CPT,
+  LOC_TRACK,
+  ROLL_OUT
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
+#define DEFINED_TYPEDEF_FOR_vertical_law_
+
+enum class vertical_law
+  : int32_T {
+  NONE = 0,
+  ALT_HOLD,
+  ALT_ACQ,
+  SPD_MACH,
+  VS,
+  FPA,
+  GS,
+  FLARE,
+  SRS,
+  VPATH
 };
 
 #endif
@@ -687,6 +687,7 @@ struct base_fmgc_ap_fd_logic_outputs
   boolean_T any_lateral_mode_engaged;
   boolean_T any_longitudinal_mode_engaged;
   boolean_T hdg_trk_preset_available;
+  boolean_T alt_soft_mode_active;
   boolean_T ap_fd_mode_reversion;
   boolean_T lateral_mode_reversion;
   boolean_T longitudinal_mode_reversion_vs;
