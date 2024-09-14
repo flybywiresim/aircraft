@@ -20,7 +20,6 @@ class MsfsHandler;
  */
 class AircraftPresets : public Module {
  private:
-
   // Convenience pointer to the data manager
   DataManager* dataManager = nullptr;
 
@@ -79,9 +78,9 @@ class AircraftPresets : public Module {
       : Module(msfsHandler), presetProcedures(PresetProcedures(aircraftProceduresDefinitions)) {}
 
   bool initialize() override;
-  bool preUpdate(sGaugeDrawData*) override { return true; }; // not required for this module
+  bool preUpdate(sGaugeDrawData*) override { return true; };  // not required for this module
   bool update(sGaugeDrawData* pData) override;
-  bool postUpdate(sGaugeDrawData*) override { return true; }; // not required for this module
+  bool postUpdate(sGaugeDrawData*) override { return true; };  // not required for this module
   bool shutdown() override;
 
  private:

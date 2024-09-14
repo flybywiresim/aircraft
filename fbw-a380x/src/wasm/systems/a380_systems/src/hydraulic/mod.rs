@@ -2556,6 +2556,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu1,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_1a,
         );
 
         self.engine_driven_pump_1a.update(
@@ -2574,6 +2575,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu2,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_2a,
         );
 
         self.engine_driven_pump_2a.update(
@@ -2592,6 +2594,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu1,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_3a,
         );
 
         self.engine_driven_pump_3a.update(
@@ -2610,6 +2613,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu2,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_4a,
         );
 
         self.engine_driven_pump_4a.update(
@@ -2628,6 +2632,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu1,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_1b,
         );
 
         self.engine_driven_pump_1b.update(
@@ -2646,6 +2651,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu2,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_2b,
         );
 
         self.engine_driven_pump_2b.update(
@@ -2664,6 +2670,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu1,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_3b,
         );
 
         self.engine_driven_pump_3b.update(
@@ -2682,6 +2689,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu2,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_4b,
         );
 
         self.engine_driven_pump_4b.update(
@@ -2699,6 +2707,7 @@ impl A380Hydraulic {
             self.green_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.green_electric_pump_a,
         );
 
         self.green_electric_pump_a.update(
@@ -2714,6 +2723,7 @@ impl A380Hydraulic {
             self.green_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.green_electric_pump_b,
         );
         self.green_electric_pump_b.update(
             context,
@@ -2729,6 +2739,7 @@ impl A380Hydraulic {
             self.yellow_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.yellow_electric_pump_a,
         );
         self.yellow_electric_pump_a.update(
             context,
@@ -2744,6 +2755,7 @@ impl A380Hydraulic {
             self.yellow_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.yellow_electric_pump_b,
         );
         self.yellow_electric_pump_b.update(
             context,
@@ -3345,6 +3357,7 @@ impl A380EngineDrivenPumpController {
         hydraulic_circuit: &impl HydraulicPressureSensors,
         lgciu: &impl LgciuInterface,
         reservoir: &Reservoir,
+        pump_status: &impl HeatingElement,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.pump_id)
@@ -3374,7 +3387,7 @@ impl A380EngineDrivenPumpController {
 
         self.update_low_level(reservoir, overhead_panel);
 
-        self.has_overheat_fault = reservoir.is_overheating();
+        self.has_overheat_fault = reservoir.is_overheating() || pump_status.is_overheating();
     }
 
     fn has_any_fault(&self) -> bool {
@@ -3605,6 +3618,8 @@ struct A380ElectricPumpController {
     has_pressure_low_fault: bool,
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
+    has_overheat_fault: bool,
+
     is_pressure_low: bool,
     should_pressurise_for_cargo_door_operation: bool,
 }
@@ -3627,6 +3642,7 @@ impl A380ElectricPumpController {
             has_pressure_low_fault: false,
             has_air_pressure_low_fault: false,
             has_low_level_fault: false,
+            has_overheat_fault: false,
 
             is_pressure_low: true,
 
@@ -3641,6 +3657,7 @@ impl A380ElectricPumpController {
         reservoir: &Reservoir,
         engines: [&impl Engine; 4],
         auto_logic: &A380ElectricPumpAutoLogic,
+        pump_status: &impl HeatingElement,
     ) {
         self.should_pressurise_for_cargo_door_operation =
             auto_logic.should_auto_run_pump(self.pump_id);
@@ -3656,6 +3673,8 @@ impl A380ElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        self.update_overheat(pump_status)
     }
 
     // Should be the feedback used to disable elec pumps running when engines are on
@@ -3673,6 +3692,10 @@ impl A380ElectricPumpController {
                 .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
         self.has_pressure_low_fault = self.is_pressure_low;
+    }
+
+    fn update_overheat(&mut self, pump_status: &impl HeatingElement) {
+        self.has_overheat_fault = pump_status.is_overheating();
     }
 
     fn update_low_air_pressure(
@@ -3694,7 +3717,10 @@ impl A380ElectricPumpController {
     }
 
     fn has_any_fault(&self) -> bool {
-        self.has_low_level_fault || self.has_air_pressure_low_fault || self.has_pressure_low_fault
+        self.has_low_level_fault
+            || self.has_air_pressure_low_fault
+            || self.has_pressure_low_fault
+            || self.has_overheat_fault
     }
 
     fn should_pressurise_for_cargo_door_operation(&self) -> bool {

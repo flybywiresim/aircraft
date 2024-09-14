@@ -18,11 +18,10 @@ use std::{
     rc::Rc,
     vec::Vec,
 };
-
-// TODO: deprecate
-pub(crate) trait CoreProcessingInputOutputModuleShared {
-    fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule;
-}
+use systems::integrated_modular_avionics::{
+    AvionicsDataCommunicationNetworkMessage,
+    AvionicsDataCommunicationNetworkMessageFunctionalDataSetStatus,
+};
 
 struct RoutingTableEntry {
     routing_id_1: VariableIdentifier,
@@ -69,10 +68,16 @@ impl RoutingTableEntry {
 // The routing tables define the upper triangular matrix for the two networks.
 // A breadth-first-search is used to update the routing table per AFDX switch.
 pub struct A380AvionicsDataCommunicationNetwork {
-    afdx_switches: [Rc<RefCell<AvionicsFullDuplexSwitch>>; 16],
+    afdx_switches: [Rc<
+        RefCell<AvionicsFullDuplexSwitch<A380AvionicsDataCommunicationNetworkMessageData>>,
+    >; 16],
     afdx_networks: [FxHashMap<u8, Vec<u8>>; 2],
-    cpio_modules: FxHashMap<&'static str, CoreProcessingInputOutputModule>,
-    io_modules: FxHashMap<&'static str, InputOutputModule>,
+    cpio_modules: FxHashMap<
+        &'static str,
+        CoreProcessingInputOutputModule<A380AvionicsDataCommunicationNetworkMessageData>,
+    >,
+    io_modules:
+        FxHashMap<&'static str, InputOutputModule<A380AvionicsDataCommunicationNetworkMessageData>>,
     routing_tables: [[Vec<RoutingTableEntry>; 8]; 2],
     publish_routing_table: bool,
     next_message_identifier: AvionicsDataCommunicationNetworkMessageIdentifier,
@@ -347,7 +352,8 @@ impl A380AvionicsDataCommunicationNetwork {
     }
 
     fn switches_reachable(
-        afdx_switches: &[Rc<RefCell<AvionicsFullDuplexSwitch>>; 16],
+        afdx_switches: &[Rc<RefCell<AvionicsFullDuplexSwitch<A380AvionicsDataCommunicationNetworkMessageData>>>;
+             16],
         network: &FxHashMap<u8, Vec<u8>>,
         from: u8,
         to: u8,
@@ -477,17 +483,12 @@ impl A380AvionicsDataCommunicationNetwork {
         }
     }
 }
-
-impl CoreProcessingInputOutputModuleShared for A380AvionicsDataCommunicationNetwork {
-    fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule {
-        // If the string is not found this will panic
-        self.cpio_modules.get(cpiom).unwrap()
-    }
-}
-
-impl<'a> AvionicsDataCommunicationNetwork<'a> for A380AvionicsDataCommunicationNetwork {
-    type NetworkEndpoint = AvionicsFullDuplexSwitch;
-    type NetworkEndpointRef = Ref<'a, AvionicsFullDuplexSwitch>;
+impl<'a> AvionicsDataCommunicationNetwork<'a, A380AvionicsDataCommunicationNetworkMessageData>
+    for A380AvionicsDataCommunicationNetwork
+{
+    type NetworkEndpoint =
+        AvionicsFullDuplexSwitch<A380AvionicsDataCommunicationNetworkMessageData>;
+    type NetworkEndpointRef = Ref<'a, Self::NetworkEndpoint>;
 
     fn get_message_identifier(
         &mut self,
@@ -504,11 +505,17 @@ impl<'a> AvionicsDataCommunicationNetwork<'a> for A380AvionicsDataCommunicationN
         self.afdx_switches[Self::map_switch_id(id)].borrow()
     }
 
-    fn get_cpiom(&self, name: &str) -> &CoreProcessingInputOutputModule {
+    fn get_cpiom(
+        &self,
+        name: &str,
+    ) -> &CoreProcessingInputOutputModule<A380AvionicsDataCommunicationNetworkMessageData> {
         &self.cpio_modules[name]
     }
 
-    fn get_iom(&self, name: &str) -> &InputOutputModule {
+    fn get_iom(
+        &self,
+        name: &str,
+    ) -> &InputOutputModule<A380AvionicsDataCommunicationNetworkMessageData> {
         &self.io_modules[name]
     }
 }
@@ -545,29 +552,62 @@ pub struct A380AvionicsDataCommunicationNetworkSimvarTranslator {}
 impl A380AvionicsDataCommunicationNetworkSimvarTranslator {
     pub fn new<'a>(
         _context: &mut InitContext,
-        _adcn: &mut impl AvionicsDataCommunicationNetwork<'a>,
+        _adcn: &mut impl AvionicsDataCommunicationNetwork<
+            'a,
+            A380AvionicsDataCommunicationNetworkMessageData,
+        >,
     ) -> Self {
         Self {}
     }
 
-    pub fn update<'a>(&mut self, _adcn: &impl AvionicsDataCommunicationNetwork<'a>) {}
+    pub fn update<'a>(
+        &mut self,
+        _adcn: &impl AvionicsDataCommunicationNetwork<
+            'a,
+            A380AvionicsDataCommunicationNetworkMessageData,
+        >,
+    ) {
+    }
 }
 impl SimulationElement for A380AvionicsDataCommunicationNetworkSimvarTranslator {}
+
+/// This type represents all the messages which can be send over AFDX
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum A380AvionicsDataCommunicationNetworkMessageData {
+    #[cfg(test)]
+    TestValue(&'static str),
+}
+impl A380AvionicsDataCommunicationNetworkMessageData {
+    pub(crate) fn into_message(
+        self,
+        status: AvionicsDataCommunicationNetworkMessageFunctionalDataSetStatus,
+    ) -> AvionicsDataCommunicationNetworkMessage<Self> {
+        AvionicsDataCommunicationNetworkMessage::new(status, self)
+    }
+}
+impl From<A380AvionicsDataCommunicationNetworkMessageData>
+    for AvionicsDataCommunicationNetworkMessage<A380AvionicsDataCommunicationNetworkMessageData>
+{
+    fn from(value: A380AvionicsDataCommunicationNetworkMessageData) -> Self {
+        value.into_message(
+            AvionicsDataCommunicationNetworkMessageFunctionalDataSetStatus::NormalOperation,
+        )
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-        integrated_modular_avionics::{
-            AvionicsDataCommunicationNetworkEndpoint, AvionicsDataCommunicationNetworkMessageData,
-        },
+        integrated_modular_avionics::AvionicsDataCommunicationNetworkEndpoint,
         shared::PotentialOrigin,
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
+    use systems::integrated_modular_avionics::AvionicsDataCommunicationNetworkMessage;
     use uom::si::{electric_potential::volt, f64::*};
 
     struct AdcnTestAircraft {
@@ -617,7 +657,9 @@ mod tests {
             &self,
             switch_id: u8,
             id: &AvionicsDataCommunicationNetworkMessageIdentifier,
-            message: AvionicsDataCommunicationNetworkMessageData,
+            message: AvionicsDataCommunicationNetworkMessage<
+                A380AvionicsDataCommunicationNetworkMessageData,
+            >,
         ) {
             self.adcn.get_endpoint(switch_id).send_value(id, message);
         }
@@ -626,7 +668,11 @@ mod tests {
             &self,
             switch_id: u8,
             id: &AvionicsDataCommunicationNetworkMessageIdentifier,
-        ) -> Option<AvionicsDataCommunicationNetworkMessageData> {
+        ) -> Option<
+            AvionicsDataCommunicationNetworkMessage<
+                A380AvionicsDataCommunicationNetworkMessageData,
+            >,
+        > {
             self.adcn.get_endpoint(switch_id).recv_value(id)
         }
     }
@@ -833,7 +879,8 @@ mod tests {
 
         let mut message_id = Default::default();
         test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
-        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        let message_sent: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("testval").into();
         test_bed.command(|a| a.set_elec_powered(true));
         test_bed.run();
         test_bed.command(|a| a.send_message(1, &message_id, message_sent.clone()));
@@ -853,7 +900,8 @@ mod tests {
 
         let mut message_id = Default::default();
         test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
-        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        let message_sent: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("testval").into();
         test_bed.command(|a| a.set_elec_powered(true));
         test_bed.run();
         test_bed.command(|a| a.send_message(11, &message_id, message_sent.clone()));
@@ -873,7 +921,8 @@ mod tests {
 
         let mut message_id = Default::default();
         test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
-        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        let message_sent: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("testval").into();
         test_bed.run();
         test_bed.command(|a| a.send_message(1, &message_id, message_sent.clone()));
         for i in (2..=7).chain(9..=9) {
@@ -892,7 +941,8 @@ mod tests {
 
         let mut message_id = Default::default();
         test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
-        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        let message_sent: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("testval").into();
         test_bed.run();
         test_bed.command(|a| a.send_message(11, &message_id, message_sent.clone()));
         for i in (1..=7).chain(9..=9) {
@@ -911,7 +961,8 @@ mod tests {
 
         let mut message_id = Default::default();
         test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
-        let message_sent = AvionicsDataCommunicationNetworkMessageData::Str("testval");
+        let message_sent: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("testval").into();
         test_bed.command(|a| a.set_elec_powered(true));
         test_bed.write_by_name("AFDX_SWITCH_1_FAILURE", true);
         test_bed.run();
@@ -928,8 +979,10 @@ mod tests {
 
         let mut message_id = Default::default();
         test_bed.command(|a| message_id = a.get_message_identifier("test_value".to_owned()));
-        let message1 = AvionicsDataCommunicationNetworkMessageData::Str("message1");
-        let message2 = AvionicsDataCommunicationNetworkMessageData::Str("message2");
+        let message1: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("message1").into();
+        let message2: AvionicsDataCommunicationNetworkMessage<_> =
+            A380AvionicsDataCommunicationNetworkMessageData::TestValue("message2").into();
         test_bed.command(|a| a.set_elec_powered(true));
         test_bed.write_by_name("AFDX_SWITCH_3_FAILURE", true);
         test_bed.write_by_name("AFDX_SWITCH_4_FAILURE", true);

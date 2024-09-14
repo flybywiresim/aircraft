@@ -18,8 +18,10 @@ jobs:
         run: npm install -g @localazy/cli
       - name: Download flyPad Translations
         run: cd fbw-common/src/systems/instruments/src/EFB/Localization && node build-flypad-translation.js
-      - name: Download locPak Translations
+      - name: Download A32NX locPak Translations
         run: cd fbw-a32nx/src/localization && node build-locPak-translation.js
+      - name: Download A380X locPak Translations
+        run: cd fbw-a380x/src/localization && node build-locPak-translation.js
       - name: Print git status
         run: git status
       - name: Create PR
@@ -27,9 +29,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: fbw-a32nx/src/localization
           branch: localazy-update # Specify branch that this action uses.
-          commit-message: 'automatically updated FlyByWire localization'
           title: 'build: update FlyByWire localization'
           body: >
             This PR automatically downloads and updates the approved changes from Localazy translations for 
@@ -39,3 +39,19 @@ jobs:
           labels: |
             EFB,
             i18n
+          path: fbw-common/src/systems/instruments/src/EFB/Localization
+          commit-message: 'automatically updated flyPad localization'
+      - uses: gr2m/create-or-update-pull-request-action@v1.x
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: localazy-update # Specify branch that this action uses.
+          path: fbw-a32nx/src/localization
+          commit-message: 'automatically updated A32NX locPak localization'
+      - uses: gr2m/create-or-update-pull-request-action@v1.x
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: localazy-update # Specify branch that this action uses.
+          path: fbw-a380x/src/localization
+          commit-message: 'automatically updated A380X locPak localization'
