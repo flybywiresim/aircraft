@@ -594,6 +594,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.activateApprButton.instance.style.visibility = 'hidden';
           }
         }
+        switch (val) {
+          case FmgcFlightPhase.Takeoff:
+          case FmgcFlightPhase.Climb:
+          case FmgcFlightPhase.Cruise:
+          case FmgcFlightPhase.Descent:
+          case FmgcFlightPhase.Approach:
+          case FmgcFlightPhase.GoAround: {
+            this.flightPhasesSelectedPageIndex.set(val - 1);
+            break;
+          }
+        }
       }, true),
     );
 
