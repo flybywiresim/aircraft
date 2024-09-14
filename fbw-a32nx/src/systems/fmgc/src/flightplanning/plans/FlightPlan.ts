@@ -489,6 +489,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   ): FlightPlan<P> {
     const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
 
+    // TODO init performance data
+
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
 

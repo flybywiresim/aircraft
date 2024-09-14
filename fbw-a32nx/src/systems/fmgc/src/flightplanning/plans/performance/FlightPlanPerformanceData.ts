@@ -72,6 +72,31 @@ export interface FlightPlanPerformanceData {
   cruiseFlightLevel: number | null;
 
   /**
+   * Cruise flight level; Unit: degrees C Null if not set.
+   */
+  cruiseTemperature: number;
+
+  /**
+   * Default ground temperature; Unit: degrees C; Null if not set.
+   */
+  defaultGroundTemperature: number | null;
+
+  /**
+   * Pilot ground temperature; Unit: degrees C; Null if not set.
+   */
+  pilotGroundTemperature: number | null;
+
+  /**
+   * Ground temperature. Default if no pilot entry, pilot entered otherwise; Unit: degrees C; Null if not set.
+   */
+  get groundTemperature(): number | null;
+
+  /**
+   * Whether ground temperature is pilot entered.
+   */
+  get groundTemperatureIsPilotEntered(): boolean;
+
+  /**
    * Pilot entered tropopause; Unit: Feet; Null if not set.
    */
   pilotTropopause: number | null;
@@ -251,6 +276,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.pilotTransitionLevel = this.pilotTransitionLevel;
 
     cloned.cruiseFlightLevel = this.cruiseFlightLevel;
+    cloned.cruiseTemperature = this.cruiseTemperature;
+    cloned.pilotGroundTemperature = this.pilotGroundTemperature;
+    cloned.defaultGroundTemperature = this.defaultGroundTemperature;
     cloned.costIndex = this.costIndex;
     cloned.pilotTropopause = this.pilotTropopause;
     cloned.defaultTropopause = this.defaultTropopause;
@@ -258,10 +286,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     return cloned as this;
   }
 
-  /**
-   * Cruise flight level; Unit: flight level (i.e. hundreds of feets); Null if not set.
-   */
   cruiseFlightLevel: number | null = null;
+
+  cruiseTemperature: number | null = null;
+
+  defaultGroundTemperature: number | null = null;
+
+  pilotGroundTemperature: number | null = null;
+
+  get groundTemperature() {
+    return this.pilotGroundTemperature ?? this.defaultGroundTemperature;
+  }
+
+  get groundTemperatureIsPilotEntered() {
+    return this.pilotGroundTemperature !== undefined;
+  }
 
   /**
    * Cost index; Unit: No unit; Null if not set.
@@ -517,6 +556,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel,
+      cruiseTemperature: this.cruiseTemperature,
+      defaultGroundTemperature: this.defaultGroundTemperature,
+      pilotGroundTemperature: this.pilotGroundTemperature,
       costIndex: this.costIndex,
       pilotTropopause: this.pilotTropopause,
       defaultTropopause: this.defaultTropopause,
@@ -545,6 +587,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
 export interface SerializedFlightPlanPerformanceData {
   cruiseFlightLevel: number | null;
+  cruiseTemperature: number | null;
+  defaultGroundTemperature: number | null;
+  pilotGroundTemperature: number | null;
   costIndex: number | null;
   defaultTropopause: number;
   pilotTropopause: number;
