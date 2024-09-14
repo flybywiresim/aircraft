@@ -2385,15 +2385,16 @@ export class FwsCore implements Instrument {
     const flapsMcduPos2Disagree = xor(this.slatFlapSelectionS22F15, mcduToFlapPos2);
     const flapsMcduPos3Disagree = xor(this.slatFlapSelectionS22F20, mcduToFlapPos3);
 
-    this.flapsMcduDisagree.set(
-      (flapsMcduPos1Disagree || flapsMcduPos2Disagree || flapsMcduPos3Disagree) &&
-        (mcduToFlapPos0 || mcduToFlapPos1 || mcduToFlapPos2 || mcduToFlapPos3),
-    );
-
     this.flapsAndPitchMcduDisagreeEnable.set(
       !this.flightPhase3PulseNode.read() &&
         !this.toConfigPulseNode.read() &&
         (this.fwcFlightPhase.get() === 3 || this.toConfigCheckedInPhase2Or3),
+    );
+
+    this.flapsMcduDisagree.set(
+      (flapsMcduPos1Disagree || flapsMcduPos2Disagree || flapsMcduPos3Disagree) &&
+        (mcduToFlapPos0 || mcduToFlapPos1 || mcduToFlapPos2 || mcduToFlapPos3) &&
+        this.flapsAndPitchMcduDisagreeEnable.get(),
     );
 
     // pitch trim not takeoff
@@ -2425,7 +2426,11 @@ export class FwsCore implements Instrument {
           !(Math.abs(fmPitchTrim.valueOr(0) - cgPercent) < 1)),
       deltaTime,
     );
-    this.pitchTrimMcduCgDisagree.set(!this.pitchTrimNotToWarning.get() && this.trimDisagreeMcduStabConf.read());
+    this.pitchTrimMcduCgDisagree.set(
+      !this.pitchTrimNotToWarning.get() &&
+        this.trimDisagreeMcduStabConf.read() &&
+        this.flapsAndPitchMcduDisagreeEnable.get(),
+    );
 
     // rudder trim not takeoff
     const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
