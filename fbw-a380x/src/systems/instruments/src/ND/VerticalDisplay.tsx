@@ -1,5 +1,6 @@
 ﻿import {
   A380EfisNdRangeValue,
+  Arinc429ConsumerSubject,
   Arinc429RegisterSubject,
   ArincEventBus,
   EfisNdMode,
@@ -15,6 +16,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
 
@@ -32,7 +34,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
   private readonly minAlt = -500;
   private readonly maxAlt = 24000;
 
-  private readonly sub = this.props.bus.getArincSubscriber<GenericFcuEvents & NDSimvars>();
+  private readonly sub = this.props.bus.getArincSubscriber<GenericFcuEvents & NDSimvars & DmcLogicEvents>();
 
   private topRef = FSComponent.createRef<SVGElement>();
 
@@ -48,6 +50,20 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
     this.ndMode,
     this.ndRangeSetting,
   );
+
+  /** either magnetic or true heading depending on true ref mode */
+  private readonly headingWord = Arinc429ConsumerSubject.create(this.sub.on('heading'));
+
+  /** either magnetic or true track depending on true ref mode */
+  private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track'));
+
+  private readonly vdAvailable = MappedSubject.create(
+    ([hdg, trk]) => hdg.isNormalOperation() && trk.isNormalOperation(),
+    this.headingWord,
+    this.trackWord,
+  );
+
+  private readonly lineColor = this.vdAvailable.map((a) => (a ? 'white' : 'red'));
 
   private readonly baroModeIsStd = ConsumerSubject.create(this.sub.on('baroMode').whenChanged(), false);
 
@@ -78,12 +94,40 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
         style={{ display: this.visible }}
       >
         <g>
-          <line x1="105" x2="105" y1="800" y2="1000" stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1={this.altToY(20000)} y2={this.altToY(20000)} stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1={this.altToY(15000)} y2={this.altToY(15000)} stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1={this.altToY(10000)} y2={this.altToY(10000)} stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1={this.altToY(5000)} y2={this.altToY(5000)} stroke="white" stroke-width="2" />
-          <line x1="105" x2="120" y1={this.altToY(0)} y2={this.altToY(0)} stroke="white" stroke-width="2" />
+          <line x1="105" x2="105" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" />
+          <line
+            x1="105"
+            x2="120"
+            y1={this.altToY(20000)}
+            y2={this.altToY(20000)}
+            stroke={this.lineColor}
+            stroke-width="2"
+          />
+          <line
+            x1="105"
+            x2="120"
+            y1={this.altToY(15000)}
+            y2={this.altToY(15000)}
+            stroke={this.lineColor}
+            stroke-width="2"
+          />
+          <line
+            x1="105"
+            x2="120"
+            y1={this.altToY(10000)}
+            y2={this.altToY(10000)}
+            stroke={this.lineColor}
+            stroke-width="2"
+          />
+          <line
+            x1="105"
+            x2="120"
+            y1={this.altToY(5000)}
+            y2={this.altToY(5000)}
+            stroke={this.lineColor}
+            stroke-width="2"
+          />
+          <line x1="105" x2="120" y1={this.altToY(0)} y2={this.altToY(0)} stroke={this.lineColor} stroke-width="2" />
           <line
             x1="97"
             x2="115"
@@ -91,20 +135,22 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             y2={this.baroCorrectedAltitude.map((a) => (a.isNormalOperation() ? this.altToY(a.value) : 0))}
             stroke="yellow"
             stroke-width="4"
-            visibility={this.baroCorrectedAltitude.map((a) =>
-              a.isNormalOperation() && a.value < 24000 ? 'visible' : 'hidden',
+            visibility={MappedSubject.create(
+              ([alt, avail]) => (alt.isNormalOperation() && alt.value < 24000 && avail ? 'visible' : 'hidden'),
+              this.baroCorrectedAltitude,
+              this.vdAvailable,
             )}
           />
         </g>
         <g>
-          <line x1="150" x2="690" y1="800" y2="800" stroke="white" stroke-width="2" />
-          <line x1="150" x2="150" y1="800" y2="1000" stroke="white" stroke-width="2" stroke-dasharray="8" />
-          <line x1="285" x2="285" y1="800" y2="1000" stroke="white" stroke-width="2" stroke-dasharray="8" />
-          <line x1="420" x2="420" y1="800" y2="1000" stroke="white" stroke-width="2" stroke-dasharray="8" />
-          <line x1="555" x2="555" y1="800" y2="1000" stroke="white" stroke-width="2" stroke-dasharray="8" />
-          <line x1="690" x2="690" y1="800" y2="1000" stroke="white" stroke-width="2" />
+          <line x1="150" x2="690" y1="800" y2="800" stroke={this.lineColor} stroke-width="2" />
+          <line x1="150" x2="150" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" stroke-dasharray="8" />
+          <line x1="285" x2="285" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" stroke-dasharray="8" />
+          <line x1="420" x2="420" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" stroke-dasharray="8" />
+          <line x1="555" x2="555" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" stroke-dasharray="8" />
+          <line x1="690" x2="690" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" />
         </g>
-        <g>
+        <g visibility={this.vdAvailable.map((a) => (a ? 'visible' : 'hidden'))}>
           <text x="150" y="797" class="Cyan FontSmallest MiddleAlign">
             0
           </text>
@@ -121,7 +167,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             {this.ndRangeSetting.map((value) => (value / 4) * 4)}
           </text>
         </g>
-        <g>
+        <g visibility={this.vdAvailable.map((a) => (a ? 'visible' : 'hidden'))}>
           <text x="95" y={this.altToY(0) + 7.5} class="White FontSmallest EndAlign">
             0
           </text>
