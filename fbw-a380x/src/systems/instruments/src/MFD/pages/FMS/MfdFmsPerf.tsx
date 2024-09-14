@@ -45,6 +45,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private managedSpeedActive = Subject.create<boolean>(false);
 
+  private previousFmsFlightPhase: FmgcFlightPhase | null = null;
+
   // Subjects
   private crzFl = Subject.create<number | null>(null);
 
@@ -594,17 +596,24 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.activateApprButton.instance.style.visibility = 'hidden';
           }
         }
-        switch (val) {
-          case FmgcFlightPhase.Takeoff:
-          case FmgcFlightPhase.Climb:
-          case FmgcFlightPhase.Cruise:
-          case FmgcFlightPhase.Descent:
-          case FmgcFlightPhase.Approach:
-          case FmgcFlightPhase.GoAround: {
-            this.flightPhasesSelectedPageIndex.set(val - 1);
-            break;
+
+        if (this.previousFmsFlightPhase) {
+          const isSamePhase = this.flightPhasesSelectedPageIndex.get() + 1 === this.previousFmsFlightPhase;
+          if (isSamePhase) {
+            switch (val) {
+              case FmgcFlightPhase.Takeoff:
+              case FmgcFlightPhase.Climb:
+              case FmgcFlightPhase.Cruise:
+              case FmgcFlightPhase.Descent:
+              case FmgcFlightPhase.Approach:
+              case FmgcFlightPhase.GoAround: {
+                this.flightPhasesSelectedPageIndex.set(val - 1);
+                break;
+              }
+            }
           }
         }
+        this.previousFmsFlightPhase = val;
       }, true),
     );
 
