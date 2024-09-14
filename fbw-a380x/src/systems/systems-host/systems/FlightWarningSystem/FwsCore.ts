@@ -167,6 +167,15 @@ export class FwsCore implements Instrument {
     Subject.create(''),
   );
 
+  // SD STATUS NORMAL
+  private readonly statusNormal = MappedSubject.create(
+    ([limAll, limAppr, inopAll, inopAppr]) => !limAll && !limAppr && !inopAll && !inopAppr,
+    this.ewdLimitationsAllPhasesLines[0],
+    this.ewdLimitationsApprLdgLines[0],
+    this.sdStatusInopAllPhasesLines[0],
+    this.sdStatusInopApprLdgLines[0],
+  );
+
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
 
@@ -1220,6 +1229,8 @@ export class FwsCore implements Instrument {
         SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
       }),
     );
+
+    this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s));
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
 

@@ -9,7 +9,7 @@
             - NODE_ID           <no default>    Node-ID of the button
 
     Page State:
-            - STATE_ID          <no default>    State of the simvar (L:A380X_ECAM_CP_SELECTED_PAGE_ID)
+            - STATE_ID          <no default>    State of the simvar (L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)
 
     ... or ...
 
@@ -29,22 +29,20 @@
             <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
 
             <!-- Internal -->
-            <STATE_SIMVAR>L:A380X_ECAM_CP_SELECTED_PAGE</STATE_SIMVAR>
+            <STATE_SIMVAR>L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX</STATE_SIMVAR>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-
-            <Condition Valid="HTML_EVENT">
-                <True>
-                    <LEFT_SINGLE_CODE>(&gt;H:A380X_RMP_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
-                </True>
-                <False>
-                    <LEFT_SINGLE_CODE>#STATE_ID# (&gt;#STATE_SIMVAR#)</LEFT_SINGLE_CODE>
-                    <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
-                </False>
-            </Condition>
-
+            <LEFT_SINGLE_CODE>
+                 (#STATE_SIMVAR#) #STATE_ID# != if{
+                    #STATE_ID# (&gt;#STATE_SIMVAR#)
+                } els{
+                    -1 (&gt;#STATE_SIMVAR#)
+                }
+                (&gt;H:A32NX_SD_PAGE_CHANGED)
+                </LEFT_SINGLE_CODE>
+            <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
             <CURSOR>Hand</CURSOR>
         </UseTemplate>
     </Template>
