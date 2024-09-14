@@ -102,7 +102,7 @@ void EngineControl_A380X::update() {
   updateFuel(deltaTime);
 
   // Update thrust limits while considering the current bleed air settings (packs, nai, wai)
-  const int packs = (simData.packsState[1]->get() > 0.5 || simData.packsState[2]->get() > 0.5) ? 1 : 0;
+  const int packs = (simData.packsState[0]->get() || simData.packsState[1]->get()) ? 1 : 0;
   const int nai   = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5     //
                    || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5  //
                    || simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5  //
@@ -488,8 +488,8 @@ int EngineControl_A380X::updateFF(int    engine,
   double outFlow = 0;  // kg/hour
   if (correctedFuelFlow >= 1) {
     outFlow = std::max(0.0,                                                                                  //
-                         (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
-                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
+                       (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                        * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
   }
   simData.engineFF[engine - 1]->set(outFlow);
 
@@ -920,14 +920,9 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   if (isTransitionActive) {
     double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
     if (timeDifference > 0 && clb > flex) {
-      deltaThrust = (std::min)(clb - flex, timeDifference * transitionFactor);
-    }
-    if (flex + deltaThrust >= clb) {
       wasFlexActive = false;
-      isTransitionActive = false;
     }
   }
-
   if (wasFlexActive) {
     clb = (std::min)(clb, flex) + deltaThrust;
   }
@@ -962,10 +957,10 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   simData.thrustLimitClimb->set(clb);
   simData.thrustLimitMct->set(mct);
 
-#ifdef PROFILING
-  profilerUpdateThrustLimits.stop();
-#endif
-}
+  #ifdef PROFILING
+    profilerUpdateThrustLimits.stop();
+  #endif
+  }
 
 /*
  * Previous code - call to it was already commented out and this function was not in use.

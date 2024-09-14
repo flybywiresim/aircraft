@@ -1,17 +1,18 @@
-/**
- * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
- */
-enum TurnDirection {
-  Unknown = 0,
-  Left = 1,
-  Right = 2,
-  Either = 3,
-}
+// Copyright (c) 2022-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { TurnDirection } from '../../navdata/shared/types/ProcedureLeg';
 
 export class MathUtils {
   static DEGREES_TO_RADIANS = Math.PI / 180;
 
   static RADIANS_TO_DEGREES = 180 / Math.PI;
+
+  static FEET_TO_NAUTICAL_MILES = 6076.12;
+
+  static METRES_TO_NAUTICAL_MILES = 1852;
+
+  public static TWO_PI = Math.PI * 2;
 
   private static optiPow10 = [];
 
@@ -74,6 +75,76 @@ export class MathUtils {
       diff -= 360;
     }
     return diff;
+  }
+
+  /**
+   * Normalises an angle into the range [0; 360).
+   * @param angle The angle in degrees.
+   * @returns An equivalent angle in the range [0; 360).
+   */
+  public static normalise360(angle: number): Degrees {
+    // this can still be negative..
+    const mod360 = angle % 360;
+    // so we force it positive.
+    return (mod360 + 360) % 360;
+  }
+
+  /**
+   * Normalises an angle into the range [-180; 180).
+   * @param angle The angle in degrees.
+   * @returns An equivalent angle in the range [-180; 180).
+   */
+  public static normalise180(angle: number): number {
+    const normalised360 = this.normalise360(angle);
+
+    if (normalised360 >= 180) {
+      return normalised360 - 360;
+    }
+
+    return normalised360;
+  }
+
+  /**
+   * Normalises an angle into the range [0; 2π).
+   * @param angle The angle in radians.
+   * @returns An equivalent angle in the range [0; 2π).
+   */
+  public static normalise2Pi(angle: number): Degrees {
+    // this can still be negative..
+    const mod2Pi = angle % MathUtils.TWO_PI;
+    // so we force it positive.
+    return (mod2Pi + MathUtils.TWO_PI) % MathUtils.TWO_PI;
+  }
+
+  /**
+   * Normalises an angle into the range [-π; π).
+   * @param angle The angle in radians.
+   * @returns An equivalent angle in the range [-π; π).
+   */
+  public static normalisePi(angle: number): number {
+    const normalised2Pi = this.normalise2Pi(angle);
+
+    if (normalised2Pi >= Math.PI) {
+      return normalised2Pi - MathUtils.TWO_PI;
+    }
+
+    return normalised2Pi;
+  }
+
+  /**
+   * Corrects an MSFS localiser radial error to give the correct deviations on the back beam.
+   * @param radialError Radial error from simvar NAV RADIAL ERROR in degrees.
+   * @returns The corrected localiser angular deviation in degrees.
+   */
+  public static correctMsfsLocaliserError(radialError: number): number {
+    const normalisedError = MathUtils.normalise180(radialError);
+    if (normalisedError < -90) {
+      return -180 - normalisedError;
+    }
+    if (normalisedError > 90) {
+      return 180 - normalisedError;
+    }
+    return normalisedError;
   }
 
   /**
@@ -472,12 +543,56 @@ export class MathUtils {
   }
 
   /**
-   * Returns a value rounded to the given number of decimal precission.
-   * @param value
-   * @param decimalPrecision
+   * Round a number to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
    */
-  public static round(value: number, decimalPrecision: number) {
-    const shift = 10 ** decimalPrecision;
-    return Math.round((value + Number.EPSILON) * shift) / shift;
+  public static round(value: number, quantum = 1): number {
+    return Math.round(value / quantum) * quantum;
+  }
+
+  static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
+    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
+  /**
+   * Bilinear interpolation on a table
+   * @param table
+   * @param i Value on row axis
+   * @param j Value on column axis
+   * @returns Interpolated value
+   */
+  public static tableInterpolation(table: number[][], i: number, j: number): number {
+    const numRows = table.length;
+    const numCols = table[0].length;
+    // Iterate through rows to find the upper bound to i
+    let r: number;
+    for (r = 1; r < numRows; r++) {
+      if (table[r][0] > i) {
+        break;
+      }
+    }
+
+    // Get lower bound to i
+    const r1 = Math.max(1, r - 1);
+    const r2 = Math.min(numRows - 1, r);
+    // Iterate through rows to find the upper bound to j
+    let c: number;
+    for (c = 1; c < numCols; c++) {
+      if (table[0][c] > j) {
+        break;
+      }
+    }
+    // Get the lower bound to j
+    const c1 = Math.max(1, c - 1);
+    const c2 = Math.min(numCols - 1, c);
+
+    const interpolatedRowAtC1 =
+      r1 === r2 ? table[r1][c1] : MathUtils.interpolate(i, table[r1][0], table[r2][0], table[r1][c1], table[r2][c1]);
+    const interpolatedRowAtC2 =
+      r1 === r2 ? table[r1][c2] : MathUtils.interpolate(i, table[r1][0], table[r2][0], table[r1][c2], table[r2][c2]);
+
+    return MathUtils.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
   }
 }

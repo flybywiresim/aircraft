@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -14,9 +14,13 @@ import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadi
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { CourseCaptureTransition } from '@fmgc/guidance/lnav/transitions/CourseCaptureTransition';
 import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
-import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { distanceTo } from 'msfs-geo';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 
@@ -47,7 +51,7 @@ export class LnavDriver implements GuidanceComponent {
 
   private lastLaw: ControlLaw;
 
-  private lastXTE: number;
+  public lastXTE: number;
 
   private lastTAE: number;
 
@@ -59,7 +63,11 @@ export class LnavDriver implements GuidanceComponent {
 
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-  constructor(guidanceController: GuidanceController) {
+  constructor(
+    private readonly flightPlanService: FlightPlanService,
+    guidanceController: GuidanceController,
+    private readonly acConfig: AircraftConfig,
+  ) {
     this.guidanceController = guidanceController;
     this.lastAvail = null;
     this.lastLaw = null;
@@ -75,15 +83,27 @@ export class LnavDriver implements GuidanceComponent {
   update(_: number): void {
     let available = false;
 
+    // TODO FIXME: Use FM position
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-    const geometry = this.guidanceController.activeGeometry;
+    const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
+    const geometry = this.guidanceController.activeGeometry;
     const activeLegIdx = this.guidanceController.activeLegIndex;
 
     if (geometry && geometry.legs.size > 0) {
       const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
+
+      const activeLegAlongTrackCompletePathDtg = this.computeAlongTrackDistanceToGo(geometry, activeLegIdx, trueTrack);
+      if (
+        activeLegAlongTrackCompletePathDtg === undefined &&
+        this.guidanceController.activeLegAlongTrackCompletePathDtg !== undefined
+      ) {
+        console.log('[FMS/LNAV] No reference leg found to compute alongTrackDistanceToGo');
+      }
+
+      this.guidanceController.activeLegAlongTrackCompletePathDtg = activeLegAlongTrackCompletePathDtg;
 
       const inboundTrans = geometry.transitions.get(activeLegIdx - 1);
       const activeLeg = geometry.legs.get(activeLegIdx);
@@ -159,10 +179,6 @@ export class LnavDriver implements GuidanceComponent {
       }
 
       // Leg sequencing
-
-      // TODO FIXME: Use FM position
-
-      const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
       // this is not the correct groundspeed to use, but it will suffice for now
       const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
@@ -368,17 +384,10 @@ export class LnavDriver implements GuidanceComponent {
         const followingLeg = geometry.legs.get(activeLegIdx + 2);
 
         if (nextLeg) {
-          // FIXME we should stop relying on discos in the wpt objects, but for now it's fiiiiiine
-          // Hard-coded check for TF leg after the disco for now - only case where we don't wanna
-          // sequence this way is VM
-          if (activeLeg instanceof XFLeg && activeLeg.fix.endsInDiscontinuity) {
-            this.sequenceDiscontinuity(activeLeg);
-          } else {
-            this.sequenceLeg(activeLeg, outboundTransition);
-          }
+          this.sequenceLeg(activeLeg, outboundTransition);
           geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
         } else {
-          this.sequenceDiscontinuity(activeLeg);
+          this.sequenceDiscontinuity(activeLeg, followingLeg);
           geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
         }
       }
@@ -400,26 +409,61 @@ export class LnavDriver implements GuidanceComponent {
     }
   }
 
-  public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates): number {
+  /**
+   *
+   * @param geometry active geometry
+   * @param activeLegIdx index of active leg in the geometry
+   * @param trueTrack true track of the aircraft
+   * @returns distance to go along the active leg
+   */
+  private computeAlongTrackDistanceToGo(
+    geometry: Geometry,
+    activeLegIdx: number,
+    trueTrack: DegreesTrue,
+  ): NauticalMiles {
+    // Iterate over the upcoming legs until we find one that has a distance to go.
+    // If we sequence a discontinuity for example, there is no geometry leg for the active leg, so we iterate downpath until we find one.
+    // This will typically be an IF leg
+    for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
+      const leg = geometry.legs.get(i);
+      if (!leg || leg instanceof VMLeg || leg instanceof FMLeg) {
+        continue;
+      }
+
+      const inboundTrans = geometry.transitions.get(i - 1);
+      const outboundTrans = geometry.transitions.get(i);
+
+      const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
+        this.ppos,
+        trueTrack,
+        leg,
+        inboundTrans,
+        outboundTrans,
+      );
+
+      return completeLegAlongTrackPathDtg;
+    }
+
+    return undefined;
+  }
+
+  public legEta(gs: Knots, termination: Coordinates): number {
     // FIXME use a more accurate estimate, calculate in predictions
 
     const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
 
-    const nauticalMilesToGo = Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
+    const nauticalMilesToGo = distanceTo(this.ppos, termination);
+    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
 
     const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
 
     return eta;
   }
 
-  sequenceLeg(_leg?: Leg, outboundTransition?: Transition): void {
-    let wpIndex = this.guidanceController.flightPlanManager.getActiveWaypointIndex(false, false, 0);
-    const wp = this.guidanceController.flightPlanManager.getActiveWaypoint(false, false, 0);
-    console.log(`[FMGC/Guidance] LNAV - sequencing leg. [WP: ${wp.ident} Active WP Index: ${wpIndex}]`);
-    wp.waypointReachedAt = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+  sequenceLeg(leg?: Leg, outboundTransition?: Transition): void {
+    this.flightPlanService.active.sequence();
 
-    this.guidanceController.flightPlanManager.setActiveWaypointIndex(++wpIndex, () => {}, 0);
+    console.log(`[FMGC/Guidance] LNAV - sequencing leg. [new Index: ${this.flightPlanService.active.activeLegIndex}]`);
 
     outboundTransition?.freeze();
 
@@ -441,7 +485,7 @@ export class LnavDriver implements GuidanceComponent {
     }
   }
 
-  sequenceDiscontinuity(_leg?: Leg): void {
+  sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {
     console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
     // Lateral mode is NAV
@@ -473,6 +517,11 @@ export class LnavDriver implements GuidanceComponent {
     }
 
     this.sequenceLeg(_leg, null);
+
+    // The leg after the disco should become the active leg, so we sequence again
+    if (followingLeg) {
+      this.sequenceLeg(null, null);
+    }
   }
 
   sequenceManual(_leg?: Leg): void {

@@ -4,6 +4,7 @@
 
 'use strict';
 
+const path = require('path');
 module.exports = {
   env: { browser: true },
   root: true,
@@ -49,7 +50,10 @@ module.exports = {
     },
   ],
   settings: {
-    tailwindcss: { groupByResponsive: true },
+    tailwindcss: {
+      groupByResponsive: true,
+      config: path.join(__dirname, 'fbw-common/src/systems/instruments/src/EFB/tailwind.config.js'),
+    },
     react: { version: 'detect' },
   },
   ignorePatterns: [
@@ -57,6 +61,7 @@ module.exports = {
     'fbw-a380x/*',
     'fbw-ingamepanels-checklist-fix/*',
     '!fbw-a380x/src/systems/instruments/src/PFD/*',
+    '!fbw-a380x/src/systems/instruments/src/MFD/*',
   ],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],

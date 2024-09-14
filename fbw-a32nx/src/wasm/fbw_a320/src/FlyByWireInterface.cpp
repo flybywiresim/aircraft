@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include <MathUtils.h>
+
 #include "Arinc429Utils.h"
 #include "FlyByWireInterface.h"
 #include "SimConnectData.h"
@@ -495,6 +497,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idRadioReceiverLocalizerDistance = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  idFm1BackbeamSelected = std::make_unique<LocalVariable>("A32NX_FM1_BACKBEAM_SELECTED");
 
   idRealisticTillerEnabled = std::make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
   idTillerHandlePosition = std::make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
@@ -1643,7 +1647,9 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.is_unit_1 = facIndex == 0;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_actuator_healthy = true;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_travel_lim_actuator_healthy = true;
-  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended = false;
+  // This should come from a dedicated discrete from the SFCC
+  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended =
+      !reinterpret_cast<Arinc429DiscreteWord*>(&sfccBusOutputs[facIndex].slat_flap_actual_position_word)->bitFromValueOr(12, false);
   facs[facIndex].modelInputs.in.discrete_inputs.nose_gear_pressed = idLgciuNoseGearCompressed[facIndex]->get();
   facs[facIndex].modelInputs.in.discrete_inputs.ir_3_switch = false;
   facs[facIndex].modelInputs.in.discrete_inputs.adr_3_switch = false;
@@ -1697,7 +1703,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacCenterOfGravity[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].center_of_gravity_pos_percent));
   idFacSideslipTarget[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].sideslip_target_deg));
   idFacSlatAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_slat_angle_deg));
-  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle));
+  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle_deg));
   idFacDiscreteWord2[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_2));
   idFacRudderTravelLimitCommand[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].rudder_travel_limit_command_deg));
   idFacDeltaRYawDamperVoted[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].delta_r_yaw_damper_deg));
@@ -1839,20 +1845,23 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.by_m_s2 = simData.by_m_s2;
     autopilotStateMachineInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
-    autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
+    const auto backbeam = idFm1BackbeamSelected->get() != 0;
+    autopilotStateMachineInput.in.data.nav_loc_deg = MathUtils::normalise360(simData.nav_loc_deg + (backbeam ? 180 : 0));
     autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
     if (idRadioReceiverUsageEnabled->get()) {
       autopilotStateMachineInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
       autopilotStateMachineInput.in.data.nav_dme_nmi = idRadioReceiverLocalizerDistance->get();
       autopilotStateMachineInput.in.data.nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
-      autopilotStateMachineInput.in.data.nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
+      const auto locDeviation = MathUtils::correctMsfsLocaliserError(idRadioReceiverLocalizerDeviation->get());
+      autopilotStateMachineInput.in.data.nav_loc_error_deg = backbeam ? -locDeviation : locDeviation;
       autopilotStateMachineInput.in.data.nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
       autopilotStateMachineInput.in.data.nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
     } else {
       autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
       autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
       autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
-      autopilotStateMachineInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+      const auto locDeviation = MathUtils::correctMsfsLocaliserError(simData.nav_loc_error_deg);
+      autopilotStateMachineInput.in.data.nav_loc_error_deg = backbeam ? -locDeviation : locDeviation;
       autopilotStateMachineInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
       autopilotStateMachineInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
     }
@@ -2195,20 +2204,23 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.by_m_s2 = simData.by_m_s2;
     autopilotLawsInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
-    autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
+    const auto backbeam = idFm1BackbeamSelected->get() != 0;
+    autopilotLawsInput.in.data.nav_loc_deg = MathUtils::normalise360(simData.nav_loc_deg + (backbeam ? 180 : 0));
     autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
     if (idRadioReceiverUsageEnabled->get()) {
       autopilotLawsInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
       autopilotLawsInput.in.data.nav_dme_nmi = idRadioReceiverLocalizerDistance->get();
       autopilotLawsInput.in.data.nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
-      autopilotLawsInput.in.data.nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
+      const auto locDeviation = MathUtils::correctMsfsLocaliserError(idRadioReceiverLocalizerDeviation->get());
+      autopilotLawsInput.in.data.nav_loc_error_deg = backbeam ? -locDeviation : locDeviation;
       autopilotLawsInput.in.data.nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
       autopilotLawsInput.in.data.nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
     } else {
       autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
       autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
       autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
-      autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+      const auto locDeviation = MathUtils::correctMsfsLocaliserError(simData.nav_loc_error_deg);
+      autopilotLawsInput.in.data.nav_loc_error_deg = backbeam ? -locDeviation : locDeviation;
       autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
       autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
     }

@@ -3,10 +3,31 @@
 
 import React from 'react';
 import { render } from '@instruments/common/index';
-import { EfbWrapper} from '@flybywiresim/flypad';
+import { AircraftContext, EfbWrapper, syncSettingsFromPersistentStorage} from '@flybywiresim/flypad';
 import { A380FailureDefinitions } from "../../../failures";
+import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
+import { a380xSyncedSettings } from 'instruments/src/EFB/settingsSync';
 
-// TODO: Move failure definition into VFS
+import './Efb.scss';
+
+function aircraftEfbSetup(): void {
+  syncSettingsFromPersistentStorage(a380xSyncedSettings);
+}
+
+// TODO: Hoist failures context provider up to here
+// This context provider will be replaced by a PluginBinder for fpadv4
 render(
-    <EfbWrapper failures={A380FailureDefinitions} />
+  <AircraftContext.Provider
+    value={{
+      performanceCalculators: {
+        takeoff: null,
+        landing: null,
+      },
+      settingsPages: {
+        autoCalloutsPage: AutomaticCallOutsPage,
+      }
+    }}
+  >
+    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} />
+  </AircraftContext.Provider>
 );

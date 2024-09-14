@@ -27,13 +27,13 @@
     "AreYouSureYouWantToResetAllChecklists": "Biztos benne hogy az összes ellenőrző listát alaphelyzetbe állítja?",
     "AreYouSureYouWantToResetChecklists": "Biztos benne hogy az összes ellenőrző listát alaphelyzetbe állítja?",
     "ChecklistResetWarning": "Ellenőrzőlista visszaállítás figyelmeztetés",
-    "MarkChecklistAsComplete": "Ellenőrző lista megjelölése befejezettként",
+    "MarkChecklistAsComplete": "Ellenőrzőlista megjelölése befejezettként",
     "MarkItemAsComplete": "Elem megjelölése készként",
     "ProceedToNextChecklist": "Tovább a következő ellenőrzőlistára",
     "ResetAll": "Összes alaphelyzetbe állítása",
     "ResetChecklist": "Lista alaphelyzetbe állítása",
     "TheLastChecklistIsComplete": "Az utolsó ellenőrzőlista kész",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Automatikusan kitöltött ellenörzőlista elemek vannak befejezetlenül",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Vannak még kitöltetlen automatikus kitöltésű ellenőrzőlista-elemek.",
     "Title": "Ellenőrzőlisták"
   },
   "Dashboard": {
@@ -49,7 +49,7 @@
       },
       "PinnedCharts": {
         "NoPinnedCharts": "Nincsenek rögzített chart-ok",
-        "Title": "Rögzített chart-ok"
+        "Title": "Rögzített chartok"
       },
       "TT": {
         "RearrangeWidgets": "Alkalmazások átrendezése"
@@ -58,7 +58,7 @@
       "Weather": {
         "AirPressure": "Légnyomás",
         "DewPoint": "Harmatpont",
-        "IcaoInvalid": "helytelen ICAO-kód vagy nincs elérhető METAR",
+        "IcaoInvalid": "Érvénytelen ICAO-kód vagy nincs elérhető METAR",
         "Loading": "Betöltés",
         "MetarParsingError": "A kapott METAR nem értelmezhető",
         "NoIcaoProvided": "Nincs ICAO megadva",
@@ -81,10 +81,12 @@
       "CostIndex": "Költség index",
       "CruiseAlt": "Utazómagasság",
       "ImportSimBriefData": "SimBrief adatok importálása",
+      "NoImportDueToBoardingOrRefuel": "Nem lehetséges az importálás a folyamatban lévő beszállítás vagy tankolás miatt!",
       "Route": "Útvonal",
       "SimBriefDataNotYetLoaded": "A SimBrief adatok még nincsenek betöltve.",
-      "Title": "A repülésed",
+      "Title": "A járatod",
       "ToastFuelPayloadImported": "Üzemanyag és rakomány importálva",
+      "ToastWrongAircraftType": "SimBrief - Nem megfelelő géptípus észlelve. Ellenőrizze a géptípust a SimBrief OFP-ben",
       "ZFW": "ZFW"
     }
   },
@@ -106,13 +108,13 @@
       "MTOW": "MTOW",
       "MZFW": "MZFW",
       "MaximumCargo": "Maximális rakomány",
-      "MaximumFuelCapacity": "Maximális üzemanyag ",
+      "MaximumFuelCapacity": "Maximális üzemanyag",
       "MaximumPassengers": "Maximális utasszám",
       "Model": "Típus",
       "Range": "Hatótávolság",
       "Title": "Áttekintés"
     },
-    "Title": "Útvonal eligazítás"
+    "Title": "Jelentés"
   },
   "Failures": {
     "Comfort": {
@@ -132,7 +134,7 @@
       "Defueling": "Üzemanyag leszívása",
       "EstimatedDuration": "Becsült időtartam (perc)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "Hívja a GSX tankert",
+      "GSXFuelSyncEnabled": "GSX-es tanker hívása",
       "LeftInnerTank": "Bal belső tartály",
       "LeftOuterTank": "Bal külső tartály",
       "ReadyToStart": "Indításra kész",
@@ -142,7 +144,7 @@
       "RightInnerTank": "Jobb belső tartály",
       "RightOuterTank": "Jobb külső tartály",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A repülőgépnek álló hajtóművekkel a földön kell lennie a tankolás időtartamának változtatásához",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A repülőgépnek lekapcsolt hajtóművekkel a földön kell lennie a tankolás időtartamának változtatásához",
         "FillBlockFuelFromSimBrief": "Block-üzemanyag kitöltése SimBrief-ből"
       },
       "Title": "Üzemanyag",
@@ -153,10 +155,10 @@
       "BoardingTime": "Beszállási idő",
       "Cargo": "Rakomány",
       "Current": "Jelenlegi",
-      "DeboardConfirmationBody": "Biztos hogy minden utast le szeretnél szállítani?",
+      "DeboardConfirmationBody": "Biztos hogy minden utast le szeretne szállítani?",
       "DeboardConfirmationCancel": "Mégse",
       "DeboardConfirmationConfirm": "Leszállítás",
-      "DeboardConfirmationTitle": "Összes utas leszállítása?",
+      "DeboardConfirmationTitle": "Leszállítja az összes utast?",
       "EstimatedDurationUnit": "perc",
       "GSXPayloadSyncEnabled": "GSX súlyadatok szinkronizálása bekapcsolva",
       "GW": "GW",
@@ -164,10 +166,15 @@
       "LoadingTime": "Loading Time",
       "Passengers": "Utasok",
       "Planned": "Tervezett",
+      "SelectItem": {
+        "CargoDeck": "Rakomány",
+        "MainDeck": "Fő",
+        "UpperDeck": "Felső"
+      },
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "A tankolás időtartamának megváltoztatása csak a földön, álló hajtóművek esetén lehetséges",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "A repülőgépnek lekapcsolthajtóművekkel a földön kell lennie a tankolás időtartamának változtatásához",
         "FillPayloadFromSimbrief": "Töltse ki a rakomány információit a Simbrief-ből",
-        "MaxCargo": "Max rakomány",
+        "MaxCargo": "Max. rakomány",
         "MaxGW": "Maximális GW",
         "MaxGWCG": "Maximális GW CG",
         "MaxPassengers": "Maximális utaslétszám",
@@ -186,7 +193,7 @@
       "Title": "Hátratolás"
     },
     "Services": {
-      "AirStarterUnit": "Levegős indítórendszer",
+      "AirStarterUnit": "Levegős indítókocsi",
       "BaggageTruck": "Poggyászkocsi",
       "CateringTruck": "Utasellátó",
       "Cones": "Biztonsági bóják",
@@ -227,7 +234,7 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "A repülőtér nem létezik",
-      "AuthenticateWithNavigraph": "Navigraph Hitelesítése ",
+      "AuthenticateWithNavigraph": "Hitelesítés Navigraph-fel",
       "GoToThirdPartyOptions": {
         "Button": "3. féltől származó beállítások",
         "Title": "Navigraph csatlakoztatásához navigálj a 3. féltől származó beállításokhoz"
@@ -377,6 +384,7 @@
       "ColdDark": "Áramtalanított ",
       "ConfirmationDialogMsg": "Kérem erősítse meg a beállítás betöltését",
       "CurrentProcedureStep": "Jelenlegi lépése az eljárásnak",
+      "ExpediteLoading": "Gyors betöltés (Nem realisztikus)",
       "PleaseConfirmLoadingOfPreset": "Kérem erősítse meg a beállítás betöltését",
       "Powered": "Áram alatt",
       "ReadyPushback": "Hátratolásra kész",
@@ -464,20 +472,27 @@
     "AlignAdirs": "ADIRS kalibrálása",
     "FinishBoarding": "Beszállítás befejezése",
     "OnScreenKeyboard": "Képernyőn megjelenő billentyűzet",
+    "PauseAtTod": "Szünet, megállítás a sűllyedés megkezdésénél.",
+    "PauseAtTodArmed": "Élesítve",
+    "PauseAtTodInactive": "Inaktív",
+    "PauseAtTodStandby": "Kikapcsolva",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Csatlakozva",
     "SimBridgeConnecting": "Csatlakozás…",
     "SimBridgeOff": "Ki",
     "SimBridgeOffline": "Nem elérhető",
+    "Simrate": "Időgyorsítás",
     "TT": {
       "AlignAdirs": "ADIRS azonnali kapcsolódás",
       "AutoBrightness": "Automatikus fényerő be/ki ",
       "Brightness": "flyPad fényerejének beállítása",
       "FinishBoarding": "Beszállítás azonnali befejezése",
       "OnScreenKeyboard": "Kijelző billentyűzet be/ki",
+      "PauseAtTod": "Élesít vagy kikapcsol. Szünet a süllyedés megkezdésénél.",
       "PowerButton": "Kikapcsolás",
       "Settings": "flyPad beállítások oldal megnyitása",
       "SimBridge": "SimBridge kapcsolat kezelése",
+      "Simrate": "Növeli vagy csökkenti az idő sebességét",
       "Sleep": "Készenlét"
     },
     "Title": "Gyors beállítások"
@@ -581,6 +596,10 @@
       "Side": "Side",
       "SimBridgeIp": "Külső SimBridge Host címe",
       "SimBridgePort": "Külső SimBridge port",
+      "SimbridgeEmptyAddress": "SimBridge távoli IP cím nem maradhat üresen.",
+      "SimbridgeLocal": "Ez a PC",
+      "SimbridgeMachine": "SimBridge Host eszköz",
+      "SimbridgeRemote": "Távoli számítógép",
       "SyncMsfsFlightPlan": "MSFS Repülési terv szinkronizálása",
       "ThrottleDetents": "Gázkar állások",
       "Title": "Szimulátor Opciók",

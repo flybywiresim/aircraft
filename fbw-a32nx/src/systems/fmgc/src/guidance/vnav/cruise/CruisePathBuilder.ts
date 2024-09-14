@@ -1,13 +1,13 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
@@ -29,6 +29,7 @@ export class CruisePathBuilder {
 
   computeCruisePath(
     profile: NavGeometryProfile,
+    config: AircraftConfig,
     startOfCruise: VerticalCheckpoint,
     targetDistanceFromStart: NauticalMiles,
     stepClimbStrategy: ClimbStrategy,
@@ -58,7 +59,7 @@ export class CruisePathBuilder {
           continue;
         }
 
-        this.addSegmentToSpeedConstraint(sequence, speedConstraint, speedProfile, windProfile);
+        this.addSegmentToSpeedConstraint(config, sequence, speedConstraint, speedProfile, windProfile);
       }
 
       const { distanceFromStart, altitude, remainingFuelOnBoard } = sequence.lastCheckpoint;
@@ -66,6 +67,7 @@ export class CruisePathBuilder {
       const speed = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Cruise);
       const headwind = windProfile.getHeadwindComponent(distanceFromStart, altitude);
       const segmentToStep = this.computeCruiseSegment(
+        config,
         altitude,
         step.distanceFromStart - distanceFromStart,
         remainingFuelOnBoard,
@@ -94,7 +96,7 @@ export class CruisePathBuilder {
         continue;
       }
 
-      this.addSegmentToSpeedConstraint(sequence, speedConstraint, speedProfile, windProfile);
+      this.addSegmentToSpeedConstraint(config, sequence, speedConstraint, speedProfile, windProfile);
     }
 
     if (sequence.lastCheckpoint.distanceFromStart >= targetDistanceFromStart) {
@@ -109,6 +111,7 @@ export class CruisePathBuilder {
 
     if (speedTarget - sequence.lastCheckpoint.speed > 1) {
       const accelerationStep = this.levelAccelerationStep(
+        config,
         sequence.lastCheckpoint.distanceFromStart,
         sequence.lastCheckpoint.speed,
         speedTarget,
@@ -121,13 +124,14 @@ export class CruisePathBuilder {
       sequence.addCheckpointFromStep(accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
     }
 
-    if (VnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
+    if (config.vnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
       console.warn(
         '[FMS/VNAV] An acceleration step in the cruise took us past T/D. This is not implemented properly yet. Blame BBK',
       );
     }
 
     const step = this.computeCruiseSegment(
+      config,
       sequence.lastCheckpoint.altitude,
       targetDistanceFromStart - sequence.lastCheckpoint.distanceFromStart,
       startOfCruise.remainingFuelOnBoard,
@@ -141,6 +145,7 @@ export class CruisePathBuilder {
   }
 
   private addSegmentToSpeedConstraint(
+    config: AircraftConfig,
     sequence: TemporaryCheckpointSequence,
     speedConstraint: MaxSpeedConstraint,
     speedProfile: SpeedProfile,
@@ -154,6 +159,7 @@ export class CruisePathBuilder {
 
     const speed = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Cruise);
     const segmentResult = this.computeCruiseSegment(
+      config,
       altitude,
       speedConstraint.distanceFromStart - distanceFromStart,
       remainingFuelOnBoard,
@@ -223,6 +229,7 @@ export class CruisePathBuilder {
   }
 
   private computeCruiseSegment(
+    config: AircraftConfig,
     altitude: Feet,
     distance: NauticalMiles,
     remainingFuelOnBoard: number,
@@ -232,6 +239,7 @@ export class CruisePathBuilder {
     const { zeroFuelWeight, managedCruiseSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
     return Predictions.levelFlightStep(
+      config,
       altitude,
       distance,
       speed,
@@ -245,6 +253,7 @@ export class CruisePathBuilder {
   }
 
   private levelAccelerationStep(
+    config: AircraftConfig,
     remainingFuelOnBoard: number,
     speed: Knots,
     finalSpeed: Knots,
@@ -254,6 +263,7 @@ export class CruisePathBuilder {
       this.computationParametersObserver.get();
 
     return Predictions.speedChangeStep(
+      config,
       0,
       cruiseAltitude,
       speed,

@@ -228,7 +228,7 @@ export const Checklists = () => {
   return (
     <>
       <h1 className="mb-4 font-bold">{t('Checklists.Title')}</h1>
-      <div className="h-content-section-reduced flex flex-row space-x-6">
+      <div className="flex h-content-section-reduced flex-row space-x-6">
         <div className="flex w-1/4 shrink-0 flex-col justify-between">
           <ScrollableContainer innerClassName="space-y-4" height={46}>
             {aircraftChecklists.map((cl, index) => (
@@ -244,9 +244,9 @@ export const Checklists = () => {
 
           <button
             type="button"
-            className="border-utility-red bg-theme-body text-utility-red hover:bg-utility-red hover:text-theme-body flex h-12
-                                   items-center justify-center rounded-md border-2 font-bold
-                                   transition duration-100"
+            className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red
+                                   bg-theme-body font-bold text-utility-red transition duration-100
+                                   hover:bg-utility-red hover:text-theme-body"
             onClick={handleResetAllConfirmation}
           >
             {t('Checklists.ResetAll')}
@@ -254,9 +254,9 @@ export const Checklists = () => {
 
           <button
             type="button"
-            className="border-utility-red bg-theme-body text-utility-red hover:bg-utility-red hover:text-theme-body flex h-12
-                                   items-center justify-center rounded-md border-2 font-bold
-                                   transition duration-100"
+            className="flex h-12 items-center justify-center rounded-md border-2 border-utility-red
+                                   bg-theme-body font-bold text-utility-red transition duration-100
+                                   hover:bg-utility-red hover:text-theme-body"
             onClick={handleResetChecklist}
           >
             {t('Checklists.ResetChecklist')}

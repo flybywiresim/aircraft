@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class NavSystem extends BaseInstrument {
     constructor() {
         super(...arguments);
@@ -34,10 +38,7 @@ class NavSystem extends BaseInstrument {
         this.reversionaryMode = false;
         this.alwaysUpdateList = new Array();
         this.accumulatedDeltaTime = 0;
-    }
-    /** @type {FlightPlanManager} */
-    get flightPlanManager() {
-        return this.currFlightPlanManager;
+        this.navDatabaseBackend = Fmgc.NavigationDatabaseBackend.Msfs;
     }
     get instrumentAlias() {
         return null;
@@ -49,13 +50,43 @@ class NavSystem extends BaseInstrument {
         this.contextualMenuElements = this.getChildById("ContextualMenuElements");
         this.menuSlider = this.getChildById("SliderMenu");
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
-        this.currFlightPlanManager = new Fmgc.FlightPlanManager(this);
-        this.currFlightPlan = new Fmgc.ManagedFlightPlan();
-        this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
+
+        if (this.nodeName.includes('CDU')) {
+            this.bus = new Fmgc.EventBus();
+            this.currFlightPhaseManager = new Fmgc.FlightPhaseManager(this.bus);
+            this.currFlightPlanService = new Fmgc.FlightPlanService(this.bus, new Fmgc.A320FlightPlanPerformanceData());
+            this.rpcServer = new Fmgc.FlightPlanRpcServer(this.bus, this.currFlightPlanService);
+
+            this.currFlightPlanService.createFlightPlans();
+
+            this.currNavigationDatabaseService = Fmgc.NavigationDatabaseService;
+
+            this.navigationDatabase = new Fmgc.NavigationDatabase(Fmgc.NavigationDatabaseBackend.Msfs);
+            this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
+        }
     }
     get flightPhaseManager() {
         return this.currFlightPhaseManager;
     }
+
+    get flightPlanService() {
+        return this.currFlightPlanService;
+    }
+
+    flightPlan(index, alternate) {
+        const plan = index === Fmgc.FlightPlanIndex.Active ? this.flightPlanService.activeOrTemporary : this.flightPlanService.get(index);
+
+        if (alternate) {
+            return plan.alternateFlightPlan;
+        }
+
+        return plan;
+    }
+
+    get navigationDatabaseService() {
+        return this.currNavigationDatabaseService;
+    }
+
     disconnectedCallback() {
         super.disconnectedCallback();
     }
@@ -407,7 +438,9 @@ class NavSystem extends BaseInstrument {
         }
         try {
             this.onUpdate(this.accumulatedDeltaTime);
-        } catch (e) {}
+        } catch (e) {
+            console.log("Uncaught exception", e);
+        }
         const t = performance.now() - t0;
         NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
         NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);

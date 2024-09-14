@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
     "noEmit": true,
     "moduleResolution": "node",
     // Babel assumes isolated modules, therefore enable it here as well.

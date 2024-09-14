@@ -79,6 +79,8 @@ export interface PFDSimvars {
   metricAltToggle: boolean;
   tla1: number;
   tla2: number;
+  tla3: number;
+  tla4: number;
   landingElevation: number;
   tcasState: number;
   tcasCorrective: boolean;
@@ -89,6 +91,8 @@ export interface PFDSimvars {
   tcasFail: boolean;
   engOneRunning: boolean;
   engTwoRunning: boolean;
+  engThreeRunning: boolean;
+  engFourRunning: boolean;
   expediteMode: boolean;
   setHoldSpeed: boolean;
   trkFpaDeselectedTCAS: boolean;
@@ -157,6 +161,10 @@ export interface PFDSimvars {
   fm2TransLvlRaw: number;
   lgciuDiscreteWord1Raw: number;
   slatPosLeft: number;
+  trimPosition: number;
+  cgPercent: number;
+  spoilersCommanded: number;
+  spoilersArmed: boolean;
 }
 
 export enum PFDVars {
@@ -237,6 +245,8 @@ export enum PFDVars {
   metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
   tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
   tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
+  tla3 = 'L:A32NX_AUTOTHRUST_TLA:3',
+  tla4 = 'L:A32NX_AUTOTHRUST_TLA:4',
   tcasState = 'L:A32NX_TCAS_STATE',
   tcasCorrective = 'L:A32NX_TCAS_RA_CORRECTIVE',
   tcasRedZoneL = 'L:A32NX_TCAS_VSPEED_RED:1',
@@ -246,6 +256,8 @@ export enum PFDVars {
   tcasFail = 'L:A32NX_TCAS_FAULT',
   engOneRunning = 'GENERAL ENG COMBUSTION:1',
   engTwoRunning = 'GENERAL ENG COMBUSTION:2',
+  engThreeRunning = 'GENERAL ENG COMBUSTION:3',
+  engFourRunning = 'GENERAL ENG COMBUSTION:4',
   expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
   trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
@@ -314,6 +326,10 @@ export enum PFDVars {
   fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
+  trimPosition = 'ELEVATOR TRIM POSITION',
+  cgPercent = 'CG PERCENT',
+  spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
+  spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -473,6 +489,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
     ['lgciuDiscreteWord1Raw', { name: PFDVars.lgciuDiscreteWord1Raw, type: SimVarValueType.Number }],
     ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
+    ['trimPosition', { name: PFDVars.trimPosition, type: SimVarValueType.Number }],
+    ['cgPercent', { name: PFDVars.cgPercent, type: SimVarValueType.Number }],
+    ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
+    ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

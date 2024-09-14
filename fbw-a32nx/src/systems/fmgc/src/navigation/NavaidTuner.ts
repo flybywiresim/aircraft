@@ -1,29 +1,42 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavRadioUtils } from '@fmgc/navigation/NavRadioUtils';
-import { Arinc429SignStatusMatrix, Arinc429Word, VorType } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429SignStatusMatrix,
+  Arinc429Word,
+  NotificationManager,
+  IlsNavaid,
+  NdbNavaid,
+  VhfNavaid,
+  VhfNavaidType,
+} from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { ConsumerSubject, EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 
-interface NavRadioTuningStatus {
+export interface NavRadioTuningStatus {
   frequency: number | null;
   ident: string | null;
+  /**
+   * Whether either the frequency or ident was set manually by the pilot.
+   * Whether it was manually set by frequency or ident can be determined by the presence of a facility.
+   */
   manual: boolean;
-  facility?: RawVor | RawNdb;
+  facility?: VhfNavaid | NdbNavaid | IlsNavaid;
 }
 
 export interface VorRadioTuningStatus extends NavRadioTuningStatus {
-  facility?: RawVor;
+  facility?: VhfNavaid;
   course: number | null;
   dmeOnly: boolean;
 }
 
 export interface MmrRadioTuningStatus extends NavRadioTuningStatus {
-  facility?: RawVor;
+  facility?: IlsNavaid;
   /** course derived from the nav database (for resetting if the manual course is cleared) */
   databaseCourse: number | null;
   /** back course flag if the selected approach is backcourse LOC (for resetting if the manual course is cleared) */
@@ -39,7 +52,7 @@ export interface MmrRadioTuningStatus extends NavRadioTuningStatus {
 }
 
 export interface AdfRadioTuningStatus extends NavRadioTuningStatus {
-  facility?: RawNdb;
+  facility?: NdbNavaid;
   bfo: boolean;
 }
 
@@ -249,30 +262,43 @@ export class NavaidTuner {
 
   private tuningActive = false;
 
-  private readonly flightPhaseManager: FlightPhaseManager;
+  private readonly flightPhase = ConsumerSubject.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
+  /** FM 1 and 2 backbeam selection LVAR output. */
+  private readonly backbeamOutput = [
+    { selected: Subject.create(false), localVar: 'L:A32NX_FM1_BACKBEAM_SELECTED' },
+    { selected: Subject.create(false), localVar: 'L:A32NX_FM2_BACKBEAM_SELECTED' },
+  ];
 
   /** Whether the tuning event blocked message has been shown before. It is only shown once. */
   private blockEventMessageShown = false;
 
-  // eslint-disable-next-line camelcase
-  private tipsManager?: A32NX_TipsManager;
+  private notificationManager = new NotificationManager();
 
   constructor(
+    private readonly bus: EventBus,
     private readonly navigationProvider: NavigationProvider,
     private readonly navaidSelectionManager: NavaidSelectionManager,
     private readonly landingSystemSelectionManager: LandingSystemSelectionManager,
-  ) {
-    this.flightPhaseManager = getFlightPhaseManager();
-  }
+  ) {}
 
   init(): void {
     this.resetAllReceivers();
 
     // FIXME move this to the RMP when it's rewritten in msfs-avionics-framework
     // FIXME use the framework manager when the framework is updated
-    this.tipsManager = A32NX_TipsManager.instance;
     Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
     NavaidTuner.TUNING_EVENT_INTERCEPTS.forEach((key) => Coherent.call('INTERCEPT_KEY_EVENT', key, 1));
+
+    for (const backbeam of this.backbeamOutput) {
+      backbeam.selected.sub((v) => SimVar.SetSimVarValue(backbeam.localVar, SimVarValueType.Bool, v), true);
+    }
+
+    // All selections are reset upon entering the DONE phase after landing.
+    this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState(false));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -319,7 +345,13 @@ export class NavaidTuner {
         // pass the tuning event through to the sim
         Coherent.call('TRIGGER_KEY_EVENT', key, true, value0 ?? 0, value1 ?? 0, value2 ?? 0);
       } else if (!this.blockEventMessageShown) {
-        this.tipsManager?.showNavRadioTuningTip();
+        this.notificationManager.showNotification({
+          message:
+            'Navigation radio tuning is not possible while the FMGC controls the radios:\n\n• tune via the MCDU RADIO NAV page, or' +
+            '\n• press the NAV button on the RMP to enable manual tuning.',
+          timeout: 15000,
+        });
+
         this.blockEventMessageShown = true;
       }
     }
@@ -373,15 +405,15 @@ export class NavaidTuner {
         const autoReason = this.navaidSelectionManager.displayVorReason;
         if (
           (autoReason === VorSelectionReason.Navigation || autoReason === VorSelectionReason.Procedure) &&
-          !NavRadioUtils.vhfFrequenciesAreEqual(autoFacility?.freqMHz, vor.frequency)
+          !NavRadioUtils.vhfFrequenciesAreEqual(autoFacility?.frequency, vor.frequency)
         ) {
-          tuneNavaidMessage = [autoFacility?.freqMHz, WayPoint.formatIdentFromIcao(autoFacility?.icao)];
+          tuneNavaidMessage = [autoFacility?.frequency, autoFacility?.ident];
         }
-      } else if (vor.facility?.icao !== autoFacility?.icao) {
+      } else if (vor.facility?.databaseId !== autoFacility?.databaseId) {
         vor.course = null;
         vor.facility = autoFacility;
-        vor.frequency = autoFacility?.freqMHz ?? null;
-        vor.ident = autoFacility?.icao ? WayPoint.formatIdentFromIcao(autoFacility.icao) : null;
+        vor.frequency = autoFacility?.frequency ?? null;
+        vor.ident = autoFacility?.ident ?? null;
         vor.dmeOnly = this.isDmeOnly(autoFacility);
       }
       // TODO if a proc VOR is tuned, make sure it is received
@@ -393,32 +425,35 @@ export class NavaidTuner {
     for (const [i, mmr] of this.mmrTuningStatus.entries()) {
       const autoFacility = this.landingSystemSelectionManager.selectedIls ?? undefined;
       const autoCourse = this.landingSystemSelectionManager.selectedLocCourse;
+      const autoBackcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
       if (
         !mmr.manual &&
-        mmr.facility?.icao !== autoFacility?.icao &&
+        (mmr.facility?.databaseId !== autoFacility?.databaseId ||
+          mmr.course !== autoCourse ||
+          mmr.backcourse !== autoBackcourse) &&
         (autoCourse !== null || autoFacility === undefined)
       ) {
         mmr.databaseCourse = autoCourse;
         mmr.databaseBackcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
         mmr.course = mmr.databaseCourse;
         mmr.courseManual = false;
-        mmr.frequency = autoFacility?.freqMHz ?? null;
+        mmr.frequency = autoFacility?.frequency ?? null;
         mmr.facility = autoFacility;
-        mmr.ident = autoFacility?.icao ? WayPoint.formatIdentFromIcao(autoFacility.icao) : null;
+        mmr.ident = autoFacility?.ident ?? null;
         mmr.backcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
         mmr.slope = this.landingSystemSelectionManager.selectedGsSlope;
       }
 
       this.tuneMmrIlsFrequency((i + 1) as 1 | 2, mmr.frequency);
-      this.tuneMmrCourse((i + 1) as 1 | 2, mmr.course);
+      this.tuneMmrCourse((i + 1) as 1 | 2, mmr.course, mmr.backcourse);
     }
 
     for (const [i, adf] of this.adfTuningStatus.entries()) {
       const autoFacility = this.navaidSelectionManager.displayNdb ?? undefined;
-      if (!adf.manual && adf.facility?.icao !== autoFacility?.icao) {
+      if (!adf.manual && adf.facility?.databaseId !== autoFacility?.databaseId) {
         adf.facility = autoFacility;
-        adf.frequency = autoFacility?.freqMHz ?? null;
-        adf.ident = autoFacility?.icao ? WayPoint.formatIdentFromIcao(autoFacility.icao) : null;
+        adf.frequency = autoFacility?.frequency ?? null;
+        adf.ident = autoFacility?.ident ?? null;
       }
 
       this.tuneAdf((i + 1) as 1 | 2, adf.frequency);
@@ -493,7 +528,7 @@ export class NavaidTuner {
    * @param frequency ILS course in degrees
    * @returns promise resolved when the tuning is complete
    */
-  private async tuneMmrCourse(index: 1 | 2, course: number | null): Promise<unknown> {
+  private async tuneMmrCourse(index: 1 | 2, course: number | null, backcourse = false): Promise<unknown> {
     if (this.isMmrTuningLocked()) {
       return false;
     }
@@ -503,6 +538,7 @@ export class NavaidTuner {
       this.lastMmrCourses[index - 1] = course;
       return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index + 2}_SET`, true, course ?? 0, 0, 0);
     }
+    this.backbeamOutput[index - 1].selected.set(backcourse);
     return false;
   }
 
@@ -531,7 +567,7 @@ export class NavaidTuner {
 
   private hasRunwayLsMismatch(index: 1 | 2): boolean {
     const mmr = this.getMmrRadioTuningStatus(index);
-    const databaseFrequency = this.landingSystemSelectionManager.selectedIls?.freqMHz ?? null;
+    const databaseFrequency = this.landingSystemSelectionManager.selectedIls?.frequency ?? null;
     const databaseCourse = this.landingSystemSelectionManager.selectedLocCourse;
 
     if (
@@ -549,10 +585,10 @@ export class NavaidTuner {
     return false;
   }
 
-  private isDmeOnly(facility?: RawVor | null): boolean {
+  private isDmeOnly(facility?: VhfNavaid | null): boolean {
     switch (facility?.type) {
-      case VorType.DME:
-      case VorType.TACAN:
+      case VhfNavaidType.Dme:
+      case VhfNavaidType.Tacan:
         return true;
       default:
         return false;
@@ -562,16 +598,16 @@ export class NavaidTuner {
   /** check if MMR tuning is locked during final approach */
   public isMmrTuningLocked() {
     return (
-      this.flightPhaseManager.phase === FmgcFlightPhase.Approach &&
+      this.flightPhase.get() === FmgcFlightPhase.Approach &&
       (this.navigationProvider.getRadioHeight() ?? Infinity) < 700
     );
   }
 
-  public get tunedVors(): RawVor[] {
+  public get tunedVors(): VhfNavaid[] {
     return this.vorTuningStatus.map((vorStatus) => vorStatus.facility).filter((fac) => fac !== undefined);
   }
 
-  public get tunedNdbs(): RawNdb[] {
+  public get tunedNdbs(): NdbNavaid[] {
     return this.adfTuningStatus.map((adfStatus) => adfStatus.facility).filter((fac) => fac !== undefined);
   }
 
@@ -587,7 +623,15 @@ export class NavaidTuner {
     return this.navaidSelectionManager.deselectedNavaids;
   }
 
-  setManualVor(index: 1 | 2, vor: RawVor | number | null): void {
+  /**
+   * Sets the manually (pilot) selected VOR
+   * @param index Index of the VOR receiver to set
+   * @param vor Any of:
+   *   - A VHF navaid if selected by ident
+   *   - A frequency if selected by frequency
+   *   - null to reset the selection
+   */
+  setManualVor(index: 1 | 2, vor: VhfNavaid | number | null): void {
     const vorStatus = this.vorTuningStatus[index - 1];
     if (vor === null) {
       vorStatus.manual = false;
@@ -605,8 +649,8 @@ export class NavaidTuner {
       vorStatus.manual = true;
       vorStatus.facility = vor;
       vorStatus.course = null;
-      vorStatus.ident = WayPoint.formatIdentFromIcao(vor.icao);
-      vorStatus.frequency = vor.freqMHz;
+      vorStatus.ident = vor.ident;
+      vorStatus.frequency = vor.frequency;
     }
     vorStatus.dmeOnly = this.isDmeOnly(vorStatus.facility);
   }
@@ -614,20 +658,21 @@ export class NavaidTuner {
   /**
    * Set a VOR course
    * @param index Index of the receiver
-   * @param course null to clear
+   * @param course The course in degrees (must be an integral value), or null to clear.
    */
   setVorCourse(index: 1 | 2, course: number | null) {
     const vorStatus = this.vorTuningStatus[index - 1];
     vorStatus.course = course;
   }
 
-  async setManualIls(ils: RawVor | number | null): Promise<void> {
-    let dbCourse: number | null = null;
-    let dbSlope: number | null = null;
-    if (ils !== null && typeof ils !== 'number') {
-      [dbCourse, dbSlope] = await this.landingSystemSelectionManager.tryGetCourseSlopeForIls(ils);
-    }
-
+  /**
+   * Sets the manually (pilot) selected ILS
+   * @param ils Any of:
+   *   - A VHF navaid if selected by ident
+   *   - A frequency if selected by frequency
+   *   - null to reset the selection
+   */
+  async setManualIls(ils: IlsNavaid | number | null): Promise<void> {
     for (const mmrStatus of this.mmrTuningStatus) {
       if (ils === null) {
         mmrStatus.databaseCourse = null;
@@ -652,16 +697,16 @@ export class NavaidTuner {
         mmrStatus.backcourse = false;
         mmrStatus.slope = null;
       } else {
-        mmrStatus.databaseCourse = dbCourse;
+        mmrStatus.databaseCourse = ils.locBearing !== -1 ? ils.locBearing : null;
         mmrStatus.databaseBackcourse = false;
         mmrStatus.manual = true;
         mmrStatus.facility = ils;
-        mmrStatus.course = dbCourse;
+        mmrStatus.course = ils.locBearing !== -1 ? ils.locBearing : null;
         mmrStatus.courseManual = false;
-        mmrStatus.ident = WayPoint.formatIdentFromIcao(ils.icao);
-        mmrStatus.frequency = ils.freqMHz;
+        mmrStatus.ident = ils.ident;
+        mmrStatus.frequency = ils.frequency;
         mmrStatus.backcourse = false;
-        mmrStatus.slope = dbSlope;
+        mmrStatus.slope = ils.gsSlope ?? null;
       }
     }
   }
@@ -679,7 +724,7 @@ export class NavaidTuner {
     }
   }
 
-  setManualAdf(index: 1 | 2, ndb: RawNdb | number | null): void {
+  setManualAdf(index: 1 | 2, ndb: NdbNavaid | number | null): void {
     const adfStatus = this.adfTuningStatus[index - 1];
     if (ndb === null) {
       adfStatus.manual = false;
@@ -696,8 +741,8 @@ export class NavaidTuner {
     } else {
       adfStatus.manual = true;
       adfStatus.facility = ndb;
-      adfStatus.ident = WayPoint.formatIdentFromIcao(ndb.icao);
-      adfStatus.frequency = ndb.freqMHz;
+      adfStatus.ident = ndb.ident;
+      adfStatus.frequency = ndb.frequency;
       adfStatus.bfo = false;
     }
   }
@@ -737,7 +782,7 @@ export class NavaidTuner {
   }
 
   /** Reset all state e.g. when the nav database is switched */
-  public resetState(): void {
+  public resetState(withLockout = true): void {
     for (let i = 1; i <= 2; i++) {
       const n = i as 1 | 2;
       this.setManualAdf(n, null);
@@ -747,6 +792,8 @@ export class NavaidTuner {
     this.setManualIls(null);
     this.setIlsCourse(null);
 
-    this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    if (withLockout) {
+      this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    }
   }
 }

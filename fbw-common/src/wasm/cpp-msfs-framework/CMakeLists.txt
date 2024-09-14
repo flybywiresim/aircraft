@@ -6,7 +6,7 @@ set(SOURCE_FILES
     MsfsHandler/DataTypes/ClientEvent.cpp
     MsfsHandler/DataTypes/NamedVariable.cpp
     MsfsHandler/MsfsHandler.cpp
-    )
+)
 set(INCLUDE_FILES
     MsfsHandler/DataManager.h
     MsfsHandler/DataTypes/AircraftVariable.h
@@ -23,10 +23,11 @@ set(INCLUDE_FILES
     MsfsHandler/MsfsHandler.h
     MsfsHandler/SimconnectExceptionStrings.h
     MsfsHandler/SimUnits.h
+    lib/arinc429.hpp
     lib/Callback.h
     lib/IDGenerator.h
     lib/fingerprint.hpp
-    lib/inih/ini.h
+    lib/inih/ini_fbw.h
     lib/inih/ini_type_conversion.h
     lib/logging.h
     lib/math_utils.hpp
@@ -37,7 +38,7 @@ set(INCLUDE_FILES
     lib/string_utils.hpp
     lib/quantity.hpp)
 
-# create the targets for all aircrafts
+# create the targets for all packages
 add_library(cpp-msfs-framework-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
 target_compile_definitions(cpp-msfs-framework-a32nx PUBLIC A32NX)
 

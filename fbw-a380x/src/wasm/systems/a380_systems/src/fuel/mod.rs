@@ -65,71 +65,71 @@ pub struct A380Fuel {
 }
 
 impl A380Fuel {
-    pub const A380_FUEL: [FuelInfo<'_>; 11] = [
+    pub const A380_FUEL: [FuelInfo<'static>; 11] = [
         FuelInfo {
             // LEFT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_1",
-            position: (-30.7, -100.0, 8.5),
+            position: (-25., -100.0, 8.5),
             total_capacity_gallons: 2731.5,
         },
         FuelInfo {
             // FEED_ONE - Capacity: 7299.6
             fuel_tank_id: "FUEL_TANK_QUANTITY_2",
-            position: (-13.2, -71.0, 7.3),
+            position: (-7.45, -71.0, 7.3),
             total_capacity_gallons: 7299.6,
         },
         FuelInfo {
             // LEFT_MID - Capacity: 9632
             fuel_tank_id: "FUEL_TANK_QUANTITY_3",
-            position: (1.3, -46.4, 5.9),
+            position: (7.1, -46.4, 5.9),
             total_capacity_gallons: 9632.,
         },
         FuelInfo {
             // LEFT_INNER - Capacity: 12189.4
             fuel_tank_id: "FUEL_TANK_QUANTITY_4",
-            position: (10.8, -24.7, 3.2),
+            position: (16.5, -24.7, 3.2),
             total_capacity_gallons: 12189.4,
         },
         FuelInfo {
             // FEED_TWO - Capacity: 7753.2
             fuel_tank_id: "FUEL_TANK_QUANTITY_5",
-            position: (21.6, -18.4, 1.0),
+            position: (27.3, -18.4, 1.0),
             total_capacity_gallons: 7753.2,
         },
         FuelInfo {
             // FEED_THREE - Capacity: 7753.2
             fuel_tank_id: "FUEL_TANK_QUANTITY_6",
-            position: (21.6, 18.4, 1.0),
+            position: (27.3, 18.4, 1.0),
             total_capacity_gallons: 7753.2,
         },
         FuelInfo {
             // RIGHT_INNER - Capacity: 12189.4
             fuel_tank_id: "FUEL_TANK_QUANTITY_7",
-            position: (10.8, 24.7, 3.2),
+            position: (16.5, 24.7, 3.2),
             total_capacity_gallons: 12189.4,
         },
         FuelInfo {
             // RIGHT_MID - Capacity: 9632
             fuel_tank_id: "FUEL_TANK_QUANTITY_8",
-            position: (1.3, 46.4, 5.9),
+            position: (7.1, 46.4, 5.9),
             total_capacity_gallons: 9632.,
         },
         FuelInfo {
             // FEED_FOUR - Capacity: 7299.6
             fuel_tank_id: "FUEL_TANK_QUANTITY_9",
-            position: (-13.2, 71., 7.3),
+            position: (-7.45, 71., 7.3),
             total_capacity_gallons: 7299.6,
         },
         FuelInfo {
             // RIGHT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_10",
-            position: (-30.7, 100., 8.5),
+            position: (-25., 100., 8.5),
             total_capacity_gallons: 2731.5,
         },
         FuelInfo {
             // TRIM - Capacity: 6260.3
             fuel_tank_id: "FUEL_TANK_QUANTITY_11",
-            position: (-92.9, 0., 12.1),
+            position: (-87.14, 0., 12.1),
             total_capacity_gallons: 6260.3,
         },
     ];

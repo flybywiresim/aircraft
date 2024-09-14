@@ -2,8 +2,8 @@ import React, { FC } from 'react';
 import { RudderPosition } from './Rudder';
 
 const SCALE_LENGTH = 116;
-const MAX_DEFLECTION = 30;
-const MIN_DEFLECTION = -30;
+export const HORIZONTAL_MAX_DEFLECTION = 30;
+export const HORIZONTAL_MIN_DEFLECTION = -30;
 
 interface HorizontalDeflectionIndicationProps {
     x?: number,
@@ -12,18 +12,17 @@ interface HorizontalDeflectionIndicationProps {
     deflectionInfoValid: boolean,
     deflection: number,
     position: RudderPosition,
+    onGround: boolean,
 }
 
 export function deflectionToXOffset(deflection: number): number {
-    const normalizedDeflection = deflection > 0 ? deflection / MAX_DEFLECTION : -deflection / MIN_DEFLECTION;
+    const normalizedDeflection = deflection > 0 ? deflection / HORIZONTAL_MAX_DEFLECTION : -deflection / HORIZONTAL_MIN_DEFLECTION;
 
     return normalizedDeflection * SCALE_LENGTH / 2;
 }
 
-export const HorizontalDeflectionIndication: FC<HorizontalDeflectionIndicationProps> = ({ x = 0, y = 0, powerAvail, deflectionInfoValid, deflection, position }) => {
+export const HorizontalDeflectionIndication: FC<HorizontalDeflectionIndicationProps> = ({ x = 0, y = 0, powerAvail, deflectionInfoValid, deflection, position, onGround }) => {
     const deflectionXValue = deflectionToXOffset(deflection);
-
-    const onGround = true;
 
     const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail;
 

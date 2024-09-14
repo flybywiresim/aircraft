@@ -86,115 +86,115 @@ pub struct A380Payload {
 impl A380Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
     pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
-    const A380_PAX: [PaxInfo<'_>; 14] = [
+    const A380_PAX: [PaxInfo<'static>; 14] = [
         PaxInfo {
             max_pax: 28,
-            position: (70.7, 0., 7.1),
+            position: (75.7, 0., 7.1),
             pax_id: "PAX_MAIN_FWD_A",
             payload_id: "PAYLOAD_STATION_1_REQ",
         },
         PaxInfo {
             max_pax: 28,
-            position: (70.7, 0., 7.1),
+            position: (75.7, 0., 7.1),
             pax_id: "PAX_MAIN_FWD_B",
             payload_id: "PAYLOAD_STATION_2_REQ",
         },
         // PAX MAIN FWD: 56
         PaxInfo {
             max_pax: 39,
-            position: (25.6, 0., 7.1),
+            position: (30.6, 0., 7.1),
             pax_id: "PAX_MAIN_MID_1A",
             payload_id: "PAYLOAD_STATION_3_REQ",
         },
         PaxInfo {
             max_pax: 50,
-            position: (25.6, 0., 7.1),
+            position: (30.6, 0., 7.1),
             pax_id: "PAX_MAIN_MID_1B",
             payload_id: "PAYLOAD_STATION_4_REQ",
         },
         PaxInfo {
             max_pax: 43,
-            position: (25.6, 0., 7.1),
+            position: (30.6, 0., 7.1),
             pax_id: "PAX_MAIN_MID_1C",
             payload_id: "PAYLOAD_STATION_5_REQ",
         },
         // PAX MAIN MID 1: 132
         PaxInfo {
             max_pax: 48,
-            position: (-16.1, 0., 7.1),
+            position: (-11.1, 0., 7.1),
             pax_id: "PAX_MAIN_MID_2A",
             payload_id: "PAYLOAD_STATION_6_REQ",
         },
         PaxInfo {
             max_pax: 40,
-            position: (-16.1, 0., 7.1),
+            position: (-11.1, 0., 7.1),
             pax_id: "PAX_MAIN_MID_2B",
             payload_id: "PAYLOAD_STATION_7_REQ",
         },
         PaxInfo {
             max_pax: 36,
-            position: (-16.1, 0., 7.1),
+            position: (-11.1, 0., 7.1),
             pax_id: "PAX_MAIN_MID_2C",
             payload_id: "PAYLOAD_STATION_8_REQ",
         },
         // PAX MAIN MID 2: 124
         PaxInfo {
             max_pax: 42,
-            position: (-51.9, 0., 7.1),
+            position: (-46.9, 0., 7.1),
             pax_id: "PAX_MAIN_AFT_A",
             payload_id: "PAYLOAD_STATION_9_REQ",
         },
         PaxInfo {
             max_pax: 40,
-            position: (-51.9, 0., 7.1),
+            position: (-46.9, 0., 7.1),
             pax_id: "PAX_MAIN_AFT_B",
             payload_id: "PAYLOAD_STATION_10_REQ",
         },
         // PAX MAIN AFT: 82
         PaxInfo {
             max_pax: 14,
-            position: (55.8, 0., 15.6),
+            position: (60.8, 0., 15.6),
             pax_id: "PAX_UPPER_FWD",
             payload_id: "PAYLOAD_STATION_11_REQ",
         },
         // PAX UPPER FWD: 14
         PaxInfo {
             max_pax: 30,
-            position: (6.7, 0., 15.6),
+            position: (11.7, 0., 15.6),
             pax_id: "PAX_UPPER_MID_A",
             payload_id: "PAYLOAD_STATION_12_REQ",
         },
         PaxInfo {
             max_pax: 28,
-            position: (6.7, 0., 15.6),
+            position: (11.7, 0., 15.6),
             pax_id: "PAX_UPPER_MID_B",
             payload_id: "PAYLOAD_STATION_13_REQ",
         },
         // PAX UPPER MID: 58
         PaxInfo {
             max_pax: 18,
-            position: (-34.3, 0., 15.6),
+            position: (-29.3, 0., 15.6),
             pax_id: "PAX_UPPER_AFT",
             payload_id: "PAYLOAD_STATION_14_REQ",
         },
         // PAX UPPER AFT: 18
     ];
-    const A380_CARGO: [CargoInfo<'_>; 3] = [
+    const A380_CARGO: [CargoInfo<'static>; 3] = [
         CargoInfo {
             max_cargo_kg: 28577.,
-            position: (62.4, 0., -0.95),
+            position: (67.4, 0., -0.95),
             cargo_id: "CARGO_FWD",
             payload_id: "PAYLOAD_STATION_15_REQ",
         },
         CargoInfo {
             max_cargo_kg: 20310.,
-            position: (-23.5, 0., -0.95),
+            position: (-18.5, 0., -0.95),
             cargo_id: "CARGO_AFT",
             payload_id: "PAYLOAD_STATION_16_REQ",
         },
         CargoInfo {
             max_cargo_kg: 2513.,
-            position: (-57.9, 0., -0.71),
+            position: (-52.9, 0., -0.71),
             cargo_id: "CARGO_BULK",
             payload_id: "PAYLOAD_STATION_17_REQ",
         },

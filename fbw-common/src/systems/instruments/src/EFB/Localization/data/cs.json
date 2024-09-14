@@ -81,10 +81,12 @@
       "CostIndex": "Cost Index",
       "CruiseAlt": "Letová hladina",
       "ImportSimBriefData": "Importovat SimBrief data",
+      "NoImportDueToBoardingOrRefuel": "Import není možný kvůli probíhajícímu nastupování nebo doplňování paliva!",
       "Route": "Trať",
       "SimBriefDataNotYetLoaded": "SimBrief data nejsou načtena.",
       "Title": "Váš let",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastFuelPayloadImported": "Palivo a náklad importovány!",
+      "ToastWrongAircraftType": "SimBrief - zjištěn neplatný typ letadla. Zkontrolujte, zda je typ letadla v SimBrief OFP správný.",
       "ZFW": "ZFW"
     }
   },
@@ -132,7 +134,7 @@
       "Defueling": "Odčerpávání",
       "EstimatedDuration": "Odhadovaná délka (min)",
       "EstimatedTime": "Odhadovaný čas",
-      "GSXFuelSyncEnabled": "GSX synchronizace zapnuta",
+      "GSXFuelSyncEnabled": "Zavolejte GSX tankování",
       "LeftInnerTank": "Levá vnitřní nádrž",
       "LeftOuterTank": "Levá vnější nádrž",
       "ReadyToStart": "Připraveno",
@@ -164,6 +166,11 @@
       "LoadingTime": "Loading Time",
       "Passengers": "Cestující",
       "Planned": "Plánované",
+      "SelectItem": {
+        "CargoDeck": "Nákladní",
+        "MainDeck": "Hlavní",
+        "UpperDeck": "Horní"
+      },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Pro změnu délky nastupování musí být letadlo na zemi s vypnutými motory",
         "FillPayloadFromSimbrief": "Načíst informace o naložení ze SimBriefu",
@@ -186,7 +193,7 @@
       "Title": "Vytlačení"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "Vzduchová startovací jednotka",
       "BaggageTruck": "Zavazadlový vůz",
       "CateringTruck": "Cateringový vůz",
       "Cones": "Výstražné kužely",
@@ -377,6 +384,7 @@
       "ColdDark": "Vše vypnuto (Cold & Dark)",
       "ConfirmationDialogMsg": "Potvrďte prosím načtení přednastaveného stavu.",
       "CurrentProcedureStep": "Aktuální krok v postupu",
+      "ExpediteLoading": "Rychlé načtení (nerealistické):",
       "PleaseConfirmLoadingOfPreset": "Potvrďte prosím načtení přednastaveného stavu.",
       "Powered": "Napájeno",
       "ReadyPushback": "Připraveno k vytlačení",
@@ -464,20 +472,27 @@
     "AlignAdirs": "Zarovnat ADIRS",
     "FinishBoarding": "Dokončit nástup",
     "OnScreenKeyboard": "Klávesnice na obrazovce",
+    "PauseAtTod": "Pauza na vrcholu sestupu",
+    "PauseAtTodArmed": "Aktivní",
+    "PauseAtTodInactive": "Neaktivní",
+    "PauseAtTodStandby": "Připravena",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "připojen",
     "SimBridgeConnecting": "Připojování…",
     "SimBridgeOff": "vypnutý",
     "SimBridgeOffline": "nedostupný",
+    "Simrate": "Rychlost simulace",
     "TT": {
       "AlignAdirs": "Okamžitě zarovnat ADIRS",
       "AutoBrightness": "Zapnutí/vypnutí automatického jasu",
       "Brightness": "Nastavení jasu flyPad",
       "FinishBoarding": "Okamžitě dokončit nástup (boarding)",
       "OnScreenKeyboard": "Zapnutí/vypnutí klávesnice na obrazovce",
+      "PauseAtTod": "Aktivovat nebo deaktivovat pauzu na vrcholu sestupu",
       "PowerButton": "Vypnout",
       "Settings": "Přejít na stránku Nastavení flyPad",
       "SimBridge": "Ovládání připojení SimBridge",
+      "Simrate": "Zvýšit nebo snížit rychlost simulace",
       "Sleep": "Uspat"
     },
     "Title": "Rychlé ovládání"
@@ -495,7 +510,7 @@
       "PaxSigns": "Znamení cestujícím",
       "RmpVhfSpacing": "RMP VHF rozteč",
       "Satcom": "Satcom",
-      "Select": "Select",
+      "Select": "Vybrat",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
       "WeightUnit": "Jednotky hmotnosti"
@@ -534,10 +549,10 @@
       "WindInteriorVolume": "Hlasitost větru v interiéru"
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "Reset": "Reset",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Title": "Automatic Call Outs"
+      "FiveHundredGlide": "Zakázáno při zachycení glideslope",
+      "Reset": "Obnovit",
+      "ResetStandardConfig": "Obnovit standardní konfiguraci",
+      "Title": "Automatické callouty"
     },
     "Fast": "Rychlý",
     "Instant": "Okamžitý",
@@ -581,6 +596,10 @@
       "Side": "Strana",
       "SimBridgeIp": "Externí hostitelská adresa SimBridge",
       "SimBridgePort": "Externí port SimBridge",
+      "SimbridgeEmptyAddress": "Vzdálená IP adresa SimBridge nesmí být prázdná!",
+      "SimbridgeLocal": "Tento počítač",
+      "SimbridgeMachine": "Hostitelský počítač Simbridge",
+      "SimbridgeRemote": "Vzdálený počítač",
       "SyncMsfsFlightPlan": "Synchronizace letového plánu MSFS",
       "ThrottleDetents": "Zarážky plynu",
       "Title": "Možnosti simulace",
@@ -600,7 +619,7 @@
         "SettingTitle": "Propojení s účtem Navigraph",
         "SubscriptionStatus": {
           "None": "Žádný",
-          "Unknown": "Unknown",
+          "Unknown": "Neznámý",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Odpojit účet"
@@ -617,14 +636,14 @@
       "Apply": "Použít",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Jste si jisti, že chcete resetovat aktuální konfiguraci plynových pák do výchozího stavu? Tato akce je nevratná.",
       "Axis": "Osa",
-      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "AxisDescription": "Osa $axis pro plyn $throttles",
       "Back": "Zpět",
       "ConfigureEnd": "Horní hranice",
       "ConfigureStart": "Spodní hranice",
       "CurrentValue": "Aktuální hodnota",
       "Deadband": "Mrtvá zóna",
       "ErrorOverlapMsg": "se překrývá s",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "FourThrottleWarning": "Nezapomeňte nakonfigurovat MSFS tak, aby používal osu 1 pro plyn 1+2 a osu 2 pro plyn 3+4.",
       "IndependentAxis": "Nezávislé osy",
       "LoadFromFile": "Načíst ze souboru",
       "PleaseEnterAValidDeadzone": "Prosím zadejte platnou mrtvou zónu",
@@ -635,7 +654,7 @@
       "SaveAndApply": "Uložit a použít",
       "SetFromThrottle": "Nastavit z plynové páky",
       "ThrottleConfigurationReset": "Reset konfigurace plynových pák",
-      "TogaOnAxis": "TOGA On Axis"
+      "TogaOnAxis": "TOGA na ose"
     },
     "Title": "Nastavení",
     "Unrealistic": "Nerealistické",

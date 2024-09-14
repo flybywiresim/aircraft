@@ -1,3 +1,6 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   FSComponent,
   ComponentProps,
@@ -6,20 +9,42 @@ import {
   Subject,
   EventBus,
   MappedSubject,
+  Subscribable,
+  ConsumerSubject,
 } from '@microsoft/msfs-sdk';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
-import { Layer } from '../../Layer';
+import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 
 export interface GlideSlopeProps extends ComponentProps {
   bus: EventBus;
+  backbeam?: Subscribable<boolean>;
 }
 
 export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
-  private readonly gsAvailableSub = Subject.create(false);
+  private readonly sub = this.props.bus.getSubscriber<GenericVorEvents>();
 
-  private readonly gsDeviationSub = Subject.create(-1);
+  private readonly backbeam = this.props.backbeam ?? Subject.create(false);
 
-  private readonly deviationPxSub = this.gsDeviationSub.map((deviation) => {
+  // FIXME hook up when MMR ready
+  private readonly mixLocVnav = Subject.create(false);
+
+  private readonly isHidden = MappedSubject.create(
+    ([backbeam, mixLocVnav]) => backbeam && !mixLocVnav,
+    this.backbeam,
+    this.mixLocVnav,
+  );
+
+  private readonly glideSlopeValid = ConsumerSubject.create(this.sub.on('glideSlopeValid'), false);
+
+  private readonly gsAvailable = MappedSubject.create(
+    ([isHidden, glideSlopeValid]) => !isHidden && glideSlopeValid,
+    this.isHidden,
+    this.glideSlopeValid,
+  );
+
+  private readonly gsDeviation = ConsumerSubject.create(this.sub.on('glideSlopeDeviation'), 0);
+
+  private readonly deviationPxSub = this.gsDeviation.map((deviation) => {
     return (deviation / 0.8) * 128;
   });
 
@@ -27,7 +52,7 @@ export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
     ([available, deviationPx]) => {
       return available && deviationPx < 128;
     },
-    this.gsAvailableSub,
+    this.gsAvailable,
     this.deviationPxSub,
   );
 
@@ -35,37 +60,20 @@ export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
     ([available, deviationPx]) => {
       return available && deviationPx > -128;
     },
-    this.gsAvailableSub,
+    this.gsAvailable,
     this.deviationPxSub,
   );
-
-  onAfterRender(node: VNode) {
-    super.onAfterRender(node);
-
-    const subs = this.props.bus.getSubscriber<GenericVorEvents>();
-
-    // TODO select correct MMR
-
-    subs
-      .on('glideSlopeValid')
-      .whenChanged()
-      .handle((value) => {
-        this.gsAvailableSub.set(value);
-      });
-
-    subs
-      .on('glideSlopeDeviation')
-      .whenChanged()
-      .handle((value) => {
-        this.gsDeviationSub.set(value);
-      });
-  }
 
   private readonly visibilityFn = (v) => (v ? 'inherit' : 'hidden');
 
   render(): VNode | null {
     return (
-      <>
+      <g
+        id="glideslope-deviation"
+        class={{
+          hidden: this.isHidden,
+        }}
+      >
         <Layer x={750} y={384}>
           <circle cx={0} cy={-128} r={4} stroke-width={2.5} class="White" />
           <circle cx={0} cy={-64} r={4} stroke-width={2.5} class="White" />
@@ -90,7 +98,7 @@ export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
             visibility={this.deviationLowerVisibleSub.map(this.visibilityFn)}
           />
         </Layer>
-      </>
+      </g>
     );
   }
 }

@@ -1,3 +1,4 @@
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { FC } from 'react';
 
 interface FctlComputerShapeProps {
@@ -43,28 +44,32 @@ interface PrimSecProps {
 
 export const Prims: FC<PrimSecProps> = ({ x, y }) => {
     const infoAvailable = true;
-    const computerFailed = false;
+    const [prim1Healthy]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_PRIM_1_HEALTHY`, 'boolean', 1000);
+    const [prim2Healthy]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_PRIM_2_HEALTHY`, 'boolean', 1000);
+    const [prim3Healthy]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_PRIM_3_HEALTHY`, 'boolean', 1000);
 
     return (
         <g id='prim-computers' transform={`translate(${x} ${y})`}>
             <text className='F22 White MiddleAlign LS1' x={45} y={85}>PRIM</text>
-            <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={computerFailed} />
-            <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={computerFailed} />
-            <FctlComputerShape x={62} y={124} num={3} infoAvailable={infoAvailable} computerFailed={computerFailed} />
+            <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={!prim1Healthy} />
+            <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={!prim2Healthy} />
+            <FctlComputerShape x={62} y={124} num={3} infoAvailable={infoAvailable} computerFailed={!prim3Healthy} />
         </g>
     );
 };
 
 export const Secs: FC<PrimSecProps> = ({ x, y }) => {
     const infoAvailable = true;
-    const computerFailed = false;
+    const [sec1Healthy]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_SEC_1_HEALTHY`, 'boolean', 1000);
+    const [sec2Healthy]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_SEC_2_HEALTHY`, 'boolean', 1000);
+    const [sec3Healthy]: [boolean, (v: boolean) => void] = useSimVar(`L:A32NX_SEC_3_HEALTHY`, 'boolean', 1000);
 
     return (
         <g id='sec-computers' transform={`translate(${x} ${y})`}>
             <text className='F22 White MiddleAlign LS1' x={48} y={84}>SEC</text>
-            <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={computerFailed} />
-            <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={computerFailed} />
-            <FctlComputerShape x={62} y={124} num={3} infoAvailable={infoAvailable} computerFailed={computerFailed} />
+            <FctlComputerShape x={8} y={100} num={1} infoAvailable={infoAvailable} computerFailed={!sec1Healthy} />
+            <FctlComputerShape x={36} y={112} num={2} infoAvailable={infoAvailable} computerFailed={!sec2Healthy} />
+            <FctlComputerShape x={62} y={124} num={3} infoAvailable={infoAvailable} computerFailed={!sec3Healthy} />
         </g>
     );
 };

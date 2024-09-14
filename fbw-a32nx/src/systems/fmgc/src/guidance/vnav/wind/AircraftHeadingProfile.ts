@@ -5,7 +5,7 @@
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { FlightPlanManager } from '@fmgc/wtsdk';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 
 interface CourseAtDistance {
   distanceFromStart: NauticalMiles;
@@ -19,7 +19,7 @@ export interface AircraftHeadingProfile {
 export class NavHeadingProfile implements AircraftHeadingProfile {
   private courses: CourseAtDistance[] = [];
 
-  constructor(private flightPlanManager: FlightPlanManager) {}
+  constructor(private fps: FlightPlanService) {}
 
   get(distanceFromStart: NauticalMiles): DegreesTrue | null {
     if (this.courses.length === 0) {
@@ -49,7 +49,7 @@ export class NavHeadingProfile implements AircraftHeadingProfile {
 
     let distanceFromStart = 0;
 
-    for (let i = 0; i < this.flightPlanManager.getWaypointsCount(); i++) {
+    for (let i = 0; i < this.fps.active.legCount; i++) {
       const leg = legs.get(i);
 
       if (!leg || leg.isNull || leg instanceof IFLeg) {

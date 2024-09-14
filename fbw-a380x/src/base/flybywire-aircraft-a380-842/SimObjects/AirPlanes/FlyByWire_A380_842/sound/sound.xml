@@ -253,7 +253,7 @@
         <Sound WwiseData="true" WwiseEvent="cabinpacks380" FadeOutType="2" FadeOutTime="3" NodeName="BASE_RIGHT" LocalVar="A32NX_COND_PACK_FLOW_1" >
             <Range LowerBound="0.001" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
 
@@ -261,7 +261,7 @@
             <Range LowerBound="0.001" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -269,7 +269,7 @@
             <Range UpperBound="30" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -277,7 +277,7 @@
             <Range LowerBound="0.001" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -285,7 +285,7 @@
             <Range UpperBound="30" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -293,7 +293,7 @@
             <Range LowerBound="0.001" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -301,7 +301,7 @@
             <Range UpperBound="30" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -309,7 +309,7 @@
             <Range LowerBound="0.001" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -317,7 +317,7 @@
             <Range UpperBound="30" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celsius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -1100,6 +1100,43 @@
             </Requires>
         </Sound>
 
+        <!-- Stall warning =====================================================================-->
+        <Sound WwiseEvent="aural_stall_new" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_AUDIO_STALL_WARNING" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <!-- ROP/ROW warnings =====================================================================-->
+        <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_MAX_BRAKING" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_SET_MAX_REVERSE" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_KEEP_MAX_REVERSE" Continuous="false">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_RWY_TOO_SHORT" Continuous="true">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
     </SimVarSounds>
 
     <!-- AvionicSounds ========================================================================================== -->
@@ -1151,12 +1188,10 @@
         <Sound WwiseData="true" WwiseEvent="30_380" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="40_380" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="50_380" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="60_380" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="70_380" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="80_380" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="90_380" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_100" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_200" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_300" NodeName="WIPER_BASE_L" />
@@ -1164,6 +1199,7 @@
         <Sound WwiseData="true" WwiseEvent="new_500" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
@@ -1186,13 +1222,6 @@
         <Sound WwiseData="true" WwiseEvent="traffic" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="WIPER_BASE_L" />
-
-        <!-- ROPS callouts ==================================================================================== -->
-
-        <Sound WwiseData="true" WwiseEvent="brake_max_braking" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="keep_max_reverse" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="runway_too_short" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="set_max_reverse" NodeName="WIPER_BASE_L" />
 
     </AvionicSounds>
 

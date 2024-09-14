@@ -100,6 +100,53 @@
                 <ID>2</ID>
             </UseTemplate>
 
+            <!-- rear left Steering -->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>left_bws</NODE_ID>
+                <ANIM_NAME>left_bws</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>1</ANIM_LENGTH>
+            </UseTemplate>
+            <!-- rear right Steering -->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>right_bws</NODE_ID>
+                <ANIM_NAME>right_bws</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>1</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR LEFT LH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>ll_tire_key</NODE_ID>
+                <ANIM_NAME>ll_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR LEFT RH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>lr_tire_key</NODE_ID>
+                <ANIM_NAME>lr_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR RIGHT LH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>rl_tire_key</NODE_ID>
+                <ANIM_NAME>rl_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR RIGHT RH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>rr_tire_key</NODE_ID>
+                <ANIM_NAME>rr_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
             <!-- Wheel Rotation LH-->
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>WHEELS_C</NODE_ID>
@@ -420,7 +467,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M1L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M2L -->
 
         <Component ID="ANIM_DOOR_M2L" Node="ANIM_DOOR_M2L_CLICK">
@@ -430,7 +477,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M2L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M3L -->
 
         <Component ID="ANIM_DOOR_M3L" Node="ANIM_DOOR_M3L_CLICK">
@@ -440,7 +487,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M3L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M4L -->
 
         <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
@@ -450,7 +497,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M5L -->
 
         <Component ID="ANIM_DOOR_M5L" Node="ANIM_DOOR_M5L_CLICK">
@@ -460,7 +507,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M5L) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M1R -->
 
         <Component ID="ANIM_DOOR_M1R" Node="ANIM_DOOR_M1R_CLICK">
@@ -470,7 +517,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M1R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M2R -->
 
         <Component ID="ANIM_DOOR_M2R" Node="ANIM_DOOR_M2R_CLICK">
@@ -480,7 +527,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M2R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M3R -->
 
         <Component ID="ANIM_DOOR_M3R" Node="ANIM_DOOR_M3R_CLICK">
@@ -490,7 +537,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M3R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M4R -->
 
         <Component ID="ANIM_DOOR_M4R" Node="ANIM_DOOR_M4R_CLICK">
@@ -500,7 +547,7 @@
                 <ANIM_CODE>(L:ANIM_DOOR_M4R) 100 *</ANIM_CODE>
 			</UseTemplate>
         </Component>
-		
+
         <!-- PAX DOOR M5R -->
 
         <Component ID="ANIM_DOOR_M5R" Node="ANIM_DOOR_M5R_CLICK">
@@ -768,17 +815,17 @@
             </UseTemplate>
 
             <!-- Reversers -->
-
             <!-- 2 -->
-            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
-                <ID>2</ID>
+             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_1</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_REVERSER_2_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
-
             <!-- 3 -->
-            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
-                <ID>3</ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_2</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_REVERSER_3_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
         </Component>
 

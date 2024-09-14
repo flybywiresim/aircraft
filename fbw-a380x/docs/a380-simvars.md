@@ -4,8 +4,11 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#afs-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
+  - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
+  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
@@ -294,6 +297,16 @@
     - Bool
     - True if the overhead manual extract vent override pushbutton is on (illuminated)
 
+## Auto Flight System ATA 22
+
+- A380X_MFD_{side}_ACTIVE_PAGE
+    - String
+    - URI of activate page on respective MFD (e.g. fms/active/init)
+    - {side} = L or R
+
+- A32NX_FMS_PAX_NUMBER
+    - Number
+    - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
 
 ## Electrical ATA 24
 
@@ -502,6 +515,143 @@
         - 3
         - 4
 
+## Fire and Smoke Protection ATA 26
+
+- A32NX_FIRE_FDU_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the Fire Detection Unit (assumed)
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Fire detected ENG 1                                  |
+      | 12  | Fire detected ENG 2                                  |
+      | 13  | Fire detected ENG 3                                  |
+      | 14  | Fire detected ENG 4                                  |
+      | 15  | Fire detected APU                                    |
+      | 16  | Fire detected MLG                                    |
+      | 17  | Not used                                             |
+      | 18  | ENG 1 LOOP A fault                                   |
+      | 19  | ENG 1 LOOP B fault                                   |
+      | 20  | ENG 2 LOOP A fault                                   |
+      | 21  | ENG 2 LOOP B fault                                   |
+      | 22  | ENG 3 LOOP A fault                                   |
+      | 23  | ENG 3 LOOP B fault                                   |
+      | 24  | ENG 4 LOOP A fault                                   |
+      | 25  | ENG 4 LOOP B fault                                   |
+      | 26  | APU LOOP A fault                                     |
+      | 27  | APU LOOP B fault                                     |
+      | 28  | MLG LOOP A fault                                     |
+      | 29  | MLG LOOP B fault                                     |
+
+- A32NX_{zone}_ON_FIRE
+    - Bool
+    - True when a fire is present in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_FIRE_DETECTED_ENG{number}
+    - Bool
+    - True when fire is detected on engine
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_DETECTED_{zone}
+    - Bool
+    - True when fire is detected in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_OVHD_FIRE_AGENT_{bottle}_{zone}_{number}_IS_PRESSED
+    - Bool
+    - True when the overhead pushbutton for the corresponding fire extinguishing bottle agent is pressed. Momentary PB. Note APU uses 1_APU_1
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_ARMED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle squibs are armed.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_DISCHARGED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle has been discharged into the engine.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_BUTTON_ENG{number}
+    - Bool
+    - True when the overhead fire pushbutton has been released
+
+- A32NX_FIRE_BUTTON_APU
+    - Bool
+    - True when the overhead apu pushbutton has been released
+
+- A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED
+    - Bool
+    - True when the overhead fire test pushbutton is pressed
+
+
+## Flaps / Slats (ATA 27)
+
+- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - Slat/Flap actual position discrete word of the SFCC bus output
+    - Arinc429<Discrete>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - | Bit |      Description A380X, if different     |
+      |:---:|:----------------------------------------:|
+      | 11  | Slat Data Valid                          |
+      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
+      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
+      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
+      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
+      | 16  | Slat WTB Engaged                         |
+      | 17  | Slat Fault                               |
+      | 18  | Flap Data Valid                          |
+      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
+      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
+      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
+      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
+      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
+      | 24  | Flap WTB engaged                         |
+      | 25  | Flap Fault                               |
+      | 26  | Spoiler Lift Demand                      |
+      | 27  | Spoiler Limit Demand                     |
+      | 28  | Slat System Jam                          |
+      | 29  | Flap System Jam                          |
+
+
 ## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL
@@ -601,9 +751,9 @@
     - {side} = L or R
     - | State | Value |
       |-------|-------|
-      | WPT   | 0     |
-      | VORD  | 1     |
-      | NDB   | 2     |
+      | WPT   | 1     |
+      | VORD  | 2     |
+      | NDB   | 3     |
 
 - A380X_EFIS_{side}_ACTIVE_OVERLAY
     - Boolean
@@ -674,6 +824,11 @@
 - A32NX_APU_FUEL_USED
   - `Arinc429Word<Mass>`
   - The APU fuel used, in kilograms
+
+## Engines ATA 70
+  - L:A32NX_OVHD_FADEC_{ENG}
+  - The powered status of the associated engine's FADEC dependant on the button on the OVHD
+  - {ENG} = 1, 2, 3, 4
 
 ## Hydraulics
 
