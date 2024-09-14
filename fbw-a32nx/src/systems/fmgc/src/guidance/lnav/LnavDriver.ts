@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -16,7 +16,8 @@ import { CourseCaptureTransition } from '@fmgc/guidance/lnav/transitions/CourseC
 import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { distanceTo } from 'msfs-geo';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
@@ -66,6 +67,7 @@ export class LnavDriver implements GuidanceComponent {
   constructor(
     private readonly flightPlanService: FlightPlanService,
     guidanceController: GuidanceController,
+    private readonly acConfig: AircraftConfig,
   ) {
     this.guidanceController = guidanceController;
     this.lastAvail = null;
@@ -446,13 +448,13 @@ export class LnavDriver implements GuidanceComponent {
     return undefined;
   }
 
-  public static legEta(ppos: Coordinates, gs: Knots, termination: Coordinates): number {
+  public legEta(gs: Knots, termination: Coordinates): number {
     // FIXME use a more accurate estimate, calculate in predictions
 
     const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
 
-    const nauticalMilesToGo = distanceTo(ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
+    const nauticalMilesToGo = distanceTo(this.ppos, termination);
+    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
 
     const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
 

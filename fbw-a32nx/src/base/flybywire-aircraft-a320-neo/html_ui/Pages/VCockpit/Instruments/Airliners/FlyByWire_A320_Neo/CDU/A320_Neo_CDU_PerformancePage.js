@@ -90,16 +90,8 @@ class CDUPerformancePage {
                         mcdu.v1Speed = mcdu.unconfirmedV1Speed;
                         mcdu.unconfirmedV1Speed = undefined;
                     } else {
-                        // not real: v-speed helper
-                        const gw = mcdu.getGrossWeight();
-                        if (mcdu.flaps && !gw) {
-                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && gw) {
-                            mcdu.setScratchpadText(mcdu._getV1Speed().toString());
-                        } else {
-                            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                            scratchpadCallback();
-                        }
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                        scratchpadCallback();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
                 } else {
@@ -122,15 +114,8 @@ class CDUPerformancePage {
                         mcdu.vRSpeed = mcdu.unconfirmedVRSpeed;
                         mcdu.unconfirmedVRSpeed = undefined;
                     } else {
-                        const gw = mcdu.getGrossWeight();
-                        if (mcdu.flaps && !gw) {
-                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && gw) {
-                            mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
-                        } else {
-                            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                            scratchpadCallback();
-                        }
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                        scratchpadCallback();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
                 } else {
@@ -153,15 +138,8 @@ class CDUPerformancePage {
                         mcdu.v2Speed = mcdu.unconfirmedV2Speed;
                         mcdu.unconfirmedV2Speed = undefined;
                     } else {
-                        const gw = mcdu.getGrossWeight();
-                        if (mcdu.flaps && !gw) {
-                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && gw) {
-                            mcdu.setScratchpadText(mcdu._getV2Speed().toString());
-                        } else {
-                            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                            scratchpadCallback();
-                        }
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                        scratchpadCallback();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
                 } else {
@@ -213,7 +191,7 @@ class CDUPerformancePage {
             const transAlt = targetPlan.performanceData.transitionAltitude;
             const transAltitudeIsFromDatabase = targetPlan.performanceData.transitionAltitudeIsFromDatabase;
 
-            if (transAlt !== undefined) {
+            if (transAlt !== null) {
                 transAltCell = `{cyan}${transAlt}{end}`;
                 if (transAltitudeIsFromDatabase) {
                     transAltCell += "[s-text]";
@@ -240,7 +218,7 @@ class CDUPerformancePage {
         const eoAcc = plan.performanceData.engineOutAccelerationAltitude;
         const eoAccPilot = plan.performanceData.engineOutAccelerationAltitudeIsPilotEntered;
 
-        const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== undefined ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== undefined ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
+        const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== null ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== null ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
 
         mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
             if (mcdu.trySetThrustReductionAccelerationAltitude(value)) {
@@ -251,7 +229,7 @@ class CDUPerformancePage {
         };
 
         // eng out acceleration altitude
-        const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== undefined ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
+        const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.trySetEngineOutAcceleration(value)) {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
@@ -911,7 +889,7 @@ class CDUPerformancePage {
         if (hasDestination) {
             const transitionLevel = plan.performanceData.transitionLevel;
 
-            if (transitionLevel !== undefined) {
+            if (transitionLevel !== null) {
                 transAltCell = (transitionLevel * 100).toFixed(0).padEnd(5, "\xa0");
 
                 if (plan.performanceData.transitionLevelIsFromDatabase) {
@@ -1087,8 +1065,8 @@ class CDUPerformancePage {
         const eoAcc = plan.performanceData.missedEngineOutAccelerationAltitude;
         const eoAccPilot = plan.performanceData.missedEngineOutAccelerationAltitudeIsPilotEntered;
 
-        const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== undefined ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== undefined ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
-        const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== undefined ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
+        const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== null ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== null ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
+        const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
 
         mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
             if (mcdu.trySetThrustReductionAccelerationAltitudeGoaround(value)) {

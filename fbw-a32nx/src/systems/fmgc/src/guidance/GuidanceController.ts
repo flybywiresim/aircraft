@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
@@ -10,15 +11,14 @@ import { EfisVectors } from '@fmgc/efis/EfisVectors';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisState } from '@fmgc/guidance/FmsState';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 
-import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -27,10 +27,13 @@ import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -156,6 +159,11 @@ export class GuidanceController {
 
   private atmosphericConditions: AtmosphericConditions;
 
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
   private updateEfisState(side: EfisSide, state: EfisState<number>): void {
     const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
     const ndRange = this.efisNDRangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
@@ -203,7 +211,7 @@ export class GuidanceController {
     const runway = this.flightPlanService.active.destinationRunway;
 
     if (runway) {
-      const phase = getFlightPhaseManager().phase;
+      const phase = this.flightPhase.get();
       const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
 
       if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
@@ -226,7 +234,7 @@ export class GuidanceController {
 
   private updateEfisData() {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
-    const flightPhase = getFlightPhaseManager().phase;
+    const flightPhase = this.flightPhase.get();
     const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
     const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
     if (activeLeg) {
@@ -241,7 +249,7 @@ export class GuidanceController {
       // Don't compute distance and ETA for XM legs
       const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-      const efisEta = isXMLeg || !etaComputable ? -1 : LnavDriver.legEta(ppos, gs, termination);
+      const efisEta = isXMLeg || !etaComputable ? -1 : this.lnavDriver.legEta(gs, termination);
 
       // FIXME should be NCD if no FM position
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
@@ -260,10 +268,12 @@ export class GuidanceController {
   }
 
   constructor(
+    private readonly bus: EventBus,
     fmgc: Fmgc,
     private readonly flightPlanService: FlightPlanService,
     private efisInterfaces: Record<EfisSide, EfisInterface>,
     private readonly efisNDRangeValues: number[],
+    private readonly acConfig: AircraftConfig,
   ) {
     this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(
       fmgc,
@@ -273,16 +283,17 @@ export class GuidanceController {
 
     this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
-    this.lnavDriver = new LnavDriver(flightPlanService, this);
+    this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
     this.vnavDriver = new VnavDriver(
       flightPlanService,
       this,
       this.verticalProfileComputationParametersObserver,
       this.atmosphericConditions,
       this.windProfileFactory,
+      this.acConfig,
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
-    this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterfaces);
+    this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
   }
 
   init() {

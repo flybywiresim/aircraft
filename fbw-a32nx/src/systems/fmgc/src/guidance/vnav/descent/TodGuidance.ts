@@ -7,7 +7,7 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { LocalSimVar, NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 const TIMEOUT = 10_000;
 
@@ -15,6 +15,12 @@ export class TodGuidance {
   private tdReached: boolean;
 
   private tdPaused: boolean;
+
+  private tdArmed: LocalSimVar<boolean>;
+
+  private pauseAtTodDistance: number;
+
+  private tdPauseEnabled: boolean;
 
   private apEngaged: boolean;
 
@@ -29,6 +35,33 @@ export class TodGuidance {
     this.apEngaged = false;
     this.tdReached = false;
     this.tdPaused = false;
+    this.tdPauseEnabled = false;
+    this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
+
+    NXDataStore.getAndSubscribe(
+      'PAUSE_AT_TOD_DISTANCE',
+      (_, value: string) => {
+        const pF = parseFloat(value);
+        if (isNaN(pF)) {
+          this.pauseAtTodDistance = 0;
+        } else {
+          this.pauseAtTodDistance = pF;
+        }
+      },
+      '10',
+    );
+
+    NXDataStore.getAndSubscribe(
+      'PAUSE_AT_TOD',
+      (_, value: string) => {
+        if (value === 'ENABLED') {
+          this.tdPauseEnabled = true;
+        } else {
+          this.tdPauseEnabled = false;
+        }
+      },
+      'DISABLED',
+    );
   }
 
   showPausePopup(title: string, message: string) {
@@ -44,61 +77,65 @@ export class TodGuidance {
 
   update(deltaTime: number) {
     this.updateTdReached(deltaTime);
-    this.updateTdPause(deltaTime);
+    if (this.tdPauseEnabled) {
+      this.updateTdPause(deltaTime);
+    }
   }
 
   updateTdPause(deltaTime: number) {
-    if (this.cooldown <= 0 && NXDataStore.get('PAUSE_AT_TOD', 'DISABLED') === 'ENABLED') {
-      // Only watching if T/D pause untriggered + between flight phase CLB and CRZ
-      if (
+    // Only armed if all conditions met
+    this.tdArmed.setVar(
+      this.cooldown <= 0 &&
         !this.tdPaused &&
         this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
         this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
-        Simplane.getAutoPilotAirspeedManaged()
-      ) {
-        // Check T/D pause first, then AP mode reversion
-        if (
-          (this.aircraftToDescentProfileRelation.distanceToTopOfDescent() ?? Number.POSITIVE_INFINITY) <
-          parseFloat(NXDataStore.get('PAUSE_AT_TOD_DISTANCE', '10'))
-        ) {
-          this.tdPaused = true;
-          this.showPausePopup(
-            'TOP OF DESCENT',
-            `Paused before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
-          );
-          // Only guard AP above transitional altitude
-        } else if (
-          this.atmosphericConditions.currentAltitude
-            ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
-            : false
-        ) {
-          const apActive =
-            SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean') &&
-            SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum') === LateralMode.NAV;
+        Simplane.getAutoPilotAirspeedManaged(),
+    );
 
-          if (this.apEngaged && !apActive) {
-            this.showPausePopup(
-              'AP PROTECTION',
-              `Autopilot or lateral guidance disengaged before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
-            );
-          }
-
-          if (this.apEngaged !== apActive) {
-            this.apEngaged = apActive;
-          }
-        }
-      }
-
-      // Reset flags on turnaround
+    if (this.tdArmed.getVar()) {
+      // Check T/D pause first
       if (
-        this.observer.get().flightPhase === FmgcFlightPhase.Done ||
-        this.observer.get().flightPhase === FmgcFlightPhase.Preflight
+        (this.aircraftToDescentProfileRelation.distanceToTopOfDescent() ?? Number.POSITIVE_INFINITY) <
+        this.pauseAtTodDistance
       ) {
-        this.tdPaused = false;
-        this.apEngaged = false;
+        this.tdPaused = true;
+        this.showPausePopup(
+          'TOP OF DESCENT',
+          `Paused before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
+        );
+        // Check A/P mode reversion
+      } else if (
+        // Only guard A/P above transitional altitude
+        this.atmosphericConditions.currentAltitude
+          ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
+          : false
+      ) {
+        const apActive =
+          SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean') &&
+          SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum') === LateralMode.NAV;
+
+        if (this.apEngaged && !apActive) {
+          this.showPausePopup(
+            'AP PROTECTION',
+            `Autopilot or lateral guidance disengaged before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
+          );
+        }
+
+        if (this.apEngaged !== apActive) {
+          this.apEngaged = apActive;
+        }
       }
     }
 
+    // Reset flags on turnaround
+    if (
+      this.observer.get().flightPhase === FmgcFlightPhase.Done ||
+      this.observer.get().flightPhase === FmgcFlightPhase.Preflight
+    ) {
+      this.tdPaused = false;
+      this.apEngaged = false;
+    }
+    // Iterate backoff timer
     if (this.cooldown > 0) {
       this.cooldown = Math.max(0, this.cooldown - deltaTime);
     }

@@ -439,7 +439,9 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private sideStickY = 0;
 
-  private onGround = true;
+  private leftGearcompressed = true;
+
+  private rightGearCompressed = true;
 
   private crossHairRef = FSComponent.createRef<SVGPathElement>();
 
@@ -449,14 +451,19 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private engTwoRunning = false;
 
-  private handleSideStickIndication() {
-    const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
+  private engThreeRunning = false;
 
-    if (!this.onGround || !oneEngineRunning) {
-      this.onGroundForVisibility.set('hidden');
-    } else {
+  private engFourRunning = false;
+
+  private handleSideStickIndication() {
+    const onGround = this.leftGearcompressed || this.rightGearCompressed;
+    const oneEngineRunning = this.engOneRunning || this.engTwoRunning || this.engThreeRunning || this.engFourRunning;
+
+    if (onGround && oneEngineRunning) {
       this.onGroundForVisibility.set('visible');
       this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
+    } else {
+      this.onGroundForVisibility.set('hidden');
     }
   }
 
@@ -466,10 +473,18 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
     const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
     sub
-      .on('noseGearCompressed')
+      .on('leftMainGearCompressed')
       .whenChanged()
       .handle((g) => {
-        this.onGround = g;
+        this.leftGearcompressed = g;
+        this.handleSideStickIndication();
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((g) => {
+        this.rightGearCompressed = g;
         this.handleSideStickIndication();
       });
 
@@ -502,6 +517,22 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
       .whenChanged()
       .handle((e) => {
         this.engTwoRunning = e;
+        this.handleSideStickIndication();
+      });
+
+    sub
+      .on('engThreeRunning')
+      .whenChanged()
+      .handle((e) => {
+        this.engThreeRunning = e;
+        this.handleSideStickIndication();
+      });
+
+    sub
+      .on('engFourRunning')
+      .whenChanged()
+      .handle((e) => {
+        this.engFourRunning = e;
         this.handleSideStickIndication();
       });
   }

@@ -7,16 +7,12 @@ import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
-import { MissedApproachSegment } from '@fmgc/flightplanning/new/segments/MissedApproachSegment';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
+import { MissedApproachSegment } from '@fmgc/flightplanning/segments/MissedApproachSegment';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export type PathAngleConstraint = Degrees;
-
-export abstract class FXLeg extends Leg {
-  from: WayPoint;
-}
 
 export function isHold(leg: Leg): boolean {
   return leg instanceof HALeg || leg instanceof HFLeg || leg instanceof HMLeg;

@@ -1,49 +1,4 @@
 /**
- * TO V2 speed table
- * calls function(gross weight (t)) which returns CAS.
- * Indexes: 0 - Config 1 + F, 1 - Config 2, 2 - Config 3.
- * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
- */
-const to = [
-    [
-        () => 126,
-        () => 126,
-        () => 126,
-        (m) => 126 + 0.2 * (m - 50),
-        (m) => 127 + m - 55,
-        (m) => 132 + m - 60,
-        (m) => 137 + m - 65,
-        (m) => 142 + m - 70,
-        (m) => 147 + m - 75,
-        () => 151
-    ], // Conf 1 + F
-    [
-        () => 126,
-        () => 126,
-        () => 126,
-        () => 126,
-        (m) => 126 + 0.2 * (m - 55),
-        (m) => 127 + m - 60,
-        (m) => 132 + m - 65,
-        (m) => 137 + 0.8 * (m - 70),
-        (m) => 141 + m - 75,
-        () => 146
-    ], // Conf 2
-    [
-        () => 125,
-        () => 125,
-        () => 125,
-        () => 125,
-        () => 125,
-        (m) => 125 + 0.6 * (m - 60),
-        (m) => 128 + 0.8 * (m - 65),
-        (m) => 132 + m - 70,
-        (m) => 137 + 0.8 * (m - 75),
-        () => 141
-    ] // Conf 3
-];
-
-/**
  * Stall speed table
  * calls function(gross weight (t), landing gear) which returns CAS.
  * Indexes: 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
@@ -501,20 +456,6 @@ class NXSpeeds {
         this.vs = _compensateForMachEffect(this.vs, alt);
         this.vls = _compensateForMachEffect(this.vls, alt);
         this.gd = _compensateForMachEffect(this.gd, alt);
-    }
-}
-
-class NXSpeedsTo {
-    /**
-     * Computes TakeOff speeds
-     * @param m {number} mass: tow in t
-     * @param fPos {number} flaps takeoff config
-     * @param alt {number} field altitude
-     */
-    constructor(m = 60, fPos = 1, alt = 0) {
-        this.v2 = Math.floor(to[fPos - 1][_correctMass(m)](m) + (fPos === 2 ? (Math.abs(alt * 0.0002)) : 0));
-        this.vr = this.v2 - 4;
-        this.v1 = this.v2 - 5;
     }
 }
 

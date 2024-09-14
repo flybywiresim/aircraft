@@ -410,12 +410,13 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       case 3: {
         this.displayModeChangedPath(true);
         const FlexTemp = Math.round(this.flexTemp);
-        const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
+        const FlexText = FlexTemp.toString();
         text = `<g>
-                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
+                                <path class="NormalStroke White" d="m29.821 1.8143v13.506h-24.517v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
-                                <text class="FontMedium MiddleAlign Cyan" x="24.099141" y="14.351689">
+                                <text class="FontMedium MiddleAlign White" x="11.669141" y="14.351689">FLX</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="20.599141" y="14.851689">+</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="26.099141" y="14.351689">
                                 ${FlexText}
                                 </text>
                             </g>`;
@@ -837,7 +838,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         break;
       }
       case VerticalMode.VS: {
-        const VSText = `${this.selectedVS > 0 ? '+' : ''}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
+        const VSText = `${this.selectedVS > 0 ? '+' : ''}${Math.round(this.selectedVS).toString()}`.padStart(6, ' ');
 
         text = 'V/S';
 
@@ -867,8 +868,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     const boxPathString =
       this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed
-        ? 'm35.756 1.8143h27.918v13.506h-27.918z'
-        : 'm35.756 1.8143h27.918v6.0476h-27.918z';
+        ? 'm34.656 1.8143h29.918v13.506h-29.918z'
+        : 'm34.656 1.8143h29.918v6.0476h-29.918z';
 
     this.boxPathStringSub.set(boxPathString);
 
@@ -966,12 +967,12 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         <path
           ref={this.speedProtectionPathRef}
           class="NormalStroke Amber BlinkInfinite"
-          d="m35.756 1.8143h27.918v6.0476h-27.918z"
+          d="m34.656 1.8143h29.918v6.0476h-29.918z"
         />
         <path
           ref={this.inModeReversionPathRef}
           class="NormalStroke White BlinkInfinite"
-          d="m35.756 1.8143h27.918v6.0476h-27.918z"
+          d="m34.656 1.8143h29.918v6.0476h-29.918z"
         />
 
         <text
@@ -1009,29 +1010,35 @@ class B2Cell extends DisplayComponent<CellProps> {
         const clbArmed = (fmv >> 2) & 1;
         const desArmed = (fmv >> 3) & 1;
         const gsArmed = (fmv >> 4) & 1;
-        const finalArmed = (fmv >> 5) & 1;
 
         let text1: string;
         let color1 = 'Cyan';
+        let vertModeActive = true;
         if (clbArmed) {
-          text1 = '      CLB'; // spaces added to center armed FMA as per newer DMC stnadards
+          text1 = '      CLB';
         } else if (desArmed) {
-          text1 = 'DES';
+          text1 = gsArmed ? 'DES ' : '      DES';
         } else if (altCstArmed) {
-          text1 = 'ALT';
+          text1 = gsArmed ? 'ALT ' : '      ALT';
           color1 = 'Magenta';
         } else if (altArmed) {
-          text1 = 'ALT';
+          text1 = gsArmed ? 'ALT ' : '      ALT';
         } else {
           text1 = '';
+          vertModeActive = false;
         }
 
         let text2;
         if (gsArmed) {
-          text2 = 'G/S';
-        } else if (finalArmed) {
-          text2 = 'FINAL';
+          if (vertModeActive) {
+            text2 = '  G/S';
+          } else {
+            text1 = '      G/S';
+          }
         } else {
+          if (!vertModeActive) {
+            text1 = '';
+          }
           text2 = '';
         }
 
@@ -1047,7 +1054,7 @@ class B2Cell extends DisplayComponent<CellProps> {
         <text class={this.classSub} style="white-space: pre" x="40.777474" y="13.629653">
           {this.text1Sub}
         </text>
-        <text class="FontMediumSmaller MiddleAlign Cyan" x="56.19803" y="13.629653">
+        <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Cyan" x="56.19803" y="13.629653">
           {this.text2Sub}
         </text>
       </g>

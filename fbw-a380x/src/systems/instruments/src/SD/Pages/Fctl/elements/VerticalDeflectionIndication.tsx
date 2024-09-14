@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
 
 const SCALE_HEIGHT = 116;
-const MAX_DEFLECTION = 20;
-const MIN_DEFLECTION = -30;
+export const MAX_VERTICAL_DEFLECTION = 20;
+export const MIN_VERTICAL_DEFLECTION = -30;
 
 interface VerticalDeflectionIndicationProps {
     x?: number,
@@ -11,18 +11,17 @@ interface VerticalDeflectionIndicationProps {
     deflectionInfoValid: boolean,
     deflection: number,
     showAileronDroopSymbol?: boolean,
+    onGround: boolean,
 }
 
 function deflectionToYOffset(deflection: number): number {
-    const normalizedDeflection = deflection > 0 ? deflection / MAX_DEFLECTION : -deflection / MIN_DEFLECTION;
+    const normalizedDeflection = deflection > 0 ? deflection / MAX_VERTICAL_DEFLECTION : -deflection / MIN_VERTICAL_DEFLECTION;
 
     return normalizedDeflection * SCALE_HEIGHT / 2;
 }
 
-export const VerticalDeflectionIndication: FC<VerticalDeflectionIndicationProps> = ({ x = 0, y = 0, powerAvail, deflectionInfoValid, deflection, showAileronDroopSymbol = false }) => {
+export const VerticalDeflectionIndication: FC<VerticalDeflectionIndicationProps> = ({ x = 0, y = 0, powerAvail, deflectionInfoValid, deflection, showAileronDroopSymbol = false, onGround }) => {
     const deflectionXValue = deflectionToYOffset(deflection);
-
-    const onGround = true;
 
     const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail;
 

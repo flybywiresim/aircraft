@@ -98,7 +98,5 @@ declare global {
         const CoRouteUplinkAdapter: typeof CoRouteUplinkAdapter_
 
         const SimBriefUplinkAdapter: typeof SimBriefUplinkAdapter_
-
-        function getFlightPhaseManager(): FlightPhaseManager_
     }
 }

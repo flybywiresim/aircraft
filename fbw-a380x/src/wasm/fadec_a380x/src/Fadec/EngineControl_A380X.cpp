@@ -102,7 +102,7 @@ void EngineControl_A380X::update() {
   updateFuel(deltaTime);
 
   // Update thrust limits while considering the current bleed air settings (packs, nai, wai)
-  const int packs = (simData.packsState[1]->get() > 0.5 || simData.packsState[2]->get() > 0.5) ? 1 : 0;
+  const int packs = (simData.packsState[0]->get() || simData.packsState[1]->get()) ? 1 : 0;
   const int nai   = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5     //
                    || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5  //
                    || simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5  //
@@ -412,7 +412,7 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
     simData.engineFF[engineIdx]->set(startFfFbw);
 
     if (engineState == RESTARTING) {
-      if ((std::abs)(startEgtFbw - preEgtFbw) <= 1.5) {
+      if (std::abs(startEgtFbw - preEgtFbw) <= 1.5) {
         simData.engineEgt[engineIdx]->set(startEgtFbw);
         simData.engineState[engineIdx]->set(STARTING);
       } else if (startEgtFbw > preEgtFbw) {
@@ -488,8 +488,8 @@ int EngineControl_A380X::updateFF(int    engine,
   double outFlow = 0;  // kg/hour
   if (correctedFuelFlow >= 1) {
     outFlow = std::max(0.0,                                                                                  //
-                         (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
-                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
+                       (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                        * std::sqrt(EngineRatios::theta2(mach, ambientTemperature))));
   }
   simData.engineFF[engine - 1]->set(outFlow);
 
@@ -537,7 +537,7 @@ void EngineControl_A380X::updateEGT(int          engine,
     const double correctedEGT    = Polynomial_A380X::correctedEGT(simCN1, correctedFuelFlow, mach, pressureAltitude);
     const double egtFbwPrevious  = simData.engineEgt[engineIdx]->get();
     double       egtFbwActualEng = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature));
-    egtFbwActualEng              = egtFbwActualEng + (egtFbwPrevious - egtFbwActualEng) * (std::exp)(-0.1 * deltaTime);
+    egtFbwActualEng              = egtFbwActualEng + (egtFbwPrevious - egtFbwActualEng) * std::exp(-0.1 * deltaTime);
     simData.engineEgt[engineIdx]->set(egtFbwActualEng);
   }
 
@@ -594,7 +594,7 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
                                  rightMidQty + feedFourQty + rightOuterQty + trimQty;  // Pounds
   const double fuelTotalPre = fuelLeftOuterPre + fuelFeedOnePre + fuelLeftMidPre + fuelLeftInnerPre + fuelFeedTwoPre + fuelFeedThreePre +
                               fuelRightInnerPre + fuelRightMidPre + fuelFeedFourPre + fuelRightOuterPre + fuelTrimPre;  // Pounds
-  const double deltaFuelRate = (std::abs)(fuelTotalActual - fuelTotalPre) / (weightLbsPerGallon * deltaTimeSeconds);    // Pounds/ sec
+  const double deltaFuelRate = std::abs(fuelTotalActual - fuelTotalPre) / (weightLbsPerGallon * deltaTimeSeconds);      // Pounds/ sec
 
   const EngineState engine1State = static_cast<EngineState>(simData.engineState[E1]->get());
   const EngineState engine2State = static_cast<EngineState>(simData.engineState[E2]->get());
@@ -790,7 +790,7 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
         if (aircraftDevelopmentStateVar != 2) {
           fuelFlowRateChange   = (*engineFF[i] - *enginePreFF[i]) / deltaTimeHours;
           previousFuelFlowRate = *enginePreFF[i];
-          *fuelBurn[i]         = (fuelFlowRateChange * (std::pow)(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
+          *fuelBurn[i]         = (fuelFlowRateChange * std::pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
         }
         // Fuel Used Accumulators
         *fuelUsedEngine[i] += *fuelBurn[i];
@@ -800,10 +800,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
       }
     }
 
-    const double fuelFeedOne   = fuelFeedOnePre - (fuelBurn1 * Fadec::KGS_TO_LBS);    // Pounds
-    const double fuelFeedTwo   = fuelFeedTwoPre - (fuelBurn2 * Fadec::KGS_TO_LBS);    // Pounds
-    const double fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * Fadec::KGS_TO_LBS);  // Pounds
-    const double fuelFeedFour  = fuelFeedFourPre - (fuelBurn4 * Fadec::KGS_TO_LBS);   // Pounds
+    const double fuelFeedOne   = std::max(feedOneQty - (fuelBurn1 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
+    const double fuelFeedTwo   = std::max(feedTwoQty - (fuelBurn2 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
+    const double fuelFeedThree = std::max(feedThreeQty - (fuelBurn3 * Fadec::KGS_TO_LBS), 0.0);  // Pounds
+    const double fuelFeedFour  = std::max(feedFourQty - (fuelBurn4 * Fadec::KGS_TO_LBS), 0.0);   // Pounds
 
     // Setting new pre-cycle conditions
     simData.enginePreFF[E1]->set(engine1FF);
@@ -880,7 +880,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
 
   // Write all N1 Limits
-  const double altitude = (std::min)(16600.0, pressAltitude);
+  const double altitude = std::min(16600.0, pressAltitude);
   const double to       = ThrustLimits_A380X::limitN1(0, altitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   const double ga       = ThrustLimits_A380X::limitN1(1, altitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   double       flex_to  = 0;
@@ -893,7 +893,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   double mct = ThrustLimits_A380X::limitN1(3, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
 
   // transition between TO and GA limit -----------------------------------------------------------------------------
-  const double machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
+  const double machFactorLow = std::max(0.0, std::min(1.0, (mach - 0.04) / 0.04));
   const double flex          = flex_to + (flex_ga - flex_to) * machFactorLow;
   double       toga          = to + (ga - to) * machFactorLow;
 
@@ -918,13 +918,13 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
 
   double deltaThrust = 0;
   if (isTransitionActive) {
-    double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
+    double timeDifference = std::max(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
     if (timeDifference > 0 && clb > flex) {
       wasFlexActive = false;
     }
   }
   if (wasFlexActive) {
-    clb = (std::min)(clb, flex) + deltaThrust;
+    clb = std::min(clb, flex) + deltaThrust;
   }
 
   prevThrustLimitType = thrustLimitType;
@@ -933,20 +933,20 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 
   // get factors
-  const double machFactor         = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
-  const double altitudeFactorLow  = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 16600) / 500)));
-  const double altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 25000) / 500)));
+  const double machFactor         = std::max(0.0, std::min(1.0, ((mach - 0.37) / 0.05)));
+  const double altitudeFactorLow  = std::max(0.0, std::min(1.0, ((pressureAltitude - 16600) / 500)));
+  const double altitudeFactorHigh = std::max(0.0, std::min(1.0, ((pressureAltitude - 25000) / 500)));
 
   // adapt thrust limits
   if (pressureAltitude >= 25000) {
-    mct  = (std::max)(clb, mct + (clb - mct) * altitudeFactorHigh);
+    mct  = std::max(clb, mct + (clb - mct) * altitudeFactorHigh);
     toga = mct;
   } else {
     if (mct > toga) {
-      mct  = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
+      mct  = toga + (mct - toga) * std::min(1.0, altitudeFactorLow + machFactor);
       toga = mct;
     } else {
-      toga = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
+      toga = toga + (mct - toga) * std::min(1.0, altitudeFactorLow + machFactor);
     }
   }
 
@@ -957,10 +957,10 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   simData.thrustLimitClimb->set(clb);
   simData.thrustLimitMct->set(mct);
 
-  #ifdef PROFILING
-    profilerUpdateThrustLimits.stop();
-  #endif
-  }
+#ifdef PROFILING
+  profilerUpdateThrustLimits.stop();
+#endif
+}
 
 /*
  * Previous code - call to it was already commented out and this function was not in use.

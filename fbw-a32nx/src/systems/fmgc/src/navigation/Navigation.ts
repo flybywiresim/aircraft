@@ -1,9 +1,10 @@
-// Copyright (c) 2022-2023 FlyByWire Simulations
+// Copyright (c) 2022-2024 FlyByWire Simulations
+//
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
 
-import { FlightPlanService } from '@fmgc/index';
+import { EventBus, FlightPlanService } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
@@ -89,13 +90,13 @@ export class Navigation implements NavigationProvider {
   }));
 
   constructor(
+    private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
-    private readonly facLoader: FacilityLoader,
   ) {
-    this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
+    this.requiredPerformance = new RequiredPerformance(this.bus, this.flightPlanService);
     this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);
-    this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this);
-    this.navaidTuner = new NavaidTuner(this, this.navaidSelectionManager, this.landingSystemSelectionManager);
+    this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.bus, this.flightPlanService, this);
+    this.navaidTuner = new NavaidTuner(this.bus, this, this.navaidSelectionManager, this.landingSystemSelectionManager);
   }
 
   init(): void {
@@ -103,7 +104,6 @@ export class Navigation implements NavigationProvider {
   }
 
   update(deltaTime: number): void {
-    // TODO... why different to master...
     this.requiredPerformance.update(deltaTime);
 
     this.updateCurrentPerformance();

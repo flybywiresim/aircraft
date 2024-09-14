@@ -52,10 +52,10 @@ class NavSystem extends BaseInstrument {
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
 
         if (this.nodeName.includes('CDU')) {
-            this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
-            const bus = new Fmgc.EventBus();
-            this.currFlightPlanService = new Fmgc.FlightPlanService(bus, new Fmgc.A320FlightPlanPerformanceData());
-            this.rpcServer = new Fmgc.FlightPlanRpcServer(bus, this.currFlightPlanService);
+            this.bus = new Fmgc.EventBus();
+            this.currFlightPhaseManager = new Fmgc.FlightPhaseManager(this.bus);
+            this.currFlightPlanService = new Fmgc.FlightPlanService(this.bus, new Fmgc.A320FlightPlanPerformanceData());
+            this.rpcServer = new Fmgc.FlightPlanRpcServer(this.bus, this.currFlightPlanService);
 
             this.currFlightPlanService.createFlightPlans();
 
@@ -446,7 +446,9 @@ class NavSystem extends BaseInstrument {
         }
         try {
             this.onUpdate(this.accumulatedDeltaTime);
-        } catch (e) {}
+        } catch (e) {
+            console.log("Uncaught exception", e);
+        }
         const t = performance.now() - t0;
         NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
         NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);

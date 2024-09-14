@@ -1,14 +1,17 @@
-import { Clock, FSComponent, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
-
+import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
+import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
+import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
-import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
+import { RopRowOansPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
+import { PfdSpeedsDropInSimvarPublisher } from 'instruments/src/PFD/shared/PfdSpeedsDropInPublisher';
 
 class A380X_PFD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -23,22 +26,39 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
 
+  // FIXME when PRIM FE is implemented
+  private readonly pfdSpeedsProvider = new PfdSpeedsDropInSimvarPublisher(this.bus);
+
   private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
   private readonly adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
 
   private readonly dmcPublisher = new DmcPublisher(this.bus);
 
+  private readonly fmsDataPublisher: FmsDataPublisher;
+
+  private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
+
+  private readonly tawsPublisher = new TawsPublisher(this.bus);
+
   constructor() {
     super();
+
+    const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
+    const stateSubject = Subject.create<'L' | 'R'>(side);
+    this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('PfdSimVars', this.simVarPublisher);
     this.backplane.addInstrument('ArincProvider', this.arincProvider);
+    this.backplane.addPublisher('PfdSpeeds', this.pfdSpeedsProvider);
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
     this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
+    this.backplane.addPublisher('FmsDataPublisher', this.fmsDataPublisher);
+    this.backplane.addPublisher('RopRowOansPublisher', this.ropRowOansPublisher);
+    this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
   }
 
   get templateID(): string {
@@ -57,8 +77,6 @@ class A380X_PFD extends BaseInstrument {
     super.connectedCallback();
 
     this.backplane.init();
-
-    this.bus.getSubscriber<DmcEvents>().on('trueRefActive').handle(console.log);
 
     FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "typeRoots": [
@@ -12,10 +12,6 @@
     "jsx": "react",
     "skipLibCheck": true,
     "paths": {
-//      "@datalink/aoc": ["datalink/aoc/src/index.ts"],
-//      "@datalink/atc": ["datalink/atc/src/index.ts"],
-//      "@datalink/common": ["datalink/common/src/index.ts"],
-//      "@datalink/router": ["datalink/router/src/index.ts"],
       "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
       "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
       "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],

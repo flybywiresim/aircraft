@@ -1,0 +1,35 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fms-init-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.mfd-fms-init-line.second-line {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.mfd-fms-init-line.altn-rte {
+  border-bottom: 1px solid $display-light-grey;
+  margin-bottom: 25px;
+  padding-bottom: 25px;
+}
+
+.mfd-fms-init-line.trip-wind {
+  border-bottom: 1px solid $display-light-grey;
+  margin-bottom: 15px;
+  padding-bottom: 35px;
+}
+
+.mfd-label.init-input-field {
+  width: 150px;
+  text-align: right;
+  padding-right: 5px;
+}
+
+.mfd-label.init-space-lr {
+  margin: 0px 10px 0px 10px;
+}

@@ -231,11 +231,11 @@ class CDUFlightPlanPage {
             winI = winI % (waypointsAndMarkers.length);
 
             const {
-                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/new/legs/FlightPlanLeg').FlightPlanElement} */
+                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
                 wp,
                 pwp,
                 marker,
-                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/new/legs/FlightPlanLeg').FlightPlanElement} */
+                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
                 holdResumeExit,
                 fpIndex,
                 inAlternate,
@@ -1055,7 +1055,7 @@ function formatMachNumber(rawNumber) {
  * @return {boolean}
  */
 function legHasAltConstraint(leg) {
-    return leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint();
+    return !leg.isXA() && (leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint());
 }
 
 /**
@@ -1087,10 +1087,10 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
     let isFl = false;
     if (useTransAlt) {
         const transAlt = activePlan.performanceData.transitionAltitude;
-        isFl = transAlt !== undefined && alt > transAlt;
+        isFl = transAlt !== null && alt > transAlt;
     } else {
         const transLevel = activePlan.performanceData.transitionLevel;
-        isFl = transLevel !== undefined && alt >= (transLevel * 100);
+        isFl = transLevel !== null && alt >= (transLevel * 100);
     }
 
     if (isFl) {
