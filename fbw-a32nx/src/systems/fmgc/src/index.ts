@@ -23,7 +23,7 @@ import { NavigationDatabaseService } from './flightplanning/NavigationDatabaseSe
 import { SimBriefUplinkAdapter } from './flightplanning/uplink/SimBriefUplinkAdapter';
 import { A320FlightPlanPerformanceData } from './flightplanning/plans/performance/FlightPlanPerformanceData';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
-import { FlightPlanUtils } from './flightplanning/new/FlightPlanUtils';
+import { FlightPlanUtils } from './flightplanning/FlightPlanUtils';
 
 function initFmgcLoop(
   baseInstrument: BaseInstrument,

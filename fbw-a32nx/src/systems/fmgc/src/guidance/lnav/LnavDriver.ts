@@ -23,7 +23,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
-import { FlightPlanUtils } from '@fmgc/flightplanning/new/FlightPlanUtils';
+import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
 /**
  * Represents the current turn state of the LNAV driver
