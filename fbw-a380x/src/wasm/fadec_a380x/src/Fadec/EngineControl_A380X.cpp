@@ -488,8 +488,8 @@ int EngineControl_A380X::updateFF(int    engine,
   double outFlow = 0;  // kg/hour
   if (correctedFuelFlow >= 1) {
     outFlow = std::max(0.0,                                                                                  //
-                         (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
-                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
+                       (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                        * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
   }
   simData.engineFF[engine - 1]->set(outFlow);
 

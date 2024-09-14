@@ -14,7 +14,7 @@
 #include <iostream>
 #endif
 
-typedef const std::vector<ProcedureStep> ProcedureDefinition;
+typedef const std::vector<ProcedureStep>  ProcedureDefinition;
 typedef std::vector<const ProcedureStep*> Procedure;
 
 /**
@@ -22,7 +22,6 @@ typedef std::vector<const ProcedureStep*> Procedure;
  * and provides the procedures for the different configurations of the aircraft.<p/>
  */
 class PresetProcedures {
-
   Procedure coldAndDark;
   Procedure powered;
   Procedure readyForPushback;
@@ -43,7 +42,6 @@ class PresetProcedures {
 
  public:
   PresetProcedures(const PresetProceduresDefinition& proceduresDefinition) {
-
 #ifdef DEBUG
     // Map the procedure groups
     // Print to console to add them to the EFB code to display the current step.
