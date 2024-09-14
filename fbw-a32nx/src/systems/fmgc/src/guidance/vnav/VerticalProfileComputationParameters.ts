@@ -95,7 +95,7 @@ export class VerticalProfileComputationParametersObserver {
 
       zeroFuelWeight: this.fmgc.getZeroFuelWeight(),
       fuelOnBoard: UnitType.TONNE.convertTo(this.fmgc.getFOB(), UnitType.POUND),
-      v2Speed: this.fmgc.getV2Speed(),
+      v2Speed: this.getV2Speed(),
       tropoPause: this.fmgc.getTropoPause(),
       perfFactor: 0, // FIXME: Use actual value,
       departureElevation: this.fmgc.getDepartureElevation() ?? 0,
@@ -104,8 +104,8 @@ export class VerticalProfileComputationParametersObserver {
        * This one one is the altitude of the destination airport, the other one is the final procedure altitude.
        */
       destinationElevation: this.fmgc.getDestinationElevation(),
-      accelerationAltitude: this.fmgc.getAccelerationAltitude(),
-      thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
+      accelerationAltitude: this.fmgc.getAccelerationAltitude() ?? 1500,
+      thrustReductionAltitude: this.fmgc.getThrustReductionAltitude() ?? 1500,
       originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
       // We do it this way because the cruise altitude is cleared in the MCDU once you start the descent
       cruiseAltitude: this.flightPlanService.active.performanceData.cruiseFlightLevel
@@ -116,7 +116,7 @@ export class VerticalProfileComputationParametersObserver {
       flightPhase: this.fmgc.getFlightPhase(),
       preselectedClbSpeed: this.fmgc.getPreSelectedClbSpeed(),
       preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
-      takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting(),
+      takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting() ?? 1,
       estimatedDestinationFuel: UnitType.TONNE.convertTo(this.fmgc.getDestEFOB(false), UnitType.POUND),
 
       approachQnh: this.fmgc.getApproachQnh(),
@@ -145,6 +145,30 @@ export class VerticalProfileComputationParametersObserver {
     );
   }
 
+  private getV2Speed(): Knots {
+    const fmV2 = this.fmgc.getV2Speed();
+    if (Number.isFinite(fmV2)) {
+      return fmV2;
+    }
+
+    return this.estimateV2Speed();
+  }
+
+  private estimateV2Speed(): Knots {
+    const fmZfw = UnitType.POUND.convertTo(this.fmgc.getZeroFuelWeight(), UnitType.TONNE);
+    const fmFob = this.fmgc.getFOB();
+    const fmGw = fmZfw + fmFob;
+
+    const flaps = this.fmgc.getTakeoffFlapsSetting() ?? 1;
+    const elevation = this.fmgc.getDepartureElevation() ?? 0;
+
+    if (Number.isFinite(fmGw)) {
+      return Math.floor(to[flaps - 1][_correctMass(fmGw)](fmGw) + (flaps === 2 ? Math.abs(elevation * 0.0002) : 0));
+    }
+
+    return null;
+  }
+
   get(): VerticalProfileComputationParameters {
     return this.parameters;
   }
@@ -159,9 +183,7 @@ export class VerticalProfileComputationParametersObserver {
     const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
     const hasCruiseAltitude = Number.isFinite(this.parameters.cruiseAltitude);
     const hasTakeoffParameters =
-      this.parameters.v2Speed > 0 &&
-      this.parameters.thrustReductionAltitude > 0 &&
-      this.parameters.accelerationAltitude > 0;
+      this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;
 
     return (
       (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) &&
@@ -171,3 +193,50 @@ export class VerticalProfileComputationParametersObserver {
     );
   }
 }
+
+const to = [
+  [
+    () => 126,
+    () => 126,
+    () => 126,
+    (m: number) => 126 + 0.2 * (m - 50),
+    (m: number) => 127 + m - 55,
+    (m: number) => 132 + m - 60,
+    (m: number) => 137 + m - 65,
+    (m: number) => 142 + m - 70,
+    (m: number) => 147 + m - 75,
+    () => 151,
+  ], // Conf 1 + F
+  [
+    () => 126,
+    () => 126,
+    () => 126,
+    () => 126,
+    (m: number) => 126 + 0.2 * (m - 55),
+    (m: number) => 127 + m - 60,
+    (m: number) => 132 + m - 65,
+    (m: number) => 137 + 0.8 * (m - 70),
+    (m: number) => 141 + m - 75,
+    () => 146,
+  ], // Conf 2
+  [
+    () => 125,
+    () => 125,
+    () => 125,
+    () => 125,
+    () => 125,
+    (m: number) => 125 + 0.6 * (m - 60),
+    (m: number) => 128 + 0.8 * (m - 65),
+    (m: number) => 132 + m - 70,
+    (m: number) => 137 + 0.8 * (m - 75),
+    () => 141,
+  ], // Conf 3
+];
+
+/**
+ * Ensure gross weight (mass) is withing valid range
+ * @param m mass: gross weight
+ * @returns mass: gross weight
+ * @private
+ */
+const _correctMass = (m: number) => Math.ceil(((m > 80 ? 80 : m) - 40) / 5);
