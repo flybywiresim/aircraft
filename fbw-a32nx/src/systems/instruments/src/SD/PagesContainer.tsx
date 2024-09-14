@@ -31,8 +31,8 @@ enum SdPages {
   Door = 8,
   Wheel = 9,
   Fctl = 10,
-  Status = 11,
-  Crz = 12,
+  Crz = 11,
+  Status = 12,
 }
 
 const CRZ_CONDITION_TIMER_DURATION = 60;
@@ -51,7 +51,7 @@ export const PagesContainer = () => {
 
   const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
 
-  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 100);
+  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 20);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
   const [crzCondTimer, setCrzCondTimer] = useState(CRZ_CONDITION_TIMER_DURATION);
   const [ecamFCTLTimer, setEcamFCTLTimer] = useState(FCTL_CONDITION_TIMER_DURATION);
@@ -120,8 +120,10 @@ export const PagesContainer = () => {
   const updateCallback = (deltaTime) => {
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
       // button press
-      setPage((prev) => (prev + 1) % 12);
-      setCurrentPage((prev) => (prev + 1) % 12);
+      setPage((prev) => {
+        setCurrentPage((prev + 1) % 12);
+        return (prev + 1) % 12;
+      });
       setEcamCycleInterval(
         setInterval(() => {
           setCurrentPage((prev) => {
@@ -264,8 +266,8 @@ export const PagesContainer = () => {
     8: <DoorPage />,
     9: <WheelPage />,
     10: <FctlPage />,
-    11: <StatusPage />,
-    12: <CrzPage />,
+    11: <CrzPage />,
+    12: <StatusPage />,
   };
 
   return (
