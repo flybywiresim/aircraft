@@ -594,7 +594,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <InputField<number>
                   dataEntryFormat={new LsCourseFormat()}
                   dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.navaidTuner.setIlsCourse(v || null);
+                    this.props.fmcService.master?.navaidTuner.setIlsCourse(v || null, v && v < 0 ? true : false);
                   }}
                   mandatory={Subject.create(false)}
                   enteredByPilot={this.lsCourseEnteredByPilot}

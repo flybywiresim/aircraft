@@ -1349,12 +1349,13 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
 }
 
 // Still need to find a way to store whether course is true or magnetic
+/** Negative number indicates back course */
 export class LsCourseFormat implements DataEntryFormat<number> {
   public placeholder = '----';
 
   public maxDigits = 4;
 
-  private minValue = 0;
+  private minValue = -360;
 
   private maxValue = 360.0;
 
@@ -1362,7 +1363,7 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     if (value === null || value === undefined) {
       return [this.placeholder, null, '°'] as FieldFormatTuple;
     }
-    return [`F${value.toFixed(0).padStart(3, '0')}`, null, '°'] as FieldFormatTuple;
+    return [`${value < 0 ? 'B' : 'F'}${Math.abs(value).toFixed(0).padStart(3, '0')}`, null, '°'] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -1371,16 +1372,18 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     }
 
     let numberPart = input;
+    let sign = +1;
     if (input.length === 4) {
       if (input[0] === 'F' || input[0] === 'B') {
-        numberPart = input.substring(1, 3);
+        sign = input[0] === 'B' ? -1 : +1;
+        numberPart = input.substring(1, 4);
       } else {
-        numberPart = input.substring(0, 2);
+        numberPart = input.substring(0, 3);
       }
     }
     const nbr = Number(numberPart);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
+      return sign * nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
