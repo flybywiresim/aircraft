@@ -253,7 +253,7 @@ class DefaultVerticalProfileParameters {
     const massIndex = Math.ceil((Math.min(fmGw, 80) - 40) / 5);
 
     return Math.floor(
-      DefaultVerticalProfileParameters.v2Speeds[conf - 1][massIndex](fmGw) +
+      DefaultVerticalProfileParameters.v2Speeds[conf][massIndex](fmGw) +
         (conf === 2 ? Math.abs(elevation * 0.0002) : 0),
     );
   }
