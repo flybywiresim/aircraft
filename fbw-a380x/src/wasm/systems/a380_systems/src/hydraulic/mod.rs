@@ -67,6 +67,8 @@ mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod autobrakes;
 use autobrakes::A380AutobrakeController;
+mod heading_control_steering;
+use heading_control_steering::HeadingControlFunction;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
@@ -4035,6 +4037,8 @@ struct A380HydraulicBrakeSteerComputerUnit {
 
     body_wheel_steering_control: BodyWheelSteeringControl,
 
+    heading_control_function: HeadingControlFunction,
+
     ground_speed: Velocity,
 }
 impl A380HydraulicBrakeSteerComputerUnit {
@@ -4120,6 +4124,8 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
             body_wheel_steering_control: BodyWheelSteeringControl::default(),
 
+            heading_control_function: HeadingControlFunction::default(),
+
             ground_speed: Velocity::new::<knot>(0.),
         }
     }
@@ -4189,15 +4195,12 @@ impl A380HydraulicBrakeSteerComputerUnit {
         pushback_tug: &impl Pushback,
     ) {
         // TODO split steering part from braking part in two different computers instances
-        self.update_steering_demands(lgciu1, engine1, engine2);
+        self.update_steering_demands(context, adirs, lgciu1, engine1, engine2);
         self.body_wheel_steering_control.update(
             self.final_steering_position_request,
             self.ground_speed,
             pushback_tug,
         );
-
-        self.pedal_steering_limiter
-            .update(self.ground_speed, lgciu1); // TODO check which lgciu input is used for mode determination
 
         self.update_normal_braking_availability(current_pressure.pressure());
         self.update_brake_pressure_limitation();
@@ -4277,10 +4280,15 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
     fn update_steering_demands(
         &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsMeasurementOutputs,
         lgciu1: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
+        self.pedal_steering_limiter
+            .update(self.ground_speed, lgciu1); // TODO check which lgciu input is used for mode determination
+
         let steer_angle_from_autopilot = Angle::new::<degree>(
             self.autopilot_nosewheel_demand.get::<ratio>() * Self::AUTOPILOT_STEERING_INPUT_GAIN,
         );
@@ -4310,6 +4318,19 @@ impl A380HydraulicBrakeSteerComputerUnit {
                 .angle_demand_from_input_demand(self.tiller_handle_position),
         );
 
+        let any_steering_demand_active = steer_angle_from_autopilot.abs()
+            > Angle::new::<degree>(0.)
+            || steer_angle_from_pedals.abs() > Angle::new::<degree>(0.1)
+            || steer_angle_from_tiller.abs() > Angle::new::<degree>(0.1);
+
+        self.heading_control_function.update(
+            context,
+            1,
+            adirs,
+            self.ground_speed,
+            any_steering_demand_active,
+        );
+
         let is_both_engine_low_oil_pressure =
             engine1.oil_pressure_is_low() && engine2.oil_pressure_is_low();
 
@@ -4317,13 +4338,15 @@ impl A380HydraulicBrakeSteerComputerUnit {
             && self.anti_skid_activated
             && lgciu1.nose_gear_compressed(false)
         {
-            (final_steer_rudder_plus_autopilot + steer_angle_from_tiller)
-                .min(Angle::new::<degree>(
-                    Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
-                ))
-                .max(Angle::new::<degree>(
-                    -Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
-                ))
+            (final_steer_rudder_plus_autopilot
+                + steer_angle_from_tiller
+                + self.heading_control_function.steering_output())
+            .min(Angle::new::<degree>(
+                Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
+            ))
+            .max(Angle::new::<degree>(
+                -Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
+            ))
         } else {
             Angle::new::<degree>(0.)
         };
