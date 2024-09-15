@@ -121,14 +121,14 @@ export const PagesContainer = () => {
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
       // button press
       setPage((prev) => {
-        setCurrentPage((prev + 1) % 12);
-        return (prev + 1) % 12;
+        setCurrentPage((prev + 1) % 11);
+        return (prev + 1) % 11;
       });
       setEcamCycleInterval(
         setInterval(() => {
           setCurrentPage((prev) => {
-            setPage((prev + 1) % 12);
-            return (prev + 1) % 12;
+            setPage((prev + 1) % 11);
+            return (prev + 1) % 11;
           });
         }, 1000) as unknown as number,
       );
