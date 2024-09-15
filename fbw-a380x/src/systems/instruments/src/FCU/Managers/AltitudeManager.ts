@@ -1,75 +1,62 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Instrument } from '@microsoft/msfs-sdk';
-import { TemporaryHax } from './TemporaryHax';
+import { ConsumerSubject, EventBus, GameStateProvider, HEvent, Instrument, MappedSubject, SimVarValueType, Subscribable, Wait } from '@microsoft/msfs-sdk';
+import { FGVars, FgVerticalArmedFlags } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { VerticalMode } from '@shared/autopilot';
 
-export class AltitudeManager extends TemporaryHax implements Instrument {
-  private isActive?: ReturnType<typeof Simplane.getAutoPilotActive>;
-  private isManaged?: ReturnType<typeof this.isManagedModeActiveOrArmed>;
-  private currentValue?: ReturnType<typeof Simplane.getAutoPilotDisplayedAltitudeLockValue>;
-  private lightsTest?: boolean | 0;
+export class AltitudeManager implements Instrument {
+  private static readonly MANAGED_ARMED_MASK = FgVerticalArmedFlags.AltCst | FgVerticalArmedFlags.Clb | FgVerticalArmedFlags.Des | FgVerticalArmedFlags.Gs;
+  private static readonly MANAGED_MODES = [
+    VerticalMode.ALT_CST,
+    VerticalMode.ALT_CST_CPT,
+    VerticalMode.CLB,
+    VerticalMode.DES,
+    VerticalMode.FINAL,
+    VerticalMode.GS_CPT,
+    VerticalMode.GS_TRACK,
+    VerticalMode.LAND,
+    VerticalMode.FLARE,
+    VerticalMode.ROLL_OUT,
+  ];
 
-  constructor(private readonly bus: EventBus) {
-    super(bus, document.getElementById('Altitude')!)
-  }
+  private readonly sub = this.bus.getSubscriber<FGVars & HEvent>();
+
+  private readonly verticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
+  private readonly verticalArmed = ConsumerSubject.create(this.sub.on('fg.fma.verticalArmedBitmask'), 0);
+  private readonly _isVerticalManaged = MappedSubject.create(
+    ([verticalMode, verticalArmed]) => (verticalArmed & AltitudeManager.MANAGED_ARMED_MASK) > 0 || AltitudeManager.MANAGED_MODES.includes(verticalMode),
+    this.verticalMode,
+    this.verticalArmed,
+  );
+  public readonly isVerticalManaged = this._isVerticalManaged as Subscribable<boolean>;
+
+  constructor(private readonly bus: EventBus) {}
 
   public init(): void {
-    this.isActive = false;
-    this.isManaged = false;
-    this.currentValue = 0;
-    let initValue = 100;
-    if (Simplane.getAltitudeAboveGround() > 1000) {
-      initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
-    }
-    Coherent.call('AP_ALT_VAR_SET_ENGLISH', 3, initValue, true).catch(console.error);
-    this.refresh(false, false, initValue, 0, true);
-  }
+    Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame, true).then(() => {
+      let initValue = 100;
+      if (Simplane.getAltitudeAboveGround() > 1000) {
+        initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
+      }
+      Coherent.call('AP_ALT_VAR_SET_ENGLISH', 3, initValue, true).catch(console.error);
+    });
 
-  public reboot(): void {
-    this.init();
-  }
+    this.isVerticalManaged.sub((v) => SimVar.SetSimVarValue('L:A32NX_FCU_ALT_MANAGED', SimVarValueType.Bool, v), true);
 
-  private isManagedModeActiveOrArmed(_mode: number, _armed: number): number | boolean {
-    return (
-      (_mode >= 20 && _mode <= 34)
-      || (_armed >> 1 & 1
-        || _armed >> 2 & 1
-        || _armed >> 3 & 1
-        || _armed >> 4 & 1
-      )
-    );
+    this.sub.on('hEvent').handle(this.onHEvent.bind(this));
   }
 
   public onUpdate(): void {
-    const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
-    const verticalArmed = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_ARMED', 'Number');
-    const isManaged = this.isManagedModeActiveOrArmed(verticalMode, verticalArmed);
-
-    this.refresh(Simplane.getAutoPilotActive(), isManaged, Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') == 0);
+    // noop
   }
 
-  private refresh(_isActive: ReturnType<typeof Simplane.getAutoPilotActive>, _isManaged: ReturnType<typeof this.isManagedModeActiveOrArmed>, _value: ReturnType<typeof Simplane.getAutoPilotDisplayedAltitudeLockValue>, _lightsTest: boolean | 0, _force = false): void {
-    if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
-      this.isActive = _isActive;
-      this.isManaged = _isManaged;
-      this.currentValue = _value;
-      this.lightsTest = _lightsTest;
-      if (this.lightsTest) {
-        this.textValueContent = '88888';
-        return;
-      }
-      const value = Math.floor(Math.max(this.currentValue, 100));
-      this.textValueContent = value.toString().padStart(5, '0');
-      SimVar.SetSimVarValue('L:A32NX_FCU_ALT_MANAGED', 'boolean', this.isManaged);
-    }
-  }
-
-  protected override onEvent(_event: string): void {
-    if (_event === 'ALT_PUSH') {
+  private onHEvent(event: string): void {
+    // FIXME don't handle events when not powered up
+    if (event === 'A320_Neo_FCU_ALT_PUSH') {
       SimVar.SetSimVarValue('K:A32NX.FCU_ALT_PUSH', 'number', 0);
       SimVar.SetSimVarValue('K:ALTITUDE_SLOT_INDEX_SET', 'number', 2);
-    } else if (_event === 'ALT_PULL') {
+    } else if (event === 'A320_Neo_FCU_ALT_PULL') {
       SimVar.SetSimVarValue('K:A32NX.FCU_ALT_PULL', 'number', 0);
       SimVar.SetSimVarValue('K:ALTITUDE_SLOT_INDEX_SET', 'number', 1);
     }

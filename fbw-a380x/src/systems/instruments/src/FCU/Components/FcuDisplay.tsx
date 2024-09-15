@@ -23,7 +23,7 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
             <Heading />
 
             <div id="AltVS">
-              <Altitude />
+              <Altitude bus={this.props.bus} />
               <VerticalSpeed />
             </div>
           </div>

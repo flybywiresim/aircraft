@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Clock, DebounceTimer, EventBus, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, MappedSubject, Subject, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, MsfsAutopilotAssitancePublisher } from '@flybywiresim/fbw-sdk';
 import { FcuDisplay } from './Components/FcuDisplay';
 import { AltitudeManager } from './Managers/AltitudeManager';
 import { AutopilotManager } from './Managers/AutopilotManager';
@@ -54,6 +54,8 @@ export class FcuFsInstrument implements FsInstrument {
     this.backplane.addInstrument("HeadingManager", new HeadingManager(this.bus));
     this.backplane.addInstrument("SpeedManager", new SpeedManager(this.bus));
     this.backplane.addInstrument("VerticalSpeedManager", new VerticalSpeedManager(this.bus));
+
+    this.backplane.addPublisher("MsfsAutopilotAssistancePublisher", new MsfsAutopilotAssitancePublisher(this.bus));
 
     this.doInit();
   }
