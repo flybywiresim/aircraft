@@ -19,6 +19,7 @@ import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -34,7 +35,9 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
   private readonly minAlt = -500;
   private readonly maxAlt = 24000;
 
-  private readonly sub = this.props.bus.getArincSubscriber<GenericFcuEvents & NDSimvars & DmcLogicEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<
+    GenericFcuEvents & NDSimvars & DmcLogicEvents & SimplaneValues
+  >();
 
   private topRef = FSComponent.createRef<SVGElement>();
 
@@ -65,7 +68,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
 
   private readonly lineColor = this.vdAvailable.map((a) => (a ? 'white' : 'red'));
 
-  private readonly baroModeIsStd = ConsumerSubject.create(this.sub.on('baroMode').whenChanged(), false);
+  private readonly baroMode = ConsumerSubject.create(this.sub.on('baroMode').whenChanged(), 'STD');
 
   private readonly baroCorrectedAltitudeRaw = ConsumerSubject.create(
     this.sub.on('baroCorrectedAltitude').whenChanged(),
@@ -172,16 +175,16 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             0
           </text>
           <text x="95" y={this.altToY(10000) + 7.5} class="White FontSmallest EndAlign">
-            {this.baroModeIsStd.map((m) => (m ? '100' : '10000'))}
+            {this.baroMode.map((m) => (m === 'STD' ? '100' : '10000'))}
           </text>
           <text x="95" y={this.altToY(20000) + 7.5} class="White FontSmallest EndAlign">
-            {this.baroModeIsStd.map((m) => (m ? '200' : '20000'))}
+            {this.baroMode.map((m) => (m === 'STD' ? '200' : '20000'))}
           </text>
           <text
             x="10"
             y="900"
             class="White FontSmallest"
-            visibility={this.baroModeIsStd.map((s) => (s ? 'visible' : 'hidden'))}
+            visibility={this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'))}
           >
             FL
           </text>
