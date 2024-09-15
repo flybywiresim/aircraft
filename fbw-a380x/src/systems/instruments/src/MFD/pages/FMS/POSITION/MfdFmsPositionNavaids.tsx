@@ -1,6 +1,7 @@
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsPositionNavaids.scss';
+import { NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -107,8 +108,6 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       return;
     }
 
-    //console.time('POSITION/NAVAIDS:onNewData');
-
     const vor1 = this.props.fmcService.master.navaidTuner.getVorRadioTuningStatus(1);
     this.vor1Ident.set(vor1.ident ?? null);
     this.vor1Freq.set(vor1.frequency ?? null);
@@ -139,7 +138,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
     this.deselectedNavaids.forEach((v, i) => {
       if (this.props.fmcService.master?.navaidTuner.deselectedNavaids[i]) {
-        v.set(this.props.fmcService.master.navaidTuner.deselectedNavaids[i]);
+        v.set(this.props.fmcService.master.navaidTuner.deselectedNavaids[i].substring(7).trim());
       } else {
         v.set(null);
       }
@@ -150,8 +149,14 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     this.thirdRowClass.set(mmr.ident ? 'ILS/DME' : '');
     this.thirdRowIdent.set(mmr.ident ?? null);
     this.thirdRowIdentRef.instance.style.visibility = mmr.ident ? 'visible' : 'hidden';
+  }
 
-    //console.timeEnd('POSITION/NAVAIDS:onNewData');
+  private async parseNavaid(navaid: string, onlyVor = false) {
+    const navaids = await (onlyVor
+      ? NavigationDatabaseService.activeDatabase.searchVor(navaid)
+      : NavigationDatabaseService.activeDatabase.searchAllNavaid(navaid));
+
+    return this.props.mfd.deduplicateFacilities(navaids);
   }
 
   private deselectGlide() {
@@ -167,21 +172,21 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       }
     } else {
-      const navaids = await NavigationDatabaseService.activeDatabase.searchVor(ident);
-      // FIXME need to handle duplicate navaids and pilot navaid page if no result
-      if (navaids.length > 0) {
+      const navaid = await this.parseNavaid(ident, true);
+
+      if (navaid && navaid.subSectionCode === NavaidSubsectionCode.VhfNavaid) {
         if (
           this.props.fmcService.master?.navaidTuner.deselectedNavaids.find(
-            (databaseId) => databaseId === navaids[0].databaseId,
+            (databaseId) => databaseId === navaid.databaseId,
           )
         ) {
           this.props.fmcService.master.addMessageToQueue(
-            NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaids[0].ident),
+            NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident),
             undefined,
             undefined,
           );
         } else {
-          this.props.fmcService.master?.navaidTuner.setManualVor(index, navaids[0]);
+          this.props.fmcService.master?.navaidTuner.setManualVor(index, navaid);
         }
       }
     }
@@ -216,9 +221,9 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       }
     } else {
       const ils = await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([ident]);
-      // FIXME need to handle duplicate navaids and pilot navaid page if no result
-      if (ils.length > 0) {
-        await this.props.fmcService.master?.navaidTuner.setManualIls(ils[0]);
+      const deduplicatedIls = await this.props.mfd.deduplicateFacilities(ils);
+      if (deduplicatedIls) {
+        await this.props.fmcService.master?.navaidTuner.setManualIls(deduplicatedIls);
       }
     }
     this.onNewData();
@@ -234,6 +239,24 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       }
     } else {
       this.props.fmcService.master?.navaidTuner.setManualIls(freq);
+    }
+    this.onNewData();
+  }
+
+  async deselectionHandler(nV: string | null, oV: string | null | undefined) {
+    console.log(nV, oV);
+    if (nV) {
+      console.log(1);
+      const navaid = await this.parseNavaid(nV);
+      console.log(navaid, navaid?.databaseId);
+      if (navaid) {
+        this.props.fmcService.master?.navaidTuner.deselectNavaid(navaid.databaseId);
+      }
+    } else if (oV) {
+      const navaid = await this.parseNavaid(oV);
+      if (navaid) {
+        this.props.fmcService.master?.navaidTuner.reselectNavaid(navaid.databaseId);
+      }
     }
     this.onNewData();
   }
@@ -428,17 +451,8 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
               <div style="width: 45%; display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <div>
                   <InputField<string>
-                    // FIXME all these need to handle duplicate names, and actually validate the navaid exists
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[0]}
                     alignText="center"
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -449,15 +463,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[1]}
                     alignText="center"
                     disabled={this.deselectedNavaids[0].map((it) => it === null)}
@@ -469,15 +475,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[2]}
                     alignText="center"
                     disabled={this.deselectedNavaids[1].map((it) => it === null)}
@@ -491,15 +489,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[3]}
                     alignText="center"
                     disabled={this.deselectedNavaids[2].map((it) => it === null)}
@@ -511,15 +501,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[4]}
                     alignText="center"
                     disabled={this.deselectedNavaids[3].map((it) => it === null)}
@@ -531,15 +513,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[5]}
                     alignText="center"
                     disabled={this.deselectedNavaids[4].map((it) => it === null)}

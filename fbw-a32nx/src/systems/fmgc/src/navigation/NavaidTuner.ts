@@ -611,12 +611,12 @@ export class NavaidTuner {
     return this.adfTuningStatus.map((adfStatus) => adfStatus.facility).filter((fac) => fac !== undefined);
   }
 
-  deselectNavaid(icao: string): void {
-    this.navaidSelectionManager.deselectNavaid(icao);
+  deselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.deselectNavaid(databaseId);
   }
 
-  reselectNavaid(icao: string): void {
-    this.navaidSelectionManager.reselectNavaid(icao);
+  reselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.reselectNavaid(databaseId);
   }
 
   get deselectedNavaids(): string[] {
