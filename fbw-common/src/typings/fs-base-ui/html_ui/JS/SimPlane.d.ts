@@ -321,7 +321,7 @@ declare global {
         function getStallSpeedPredicted(flapIndex: number): Knots | null;
         function getWindDirection(): Degrees | null;
         function getWindStrength(): Knots | null;
-        function getAutoPilotActive(apIndex: number): boolean | null;
+        function getAutoPilotActive(apIndex?: number): boolean | null;
         function getAutoPilotAirspeedManaged(): boolean;
         function getAutoPilotAirspeedSelected(): boolean;
         function getAutoPilotAirspeedHoldActive(isManaged?: boolean): boolean | null;

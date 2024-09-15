@@ -30,6 +30,7 @@ module.exports = {
     instruments: [
         msfsAvionicsInstrument('Clock'),
         msfsAvionicsInstrument('EWD'),
+        msfsAvionicsInstrument('FCU', 'FcuBaseInstrument.ts'),
         msfsAvionicsInstrument('MFD'),
         msfsAvionicsInstrument('ND'),
         msfsAvionicsInstrument('PFD'),
@@ -44,10 +45,10 @@ module.exports = {
     ],
 };
 
-function msfsAvionicsInstrument(name, folder = name) {
+function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
     return {
         name,
-        index: `src/systems/instruments/src/${folder}/instrument.tsx`,
+        index: `src/systems/instruments/src/${name}/${index}`,
         simulatorPackage: {
             type: 'baseInstrument',
             templateId: `A380X_${name}`,

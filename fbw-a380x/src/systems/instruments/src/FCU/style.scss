@@ -1,5 +1,7 @@
-﻿/* Copyright (c) 2023-2024 FlyByWire Simulations */
-/* SPDX-License-Identifier: GPL-3.0 */
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "./definitions.scss";
 
 :root {
   --bodyHeightScale: 1;
@@ -34,21 +36,6 @@
 
 #Electricity[state="off"] {
   display: none;
-}
-
-
-@font-face {
-  font-family: "Poppins-SemiBold";
-  src: url("/Fonts/fbw-a380x/Poppins-SemiBold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Digital";
-  src: url("/Fonts/fbw-a380x/A380X_FCU.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
 }
 
 :root {
@@ -107,7 +94,7 @@
   fill: var(--main-display-colour);
 }
 
-a380-fcu-element {
+#FCU_CONTENT {
   width: 100%;
   height: 100%;
   background-color: var(--main-display-colour-background);
@@ -116,14 +103,14 @@ a380-fcu-element {
   overflow: hidden;
 }
 
-a380-fcu-element #Mainframe {
+#FCU_CONTENT #Mainframe {
   width: 100%;
   height: 100%;
   display: block;
   position: relative;
 }
 
-a380-fcu-element #Mainframe #LargeScreen {
+#FCU_CONTENT #Mainframe #LargeScreen {
   width: 100%;
   height: 16%;
   display: block;
@@ -131,7 +118,7 @@ a380-fcu-element #Mainframe #LargeScreen {
   background-color: var(--main-display-colour-background);
 }
 
-a380-fcu-element #Mainframe #LargeScreen #Speed {
+#FCU_CONTENT #Mainframe #LargeScreen #Speed {
   width: 30%;
   height: 100%;
   left: 5%;
@@ -139,42 +126,42 @@ a380-fcu-element #Mainframe #LargeScreen #Speed {
   position: absolute;
 }
 
-a380-fcu-element #Mainframe #LargeScreen #Heading {
+#FCU_CONTENT #Mainframe #LargeScreen #Heading {
   width: 30%;
   height: 100%;
   left: 50%;
   position: absolute;
 }
 
-a380-fcu-element #Mainframe #LargeScreen #Mode {
+#FCU_CONTENT #Mainframe #LargeScreen #Mode {
   width: 20%;
   height: 100%;
   left: 80%;
   position: absolute;
 }
 
-a380-fcu-element #Mainframe #LargeScreen #AltVS {
+#FCU_CONTENT #Mainframe #LargeScreen #AltVS {
   width: 40%;
   height: 100%;
   left: 120%;
   position: absolute;
 }
 
-a380-fcu-element #Mainframe #LargeScreen #AltVS #Altitude {
+#FCU_CONTENT #Mainframe #LargeScreen #AltVS #Altitude {
   width: 100%;
   height: 100%;
   left: 0%;
   position: absolute;
 }
 
-a380-fcu-element #Mainframe #LargeScreen #AltVS #VerticalSpeed {
+#FCU_CONTENT #Mainframe #LargeScreen #AltVS #VerticalSpeed {
   width: 100%;
   height: 100%;
   left: 95%;
   position: absolute;
 }
 
-a380-fcu-element #Mainframe #SmallScreen {
+#FCU_CONTENT #Mainframe #SmallScreen {
   width: 27%;
   height: 17%;
   display: block;
@@ -183,8 +170,8 @@ a380-fcu-element #Mainframe #SmallScreen {
   background-color: var(--main-display-colour-background);
 }
 
-a380-fcu-element #Mainframe #SmallScreen #Selected,
-a380-fcu-element #Mainframe #SmallScreen #Standard {
+#FCU_CONTENT #Mainframe #SmallScreen #Selected,
+#FCU_CONTENT #Mainframe #SmallScreen #Standard {
   width: 100%;
   height: 100%;
   top: 0;
