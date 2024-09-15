@@ -27,6 +27,8 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
   private selectedFpa?: number;
   private _resetSelectionTimeout?: ReturnType<typeof setTimeout>;
   private currentValue?: number;
+  /** @deprecated not written anywhere!! */
+  private currentVs: undefined
   private lightsTest?: number | boolean;
 
   constructor(private readonly bus: EventBus) {
