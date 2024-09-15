@@ -1324,7 +1324,7 @@ export class FmcAircraftInterface {
         undefined,
       );
       this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFl);
-      SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
     }
   }
 
@@ -1407,7 +1407,7 @@ export class FmcAircraftInterface {
             );
             this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
             // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
           }
         }, 3000);
       }
@@ -1480,7 +1480,7 @@ export class FmcAircraftInterface {
    * @param newCruiseLevel as flight level
    */
   onUpdateCruiseLevel(newCruiseLevel: number) {
-    SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', newCruiseLevel * 100);
+    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', newCruiseLevel * 100);
     this.updateConstraints();
 
     this.fmc.handleNewCruiseAltitudeEntered(newCruiseLevel);
