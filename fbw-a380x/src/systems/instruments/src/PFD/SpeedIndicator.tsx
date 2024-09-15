@@ -1212,7 +1212,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
           ref={this.speedTargetRef}
           class="NormalStroke CornerRound Cyan"
           style="transform: translate3d(0px, 0px, 0px)"
-          d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512"
+          d="m19.274 81.895 5.3577 1.9512v -6.0476l -5.3577 1.9512z"
         />
         <SpeedMargins bus={this.props.bus} />
       </>
