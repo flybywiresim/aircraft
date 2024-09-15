@@ -15,7 +15,7 @@
 class AircraftPresetProcedures_A32NX {
  public:
   const inline static PresetProceduresDefinition aircraftProcedureDefinition{
-      // clang-format off
+  // clang-format off
       // @formatter:off
 
       .POWERED_CONFIG_ON {
@@ -156,6 +156,7 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"Spoiler Arm",          3090, false, 2000,  "(L:A32NX_SPOILERS_ARMED) 1 ==",                    "1 (>K:SPOILERS_ARM_SET)"},
         ProcedureStep{"Rudder Trim Reset",    3100, false, 2000,  "(A:RUDDER TRIM, Radians) 0 ==",                    "0 (>K:RUDDER_TRIM_SET)"},
         ProcedureStep{"Flaps 1",              3110, false, 3000,  "(L:A32NX_FLAPS_HANDLE_INDEX) 1 ==",                "1 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
+
         // SOP: TAXI
         ProcedureStep{"NOSE Lt Taxi",         3120, false, 1000,  "(A:CIRCUIT SWITCH ON:20, Bool)",                   "0 (>L:LIGHTING_LANDING_1) (A:CIRCUIT SWITCH ON:20, Bool) ! if{ 20 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
         ProcedureStep{"RWY TURN OFF Lt L On", 3130, false, 0,     "(A:CIRCUIT SWITCH ON:21, Bool)",                   "(A:CIRCUIT SWITCH ON:21, Bool) ! if{ 21 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
@@ -166,6 +167,12 @@ class AircraftPresetProcedures_A32NX {
         ProcedureStep{"TCAS TRAFFIC Abv",     2100, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",      "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
         ProcedureStep{"Autobrake Max",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",             "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
         ProcedureStep{"TERR ON ND Capt. On",  3080, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
+
+        ProcedureStep{"Await Flaps 1+F",      3110, true,  1000,  "",                                                 "(L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 24 >= "
+                                                                                                                      "(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 24 >= && "},
+        ProcedureStep{"Await Slats 1+F",      3110, true,  1000,  "",                                                 "(L:A32NX_LEFT_SLATS_POSITION_PERCENT) 66 >= "
+                                                                                                                      "(L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 >= && "},
+
         ProcedureStep{"T.O Config",           3085, false, 200,   "",                                                 "1 (>L:A32NX_BTN_TOCONFIG)"},
         ProcedureStep{"T.O Config",           3085, false, 2000,  "",                                                 "0 (>L:A32NX_BTN_TOCONFIG)"},
       },
@@ -219,7 +226,7 @@ class AircraftPresetProcedures_A32NX {
       }
 
       // @formatter:on
-      // clang-format on
+  // clang-format on
   };
 };
 

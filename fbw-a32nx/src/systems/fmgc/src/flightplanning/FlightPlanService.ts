@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
@@ -23,13 +23,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
 
-  private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
-
   navigationDatabase: NavigationDatabase;
 
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
+    private config = FpmConfigs.A320_HONEYWELL_H3,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
       this.bus,
