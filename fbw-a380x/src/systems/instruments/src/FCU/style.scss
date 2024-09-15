@@ -38,12 +38,6 @@
   display: none;
 }
 
-:root {
-  --main-display-colour-background: hsl(248, 94%, 53%);
-  --main-display-colour: hsl(0, 0%, 100%);
-  --main-display-colour-inactive: hsl(248, 94%, 48%);
-}
-
 :root text.Common {
   width: 100%;
   height: 100%;
@@ -52,7 +46,7 @@
 :root text.Active {
   font-family: "Poppins-SemiBold";
   font-size: 230px;
-  fill: var(--main-display-colour);
+  fill: $display-colour;
 }
 :root text.Active.BaroValue {
   font-size: 210px;
@@ -61,7 +55,7 @@
 :root text.Inactive {
   font-family: "Poppins-SemiBold";
   font-size: 230px;
-  fill: var(--main-display-colour-inactive);
+  fill: $display-colour-inactive;
 }
 :root text.Inactive.BaroValue {
   font-size: 210px;
@@ -71,7 +65,7 @@
   font-family: Digital;
   font-size:440px;
   text-anchor: start;
-  fill: var(--main-display-colour);
+  fill: $display-colour;
   letter-spacing: 0px;
 }
 
@@ -86,18 +80,18 @@
 }
 
 :root line {
-  stroke: var(--main-display-colour);
+  stroke: $display-colour;
   stroke-width: 5;
 }
 
 :root circle {
-  fill: var(--main-display-colour);
+  fill: $display-colour;
 }
 
 #FCU_CONTENT {
   width: 100%;
   height: 100%;
-  background-color: var(--main-display-colour-background);
+  background-color: $display-colour-background;
   font-family: "Poppins-SemiBold";
   position: relative;
   overflow: hidden;
@@ -115,7 +109,7 @@
   height: 16%;
   display: block;
   position: absolute;
-  background-color: var(--main-display-colour-background);
+  background-color: $display-colour-background;
 }
 
 #FCU_CONTENT #Mainframe #LargeScreen #Speed {
@@ -167,7 +161,7 @@
   display: block;
   position: absolute;
   top: 16%;
-  background-color: var(--main-display-colour-background);
+  background-color: $display-colour-background;
 }
 
 #FCU_CONTENT #Mainframe #SmallScreen #Selected,
