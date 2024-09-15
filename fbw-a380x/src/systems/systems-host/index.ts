@@ -17,6 +17,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
+import { LegacyFuelInit } from 'systems-host/systems/LegacyFuelInit';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
@@ -49,6 +50,8 @@ class SystemsHost extends BaseInstrument {
   private gpws: LegacyGpws;
 
   private soundManager: LegacySoundManager;
+
+  private fuelInit: LegacyFuelInit;
 
   private keyInterceptManager: KeyEventManager;
 
@@ -115,6 +118,7 @@ class SystemsHost extends BaseInstrument {
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.fwc = new LegacyFwc();
     this.soundManager = new LegacySoundManager();
+    this.fuelInit = new LegacyFuelInit();
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
 
@@ -139,6 +143,7 @@ class SystemsHost extends BaseInstrument {
     ]).then(([keyEventManager]) => {
       this.keyInterceptManager = keyEventManager;
       this.initLighting();
+      this.fuelInit.init();
     });
   }
 
