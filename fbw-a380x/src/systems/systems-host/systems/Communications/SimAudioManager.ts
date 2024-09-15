@@ -1,33 +1,41 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerValue, EventBus, Instrument, MutableSubscribable, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ConsumerValue,
+  EventBus,
+  Instrument,
+  MutableSubscribable,
+  SimVarValueType,
+  Subject,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { CameraEvents } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
 import { AudioManagementUnit, ComIndex } from './AudioManagementUnit';
 import { RadioNavSelectedNavaid, RmpAmuBusEvents } from './RmpAmuBusPublisher';
 
 interface NavaidDefinition {
-  setVolume: (volume: number, amuIndex: number) => Promise<unknown>,
-  setIdent: (on: boolean, amuIndex: number) => Promise<unknown>,
+  setVolume: (volume: number, amuIndex: number) => Promise<unknown>;
+  setIdent: (on: boolean, amuIndex: number) => Promise<unknown>;
 }
 
 interface NavaidState extends NavaidDefinition {
-  isIdentOn: MutableSubscribable<boolean>,
-  volume: MutableSubscribable<number>,
-  subs: Subscription[],
+  isIdentOn: MutableSubscribable<boolean>;
+  volume: MutableSubscribable<number>;
+  subs: Subscription[];
 }
 
 interface ComDefinition {
-  setVolume: (volume: number) => Promise<unknown>,
-  setReceive: (on: boolean) => Promise<unknown>,
-  setTransmit: (on: boolean, amuIndex: number) => Promise<unknown>,
+  setVolume: (volume: number) => Promise<unknown>;
+  setReceive: (on: boolean) => Promise<unknown>;
+  setTransmit: (on: boolean, amuIndex: number) => Promise<unknown>;
 }
 
 interface ComState extends ComDefinition {
-  isReceiveOn: MutableSubscribable<boolean>,
-  isTransmitOn: MutableSubscribable<boolean>,
-  volume: MutableSubscribable<number>,
-  subs: Subscription[],
+  isReceiveOn: MutableSubscribable<boolean>;
+  isTransmitOn: MutableSubscribable<boolean>;
+  volume: MutableSubscribable<number>;
+  subs: Subscription[];
 }
 
 enum SimTransmitStates {
@@ -59,7 +67,7 @@ export class SimAudioManager implements Instrument {
       },
       setIdent: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue('RADIO_VOR3_IDENT_SET', SimVarValueType.Number, amuIndex === 2 ? 0 : (on ? 1 : 0)),
+          SimVar.SetSimVarValue('RADIO_VOR3_IDENT_SET', SimVarValueType.Number, amuIndex === 2 ? 0 : on ? 1 : 0),
           SimVar.SetSimVarValue('RADIO_VOR4_IDENT_SET', SimVarValueType.Number, amuIndex === 2 ? (on ? 1 : 0) : 0),
         ]);
       },
@@ -90,8 +98,16 @@ export class SimAudioManager implements Instrument {
       setReceive: (on) => SimVar.SetSimVarValue('K:COM1_RECEIVE_SELECT', SimVarValueType.Number, on ? 1 : 0),
       setTransmit: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue(amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET', SimVarValueType.Enum, on ? SimTransmitStates.Com1 : SimTransmitStates.None),
-          SimVar.SetSimVarValue(amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET', SimVarValueType.Enum, SimTransmitStates.None),
+          SimVar.SetSimVarValue(
+            amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET',
+            SimVarValueType.Enum,
+            on ? SimTransmitStates.Com1 : SimTransmitStates.None,
+          ),
+          SimVar.SetSimVarValue(
+            amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET',
+            SimVarValueType.Enum,
+            SimTransmitStates.None,
+          ),
         ]);
       },
     },
@@ -100,8 +116,16 @@ export class SimAudioManager implements Instrument {
       setReceive: (on) => SimVar.SetSimVarValue('K:COM2_RECEIVE_SELECT', SimVarValueType.Number, on ? 1 : 0),
       setTransmit: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue(amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET', SimVarValueType.Enum, on ? SimTransmitStates.Com2 : SimTransmitStates.None),
-          SimVar.SetSimVarValue(amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET', SimVarValueType.Enum, SimTransmitStates.None),
+          SimVar.SetSimVarValue(
+            amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET',
+            SimVarValueType.Enum,
+            on ? SimTransmitStates.Com2 : SimTransmitStates.None,
+          ),
+          SimVar.SetSimVarValue(
+            amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET',
+            SimVarValueType.Enum,
+            SimTransmitStates.None,
+          ),
         ]);
       },
     },
@@ -110,8 +134,16 @@ export class SimAudioManager implements Instrument {
       setReceive: (on) => SimVar.SetSimVarValue('K:COM3_RECEIVE_SELECT', SimVarValueType.Number, on ? 1 : 0),
       setTransmit: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue(amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET', SimVarValueType.Enum, on ? SimTransmitStates.Com3 : SimTransmitStates.None),
-          SimVar.SetSimVarValue(amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET', SimVarValueType.Enum, SimTransmitStates.None),
+          SimVar.SetSimVarValue(
+            amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET',
+            SimVarValueType.Enum,
+            on ? SimTransmitStates.Com3 : SimTransmitStates.None,
+          ),
+          SimVar.SetSimVarValue(
+            amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET',
+            SimVarValueType.Enum,
+            SimTransmitStates.None,
+          ),
         ]);
       },
     },
@@ -121,35 +153,43 @@ export class SimAudioManager implements Instrument {
 
   private activeAmuIndex = 1;
 
-  private readonly navaidStates: Map<RadioNavSelectedNavaid, NavaidState> = new Map(Object.entries(SimAudioManager.navaidDefinitions).map(([key, def]) => {
-    const isIdentOn = Subject.create<boolean>(false);
-    const volume = Subject.create<number>(0);
+  private readonly navaidStates: Map<RadioNavSelectedNavaid, NavaidState> = new Map(
+    Object.entries(SimAudioManager.navaidDefinitions).map(([key, def]) => {
+      const isIdentOn = Subject.create<boolean>(false);
+      const volume = Subject.create<number>(0);
 
-    const subs = [
-      isIdentOn.sub((v) => def.setIdent(v === true, this.activeAmuIndex), true, true),
-      volume.sub((v) => def.setVolume(v, this.activeAmuIndex), true, true),
-    ];
+      const subs = [
+        isIdentOn.sub((v) => def.setIdent(v === true, this.activeAmuIndex), true, true),
+        volume.sub((v) => def.setVolume(v, this.activeAmuIndex), true, true),
+      ];
 
-    return [parseInt(key), { ...def, isIdentOn, volume, subs }];
-  }));
+      return [parseInt(key), { ...def, isIdentOn, volume, subs }];
+    }),
+  );
 
-  private readonly comStates: Map<ComIndex, ComState> = new Map(Object.entries(SimAudioManager.comDefinitions).map(([key, def]) => {
-    const isReceiveOn = Subject.create<boolean>(false);
-    const isTransmitOn = Subject.create<boolean>(false);
-    const volume = Subject.create<number>(0);
+  private readonly comStates: Map<ComIndex, ComState> = new Map(
+    Object.entries(SimAudioManager.comDefinitions).map(([key, def]) => {
+      const isReceiveOn = Subject.create<boolean>(false);
+      const isTransmitOn = Subject.create<boolean>(false);
+      const volume = Subject.create<number>(0);
 
-    const subs = [
-      isReceiveOn.sub((v) => def.setReceive(v === true), true, true),
-      isTransmitOn.sub((v) => def.setTransmit(v === true, this.activeAmuIndex), true, true),
-      volume.sub((v) => def.setVolume(v), true, true),
-    ];
+      const subs = [
+        isReceiveOn.sub((v) => def.setReceive(v === true), true, true),
+        isTransmitOn.sub((v) => def.setTransmit(v === true, this.activeAmuIndex), true, true),
+        volume.sub((v) => def.setVolume(v), true, true),
+      ];
 
-    return [parseInt(key), { ...def, isReceiveOn, isTransmitOn, volume, subs }];
-  }));
+      return [parseInt(key), { ...def, isReceiveOn, isTransmitOn, volume, subs }];
+    }),
+  );
 
   private readonly isPilotSittingFoSide = ConsumerValue.create(this.sub.on('camera_pilot_in_fo_seat'), false);
 
-  constructor(private readonly bus: EventBus, private readonly amu1: AudioManagementUnit, private readonly amu2: AudioManagementUnit) {}
+  constructor(
+    private readonly bus: EventBus,
+    private readonly amu1: AudioManagementUnit,
+    private readonly amu2: AudioManagementUnit,
+  ) {}
 
   init(): void {
     for (const navaid of this.navaidStates.values()) {
@@ -165,7 +205,7 @@ export class SimAudioManager implements Instrument {
     }
   }
   onUpdate(): void {
-    this.activeAmuIndex = (!this.amu1.isHealthy.get() || this.isPilotSittingFoSide.get()) ? 2 : 1;
+    this.activeAmuIndex = !this.amu1.isHealthy.get() || this.isPilotSittingFoSide.get() ? 2 : 1;
     const activeAmu = this.activeAmuIndex === 2 ? this.amu2 : this.amu1;
     const isAmuHealthy = activeAmu.isHealthy.get();
 
