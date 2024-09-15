@@ -16,7 +16,7 @@ export class RefImages extends DisplayComponent<ComponentProps> {
 
   private readonly buttonRef = FSComponent.createRef<HTMLDivElement>();
 
-  onAfterRender(node: VNode): void {
+  onAfterRender(): void {
     this.buttonRef.instance.onclick = () => {
       const index = this.images.findIndex((i) => i.img === this.image.get());
       const newImage = this.images[index + 1];

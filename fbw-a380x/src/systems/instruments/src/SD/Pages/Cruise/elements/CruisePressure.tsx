@@ -1,7 +1,7 @@
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 export const CruisePressure = () => {
   // TODO: Handle landing elevation invalid SSM

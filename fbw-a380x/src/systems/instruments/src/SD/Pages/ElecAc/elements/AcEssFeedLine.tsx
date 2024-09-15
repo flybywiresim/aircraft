@@ -7,7 +7,7 @@ interface AcEssFeedLineProps {
 
 export const AcEssFeedLine: FC<AcEssFeedLineProps> = ({ side }) => {
   // TODO This contactor is not yet implemented.
-  const [pepdcToEmerPwrCtrCtorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_993XC${side}_IS_CLOSED`, 'bool', 500);
+  // const [pepdcToEmerPwrCtrCtorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_993XC${side}_IS_CLOSED`, 'bool', 500);
   const [acEssBusSwitchingCtorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_3XC${side}_IS_CLOSED`, 'bool', 500);
 
   return (

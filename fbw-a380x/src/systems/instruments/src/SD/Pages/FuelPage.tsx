@@ -29,9 +29,6 @@ export const FuelPage = () => {
   const [engine3Valve] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'Percent over 100');
   const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100');
 
-  const [feed1Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Bool');
-  const [feed1Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Bool');
-
   const [crossFeed1ValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:28', 'Percent over 100');
 
   const [leftOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:1', 'kg');
@@ -173,7 +170,7 @@ interface FuelLineProps {
   displayWhenInactive: boolean;
 }
 
-const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, startArrow, endArrow, active, displayWhenInactive }) => {
+const FuelLine: FC<FuelLineProps> = ({ x1, y1, x2, y2, active, displayWhenInactive }) => {
   let color: string;
   if (active) {
     color = 'Green';

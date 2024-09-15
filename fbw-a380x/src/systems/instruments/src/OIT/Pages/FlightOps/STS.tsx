@@ -1,12 +1,8 @@
-import React, { FC, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { useOITContext } from '../../OnboardInformationTerminal';
+import React, { FC } from 'react';
 import { Button } from '../../Components/Button';
 import { Dropdown, DropdownItem } from '../../Components/Dropdown';
 
 export const STSPage: FC = () => {
-  const history = useHistory();
-  const { displayPosition } = useOITContext();
   return (
     <>
       {/* Main Section */}

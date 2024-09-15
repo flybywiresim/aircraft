@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { TawsDataEvents } from '@flybywiresim/msfs-avionics-common';
 

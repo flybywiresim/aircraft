@@ -1,17 +1,9 @@
 import React, { useRef } from 'react';
 
-import useMouse from '@react-hook/mouse-position';
-import { useSimVar } from '@instruments/common/simVars';
 import { Layer } from '@instruments/common/utils';
 
 export const Mailbox = () => {
   const ref = useRef(null);
-
-  const mouse = useMouse(ref, {
-    fps: 165,
-    enterDelay: 100,
-    leaveDelay: 100,
-  });
 
   return (
     <>

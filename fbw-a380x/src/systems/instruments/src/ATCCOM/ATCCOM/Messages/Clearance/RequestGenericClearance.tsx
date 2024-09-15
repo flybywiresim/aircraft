@@ -5,13 +5,7 @@ import { MessageVisualizationProps } from '../Registry';
 
 // TODO make ATSU a singleton with access to the scratchpad
 // TODO get current station from ATSU
-export const RequestGenericClearance: FC<MessageVisualizationProps> = ({
-  x = 0,
-  y = 0,
-  index,
-  messageElements,
-  onDelete,
-}) => (
+export const RequestGenericClearance: FC<MessageVisualizationProps> = ({ x = 0, y = 0, onDelete }) => (
   <MessageElement x={x} y={y} onDelete={onDelete}>
     <Layer>
       <text x={30} fontSize={22} fill="white">

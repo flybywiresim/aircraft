@@ -3,16 +3,10 @@ import { TextBox } from '../../../Components/Textbox';
 import { MessageElement } from '../../Elements/MessageElement';
 import { MessageVisualizationProps } from '../Registry';
 
-export const RequestOceanicClearance: FC<MessageVisualizationProps> = ({
-  x = 0,
-  y = 0,
-  index,
-  messageElements,
-  onDelete,
-}) => {
-  const updateValue = (value: string, boxIndex: number): boolean => {
-    return false;
-  };
+export const RequestOceanicClearance: FC<MessageVisualizationProps> = ({ x = 0, y = 0, onDelete }) => {
+  // const updateValue = (value: string, boxIndex: number): boolean => {
+  //   return false;
+  // };
 
   return (
     <>

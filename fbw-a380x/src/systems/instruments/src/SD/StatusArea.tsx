@@ -75,8 +75,6 @@ export const StatusArea = () => {
     setIsaVisible(isaShouldBeVisible);
   }, [isa, sat, zp]);
 
-  const isaPrefix = isa > 0 ? '+' : '';
-
   return (
     <Layer x={0} y={0}>
       {/* Frame */}

@@ -1,10 +1,8 @@
-import React, { FC, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { FC } from 'react';
 import { useOITContext } from '../../OnboardInformationTerminal';
 import { Button } from '../../Components/Button';
 
 export const LoginPage: FC = () => {
-  const history = useHistory();
   const { displayPosition } = useOITContext();
   return (
     <>

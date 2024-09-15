@@ -1,5 +1,4 @@
 import React from 'react';
-import { Triangle } from '@instruments/common/Shapes';
 import { Reservoir } from './Reservoir';
 import { Engine } from 'instruments/src/SD/Pages/Hyd/elements/Engine';
 import { useSimVar } from '@instruments/common/simVars';

@@ -69,7 +69,6 @@ export const EbhaActuatorIndication: FC<EbhaActuatorIndicationProps> = ({
   x,
   y,
   hydraulicPowerSource,
-  elecPowerSource,
   hydPowerAvailable,
   elecPowerAvailable,
 }) => {

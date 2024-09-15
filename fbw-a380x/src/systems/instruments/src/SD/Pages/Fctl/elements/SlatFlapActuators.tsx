@@ -24,8 +24,6 @@ export const SlatFlapActuatorIndication: FC<SlatFlapActuatorIndicationProps> = (
     'boolean',
     1000,
   );
-  const powerSourceInfoAvail = true;
-  const actuatorFailed = false;
 
   return (
     <g id={`${type}-actuators`} transform={`translate(${x} ${y})`}>

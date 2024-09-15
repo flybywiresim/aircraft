@@ -3,7 +3,7 @@
 module.exports = {
   extends: ['../../../../../../.eslintrc.js', 'plugin:jsdoc/recommended-typescript-error'],
 
-  plugins: ['eslint-plugin-tsdoc', 'eslint-plugin-jsdoc'],
+  plugins: ['eslint-plugin-jsdoc'],
 
   // overrides airbnb, use sparingly
   rules: {
@@ -11,6 +11,5 @@ module.exports = {
     'react/style-prop-object': 'off',
     'arrow-body-style': 'off',
     camelcase: 'off',
-    'tsdoc/syntax': 'warn',
   },
 };

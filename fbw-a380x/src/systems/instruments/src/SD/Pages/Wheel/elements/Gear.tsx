@@ -63,7 +63,7 @@ interface PositionIndicatiorProps {
   type: GearType;
 }
 
-const PositionIndicator: FC<PositionIndicatiorProps> = ({ system, position, type }) => {
+const PositionIndicator: FC<PositionIndicatiorProps> = ({ system, position }) => {
   // FIXME replace with LGCIU signals once implemented
   const [gearPos]: [number, (v: number) => void] = useSimVar(
     `L:A32NX_GEAR_${position === GearPosition.Nose ? 'CENTER' : position}_POSITION`,

@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 // TODO remove this once Rust implementation is up and running
-import { Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 enum FwcFlightPhase {
   ElecPwr = 1,

@@ -1,5 +1,3 @@
-/* global SimVar */
-
 import { useEffect, useRef } from 'react';
 
 export const renderTarget = document.getElementById('MSFS_REACT_MOUNT');

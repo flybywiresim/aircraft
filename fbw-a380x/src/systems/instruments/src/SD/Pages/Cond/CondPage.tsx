@@ -1,6 +1,5 @@
 import React from 'react';
-import { Position } from '@instruments/common/types';
-import { useArinc429Var, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../Generic/PageTitle';
 import A380Cond from './elements/A380Cond';
 import CabinTemperatures from './elements/CabinTemperatures';
