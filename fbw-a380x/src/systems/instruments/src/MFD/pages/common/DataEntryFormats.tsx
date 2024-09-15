@@ -1381,6 +1381,10 @@ export class LsCourseFormat implements DataEntryFormat<number> {
         numberPart = input.substring(0, 3);
       }
     }
+
+    // FIXME Delete next line as soon as back course is implemented
+    if (input[0] === 'B') throw new FmsError(FmsErrorType.FormatError);
+
     const nbr = Number(numberPart);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return sign * nbr;
