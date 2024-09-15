@@ -20,7 +20,7 @@ import {
   ThrottlePositionDonutComponent,
   ThrustTransientComponent,
 } from 'instruments/src/MsfsAvionicsCommon/gauges';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface ThrustGaugeProps {
   bus: EventBus;
@@ -32,8 +32,7 @@ interface ThrustGaugeProps {
 }
 
 export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
-  private readonly subArinc = this.props.bus.getSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & EwdSimvars>();
 
   private readonly n1 = ConsumerSubject.create(
     this.sub.on(`n1_${this.props.engine}`).withPrecision(1).whenChanged(),
@@ -64,10 +63,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
   private readonly thrustLimitRev = ConsumerSubject.create(this.sub.on('thrust_limit_rev').whenChanged(), 0);
 
-  private readonly cpiomBAgsDiscrete = ConsumerSubject.create(
-    this.subArinc.on('cpiomBAgsDiscrete').whenChanged(),
-    Arinc429Word.empty(),
-  );
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
 
   private readonly revDeploying = ConsumerSubject.create(
     this.sub.on(`reverser_deploying_${this.props.engine}`).whenChanged(),
@@ -174,6 +170,12 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private revRadius = 58;
   private revMin = 0;
   private revMax = 3;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.cpiomBAgsDiscrete.setConsumer(this.sub.on('cpiomBAgsDiscrete'));
+  }
 
   render() {
     return (

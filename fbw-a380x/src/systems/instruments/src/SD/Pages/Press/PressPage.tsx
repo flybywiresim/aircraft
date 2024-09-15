@@ -72,7 +72,6 @@ export const PressPage = () => {
             {/* Packs */}
             <Packs x={12} y={641} pack={1} />
             <Packs x={647} y={641} pack={2} />
-
         </>
     );
 };

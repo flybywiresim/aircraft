@@ -28,13 +28,16 @@ export const CruisePressure = () => {
     }
 
     const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'feet', 500);
-    const cabinAlt = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUse}`, 500).valueOr(manCabinAlt);
+    const cabinAltArinc = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUse}`, 500);
+    const cabinAlt = cabinAltArinc.isNormalOperation() ? cabinAltArinc.value : manCabinAlt;
 
     const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'feet', 500);
-    const deltaPsi = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUse}`, 500).valueOr(manDeltaPsi);
+    const deltaPsiArinc = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUse}`, 500);
+    const deltaPsi = deltaPsiArinc.isNormalOperation() ? deltaPsiArinc.value : manDeltaPsi;
 
     const [mancabinVs] = useSimVar('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute', 500);
-    const cabinVs = useArinc429Var(`L:A32NX_PRESS_CABIN_VS_B${cpcsToUse}`, 500).valueOr(mancabinVs);
+    const cabinVsArinc = useArinc429Var(`L:A32NX_PRESS_CABIN_VS_B${cpcsToUse}`, 500);
+    const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.value : mancabinVs;
 
 
     const vsx = 440;

@@ -11,15 +11,18 @@ const OutflowValve: React.FC<Position & EngineNumber & ValidRedundantSystem> = m
 
     const [manOutflowValueOpenPercentage] = useSimVar(`L:A32NX_PRESS_MAN_OUTFLOW_VALVE_${engine}_OPEN_PERCENTAGE`, 'percent', 500);
 
-    const outflowValueOpenPercentage = useArinc429Var(
+    const outflowValueOpenPercentageArinc = useArinc429Var(
         `L:A32NX_PRESS_OUTFLOW_VALVE_${engine}_OPEN_PERCENTAGE_B${system}`,
         500,
-    ).valueOr(manOutflowValueOpenPercentage);
+    );
+    const outflowValueOpenPercentage = outflowValueOpenPercentageArinc.isNormalOperation() ? outflowValueOpenPercentageArinc.value : manOutflowValueOpenPercentage;
+
+    const cpiomBCpcsDiscreteWord = useArinc429Var(`L:A32NX_COND_CPIOM_B${engine}_CPCS_DISCRETE_WORD`);
 
     const [dualChannelFailure] = useSimVar(`L:A32NX_PRESS_OCSM_${engine}_CHANNEL_1_FAILURE`, 'bool', 500)
         && useSimVar(`L:A32NX_PRESS_OCSM_${engine}_CHANNEL_2_FAILURE`, 'bool', 500);
     const [autoPartitionFailure] = useSimVar(`L:A32NX_PRESS_OCSM_${engine}_AUTO_PARTITION_FAILURE`, 'bool', 500)
-    const sysFault = useArinc429Var(`L:A32NX_COND_CPIOM_B${engine}_CPCS_DISCRETE_WORD`).getBitValueOr(11, true)
+    const sysFault = cpiomBCpcsDiscreteWord.getBitValueOr(11, true)
         || autoPartitionFailure || dualChannelFailure;
 
     return (

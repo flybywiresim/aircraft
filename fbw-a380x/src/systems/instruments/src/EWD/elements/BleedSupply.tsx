@@ -1,5 +1,5 @@
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject } from '@microsoft/msfs-sdk';
+import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 
@@ -10,13 +10,9 @@ interface BleedSupplyProps {
 }
 
 export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
-  private readonly subArinc = this.props.bus.getSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & Arinc429Values>();
 
-  private readonly cpiomBAgsDiscrete = ConsumerSubject.create(
-    this.subArinc.on('cpiomBAgsDiscrete').whenChanged(),
-    Arinc429Word.empty(),
-  );
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
 
   private readonly nai1 = ConsumerSubject.create(this.sub.on('eng_anti_ice_1').whenChanged(), false);
   private readonly nai2 = ConsumerSubject.create(this.sub.on('eng_anti_ice_2').whenChanged(), false);
@@ -48,6 +44,12 @@ export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
     this.nai4,
     this.wai,
   );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.cpiomBAgsDiscrete.setConsumer(this.sub.on('cpiomBAgsDiscrete'));
+  }
 
   render() {
     return (

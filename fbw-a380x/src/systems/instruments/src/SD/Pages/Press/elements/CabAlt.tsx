@@ -6,11 +6,13 @@ import React from 'react';
 
 export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system }) => {
     const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'feet', 500);
-    const cabinAlt = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_B${system}`, 500).valueOr(manCabinAlt);
+    const cabinAltArinc = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_B${system}`, 500);
+    const cabinAlt = cabinAltArinc.isNormalOperation() ? cabinAltArinc.value : manCabinAlt;
 
     const cabAlt50 = Math.round(cabinAlt / 50) * 50;
 
-    const cabinAltTarget = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${system}`, 500).valueOr(null);
+    const cabinAltTargetArinc = useArinc429Var(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${system}`, 500);
+    const cabinAltTarget = cabinAltTargetArinc.isNormalOperation() ? cabinAltTargetArinc.value : null;
 
     const cabAltTarget50 = Math.round(cabinAltTarget / 50) * 50;
 

@@ -6,13 +6,14 @@ import React from 'react';
 
 export const DeltaP: React.FC<Position & ValidRedundantSystem> = ({ x, y, system }) => {
     const [manDeltaPsi] = useSimVar('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'feet', 500);
-    const deltaPsi = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${system}`, 500).valueOr(manDeltaPsi);
+    const deltaPsiArinc = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${system}`, 500);
+    const deltaPsi = deltaPsiArinc.isNormalOperation() ? deltaPsiArinc.value : manDeltaPsi;
 
     const deltaPress = splitDecimals(deltaPsi);
 
     // Fixme: There is an edge case here where all CPIOM Bs have failed and the ADIRS are not sending data, that we would still have
     // delta pressure available from the manual partition. Unsure how the aircraft handles this situation so this is left for future work.
-    const deltaPressNotAvail = useArinc429Var(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${system}`).isNoComputedData();
+    const deltaPressNotAvail = deltaPsiArinc.isNoComputedData();
 
     let colour;
     if (deltaPsi < -0.72 || deltaPsi > 9.2) {
