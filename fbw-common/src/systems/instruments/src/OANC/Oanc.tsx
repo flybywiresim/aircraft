@@ -918,6 +918,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.updatePosition();
 
+    if (!this.data || this.dataLoading) return;
+
     this.aircraftOnGround.set(
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
@@ -943,10 +945,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     } else {
       this.referencePos.lat = this.arpCoordinates.lat;
       this.referencePos.long = this.arpCoordinates.long;
-    }
-
-    if (!this.data || this.dataLoading) {
-      return;
     }
 
     const position = this.positionComputer.computePosition();
