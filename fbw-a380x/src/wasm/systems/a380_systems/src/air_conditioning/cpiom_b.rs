@@ -9,6 +9,7 @@ use systems::{
         PressurizationConstants, PressurizationOverheadShared, VcmShared, ZoneType,
     },
     failures::{Failure, FailureType},
+    integrated_modular_avionics::AvionicsDataCommunicationNetwork,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
@@ -22,7 +23,7 @@ use systems::{
     },
 };
 
-use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
+use crate::avionics_data_communication_network::A380AvionicsDataCommunicationNetworkMessageData;
 
 use super::{
     local_controllers::{
@@ -73,22 +74,23 @@ impl CoreProcessingInputOutputModuleB {
         }
     }
 
-    pub(super) fn update(
+    pub(super) fn update<'a>(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
         acs_overhead: &impl AirConditioningOverheadShared,
         cabin_temperature: &impl CabinSimulation,
         cargo_door_open: &impl CargoDoorLocked,
-        cpiom_b: &impl CoreProcessingInputOutputModuleShared,
+        cpiom_b: &impl AvionicsDataCommunicationNetwork<
+            'a,
+            A380AvionicsDataCommunicationNetworkMessageData,
+        >,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         local_controllers: &(impl TaddShared + VcmShared),
     ) {
-        self.cpiom_is_active = cpiom_b
-            .core_processing_input_output_module(&self.cpiom_id.to_string())
-            .is_available();
+        self.cpiom_is_active = cpiom_b.get_cpiom(&self.cpiom_id.to_string()).is_available();
 
         // We check if any CPIOM B is available to run the applications
         if self.cpiom_is_active {

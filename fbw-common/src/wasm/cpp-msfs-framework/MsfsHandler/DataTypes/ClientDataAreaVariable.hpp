@@ -88,22 +88,16 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
    *                    the requestUpdateFromSim() method.
    */
-  ClientDataAreaVariable<T>(HANDLE hSimConnect,
-                            const std::string& clientDataName,
-                            SIMCONNECT_CLIENT_DATA_ID clientDataId,
+  ClientDataAreaVariable<T>(HANDLE                               hSimConnect,
+                            const std::string&                   clientDataName,
+                            SIMCONNECT_CLIENT_DATA_ID            clientDataId,
                             SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
-                            SIMCONNECT_DATA_REQUEST_ID requestId,
-                            std::size_t dataSize = sizeof(T),
-                            UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                            FLOAT64 maxAgeTime = 0.0,
-                            UINT64 maxAgeTicks = 0)
-      : SimObjectBase(hSimConnect,
-                      clientDataName,
-                      clientDataDefinitionId,
-                      requestId,
-                      updateMode,
-                      maxAgeTime,
-                      maxAgeTicks),
+                            SIMCONNECT_DATA_REQUEST_ID           requestId,
+                            std::size_t                          dataSize    = sizeof(T),
+                            UpdateMode                           updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                            FLOAT64                              maxAgeTime  = 0.0,
+                            UINT64                               maxAgeTicks = 0)
+      : SimObjectBase(hSimConnect, clientDataName, clientDataDefinitionId, requestId, updateMode, maxAgeTime, maxAgeTicks),
         clientDataId(clientDataId) {
     // Map the client data area name to the client data area ID
     HRESULT hresult = SimConnect_MapClientDataNameToID(hSimConnect, name.c_str(), clientDataId);
@@ -131,11 +125,11 @@ class ClientDataAreaVariable : public SimObjectBase {
   }
 
  public:
-  ClientDataAreaVariable<T>() = delete;                                             // no default constructor
-  ClientDataAreaVariable<T>(const ClientDataAreaVariable&) = delete;                // no copy constructor
+  ClientDataAreaVariable<T>()                                            = delete;  // no default constructor
+  ClientDataAreaVariable<T>(const ClientDataAreaVariable&)               = delete;  // no copy constructor
   ClientDataAreaVariable<T>& operator=(const ClientDataAreaVariable<T>&) = delete;  // no copy assignment
-  ClientDataAreaVariable(ClientDataAreaVariable&&) = delete;                        // no move constructor
-  ClientDataAreaVariable& operator=(ClientDataAreaVariable&&) = delete;             // no move assignment
+  ClientDataAreaVariable(ClientDataAreaVariable&&)                       = delete;  // no move constructor
+  ClientDataAreaVariable& operator=(ClientDataAreaVariable&&)            = delete;  // no move assignment
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
@@ -201,12 +195,11 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm
    */
-  bool requestPeriodicDataFromSim(
-      SIMCONNECT_CLIENT_DATA_PERIOD period,
-      SIMCONNECT_CLIENT_DATA_REQUEST_FLAG periodFlags = SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT,
-      DWORD origin = 0,
-      DWORD interval = 0,
-      DWORD limit = 0) const {
+  bool requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD       period,
+                                  SIMCONNECT_CLIENT_DATA_REQUEST_FLAG periodFlags = SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT,
+                                  DWORD                               origin      = 0,
+                                  DWORD                               interval    = 0,
+                                  DWORD                               limit       = 0) const {
     if (this->isAutoRead() && period >= SIMCONNECT_CLIENT_DATA_PERIOD_ONCE) {
       LOG_ERROR("ClientDataAreaVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;

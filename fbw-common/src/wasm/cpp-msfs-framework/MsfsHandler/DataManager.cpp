@@ -7,7 +7,7 @@
 #include "UpdateMode.h"
 
 bool DataManager::initialize(HANDLE simConnectHandle) {
-  hSimConnect = simConnectHandle;
+  hSimConnect   = simConnectHandle;
   isInitialized = true;
   return true;
 }
@@ -21,8 +21,8 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   }
 
   // get current time stamp and tick counter
-  const FLOAT64 timeStamp = msfsHandlerPtr->getTimeStamp();
-  const UINT64 tickCounter = msfsHandlerPtr->getTickCounter();
+  const FLOAT64 timeStamp   = msfsHandlerPtr->getTimeStamp();
+  const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
   // get all variables set to automatically read
   for (const auto& var : variables) {
@@ -94,7 +94,7 @@ bool DataManager::shutdown() {
 }
 
 void DataManager::getRequestedData() const {
-  DWORD cbData;
+  DWORD            cbData;
   SIMCONNECT_RECV* ptrData;
   while (SUCCEEDED(SimConnect_GetNextDispatch(hSimConnect, &ptrData, &cbData))) {
     processDispatchMessage(ptrData, &cbData);
@@ -106,18 +106,22 @@ void DataManager::getRequestedData() const {
 // =================================================================================================
 
 NamedVariablePtr DataManager::make_named_var(const std::string& varName,
-                                             SimUnit unit,
-                                             UpdateMode updateMode,
-                                             FLOAT64 maxAgeTime,
-                                             UINT64 maxAgeTicks) {
+                                             SimUnit            unit,
+                                             UpdateMode         updateMode,
+                                             FLOAT64            maxAgeTime,
+                                             UINT64             maxAgeTicks,
+                                             bool               noPrefix) {
   // The uniqueName is used in the map of all named variables and needs to
   // contain all the information to identify the variable and the expected value
   // uniquely. This is because the same variable can be used in different places
   // with different expected values via SimUnits.
-  const std::string uniqueName{varName + ":" + unit.name};
+  // It adds the prefix to the variable name if it is not already present to make sure to really deduplicate
+  // variables with the same name but with or without prefixes.
+  const std::string prefixedVarName = noPrefix ? varName : NamedVariable::addPrefixToVarName(varName);
+  const std::string uniqueName{prefixedVarName + ":" + unit.name};
 
-  // Check if variable already exists
-  // Check which update method and frequency to use - if two variables are the same
+  // Check if variable already exists.
+  // Check which update method and frequency to use - if two variables are the same,
   // then use the update method and frequency of the automated one with faster
   // update frequency
   const auto pair = variables.find(uniqueName);
@@ -139,28 +143,29 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
   }
 
   // Create new var and store it in the map
-  NamedVariablePtr var = NamedVariablePtr(new NamedVariable(varName, unit, updateMode, maxAgeTime, maxAgeTicks));
+  // We can set the noPrefix flag to true as we already checked and added the prefix above
+  NamedVariablePtr var  = NamedVariablePtr(new NamedVariable(prefixedVarName, unit, updateMode, maxAgeTime, maxAgeTicks, true));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_named_var(): created variable " + var->str());
   return var;
 }
 
-AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
-                                                   int index,
-                                                   std::string setterEventName,
+AircraftVariablePtr DataManager::make_aircraft_var(const std::string&    varName,
+                                                   int                   index,
+                                                   std::string           setterEventName,
                                                    const ClientEventPtr& setterEvent,
-                                                   SimUnit unit,
-                                                   UpdateMode updateMode,
-                                                   FLOAT64 maxAgeTime,
-                                                   UINT64 maxAgeTicks) {
+                                                   SimUnit               unit,
+                                                   UpdateMode            updateMode,
+                                                   FLOAT64               maxAgeTime,
+                                                   UINT64                maxAgeTicks) {
   // The uniqueName is used in the map of all named variables and needs to
   // contain all the information to identify the variable and the expected value
   // uniquely. This is because the same variable can be  used in different places
   // with different expected values via Index and SimUnits.
   const std::string uniqueName{varName + ":" + std::to_string(index) + ":" + unit.name};
 
-  // Check if variable already exists
+  // Check if variable already exists.
   // Check which update method and frequency to use - if two variables are the same
   // use the update method and frequency of the automated one with faster update frequency
   const auto pair = variables.find(uniqueName);
@@ -193,8 +198,8 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
   return var;
 }
 
-ClientEventPtr DataManager::make_client_event(const std::string& clientEventName,
-                                              bool registerToSim,
+ClientEventPtr DataManager::make_client_event(const std::string&               clientEventName,
+                                              bool                             registerToSim,
                                               SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
   // find existing event instance for this event
   for (const auto& event : clientEvents) {
@@ -233,7 +238,6 @@ KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const
   return id;
 }
 
-// FIXME: Double check if this is correct
 bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId) {
   const auto eventPair = keyEventCallbacks.find(keyEventId);
   if (eventPair != keyEventCallbacks.end()) {
@@ -303,7 +307,7 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
 
     case SIMCONNECT_RECV_ID_EXCEPTION: {
       auto* const pException = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pRecv);
-      std::ignore = pException;
+      std::ignore            = pException;
       LOG_ERROR("DataManager: Exception in SimConnect connection: " +
                 SimconnectExceptionStrings::getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(pException->dwException)) +
                 " send_id:" + std::to_string(pException->dwSendID) + " index:" + std::to_string(pException->dwIndex));
@@ -318,7 +322,7 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
 
 void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) const {
   const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
-  const auto pair = simObjects.find(pSimobjectData->dwRequestID);
+  const auto pair           = simObjects.find(pSimobjectData->dwRequestID);
   if (pair != simObjects.end()) {
     pair->second->processSimData(pData, msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
     return;

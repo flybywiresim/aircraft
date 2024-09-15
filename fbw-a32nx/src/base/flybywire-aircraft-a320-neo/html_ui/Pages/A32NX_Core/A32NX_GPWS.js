@@ -35,8 +35,6 @@ class A32NX_GPWS {
 
         this.minimumsState = 0;
 
-        this.radnav = new RadioNav();
-
         this.Mode3MaxBaroAlt = NaN;
 
         this.Mode4MaxRAAlt = 0;
@@ -167,8 +165,6 @@ class A32NX_GPWS {
 
     init() {
         console.log('A32NX_GPWS init');
-
-        this.radnav.init(NavMode.FOUR_SLOTS);
 
         this.setGlideSlopeWarning(false);
         this.setGpwsWarning(false);
@@ -525,8 +521,9 @@ class A32NX_GPWS {
             mode.current = 0;
             return;
         }
-        const localizer = this.radnav.getBestILSBeacon();
-        if (localizer.id <= 0 || !SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number')) {
+
+        // FIXME add backcourse inhibit
+        if (!SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number')) {
             mode.current = 0;
             return;
         }

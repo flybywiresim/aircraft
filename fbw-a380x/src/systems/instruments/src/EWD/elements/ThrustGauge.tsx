@@ -241,6 +241,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 x={this.props.x - 18}
                 y={this.props.y - 14}
                 mesg={this.availRevText}
+                engineNumber={this.props.engine}
                 visible={this.availRevVisible}
                 revDoorOpen={this.revDeployed}
               />
@@ -423,6 +424,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 x={this.props.x - 18}
                 y={this.props.y - 14}
                 mesg={this.availRevText}
+                engineNumber={this.props.engine}
                 visible={this.availRevVisible}
                 revDoorOpen={this.revDeployed}
               />
@@ -479,6 +481,7 @@ interface AvailRevProps {
   x: number;
   y: number;
   mesg: Subscribable<'AVAIL' | 'REV'>;
+  engineNumber: number;
   visible: Subscribable<boolean>;
   revDoorOpen: Subscribable<boolean>;
 }
@@ -495,10 +498,10 @@ class AvailRev extends DisplayComponent<AvailRevProps> {
         <g visibility={this.props.mesg.map((mesg) => (mesg === 'REV' ? 'inherit' : 'hidden'))}>
           <text
             class={this.props.revDoorOpen.map((it) => `F26 Spread Centre ${it ? 'Green' : 'Amber'}`)}
-            x={this.props.x - 8}
+            x={this.props.x - 25}
             y={this.props.y + 9}
           >
-            REV
+            {`REV ${this.props.engineNumber}`}
           </text>
         </g>
         <g visibility={this.props.mesg.map((mesg) => (mesg === 'AVAIL' ? 'inherit' : 'hidden'))}>

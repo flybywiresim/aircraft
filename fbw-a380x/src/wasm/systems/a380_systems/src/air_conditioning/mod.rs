@@ -10,6 +10,7 @@ use systems::{
         OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
         PressurizationOverheadShared, TrimAirSystem, VcmId, VcmShared, ZoneType,
     },
+    integrated_modular_avionics::AvionicsDataCommunicationNetwork,
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         ValueKnob,
@@ -34,7 +35,8 @@ use uom::si::{
 };
 
 use crate::{
-    avionics_data_communication_network::CoreProcessingInputOutputModuleShared, payload::A380Pax,
+    avionics_data_communication_network::A380AvionicsDataCommunicationNetworkMessageData,
+    payload::A380Pax,
 };
 
 use self::{
@@ -102,12 +104,15 @@ impl A380AirConditioning {
         }
     }
 
-    pub(super) fn update(
+    pub(super) fn update<'a>(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
         cargo_door_open: &impl CargoDoorLocked,
-        cpiom_b: &impl CoreProcessingInputOutputModuleShared,
+        cpiom_b: &impl AvionicsDataCommunicationNetwork<
+            'a,
+            A380AvionicsDataCommunicationNetworkMessageData,
+        >,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_passengers: &impl NumberOfPassengers,
@@ -1182,7 +1187,11 @@ mod tests {
         air_conditioning::{Channel, PackFlow},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         failures::FailureType,
-        integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
+        integrated_modular_avionics::{
+            avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
+            core_processing_input_output_module::CoreProcessingInputOutputModule,
+            input_output_module::InputOutputModule,
+        },
         overhead::AutoOffFaultPushButton,
         pneumatic::{
             valve::{DefaultValve, ElectroPneumaticValve, PneumaticExhaust},
@@ -1260,7 +1269,10 @@ mod tests {
     }
 
     struct TestAdcn {
-        cpiom_b: FxHashMap<&'static str, CoreProcessingInputOutputModule>,
+        cpiom_b: FxHashMap<
+            &'static str,
+            CoreProcessingInputOutputModule<A380AvionicsDataCommunicationNetworkMessageData>,
+        >,
     }
     impl TestAdcn {
         fn new(context: &mut InitContext) -> Self {
@@ -1282,13 +1294,39 @@ mod tests {
             }
         }
     }
-    impl CoreProcessingInputOutputModuleShared for TestAdcn {
-        fn core_processing_input_output_module(
+    impl AvionicsDataCommunicationNetwork<'_, A380AvionicsDataCommunicationNetworkMessageData>
+        for TestAdcn
+    {
+        type NetworkEndpoint =
+            AvionicsFullDuplexSwitch<A380AvionicsDataCommunicationNetworkMessageData>;
+        type NetworkEndpointRef = &'static Self::NetworkEndpoint; // Not needed therefore this works
+
+        fn get_message_identifier(
+            &mut self,
+            _name: String,
+        ) -> systems::integrated_modular_avionics::AvionicsDataCommunicationNetworkMessageIdentifier
+        {
+            unimplemented!()
+        }
+
+        fn get_endpoint(&'_ self, _id: u8) -> Self::NetworkEndpointRef {
+            unimplemented!()
+        }
+
+        fn get_cpiom(
             &self,
-            cpiom: &str,
-        ) -> &CoreProcessingInputOutputModule {
+            name: &str,
+        ) -> &CoreProcessingInputOutputModule<A380AvionicsDataCommunicationNetworkMessageData>
+        {
             // If the string is not found this will panic
-            self.cpiom_b.get(cpiom).unwrap()
+            self.cpiom_b.get(name).unwrap()
+        }
+
+        fn get_iom(
+            &self,
+            _name: &str,
+        ) -> &InputOutputModule<A380AvionicsDataCommunicationNetworkMessageData> {
+            unimplemented!()
         }
     }
     impl SimulationElement for TestAdcn {

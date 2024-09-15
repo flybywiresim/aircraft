@@ -7,7 +7,7 @@ class CDUNewWaypoint {
      * Callback when a new waypoint has been created, or aborted
      * @name NewWaypointDoneCallback
      * @function
-     * @param {WayPoint | undefined} waypoint the resultant new waypoint, or undefined if aborted
+     * @param {PilotWaypoint | undefined | null} waypoint the resultant new waypoint, or undefined if aborted
      */
     /**
      * New Waypoint Page
