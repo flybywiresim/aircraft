@@ -370,8 +370,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_EO_ACC_ALT");
   idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_ACC_ALT");
   idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
-  idFmgcCruiseAltitude = std::make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
-  idFmgcFlexTemperature = std::make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
+  idFmgcCruiseAltitude                        = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
+  idFmgcFlexTemperature                       = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
 
   idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
   idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
