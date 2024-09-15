@@ -21,7 +21,6 @@
 #include "Example/ExampleModule.h"
 #endif
 
-#include "AircraftPresets/AircraftPresetProcedures_A380X.h"
 #include "AircraftPresets/AircraftPresets.h"
 #include "LightingPresets/LightingPresets_A380X.h"
 #include "Pushback/Pushback_A380X.h"
@@ -37,7 +36,7 @@ ExampleModule exampleModule(msfsHandler);
 // This is the only place these have to be added - everything else is handled automatically
 LightingPresets_A380X lightingPresets(msfsHandler);
 Pushback_A380X        pushback(msfsHandler);
-AircraftPresets       aircraftPresets(msfsHandler, AircraftPresetProcedures_A380X::aircraftProcedureDefinition);
+AircraftPresets       aircraftPresets(msfsHandler, "./config/a380x/a380-842/aircraft_preset_procedures.xml");
 
 /**
  * Gauge Callback

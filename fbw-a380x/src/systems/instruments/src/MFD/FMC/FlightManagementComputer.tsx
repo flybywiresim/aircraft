@@ -665,7 +665,7 @@ export class FlightManagementComputer implements FmcInterface {
             (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100,
           );
           SimVar.SetSimVarValue(
-            'L:AIRLINER_CRUISE_ALTITUDE',
+            'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
             'number',
             Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0,
           );
