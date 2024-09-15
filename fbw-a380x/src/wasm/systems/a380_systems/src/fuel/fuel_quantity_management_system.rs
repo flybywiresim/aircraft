@@ -480,6 +480,8 @@ impl RefuelDriver {
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
+        // TODO: Proper fuel transfer logic from proper fuel ports into the correct fuel tanks (LMID/LINNER RMID/RINNER). Replace naive method below.
+        // TODO: Deprecating this function from refuel driver, which will only be used for instant refueling, into a proper FQMS implementation.
         // TODO: Account for AGT (Auto Ground Transfer) logic, disable when 2 engines are running (only when realistic setting is used)
 
         let speed_multi = if is_fast { Self::FAST_SPEED_FACTOR } else { 1. };
