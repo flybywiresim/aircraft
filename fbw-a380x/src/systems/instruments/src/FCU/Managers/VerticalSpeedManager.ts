@@ -12,27 +12,40 @@ enum A320_Neo_FCU_VSpeed_State {
 }
 
 export class VerticalSpeedManager extends TemporaryHax implements Instrument {
+  private forceUpdate = true;
+  private ABS_MINMAX_FPA = 9.9;
+  private ABS_MINMAX_VS = 6000;
+  private backToIdleTimeout = 45000;
+  private previousVerticalMode = 0;
+
+  private _currentState?: number;
+  private textVS?: ReturnType<typeof this.getTextElement>;
+  private textFPA?: ReturnType<typeof this.getTextElement>;
+  private isActive?: boolean;
+  private isFPAMode?: boolean;
+  private selectedVs?: number;
+  private selectedFpa?: number;
+  private _resetSelectionTimeout?: ReturnType<typeof setTimeout>;
+  private currentValue?: number;
+  private lightsTest?: number | boolean;
+
   constructor(private readonly bus: EventBus) {
     super(bus, document.getElementById('VerticalSpeed')!);
-    this.forceUpdate = true;
-    this.ABS_MINMAX_FPA = 9.9;
-    this.ABS_MINMAX_VS = 6000;
-    this.backToIdleTimeout = 45000;
-    this.previousVerticalMode = 0;
+
     this.init();
     this.onUpdate();
   }
 
-  get currentState() {
+  private get currentState(): number | undefined {
     return this._currentState;
   }
 
-  set currentState(v) {
+  private set currentState(v) {
     this._currentState = v;
     SimVar.SetSimVarValue('L:A320_NE0_FCU_STATE', 'number', this.currentState);
   }
 
-  init() {
+  public init(): void {
     this.textVS = this.getTextElement('VS');
     this.textFPA = this.getTextElement('FPA');
     this.isActive = false;
@@ -43,7 +56,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     this.refresh(false, false, 0, 0, true);
   }
 
-  onPush() {
+  private onPush(): void {
     const mode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
     if (mode >= 32 && mode <= 34) {
       return;
@@ -59,7 +72,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     SimVar.SetSimVarValue('K:A32NX.FCU_TO_AP_VS_PUSH', 'number', 0);
   }
 
-  onRotate() {
+  private onRotate(): void {
     if (this.currentState === A320_Neo_FCU_VSpeed_State.Idle || this.currentState === A320_Neo_FCU_VSpeed_State.Selecting) {
       clearTimeout(this._resetSelectionTimeout);
       this.forceUpdate = true;
@@ -83,7 +96,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     }
   }
 
-  onPull() {
+  private onPull(): void {
     clearTimeout(this._resetSelectionTimeout);
     this.forceUpdate = true;
 
@@ -98,22 +111,22 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     SimVar.SetSimVarValue('K:A32NX.FCU_TO_AP_VS_PULL', 'number', 0);
   }
 
-  getCurrentFlightPathAngle() {
+  private getCurrentFlightPathAngle(): number {
     return this.calculateAngleForVerticalSpeed(Simplane.getVerticalSpeed());
   }
 
-  getCurrentVerticalSpeed() {
+  private getCurrentVerticalSpeed(): number {
     return Utils.Clamp(Math.round(Simplane.getVerticalSpeed() / 100) * 100, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
   }
 
-  _enterIdleState(idleVSpeed) {
+  private _enterIdleState(idleVSpeed: unknown): void {
     this.selectedVs = 0;
     this.selectedFpa = 0;
     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
     this.forceUpdate = true;
   }
 
-  onUpdate() {
+  public onUpdate(): void {
     const lightsTest = SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') == 0;
     const isFPAMode = SimVar.GetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'Bool');
     const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
@@ -161,7 +174,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       this.previousVerticalMode = verticalMode;
     }
 
-    refresh(_isActive, _isFPAMode, _value, _lightsTest, _force = false) {
+    private refresh(_isActive: boolean, _isFPAMode: boolean, _value: number | undefined, _lightsTest: boolean | number, _force = false): void {
       if ((_isActive != this.isActive) || (_isFPAMode != this.isFPAMode) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
         if (this.isFPAMode != _isFPAMode) {
           this.onFPAModeChanged(_isFPAMode);
@@ -209,7 +222,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       }
     }
 
-    onEvent(_event) {
+    protected onEvent(_event: string): void {
       if (_event === 'VS_INC_VS') {
         this.selectedVs = Utils.Clamp(Math.round(this.selectedVs + 100), -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
         this.onRotate();
@@ -242,7 +255,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       }
     }
 
-    onFPAModeChanged(_newValue) {
+    private onFPAModeChanged(_newValue: boolean): void {
       if (_newValue) {
         this.selectedFpa = this.calculateAngleForVerticalSpeed(this.selectedVs);
       } else {
@@ -255,7 +268,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     * @param {number} _angle The flight path angle in degrees.
     * @returns {number} The corresponding vertical speed in feet per minute.
     */
-    calculateVerticalSpeedForAngle(_angle) {
+    private calculateVerticalSpeedForAngle(_angle?: number): number {
       if (_angle == 0) {
         return 0;
       }
@@ -271,7 +284,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     * @param {number} verticalSpeed The flight path angle in feet per minute.
     * @returns {number} The corresponding flight path angle in degrees.
     */
-    calculateAngleForVerticalSpeed(verticalSpeed) {
+    private calculateAngleForVerticalSpeed(verticalSpeed?: number): number {
       if (Math.abs(verticalSpeed) < 10) {
         return 0;
       }

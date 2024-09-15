@@ -5,11 +5,23 @@ import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
 export class BaroManager extends TemporaryHax implements Instrument {
+  private selectedElem?: ReturnType<typeof this.getDivElement>;
+  private standardElem?: ReturnType<typeof this.getDivElement>;
+  private textQFE?: ReturnType<typeof this.getTextElement>;
+  private textQNH?: ReturnType<typeof this.getTextElement>;
+  private textPreSelBaro?: ReturnType<typeof this.getTextElement>;
+  private currentPreSelValue?: null | number;
+  private resetPreSelectionTimeout?: ReturnType<typeof setTimeout> | null;
+  private isHGUnit?: boolean;
+  private currentMode?: ReturnType<typeof Simplane.getPressureSelectedMode>;
+  private currentValue?: ReturnType<typeof Simplane.getPressureValue>;
+  private lightsTest?: boolean | 0;
+
   constructor(private readonly bus: EventBus) {
     super(bus, document.getElementById('SmallScreen')!);
   }
 
-  init() {
+  public init(): void {
     this.selectedElem = this.getDivElement('Selected');
     this.standardElem = this.getDivElement('Standard');
     this.textQFE = this.getTextElement('QFE');
@@ -20,13 +32,13 @@ export class BaroManager extends TemporaryHax implements Instrument {
     this.refresh('QFE', true, 0, 0, true);
   }
 
-  onUpdate() {
+  public onUpdate(): void {
     const units = Simplane.getPressureSelectedUnits();
     const mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
     this.refresh(mode, (units != 'millibar'), Simplane.getPressureValue(units), SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') == 0);
   }
 
-  refresh(_mode, _isHGUnit, _value, _lightsTest, _force = false) {
+  private refresh(_mode: ReturnType<typeof Simplane.getPressureSelectedMode>, _isHGUnit: boolean, _value: ReturnType<typeof Simplane.getPressureValue>, _lightsTest: boolean | 0, _force = false): void {
     let preSelValue = SimVar.GetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number');
     // Conversion of baro selection SimVar. I tried using a standard altimeter, didn't work.
     if (preSelValue < 1) {

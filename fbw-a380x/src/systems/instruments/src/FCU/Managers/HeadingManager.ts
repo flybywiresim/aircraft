@@ -5,21 +5,39 @@ import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
 export class HeadingManager extends TemporaryHax implements Instrument {
+  private backToIdleTimeout = 45000;
+  private inSelection = false;
+  private _rotaryEncoderCurrentSpeed = 1;
+  private _rotaryEncoderMaximumSpeed = 5;
+  private _rotaryEncoderTimeout = 350;
+  private _rotaryEncoderIncrement = 0.1;
+  private _rotaryEncoderPreviousTimestamp = 0;
+
+  private textHDG?: ReturnType<typeof this.getTextElement>;
+  private textTRK?: ReturnType<typeof this.getTextElement>;
+  private signDegrees?: ReturnType<typeof this.getTextElement>;
+  private currentValue?: number;
+  private selectedValue?: number;
+  private isSelectedValueActive?: boolean;
+  private isPreselectionModeActive?: boolean;
+  private wasHeadingSync?: boolean;
+  private _resetSelectionTimeout?: ReturnType<typeof setTimeout>;
+  private isActive?: boolean;
+  private isManagedArmed?: boolean;
+  private isManagedActive?: boolean;
+  private isTRKMode?: number | boolean;
+  private showSelectedHeading?: boolean;
+  private lightsTest?: boolean;
+  private trueRef?: boolean;
+
   constructor(private readonly bus: EventBus) {
     super(bus, document.getElementById('Heading')!);
-    this.backToIdleTimeout = 45000;
-    this.inSelection = false;
 
-    this._rotaryEncoderCurrentSpeed = 1;
-    this._rotaryEncoderMaximumSpeed = 5;
-    this._rotaryEncoderTimeout = 350;
-    this._rotaryEncoderIncrement = 0.1;
-    this._rotaryEncoderPreviousTimestamp = 0;
     this.init();
     this.onUpdate();
   }
 
-  init() {
+  public init(): void {
     this.textHDG = this.getTextElement('HDG');
     this.textTRK = this.getTextElement('TRK');
     this.signDegrees = this.getTextElement('DEGREES');
@@ -31,7 +49,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
     this.refresh(true, false, false, false, true, 0, false, true);
   }
 
-  onRotate() {
+  private onRotate(): void {
     const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
     const lateralArmed = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Number');
     const isTRKMode = SimVar.GetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'Bool');
@@ -66,15 +84,15 @@ export class HeadingManager extends TemporaryHax implements Instrument {
     }
 
 
-    getCurrentHeading() {
+    private getCurrentHeading(): number {
       return ((Math.round(SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degree')) % 360) + 360) % 360;
     }
 
-    getCurrentTrack() {
+    private getCurrentTrack(): number {
       return ((Math.round(SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'degree')) % 360) + 360) % 360;
     }
 
-    onPush() {
+    private onPush(): void {
       clearTimeout(this._resetSelectionTimeout);
       this.isPreselectionModeActive = false;
       this.inSelection = false;
@@ -82,7 +100,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       SimVar.SetSimVarValue('K:HEADING_SLOT_INDEX_SET', 'number', 2);
     }
 
-    onPull() {
+    private onPull(): void {
       clearTimeout(this._resetSelectionTimeout);
       const isTRKMode = SimVar.GetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'Bool');
       if (!this.isSelectedValueActive) {
@@ -99,7 +117,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       SimVar.SetSimVarValue('K:HEADING_SLOT_INDEX_SET', 'number', 1);
     }
 
-    onUpdate() {
+    public onUpdate(): void {
       const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
       const lateralArmed = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Number');
       const isTRKMode = SimVar.GetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'Bool');
@@ -123,7 +141,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       this.refresh(true, isManagedArmed, isManagedActive, isTRKMode, showSelectedValue, this.selectedValue, lightsTest);
     }
 
-    refresh(_isActive, _isManagedArmed, _isManagedActive, _isTRKMode, _showSelectedHeading, _value, _lightsTest, _force = false) {
+    private refresh(_isActive: boolean, _isManagedArmed: boolean, _isManagedActive: boolean, _isTRKMode: number | boolean, _showSelectedHeading: boolean | undefined, _value: number | undefined, _lightsTest: boolean, _force = false): void {
       if ((_isActive != this.isActive)
         || (_isManagedArmed != this.isManagedArmed)
       || (_isManagedActive != this.isManagedActive)
@@ -168,7 +186,8 @@ export class HeadingManager extends TemporaryHax implements Instrument {
           }
 
           // ugly hack because the FG doesn't understand true heading
-          // FIXME teach the FG about true/mag
+          // FIXME teach the A380 FG about true/mag
+          // this.trueRef = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean') > 0;
           const correctedHeading = this.trueRef ? (_value - SimVar.GetSimVarValue('MAGVAR', 'degree')) % 360 : _value;
 
           SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", _showSelectedHeading == true ? 1 : 0);
@@ -215,22 +234,22 @@ export class HeadingManager extends TemporaryHax implements Instrument {
         }
       }
 
-      isManagedModeActive(_mode) {
+      private isManagedModeActive(_mode: number): boolean {
         return (_mode !== 0 && _mode !== 10 && _mode !== 11 && _mode !== 40 && _mode !== 41);
       }
 
-      isManagedModeArmed(_armed) {
+      private isManagedModeArmed(_armed: number): boolean {
         return (_armed > 0);
       }
 
-      isPreselectionAvailable(_radioHeight, _mode) {
+      private isPreselectionAvailable(_radioHeight: number, _mode: number): boolean {
         return (
           _radioHeight < 30
           || ((_mode >= 30 && _mode <= 34) || _mode === 50)
         );
       }
 
-      onTRKModeChanged(_newValue) {
+      private onTRKModeChanged(_newValue: number | boolean): void {
         if (_newValue) {
           this.selectedValue = this.calculateTrackForHeading(this.selectedValue);
         } else {
@@ -243,7 +262,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       * @param {number} _heading The heading in degrees.
       * @returns {number} The corresponding track in degrees.
       */
-      calculateTrackForHeading(_heading) {
+      private calculateTrackForHeading(_heading: number): number {
         const trueAirspeed = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
         if (trueAirspeed < 50) {
           return _heading;
@@ -263,7 +282,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       * @param {number} _track The track in degrees.
       * @returns {number} The corresponding heading in degrees.
       */
-      calculateHeadingForTrack(_track) {
+      private calculateHeadingForTrack(_track: number): number {
         const trueAirspeed = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
         if (trueAirspeed < 50) {
           return _track;
@@ -279,7 +298,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
         return _heading == NaN ? _track : _heading;
       }
 
-      getRotationSpeed() {
+      private getRotationSpeed(): number {
         if (this._rotaryEncoderCurrentSpeed < 1
           || (Date.now() - this._rotaryEncoderPreviousTimestamp) > this._rotaryEncoderTimeout) {
             this._rotaryEncoderCurrentSpeed = 1;
@@ -290,7 +309,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
           return Math.min(this._rotaryEncoderMaximumSpeed, Math.floor(this._rotaryEncoderCurrentSpeed));
         }
 
-        onEvent(_event) {
+        protected onEvent(_event): void {
           if (_event === 'HDG_INC_HEADING') {
             this.selectedValue = ((Math.round(this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
             this.onRotate();

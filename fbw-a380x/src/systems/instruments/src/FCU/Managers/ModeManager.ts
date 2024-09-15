@@ -5,13 +5,21 @@ import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
 export class ModeManager extends TemporaryHax implements Instrument {
+  private textHDG?: ReturnType<typeof this.getTextElement>;
+  private textVS?: ReturnType<typeof this.getTextElement>;
+  private textTRK?: ReturnType<typeof this.getTextElement>;
+  private textFPA?: ReturnType<typeof this.getTextElement>;
+
+  private isTRKFPADisplayMode?: number | boolean;
+  private lightsTest?: number | boolean;
+
   constructor(private readonly bus: EventBus) {
       super(bus, document.getElementById('Mode')!);
       this.init();
       this.onUpdate();
   }
 
-  init() {
+  public init(): void {
       this.textHDG = this.getTextElement('HDG');
       this.textVS = this.getTextElement('VS');
       this.textTRK = this.getTextElement('TRK');
@@ -19,7 +27,7 @@ export class ModeManager extends TemporaryHax implements Instrument {
       this.refresh(false, 0, true);
   }
 
-  onUpdate() {
+  public onUpdate(): void {
       if (SimVar.GetSimVarValue('L:A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE', 'Bool')) {
           SimVar.SetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'Bool', 0);
       }
@@ -27,7 +35,7 @@ export class ModeManager extends TemporaryHax implements Instrument {
       this.refresh(_isTRKFPADisplayMode, SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') == 0);
   }
 
-  refresh(_isTRKFPADisplayMode, _lightsTest, _force = false) {
+  private refresh(_isTRKFPADisplayMode: number | boolean, _lightsTest: number | boolean, _force = false): void {
       if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || (_lightsTest !== this.lightsTest) || _force) {
           this.isTRKFPADisplayMode = _isTRKFPADisplayMode;
           this.lightsTest = _lightsTest;

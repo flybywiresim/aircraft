@@ -5,11 +5,16 @@ import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
 export class AltitudeManager extends TemporaryHax implements Instrument {
+  private isActive?: ReturnType<typeof Simplane.getAutoPilotActive>;
+  private isManaged?: ReturnType<typeof this.isManagedModeActiveOrArmed>;
+  private currentValue?: ReturnType<typeof Simplane.getAutoPilotDisplayedAltitudeLockValue>;
+  private lightsTest?: boolean | 0;
+
   constructor(private readonly bus: EventBus) {
     super(bus, document.getElementById('Altitude')!)
   }
 
-  init() {
+  public init(): void {
     this.isActive = false;
     this.isManaged = false;
     this.currentValue = 0;
@@ -21,11 +26,11 @@ export class AltitudeManager extends TemporaryHax implements Instrument {
     this.refresh(false, false, initValue, 0, true);
   }
 
-  reboot() {
+  public reboot(): void {
     this.init();
   }
 
-  isManagedModeActiveOrArmed(_mode, _armed) {
+  private isManagedModeActiveOrArmed(_mode: number, _armed: number): number | boolean {
     return (
       (_mode >= 20 && _mode <= 34)
       || (_armed >> 1 & 1
@@ -36,7 +41,7 @@ export class AltitudeManager extends TemporaryHax implements Instrument {
     );
   }
 
-  onUpdate() {
+  public onUpdate(): void {
     const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
     const verticalArmed = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_ARMED', 'Number');
     const isManaged = this.isManagedModeActiveOrArmed(verticalMode, verticalArmed);
@@ -44,7 +49,7 @@ export class AltitudeManager extends TemporaryHax implements Instrument {
     this.refresh(Simplane.getAutoPilotActive(), isManaged, Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') == 0);
   }
 
-  refresh(_isActive, _isManaged, _value, _lightsTest, _force = false) {
+  private refresh(_isActive: ReturnType<typeof Simplane.getAutoPilotActive>, _isManaged: ReturnType<typeof this.isManagedModeActiveOrArmed>, _value: ReturnType<typeof Simplane.getAutoPilotDisplayedAltitudeLockValue>, _lightsTest: boolean | 0, _force = false): void {
     if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
       this.isActive = _isActive;
       this.isManaged = _isManaged;
@@ -60,7 +65,7 @@ export class AltitudeManager extends TemporaryHax implements Instrument {
     }
   }
 
-  onEvent(_event) {
+  protected override onEvent(_event: string): void {
     if (_event === 'ALT_PUSH') {
       SimVar.SetSimVarValue('K:A32NX.FCU_ALT_PUSH', 'number', 0);
       SimVar.SetSimVarValue('K:ALTITUDE_SLOT_INDEX_SET', 'number', 2);

@@ -5,37 +5,43 @@ import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
 export class SpeedManager extends TemporaryHax implements Instrument {
+    private readonly backToIdleTimeout = 10000;
+    private readonly MIN_SPEED = 100;
+    private readonly MAX_SPEED = 399;
+    private readonly MIN_MACH = 0.10;
+    private readonly MAX_MACH = 0.99;
+
+    private isActive = false;
+    private isManaged = false;
+    private showSelectedSpeed = true;
+    private currentValue = this.MIN_SPEED;
+    private selectedValue = this.MIN_SPEED;
+    private isMachActive: number | boolean = false;
+    private inSelection = false;
+    private isSelectedValueActive = false;
+    private isValidV2 = false;
+    private isVerticalModeSRS = false;
+    private isTargetManaged = false;
+    private _rotaryEncoderCurrentSpeed = 1;
+    private _rotaryEncoderMaximumSpeed = 10;
+    private _rotaryEncoderTimeout = 300;
+    private _rotaryEncoderIncrement = 0.15;
+    private _rotaryEncoderPreviousTimestamp = 0;
+    private targetSpeed?: number;
+    private textSPD?: ReturnType<typeof this.getTextElement>;
+    private textMACH?: ReturnType<typeof this.getTextElement>;
+    private textKNOTS?: ReturnType<typeof this.getTextElement>;
+    private lightsTest?: boolean;
+    private _resetSelectionTimeout?: ReturnType<typeof setTimeout>;
+
     constructor(private readonly bus: EventBus) {
         super(bus, document.getElementById('Speed')!);
 
-        this.backToIdleTimeout = 10000;
-        this.MIN_SPEED = 100;
-        this.MAX_SPEED = 399;
-        this.MIN_MACH = 0.10;
-        this.MAX_MACH = 0.99;
-
-        this.isActive = false;
-        this.isManaged = false;
-        this.showSelectedSpeed = true;
-        this.currentValue = this.MIN_SPEED;
-        this.selectedValue = this.MIN_SPEED;
-        this.isMachActive = false;
-        this.inSelection = false;
-        this.isSelectedValueActive = false;
-        this.isValidV2 = false;
-        this.isVerticalModeSRS = false;
-        this.isTargetManaged = false;
-
-        this._rotaryEncoderCurrentSpeed = 1;
-        this._rotaryEncoderMaximumSpeed = 10;
-        this._rotaryEncoderTimeout = 300;
-        this._rotaryEncoderIncrement = 0.15;
-        this._rotaryEncoderPreviousTimestamp = 0;
         this.init();
         this.onUpdate();
     }
 
-    init() {
+    public init(): void {
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
         this.selectedValue = this.MIN_SPEED;
@@ -52,7 +58,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         this.onPull();
     }
 
-    onUpdate() {
+    public onUpdate(): void {
         const isManaged = Simplane.getAutoPilotAirspeedManaged() && this.isTargetManaged;
         const showSelectedSpeed = this.inSelection || !isManaged;
         const isMachActive = SimVar.GetSimVarValue('AUTOPILOT MANAGED SPEED IN MACH', 'bool');
@@ -117,7 +123,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         );
     }
 
-    shouldEngageManagedSpeed() {
+    private shouldEngageManagedSpeed(): boolean {
         const managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
         const isValidV2 = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots') >= 90;
         const isVerticalModeSRS = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum') === 40;
@@ -139,7 +145,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         return shouldEngage;
     }
 
-    isManagedSpeedAvailable() {
+    private isManagedSpeedAvailable(): boolean {
         // managed speed is available when flight director or autopilot is engaged, or in approach phase (FMGC flight phase)
         return (Simplane.getAutoPilotFlightDirectorActive(1)
                 || Simplane.getAutoPilotFlightDirectorActive(2)
@@ -148,7 +154,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
             && SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots') >= 90;
     }
 
-    refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
+    private refresh(_isActive: true, _isManaged: boolean, _showSelectedSpeed: boolean, _machActive: number, _value: number, _lightsTest: boolean, _force = false): void {
         if ((_isActive != this.isActive)
             || (_isManaged != this.isManaged)
             || (_showSelectedSpeed != this.showSelectedSpeed)
@@ -213,23 +219,23 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         }
     }
 
-    clampSpeed(value) {
+    private clampSpeed(value: number): number {
         return Utils.Clamp(value, this.MIN_SPEED, this.MAX_SPEED);
     }
 
-    clampMach(value) {
+    private clampMach(value: number): number {
         return Utils.Clamp(value, this.MIN_MACH, this.MAX_MACH);
     }
 
-    getCurrentSpeed() {
+    private getCurrentSpeed(): number {
         return this.clampSpeed(Math.round(Simplane.getIndicatedSpeed()));
     }
 
-    getCurrentMach() {
+    private getCurrentMach(): number {
         return this.clampMach(Math.round(Simplane.getMachSpeed() * 100) / 100);
     }
 
-    onRotate() {
+    private onRotate(): void {
         clearTimeout(this._resetSelectionTimeout);
         if (!this.inSelection && this.isManaged) {
             this.inSelection = true;
@@ -251,7 +257,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         }
     }
 
-    onPush() {
+    private onPush(): void {
         if (!this.isManagedSpeedAvailable()) {
             return;
         }
@@ -262,7 +268,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         this.isTargetManaged = true;
     }
 
-    onPull() {
+    private onPull(): void {
         clearTimeout(this._resetSelectionTimeout);
         if (!this.isSelectedValueActive) {
             if (this.isMachActive) {
@@ -277,7 +283,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         this.isTargetManaged = false;
     }
 
-    onSwitchSpeedMach() {
+    private onSwitchSpeedMach(): void {
         clearTimeout(this._resetSelectionTimeout);
         this.inSelection = false;
         this.isSelectedValueActive = false;
@@ -288,7 +294,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         }
     }
 
-    onPreSelSpeed(isMach) {
+    private onPreSelSpeed(isMach: boolean): void {
         clearTimeout(this._resetSelectionTimeout);
         SimVar.SetSimVarValue('K:SPEED_SLOT_INDEX_SET', 'number', 1);
         this.inSelection = false;
@@ -304,7 +310,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         }
     }
 
-    getRotationSpeed() {
+    private getRotationSpeed(): number {
         if (this._rotaryEncoderCurrentSpeed < 1
             || (Date.now() - this._rotaryEncoderPreviousTimestamp) > this._rotaryEncoderTimeout) {
             this._rotaryEncoderCurrentSpeed = 1;
@@ -315,7 +321,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         return Math.min(this._rotaryEncoderMaximumSpeed, Math.floor(this._rotaryEncoderCurrentSpeed));
     }
 
-    onEvent(_event) {
+    protected onEvent(_event: string): void {
         if (_event === 'SPEED_INC') {
             // use rotary encoder to speed dialing up / down
             if (this.isMachActive) {

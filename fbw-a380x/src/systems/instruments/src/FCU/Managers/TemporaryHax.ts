@@ -25,7 +25,7 @@ export abstract class TemporaryHax {
     }
   }
 
-  protected set textValueContent(_textContent: string) {
+  protected set textValueContent(_textContent: string | null) {
     if (this.textValue != null) {
       this.textValue.textContent = _textContent;
       this.textValue.innerHTML = this.textValue.innerHTML.replace('{sp}', '&nbsp;');

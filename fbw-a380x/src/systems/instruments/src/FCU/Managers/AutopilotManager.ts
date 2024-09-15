@@ -11,10 +11,10 @@ export class AutopilotManager extends TemporaryHax implements Instrument {
     this.onUpdate();
   }
 
-  init() {
+  public init(): void {
   }
 
-  onEvent(_event) {
+  protected override onEvent(_event: string): void {
     if (_event === 'AP_1_PUSH') {
       SimVar.SetSimVarValue('K:A32NX.FCU_AP_1_PUSH', 'number', 0);
     } else if (_event === 'AP_2_PUSH') {
@@ -30,6 +30,6 @@ export class AutopilotManager extends TemporaryHax implements Instrument {
     }
   }
 
-  onUpdate() {
+  public onUpdate(): void {
   }
 }
