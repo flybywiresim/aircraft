@@ -6,9 +6,9 @@ import { render } from '../Common';
 import { renderTarget } from '../util';
 
 if (renderTarget) {
-    render(<SystemDisplay />);
+  render(<SystemDisplay />);
 }
 
 getRootElement().addEventListener('unload', () => {
-    ReactDOM.unmountComponentAtNode(renderTarget ?? document.body);
+  ReactDOM.unmountComponentAtNode(renderTarget ?? document.body);
 });

@@ -116,7 +116,6 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [26, A380Failure.MLGLoopA, 'Main Landing Gear Bay Loop A'],
   [26, A380Failure.MLGLoopB, 'Main Landing Gear Bay Loop B'],
 
-
   [29, A380Failure.GreenReservoirLeak, 'Green reservoir leak'],
   [29, A380Failure.YellowReservoirLeak, 'Yellow reservoir leak'],
   [29, A380Failure.GreenReservoirAirLeak, 'Green reservoir air leak'],

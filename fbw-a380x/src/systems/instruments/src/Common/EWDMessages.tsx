@@ -140,7 +140,7 @@ const EWDMessages: { [key: string]: string } = {
   '340003109': '\x1b<3mIR ALIGNED',
   '340068001': '\x1b<3mADIRS SWTG',
   '709000001': '\x1b<3mIGNITION',
-    220200001: '\x1b<3mFMS 1 ON FMC-C',
+  220200001: '\x1b<3mFMS 1 ON FMC-C',
   220200002: '\x1b<3mFMS 2 ON FMC-C',
   220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
   220200004: '\x1b<3mCAT 2 ONLY',
@@ -156,7 +156,7 @@ const EWDMessages: { [key: string]: string } = {
   340200005: '\x1b<3mPFD BKUP SPEED & ALT AVAIL',
   340200006: '\x1b<3mFPV / VV AVAIL',
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
-    230400001: '\x1b<5mNO COM AVAIL',
+  230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',
   240400002: '\x1b<5mMAX SPEED: 310/.86',
   240400003: '\x1b<5mSPD BRK: DO NOT USE',

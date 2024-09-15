@@ -27,41 +27,41 @@ import { Mailbox } from './Mailbox';
 import '../index.scss';
 
 export const SystemDisplay = () => {
-    const [theCurrentPage] = useSimVar('L:A380X_ECAM_CP_SELECTED_PAGE', 'number', 500);
-    // const [currentPage, setCurrentPage] = useState(0);
-    // useInteractionEvent('A380X_SD_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A380X_SD_CURRENT_PAGE_INDEX', 'number')));
+  const [theCurrentPage] = useSimVar('L:A380X_ECAM_CP_SELECTED_PAGE', 'number', 500);
+  // const [currentPage, setCurrentPage] = useState(0);
+  // useInteractionEvent('A380X_SD_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A380X_SD_CURRENT_PAGE_INDEX', 'number')));
 
-    useEffect(() => {
-        console.log(`Changing current page to ${theCurrentPage}`);
-        // setCurrentPage(getSimVar('L:A380X_SD_CURRENT_PAGE_INDEX', 'number'));
-    }, [theCurrentPage]);
+  useEffect(() => {
+    console.log(`Changing current page to ${theCurrentPage}`);
+    // setCurrentPage(getSimVar('L:A380X_SD_CURRENT_PAGE_INDEX', 'number'));
+  }, [theCurrentPage]);
 
-    const PAGES = {
-        0: <EngPage />,
-        1: <BleedPage />,
-        2: <PressPage />,
-        3: <ElecAcPage />,
-        4: <FuelPage />,
-        5: <HydPage />,
-        6: <CbPage />,
-        7: <ApuPage />,
-        8: <CondPage />,
-        9: <DoorPage />,
-        10: <ElecDcPage />,
-        11: <WheelPage />,
-        12: <FctlPage />,
-        13: <CruisePage />, // TODO video page
-        14: <CruisePage />,
-        15: <StatusPage />,
-    };
+  const PAGES = {
+    0: <EngPage />,
+    1: <BleedPage />,
+    2: <PressPage />,
+    3: <ElecAcPage />,
+    4: <FuelPage />,
+    5: <HydPage />,
+    6: <CbPage />,
+    7: <ApuPage />,
+    8: <CondPage />,
+    9: <DoorPage />,
+    10: <ElecDcPage />,
+    11: <WheelPage />,
+    12: <FctlPage />,
+    13: <CruisePage />, // TODO video page
+    14: <CruisePage />,
+    15: <StatusPage />,
+  };
 
-    return (
-        <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
-            <g>
-                {PAGES[theCurrentPage]}
-                <StatusArea />
-                <Mailbox />
-            </g>
-        </LegacyCdsDisplayUnit>
-    );
+  return (
+    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
+      <g>
+        {PAGES[theCurrentPage]}
+        <StatusArea />
+        <Mailbox />
+      </g>
+    </LegacyCdsDisplayUnit>
+  );
 };
