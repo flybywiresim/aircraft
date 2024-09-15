@@ -680,8 +680,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
           </g>
           <VAlphaLimBar bus={this.props.bus} />
           <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} />
-
           <V1Offtape bus={this.props.bus} />
+          <ArsBar bus={this.props.bus}></ArsBar>
         </g>
       </>
     );
@@ -954,6 +954,59 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
         0
       </text>
     );
+  }
+}
+
+class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
+  private arsPath = Subject.create<string>('');
+
+  private arsVisiblity = Subject.create<string>('hidden');
+
+  private airSpeed = new Arinc429Word(0);
+
+  private conf1FSelected = false;
+
+  private readonly ARS1FSpeed = 212;
+
+  private readonly Conf1FVFE = 222;
+
+  private readonly offset = ((this.ARS1FSpeed - this.Conf1FVFE) * DistanceSpacing) / ValueSpacing;
+
+  private setArspath() {
+    if (this.conf1FSelected) {
+      this.arsVisiblity.set('visible');
+      const arsPos = ((this.airSpeed.value - this.ARS1FSpeed) * DistanceSpacing) / ValueSpacing + 80.818;
+      this.arsPath.set(`m19.031 ${arsPos}h 1.9748v${this.offset}`);
+    } else {
+      this.arsVisiblity.set('hidden');
+    }
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+
+    sub
+      .on('slatsFlapsStatus')
+      .whenChanged()
+      .handle((s) => {
+        this.conf1FSelected =
+          s.getBitValueOr(28, false) && s.getBitValue(29) && s.getBitValue(18) && !s.getBitValue(26);
+        this.setArspath();
+      });
+
+    sub
+      .on('speedAr')
+      .withArinc429Precision(2)
+      .handle((s) => {
+        this.airSpeed = s;
+        this.setArspath();
+      });
+  }
+
+  render(): VNode {
+    return <path id="ArsIndicator" class="NormalStroke Green" d={this.arsPath} visibility={this.arsVisiblity} />;
   }
 }
 
