@@ -87,7 +87,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['thrust_limit_rev', { name: 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_REV', type: SimVarValueType.Number }],
       ['satRaw', { name: 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', type: SimVarValueType.Number }],
       ['n1Idle', { name: 'L:A32NX_ENGINE_IDLE_N1', type: SimVarValueType.Number }],
-      ['flex', { name: 'L:AIRLINER_TO_FLEX_TEMP', type: SimVarValueType.Number }],
+      ['flex', { name: 'L:A32NX_AIRLINER_TO_FLEX_TEMP', type: SimVarValueType.Number }],
       ['athrTogaWarning', { name: 'L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', type: SimVarValueType.Bool }],
       ['packs1', { name: 'L:A32NX_COND_PACK_1_IS_OPERATING', type: SimVarValueType.Bool }],
       ['packs2', { name: 'L:A32NX_COND_PACK_2_IS_OPERATING', type: SimVarValueType.Bool }],

@@ -290,7 +290,12 @@ impl Turbine for Starting {
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n2 = self.calculate_n2();
-        self.n = self.calculate_n();
+        if context.aircraft_preset_quick_mode() {
+            self.n = Ratio::new::<percent>(100.);
+            println!("apu/pw980.rs: Aircraft Preset Quick Mode is active, setting N to 100%");
+        } else {
+            self.n = self.calculate_n();
+        };
         self.egt = self.calculate_egt(context);
 
         match controller.signal() {
@@ -747,7 +752,12 @@ impl Turbine for Stopping {
         _: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
-        self.n = Stopping::calculate_n1(self.since) * self.n_factor;
+        if context.aircraft_preset_quick_mode() {
+            self.n = Ratio::new::<percent>(0.);
+            println!("apu/pw980.rs: Aircraft Preset Quick Mode is active, setting N to 0%.");
+        } else {
+            self.n = Stopping::calculate_n1(self.since) * self.n_factor
+        };
         self.n2 = Stopping::calculate_n2(self.since) * self.n2_factor;
         self.egt = self.base_temperature + Stopping::calculate_egt_delta(self.n2)
             - self.egt_delta_at_entry;
@@ -1016,6 +1026,7 @@ mod apu_generator_tests {
     use ntest::assert_about_eq;
     use uom::si::frequency::hertz;
 
+    use crate::simulation::InitContext;
     use crate::{
         apu::tests::test_bed_pw980 as test_bed_with,
         shared,
@@ -1023,7 +1034,6 @@ mod apu_generator_tests {
     };
 
     use super::*;
-    use crate::simulation::InitContext;
 
     #[test]
     fn starts_without_output() {

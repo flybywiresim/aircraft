@@ -85,7 +85,7 @@ class DataManager {
   std::map<SIMCONNECT_DATA_REQUEST_ID, SimObjectBasePtr> simObjects{};
 
   // A map of all registered events.
-  // Map over the event id to quickly find the event - make creating an event a bit less efficient.
+  // Map over the event id to quickly find the event.
   std::map<SIMCONNECT_CLIENT_EVENT_ID, ClientEventPtr> clientEvents{};
 
   // Map of callback maps to be called when a key event is triggered in the sim.
@@ -276,7 +276,6 @@ class DataManager {
       LOG_ERROR("DataManager::make_datadefinition_var(): DataDefinitionVariable with name " + name + " already exists");
       return nullptr;
     }
-
     DataDefinitionVariablePtr<T> var = DataDefinitionVariablePtr<T>(new DataDefinitionVariable<T>(
         hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), updateMode, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
