@@ -1412,7 +1412,7 @@ export class SquawkFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue && /^[0-7]{4}$/.test(input)) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
