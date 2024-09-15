@@ -164,30 +164,40 @@ impl FuelTestBed {
     #[allow(dead_code)]
     fn desired_fuel_max(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 260059.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_min(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 0.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_50000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 50000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_100000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 100000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_200000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 200000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 

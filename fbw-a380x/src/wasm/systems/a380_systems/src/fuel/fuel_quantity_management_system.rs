@@ -74,6 +74,13 @@ pub struct RefuelPanelInput {
 
     engine_state_ids: [VariableIdentifier; 4],
     engine_states: [EngineState; 4],
+
+    // TODO: Replace when proper implementation is done
+    target_zero_fuel_weight: Mass,
+    target_zero_fuel_weight_id: VariableIdentifier,
+
+    target_zero_fuel_weight_cg_mac: f64,
+    target_zero_fuel_weight_cg_mac_id: VariableIdentifier,
 }
 impl RefuelPanelInput {
     pub fn new(context: &mut InitContext) -> Self {
@@ -94,6 +101,13 @@ impl RefuelPanelInput {
             engine_state_ids: [1, 2, 3, 4]
                 .map(|id| context.get_identifier(format!("ENGINE_STATE:{id}"))),
             engine_states: [EngineState::Off; 4],
+
+            target_zero_fuel_weight: Mass::new::<kilogram>(300000.),
+            target_zero_fuel_weight_id: context.get_identifier("AIRFRAME_ZFW_DESIRED".to_owned()),
+
+            target_zero_fuel_weight_cg_mac: 36.5,
+            target_zero_fuel_weight_cg_mac_id: context
+                .get_identifier("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED".to_owned()),
         }
     }
 
@@ -118,6 +132,7 @@ impl RefuelPanelInput {
     }
 
     fn refuel_is_enabled(&self) -> bool {
+        // TODO: Should this be if two engines are running instead of just one?
         self.refuel_status
             && self
                 .engine_states
@@ -125,6 +140,14 @@ impl RefuelPanelInput {
                 .all(|state| *state == EngineState::Off)
             && self.is_on_ground
             && self.ground_speed < Velocity::new::<knot>(0.1)
+    }
+
+    fn target_zero_fuel_weight(&self) -> Mass {
+        self.target_zero_fuel_weight
+    }
+
+    fn target_zero_fuel_weight_cg_mac(&self) -> f64 {
+        self.target_zero_fuel_weight_cg_mac
     }
 }
 impl SimulationElement for RefuelPanelInput {
@@ -142,6 +165,9 @@ impl SimulationElement for RefuelPanelInput {
         {
             *state = reader.read(id);
         }
+        self.target_zero_fuel_weight =
+            Mass::new::<kilogram>(reader.read(&self.target_zero_fuel_weight_id));
+        self.target_zero_fuel_weight_cg_mac = reader.read(&self.target_zero_fuel_weight_cg_mac_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -193,6 +219,14 @@ impl IntegratedRefuelPanel {
     fn refuel_is_enabled(&self) -> bool {
         self.input.refuel_is_enabled()
     }
+
+    fn target_zero_fuel_weight(&self) -> Mass {
+        self.input.target_zero_fuel_weight()
+    }
+
+    fn target_zero_fuel_weight_cg_mac(&self) -> f64 {
+        self.input.target_zero_fuel_weight_cg_mac()
+    }
 }
 impl SimulationElement for IntegratedRefuelPanel {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -209,6 +243,7 @@ const TRIM_TANK_TOML: &str = include_str!("./trim_tank_targets.toml");
 pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
     trim_tank_map: TrimTankMapping,
+    // TODO: Temporary values for now, take from EFB fuel page target variables
 }
 impl RefuelApplication {
     pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
@@ -229,8 +264,8 @@ impl RefuelApplication {
         let desired_quantities = self.calculate_auto_refuel(
             refuel_panel_input.total_desired_fuel(),
             // TODO FIXME: Add values from either MFD (or EFB)
-            Mass::new::<kilogram>(300000.),
-            36.5,
+            refuel_panel_input.target_zero_fuel_weight(),
+            refuel_panel_input.target_zero_fuel_weight_cg_mac(),
         );
 
         // TODO: Uncomment when IS_SIM_READY variable is implemented
@@ -481,7 +516,7 @@ impl RefuelDriver {
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
         // TODO: Proper fuel transfer logic from proper fuel ports into the correct fuel tanks (LMID/LINNER RMID/RINNER). Replace naive method below.
-        // TODO: Deprecating this function from refuel driver, which will only be used for instant refueling, into a proper FQMS implementation.
+        // TODO: Deprecating this realistically timed refueling function from refuel driver, which will only be used for instant refueling, into a proper FQMS implementation.
         // TODO: Account for AGT (Auto Ground Transfer) logic, disable when 2 engines are running (only when realistic setting is used)
 
         let speed_multi = if is_fast { Self::FAST_SPEED_FACTOR } else { 1. };
