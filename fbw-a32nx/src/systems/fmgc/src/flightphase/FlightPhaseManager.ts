@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  Phase,
-  PreFlightPhase,
-  TakeOffPhase,
+  ApproachPhase,
   ClimbPhase,
   CruisePhase,
   DescentPhase,
-  ApproachPhase,
-  GoAroundPhase,
   DonePhase,
+  GoAroundPhase,
+  Phase,
+  PreFlightPhase,
+  TakeOffPhase,
 } from '@fmgc/flightphase/Phase';
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -26,7 +26,7 @@ export interface FlightPhaseManagerEvents {
 function canInitiateDes(distanceToDestination: number): boolean {
   const fl = Math.round(Simplane.getAltitude() / 100);
   const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
-  const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+  const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
   // Can initiate descent? OR Can initiate early descent?
   return (
@@ -62,7 +62,6 @@ export class FlightPhaseManager {
   }
 
   constructor(private readonly bus: EventBus) {}
-
   init(): void {
     console.log(`FMGC Flight Phase: ${this.phase}`);
     this.phases[this.phase].init();
@@ -82,12 +81,14 @@ export class FlightPhaseManager {
       this.handleSlewSituation(_deltaTime);
     } else if (this.phase !== this.initialPhase) {
       // ensure correct init of phase
+
       this.changePhase(this.initialPhase);
     }
   }
 
-  /** @deprecated Use {@link FlightPhaseManagerEvents} instead. */
-  addOnPhaseChanged(cb: (prev: FmgcFlightPhase, next: FmgcFlightPhase) => void): void {
+  /** @deprecated Use {@link FlightPhaseManagerEvents} instead. */ addOnPhaseChanged(
+    cb: (prev: FmgcFlightPhase, next: FmgcFlightPhase) => void,
+  ): void {
     this.phaseChangeListeners.push(cb);
   }
 
