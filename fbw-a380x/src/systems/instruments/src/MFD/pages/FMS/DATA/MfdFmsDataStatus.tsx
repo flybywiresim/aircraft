@@ -39,8 +39,6 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
   private deleteStoredElementsDisabled = Subject.create(true);
 
   protected onNewData() {
-    console.time('DATA/STATUS:onNewData');
-
     NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((db) => {
       const from = new Date(db.effectiveFrom);
       const to = new Date(db.effectiveTo);
@@ -60,8 +58,6 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
       this.storedRunways.set(storedElements.runways.toFixed(0).padStart(2, '0'));
       this.deleteStoredElementsDisabled.set(storedElements.total === 0);
     }
-
-    console.timeEnd('DATA/STATUS:onNewData');
   }
 
   public onAfterRender(node: VNode): void {
