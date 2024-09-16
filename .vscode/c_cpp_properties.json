@@ -21,7 +21,8 @@
                 "__wasi__",
                 "_LIBCPP_HAS_NO_THREADS",
                 "_WINDLL",
-                "_MBCS"
+                "_MBCS",
+                "NOMINMAX"
             ],
             "windowsSdkVersion": "10.0.18362.0",
             "compilerArgs": [
