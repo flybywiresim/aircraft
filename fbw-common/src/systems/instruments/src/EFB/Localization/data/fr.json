@@ -722,9 +722,6 @@
   "HandleFuel": {
     "Title": "Gestion du carburant",
     "Fuel": "Carburant",
-    "CurrentFuel": {
-      "Title": "Carburant actuel",
-      "CurrentFuel": "Carburant actuel :"
-    }
+    "CurrentFuelIs": "Le carburant acutel de l'avion est de : "
   }
 }

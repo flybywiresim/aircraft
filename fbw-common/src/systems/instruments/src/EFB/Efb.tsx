@@ -62,7 +62,7 @@ import './Assets/Slider.scss';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
 import { NavigraphAuthProvider } from '../react/navigraph';
-import { HandleFuel } from 'instruments/src/EFB/handleFuel/handleFuel';
+import { HandleFuel } from 'instruments/src/EFB/handleFuel/HandleFuel';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
