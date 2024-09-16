@@ -243,7 +243,6 @@ const TRIM_TANK_TOML: &str = include_str!("./trim_tank_targets.toml");
 pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
     trim_tank_map: TrimTankMapping,
-    // TODO: Temporary values for now, take from EFB fuel page target variables
 }
 impl RefuelApplication {
     pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
