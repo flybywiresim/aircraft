@@ -12,8 +12,8 @@ fxhash = "0.2.1"
 rand = "0.8.0"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_with = { version = "3.9.0", features = ["std"] }
+toml = { version = "0.8.19", features = ["parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
-toml = "0.8.19"
 
 [dev-dependencies]
 rstest = "0.10.0"
