@@ -28,7 +28,6 @@ These systems are currently not operational / these features are missing and sha
 - AP tuning for A380X
 - FLS
 - THR NOISE, DCLB
-- ILS back course implementation in AP + EFIS
 
 ### ATA 22 Flight Management System (FMS)
 
