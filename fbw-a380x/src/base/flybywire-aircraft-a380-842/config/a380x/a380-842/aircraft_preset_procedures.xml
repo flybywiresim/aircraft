@@ -1,0 +1,767 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<!-- DO NOT CHANGE OR OVERRIDE THIS FILE IN MODS -->
+<!-- FlyByWire will not provide support if this file is overridden -->
+
+<!--
+Format Documentation:
+=====================
+
+Execution of the procedures is done in the order of the steps in the procedure.
+Each step can have a delay before the next step is executed.
+The delay is ignored in expedited mode.
+The StepType also defines if the step is executed in normal mode, expedited mode or both.
+
+<AircraftPresetProcedures> - root
+    <Procedure Name="..."> - Procedure - these are a fixed set of procedure in pair _ON and _OFF.
+                                         The _OFF procedure needs to undo the _ON procedure (usually in reverser order).
+        <Step             - Step -  a single step in the procedure
+            Name="..."    - Name -  the name of the step which is displayed in the flyPad when the preset is executed
+            Type="..."    - Type -  the type of the step, can be [STEP | PROC | NOEX | EXON | COND | NCON | ECON] - see below for details
+            Delay="...">  - Delay - the delay in milliseconds before the next step is executed.
+                                    In experimental mode, the delay is ignored depending on the type of the step
+
+            <Condition>   - Condition - RPN expression which needs to be either true or false.
+                                        For COND, NCON, ECON, the condition needs to be true to continue to the next step.
+                                        For STEP, PROC, NOEX, EXON, the condition need to be false to execute the action of the step meaning
+                                        if the condition is already true the action is not required.
+                                        If the condition is not present or empty, the step is always executed (depending on type).
+
+            <Action>      - Action - RPN expression which is executed if the condition is not true meaning if the condition is already true
+                                     the action is not required.
+                                     For CONd, NCON, ECON, the action can be omitted.
+
+    Step Types:
+          STEP = ACTION | NORMAL_MODE | EXPEDITED_MODE,     // Action step in normal and expedited mode
+          PROC = ACTION | NORMAL_MODE,                      // Action step only executed in normal mode - skipped in expedited mode
+          NOEX = STEP | EXPEDITED_DELAY,                    // Action step in normal and expedited mode, delay is respected even in expedited mode
+          EXON = ACTION | EXPEDITED_MODE,                   // Action step only executed in expedited mode - skipped in normal mode
+
+          COND = CONDITION | NORMAL_MODE | EXPEDITED_MODE,  // Conditional step, runs in normal and expedited mode
+          NCON = CONDITION | NORMAL_MODE,                   // Conditional step, runs in normal mode only
+          ECON = CONDITION | EXPEDITED_MODE,                // Conditional step, runs in expedited mode only
+-->
+
+<AircraftPresetProcedures>
+    <!--  =========================================================  -->
+    <!--  POWERUP_CONFIG_ON  -->
+    <!--  =========================================================  -->
+    <Procedure Name="POWERUP_CONFIG_ON">
+        <!-- SOP: PRELIMINARY COCKPIT PREPARATION-->
+        <Step Name="BAT1 On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT ESS On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT2 On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT APU On" Type="STEP" Delay="3000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)</Action>
+        </Step>
+
+        <Step Name="EXT PWR 2 On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
+            <Action>(A:EXTERNAL POWER ON:2, BOOL) ! if{ 2 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 3 On" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:3, BOOL) ! if{ 3 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 1 On" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:1, BOOL) ! if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 4 On" Type="STEP" Delay="3000">
+            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:4, BOOL) ! if{ 4 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+
+        <!-- ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test) -->
+        <Step Name="ENG Fire Test On" Type="PROC" Delay="2000">
+            <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
+            <Action>1 (&gt;L:A32NX_FIRE_TEST_ENG1)</Action>
+        </Step>
+        <Step Name="ENG Fire Test Off" Type="PROC" Delay="2000">
+            <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
+            <Action>0 (&gt;L:A32NX_FIRE_TEST_ENG1) 1 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
+        </Step>
+
+        <!-- Start APU (APU fire tests are done automatically in the A380 -->
+        <Step Name="APU Master On" Type="STEP" Delay="3000">
+            <Condition>(L:A32NX_ENGINE_STATE:1) 1 == (L:A32NX_ENGINE_STATE:2) 1 == &amp;&amp; (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="APU Start On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_APU_START_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="Await AC BUS ON" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
+        </Step>
+
+        <!-- SOP: COCKPIT PREPARATION -->
+        <Step Name="Crew Oxy On" Type="STEP" Delay="1000">
+            <Condition>(L:PUSH_OVHD_OXYGEN_CREW) 0 ==</Condition>
+            <Action>0 (&gt;L:PUSH_OVHD_OXYGEN_CREW)</Action>
+        </Step>
+        <Step Name="GND CTL On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_ENGINE_STATE:1) 1 == (L:A32NX_ENGINE_STATE:2) 1 == || (L:A32NX_RCDR_GROUND_CONTROL_ON) 1 == ||</Condition>
+            <Action>1 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON)</Action>
+        </Step>
+        <Step Name="ADIRS 1 Nav" Type="STEP" Delay="500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="ADIRS 2 Nav" Type="STEP" Delay="500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="ADIRS 3 Nav" Type="STEP" Delay="1500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="Strobe Auto" Type="STEP" Delay="1000">
+            <Condition>(L:LIGHTING_STROBE_0) 1 ==</Condition>
+            <Action>1 (&gt;L:LIGHTING_STROBE_0)</Action>
+        </Step>
+        <Step Name="Nav &amp; Logo Lt On" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &amp;&amp;</Condition>
+            <Action>1 (&gt;K:2:LOGO_LIGHTS_SET) 1 (&gt;K:2:NAV_LIGHTS_SET)</Action>
+        </Step>
+        <Step Name="SEAT BELTS On" Type="STEP" Delay="1000">
+            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)</Condition>
+            <Action>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }</Action>
+        </Step>
+        <Step Name="NO SMOKING Auto" Type="STEP" Delay="1000">
+            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==</Condition>
+            <Action>1 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
+        </Step>
+        <Step Name="EMER EXT Lt Arm" Type="STEP" Delay="1000">
+            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==</Condition>
+            <Action>1 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)</Action>
+        </Step>
+
+        <Step Name="Await APU Avail" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||</Condition>
+        </Step>
+        <Step Name="APU Bleed On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  POWERUP_CONFIG_OFF  -->
+    <!--  =========================================================  -->
+    <Procedure Name="POWERUP_CONFIG_OFF">
+        <Step Name="APU Bleed Off" Type="STEP" Delay="1500">
+            <Condition>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="EMER EXT Lt Off" Type="STEP" Delay="1500">
+            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)</Action>
+        </Step>
+        <Step Name="NO SMOKING Off" Type="STEP" Delay="1000">
+            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
+        </Step>
+        <Step Name="SEAT BELTS Off" Type="STEP" Delay="2000">
+            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) !</Condition>
+            <Action>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }</Action>
+        </Step>
+        <Step Name="Nav &amp; Logo Lt Off" Type="STEP" Delay="500">
+            <Condition>(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &amp;&amp;</Condition>
+            <Action>0 (&gt;K:2:LOGO_LIGHTS_SET) 0 (&gt;K:2:NAV_LIGHTS_SET)</Action>
+        </Step>
+        <Step Name="Strobe Off" Type="STEP" Delay="1000">
+            <Condition>(L:LIGHTING_STROBE_0) 2 ==</Condition>
+            <Action>2 (&gt;L:LIGHTING_STROBE_0)</Action>
+        </Step>
+        <Step Name="ADIRS 3 Off" Type="STEP" Delay="500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="ADIRS 2 Off" Type="STEP" Delay="500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="ADIRS 1 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="GND CTL Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON)</Action>
+        </Step>
+        <Step Name="Crew Oxy Off" Type="STEP" Delay="1000">
+            <Condition>(L:PUSH_OVHD_OXYGEN_CREW) 1 ==</Condition>
+            <Action>1 (&gt;L:PUSH_OVHD_OXYGEN_CREW)</Action>
+        </Step>
+        <Step Name="APU Master Off" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="EXT PWR 4 Off" Type="STEP" Delay="3000">
+            <Condition>(A:EXTERNAL POWER ON:4, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:4, BOOL) if{ 4 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:3, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:3, BOOL) if{ 3 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
+            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:2, BOOL) if{ 2 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="BAT APU Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT2 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT ESS Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT1 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="AC BUS Off Check" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !</Condition>
+        </Step>
+        <Step Name="ENG 1 Fire Test Reset" Type="STEP" Delay="0">
+
+            <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
+        </Step>
+        <Step Name="FWC Init Reset" Type="STEP" Delay="0">
+
+            <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)</Action>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  PUSHBACK_CONFIG_ON  -->
+    <!--  =========================================================  -->
+    <Procedure Name="PUSHBACK_CONFIG_ON">
+        <!-- SOP: BEFORE PUSHBACK OR START-->
+        <Step Name="EXT PWR 4 Off" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:4, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:4, BOOL) if{ 4 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
+            <Condition>(A:EXTERNAL POWER ON:3, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:3, BOOL) if{ 3 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+        <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
+            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
+            <Action>(A:EXTERNAL POWER ON:2, BOOL) if{ 2 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+        </Step>
+
+        <Step Name="Beacon On" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT BEACON, Bool)</Condition>
+            <Action>0 (&gt;K:BEACON_LIGHTS_ON)</Action>
+        </Step>
+
+        <Step Name="Fuel Pump Feed TK1 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:2, Bool)</Condition>
+            <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK1 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:3, Bool)</Condition>
+            <Action>3 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:64, Bool)</Condition>
+            <Action>64 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:65, Bool)</Condition>
+            <Action>65 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:66, Bool)</Condition>
+            <Action>66 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:67, Bool)</Condition>
+            <Action>67 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:68, Bool)</Condition>
+            <Action>68 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:69, Bool)</Condition>
+            <Action>69 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L OUTR TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:70, Bool)</Condition>
+            <Action>70 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID FWD TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:71, Bool)</Condition>
+            <Action>71 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID AFT TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:72, Bool)</Condition>
+            <Action>72 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR FWD TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:73, Bool)</Condition>
+            <Action>73 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR AFT TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:74, Bool)</Condition>
+            <Action>74 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR AFT TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:78, Bool)</Condition>
+            <Action>78 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR FWD TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:79, Bool)</Condition>
+            <Action>79 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID AFT TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:76, Bool)</Condition>
+            <Action>76 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID FWD TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:77, Bool)</Condition>
+            <Action>77 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R OUTR TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:75, Bool)</Condition>
+            <Action>75 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK L On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:80, Bool)</Condition>
+            <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
+            <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+
+        <Step Name="Cockpit Door Locked" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
+        </Step>
+
+        <Step Name="Await ADIRS 1 Alignment" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ADIRS_ADIRU_1_STATE) 2 ==</Condition>
+        </Step>
+        <Step Name="Await ADIRS 2 Alignment" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ADIRS_ADIRU_2_STATE) 2 ==</Condition>
+        </Step>
+        <Step Name="Await ADIRS 3 Alignment" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ADIRS_ADIRU_3_STATE) 2 ==</Condition>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  PUSHBACK_CONFIG_OFF  -->
+    <!--  =========================================================  -->
+    <Procedure Name="PUSHBACK_CONFIG_OFF">
+        <Step Name="Cockpit Door Open" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
+            <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK L Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:80, Bool) !</Condition>
+            <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R OUTR TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:75, Bool) !</Condition>
+            <Action>75 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID FWD TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:77, Bool) !</Condition>
+            <Action>77 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID AFT TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:76, Bool) !</Condition>
+            <Action>76 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR FWD TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:79, Bool) !</Condition>
+            <Action>79 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR AFT TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:78, Bool) !</Condition>
+            <Action>78 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR AFT TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:74, Bool) !</Condition>
+            <Action>74 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR FWD TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:73, Bool) !</Condition>
+            <Action>73 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID AFT TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:72, Bool) !</Condition>
+            <Action>72 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID FWD TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:71, Bool) !</Condition>
+            <Action>71 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L OUTR TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:70, Bool) !</Condition>
+            <Action>70 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:69, Bool) !</Condition>
+            <Action>69 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:68, Bool) !</Condition>
+            <Action>68 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:67, Bool) !</Condition>
+            <Action>67 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:66, Bool) !</Condition>
+            <Action>66 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:65, Bool) !</Condition>
+            <Action>65 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:64, Bool) !</Condition>
+            <Action>64 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK1 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:3, Bool) !</Condition>
+            <Action>3 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK1 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:2, Bool) !</Condition>
+            <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Beacon Off" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT BEACON, Bool) !</Condition>
+            <Action>0 (&gt;K:BEACON_LIGHTS_OFF)</Action>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  TAXI_CONFIG_ON  -->
+    <!--  =========================================================  -->
+    <Procedure Name="TAXI_CONFIG_ON">
+        <!-- SOP: ENGINE START -->
+        <Step Name="ENG MODE SEL Start" Type="STEP" Delay="3000">
+            <Condition>
+                (L:A32NX_ENGINE_STATE:1) 1 ==
+                (L:A32NX_ENGINE_STATE:2) 1 ==
+                (L:A32NX_ENGINE_STATE:3) 1 ==
+                (L:A32NX_ENGINE_STATE:4) 1 ==
+                1 &amp;&amp; &amp;&amp; &amp;&amp;
+            </Condition>
+            <Action>
+                2 (&gt;K:TURBINE_IGNITION_SWITCH_SET1)
+                2 (&gt;K:TURBINE_IGNITION_SWITCH_SET2)
+                2 (&gt;K:TURBINE_IGNITION_SWITCH_SET3)
+                2 (&gt;K:TURBINE_IGNITION_SWITCH_SET4)
+            </Action>
+        </Step>
+        <Step Name="ENG 1 On" Type="STEP" Delay="1000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:1, Bool)</Condition>
+            <Action>1 (&gt;K:FUELSYSTEM_VALVE_OPEN)</Action>
+        </Step>
+        <Step Name="ENG 2 On" Type="STEP" Delay="20000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:2, Bool)</Condition>
+            <Action>2 (&gt;K:FUELSYSTEM_VALVE_OPEN)</Action>
+        </Step>
+        <Step Name="Await ENG 1 Avail" Type="NCON" Delay="2000">
+            <Condition>(L:A32NX_ENGINE_STATE:1) 1 ==</Condition>
+        </Step>
+        <Step Name="Await ENG 2 Avail" Type="NCON" Delay="2000">
+            <Condition>(L:A32NX_ENGINE_STATE:2) 1 ==</Condition>
+        </Step>
+        <Step Name="ENG 3 On" Type="STEP" Delay="1000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:3, Bool)</Condition>
+            <Action>3 (&gt;K:FUELSYSTEM_VALVE_OPEN)</Action>
+        </Step>
+        <Step Name="ENG 4 On" Type="STEP" Delay="20000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:4, Bool)</Condition>
+            <Action>4 (&gt;K:FUELSYSTEM_VALVE_OPEN)</Action>
+        </Step>
+        <Step Name="Await ENG 3 Avail" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ENGINE_STATE:3) 1 ==</Condition>
+        </Step>
+        <Step Name="Await ENG 4 Avail" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ENGINE_STATE:4) 1 ==</Condition>
+        </Step>
+
+        <!-- SOP: AFTER START -->
+        <Step Name="ENG MODE SEL Norm" Type="STEP" Delay="3000">
+            <Condition>
+                (A:TURB ENG IGNITION SWITCH EX1:1, Number) 1 ==
+                (A:TURB ENG IGNITION SWITCH EX1:2, Number) 1 ==
+                (A:TURB ENG IGNITION SWITCH EX1:3, Number) 1 ==
+                (A:TURB ENG IGNITION SWITCH EX1:4, Number) 1 ==
+                0 || || || ||
+            </Condition>
+            <Action>
+                1 (&gt;K:TURBINE_IGNITION_SWITCH_SET1)
+                1 (&gt;K:TURBINE_IGNITION_SWITCH_SET2)
+                1 (&gt;K:TURBINE_IGNITION_SWITCH_SET3)
+                1 (&gt;K:TURBINE_IGNITION_SWITCH_SET4)
+            </Action>
+        </Step>
+        <Step Name="APU Bleed Off" Type="STEP" Delay="1500">
+            <Condition>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="APU Master Off" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="Spoiler Arm" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_SPOILERS_ARMED) 1 ==</Condition>
+            <Action>1 (&gt;K:SPOILERS_ARM_SET)</Action>
+        </Step>
+        <Step Name="Rudder Trim Reset" Type="STEP" Delay="2000">
+            <Condition>(A:RUDDER TRIM, Radians) 0 ==</Condition>
+            <Action>0 (&gt;K:RUDDER_TRIM_SET)</Action>
+        </Step>
+        <Step Name="Flaps 1" Type="STEP" Delay="3000">
+            <Condition>(L:A32NX_FLAPS_HANDLE_INDEX) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_FLAPS_HANDLE_INDEX)</Action>
+        </Step>
+
+        <!-- SOP: TAXI -->
+        <Step Name="NOSE Lt Taxi" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT TAXI, Number) 1 ==</Condition>
+            <Action>1 (&gt;K:TAXI_LIGHTS_ON)</Action>
+        </Step>
+        <Step Name="RWY TURN OFF Lt On" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT TAXI:2, Number) 1 == (A:LIGHT TAXI:3, Number) 1 == &amp;&amp;</Condition>
+            <Action>2 (&gt;K:TAXI_LIGHTS_ON) 3 (&gt;K:TAXI_LIGHTS_ON)</Action>
+        </Step>
+        <Step Name="PWS Auto" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_SWITCH_RADAR_PWS_POSITION)</Action>
+        </Step>
+        <Step Name="Transponder On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_TRANSPONDER_MODE) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
+        </Step>
+        <Step Name="ATC ALT RPTG On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_SWITCH_ATC_ALT) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_SWITCH_ATC_ALT)</Action>
+        </Step>
+        <Step Name="TCAS TRAFFIC Abv" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
+        </Step>
+        <Step Name="Autobrake RTO" Type="STEP" Delay="200">
+            <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
+        </Step>
+        <Step Name="TERR ON ND Capt. On" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
+        </Step>
+
+        <Step Name="Await Flaps 1+F" Type="COND" Delay="1000">
+            <Condition>
+                (L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 24 &gt;=
+                (L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 24 &gt;=
+                &amp;&amp;
+            </Condition>
+        </Step>
+        <Step Name="Await Slats 1+F" Type="COND" Delay="1000">
+            <Condition>
+                (L:A32NX_LEFT_SLATS_POSITION_PERCENT) 66 &gt;=
+                (L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 66 &gt;=
+                &amp;&amp;
+            </Condition>
+        </Step>
+
+        <Step Name="T.O. Config" Type="STEP" Delay="2000">
+            <Action>1 (&gt;L:A32NX_TO_CONFIG_NORMAL)</Action>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  TAXI_CONFIG_OFF  -->
+    <!--  =========================================================  -->
+    <Procedure Name="TAXI_CONFIG_OFF">
+        <Step Name="TERR ON ND Capt. Off" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
+        </Step>
+        <Step Name="Autobrake RTO Off" Type="STEP" Delay="200">
+            <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 0 ==</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
+        </Step>
+        <Step Name="Autobrake RTO Off" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
+        </Step>
+        <Step Name="TCAS TRAFFIC Abv" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
+        </Step>
+        <Step Name="ATC ALT RPTG Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_SWITCH_ATC_ALT) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_SWITCH_ATC_ALT)</Action>
+        </Step>
+        <Step Name="Transponder Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_TRANSPONDER_MODE) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
+        </Step>
+        <Step Name="PWS Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_SWITCH_RADAR_PWS_POSITION) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_SWITCH_RADAR_PWS_POSITION)</Action>
+        </Step>
+        <Step Name="RWY TURN OFF Lt Off" Type="STEP" Delay="2000">
+            <Condition>(A:LIGHT TAXI:2, Number) 0 == (A:LIGHT TAXI:3, Number) 0 == &amp;&amp;</Condition>
+            <Action>2 (&gt;K:TAXI_LIGHTS_OFF) 3 (&gt;K:TAXI_LIGHTS_OFF)</Action>
+        </Step>
+        <Step Name="NOSE Lt Taxi" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT TAXI, Number) 0 ==</Condition>
+            <Action>1 (&gt;K:TAXI_LIGHTS_OFF)</Action>
+        </Step>
+        <Step Name="Flaps 0" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_FLAPS_HANDLE_INDEX)</Action>
+        </Step>
+        <Step Name="Rudder Trim Reset" Type="STEP" Delay="2000">
+            <Condition>(A:RUDDER TRIM, Radians) 0 ==</Condition>
+            <Action>0 (&gt;K:RUDDER_TRIM_SET)</Action>
+        </Step>
+        <Step Name="Spoiler Disarm" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_SPOILERS_ARMED) 0 ==</Condition>
+            <Action>0 (&gt;K:SPOILERS_ARM_SET)</Action>
+        </Step>
+
+        <Step Name="Await Flaps 0" Type="COND" Delay="1000">
+            <Condition>
+                (L:A32NX_LEFT_FLAPS_POSITION_PERCENT) 1 &lt;=
+                (L:A32NX_RIGHT_FLAPS_POSITION_PERCENT) 1 &lt;=
+                &amp;&amp;
+            </Condition>
+        </Step>
+        <Step Name="Await Slats 0" Type="COND" Delay="1000">
+            <Condition>
+                (L:A32NX_LEFT_SLATS_POSITION_PERCENT) 1 &lt;=
+                (L:A32NX_RIGHT_SLATS_POSITION_PERCENT) 1 &lt;=
+                &amp;&amp;
+            </Condition>
+        </Step>
+
+        <Step Name="ENG 4 Off" Type="STEP" Delay="2000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:4, Bool) !</Condition>
+            <Action>4 (&gt;K:FUELSYSTEM_VALVE_CLOSE)</Action>
+        </Step>
+        <Step Name="ENG 3 Off" Type="STEP" Delay="2000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:3, Bool) !</Condition>
+            <Action>3 (&gt;K:FUELSYSTEM_VALVE_CLOSE)</Action>
+        </Step>
+        <Step Name="ENG 2 Off" Type="STEP" Delay="2000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:2, Bool) !</Condition>
+            <Action>2 (&gt;K:FUELSYSTEM_VALVE_CLOSE)</Action>
+        </Step>
+        <Step Name="ENG 1 Off" Type="STEP" Delay="2000">
+            <Condition>(A:FUELSYSTEM VALVE OPEN:1, Bool) !</Condition>
+            <Action>1 (&gt;K:FUELSYSTEM_VALVE_CLOSE)</Action>
+        </Step>
+        <Step Name="ENG 4 N1 <3%" Type="COND" Delay="500">
+            <Condition>(L:A32NX_ENGINE_N1:4) 3 &lt;</Condition>
+
+        </Step>
+        <Step Name="ENG 3 N1 <3%" Type="COND" Delay="500">
+            <Condition>(L:A32NX_ENGINE_N1:3) 3 &lt;</Condition>
+        </Step>
+        <Step Name="ENG 2 N1 <3%" Type="COND" Delay="500">
+            <Condition>(L:A32NX_ENGINE_N1:2) 3 &lt;</Condition>
+        </Step>
+        <Step Name="ENG 1 N1 <3%" Type="COND" Delay="500">
+            <Condition>(L:A32NX_ENGINE_N1:1) 3 &lt;</Condition>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  TAKEOFF_CONFIG_ON  -->
+    <!--  =========================================================  -->
+    <Procedure Name="TAKEOFF_CONFIG_ON">
+        <!-- SOP: TAXI -->
+        <Step Name="TCAS Switch TA/RA" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_SWITCH_TCAS_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
+        </Step>
+        <Step Name="Strobe On" Type="STEP" Delay="1000">
+            <Condition>(L:LIGHTING_STROBE_0) 0 ==</Condition>
+            <Action>0 (&gt;L:LIGHTING_STROBE_0)</Action>
+        </Step>
+        <Step Name="Cabin Read On" Type="STEP" Delay="1000">
+            <Action>1 (&gt;L:A32NX_CABIN_READY)</Action>
+        </Step>
+        <Step Name="Cabin Ready Off" Type="STEP" Delay="1000">
+            <Action>0 (&gt;L:A32NX_CABIN_READY)</Action>
+        </Step>
+
+        <!-- SOP: TAKEOFF -->
+        <Step Name="NOSE Lt Takeoff" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT LANDING:1, Number) 1 ==</Condition>
+            <Action>1 (&gt;K:LANDING_LIGHTS_ON)</Action>
+        </Step>
+        <Step Name="Landing Lights On" Type="STEP" Delay="0">
+            <Condition>(A:LIGHT LANDING:2, Number) 1 ==</Condition>
+            <Action>2 (&gt;K:LANDING_LIGHTS_ON)</Action>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  TAKEOFF_CONFIG_OFF  -->
+    <!--  =========================================================  -->
+    <Procedure Name="TAKEOFF_CONFIG_OFF">
+        <Step Name="Landing Lights Off TEST" Type="STEP" Delay="0">
+            <Condition>(A:LIGHT LANDING:2, Number) 0 ==</Condition>
+            <Action>2 (&gt;K:LANDING_LIGHTS_OFF)</Action>
+        </Step>
+        <Step Name="NOSE Lt Takeoff" Type="STEP" Delay="2000">
+            <Condition>(A:LIGHT LANDING:1, Number) 0 ==</Condition>
+            <Action>1 (&gt;K:LANDING_LIGHTS_OFF)</Action>
+        </Step>
+        <Step Name="Strobe Auto" Type="STEP" Delay="1000">
+            <Condition>(L:LIGHTING_STROBE_0) 1 ==</Condition>
+            <Action>1 (&gt;L:LIGHTING_STROBE_0)</Action>
+        </Step>
+        <Step Name="TCAS Switch TA/RA" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_SWITCH_TCAS_POSITION) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
+        </Step>
+    </Procedure>
+</AircraftPresetProcedures>
+

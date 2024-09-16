@@ -205,4 +205,6 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
     planDisplayLegIndex: number,
     planDisplayInAltn: boolean,
   ): void;
+
+  clearCheckSpeedModeMessage(): void;
 }

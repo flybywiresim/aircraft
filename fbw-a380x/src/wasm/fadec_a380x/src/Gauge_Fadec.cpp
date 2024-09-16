@@ -18,10 +18,7 @@
 #include "MsfsHandler.h"
 
 // Create an instance of the MsfsHandler
-// We do not use a prefix and use the full LVar name in the code.
-// Prefixes in framework code are not ideal and also prevent the creation
-// of an LVar without a prefix
-MsfsHandler msfsHandler("Gauge_Fadec_A380X", "");
+MsfsHandler msfsHandler("Gauge_Fadec_A380X", "A32NX_");
 
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically

@@ -30,23 +30,22 @@ class Table1502_A380X {
    * @return A 2D array representing the CN2 - correctedN1 pairs.
    */
   static constexpr double table1502[13][4] = {
-      {16.012, 0.000, 0.000, 17.000},       // CN3 = 18.20, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
-      {19.355, 1.845, 1.845, 17.345},       // CN3 = 22.00, correctedN1 = [1.90, 1.90] at Mach 0.2, correctedN1 = 17.40 at Mach 0.9
-      {22.874, 2.427, 2.427, 18.127},       // CN3 = 26.00, correctedN1 = [2.50, 2.50] at Mach 0.2, correctedN1 = 18.20 at Mach 0.9
-      {50.147, 12.427, 12.427, 26.627},     // CN3 = 57.00, correctedN1 = [12.80, 12.80] at Mach 0.2, correctedN1 = 27.00 at Mach 0.9
-      {60.000, 18.500, 18.500, 33.728},     // CN3 = 68.20, correctedN1 = [19.60, 19.60] at Mach 0.2, correctedN1 = 34.83 at Mach 0.9
-      {67.742, 25.243, 25.243, 40.082},     // CN3 = 77.00, correctedN1 = [26.00, 26.00] at Mach 0.2, correctedN1 = 40.84 at Mach 0.9
-      {73.021, 30.505, 30.505, 43.854},     // CN3 = 83.00, correctedN1 = [31.42, 31.42] at Mach 0.2, correctedN1 = 44.77 at Mach 0.9
-      {78.299, 39.779, 39.779, 48.899},     // CN3 = 89.00, correctedN1 = [40.97, 40.97] at Mach 0.2, correctedN1 = 50.09 at Mach 0.9
-      {81.642, 49.515, 49.515, 53.557},     // CN3 = 92.80, correctedN1 = [51.00, 51.00] at Mach 0.2, correctedN1 = 55.04 at Mach 0.9
-      {85.337, 63.107, 63.107, 63.107},     // CN3 = 97.00, correctedN1 = [65.00, 65.00] at Mach 0.2, correctedN1 = 65.00 at Mach 0.9
-      {87.977, 74.757, 74.757, 74.757},     // CN3 = 100.00, correctedN1 = [77.00, 77.00] at Mach 0.2, correctedN1 = 77.00 at Mach 0.9
-      {97.800, 97.200, 97.200, 97.200},     // CN3 = 104.00, correctedN1 = [85.00, 85.00] at Mach 0.2, correctedN1 = 85.50 at Mach 0.9
+      {16.012,  0.000,   0.000,   17.000 }, // CN3 = 18.20, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
+      {19.355,  1.845,   1.845,   17.345 }, // CN3 = 22.00, correctedN1 = [1.90, 1.90] at Mach 0.2, correctedN1 = 17.40 at Mach 0.9
+      {22.874,  2.427,   2.427,   18.127 }, // CN3 = 26.00, correctedN1 = [2.50, 2.50] at Mach 0.2, correctedN1 = 18.20 at Mach 0.9
+      {50.147,  12.427,  12.427,  26.627 }, // CN3 = 57.00, correctedN1 = [12.80, 12.80] at Mach 0.2, correctedN1 = 27.00 at Mach 0.9
+      {60.000,  18.500,  18.500,  33.728 }, // CN3 = 68.20, correctedN1 = [19.60, 19.60] at Mach 0.2, correctedN1 = 34.83 at Mach 0.9
+      {67.742,  25.243,  25.243,  40.082 }, // CN3 = 77.00, correctedN1 = [26.00, 26.00] at Mach 0.2, correctedN1 = 40.84 at Mach 0.9
+      {73.021,  30.505,  30.505,  43.854 }, // CN3 = 83.00, correctedN1 = [31.42, 31.42] at Mach 0.2, correctedN1 = 44.77 at Mach 0.9
+      {78.299,  39.779,  39.779,  48.899 }, // CN3 = 89.00, correctedN1 = [40.97, 40.97] at Mach 0.2, correctedN1 = 50.09 at Mach 0.9
+      {81.642,  49.515,  49.515,  53.557 }, // CN3 = 92.80, correctedN1 = [51.00, 51.00] at Mach 0.2, correctedN1 = 55.04 at Mach 0.9
+      {85.337,  63.107,  63.107,  63.107 }, // CN3 = 97.00, correctedN1 = [65.00, 65.00] at Mach 0.2, correctedN1 = 65.00 at Mach 0.9
+      {87.977,  74.757,  74.757,  74.757 }, // CN3 = 100.00, correctedN1 = [77.00, 77.00] at Mach 0.2, correctedN1 = 77.00 at Mach 0.9
+      {97.800,  97.200,  97.200,  97.200 }, // CN3 = 104.00, correctedN1 = [85.00, 85.00] at Mach 0.2, correctedN1 = 85.50 at Mach 0.9
       {118.000, 115.347, 115.347, 115.347}  // CN3 = 116.50, correctedN1 = [101.00, 101.00] at Mach 0.2, correctedN1 = 101.00 at Mach 0.9
   };
 
  public:
-
   /**
    * @brief Calculates the expected CN3 at idle.
    *
@@ -79,8 +78,8 @@ class Table1502_A380X {
     }
 
     // Retrieve the lower and upper bounds of the CN3 value and the correctedN1 value at Mach 0.2 and Mach 0.9
-    const double cn3lo = table1502[i - 1][0];
-    const double cn3hi = table1502[i][0];
+    const double cn3lo   = table1502[i - 1][0];
+    const double cn3hi   = table1502[i][0];
     const double cn1lolo = table1502[i - 1][1];
     const double cn1hilo = table1502[i][1];
     const double cn1lohi = table1502[i - 1][3];
