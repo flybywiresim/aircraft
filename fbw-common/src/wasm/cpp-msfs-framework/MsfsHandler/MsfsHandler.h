@@ -83,14 +83,18 @@ class MsfsHandler {
    */
   // Pause detection
   NamedVariablePtr a32nxPauseDetected;
-  ClientEventPtr pauseDetectedEvent;
+  ClientEventPtr   pauseDetectedEvent;
 
   /**
    * Current simulation time used for pause detection and time stamping variable updates
    */
   FLOAT64 timeStamp{};
 
-  /** The difference in sim time (including sim rate) since the last update, in seconds. */
+  /**
+   * The difference in sim time since the last update, in seconds accounting for sim rate.
+   * As the sim only provides the delta time since the last update, independent of the sim rate,
+   * this value is calculated by the MsfsHandler.
+   */
   FLOAT64 simulationDeltaTime{};
 
   /**
@@ -166,6 +170,9 @@ class MsfsHandler {
   [[nodiscard]] FLOAT64 getSimulationTime() const { return baseSimData->data().simulationTime; }
 
   /**
+   * @brief The difference in sim time since the last update, in seconds accounting for sim rate.
+   *        As the sim only provides the delta time since the last update, independent of the sim rate,
+   *        this value is calculated by the MsfsHandler.
    * @return The difference in sim time (accounting for sim rate) since the last update, in seconds.
    * @note This can return 0, and will return 0 when paused.
    */

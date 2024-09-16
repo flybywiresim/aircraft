@@ -19,22 +19,21 @@
                     <RMP_SCREEN_POT>80</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
-                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
+                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
                     <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_1</INPUT_EVENT_ID_SOURCE>
                 </Case>
                 <Case Value="2">
                     <RMP_SCREEN_POT>81</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
-                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
+                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
                     <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_2</INPUT_EVENT_ID_SOURCE>
                 </Case>
                 <Case Value="3">
                     <RMP_SCREEN_POT>82</RMP_SCREEN_POT>
-                    <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
-                    <!-- TODO find a pot for this and check elec supply -->
+                    <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
-                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
+                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
                     <INPUT_EVENT_ID_SOURCE>A380X_OVHD_RMP_3</INPUT_EVENT_ID_SOURCE>
                 </Case>
             </Switch>
