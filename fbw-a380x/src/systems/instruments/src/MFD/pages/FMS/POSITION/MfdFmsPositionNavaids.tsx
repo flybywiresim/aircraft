@@ -244,11 +244,8 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
   }
 
   async deselectionHandler(nV: string | null, oV: string | null | undefined) {
-    console.log(nV, oV);
     if (nV) {
-      console.log(1);
       const navaid = await this.parseNavaid(nV);
-      console.log(navaid, navaid?.databaseId);
       if (navaid) {
         this.props.fmcService.master?.navaidTuner.deselectNavaid(navaid.databaseId);
       }
