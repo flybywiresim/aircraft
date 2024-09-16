@@ -560,6 +560,10 @@ impl<const ZONES: usize> MixerUnit<ZONES> {
     fn outlet_temperature(&self) -> ThermodynamicTemperature {
         self.outlet_air.temperature()
     }
+
+    fn flow_rate(&self) -> MassRate {
+        self.outlet_air.flow_rate()
+    }
 }
 
 impl<const ZONES: usize> OutletAir for MixerUnit<ZONES> {
@@ -757,6 +761,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         for (id, tav) in self.trim_air_valves.iter_mut().enumerate() {
             tav.update(
                 context,
+                mixer_air.flow_rate(),
                 self.trim_air_pressure_regulating_valves
                     .iter()
                     .any(|taprv| taprv.is_open()),
@@ -1057,6 +1062,7 @@ impl TrimAirValve {
     fn update(
         &mut self,
         context: &UpdateContext,
+        pack_flow: MassRate,
         trim_air_pressure_regulating_valve_open: bool,
         from: &mut impl PneumaticContainer,
         tav_controller: TrimAirValveController,
@@ -1085,7 +1091,7 @@ impl TrimAirValve {
         } else {
             self.outlet_air.set_temperature(from.temperature());
             self.outlet_air
-                .set_flow_rate(self.trim_air_valve_air_flow());
+                .set_flow_rate(self.trim_air_valve_air_flow(pack_flow));
         }
 
         self.outlet_air
@@ -1096,8 +1102,13 @@ impl TrimAirValve {
         self.trim_air_valve.open_amount()
     }
 
-    fn trim_air_valve_air_flow(&self) -> MassRate {
-        self.trim_air_valve.fluid_flow()
+    fn trim_air_valve_air_flow(&self, pack_flow: MassRate) -> MassRate {
+        // If there is no pack flow, there should not be any trim air flow either
+        if pack_flow == MassRate::default() {
+            MassRate::new::<kilogram_per_second>(0.)
+        } else {
+            self.trim_air_valve.fluid_flow()
+        }
     }
 
     fn trim_air_valve_has_fault(&self) -> bool {
