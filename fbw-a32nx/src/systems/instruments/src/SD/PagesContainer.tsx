@@ -127,10 +127,11 @@ export const PagesContainer = () => {
       setEcamCycleInterval(
         setInterval(() => {
           setCurrentPage((prev) => {
-            setPage((prev + 1) % 11);
-            return (prev + 1) % 11;
+            prev = Math.min(prev + 1, SdPages.Fctl);
+            setPage(prev);
+            return prev;
           });
-        }, 1000) as unknown as number,
+        }, 3000) as unknown as number,
       );
     } else if (!ecamAllButtonPushed && prevEcamAllButtonState) {
       // button release
