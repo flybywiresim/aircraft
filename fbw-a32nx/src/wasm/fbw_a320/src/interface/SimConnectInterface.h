@@ -121,6 +121,7 @@ class SimConnectInterface {
     AP_SPEED_SLOT_INDEX_SET,
     AP_SPD_VAR_INC,
     AP_SPD_VAR_DEC,
+    AP_SPD_VAR_SET,
     AP_MACH_VAR_INC,
     AP_MACH_VAR_DEC,
     AP_HEADING_SLOT_INDEX_SET,
@@ -540,6 +541,8 @@ class SimConnectInterface {
    * @brief Process a SimConnect event with one parameter.
    * @param eventId Specifies the ID of the client event.
    * @param data0 Double word containing any additional number required by the event.
+   * @param data1 Double word containing any additional number required by the event.
+   *                If called by non-EX1 Event Handler, default to 0.
    */
-  void processEventWithOneParam(const DWORD eventId, const DWORD data0);
+  void processEvent(const DWORD eventId, const DWORD data0, const DWORD data1 = 0);
 };
