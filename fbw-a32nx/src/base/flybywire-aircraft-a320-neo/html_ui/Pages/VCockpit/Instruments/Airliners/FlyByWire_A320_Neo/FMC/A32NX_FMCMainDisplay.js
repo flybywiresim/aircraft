@@ -1200,6 +1200,13 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.isAirspeedManaged()) {
             Coherent.call("AP_SPD_VAR_SET", 0, Vtap).catch(console.error);
         }
+
+        // Reset V1/R/2 speed after the TAKEOFF phase
+        if (this.flightPhaseManager.phase > FmgcFlightPhases.TAKEOFF) {
+            this.v1Speed = null;
+            this.vrSpeed = null;
+            this.v2Speed = null;
+        }
     }
 
     activatePreSelSpeedMach(preSel) {
