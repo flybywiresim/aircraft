@@ -153,10 +153,7 @@ export class VerticalProfileComputationParametersObserver {
       return fmV2;
     }
 
-    const fmZfw = UnitType.POUND.convertTo(this.fmgc.getZeroFuelWeight(), UnitType.TONNE);
-    const fmFob = this.fmgc.getFOB();
-    const fmGw = fmZfw + fmFob;
-
+    const fmGw = this.fmgc.getGrossWeight();
     const flaps = this.fmgc.getTakeoffFlapsSetting() ?? DefaultVerticalProfileParameters.flapsSetting;
     const departureElevation = this.fmgc.getDepartureElevation() ?? DefaultVerticalProfileParameters.departureElevation;
 
@@ -179,6 +176,7 @@ export class VerticalProfileComputationParametersObserver {
       this.parameters.approachSpeed > 100;
 
     const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
+    const hasGrossWeight = Number.isFinite(this.fmgc.getGrossWeight());
     const hasCruiseAltitude = Number.isFinite(this.parameters.cruiseAltitude);
     const hasTakeoffParameters =
       this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;
@@ -187,6 +185,7 @@ export class VerticalProfileComputationParametersObserver {
       (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) &&
       areApproachSpeedsValid &&
       hasZeroFuelWeight &&
+      hasGrossWeight &&
       hasCruiseAltitude
     );
   }
