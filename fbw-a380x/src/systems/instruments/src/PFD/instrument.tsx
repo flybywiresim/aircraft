@@ -7,7 +7,7 @@ import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
-import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
+import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
 import './style.scss';
 import { RopRowOansPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';

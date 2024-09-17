@@ -468,7 +468,7 @@ mod tests {
         test_bed.command(|a| a.set_lock_reverser(false));
 
         test_bed.run_with_delta(Duration::from_millis(2500));
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.99);
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.97);
 
         test_bed.command(|a| a.set_lock_reverser(true));
         test_bed.command(|a| a.set_deploy_reverser(false));

@@ -28,67 +28,25 @@
 #define VERBOSE_LVL 6
 #define TRACE_LVL 7
 
-#if LOG_LEVEL > ZERO_LVL
 #define LOG_CRITICAL(msg) logger->critical(msg)
-#define LOG_CRITICAL_BLOCK(block) block
-#else
-#define LOG_CRITICAL(msg) void(0)
-#define LOG_CRITICAL_BLOCK(block) void(0);
-#endif
-
-#if LOG_LEVEL > CRITICAL_LVL
 #define LOG_ERROR(msg) logger->error(msg)
-#define LOG_ERROR_BLOCK(block) block
-#else
-#define LOG_ERROR(msg) void(0)
-#define LOG_ERROR_BLOCK(block) void(0);
-#endif
-
-#if LOG_LEVEL > ERROR_LVL
 #define LOG_WARN(msg) logger->warn(msg)
-#define LOG_WARN_BLOCK(block) block
-#else
-#define LOG_WARN(msg) void(0)
-#define LOG_WARN_BLOCK(block) void(0);
-#endif
-
-#if LOG_LEVEL > WARN_LVL
 #define LOG_INFO(msg) logger->info(msg)
-#define LOG_INFO_BLOCK(block) block
-#else
-#define LOG_INFO(msg) void(0)
-#define LOG_INFO_BLOCK(block) void(0);
-#endif
-
-#if LOG_LEVEL > INFO_LVL
 #define LOG_DEBUG(msg) logger->debug(msg)
-#define LOG_DEBUG_BLOCK(block) block
-#else
-#define LOG_DEBUG(msg) void(0)
-#define LOG_DEBUG_BLOCK(block) void(0);
-#endif
-
-#if LOG_LEVEL > DEBUG_LVL
 #define LOG_VERBOSE(msg) logger->verbose(msg)
-#define LOG_VERBOSE_BLOCK(block) block
-#else
-#define LOG_VERBOSE(msg) void(0)
-#define LOG_VERBOSE_BLOCK(block) void(0);
-#endif
-
-#if LOG_LEVEL > VERBOSE_LVL
 #define LOG_TRACE(msg) logger->trace(msg)
-#define LOG_TRACE_BLOCK(block) block
-#else
-#define LOG_TRACE(msg) void(0)
-#define LOG_TRACE_BLOCK(block) void(0);
-#endif
 
 /**
  * @brief The Logger class is a very simple logging facility.
  *
  * Singleton class for Logger
  * Very simple implementation for now.
+ * The use of macros allows for a complete removal of logging code when not needed.
+ *
+ * Usage:
+ *
+ * 1. Include "logging.h" in your source file.
+ * 2. Use the LOG_* macros to log messages to the console.
  */
 class Logger {
  public:
@@ -101,18 +59,52 @@ class Logger {
 
  public:
   // disallow copies
-  Logger(Logger const&) = delete;              // copy
-  Logger& operator=(const Logger&) = delete;   // copy assignment
-  Logger(Logger const&&) = delete;             // move
+  Logger(Logger const&)             = delete;  // copy
+  Logger& operator=(const Logger&)  = delete;  // copy assignment
+  Logger(Logger const&&)            = delete;  // move
   Logger& operator=(const Logger&&) = delete;  // move assignment
 
-  void critical(const std::string& msg) { std::cerr << "critical: " + msg; }
-  void error(const std::string& msg) { std::cerr << "error: " + msg; }
-  void warn(const std::string& msg) { std::cerr << "warn: " + msg; }
-  void info(const std::string& msg) { std::cout << "info: " << msg << std::endl; }
-  void debug(const std::string& msg) { std::cout << "debug: " << msg << std::endl; }
-  void verbose(const std::string& msg) { std::cout << "verbose: " << msg << std::endl; }
-  void trace(const std::string& msg) { std::cout << "trace: " << msg << std::endl; }
+  void critical([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= CRITICAL_LVL
+    std::cerr << "critical: " + msg;
+#endif
+  }
+
+  void error([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= ERROR_LVL
+    std::cerr << "error: " + msg;
+#endif
+  }
+
+  void warn([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= WARN_LVL
+    std::cerr << "warn: " + msg;
+#endif
+  }
+
+  void info([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= INFO_LVL
+    std::cout << "info: " << msg << std::endl;
+#endif
+  }
+
+  void debug([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= DEBUG_LVL
+    std::cout << "debug: " << msg << std::endl;
+#endif
+  }
+
+  void verbose([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= VERBOSE_LVL
+    std::cout << "verbose: " << msg << std::endl;
+#endif
+  }
+
+  void trace([[maybe_unused]] const std::string& msg) {
+#if LOG_LEVEL >= TRACE_LVL
+    std::cout << "trace: " << msg << std::endl;
+#endif
+  }
 };
 
 inline Logger* logger = Logger::instance();

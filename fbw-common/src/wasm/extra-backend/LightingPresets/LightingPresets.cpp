@@ -13,7 +13,7 @@ bool LightingPresets::initialize() {
   // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
   loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
-  presetLoadTime = dataManager->make_named_var("LIGHTING_PRESET_LOAD_TIME", UNITS.Number, UpdateMode::AUTO_READ);
+  presetLoadTime            = dataManager->make_named_var("LIGHTING_PRESET_LOAD_TIME", UNITS.Number, UpdateMode::AUTO_READ);
 
   // reset to default values
   loadLightingPresetRequest->setAndWriteToSim(0.0);
@@ -83,8 +83,8 @@ bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
     return false;
   }
   const FLOAT64 partialLoad = presetLoadTime->get() / deltaTime;
-  FLOAT64 stepSize = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
-  lastUpdate = msfsHandler.getTimeStamp();
+  FLOAT64       stepSize    = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
+  lastUpdate                = msfsHandler.getTimeStamp();
 
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
@@ -133,9 +133,9 @@ AircraftVariablePtr LightingPresets::createLightPotentiometerVar(int index) cons
 }
 
 FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
-                                         const std::string& section,
-                                         const std::string& key,
-                                         const double defaultValue) {
+                                         const std::string&        section,
+                                         const std::string&        key,
+                                         const double              defaultValue) {
   if (auto value = ini.get(section).get(key); !value.empty()) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
     // std::stof here. Workaround with std::stringstreams.

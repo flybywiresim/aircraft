@@ -230,7 +230,7 @@ export class LegacyFwc {
 
     // ESLD 1.0.79 + 1.0.80
     const eng1TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
-    const eng1TLAFTO = SimVar.GetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'number') !== 0; // is a flex temp is set?
+    const eng1TLAFTO = SimVar.GetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'number') !== 0; // is a flex temp is set?
     const eng1MCT = eng1TLA > 33.3 && eng1TLA < 36.7;
     const eng1TLAFullPwr = eng1TLA > 43.3;
     const eng1MCL = eng1TLA > 22.9;

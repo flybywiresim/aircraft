@@ -227,6 +227,10 @@ impl HydraulicGearSystem {
         );
     }
 
+    pub fn gear_hydraulic_manifold_pressure(&self) -> Pressure {
+        self.hydraulic_supply.gear_system_manifold_pressure()
+    }
+
     pub fn all_actuators(&mut self) -> [&mut impl Actuator; 6] {
         [
             self.nose_door_assembly.actuator(),
