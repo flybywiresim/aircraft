@@ -657,6 +657,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   false,
+  false,
   true,
   true,
   true,
@@ -4199,6 +4200,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
