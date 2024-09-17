@@ -141,7 +141,7 @@ export interface OancProps<T extends number> extends ComponentProps {
   contextMenuX?: Subject<number>;
   contextMenuY?: Subject<number>;
   contextMenuItems?: ContextMenuItemData[];
-  waitScreenRef: NodeReference<HTMLDivElement>;
+  messageScreenRef: NodeReference<HTMLDivElement>;
   zoomValues: T[];
 }
 
@@ -338,7 +338,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   );
 
   // eslint-disable-next-line arrow-body-style
-  private readonly showAircraft = this.usingPposAsReference;
+  private readonly showAircraft = MappedSubject.create(
+    ([icao, pposRef]) => icao !== '' && pposRef,
+    this.dataAirportIcao,
+    this.usingPposAsReference,
+  );
 
   private readonly aircraftX = Subject.create(0);
 
@@ -379,6 +383,23 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       .whenChanged()
       .handle((airport) => {
         this.loadAirportMap(airport);
+      });
+
+    sub
+      .on('oansNotAvail')
+      .whenChanged()
+      .handle((na) => {
+        if (this.props.messageScreenRef.getOrDefault()) {
+          if (na) {
+            this.props.messageScreenRef.instance.style.visibility = 'visible';
+            this.props.messageScreenRef.instance.innerText = 'NOT AVAIL';
+            this.props.messageScreenRef.instance.classList.add('amber');
+          } else if (this.props.messageScreenRef.instance.innerText === 'NOT AVAIL') {
+            this.props.messageScreenRef.instance.style.visibility = 'hidden';
+            this.props.messageScreenRef.instance.innerText = '';
+            this.props.messageScreenRef.instance.classList.remove('amber');
+          }
+        }
       });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
@@ -492,8 +513,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   public async loadAirportMap(icao: string) {
     this.dataLoading = true;
 
-    if (this.props.waitScreenRef.getOrDefault()) {
-      this.props.waitScreenRef.instance.style.visibility = 'visible';
+    if (this.props.messageScreenRef.getOrDefault()) {
+      this.props.messageScreenRef.instance.style.visibility = 'visible';
+      this.props.messageScreenRef.instance.innerText = 'PLEASE WAIT';
+      this.props.messageScreenRef.instance.classList.remove('amber');
     }
 
     this.clearData();
@@ -895,9 +918,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.updatePosition();
 
+    if (!this.data || this.dataLoading) return;
+
     this.aircraftOnGround.set(
-      ![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
+      ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
+
+    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos, bboxPolygon(bbox(this.data))));
 
     const distToArpt = this.ppos && this.arpCoordinates ? distanceTo(this.ppos, this.arpCoordinates) : 9999;
 
@@ -907,6 +934,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     if (this.arpCoordinates) {
       this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
       this.airportBearing.set(bearingTo(this.ppos, this.arpCoordinates));
+    } else {
+      this.airportWithinRange.set(true);
+      this.airportBearing.set(0);
     }
 
     if (this.usingPposAsReference.get() || !this.arpCoordinates) {
@@ -915,10 +945,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     } else {
       this.referencePos.lat = this.arpCoordinates.lat;
       this.referencePos.long = this.arpCoordinates.long;
-    }
-
-    if (!this.data || this.dataLoading) {
-      return;
     }
 
     const position = this.positionComputer.computePosition();
@@ -1024,8 +1050,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     if (this.lastLayerDrawnIndex > this.layerCanvasRefs.length - 1) {
       this.doneDrawing = true;
 
-      if (this.props.waitScreenRef.getOrDefault()) {
-        this.props.waitScreenRef.instance.style.visibility = 'hidden';
+      if (this.props.messageScreenRef.getOrDefault()) {
+        this.props.messageScreenRef.instance.style.visibility = 'hidden';
+        this.props.messageScreenRef.instance.innerText = '';
       }
 
       this.labelManager.reflowLabels(
@@ -1194,9 +1221,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   public handleCursorPanStart(event: MouseEvent): void {
-    this.isPanningArmed = true;
-    this.panArmedX.set(event.screenX);
-    this.panArmedY.set(event.screenY);
+    if (this.dataAirportIcao.get()) {
+      this.isPanningArmed = true;
+      this.panArmedX.set(event.screenX);
+      this.panArmedY.set(event.screenY);
+    }
   }
 
   public handleCursorPanMove(event: MouseEvent): void {
