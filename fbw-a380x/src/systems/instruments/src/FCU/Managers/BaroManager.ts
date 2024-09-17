@@ -41,6 +41,7 @@ export class BaroManager implements Instrument {
   public init(): void {
     this.mode.sub((v) => {
       SimVar.SetSimVarValue('KOHLSMAN SETTING STD', 'Bool', v === 'STD');
+      // FIXME get rid of this when we stop using MSFS altimeter
       if (v !== 'STD') {
         // put pre-select into altimeter
         const correction = this.correction.get();
