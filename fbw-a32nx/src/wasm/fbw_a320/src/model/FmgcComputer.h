@@ -100,6 +100,7 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_n;
     boolean_T Memory_PreviousInput_ne;
     boolean_T Memory_PreviousInput_cb;
+    boolean_T Memory_PreviousInput_no;
     boolean_T Memory_PreviousInput_fg;
     boolean_T Memory_PreviousInput_ma;
     boolean_T Memory_PreviousInput_ec;
@@ -781,6 +782,7 @@ class FmgcComputer final
     boolean_T SRFlipFlop1_initial_condition_b;
     boolean_T SRFlipFlop_initial_condition_ja;
     boolean_T SRFlipFlop_initial_condition_li;
+    boolean_T SRFlipFlop1_initial_condition_l;
     boolean_T SRFlipFlop1_initial_condition_i;
     boolean_T SRFlipFlop_initial_condition_be;
     boolean_T SRFlipFlop_initial_condition_jv;
@@ -802,7 +804,7 @@ class FmgcComputer final
     boolean_T SRFlipFlop_initial_condition_er;
     boolean_T SRFlipFlop1_initial_condition_d;
     boolean_T SRFlipFlop_initial_condition_nm;
-    boolean_T SRFlipFlop1_initial_condition_l;
+    boolean_T SRFlipFlop1_initial_condition_lo;
     boolean_T SRFlipFlop1_initial_condition_m;
     boolean_T SRFlipFlop1_initial_condition_by;
     boolean_T SRFlipFlop_initial_condition_as;
@@ -1049,6 +1051,7 @@ class FmgcComputer final
     boolean_T Logic_table_pk[16];
     boolean_T Logic_table_nz[16];
     boolean_T Logic_table_ob[16];
+    boolean_T Logic_table_ay[16];
     boolean_T Logic_table_ny[16];
     boolean_T Logic_table_ns[16];
     boolean_T Logic_table_kw[16];
