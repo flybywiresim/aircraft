@@ -1402,10 +1402,6 @@ export class SquawkFormat implements DataEntryFormat<number> {
 
   public maxDigits = 4;
 
-  private minValue = 0;
-
-  private maxValue = 7777;
-
   public format(value: number) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, null] as FieldFormatTuple;
@@ -1419,10 +1415,10 @@ export class SquawkFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue && /^[0-7]{4}$/.test(input)) {
+    if (!Number.isNaN(nbr) && /^[0-7]{4}$/.test(input)) {
       return nbr;
     }
-    if (nbr > this.maxValue || nbr < this.minValue) {
+    if (!/^[0-7]{4}$/.test(input)) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw new FmsError(FmsErrorType.FormatError);
