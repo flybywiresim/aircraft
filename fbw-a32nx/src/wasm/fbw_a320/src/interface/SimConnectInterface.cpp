@@ -378,6 +378,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPEED_SLOT_INDEX_SET, "SPEED_SLOT_INDEX_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_INC, "AP_SPD_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_DEC, "AP_SPD_VAR_DEC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_SET, "AP_SPD_VAR_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_VAR_INC, "AP_MACH_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_VAR_DEC, "AP_MACH_VAR_DEC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_HEADING_SLOT_INDEX_SET, "HEADING_SLOT_INDEX_SET", false);
@@ -1502,16 +1503,17 @@ void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pDat
 void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event) {
   const DWORD eventId = event->uEventID;
   const DWORD data0 = event->dwData;
-  processEventWithOneParam(eventId, data0);
+  processEvent(eventId, data0);
 }
 
 void SimConnectInterface::simConnectProcessEvent_EX1(const SIMCONNECT_RECV_EVENT_EX1* event) {
   const DWORD eventId = event->uEventID;
   const DWORD data0 = event->dwData0;
-  processEventWithOneParam(eventId, data0);
+  const DWORD data1 = event->dwData1;
+  processEvent(eventId, data0, data1);
 }
 
-void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DWORD data0) {
+void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, const DWORD data1) {
   // process depending on event id
   switch (eventId) {
     case Events::SYSTEM_EVENT_PAUSE: {
@@ -2078,7 +2080,17 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     }
 
     // TODO Unsync EFIS baro
-    case Events::KOHLSMANN_INC:
+    case Events::KOHLSMANN_INC: {
+      if (data1 == 0 || data1 == 1) {
+        fcuEfisPanelInputs[0].baro_knob.turns = 1;
+        fcuEfisPanelInputs[1].baro_knob.turns = 1;
+      }
+      if (data1 != 1) {
+        sendEventEx1(KOHLSMANN_INC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+      }
+      std::cout << "WASM: event triggered: KOHLSMANN_INC, index " << data1 << std::endl;
+      break;
+    }
     case Events::A32NX_FCU_EFIS_L_BARO_INC: {
       fcuEfisPanelInputs[0].baro_knob.turns = 1;
       fcuEfisPanelInputs[1].baro_knob.turns = 1;
@@ -2086,7 +2098,17 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
-    case Events::KOHLSMANN_DEC:
+    case Events::KOHLSMANN_DEC: {
+      if (data1 == 0 || data1 == 1) {
+        fcuEfisPanelInputs[0].baro_knob.turns = -1;
+        fcuEfisPanelInputs[1].baro_knob.turns = -1;
+      }
+      if (data1 != 1) {
+        sendEventEx1(KOHLSMANN_DEC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+      }
+      std::cout << "WASM: event triggered: KOHLSMANN_DEC, index " << data1 << std::endl;
+      break;
+    }
     case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
       fcuEfisPanelInputs[0].baro_knob.turns = -1;
       fcuEfisPanelInputs[1].baro_knob.turns = -1;
@@ -2094,7 +2116,18 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
-    case Events::KOHLSMANN_SET:
+    case Events::KOHLSMANN_SET: {
+      if (data1 == 0 || data1 == 1) {
+        simInputAutopilot.baro_left_set = data0;
+        simInputAutopilot.baro_right_set = data0;
+      }
+      if (data1 != 1) {
+        sendEventEx1(KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+      }
+      std::cout << "WASM: event triggered: KOHLSMANN_SET, index " << data1 << std::endl;
+      break;
+    }
+
     case Events::A32NX_FCU_EFIS_L_BARO_SET: {
       simInputAutopilot.baro_left_set = data0;
       simInputAutopilot.baro_right_set = data0;
@@ -2103,9 +2136,14 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     }
 
     case Events::BAROMETRIC_STD_PRESSURE: {
-      simInputAutopilot.baro_left_set = 1013;
-      simInputAutopilot.baro_right_set = 1013;
-      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE" << std::endl;
+      if (data0 == 0 || data0 == 1) {
+        simInputAutopilot.baro_left_set = 1013;
+        simInputAutopilot.baro_right_set = 1013;
+      }
+      if (data0 != 1) {
+        sendEvent(BAROMETRIC_STD_PRESSURE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
+      }
+      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE, index " << data0 << std::endl;
       break;
     }
 
@@ -2392,6 +2430,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::BAROMETRIC: {
       simInputAutopilot.baro_left_set = simData.seaLevelPressure;
       simInputAutopilot.baro_right_set = simData.seaLevelPressure;
+      sendEvent(Events::BAROMETRIC, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
 
       std::cout << "WASM: event triggered: BAROMETRIC" << std::endl;
     }
