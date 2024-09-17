@@ -17,6 +17,12 @@ export interface Arinc429WordData {
   isFunctionalTest(): boolean;
 
   isNormalOperation(): boolean;
+
+  valueOr(defaultValue: number | undefined | null): number;
+
+  getBitValue(bit: number): boolean;
+
+  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean;
 }
 
 export class Arinc429Word implements Arinc429WordData {
@@ -154,14 +160,24 @@ export class Arinc429Register implements Arinc429WordData {
   /**
    * Returns the value when normal operation, the supplied default value otherwise.
    */
-  valueOr(defaultValue: number | undefined | null) {
+  valueOr(defaultValue: number | undefined | null): number {
     return this.isNormalOperation() ? this.value : defaultValue;
   }
 
+  getBitValue(bit: number): boolean {
+    return ((this.value >> (bit - 1)) & 1) !== 0;
+  }
+
+  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+    return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+  }
+
+  /** @deprecated use {@link getBitValue} */
   bitValue(bit: number): boolean {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
+  /** @deprecated use {@link getBitValueOr} */
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
@@ -225,6 +241,18 @@ export class Arinc429OutputWord implements Arinc429WordData {
 
   isNormalOperation() {
     return this.word.isNormalOperation();
+  }
+
+  valueOr(defaultValue: number | undefined | null): number {
+    return this.word.valueOr(defaultValue);
+  }
+
+  getBitValue(bit: number): boolean {
+    return this.word.getBitValue(bit);
+  }
+
+  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+    return this.word.getBitValueOr(bit, defaultValue);
   }
 
   async writeToSimVarIfDirty() {

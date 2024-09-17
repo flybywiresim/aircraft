@@ -1,5 +1,6 @@
 import {
   ClockEvents,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -8,7 +9,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { LagFilter, RateLimiter } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -681,7 +682,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
           <VAlphaLimBar bus={this.props.bus} />
           <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} />
           <V1Offtape bus={this.props.bus} />
-          <ArsBar bus={this.props.bus}></ArsBar>
+          <ArsBar bus={this.props.bus} />
         </g>
       </>
     );
@@ -958,55 +959,56 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private arsPath = Subject.create<string>('');
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
 
-  private arsVisiblity = Subject.create<string>('hidden');
+  private static readonly ARS_1F_F_SPEED = 212;
 
-  private airSpeed = new Arinc429Word(0);
+  private static readonly CONF_1_F_VFE = 222;
 
-  private conf1FSelected = false;
+  private readonly size = ((ArsBar.ARS_1F_F_SPEED - ArsBar.CONF_1_F_VFE) * DistanceSpacing) / ValueSpacing;
 
-  private readonly ARS1FSpeed = 212;
+  private readonly path = `m19.031 0h 1.9748v${this.size}`;
 
-  private readonly Conf1FVFE = 222;
+  private readonly flapConfigRaw = ConsumerSubject.create(this.sub.on('slatsFlapsStatusRaw').whenChanged(), null);
 
-  private readonly offset = ((this.ARS1FSpeed - this.Conf1FVFE) * DistanceSpacing) / ValueSpacing;
+  private readonly flapConfig = Arinc429RegisterSubject.createEmpty();
 
-  private setArspath() {
-    if (this.conf1FSelected) {
-      this.arsVisiblity.set('visible');
-      const arsPos = ((this.airSpeed.value - this.ARS1FSpeed) * DistanceSpacing) / ValueSpacing + 80.818;
-      this.arsPath.set(`m19.031 ${arsPos}h 1.9748v${this.offset}`);
+  private readonly conf1SelectedSub = this.flapConfig.map(
+    (w) => w.getBitValueOr(28, false) && w.getBitValue(29) && w.getBitValue(18) && !w.getBitValue(26),
+  );
+
+  private readonly arsVisiblitySub = this.conf1SelectedSub.map((v) => (v ? 'visible' : 'hidden'));
+
+  private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
+
+  private readonly airspeed = Arinc429RegisterSubject.createEmpty();
+
+  private readonly arsStyleSub = this.airspeed.map((ias) => {
+    if (this.conf1SelectedSub.get()) {
+      const arsPos = ((ias.value - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818;
+      return `transform: translate3d(0px, ${arsPos}px, 0px )`;
     } else {
-      this.arsVisiblity.set('hidden');
+      return '';
     }
-  }
+  });
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
-
-    sub
-      .on('slatsFlapsStatus')
-      .whenChanged()
-      .handle((s) => {
-        this.conf1FSelected =
-          s.getBitValueOr(28, false) && s.getBitValue(29) && s.getBitValue(18) && !s.getBitValue(26);
-        this.setArspath();
-      });
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.airSpeed = s;
-        this.setArspath();
-      });
+    this.flapConfigRaw.sub((w) => this.flapConfig.setWord(w));
+    this.airspeedRaw.sub((w) => this.airspeed.setWord(w));
   }
 
   render(): VNode {
-    return <path id="ArsIndicator" class="NormalStroke Green" d={this.arsPath} visibility={this.arsVisiblity} />;
+    return (
+      <path
+        id="ArsIndicator"
+        class="NormalStroke Green"
+        d={this.path}
+        visibility={this.arsVisiblitySub}
+        style={this.arsStyleSub}
+      />
+    );
   }
 }
 
