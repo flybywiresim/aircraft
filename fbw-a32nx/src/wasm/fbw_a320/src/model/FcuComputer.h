@@ -46,6 +46,7 @@ class FcuComputer final
   };
 
   struct D_Work_FcuComputer_T {
+    real_T eventTime;
     real32_T DelayInput1_DSTATE[4];
     real32_T pValue;
     real32_T pValue_e;
@@ -56,6 +57,7 @@ class FcuComputer final
     boolean_T prevTrkFpaActive_not_empty;
     boolean_T p_metric_alt_active;
     boolean_T p_trk_fpa_active;
+    boolean_T eventTime_not_empty;
     boolean_T pValue_not_empty_l;
     boolean_T prevMachActive;
     boolean_T prevMachActive_not_empty;
@@ -101,7 +103,6 @@ class FcuComputer final
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_ma;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_a4;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kl;
-    rtDW_MATLABFunction1_FcuComputer_T sf_MATLABFunction1_p;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_oi;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_lh;
     rtDW_MATLABFunction_FcuComputer_T sf_MATLABFunction_p5r;
