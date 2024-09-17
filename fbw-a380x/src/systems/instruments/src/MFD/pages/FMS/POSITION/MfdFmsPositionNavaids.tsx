@@ -107,8 +107,6 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       return;
     }
 
-    //console.time('POSITION/NAVAIDS:onNewData');
-
     const vor1 = this.props.fmcService.master.navaidTuner.getVorRadioTuningStatus(1);
     this.vor1Ident.set(vor1.ident ?? null);
     this.vor1Freq.set(vor1.frequency ?? null);
@@ -150,8 +148,6 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     this.thirdRowClass.set(mmr.ident ? 'ILS/DME' : '');
     this.thirdRowIdent.set(mmr.ident ?? null);
     this.thirdRowIdentRef.instance.style.visibility = mmr.ident ? 'visible' : 'hidden';
-
-    //console.timeEnd('POSITION/NAVAIDS:onNewData');
   }
 
   private deselectGlide() {
