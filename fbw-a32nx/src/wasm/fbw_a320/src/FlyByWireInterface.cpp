@@ -2187,6 +2187,11 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
 
   // Update AFS CP variables (Sim AP vars and legacy Lvars)
+  // The speed var comes from the FMGC, do a simple check of FMGC health to select the FMGC to use
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_SPD_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   fmgcsBusOutputs[fmgcsDiscreteOutputs[0].fmgc_healthy ? 0 : 1].fmgc_a_bus.pfd_sel_spd_kts.Data, 0);
+  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_SPEED_SLOT_INDEX_SET, discreteOutputs.afs_outputs.spd_mach_managed ? 2 : 1,
+                                SIMCONNECT_GROUP_PRIORITY_STANDARD);
   idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
   idFcuShimSpdDot->set(discreteOutputs.afs_outputs.spd_mach_managed);
   idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
