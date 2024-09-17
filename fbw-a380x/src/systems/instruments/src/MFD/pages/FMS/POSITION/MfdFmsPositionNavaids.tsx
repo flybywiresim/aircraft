@@ -138,6 +138,8 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
     this.deselectedNavaids.forEach((v, i) => {
       if (this.props.fmcService.master?.navaidTuner.deselectedNavaids[i]) {
+        // FIXME pass full navaid objects to deselected navaids so we can get the ident.
+        // Taking it from the databaseId is not safe but all we can do for now.
         v.set(this.props.fmcService.master.navaidTuner.deselectedNavaids[i].substring(7).trim());
       } else {
         v.set(null);
