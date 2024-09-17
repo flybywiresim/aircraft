@@ -36,6 +36,7 @@ clang \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -DNOMINMAX \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
@@ -76,6 +77,7 @@ clang++ \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -DNOMINMAX \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
