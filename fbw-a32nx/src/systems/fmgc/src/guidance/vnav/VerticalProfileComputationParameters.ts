@@ -93,8 +93,8 @@ export class VerticalProfileComputationParametersObserver {
       managedDescentSpeed: this.fmgc.getManagedDescentSpeed(),
       managedDescentSpeedMach: this.fmgc.getManagedDescentSpeedMach(),
 
-      zeroFuelWeight: this.fmgc.getZeroFuelWeight(),
-      fuelOnBoard: UnitType.TONNE.convertTo(this.fmgc.getFOB(), UnitType.POUND),
+      zeroFuelWeight: this.getZeroFuelWeight(),
+      fuelOnBoard: this.getFuelOnBoard(),
       v2Speed: this.getV2Speed(),
       tropoPause: this.fmgc.getTropoPause(),
       perfFactor: 0, // FIXME: Use actual value,
@@ -188,6 +188,23 @@ export class VerticalProfileComputationParametersObserver {
       hasGrossWeight &&
       hasCruiseAltitude
     );
+  }
+
+  getZeroFuelWeight(): Pounds {
+    const fmZfw = this.fmgc.getZeroFuelWeight();
+
+    return Number.isFinite(fmZfw) ? UnitType.TONNE.convertTo(fmZfw, UnitType.POUND) : undefined;
+  }
+
+  getFuelOnBoard(): Pounds {
+    const fmGw = this.fmgc.getGrossWeight();
+    const fmZfw = this.fmgc.getZeroFuelWeight();
+
+    if (Number.isFinite(fmGw) && Number.isFinite(fmZfw)) {
+      return UnitType.TONNE.convertTo(fmGw - fmZfw, UnitType.POUND);
+    }
+
+    return undefined;
   }
 }
 

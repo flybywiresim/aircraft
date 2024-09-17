@@ -338,12 +338,16 @@ class CDUInitPage {
         }
     }
     static fuelPredConditionsMet(mcdu) {
-        return isFinite(mcdu.blockFuel) &&
-            isFinite(mcdu.zeroFuelWeightMassCenter) &&
-            isFinite(mcdu.zeroFuelWeight) &&
+        const useFqi = mcdu.isAnEngineOn();
+        const blockFuel = mcdu._blockFuelEntered ? mcdu.blockFuel : undefined;
+
+        const fob = useFqi ? mcdu.getFOB() : blockFuel;
+
+        return Number.isFinite(fob) &&
+            Number.isFinite(mcdu.zeroFuelWeightMassCenter) &&
+            Number.isFinite(mcdu.zeroFuelWeight) &&
             mcdu.flightPlanService.active && mcdu.flightPlanService.active.legCount > 0 &&
-            mcdu._zeroFuelWeightZFWCGEntered &&
-            (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
+            mcdu._zeroFuelWeightZFWCGEntered;
     }
     static trySetFuelPred(mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
