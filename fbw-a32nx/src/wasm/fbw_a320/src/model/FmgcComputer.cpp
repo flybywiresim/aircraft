@@ -2336,7 +2336,7 @@ void FmgcComputer::step()
         FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active ||
         FmgcComputer_DWork.Delay_DSTATE.lateral_modes.land_active) && (!rtb_y_af))) + (static_cast<uint32_T>
       (rtb_Compare_du) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_cb];
-    FmgcComputer_MATLABFunction(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_alt_ft,
+    FmgcComputer_MATLABFunction(&rtb_BusAssignment_ic_logic_adr_computation_data_altitude_corrected_ft,
       FmgcComputer_P.A429ValueOrDefault3_defaultValue_m, &rtb_y_py);
     FmgcComputer_DWork.Memory_PreviousInput_no = FmgcComputer_P.Logic_table_ay[(((static_cast<uint32_T>(std::abs
       (FmgcComputer_U.in.fms_inputs.cruise_alt_ft - rtb_y_py) < FmgcComputer_P.CompareToConstant1_const_a) << 1) +
