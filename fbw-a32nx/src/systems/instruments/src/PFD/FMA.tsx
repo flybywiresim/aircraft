@@ -318,62 +318,89 @@ class Row2 extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscr
 class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   private text = Subject.create('');
 
-  private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
+  private autobrakeActive = false;
 
-  private autoBrkRef = FSComponent.createRef<SVGTextElement>();
+  private autobrakeMode = 0;
+
+  private fcuAtsFmaDiscreteWord = new Arinc429Word(0);
+
+  private fcuAtsDiscreteWord = new Arinc429Word(0);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & FcuBus>();
 
     sub
       .on('autoBrakeMode')
       .whenChanged()
       .handle((am) => {
-        switch (am) {
-          case 0:
-            this.text.set('');
-            break;
-          case 1:
-            this.text.set('BRK LO ');
-            break;
-          case 2:
-            this.text.set('BRK MED ');
-            break;
-          case 3:
-            // MAX will be shown in 3rd row
-            this.text.set('');
-            break;
-          default:
-            break;
-        }
+        this.autobrakeMode = am;
+        this.handleMessage();
       });
 
     sub
       .on('autoBrakeActive')
       .whenChanged()
       .handle((am) => {
-        if (am) {
-          this.autoBrkRef.instance.style.visibility = 'hidden';
-        } else {
-          this.autoBrkRef.instance.style.visibility = 'visible';
-        }
+        this.autobrakeActive = am;
+        this.handleMessage();
       });
 
-    // sub.on('AThrMode').whenChanged().handle((athrMode) => {
-    //     // ATHR mode overrides BRK LO and MED memo
-    //     if (athrMode > 0 && athrMode <= 6) {
-    //         this.autoBrkRef.instance.style.visibility = 'hidden';
-    //     } else {
-    //         this.autoBrkRef.instance.style.visibility = 'visible';
-    //     }
-    // });
+    sub
+      .on('fcuAtsDiscreteWord')
+      .whenChanged()
+      .handle((word) => {
+        this.fcuAtsDiscreteWord = word;
+        this.handleMessage();
+      });
+
+    sub
+      .on('fcuAtsFmaDiscreteWord')
+      .whenChanged()
+      .handle((word) => {
+        this.fcuAtsFmaDiscreteWord = word;
+        this.handleMessage();
+      });
+  }
+
+  handleMessage(): void {
+    const [_isShown, isTwoLine, _text] = getA1A2CellText(
+      this.fcuAtsDiscreteWord,
+      this.fcuAtsFmaDiscreteWord,
+      0,
+      this.autobrakeMode,
+      this.autobrakeActive,
+    );
+
+    if (this.autobrakeActive || isTwoLine) {
+      this.text.set('');
+
+      return;
+    }
+
+    switch (this.autobrakeMode) {
+      case 0:
+        this.text.set('');
+        break;
+      case 1:
+        this.text.set('BRK LO ');
+        break;
+      case 2:
+        this.text.set('BRK MED ');
+        break;
+      case 3:
+        // MAX will be shown in 3rd row
+        this.text.set('');
+        break;
+      default:
+        break;
+    }
   }
 
   render(): VNode {
     return (
-      <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
+      <text class="FontMediumSmaller MiddleAlign Cyan" x="16.782249" y="14.329653" style="white-space: pre">
         {this.text}
       </text>
     );
@@ -414,6 +441,120 @@ class Row3 extends DisplayComponent<{
   }
 }
 
+function getA1A2CellText(
+  fcuAtsDiscreteWord: Arinc429Word,
+  fcuAtsFmaDiscreteWord: Arinc429Word,
+  flexTemp: number,
+  autoBrakeMode: number,
+  autoBrakeActive: boolean,
+): [boolean, boolean, string] {
+  const atEngaged = fcuAtsDiscreteWord.getBitValueOr(13, false);
+  const atActive = fcuAtsDiscreteWord.getBitValueOr(14, false);
+
+  let text = '';
+  let isShown = true;
+  let isTwoLine = false;
+
+  if (fcuAtsFmaDiscreteWord.getBitValueOr(11, false)) {
+    isShown = false;
+    isTwoLine = true;
+    text = `
+                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
+                            `;
+  } else if (false) {
+    isShown = false;
+    isTwoLine = true;
+    text = `<g>
+                                <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(13, false)) {
+    isShown = false;
+    isTwoLine = true;
+    const FlexTemp = Math.round(flexTemp);
+    const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
+    text = `<g>
+                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="24.099141" y="14.351689">
+                               ${FlexText}
+                                </text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(29, false)) {
+    isShown = false;
+    isTwoLine = true;
+    text = `<g>
+                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && !atActive) {
+    isShown = false;
+    isTwoLine = true;
+    text = `<g>
+                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && !atActive) {
+    isShown = false;
+    isTwoLine = true;
+    text = `<g>
+                                <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(17, false)) {
+    isShown = false;
+    text = `<g>
+                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(18, false)) {
+    isShown = false;
+    text = `<g>
+                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
+                            </g>`;
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(19, false)) {
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(20, false)) {
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && atActive) {
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(14, false)) {
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && atActive) {
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
+  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(16, false)) {
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+  } else if (autoBrakeActive) {
+    switch (autoBrakeMode) {
+      case 1:
+        text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
+        break;
+      case 2:
+        text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
+        break;
+      case 3:
+        text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
+        break;
+      default:
+        text = '';
+        isShown = false;
+    }
+  } else {
+    text = '';
+    isShown = false;
+  }
+
+  return [isShown, isTwoLine, text];
+}
+
 interface CellProps extends ComponentProps {
   bus: ArincEventBus;
 }
@@ -436,102 +577,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    let text: string = '';
-    this.isShown = true;
-
-    const atEngaged = this.fcuAtsDiscreteWord.getBitValueOr(13, false);
-    const atActive = this.fcuAtsDiscreteWord.getBitValueOr(14, false);
-
-    if (this.fcuAtsFmaDiscreteWord.getBitValueOr(11, false)) {
-      this.isShown = false;
-      text = `
-                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
-                            `;
-    } else if (false) {
-      this.isShown = false;
-      text = `<g>
-                                <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(13, false)) {
-      this.isShown = false;
-      const FlexTemp = Math.round(this.flexTemp);
-      const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
-      text = `<g>
-                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
-                                <text class="FontMedium MiddleAlign Cyan" x="24.099141" y="14.351689">
-                               ${FlexText}
-                                </text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(29, false)) {
-      this.isShown = false;
-      text = `<g>
-                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && !atActive) {
-      this.isShown = false;
-      text = `<g>
-                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && !atActive) {
-      this.isShown = false;
-      text = `<g>
-                                <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(17, false)) {
-      this.isShown = false;
-      text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(18, false)) {
-      this.isShown = false;
-      text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
-                            </g>`;
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(19, false)) {
-      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(20, false)) {
-      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && atActive) {
-      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(14, false)) {
-      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && atActive) {
-      text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-    } else if (this.fcuAtsFmaDiscreteWord.getBitValueOr(16, false)) {
-      text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
-    } else if (this.autoBrakeActive) {
-      switch (this.autoBrakeMode) {
-        case 1:
-          text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
-          break;
-        case 2:
-          text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
-          break;
-        case 3:
-          text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
-          break;
-        default:
-          text = '';
-          this.isShown = false;
-      }
-    } else {
-      text = '';
-      this.isShown = false;
-    }
+    const [isShown, _isTwoLine, text] = getA1A2CellText(
+      this.fcuAtsDiscreteWord,
+      this.fcuAtsFmaDiscreteWord,
+      this.flexTemp,
+      this.autoBrakeMode,
+      this.autoBrakeActive,
+    );
+    this.isShown = isShown;
 
     const hasChanged = text.length > 0 && text !== this.cellRef.instance.innerHTML;
     if (hasChanged) {
