@@ -28,7 +28,8 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
             </div>
           </div>
 
-          <Baro />
+          <Baro bus={this.props.bus} />
+          {/* FIXME need a second baro for FO side */}
 
           <img style="position: absolute; top: 1750px; left: 240px" width="620px" src="/Images/fbw-a380x/fcu/CSTR.png" />
           <img style="position: absolute; top: 1750px; left: 1130px" width="620px" src="/Images/fbw-a380x/fcu/WPT.png" />

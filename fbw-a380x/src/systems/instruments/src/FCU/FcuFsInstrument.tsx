@@ -14,7 +14,7 @@ import { VerticalSpeedManager } from './Managers/VerticalSpeedManager';
 import './style.scss';
 
 export class FcuFsInstrument implements FsInstrument {
-  private static readonly INIT_DURATION = 3000;
+  private static readonly INIT_DURATION = 1000;
 
   private readonly bus = new EventBus();
 
@@ -50,7 +50,7 @@ export class FcuFsInstrument implements FsInstrument {
 
     this.backplane.addInstrument("AltitudeManager", new AltitudeManager(this.bus));
     this.backplane.addInstrument("AutopilotManager", new AutopilotManager(this.bus));
-    this.backplane.addInstrument("BaroManager", new BaroManager(this.bus));
+    this.backplane.addInstrument("BaroManager1", new BaroManager(this.bus, 1), true);
     this.backplane.addInstrument("HeadingManager", new HeadingManager(this.bus));
     this.backplane.addInstrument("SpeedManager", new SpeedManager(this.bus));
     this.backplane.addInstrument("VerticalSpeedManager", new VerticalSpeedManager(this.bus));

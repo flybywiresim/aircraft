@@ -1,113 +1,92 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Instrument } from '@microsoft/msfs-sdk';
-import { TemporaryHax } from './TemporaryHax';
+import { EventBus, HEvent, Instrument, KeyEventManager, Subject, UnitType } from '@microsoft/msfs-sdk';
 
-export class BaroManager extends TemporaryHax implements Instrument {
-  private selectedElem?: ReturnType<typeof this.getDivElement>;
-  private standardElem?: ReturnType<typeof this.getDivElement>;
-  private textQFE?: ReturnType<typeof this.getTextElement>;
-  private textQNH?: ReturnType<typeof this.getTextElement>;
-  private textPreSelBaro?: ReturnType<typeof this.getTextElement>;
-  private currentPreSelValue?: null | number;
-  private resetPreSelectionTimeout?: ReturnType<typeof setTimeout> | null;
-  private isHGUnit?: boolean;
-  private currentMode?: ReturnType<typeof Simplane.getPressureSelectedMode>;
-  private currentValue?: ReturnType<typeof Simplane.getPressureValue>;
-  private lightsTest?: boolean | 0;
+export type BaroMode = ReturnType<typeof Simplane.getPressureSelectedMode>;
+export type BaroUnit = ReturnType<typeof Simplane.getPressureSelectedUnits>;
 
-  constructor(private readonly bus: EventBus) {
-    super(bus, document.getElementById('SmallScreen')!);
+export type BaroIndex = 1; // | 2;
+
+interface BaroBaseEvents {
+  baro_mode: BaroMode;
+  baro_unit: BaroUnit;
+  baro_correction: number;
+  baro_preselect_changed: unknown;
+}
+
+export type BaroEvents = {
+  [P in keyof BaroBaseEvents as `${P}_${BaroIndex}`]: BaroBaseEvents[P];
+};
+
+export class BaroManager implements Instrument {
+  private readonly publisher = this.bus.getPublisher<BaroEvents>();
+  private readonly sub = this.bus.getSubscriber<HEvent>();
+
+  private keyEventManager?: KeyEventManager;
+
+  private readonly mode = Subject.create<BaroMode>('STD');
+  private readonly unit = Subject.create<BaroUnit>('millibar');
+  private readonly correction = Subject.create(1013);
+
+  private readonly modeEventKey: keyof BaroEvents = `baro_mode_${this.index}`;
+  private readonly unitEventKey: keyof BaroEvents = `baro_unit_${this.index}`;
+  private readonly correctionEventKey: keyof BaroEvents = `baro_correction_${this.index}`;
+  private readonly preselectChangedEventKey: keyof BaroEvents = `baro_preselect_changed_${this.index}`;
+
+  constructor(private readonly bus: EventBus, private readonly index: BaroIndex) {
+    KeyEventManager.getManager(this.bus).then((manager) => this.keyEventManager = manager);
   }
 
   public init(): void {
-    this.selectedElem = this.getDivElement('Selected');
-    this.standardElem = this.getDivElement('Standard');
-    this.textQFE = this.getTextElement('QFE');
-    this.textQNH = this.getTextElement('QNH');
-    this.textPreSelBaro = this.getTextElement('PreSelBaroValue');
-    this.currentPreSelValue = null;
-    this.resetPreSelectionTimeout = null;
-    this.refresh('QFE', true, 0, 0, true);
+    this.mode.sub((v) => {
+      SimVar.SetSimVarValue('KOHLSMAN SETTING STD', 'Bool', v === 'STD');
+      if (v !== 'STD') {
+        // put pre-select into altimeter
+        const correction = this.correction.get();
+        const preSelectKohlsman = 16 * (correction < 100 ? UnitType.HPA.convertFrom(correction, UnitType.IN_HG) : correction);
+        // FIXME danger, need to setup altimeter 2 in systems.cfg for fo side rather than isis
+        this.keyEventManager?.triggerKey('KOHLSMAN_SET', true, preSelectKohlsman, this.index);
+      }
+      this.publisher.pub(this.modeEventKey, v);
+    }, true);
+
+    this.unit.sub((v) => this.publisher.pub(this.unitEventKey, v), true);
+
+    this.correction.sub((v) => this.publisher.pub(this.correctionEventKey, v));
+
+    this.sub.on('hEvent').handle(this.onHEvent.bind(this));
   }
 
   public onUpdate(): void {
     const units = Simplane.getPressureSelectedUnits();
     const mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
-    this.refresh(mode, (units != 'millibar'), Simplane.getPressureValue(units), SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') == 0);
+    const correction = Simplane.getPressureValue(units);
+
+    this.unit.set(units);
+    this.mode.set(mode);
+    if (mode !== 'STD') {
+      this.correction.set(correction);
+    }
   }
 
-  private refresh(_mode: ReturnType<typeof Simplane.getPressureSelectedMode>, _isHGUnit: boolean, _value: ReturnType<typeof Simplane.getPressureValue>, _lightsTest: boolean | 0, _force = false): void {
-    let preSelValue = SimVar.GetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number');
-    // Conversion of baro selection SimVar. I tried using a standard altimeter, didn't work.
-    if (preSelValue < 1) {
-      preSelValue = _isHGUnit ? 29.92 : 1013.25;
-      SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
-    }
-    if (preSelValue < 800 && !_isHGUnit) {
-      preSelValue = preSelValue / 0.02953;
-      SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
-    } else if (preSelValue > 800 && _isHGUnit) {
-      preSelValue = Math.round(preSelValue * 0.02953 * 100) / 100;
-      SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', preSelValue);
+  private onHEvent(event: string): void {
+    if (this.mode.get() !== 'STD') {
+      return;
     }
 
-    // Display pre-selected value for only 4 seconds, then reset and hide
-    if (preSelValue !== this.currentPreSelValue || (_isHGUnit != this.isHGUnit)) {
-      clearTimeout(this.resetPreSelectionTimeout);
-      this.resetPreSelectionTimeout = setTimeout(() => {
-        this.currentPreSelValue = Simplane.getPressureSelectedUnits() === 'millibar' ? 1013.25 : 29.92;
-        SimVar.SetSimVarValue('L:A380X_EFIS_L_BARO_PRESELECTED', 'number', this.currentPreSelValue);
-        this.setTextElementActive(this.textPreSelBaro, false, true);
-      }, 4000);
-    }
-
-    if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || (preSelValue != this.currentPreSelValue) || (_lightsTest !== this.lightsTest) || _force) {
-      const wasStd = this.currentMode == 'STD' && _mode != 'STD';
-      this.currentMode = _mode;
-      this.isHGUnit = _isHGUnit;
-      this.currentValue = _value;
-      this.currentPreSelValue = preSelValue;
-      this.lightsTest = _lightsTest;
-      if (this.lightsTest) {
-        this.standardElem.style.display = 'none';
-        this.selectedElem.style.display = 'block';
-        this.setTextElementActive(this.textQFE, true, true);
-        this.setTextElementActive(this.textQNH, true, true);
-        this.setTextElementActive(this.textPreSelBaro, true, true);
-        this.textValueContent = '88.88';
-        this.textPreSelBaro.textContent = '88.88';
-        return;
+    switch (event) {
+      case 'A380X_FCU_BARO_PRESEL_DEC': {
+        const correction = this.correction.get();
+        this.correction.set(correction - (correction > 100 ? 1 : 0.01));
+        this.publisher.pub(this.preselectChangedEventKey, null);
+        break;
       }
-      if (this.currentMode == 'STD') {
-        this.standardElem.style.display = 'block';
-        this.selectedElem.style.display = 'none';
-        SimVar.SetSimVarValue('KOHLSMAN SETTING STD', 'Bool', 1);
-        const hPa = SimVar.GetSimVarValue('L:XMLVAR_Baro_Selector_HPA_1', 'boolean');
-        const preSelRender = Math.round(Math.max(!hPa ? (preSelValue * 100) : preSelValue, 0));
-        this.textPreSelBaro.textContent = !hPa ? `${preSelRender.toFixed(0).substring(0, 2)}.${preSelRender.toFixed(0).substring(2)}` : preSelRender.toFixed(0).padStart(4, '0');
-        if (Math.abs(preSelValue - 1013) < 0.5 || Math.abs(preSelValue - 29.92) < 0.005) {
-          this.setTextElementActive(this.textPreSelBaro, false, true);
-        } else {
-          this.setTextElementActive(this.textPreSelBaro, true, true);
-        }
-      } else {
-        this.standardElem.style.display = 'none';
-        this.selectedElem.style.display = 'block';
-        SimVar.SetSimVarValue('KOHLSMAN SETTING STD', 'Bool', 0);
-        const isQFE = (this.currentMode == 'QFE');
-        this.setTextElementActive(this.textQFE, isQFE, true);
-        this.setTextElementActive(this.textQNH, !isQFE, true);
-        this.setTextElementActive(this.textPreSelBaro, false, true);
-        let value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
-        if (!wasStd) {
-          value = value.toString().padStart(4, '0');
-          if (this.isHGUnit) {
-            value = `${value.substring(0, 2)}.${value.substring(2)}`;
-          }
-          this.textValueContent = value;
-        }
+      case 'A380X_FCU_BARO_PRESEL_INC':{
+        const correction = this.correction.get();
+        this.correction.set(correction + (correction > 100 ? 1 : 0.01));
+        this.publisher.pub(this.preselectChangedEventKey, null);
+        break;
       }
     }
   }

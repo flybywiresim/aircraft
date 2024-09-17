@@ -43,6 +43,21 @@
   height: 100%;
 }
 
+text.Label {
+  font-family: "Poppins-SemiBold";
+  font-size: 230px;
+  fill: $display-colour-inactive;
+}
+
+.Baro text.Label {
+  font-size: 210px;
+}
+
+text.Label.Visible {
+  fill: $display-colour;
+}
+
+// deprecated
 :root text.Active {
   font-family: "Poppins-SemiBold";
   font-size: 230px;
@@ -52,6 +67,7 @@
   font-size: 210px;
 }
 
+// deprecated
 :root text.Inactive {
   font-family: "Poppins-SemiBold";
   font-size: 230px;
@@ -69,7 +85,7 @@
   letter-spacing: 0px;
 }
 
-:root text.BaroValue {
+:root .Baro text.Value {
   font-size: 400px;
 }
 
