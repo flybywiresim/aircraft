@@ -82,8 +82,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       return;
     }
 
-    console.time('ARRIVAL:onNewData');
-
     const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get() ?? false;
     const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
@@ -362,8 +360,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     } else {
       this.toIcao.set('----');
     }
-
-    console.timeEnd('ARRIVAL:onNewData');
   }
 
   public onAfterRender(node: VNode): void {

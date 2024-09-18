@@ -63,7 +63,7 @@ export class A380xRmpStateController implements Instrument {
         this.dcPowerVar = 'A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
         this.failureKey = A380Failure.RadioManagementPanel2;
         this.selectBusAVars = ['L:FBW_VHF2_BUS_A', 'L:FBW_HF2_BUS_A'];
-        this.screenPotentiometer = 85;
+        this.screenPotentiometer = 81;
         break;
       case 3:
         this.dcPowerVar = 'A32NX_ELEC_DC_1_BUS_IS_POWERED';

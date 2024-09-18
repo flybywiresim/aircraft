@@ -52,6 +52,7 @@ import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { FcuBusPublisher, FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
+import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
 import './style.scss';
 import './oans-style.scss';
@@ -105,6 +106,8 @@ class NDInstrument implements FsInstrument {
 
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
+  private readonly simplaneValueProvider: SimplaneValueProvider;
+
   private readonly clock: Clock;
 
   public readonly controlPanelRef = FSComponent.createRef<OansControlPanel>();
@@ -117,7 +120,7 @@ class NDInstrument implements FsInstrument {
 
   private readonly controlPanelVisible = Subject.create(false);
 
-  private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly oansMessageScreenRef = FSComponent.createRef<HTMLDivElement>();
 
   private oansContextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
     {
@@ -217,6 +220,7 @@ class NDInstrument implements FsInstrument {
     this.hEventPublisher = new HEventPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
+    this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
     this.clock = new Clock(this.bus);
 
@@ -237,6 +241,7 @@ class NDInstrument implements FsInstrument {
 
     this.backplane.addInstrument('btvArinc', this.btvArincProvider);
     this.backplane.addInstrument('fms-arinc', this.fmsOansArincProvider);
+    this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);
 
     this.doInit();
@@ -260,14 +265,14 @@ class NDInstrument implements FsInstrument {
             class="oanc-container"
             style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}
           >
-            <div ref={this.waitScreenRef} class="oanc-waiting-screen" style="visibility: hidden;">
+            <div ref={this.oansMessageScreenRef} class="oanc-message-screen" style="visibility: hidden;">
               PLEASE WAIT
             </div>
             <Oanc
               bus={this.bus}
               side={this.efisSide}
               ref={this.oansRef}
-              waitScreenRef={this.waitScreenRef}
+              messageScreenRef={this.oansMessageScreenRef}
               contextMenuVisible={this.contextMenuVisible}
               contextMenuX={this.contextMenuX}
               contextMenuY={this.contextMenuY}

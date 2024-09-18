@@ -393,7 +393,6 @@
         <UseTemplate Name="FBW_A380X_Laptop_Keyboard_Template">
             <SIDE_NODE_GROUP>CPT</SIDE_NODE_GROUP>
 
-            <!-- Verify this -->
             <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
             <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
         </UseTemplate>
@@ -402,8 +401,7 @@
         <UseTemplate Name="FBW_A380X_Laptop_Keyboard_Template">
             <SIDE_NODE_GROUP>FO</SIDE_NODE_GROUP>
 
-            <!-- Verify this -->
-            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
             <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
         </UseTemplate>
     </Template>
