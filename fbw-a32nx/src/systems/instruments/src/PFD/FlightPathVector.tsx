@@ -73,7 +73,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
       if (this.needsUpdate) {
         this.needsUpdate = false;
 
-        const trkFpaActive = this.fcuDiscreteWord1.getBitValueOr(25, false);
+        const trkFpaActive = this.fcuDiscreteWord1.getBitValueOr(25, true);
         const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
         if (trkFpaActive && daAndFpaValid) {
           this.fpvFlag.instance.style.visibility = 'hidden';
