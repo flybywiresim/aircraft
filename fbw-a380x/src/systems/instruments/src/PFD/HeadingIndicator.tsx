@@ -82,11 +82,12 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
         this.ILSCourse.set(n);
       });
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        this.lsPressed.set(!this.lsPressed.get());
-      }
-    });
+    sub
+      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
+      .whenChanged()
+      .handle((lsButton) => {
+        this.lsPressed.set(lsButton);
+      });
   }
 
   render(): VNode {
