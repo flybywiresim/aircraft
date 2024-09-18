@@ -94,7 +94,6 @@
 1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
 1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
-1. [CDU] Fix for EFOB calculation not pulling from block fuel prior to engine start - @PatM (Patrick Macken)
 1. [EFB] Added simrate indicator to status bar - @2hwk (2Cas)
 1. [EFB] Added simrate and pause on TOD controls to control center - @2hwk (2Cas)
 1. [FMS] Implement missed approach route - @Benjozork (Benjamin Dupont), @tracernz (Mike), @saschl (saschl#9432), @BlueberryKing (BlueberryKing)
@@ -120,6 +119,7 @@
 1. [FADEC] Added quick start for engines and APU - @frankkopp (Frank Kopp) - @Gurgel100 (Pascal)
 1. [EFB] Added expedited presets - @frankkopp (Frank Kopp)
 1. [FMS] Show runway ident on lateral/vertical revision page of the missed approach point - @BlueberryKing (BlueberryKing)
+1. [CDU] Fix for EFOB calculation not pulling from block fuel prior to engine start - @PatM (Patrick Macken)
 
 ## 0.11.0
 

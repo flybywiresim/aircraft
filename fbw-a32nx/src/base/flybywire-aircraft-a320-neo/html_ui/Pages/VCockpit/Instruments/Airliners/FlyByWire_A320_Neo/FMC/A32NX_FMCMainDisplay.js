@@ -1,6 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
+
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -2655,13 +2656,13 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number | null} gross weight in tons or null if not available.
      */
     getGrossWeight() {
-        const useFqi = this.isAnEngineOn();
+        const fob = this.getFOB();
 
-        if (this.zeroFuelWeight === undefined || (!useFqi && this.blockFuel === undefined)) {
+        if (this.zeroFuelWeight === undefined || fob === undefined) {
             return null;
         }
 
-        return this.zeroFuelWeight + (this.getFOB());
+        return this.zeroFuelWeight + fob;
     }
 
     getToSpeedsTooLow() {
@@ -4540,28 +4541,24 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: Can this be util?
     getFOB() {
-        if (this.isAnEngineOn()) {
-            return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
-        } else {
-            //If an engine is not running, use pilot entered block fuel to calculate fuel predictions
-            return this.blockFuel;
-        }
+        const useFqi = this.isAnEngineOn();
+
+        // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
+        return useFqi ? (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000 : this.blockFuel;
     }
 
     /**
-     * retrieves GW in Tons
+     * retrieves gross weight in tons or 0 if not available
      * @returns {number}
+     * @deprecated use getGrossWeight() instead
      */
     //TODO: Can this be util?
     getGW() {
-        let fmGW = 0;
-        const currFob = this.getFOB();
-        //Simplified to just checking fuelWeight as GetFOB handles what fuel level to use (block vs tank reading)
-        if (Number.isFinite(this.zeroFuelWeight) && Number.isFinite(currFob)) {
-            fmGW = (currFob + this.zeroFuelWeight);
-        }
-        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
-        return fmGW;
+        const fmGwOrNull = this.getGrossWeight();
+        const fmGw = fmGwOrNull !== null ? fmGwOrNull : 0;
+
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGw);
+        return fmGw;
     }
 
     //TODO: Can this be util?
