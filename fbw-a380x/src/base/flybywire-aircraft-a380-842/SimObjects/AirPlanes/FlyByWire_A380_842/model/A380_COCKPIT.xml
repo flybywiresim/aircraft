@@ -106,9 +106,6 @@
                 (L:A32NX_EFIS_L_ND_MODE) (&gt;L:A380X_EFIS_L_ND_MODE)
                 (L:A32NX_EFIS_R_ND_MODE) (&gt;L:A380X_EFIS_R_ND_MODE)
 
-                (L:A380X_EFIS_L_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_1_FILTER_ACTIVE)
-                (L:A380X_EFIS_R_LS_BUTTON_IS_ON) (&gt;L:BTN_LS_2_FILTER_ACTIVE)
-
                 0
 
                 (L:A380X_EFIS_L_ACTIVE_FILTER) 1 == if{
@@ -515,12 +512,6 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>LEVER_ELEVATORTRIM_DECAL</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
-                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
-            </UseTemplate>
-
-            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>pedestal_cables</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
@@ -899,28 +890,6 @@
                 <NODE_ID>PUSH_THROTTLE_2</NODE_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_HANDLING_Wheel_ElevatorTrim_Template">
-                <ANIM_NAME>lever_trimtab_elevator_key_pct</ANIM_NAME>
-                <NODE_ID>LEVER_ELEVATORTRIM_1</NODE_ID>
-                <NODE_ID2>LEVER_ELEVATORTRIM_2</NODE_ID2>
-                <REPEAT_ANIM>5</REPEAT_ANIM>
-                <DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
-                <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
-            </UseTemplate>
-
-            <UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
-                <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL</ANIM_NAME>
-                <MIN_DISPLAYABLE>-4</MIN_DISPLAYABLE>
-                <MAX_DISPLAYABLE>13.5</MAX_DISPLAYABLE>
-                <REF_VALUE_0>-4</REF_VALUE_0>
-                <ANIM_VALUE_0>0</ANIM_VALUE_0>
-                <REF_VALUE_1>13</REF_VALUE_1>
-                <ANIM_VALUE_1>94</ANIM_VALUE_1>
-                <REF_VALUE_2>13.5</REF_VALUE_2>
-                <ANIM_VALUE_2>100</ANIM_VALUE_2>
-                <MAX_POINT_INDEX>2</MAX_POINT_INDEX>
-            </UseTemplate>
-
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
@@ -1036,8 +1005,8 @@
                     <AIRBUS_TYPE />
                     <ANIM_NAME>KNOB_RUDDERTRIM</ANIM_NAME>
                     <NODE_ID>KNOB_RUDDERTRIM</NODE_ID>
-                    <RESET_PUSH_ANIM_NAME>PUSH_RUDDERTRIM_RESET</RESET_PUSH_ANIM_NAME>
-                    <RESET_PUSH_NODE_ID>PUSH_RUDDERTRIM_RESET</RESET_PUSH_NODE_ID>
+                    <RESET_PUSH_ANIM_NAME>PUSH_TRIM_RESET</RESET_PUSH_ANIM_NAME>
+                    <RESET_PUSH_NODE_ID>PUSH_TRIM_RESET</RESET_PUSH_NODE_ID>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_HANDLING_Lever_With_Button_Flaps_Template">
@@ -1081,6 +1050,12 @@
                     <NODE_ID>LEVER_SPEEDBRAKE</NODE_ID>
                     <TYPE>AIRLINER</TYPE>
                     <TOOLTIPID>TT:COCKPIT.TOOLTIPS.SPEEDBRAKE_LEVER</TOOLTIPID>
+                </UseTemplate>
+
+                <UseTemplate Name="A380X_SWITCH_PITCH_TRIM">
+                    <NODE_ID>SWITCH_TRIM_PITCH</NODE_ID>
+                    <ANIM_NAME>SWITCH_TRIM_PITCH</ANIM_NAME>
+                    <INVERT_ANIM>1</INVERT_ANIM>
                 </UseTemplate>
             </Component>
 
@@ -4543,12 +4518,12 @@
 
                 <Component ID="Right_Pedestal_Misc">
                     <UseTemplate Name="FBW_Push_Held">
-                        <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
-                        <HOLD_SIMVAR>L:A32NX_AIDS_PRINT_ON</HOLD_SIMVAR>
-                        <TOOLTIP>Print data</TOOLTIP>
+                        <NODE_ID>PUSH_ACMS_TRIGGER</NODE_ID>
+                        <HOLD_SIMVAR>L:A32NX_ACMS_TRIGGER_ON</HOLD_SIMVAR>
+                        <TOOLTIP>ACMS trigger (Inop.)</TOOLTIP>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Held">
-                        <NODE_ID>PUSH_PANELCS_DFDR</NODE_ID>
+                        <NODE_ID>PUSH_DFDR_EVENT</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_DFDR_EVENT_ON</HOLD_SIMVAR>
                         <TOOLTIP>Print data (Inop.)</TOOLTIP>
                     </UseTemplate>
@@ -5179,15 +5154,15 @@
 
         <Component ID="DOOR_PANEL">
             <UseTemplate Name="A32NX_SWITCH_DOORPANEL_LOCK">
-                <NODE_ID>SWITCH_DOORPANEL_LOCK</NODE_ID>
-                <ANIM_NAME>SWITCH_DOORPANEL_LOCK</ANIM_NAME>
+                <NODE_ID>LOCK_DOOR_LCKG_SYS</NODE_ID>
+                <ANIM_NAME>LOCK_DOOR_LCKG_SYS</ANIM_NAME>
                 <INVERT_ANIM>1</INVERT_ANIM>
             </UseTemplate>
             <UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
-                <NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
-                <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                <NODE_ID>PUSH_DOOR_LCKG_SYS</NODE_ID>
+                <ANIM_NAME>PUSH_DOOR_LCKG_SYS</ANIM_NAME>
+                <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
         </Component>
 
