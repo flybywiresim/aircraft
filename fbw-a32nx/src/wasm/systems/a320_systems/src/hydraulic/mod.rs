@@ -2144,6 +2144,9 @@ impl A320Hydraulic {
         self.pushback_tug.update(context);
         self.bypass_pin.update(&self.pushback_tug);
 
+        let brake_fan_turned_on = self.dc2_powered
+            && brake_fan_panel.brake_fan_pb_is_pressed()
+            && lgciu2.left_gear_compressed(false);
         for (brake_assembly, braking_pressure_norm, braking_pressure_altn, gear_position) in [
             (
                 &mut self.left_brake_assembly,
@@ -2158,9 +2161,6 @@ impl A320Hydraulic {
                 self.gear_system.right_gear_position(),
             ),
         ] {
-            let brake_fan_turned_on = self.dc2_powered
-                && brake_fan_panel.brake_fan_pb_is_pressed()
-                && lgciu2.left_gear_compressed(false);
             brake_assembly.update(
                 context,
                 &self.brake_properties,
