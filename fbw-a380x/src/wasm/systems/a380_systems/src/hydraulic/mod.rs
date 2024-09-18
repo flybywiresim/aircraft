@@ -3,7 +3,7 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     angle::degree,
-    angular_velocity::{radian_per_second, revolution_per_minute},
+    angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
     length::meter,
@@ -1501,7 +1501,6 @@ impl A380GearSystemFactory {
 }
 
 pub(super) struct A380Hydraulic {
-    //TODO create a A380_Steering structure
     nose_steering: SteeringActuator,
     body_wheel_steering_left: SteeringActuator,
     body_wheel_steering_right: SteeringActuator,
@@ -1646,7 +1645,7 @@ impl A380Hydraulic {
                 context,
                 "NOSE_WHEEL",
                 Angle::new::<degree>(75.),
-                AngularVelocity::new::<radian_per_second>(0.2618), // Reference is 15 deg/s
+                AngularVelocity::new::<degree_per_second>(15.), // Reference is 15 deg/s
                 Length::new::<meter>(0.11), // Diameter of 0.11 gives correct A380 flow of around 35 lpm at full speed
                 Ratio::new::<ratio>(0.18),
                 Pressure::new::<psi>(4000.),
@@ -1657,9 +1656,9 @@ impl A380Hydraulic {
                 context,
                 "LEFT_BODY_STEERING",
                 Angle::new::<degree>(15.),
-                AngularVelocity::new::<radian_per_second>(0.07854), // Reference is 4.5 deg/s
-                Length::new::<meter>(0.11),                         // TODO
-                Ratio::new::<ratio>(0.18),                          // TODO
+                AngularVelocity::new::<degree_per_second>(4.5), // Reference is 4.5 deg/s
+                Length::new::<meter>(0.11),                     // TODO
+                Ratio::new::<ratio>(0.18),                      // TODO
                 Pressure::new::<psi>(4000.),
                 false,
             ),
@@ -1668,9 +1667,9 @@ impl A380Hydraulic {
                 context,
                 "RIGHT_BODY_STEERING",
                 Angle::new::<degree>(15.),
-                AngularVelocity::new::<radian_per_second>(0.07854), // Reference is 4.5 deg/s
-                Length::new::<meter>(0.11),                         // TODO
-                Ratio::new::<ratio>(0.18),                          // TODO
+                AngularVelocity::new::<degree_per_second>(4.5), // Reference is 4.5 deg/s
+                Length::new::<meter>(0.11),                     // TODO
+                Ratio::new::<ratio>(0.18),                      // TODO
                 Pressure::new::<psi>(4000.),
                 false,
             ),
