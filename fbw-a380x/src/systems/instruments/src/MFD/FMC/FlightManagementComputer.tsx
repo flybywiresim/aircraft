@@ -42,6 +42,7 @@ import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { A380Failure } from '@failures';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -83,7 +84,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#operatingMode = value;
   }
 
-  #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData());
+  #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
 
   get flightPlanService() {
     return this.#flightPlanService;
@@ -664,7 +665,7 @@ export class FlightManagementComputer implements FmcInterface {
             (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100,
           );
           SimVar.SetSimVarValue(
-            'L:AIRLINER_CRUISE_ALTITUDE',
+            'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
             'number',
             Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0,
           );
@@ -795,6 +796,15 @@ export class FlightManagementComputer implements FmcInterface {
         },
       );
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', true);
+    }
+  }
+
+  clearCheckSpeedModeMessage() {
+    const checkSpeedModeMessageActive =
+      this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
+    if (checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+      SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }
 

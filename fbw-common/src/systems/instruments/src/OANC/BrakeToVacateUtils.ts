@@ -358,8 +358,8 @@ export class BrakeToVacateUtils<T extends number> {
     if (
       (!ra1.isNormalOperation() && !ra2.isNormalOperation()) ||
       (ra1.isNormalOperation() ? ra1.value : ra2.value) > 600 ||
-      this.fwsFlightPhase.get() < 6 ||
-      this.fwsFlightPhase.get() > 9
+      this.fwsFlightPhase.get() < 9 ||
+      this.fwsFlightPhase.get() > 11
     ) {
       this.remaininingDistToRwyEnd.set(-1);
       this.remaininingDistToExit.set(-1);

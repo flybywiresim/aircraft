@@ -54,7 +54,7 @@
 
     <Template Name="FBW_A380X_Components_MIP">
         <DefaultTemplateParameters>
-            <BACKLIGHT_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
             <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
         </DefaultTemplateParameters>
 

@@ -67,6 +67,7 @@ mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod autobrakes;
 use autobrakes::A380AutobrakeController;
+mod gear_secondary_doors;
 mod heading_control_steering;
 use heading_control_steering::HeadingControlFunction;
 
@@ -1593,6 +1594,7 @@ pub(super) struct A380Hydraulic {
     epump_auto_logic: A380ElectricPumpAutoLogic,
 
     tilting_gears: A380TiltingGears,
+    aux_gear_doors: A380AuxiliaryGearDoorSet,
 }
 impl A380Hydraulic {
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
@@ -1940,6 +1942,8 @@ impl A380Hydraulic {
             ),
 
             tilting_gears: A380TiltingGearsFactory::new_a380_tilt_assembly(context),
+
+            aux_gear_doors: A380AuxiliaryGearDoorSet::new(context),
         }
     }
 
@@ -1965,6 +1969,7 @@ impl A380Hydraulic {
             engines[0],
             engines[1],
             adirs,
+            lgcius,
         );
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -2230,6 +2235,7 @@ impl A380Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
         adirs: &impl AdirsMeasurementOutputs,
+        lgcius: &LandingGearControlInterfaceUnitSet,
     ) {
         self.gear_system_gravity_extension_controller
             .update(context);
@@ -2338,6 +2344,16 @@ impl A380Hydraulic {
                 .should_pressurise_for_body_steering(),
             overhead_panel,
         );
+
+        // Placeholder to move auxiliary gear doors. To remove when gear system fully implemented
+        self.aux_gear_doors.update(
+            context,
+            lgcius.active_lgciu(),
+            self.gear_system
+                .gear_hydraulic_manifold_pressure()
+                .get::<psi>()
+                > 2000.,
+        )
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -2593,6 +2609,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu1,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_1a,
         );
 
         self.engine_driven_pump_1a.update(
@@ -2611,6 +2628,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu2,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_2a,
         );
 
         self.engine_driven_pump_2a.update(
@@ -2629,6 +2647,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu1,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_3a,
         );
 
         self.engine_driven_pump_3a.update(
@@ -2647,6 +2666,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu2,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_4a,
         );
 
         self.engine_driven_pump_4a.update(
@@ -2665,6 +2685,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu1,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_1b,
         );
 
         self.engine_driven_pump_1b.update(
@@ -2683,6 +2704,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             lgciu2,
             self.green_circuit.reservoir(),
+            &self.engine_driven_pump_2b,
         );
 
         self.engine_driven_pump_2b.update(
@@ -2701,6 +2723,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu1,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_3b,
         );
 
         self.engine_driven_pump_3b.update(
@@ -2719,6 +2742,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             lgciu2,
             self.yellow_circuit.reservoir(),
+            &self.engine_driven_pump_4b,
         );
 
         self.engine_driven_pump_4b.update(
@@ -2736,6 +2760,7 @@ impl A380Hydraulic {
             self.green_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.green_electric_pump_a,
         );
 
         self.green_electric_pump_a.update(
@@ -2751,6 +2776,7 @@ impl A380Hydraulic {
             self.green_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.green_electric_pump_b,
         );
         self.green_electric_pump_b.update(
             context,
@@ -2766,6 +2792,7 @@ impl A380Hydraulic {
             self.yellow_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.yellow_electric_pump_a,
         );
         self.yellow_electric_pump_a.update(
             context,
@@ -2781,6 +2808,7 @@ impl A380Hydraulic {
             self.yellow_circuit.reservoir(),
             engines,
             &self.epump_auto_logic,
+            &self.yellow_electric_pump_b,
         );
         self.yellow_electric_pump_b.update(
             context,
@@ -2989,6 +3017,8 @@ impl SimulationElement for A380Hydraulic {
         self.ths.accept(visitor);
 
         self.tilting_gears.accept(visitor);
+
+        self.aux_gear_doors.accept(visitor);
 
         visitor.visit(self);
     }
@@ -3200,7 +3230,7 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 
 use std::fmt::Display;
 
-use self::autobrakes::A380AutobrakePanel;
+use self::{autobrakes::A380AutobrakePanel, gear_secondary_doors::A380AuxiliaryGearDoorSet};
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum A380EngineDrivenPumpId {
     Edp1a,
@@ -3383,6 +3413,7 @@ impl A380EngineDrivenPumpController {
         hydraulic_circuit: &impl HydraulicPressureSensors,
         lgciu: &impl LgciuInterface,
         reservoir: &Reservoir,
+        pump_status: &impl HeatingElement,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.pump_id)
@@ -3412,7 +3443,7 @@ impl A380EngineDrivenPumpController {
 
         self.update_low_level(reservoir, overhead_panel);
 
-        self.has_overheat_fault = reservoir.is_overheating();
+        self.has_overheat_fault = reservoir.is_overheating() || pump_status.is_overheating();
     }
 
     fn has_any_fault(&self) -> bool {
@@ -3643,6 +3674,8 @@ struct A380ElectricPumpController {
     has_pressure_low_fault: bool,
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
+    has_overheat_fault: bool,
+
     is_pressure_low: bool,
     should_pressurise_for_cargo_door_operation: bool,
 }
@@ -3665,6 +3698,7 @@ impl A380ElectricPumpController {
             has_pressure_low_fault: false,
             has_air_pressure_low_fault: false,
             has_low_level_fault: false,
+            has_overheat_fault: false,
 
             is_pressure_low: true,
 
@@ -3679,6 +3713,7 @@ impl A380ElectricPumpController {
         reservoir: &Reservoir,
         engines: [&impl Engine; 4],
         auto_logic: &A380ElectricPumpAutoLogic,
+        pump_status: &impl HeatingElement,
     ) {
         self.should_pressurise_for_cargo_door_operation =
             auto_logic.should_auto_run_pump(self.pump_id);
@@ -3694,6 +3729,8 @@ impl A380ElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        self.update_overheat(pump_status)
     }
 
     // Should be the feedback used to disable elec pumps running when engines are on
@@ -3711,6 +3748,10 @@ impl A380ElectricPumpController {
                 .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
         self.has_pressure_low_fault = self.is_pressure_low;
+    }
+
+    fn update_overheat(&mut self, pump_status: &impl HeatingElement) {
+        self.has_overheat_fault = pump_status.is_overheating();
     }
 
     fn update_low_air_pressure(
@@ -3732,7 +3773,10 @@ impl A380ElectricPumpController {
     }
 
     fn has_any_fault(&self) -> bool {
-        self.has_low_level_fault || self.has_air_pressure_low_fault || self.has_pressure_low_fault
+        self.has_low_level_fault
+            || self.has_air_pressure_low_fault
+            || self.has_pressure_low_fault
+            || self.has_overheat_fault
     }
 
     fn should_pressurise_for_cargo_door_operation(&self) -> bool {
@@ -7816,6 +7860,24 @@ mod tests {
                 }
             }
 
+            fn is_all_auxiliary_gear_door_opened(&mut self) -> bool {
+                let left_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_LEFT_POSITION"));
+                let right_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_RIGHT_POSITION"));
+
+                left_pos.get::<ratio>() > 0.95 && right_pos.get::<ratio>() > 0.95
+            }
+
+            fn is_all_auxiliary_gear_door_closed(&mut self) -> bool {
+                let left_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_LEFT_POSITION"));
+                let right_pos =
+                    Ratio::new::<percent>(self.read_by_name("SECONDARY_GEAR_DOOR_RIGHT_POSITION"));
+
+                left_pos.get::<ratio>() < 0.05 && right_pos.get::<ratio>() < 0.05
+            }
+
             fn is_all_gears_really_up(&mut self) -> bool {
                 self.get_real_gear_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
                     && self.get_real_gear_position(GearWheel::LEFT) <= Ratio::new::<ratio>(0.01)
@@ -10580,6 +10642,7 @@ mod tests {
 
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             test_bed = test_bed
                 .set_green_ed_pump(false)
@@ -10588,6 +10651,9 @@ mod tests {
 
             assert!(test_bed.is_all_doors_really_down());
             assert!(test_bed.is_all_gears_really_down());
+
+            //Auxiliary cannot open without hyd
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
         }
 
         #[test]
@@ -10599,6 +10665,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             let initial_fluid_quantity = test_bed.get_green_reservoir_volume();
 
@@ -10607,6 +10674,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(20.));
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             let uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
 
@@ -10618,6 +10686,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(20.));
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
             assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             let downlocked_fluid_quantity = test_bed.get_green_reservoir_volume();
             assert!(
@@ -10635,12 +10704,14 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(20.));
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             let initial_uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
 
@@ -10668,12 +10739,13 @@ mod tests {
 
         #[test]
         fn gear_init_up_if_spawning_in_air() {
-            let test_bed = test_bed_in_flight_with()
+            let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .run_one_tick();
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_auxiliary_gear_door_closed());
         }
 
         #[test]

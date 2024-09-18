@@ -27,7 +27,7 @@ export class OancAircraftIcon extends DisplayComponent<OancAircraftIconProps> {
     this.subscriptions.push(
       this.props.isVisible.sub((isVisible) => {
         this.svgRef.instance.style.visibility = isVisible ? 'visible' : 'hidden';
-      }),
+      }, true),
       MappedSubject.create(this.props.x, this.props.y, this.props.rotation).sub(([x, y, rotation]) => {
         this.svgRef.instance.style.transform = `translate(${x - 45}px, ${y - 39.625}px) rotate(${rotation}deg)`;
       }),

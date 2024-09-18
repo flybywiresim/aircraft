@@ -52,9 +52,9 @@
 }
 
 :root {
-  --main-display-colour-background: hsl(240, 100%, 55%);
+  --main-display-colour-background: hsl(248, 94%, 53%);
   --main-display-colour: hsl(0, 0%, 100%);
-  --main-display-colour-inactive: hsl(240, 100%, 50%);
+  --main-display-colour-inactive: hsl(248, 94%, 48%);
 }
 
 :root text.Common {
