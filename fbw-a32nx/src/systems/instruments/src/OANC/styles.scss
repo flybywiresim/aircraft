@@ -20,7 +20,7 @@
   font-family: "Ecam", monospace !important;
 }
 
-.oanc-waiting-screen {
+.oanc-message-screen {
   position: absolute;
 
   width: 768px;
@@ -33,9 +33,13 @@
   font-size: 24px;
 
   background-color: $display-background;
-  color: white;
+  color: $display-white;
 
   z-index: 9999;
+}
+
+.oanc-message-screen.amber {
+  color: $display-amber;
 }
 
 .oanc-label {
@@ -49,7 +53,7 @@
   font-size: 19px;
 
   background-color: black;
-  color: white;
+  color: $display-white;
 
   white-space: pre;
 

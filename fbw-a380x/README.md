@@ -74,7 +74,7 @@ These systems are currently not operational / these features are missing and sha
 - CDS / displays (automatic) reconfiguration
 - PFD backup scales
 - Interactive ND
-- Vertical Display
+- Vertical Display: Only fixed vertical range (until FL240) w/o FMS trajectory
 - EFIS CP: Multi-selection for some filters
 - Independent QNH
 - KCCU soft keyboard

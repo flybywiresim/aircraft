@@ -35,14 +35,10 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
   private tmpyFplnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    console.time('AIRWAYS:onNewData');
-
     const revWpt = this.props.fmcService.master?.revisedWaypoint();
     if (revWpt) {
       this.revisedFixIdent.set(revWpt.ident);
     }
-
-    console.timeEnd('AIRWAYS:onNewData');
   }
 
   private renderNextLine(fromFix: Fix): void {

@@ -26,7 +26,7 @@ import {
   WindDirectionFormat,
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Mmo, Vmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
+import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
@@ -211,16 +211,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     if (newIndex === TakeoffPowerSetting.FLEX) {
       // FLEX
       SimVar.SetSimVarValue(
-        'L:AIRLINER_TO_FLEX_TEMP',
+        'L:A32NX_AIRLINER_TO_FLEX_TEMP',
         'Number',
         this.props.fmcService.master?.fmgc.data.takeoffFlexTemp.get() ?? 0.1,
       );
     } else if (newIndex === TakeoffPowerSetting.DERATED) {
       // DERATED
-      SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
     } else {
       // TOGA
-      SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
     }
   }
 
@@ -1135,7 +1135,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
                         dataHandlerDuringValidation={async (v) => {
                           // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
-                          await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
+                          await SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
                           this.props.fmcService.master?.fmgc.data.takeoffFlexTemp.set(v);
                         }}
                         mandatory={Subject.create(false)}
