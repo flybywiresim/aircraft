@@ -103,9 +103,6 @@ class CDUAocInit {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
-        if (mcdu.isAnEngineOn()) {
-            const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-        }
         /**
             GMT: is the current zulu time
             FLT time: is wheels up to wheels down... so basically shows 0000 as soon as you are wheels up, counts up and then stops timing once you are weight on wheels again
