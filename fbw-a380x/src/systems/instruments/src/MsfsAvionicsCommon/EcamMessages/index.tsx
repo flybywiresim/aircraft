@@ -208,6 +208,7 @@ export const EcamInfos: { [n: string]: string } = {
   220200010: '\x1b<3mCAT 1 ONLY',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
+  320200001: '\x1b<3mALTN BRK WITH A-SKID',
   340200002: '\x1b<3mALTN LAW : PROT LOST',
   340200003: '\x1b<3mFLS LIMITED TO F-APP + RAW',
   340200004: '\x1b<3mDIRECT LAW : PROT LOST',
@@ -215,10 +216,16 @@ export const EcamInfos: { [n: string]: string } = {
   340200006: '\x1b<3mFPV / VV AVAIL',
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
+  800200001: '\x1b<3mFMS PRED UNRELIABLE',
+  800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  800200003: '\x1b<5mTAXI WITH CARE',
+  800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
+  800200005: '\x1b<5mNO BRAKED PIVOT TURN',
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
 export const EcamLimitations: { [n: string]: string } = {
+  220400001: '\x1b<5mNO AUTOLAND',
   230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',
   240400002: '\x1b<5mMAX SPEED: 310/.86',
@@ -226,7 +233,17 @@ export const EcamLimitations: { [n: string]: string } = {
   240400004: '\x1b<5mMANEUVER WITH CARE',
   260400001: '\x1b<5mAPU BLEED DO NOT USE',
   260400002: '\x1b<5mMAX SPEED : 250/.55',
+  270400001: '\x1b<5mFOR LDG : FLAP LVR 3',
+  290400001: '\x1b<5mSLATS SLOW',
+  290400002: '\x1b<5mFLAPS SLOW',
   300400001: '\x1b<5mAVOID ICING CONDs',
+  320400001: '\x1b<5mMAX SPEED : 220 KT', // for lg extension
+  320400002: '\x1b<5mL/G GRVTY EXTN ONLY',
+  320400003: '\x1b<5mSTEER ENDUR LIMITED',
+  800400001: '\x1b<5mFUEL CONSUMPT INCRSD',
+  800400002: '\x1b<5mLDG DIST AFFECTED',
+  800400003: '\x1b<5mLDG PERF AFFECTED',
+  800400004: '\x1b<5mFOR GA : KEEP S/F CONF',
 };
 
 /** All possible INOP sys, with special formatting characters. */
