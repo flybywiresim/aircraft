@@ -123,7 +123,7 @@ impl SteeringActuator {
     // Formula is speed_coefficient = POSITION_ERROR_TO_MAX_SPEED_GAIN * position_error^2
     // Then max speed will be max_speed = nominal_speed * speed_coefficient
     // Note this is open loop: it will overshoot or undershoot depending on this factor
-    const POSITION_ERROR_TO_MAX_SPEED_GAIN: f64 = 0.06;
+    const POSITION_ERROR_TO_MAX_SPEED_GAIN: f64 = 0.18;
 
     pub fn new(
         context: &mut InitContext,
@@ -182,14 +182,6 @@ impl SteeringActuator {
             self.update_speed_position_during_pushback(pushback_tug);
         }
 
-        if !self.is_steered_by_tug {
-            println!(
-                "BW STEERING ANGLE {:.2} RATIO {:.2} PRESSURE {:.0}",
-                self.current_position.get::<degree>(),
-                self.position_normalized().get::<ratio>(),
-                section_pressure.pressure().get::<psi>()
-            );
-        }
         self.update_flow(context, bypass_pin);
     }
 
@@ -214,7 +206,7 @@ impl SteeringActuator {
         let current_pressure = section_pressure.pressure_downstream_priority_valve();
 
         let max_speed_for_current_hydraulics_pressure =
-            self.max_speed_for_current_hydraulics_pressure(current_pressure);
+            self.max_speed_for_current_hydraulics_pressure(context, current_pressure);
 
         let max_speed_closing_to_requested_position =
             self.max_speed_for_position_error(requested_angle);
@@ -235,13 +227,15 @@ impl SteeringActuator {
 
     fn max_speed_for_current_hydraulics_pressure(
         &self,
+        context: &UpdateContext,
         current_pressure: Pressure,
     ) -> AngularVelocity {
         (if current_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWING_STEERING_PSI {
             self.nominal_speed * current_pressure.get::<psi>().sqrt()
                 / self.reference_pressure_for_max_speed.get::<psi>().sqrt()
         } else {
-            AngularVelocity::default()
+            (0.03 * context.ground_speed().get::<knot>().abs().sqrt()).clamp(0., 1.)
+                * self.nominal_speed
         })
         .min(self.nominal_speed)
     }
@@ -310,7 +304,7 @@ mod tests {
 
     use super::*;
 
-    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
+    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
     use uom::si::{angle::degree, pressure::psi};
@@ -600,7 +594,7 @@ mod tests {
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
 
-        test_bed.run_multiple_frames(Duration::from_secs(3));
+        test_bed.run_multiple_frames(Duration::from_secs(5));
 
         assert!(is_equal_angle(
             test_bed.query(|a| a.steering_actuator.position_feedback()),
@@ -685,6 +679,40 @@ mod tests {
         assert!(is_equal_angle(
             test_bed.query(|a| a.steering_actuator.position_feedback()),
             Angle::new::<degree>(4.)
+        ));
+    }
+
+    #[test]
+    fn steering_returns_neutral_if_ground_speed_but_no_hydraulics() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
+
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        assert!(is_equal_angle(
+            test_bed.query(|a| a.steering_actuator.position_feedback()),
+            Angle::new::<degree>(20.)
+        ));
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(0.)));
+        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(0.)));
+
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        assert!(is_equal_angle(
+            test_bed.query(|a| a.steering_actuator.position_feedback()),
+            Angle::new::<degree>(20.)
+        ));
+
+        test_bed.write_by_name("GPS GROUND SPEED", 20.);
+
+        test_bed.run_multiple_frames(Duration::from_secs(8));
+
+        assert!(is_equal_angle(
+            test_bed.query(|a| a.steering_actuator.position_feedback()),
+            Angle::new::<degree>(0.)
         ));
     }
 

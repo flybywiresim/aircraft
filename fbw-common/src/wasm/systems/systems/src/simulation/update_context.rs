@@ -203,6 +203,7 @@ pub struct UpdateContext {
     ambient_temperature_id: VariableIdentifier,
     indicated_airspeed_id: VariableIdentifier,
     true_airspeed_id: VariableIdentifier,
+    ground_speed_id: VariableIdentifier,
     indicated_altitude_id: VariableIdentifier,
     pressure_altitude_id: VariableIdentifier,
     is_on_ground_id: VariableIdentifier,
@@ -241,6 +242,7 @@ pub struct UpdateContext {
     is_ready: bool,
     indicated_airspeed: Velocity,
     true_airspeed: Velocity,
+    ground_speed: Velocity,
     indicated_altitude: Length,
     pressure_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
@@ -276,6 +278,7 @@ pub struct UpdateContext {
     rotation_vel: Vector3<AngularVelocity>,
 }
 impl UpdateContext {
+    pub(crate) const GROUND_SPEED_KEY: &'static str = "GPS GROUND SPEED";
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
     pub(crate) const IN_CLOUD_KEY: &'static str = "AMBIENT IN CLOUD";
@@ -332,6 +335,7 @@ impl UpdateContext {
         simulation_time: f64,
         indicated_airspeed: Velocity,
         true_airspeed: Velocity,
+        ground_speed: Velocity,
         indicated_altitude: Length,
         pressure_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
@@ -350,6 +354,7 @@ impl UpdateContext {
                 .get_identifier(Self::AMBIENT_TEMPERATURE_KEY.to_owned()),
             indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED_KEY.to_owned()),
+            ground_speed_id: context.get_identifier(Self::GROUND_SPEED_KEY.to_owned()),
             indicated_altitude_id: context.get_identifier(Self::INDICATED_ALTITUDE_KEY.to_owned()),
             pressure_altitude_id: context.get_identifier(Self::PRESSURE_ALTITUDE_KEY.to_owned()),
             is_on_ground_id: context.get_identifier(Self::IS_ON_GROUND_KEY.to_owned()),
@@ -392,6 +397,7 @@ impl UpdateContext {
             is_ready: true,
             indicated_airspeed,
             true_airspeed,
+            ground_speed,
             indicated_altitude,
             pressure_altitude,
             ambient_temperature,
@@ -449,6 +455,7 @@ impl UpdateContext {
             ambient_temperature_id: context.get_identifier("AMBIENT TEMPERATURE".to_owned()),
             indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
             true_airspeed_id: context.get_identifier("AIRSPEED TRUE".to_owned()),
+            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             indicated_altitude_id: context.get_identifier("INDICATED ALTITUDE".to_owned()),
             pressure_altitude_id: context.get_identifier("PRESSURE ALTITUDE".to_owned()),
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
@@ -489,6 +496,7 @@ impl UpdateContext {
             is_ready: Default::default(),
             indicated_airspeed: Default::default(),
             true_airspeed: Default::default(),
+            ground_speed: Default::default(),
             indicated_altitude: Default::default(),
             pressure_altitude: Default::default(),
             ambient_temperature: Default::default(),
@@ -546,6 +554,7 @@ impl UpdateContext {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
         self.true_airspeed = reader.read(&self.true_airspeed_id);
+        self.ground_speed = reader.read(&self.ground_speed_id);
         self.indicated_altitude = reader.read(&self.indicated_altitude_id);
         self.pressure_altitude = reader.read(&self.pressure_altitude_id);
         self.is_on_ground = reader.read(&self.is_on_ground_id);
@@ -714,6 +723,10 @@ impl UpdateContext {
 
     pub fn true_airspeed(&self) -> Velocity {
         self.true_airspeed
+    }
+
+    pub fn ground_speed(&self) -> Velocity {
+        self.ground_speed
     }
 
     pub fn indicated_altitude(&self) -> Length {

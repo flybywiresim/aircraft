@@ -2282,6 +2282,7 @@ impl A380Hydraulic {
             self.left_spoilers.ground_spoilers_are_requested()
                 && self.right_spoilers.ground_spoilers_are_requested(),
             &self.pushback_tug,
+            self.nose_steering.position_feedback(),
         );
 
         self.pushback_tug.update(context);
@@ -3853,11 +3854,12 @@ impl BodyWheelSteeringController {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         nose_steering_angle: Angle,
-        ground_speed: Velocity,
         pushback_tug: &impl Pushback,
     ) {
-        if nose_steering_angle.get::<degree>().abs() > 20. && ground_speed.get::<knot>() < 30.
+        if nose_steering_angle.get::<degree>().abs() > 20.
+            && context.ground_speed().get::<knot>() < 30.
             || pushback_tug.steering_angle().get::<degree>().abs() > 5.
         {
             let steering_angle_map_input = if pushback_tug.is_nose_wheel_steering_pin_inserted() {
@@ -3879,20 +3881,6 @@ impl BodyWheelSteeringController {
                     -steering_angle_map_input.get::<degree>(),
                 ))
             };
-
-            if self.is_left_side {
-                println!(
-                    "LEFT STEERING input{:.2} output {:.2}",
-                    steering_angle_map_input.get::<degree>(),
-                    self.requested_position.get::<degree>()
-                );
-            } else {
-                println!(
-                    "RIGHT STEERING input{:.2} output {:.2}",
-                    steering_angle_map_input.get::<degree>(),
-                    self.requested_position.get::<degree>()
-                );
-            }
         } else {
             self.requested_position = Angle::default();
         }
@@ -3918,14 +3906,14 @@ impl BodyWheelSteeringControl {
 
     fn update(
         &mut self,
-        nose_steering_angle: Angle,
-        ground_speed: Velocity,
+        context: &UpdateContext,
+        nose_steering_feedback: Angle,
         pushback_tug: &impl Pushback,
     ) {
         self.left_controller
-            .update(nose_steering_angle, ground_speed, pushback_tug);
+            .update(context, nose_steering_feedback, pushback_tug);
         self.right_controller
-            .update(nose_steering_angle, ground_speed, pushback_tug);
+            .update(context, nose_steering_feedback, pushback_tug);
     }
 
     fn left_controller(&self) -> &impl SteeringController {
@@ -3960,6 +3948,7 @@ impl PedalSteeringDynamicLimiter {
     const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 100., 150., 1500.0, 2800.0];
     const STEERING_ANGLE_FOR_PEDAL_ACTION_TAKEOFF_RATIO: [f64; 5] = [1., 1., 0.333, 0.333, 0.333]; // Used in takeoff mode only
     const STEERING_ANGLE_FOR_PEDAL_ACTION_LANDING_RATIO: [f64; 5] = [1., 1., 0., 0., 0.]; // Used in landing mode only
+    const SPEED_TO_SWITCH_TAKEOFF_MODE_KNOT: f64 = 100.;
 
     fn default() -> Self {
         Self {
@@ -3979,11 +3968,11 @@ impl PedalSteeringDynamicLimiter {
         if !lgciu.left_and_right_gear_compressed(false) {
             self.is_landing_mode = true;
         }
-        if ground_speed.get::<knot>() < 100. && lgciu.left_and_right_gear_compressed(false) {
+        if ground_speed.get::<knot>() < Self::SPEED_TO_SWITCH_TAKEOFF_MODE_KNOT
+            && lgciu.left_and_right_gear_compressed(false)
+        {
             self.is_landing_mode = false;
         }
-
-        println!("RUDDER MODE IS_LANDING {:?}", self.is_landing_mode);
     }
 
     fn angle_from_speed(&self, speed: Velocity, angle_demand: Angle) -> Angle {
@@ -4003,8 +3992,6 @@ struct A380HydraulicBrakeSteerComputerUnit {
     antiskid_brakes_active_id: VariableIdentifier,
     left_brake_pedal_input_id: VariableIdentifier,
     right_brake_pedal_input_id: VariableIdentifier,
-
-    ground_speed_id: VariableIdentifier,
 
     rudder_pedal_input_id: VariableIdentifier,
     tiller_handle_input_id: VariableIdentifier,
@@ -4038,8 +4025,6 @@ struct A380HydraulicBrakeSteerComputerUnit {
     body_wheel_steering_control: BodyWheelSteeringControl,
 
     heading_control_function: HeadingControlFunction,
-
-    ground_speed: Velocity,
 }
 impl A380HydraulicBrakeSteerComputerUnit {
     const RUDDER_PEDAL_INPUT_GAIN: f64 = 32.;
@@ -4079,7 +4064,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
             right_brake_pedal_input_id: context
                 .get_identifier("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
 
-            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION_RATIO".to_owned()),
             tiller_handle_input_id: context.get_identifier("TILLER_HANDLE_POSITION".to_owned()),
             tiller_pedal_disconnect_id: context
@@ -4125,8 +4109,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
             body_wheel_steering_control: BodyWheelSteeringControl::default(),
 
             heading_control_function: HeadingControlFunction::default(),
-
-            ground_speed: Velocity::new::<knot>(0.),
         }
     }
 
@@ -4193,14 +4175,19 @@ impl A380HydraulicBrakeSteerComputerUnit {
         adirs: &impl AdirsMeasurementOutputs,
         placeholder_ground_spoilers_out: bool,
         pushback_tug: &impl Pushback,
+        nose_steering_feedback: Angle,
     ) {
         // TODO split steering part from braking part in two different computers instances
-        self.update_steering_demands(context, adirs, lgciu1, engine1, engine2);
-        self.body_wheel_steering_control.update(
-            self.final_steering_position_request,
-            self.ground_speed,
-            pushback_tug,
+        self.update_steering_demands(
+            context,
+            adirs,
+            lgciu1,
+            engine1,
+            engine2,
+            nose_steering_feedback,
         );
+        self.body_wheel_steering_control
+            .update(context, nose_steering_feedback, pushback_tug);
 
         self.update_normal_braking_availability(current_pressure.pressure());
         self.update_brake_pressure_limitation();
@@ -4214,7 +4201,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
             lgciu1,
             lgciu2,
             placeholder_ground_spoilers_out,
-            self.ground_speed,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
@@ -4285,9 +4271,10 @@ impl A380HydraulicBrakeSteerComputerUnit {
         lgciu1: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        nose_steering_feedback: Angle,
     ) {
         self.pedal_steering_limiter
-            .update(self.ground_speed, lgciu1); // TODO check which lgciu input is used for mode determination
+            .update(context.ground_speed(), lgciu1); // TODO check which lgciu input is used for mode determination
 
         let steer_angle_from_autopilot = Angle::new::<degree>(
             self.autopilot_nosewheel_demand.get::<ratio>() * Self::AUTOPILOT_STEERING_INPUT_GAIN,
@@ -4302,7 +4289,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
         // TODO Here ground speed would be probably computed from wheel sensor logic
         let final_steer_rudder_plus_autopilot = self.pedal_steering_limiter.angle_from_speed(
-            self.ground_speed,
+            context.ground_speed(),
             (steer_angle_from_pedals + steer_angle_from_autopilot)
                 .min(Angle::new::<degree>(
                     Self::MAX_RUDDER_INPUT_INCLUDING_AUTOPILOT_DEGREE,
@@ -4313,7 +4300,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
         );
 
         let steer_angle_from_tiller = self.tiller_steering_limiter.angle_from_speed(
-            self.ground_speed,
+            context.ground_speed(),
             self.tiller_input_map
                 .angle_demand_from_input_demand(self.tiller_handle_position),
         );
@@ -4327,8 +4314,8 @@ impl A380HydraulicBrakeSteerComputerUnit {
             context,
             1,
             adirs,
-            self.ground_speed,
             any_steering_demand_active,
+            nose_steering_feedback,
         );
 
         let is_both_engine_low_oil_pressure =
@@ -4391,7 +4378,6 @@ impl SimulationElement for A380HydraulicBrakeSteerComputerUnit {
             Ratio::new::<ratio>(reader.read(&self.tiller_handle_input_id));
         self.rudder_pedal_position = Ratio::new::<ratio>(reader.read(&self.rudder_pedal_input_id));
         self.tiller_pedal_disconnect = reader.read(&self.tiller_pedal_disconnect_id);
-        self.ground_speed = reader.read(&self.ground_speed_id);
 
         self.autopilot_nosewheel_demand =
             Ratio::new::<ratio>(reader.read(&self.autopilot_nosewheel_demand_id));
