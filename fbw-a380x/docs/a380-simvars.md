@@ -362,7 +362,9 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
 ## Flight Management System ATA 22
+
 - A32NX_FMS_SWITCHING_KNOB
     - FMS used
     - Position (0-2)
