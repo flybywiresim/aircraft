@@ -615,6 +615,7 @@ export class MsfsMapping {
         .filter((approach) => approach.runwayNumber !== 0)
         .map((approach) => {
           const approachName = this.mapApproachName(approach);
+          const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
           // the AR flag is not available so we use this heuristic based on analysing the MSFS data
           const authorisationRequired = approach.rnavTypeFlags === 0;
@@ -632,6 +633,7 @@ export class MsfsMapping {
             databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
             icaoCode,
             ident: approachName,
+            suffix,
             runwayIdent,
             multipleIndicator: approach.approachSuffix,
             type: this.mapApproachType(approach.approachType),
