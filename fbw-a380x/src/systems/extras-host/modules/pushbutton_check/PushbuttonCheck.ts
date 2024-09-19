@@ -21,7 +21,7 @@ export class PushbuttonCheck {
 
     private readonly toConfTimer = new DebounceTimer();
 
-    private readonly toConfButtonInCruise = MappedSubject.create(([toConf, phase]) => toConf && phase === 6, this.toConfButton, this.fwcFlightPhase)
+    private readonly toConfButtonInCruise = MappedSubject.create(([toConf, phase]) => toConf && phase === 8, this.toConfButton, this.fwcFlightPhase)
 
     private toConfMessageShown = false;
 

@@ -55,6 +55,13 @@ class NamedVariable : public CacheableVariable {
     dataID = register_named_variable(name.c_str());
   }
 
+  /**
+   * @brief Adds the aircraft prefix to the variable name if it is not already present.
+   * @param varName The variable name to prefix.
+   * @return The prefixed variable name.
+   */
+  static std::string addPrefixToVarName(const std::string& varName);
+
  public:
   NamedVariable()                                = delete;  // no default constructor
   NamedVariable(const NamedVariable&)            = delete;  // no copy constructor
@@ -63,7 +70,8 @@ class NamedVariable : public CacheableVariable {
   NamedVariable& operator=(NamedVariable&&)      = delete;  // move assignment
 
   [[nodiscard]] FLOAT64 rawReadFromSim() const override;
-  void                  rawWriteToSim() override;
+
+  void rawWriteToSim() override;
 
   [[nodiscard]] std::string str() const override;
 
@@ -79,13 +87,6 @@ class NamedVariable : public CacheableVariable {
    * @return The aircraft prefix.
    */
   static const std::string& getAircraftPrefix() { return AIRCRAFT_PREFIX; }
-
-  /**
-   * @brief Adds the aircraft prefix to the variable name if it is not already present.
-   * @param varName The variable name to prefix.
-   * @return The prefixed variable name.
-   */
-  static std::string addPrefixToVarName(const std::string& varName);
 
   friend std::ostream& operator<<(std::ostream& os, const NamedVariable& namedVariable);
 };
