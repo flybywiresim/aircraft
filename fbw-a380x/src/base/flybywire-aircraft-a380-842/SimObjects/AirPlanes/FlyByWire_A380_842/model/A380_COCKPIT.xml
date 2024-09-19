@@ -1163,7 +1163,6 @@
                 <ANIM_LENGTH>200</ANIM_LENGTH>
             </UseTemplate>
 
-
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
                 <!--<POTENTIOMETER>85</POTENTIOMETER>-->
