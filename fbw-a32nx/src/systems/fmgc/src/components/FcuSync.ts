@@ -18,7 +18,7 @@ export class FcuSync implements FmgcComponent {
     const irMaint = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_IR_1_MAINT_WORD');
     const trueRefPb = SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'bool');
 
-    const trueRef = (irMaint.getBitValueOr(15, false) || trueRefPb) && !irMaint.getBitValueOr(2, false);
+    const trueRef = (irMaint.bitValueOr(15, false) || trueRefPb) && !irMaint.bitValueOr(2, false);
 
     if (trueRef !== this.trueRef) {
       this.trueRef = trueRef;

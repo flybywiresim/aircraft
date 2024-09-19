@@ -148,7 +148,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private setAlphaProtBarPath() {
     const normalLawActive =
-      this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
     if (
       this.airSpeed.value - this.vAlphaProt.value > DisplayRange ||
       this.vAlphaProt.isFailureWarning() ||
@@ -470,7 +470,7 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private setVStallWarnBarPath() {
     const normalLawActive =
-      this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
     if (
       this.airSpeed.value - this.vStallWarn.value > DisplayRange ||
       this.vStallWarn.isFailureWarning() ||
@@ -780,7 +780,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
       this.vlsVisbility.set('visible');
 
       const normalLawActive =
-        this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+        this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
 
       const VLsPos = ((this.airSpeed.value - this.vls.value) * DistanceSpacing) / ValueSpacing + 80.818;
       const offset =
@@ -860,7 +860,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private setAlphaLimBarPath() {
     const normalLawActive =
-      this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
     if (
       this.vAlphaLim.value - this.airSpeed.value < -DisplayRange ||
       this.vAlphaLim.isFailureWarning() ||
@@ -974,7 +974,7 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly flapConfig = Arinc429RegisterSubject.createEmpty();
 
   private readonly conf1SelectedSub = this.flapConfig.map(
-    (w) => w.getBitValueOr(28, false) && w.getBitValue(29) && w.getBitValue(18) && !w.getBitValue(26),
+    (w) => w.bitValueOr(28, false) && w.bitValue(29) && w.bitValue(18) && !w.bitValue(26),
   );
 
   private readonly arsVisiblitySub = this.conf1SelectedSub.map((v) => (v ? 'visible' : 'hidden'));
@@ -1387,7 +1387,7 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
     const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
     const offset = (-(this.Vmax.value + 6) * DistanceSpacing) / ValueSpacing;
 
-    const isNormalLawActive = this.fcdcWord1.getBitValue(11) && !this.fcdcWord1.isFailureWarning();
+    const isNormalLawActive = this.fcdcWord1.bitValue(11) && !this.fcdcWord1.isFailureWarning();
 
     if (showVProt && isNormalLawActive) {
       this.vProtBug.instance.style.display = 'block';

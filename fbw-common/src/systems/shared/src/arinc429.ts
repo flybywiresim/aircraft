@@ -20,9 +20,9 @@ export interface Arinc429WordData {
 
   valueOr(defaultValue: number | undefined | null): number;
 
-  getBitValue(bit: number): boolean;
+  bitValue(bit: number): boolean;
 
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean;
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean;
 }
 
 export class Arinc429Word implements Arinc429WordData {
@@ -77,11 +77,11 @@ export class Arinc429Word implements Arinc429WordData {
     return this.isNormalOperation() ? this.value : defaultValue;
   }
 
-  getBitValue(bit: number): boolean {
+  bitValue(bit: number): boolean {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 
@@ -164,20 +164,10 @@ export class Arinc429Register implements Arinc429WordData {
     return this.isNormalOperation() ? this.value : defaultValue;
   }
 
-  getBitValue(bit: number): boolean {
-    return ((this.value >> (bit - 1)) & 1) !== 0;
-  }
-
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
-  }
-
-  /** @deprecated use {@link getBitValue} */
   bitValue(bit: number): boolean {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  /** @deprecated use {@link getBitValueOr} */
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
@@ -247,12 +237,12 @@ export class Arinc429OutputWord implements Arinc429WordData {
     return this.word.valueOr(defaultValue);
   }
 
-  getBitValue(bit: number): boolean {
-    return this.word.getBitValue(bit);
+  bitValue(bit: number): boolean {
+    return this.word.bitValue(bit);
   }
 
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.word.getBitValueOr(bit, defaultValue);
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+    return this.word.bitValueOr(bit, defaultValue);
   }
 
   async writeToSimVarIfDirty() {
