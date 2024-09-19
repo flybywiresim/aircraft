@@ -2811,7 +2811,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 8 || fwcFlightPhase == 9) {
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 || fwcFlightPhase == 11) {
     idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
     idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
   } else {

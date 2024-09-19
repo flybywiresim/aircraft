@@ -4,8 +4,9 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
-  - [Auto Flight System ATA 22](#afs-ata-22)
+  - [Air Conditioning / Pressurisation / Ventilation ATA  21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
+  - [Flight Management System ATA 22](#flight-management-system-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
@@ -361,6 +362,13 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+## Flight Management System ATA 22
+
+- A32NX_FMS_SWITCHING_KNOB
+    - FMS used
+    - Position (0-2)
+    - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
 ## Electrical ATA 24
 
