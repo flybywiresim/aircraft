@@ -115,9 +115,10 @@
 1. [FMS] Selected navaids are now reset on entering the done flight phase - @tracernz (Mike)
 1. [FMS] Fix tailwind component of trip wind being treated as a headwind - @BlueberryKing (BlueberryKing)
 1. [FMS] Improved NAVAID page - @tracernz (Mike)
-1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal 
+1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal
 1. [FADEC] Added quick start for engines and APU - @frankkopp (Frank Kopp) - @Gurgel100 (Pascal)
 1. [EFB] Added expedited presets - @frankkopp (Frank Kopp)
+1. [FMS] Show runway ident on lateral/vertical revision page of the missed approach point - @BlueberryKing (BlueberryKing)
 1. [ECAM] Fixed ALL ECAM Button cycling through STS page and being inconsisten on press - @Maximilian-Reuter (\_chaoz_)
 
 ## 0.11.0

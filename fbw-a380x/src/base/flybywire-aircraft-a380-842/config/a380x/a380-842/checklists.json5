@@ -22,12 +22,14 @@
 // | 2      | 1ST ENG STARTED  |
 // | 3      | 1ST ENG TO PWR   |
 // | 4      | 80 kt            |
-// | 5      | LIFTOFF          |
-// | 6      | 1500ft (in clb)  |
-// | 7      | 800 ft (in desc) |
-// | 8      | TOUCHDOWN        |
-// | 9      | 80 kt            |
-// | 10     | 2nd ENG SHUTDOWN |
+// | 5      | V1
+// | 6      | LIFTOFF          |
+// | 7      | 400ft (in clb)
+// | 8      | 1500ft (in clb)  |
+// | 9      | 800 ft (in desc) |
+// | 10      | TOUCHDOWN        |
+// | 11      | 80 kt            |
+// | 12     | 2nd ENG SHUTDOWN |
 // | &gt; 1 | 5 MIN AFTER      |
 //
 // OBS: It is not recommended to override these default checklists yet as they are still being improved and the format
@@ -281,7 +283,7 @@
     {
       // afterTakeoffChecklistA380X =================================================",
       "name": "AFTER TAKEOFF / CLIMB",
-      "flightphase": 6,
+      "flightphase": 8,
       "items": [
         {
           "item": "LDG GEAR",
@@ -365,7 +367,7 @@
     {
       // approachChecklistA380X =================================================",
       "name": "APPROACH",
-      "flightphase": 6,
+      "flightphase": 8,
       "items": [
         {
           "item": "CABIN CREW",
@@ -416,7 +418,7 @@
     {
       // landingChecklistA380X =================================================",
       "name": "LANDING",
-      "flightphase": 7,
+      "flightphase": 9,
       "items": [
         {
           "item": "A/THR MODE",
@@ -492,7 +494,7 @@
     {
       // afterLandingChecklistA380X =================================================",
       "name": "AFTER LANDING",
-      "flightphase": 9,
+      "flightphase": 11,
       "items": [
         {
           "item": "EXTERIOR LIGHTS",
@@ -539,7 +541,7 @@
     {
       // parkingChecklistA380X =================================================",
       "name": "PARKING",
-      "flightphase": 10,
+      "flightphase": 12,
       "items": [
         {
           "item": "PARK BRK or CHOCKS",
@@ -694,7 +696,7 @@
     {
       // securingAircraftChecklistA380X =================================================",
       "name": "SECURING AIRCRAFT",
-      "flightphase": 10,
+      "flightphase": 12,
       "items": [
         {
           "item": "ADIRS",

@@ -13,7 +13,7 @@ import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPub
 import { LagFilter, RateLimiter } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
 const ValueSpacing = 10;
@@ -59,7 +59,7 @@ class V1BugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 
   private getV1Visibility() {
-    if (this.flightPhase <= 4 && this.v1Speed !== 0) {
+    if (this.flightPhase <= 5 && this.v1Speed !== 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -114,7 +114,7 @@ class VRBugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 
   private getVrVisibility() {
-    if (this.flightPhase <= 4 && this.vrSpeed !== 0) {
+    if (this.flightPhase <= 5 && this.vrSpeed !== 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -940,7 +940,7 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((p) => {
-        if (p <= 4) {
+        if (p <= 5) {
           this.v1TextRef.instance.style.visibility = 'visible';
         } else {
           this.v1TextRef.instance.style.visibility = 'hidden';
