@@ -256,10 +256,14 @@
                 <ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
-                <TRIM_ONLY>True</TRIM_ONLY>
-                <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
-            </UseTemplate>
+
+            <!-- THS -->
+            <Component ID="THS">
+                <UseTemplate Name="FBW_Control_Surface_Template">
+                    <ANIM_NAME>trimtab_elevator_key</ANIM_NAME>
+                    <DEFLECTION_CODE>(A:ELEVATOR TRIM PCT, percent over 100) -1 *</DEFLECTION_CODE>
+                </UseTemplate>
+            </Component>
 
             <!-- Ailerons left -->
             <Component ID="AILERONS_LEFT">
