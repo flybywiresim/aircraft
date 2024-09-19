@@ -201,6 +201,7 @@ export class MsfsMapping {
             this.approachHasLandingSystem(appr),
         );
         const lsIdent = lsAppr ? FacilityCache.ident(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao) : '';
+        // FIXME need to return an IlsNavaid for ILS
         const lsFrequencyChannel = lsAppr
           ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz
           : undefined;

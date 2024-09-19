@@ -1,10 +1,11 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, ApproachType, IlsNavaid, isIlsNavaid } from '@flybywiresim/fbw-sdk';
+import { Approach, ApproachType, isVhfNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 
 export class LandingSystemUtils {
-  static getLsFromApproach(approach: Approach): IlsNavaid | null {
+  // FIXME IlsNavaid when MSFS mapping can support it
+  static getLsFromApproach(approach: Approach): VhfNavaid | null {
     if (approach.legs.length < 1) {
       return null;
     }
@@ -19,7 +20,7 @@ export class LandingSystemUtils {
       case ApproachType.Loc:
       case ApproachType.LocBackcourse:
       case ApproachType.Sdf:
-        if (isIlsNavaid(mapLeg.recommendedNavaid)) {
+        if (isVhfNavaid(mapLeg.recommendedNavaid) && mapLeg.recommendedNavaid.type === VhfNavaidType.IlsDme) {
           return mapLeg.recommendedNavaid;
         }
       // fallthrough
