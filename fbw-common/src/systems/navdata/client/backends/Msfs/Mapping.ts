@@ -202,8 +202,8 @@ export class MsfsMapping {
         );
         const lsIdent = lsAppr ? FacilityCache.ident(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao) : '';
         const lsFrequencyChannel = lsAppr
-          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz ?? 0
-          : 0;
+          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz
+          : undefined;
 
         runways.push({
           sectionCode: SectionCode.Airport,
