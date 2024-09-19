@@ -768,4 +768,11 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [], // not implemented
   },
+  // SURVEILLANCE
+  341800037 :{
+    title: '\x1b<4m\x1b4mSURV\x1bm XPDR STBY',
+    sensed: true,
+    items: []
+  }
+  
 };
