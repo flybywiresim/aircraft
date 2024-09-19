@@ -78,8 +78,14 @@ These systems are currently not operational / these features are missing and sha
 - EFIS CP: Multi-selection for some filters
 - Independent QNH
 - KCCU soft keyboard
-- ECAM: Only basic abnormal sensed procedures
+- ECAM: Only basic abnormal sensed procedures, only sensed items are complete
+- ECAM abnormal sensed: No navigation up/down, only CLEAR selectable for manual completion
 - ECAM: Abnormal non-sensed procedures
+- ECAM Deferred procedures
+- ECAM ABN secondary failures
+- ECAM: Complete STS page implementation
+- ECAM: AUTO RCL
+- ECAM: Correct behavior of RCL / RCL LAST
 - Video: ETACS due to sim limitation
 - Latest FMA indications for landing modes (e.g. LAND3 instead of CAT3)
 - SD VIDEO page
