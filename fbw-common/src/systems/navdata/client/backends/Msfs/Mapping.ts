@@ -618,7 +618,7 @@ export class MsfsMapping {
           const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
           // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-          const authorisationRequired = approach.rnavTypeFlags === 0;
+          const authorisationRequired = approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
           const rnp = authorisationRequired ? 0.3 : undefined;
 
           const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
