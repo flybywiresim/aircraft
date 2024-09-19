@@ -145,10 +145,22 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         ];
 
         // Sort approaches by runway
-        const sortedApproaches = flightPlan.availableApproaches.sort(
-          (a, b) =>
-            a.runwayIdent?.localeCompare(b.runwayIdent ?? '') || ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type],
-        );
+        // FIXME add runway-by-itself
+        const sortedApproaches = flightPlan.availableApproaches
+          .filter(
+            (a) =>
+              a.type !== ApproachType.Tacan &&
+              a.type !== ApproachType.Mls &&
+              a.type !== ApproachType.MlsTypeA &&
+              a.type !== ApproachType.MlsTypeBC &&
+              a.runwayIdent !== undefined && // circling approaches
+              a.type !== ApproachType.LocBackcourse, // FIXME remove when supported
+          )
+          .sort(
+            (a, b) =>
+              a.runwayIdent?.localeCompare(b.runwayIdent ?? '') ||
+              ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type],
+          );
         let isFirstMatch = true;
         sortedApproaches.forEach((el, idx) => {
           appr.push({
