@@ -2903,10 +2903,9 @@ export class FwsCore implements Instrument {
     this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
     this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
 
-    // fix me use active transponder & check for fault condition when implemented
+    // fix me check for fault condition when implemented
     const transponder1State = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum');
-    const transponder2State = SimVar.GetSimVarValue('TRANSPONDER STATE:2', 'Enum');
-    this.xpdrStby.set(transponder1State === 1 || transponder2State === 1);
+    this.xpdrStby.set(transponder1State === 1);
     this.xpdrAltReporting.set(
       this.aircraftOnGround.get()
         ? this.xpdrAltReportingRequest.get()
