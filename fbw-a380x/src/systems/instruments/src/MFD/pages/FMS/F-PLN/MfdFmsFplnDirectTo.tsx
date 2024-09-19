@@ -44,8 +44,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    console.time('DIRECT-TO:onNewData');
-
     // Use active FPLN for building the list (page only works for active anyways)
     const activeFpln = this.props.fmcService.master?.flightPlanService.active;
     if (activeFpln) {
@@ -88,8 +86,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         this.distToWpt.set(this.loadedFlightPlan?.activeLeg?.calculated?.cumulativeDistance?.toFixed(0) ?? '---');
       }
     }
-
-    console.timeEnd('DIRECT-TO:onNewData');
   }
 
   private async onDropdownModified(idx: number, text: string): Promise<void> {

@@ -4,18 +4,20 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
+  Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import EWDMessages from '@instruments/common/EWDMessages';
+import { EcamLimitations } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdLimitationsProps {
   bus: EventBus;
+  visible: Subscribable<boolean>;
 }
-
-const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
 export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
@@ -36,32 +38,27 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
 
   private readonly limitationsRightFormatString = Subject.create('');
 
-  private readonly limitationsDisplay = Subject.create('none');
+  private readonly limitationsDisplay = Subject.create(false);
 
   private update() {
     this.limitationsLeftFormatString.set(
       this.limitationsLeft
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamLimitations[val.get()])
         .join('\r'),
     );
     this.limitationsRightFormatString.set(
       this.limitationsRight
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamLimitations[val.get()])
         .join('\r'),
     );
 
-    // Weirdly enough, we have to wait for the SVG to be rendered to get its bounding box
-    setTimeout(() => {
-      this.limitationsLeftSvgRef.instance.style.height = `${(this.limitationsLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-      this.limitationsRightSvgRef.instance.style.height = `${(this.limitationsRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-    }, 100);
+    this.limitationsLeftSvgRef.instance.style.height = `${this.limitationsLeft.filter((v) => !!v.get()).length * 30 + 3}px`;
+    this.limitationsRightSvgRef.instance.style.height = `${this.limitationsRight.filter((v) => !!v.get()).length * 30 + 3}px`;
 
     this.limitationsDisplay.set(
-      this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0
-        ? 'block'
-        : 'none',
+      this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0,
     );
   }
 
@@ -70,12 +67,26 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
 
     this.limitationsLeft.forEach((el) => el.sub(() => this.update(), true));
     this.limitationsRight.forEach((el) => el.sub(() => this.update(), true));
+
+    this.sub
+      .on('realTime')
+      .atFrequency(0.05)
+      .handle(() => this.update());
   }
 
   render() {
     return (
       <>
-        <div class="LimitationsContainer" style={{ display: this.limitationsDisplay }}>
+        <div
+          class="LimitationsContainer"
+          style={{
+            display: MappedSubject.create(
+              SubscribableMapFunctions.and(),
+              this.limitationsDisplay,
+              this.props.visible,
+            ).map((it) => (it ? 'block' : 'none')),
+          }}
+        >
           <span class="LimitationsHeading Underline">LIMITATIONS</span>
           <div class="MemosDividedArea">
             <div class="MemosLeft">
@@ -91,7 +102,6 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
               </svg>
             </div>
           </div>
-          <div class="MemosFillArea" />
         </div>
       </>
     );

@@ -1115,16 +1115,15 @@ impl BtvDecelScheduler {
             self.oans_distance_to_exit.value()
         };
 
-        let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M);
+        // Distance to runway end minus a margin from FCOM reference (cannot be negative)
+        let distance_to_runway_end_minus_margin = (self.distance_to_rwy_end
+            - Length::new::<meter>(Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS))
+        .max(Length::default());
 
-        // Max distance clamped to end of rwy minus a margin
-        (distance_remaining_raw - distance_from_btv_exit).clamp(
-            Length::default(),
-            self.distance_to_rwy_end
-                - Length::new::<meter>(
-                    Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS,
-                ),
-        )
+        // BTV remaining distance is raw distance minus a small offset before exit
+        //      Max distance is clamped to end of rwy minus margin as BTV will never target a further end of decel point
+        (distance_remaining_raw - Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M))
+            .clamp(Length::default(), distance_to_runway_end_minus_margin)
     }
 
     fn compute_decel(&mut self, ground_speed: Velocity) {

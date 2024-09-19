@@ -38,6 +38,7 @@ import {
   FeatureType,
   FeatureTypeString,
   MathUtils,
+  NXDataStore,
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
@@ -71,12 +72,11 @@ export enum EntityTypes {
 }
 
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
 
-  private readonly navigraphAvailable = Subject.create<boolean>(false);
+  private readonly navigraphAvailable = Subject.create(false);
 
   private amdbClient = new NavigraphAmdbClient();
 
@@ -136,17 +136,19 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly reqStoppingDistance = Subject.create<number | null>(null);
 
+  private readonly fmsLandingRunwayVisibility = this.fmsDataStore.landingRunway.map((rwy) =>
+    rwy ? 'inherit' : 'hidden',
+  );
+
   private arpCoordinates: Coordinates | undefined;
 
   private landingRunwayNavdata: Runway | undefined;
 
   private btvUtils = new BrakeToVacateUtils(this.props.bus);
 
-  private readonly airportDatabase = Subject.create('FBW9027250BB04');
+  private readonly airportDatabase = this.navigraphAvailable.map((a) => (a ? 'FBW9027250BB04' : 'N/A'));
 
   private readonly activeDatabase = Subject.create('30DEC-27JAN');
-
-  private readonly secondDatabase = Subject.create('27JAN-24FEB');
 
   public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
@@ -166,6 +168,19 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
   }
 
+  private loadOansDb() {
+    this.amdbClient
+      .searchForAirports('')
+      .then((airports) => {
+        this.store.airports.set(airports);
+        this.navigraphAvailable.set(true);
+      })
+      .catch(() => {
+        this.store.airports.set([]);
+        this.navigraphAvailable.set(false);
+      });
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -179,22 +194,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       this.activeDatabase.set(`${from.getDay()}${months[from.getMonth()]}-${to.getDay()}${months[to.getMonth()]}`);
     });
 
-    const date = SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
-    if (date) {
-      this.secondDatabase.set(this.calculateSecDate(date));
-    }
+    NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
 
     this.subs.push(
       this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
     );
-
-    this.amdbClient
-      .searchForAirports('')
-      .then((airports) => {
-        this.store.airports.set(airports);
-        this.navigraphAvailable.set(true);
-      })
-      .catch(() => this.navigraphAvailable.set(false));
 
     this.subs.push(
       this.store.airports.sub(() =>
@@ -214,12 +218,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     // unfocus input fields on tab change
     this.subs.push(this.activeTabIndex.sub((_index) => Coherent.trigger('UNFOCUS_INPUT_FIELD')));
 
-    this.navigraphAvailable.sub((v) => {
-      if (this.mapDataMainRef.getOrDefault() && this.mapDataBtvFallback.getOrDefault()) {
-        this.mapDataMainRef.instance.style.display = v ? 'block' : 'none';
-        this.mapDataBtvFallback.instance.style.display = v ? 'none' : 'block';
-      }
-    }, true);
+    this.subs.push(
+      this.navigraphAvailable.sub((v) => {
+        if (this.mapDataMainRef.getOrDefault() && this.mapDataBtvFallback.getOrDefault()) {
+          this.mapDataMainRef.instance.style.display = v ? 'block' : 'none';
+          this.mapDataBtvFallback.instance.style.display = v ? 'none' : 'block';
+        }
+        SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
+        this.props.bus.getPublisher<OansControlEvents>().pub('oansNotAvail', !v, true);
+      }, true),
+    );
 
     const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansDataArinc429 & AdirsSimVars & NDSimvars>();
 
@@ -425,7 +433,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       return;
     }
     // If on ground, and no airport is loaded, find current airport.
-    if (![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number))) {
+    if (![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number))) {
       // Go through all airports, load if distance <20NM
       const nearestAirports = this.store.airports
         .getArray()
@@ -459,65 +467,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }
       }
     }
-  }
-
-  private findNewMonthIndex(index: number) {
-    if (index === 0) {
-      return 11;
-    }
-    return index - 1;
-  }
-
-  private lessThan10(num: number) {
-    if (num < 10) {
-      return `0${num}`;
-    }
-    return num;
-  }
-
-  private calculateActiveDate(date: string): string {
-    if (date.length === 13) {
-      const startMonth = date.slice(0, 3);
-      const startDay = date.slice(3, 5);
-
-      const endMonth = date.slice(5, 8);
-      const endDay = date.slice(8, 10);
-
-      return `${startDay}${startMonth}-${endDay}${endMonth}`;
-    }
-    return date;
-  }
-
-  private calculateSecDate(date: string): string {
-    if (date.length === 13) {
-      const primStartMonth = date.slice(0, 3);
-      const primStartDay = Number(date.slice(3, 5));
-
-      const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
-
-      if (primStartMonthIndex === -1) {
-        return 'ERR';
-      }
-
-      let newEndMonth = primStartMonth;
-      let newEndDay = primStartDay - 1;
-
-      let newStartDay = newEndDay - 27;
-      let newStartMonth = primStartMonth;
-
-      if (newEndDay === 0) {
-        newEndMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
-        newEndDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)];
-      }
-
-      if (newStartDay <= 0) {
-        newStartMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
-        newStartDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)] + newStartDay;
-      }
-
-      return `${this.lessThan10(newStartDay)}${newStartMonth}-${this.lessThan10(newEndDay)}${newEndMonth}`;
-    }
-    return 'ERR';
   }
 
   render(): VNode {
@@ -649,7 +598,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         BTV MANUAL CONTROL / FALLBACK
                       </div>
                     </div>
-                    <div class="oans-cp-map-data-btv-rwy-length">
+                    <div
+                      class="oans-cp-map-data-btv-rwy-length"
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
+                    >
                       <div class="mfd-label" style="margin-right: 10px;">
                         RUNWAY LENGTH
                       </div>
@@ -658,7 +610,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         <span style="color: rgb(33, 33, 255)">M</span>
                       </span>
                     </div>
-                    <div class="oans-cp-map-data-btv-rwy-length">
+                    <div
+                      class="oans-cp-map-data-btv-rwy-length"
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
+                    >
                       <div class="mfd-label" style="margin-right: 10px;">
                         BTV STOP DISTANCE
                       </div>
@@ -691,6 +646,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           hEventConsumer={this.hEventConsumer}
                           interactionMode={this.interactionMode}
                         />
+                      </div>
+                    </div>
+                    <div
+                      class="oans-cp-map-data-btv-rwy-length"
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
+                    >
+                      <div class="mfd-label amber" style="margin-right: 10px;">
+                        SELECT LANDING RUNWAY IN FMS
                       </div>
                     </div>
                   </div>
@@ -823,8 +786,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div class="oans-cp-status-2">
                     <Button
                       label="SWAP"
-                      disabled={Subject.create(true)}
-                      onClick={() => console.log('SWAP')}
+                      disabled={this.navigraphAvailable}
+                      onClick={() => this.loadOansDb()}
                       buttonStyle="padding: 20px 30px 20px 30px;"
                     />
                   </div>
@@ -832,7 +795,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <span class="mfd-label" style="margin-bottom: 10px;">
                       SECOND
                     </span>
-                    <span class="mfd-value smaller">{this.secondDatabase}</span>
+                    <span class="mfd-value smaller">{this.activeDatabase}</span>
                   </div>
                 </div>
                 <div class="oans-cp-status-db">

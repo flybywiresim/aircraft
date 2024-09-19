@@ -11,7 +11,7 @@ import { VerticalMode } from '@shared/autopilot';
 import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
@@ -55,7 +55,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
       .handle((fp) => {
         this.flightPhase = fp;
 
-        if ((fp !== 7 && fp !== 8) || this.delta > DisplayRange) {
+        if ((fp !== 9 && fp !== 10) || this.delta > DisplayRange) {
           this.landingElevationIndicator.instance.classList.add('HiddenElement');
         } else {
           this.landingElevationIndicator.instance.classList.remove('HiddenElement');
@@ -214,7 +214,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.inLandingPhases = fp === 7 || fp === 8;
+        this.inLandingPhases = fp === 9 || fp === 10;
         this.updateIndication();
       });
 
