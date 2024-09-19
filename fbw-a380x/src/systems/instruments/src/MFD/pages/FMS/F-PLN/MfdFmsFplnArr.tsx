@@ -4,6 +4,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { ApproachType, LandingSystemUtils } from '@fmgc/index';
+import { getApproachName } from '../../../shared/utils';
 
 import './MfdFmsFpln.scss';
 
@@ -40,6 +41,8 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
   private rwyLength = Subject.create<string>('');
 
   private rwyCrs = Subject.create<string>('');
+
+  private readonly approachName = Subject.create<string>('');
 
   private readonly approachLsFrequencyChannel = Subject.create<string>('');
 
@@ -149,7 +152,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         let isFirstMatch = true;
         sortedApproaches.forEach((el, idx) => {
           appr.push({
-            label: el.ident,
+            label: getApproachName(el),
             action: async () => {
               await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
                 el.runwayIdent ?? '',
@@ -181,6 +184,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }
 
       if (flightPlan.approach) {
+        this.approachName.set(getApproachName(flightPlan.approach, false));
         const ls = flightPlan.approach ? LandingSystemUtils.getLsFromApproach(flightPlan.approach) : undefined;
         // FIXME handle non-localizer types
         this.approachLsFrequencyChannel.set(ls?.frequency.toFixed(2) ?? '');
@@ -229,12 +233,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           this.viaDisabled.set(true);
         }
       } else if (flightPlan.availableApproaches?.length > 0) {
-        this.appr.set('------');
+        this.approachName.set('------');
         this.approachLsFrequencyChannel.set('---.--');
         this.approachLsIdent.set('');
         this.viaDisabled.set(true);
       } else {
-        this.appr.set('NONE');
+        this.approachName.set('NONE');
         this.approachLsFrequencyChannel.set('---.--');
         this.approachLsIdent.set('');
         this.viaDisabled.set(true);
@@ -469,7 +473,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   sec: this.secActive,
                 }}
               >
-                {this.appr}
+                {this.approachName}
               </span>
             </div>
             <div class="fc" style="flex: 0.2;">
