@@ -101,8 +101,9 @@ export const A380Failure = Object.freeze({
 
   RadioAltimeter1: 34000,
   RadioAltimeter2: 34001,
-  Transponder1: 34002,
-  Transponder2: 34003,
+  RadioAltimeter3: 34002,
+  Transponder1: 34003,
+  Transponder2: 34004,
 });
 
 export const A380FailureDefinitions: FailureDefinition[] = [
@@ -198,8 +199,9 @@ export const A380FailureDefinitions: FailureDefinition[] = [
 
   [32, A380Failure.GearProxSensorDamageGearUplockNose1, 'Proximity sensor damage uplock nose gear #1'],
 
-  [34, A380Failure.RadioAltimeter1, 'RA 1'],
-  [34, A380Failure.RadioAltimeter2, 'RA 2'],
+  [34, A380Failure.RadioAltimeter1, 'RA SYS A'],
+  [34, A380Failure.RadioAltimeter2, 'RA SYS B'],
+  [34, A380Failure.RadioAltimeter3, 'RA SYS C'],
   [34, A380Failure.Transponder1, 'XPDR 1'],
   [34, A380Failure.Transponder2, 'XPDR 2'],
 ];

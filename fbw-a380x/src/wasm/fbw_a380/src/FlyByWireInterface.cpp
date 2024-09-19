@@ -508,8 +508,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 
-  idLs1Active = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
-  idLs2Active = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idLs1Active = std::make_unique<LocalVariable>("A380X_EFIS_L_LS_BUTTON_IS_ON");
+  idLs2Active = std::make_unique<LocalVariable>("A380X_EFIS_R_LS_BUTTON_IS_ON");
   idIsisLsActive = std::make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
@@ -2811,7 +2811,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 8 || fwcFlightPhase == 9) {
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 || fwcFlightPhase == 11) {
     idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
     idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
   } else {
@@ -2861,18 +2861,7 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   // get sim data
   auto simData = simConnectInterface.getSimData();
 
-  // FD Button
-  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active) {
-    if (last_fd1_active != simData.ap_fd_1_active) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
-    }
-
-    if (last_fd2_active != simData.ap_fd_2_active) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
-    }
-  }
-  last_fd1_active = simData.ap_fd_1_active;
-  last_fd2_active = simData.ap_fd_2_active;
+  // Only one FD state, no sync needed
 
   // LS Button
   if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active) {
