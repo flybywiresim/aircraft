@@ -12,6 +12,8 @@ export enum RadioChannelType {
   VhfCom8_33_25,
   /** 50 kHz channels. */
   VhfNavaid50,
+  /** 50 kHz ILS channels. */
+  IlsNavaid50,
 }
 
 interface ChannelParameters {
@@ -53,6 +55,12 @@ export class RadioUtils {
       channels: [0, 0x500],
       min: 0x1080000,
       max: 0x1179500,
+    },
+    [RadioChannelType.IlsNavaid50]: {
+      channelMask: 0xfff,
+      channels: [0, 0x500],
+      min: 0x1080000,
+      max: 0x1119500,
     },
     [RadioChannelType.Hf1]: {
       channelMask: 0xff,
