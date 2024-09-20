@@ -43,6 +43,10 @@
   height: 100%;
 }
 
+.Invisible {
+  visibility: hidden;
+}
+
 text.Label {
   font-family: "Poppins-SemiBold";
   font-size: 230px;
@@ -185,4 +189,30 @@ text.Label.Visible {
   width: 100%;
   height: 100%;
   top: 0;
+}
+
+.NdData {
+  position: absolute;
+}
+
+.NdData.LeftSide {
+  top: 1750px;
+  left: 240px;
+}
+
+.NdData.RightSide {
+  top: 2900px;
+  left: 300px;
+}
+
+.NdData .TopRow {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.NdData .BottomRow {
+  position: absolute;
+  top: 550px;
+  left: 0;
 }

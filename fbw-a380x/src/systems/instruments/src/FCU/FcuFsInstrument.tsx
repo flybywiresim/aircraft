@@ -1,8 +1,19 @@
 //  Copyright (c) 2024 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { Clock, DebounceTimer, EventBus, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, MappedSubject, Subject, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
-import { FailuresConsumer, MsfsAutopilotAssitancePublisher } from '@flybywiresim/fbw-sdk';
+import {
+  Clock,
+  DebounceTimer,
+  EventBus,
+  FSComponent,
+  FsInstrument,
+  HEventPublisher,
+  InstrumentBackplane,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+} from '@microsoft/msfs-sdk';
+import { FailuresConsumer, MsfsAutopilotAssitancePublisher, MsfsRadioNavigationPublisher } from '@flybywiresim/fbw-sdk';
 import { FcuDisplay } from './Components/FcuDisplay';
 import { AltitudeManager } from './Managers/AltitudeManager';
 import { AutopilotManager } from './Managers/AutopilotManager';
@@ -10,6 +21,8 @@ import { BaroManager } from './Managers/BaroManager';
 import { HeadingManager } from './Managers/HeadingManager';
 import { SpeedManager } from './Managers/SpeedManager';
 import { VerticalSpeedManager } from './Managers/VerticalSpeedManager';
+import { FcuPublisher } from './Publishers/FcuPublisher';
+import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 import './style.scss';
 
@@ -33,36 +46,40 @@ export class FcuFsInstrument implements FsInstrument {
   private readonly initTimer = new DebounceTimer();
 
   /**
-  * Creates a new instance of FsInstrument.
-  * @param instrument This instrument's parent BaseInstrument.
-  * @param config The general avionics configuration object.
-  */
-  constructor(
-    public readonly instrument: BaseInstrument,
-  ) {
+   * Creates a new instance of FsInstrument.
+   * @param instrument This instrument's parent BaseInstrument.
+   * @param config The general avionics configuration object.
+   */
+  constructor(public readonly instrument: BaseInstrument) {
     // force enable animations
     document.documentElement.classList.add('animationsEnabled');
 
     this.renderComponents();
 
-    this.backplane.addInstrument("Clock", this.clock);
-    this.backplane.addPublisher("HEvent", this.hEventPublisher);
+    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addPublisher('HEvent', this.hEventPublisher);
 
-    this.backplane.addInstrument("AltitudeManager", new AltitudeManager(this.bus));
-    this.backplane.addInstrument("AutopilotManager", new AutopilotManager(this.bus));
-    this.backplane.addInstrument("BaroManager1", new BaroManager(this.bus, 1), true);
-    this.backplane.addInstrument("HeadingManager", new HeadingManager(this.bus));
-    this.backplane.addInstrument("SpeedManager", new SpeedManager(this.bus));
-    this.backplane.addInstrument("VerticalSpeedManager", new VerticalSpeedManager(this.bus));
+    this.backplane.addInstrument('AltitudeManager', new AltitudeManager(this.bus));
+    this.backplane.addInstrument('AutopilotManager', new AutopilotManager(this.bus));
+    this.backplane.addInstrument('BaroManager1', new BaroManager(this.bus, 1), true);
+    this.backplane.addInstrument('HeadingManager', new HeadingManager(this.bus));
+    this.backplane.addInstrument('SpeedManager', new SpeedManager(this.bus));
+    this.backplane.addInstrument('VerticalSpeedManager', new VerticalSpeedManager(this.bus));
 
-    this.backplane.addPublisher("MsfsAutopilotAssistancePublisher", new MsfsAutopilotAssitancePublisher(this.bus));
+    this.backplane.addPublisher('FcuPublisher', new FcuPublisher(this.bus));
+    this.backplane.addPublisher('FgBusPublisher', new FGDataPublisher(this.bus));
+    this.backplane.addPublisher('MsfsAutopilotAssistancePublisher', new MsfsAutopilotAssitancePublisher(this.bus));
+    this.backplane.addPublisher('MsfsRadioNavigationPublisher', new MsfsRadioNavigationPublisher(this.bus));
 
     this.doInit();
   }
 
   /** @inheritdoc */
   private renderComponents(): void {
-    FSComponent.render(<FcuDisplay bus={this.bus} isHidden={this.isOperating.map(SubscribableMapFunctions.not())} />, document.getElementById('FCU_CONTENT'));
+    FSComponent.render(
+      <FcuDisplay bus={this.bus} isHidden={this.isOperating.map(SubscribableMapFunctions.not())} />,
+      document.getElementById('FCU_CONTENT'),
+    );
 
     // Remove "instrument didn't load" text
     document.getElementById('FCU_CONTENT')?.querySelector(':scope > h1')?.remove();
@@ -115,15 +132,12 @@ export class FcuFsInstrument implements FsInstrument {
           SimVar.SetSimVarValue('K:TOGGLE_FLIGHT_DIRECTOR', 'number', 1);
         }
         if (!SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool')) {
-            SimVar.SetSimVarValue('K:TOGGLE_FLIGHT_DIRECTOR', 'number', 2);
+          SimVar.SetSimVarValue('K:TOGGLE_FLIGHT_DIRECTOR', 'number', 2);
         }
       }
     });
 
-    MappedSubject.create(
-      this.isPowered,
-      this.isFailed,
-    ).sub(([isPowered, isFailed]) => {
+    MappedSubject.create(this.isPowered, this.isFailed).sub(([isPowered, isFailed]) => {
       if (isPowered && !isFailed) {
         this.initTimer.schedule(() => this.isOperating.set(true), FcuFsInstrument.INIT_DURATION);
       } else {
