@@ -28,6 +28,11 @@ interface ChannelParameters {
 }
 
 export class RadioUtils {
+  /**
+   * @deprecated Channel types for easier use with legacy JS. For TS use {@link RadioChannelType} directly.
+   */
+  public static readonly RadioChannelType = RadioChannelType;
+
   /** The channel spacings in kHz for each frequency spacing. */
   public static readonly CHANNEL_TYPES: Record<RadioChannelType, ChannelParameters> = {
     [RadioChannelType.VhfCom8_33]: {
