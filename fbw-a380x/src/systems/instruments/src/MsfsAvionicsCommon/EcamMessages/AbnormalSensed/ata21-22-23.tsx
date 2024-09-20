@@ -64,6 +64,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
+        name: 'PACK 1 CTL 1+2 FAULT',
+        sensed: false,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
         name: 'PACK 1',
         sensed: true,
         labelNotCompleted: 'OFF',
@@ -74,6 +79,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 FAULT  ',
     sensed: true,
     items: [
+      {
+        name: 'PACK 2 CTL 1+2 FAULT',
+        sensed: false,
+        style: ChecklistLineStyle.Amber,
+      },
       {
         name: 'PACK 2',
         sensed: true,

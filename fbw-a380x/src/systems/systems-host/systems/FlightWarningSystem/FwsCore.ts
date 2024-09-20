@@ -233,6 +233,22 @@ export class FwsCore implements Instrument {
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
+  // A380X - REMOVE LABEL
+
+  public readonly fdac1Channel1Failure = Subject.create(false);
+
+  public readonly fdac1Channel2Failure = Subject.create(false);
+
+  public readonly fdac2Channel1Failure = Subject.create(false);
+
+  public readonly fdac2Channel2Failure = Subject.create(false);
+
+  public readonly pack1On = Subject.create(false);
+
+  public readonly pack2On = Subject.create(false);
+
+  // A32NX - REMOVE LABEL
+
   public readonly acsc1DiscreteWord1 = Arinc429Register.empty();
 
   public readonly acsc1DiscreteWord2 = Arinc429Register.empty();
@@ -310,10 +326,6 @@ export class FwsCore implements Instrument {
   public readonly anyDuctOvht = Subject.create(false);
 
   public readonly lavGalleyFanFault = Subject.create(false);
-
-  public readonly pack1On = Subject.create(false);
-
-  public readonly pack2On = Subject.create(false);
 
   public readonly packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
 
@@ -2221,6 +2233,18 @@ export class FwsCore implements Instrument {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
+    // A380X - REMOVE LABEL
+
+    this.fdac1Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_1_FAILURE', 'bool'));
+    this.fdac1Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_2_FAILURE', 'bool'));
+    this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
+    this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
+
+    this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
+    this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
+
+    // A32NX - REMOVE LABEL
+
     this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
     this.acsc1DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2');
     this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
@@ -2292,8 +2316,6 @@ export class FwsCore implements Instrument {
     const eng2BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool');
     const pack1Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
     const pack2Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
-    this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
-    this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
     this.cpc1DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
     this.cpc2DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');

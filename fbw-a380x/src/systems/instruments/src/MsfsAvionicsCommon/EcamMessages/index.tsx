@@ -248,7 +248,12 @@ export const EcamLimitations: { [n: string]: string } = {
 
 /** All possible INOP sys, with special formatting characters. */
 export const EcamInopSys: { [n: string]: string } = {
-  210300001: '\x1b<4mCAB PRESS AUTO CTL',
+  210300001: '\x1b<4mPACK 1 CTL 1',
+  210300002: '\x1b<4mPACK 1 CTL 2',
+  210300003: '\x1b<4mPACK 2 CTL 1',
+  210300004: '\x1b<4mPACK 2 CTL 2',
+  210300005: '\x1b<4mPACK 1',
+  210300006: '\x1b<4mPACK 2',
   220300001: '\x1b<4mA/THR',
   220300002: '\x1b<4mCAT 3',
   220300004: '\x1b<4mAFS CTL PNL',

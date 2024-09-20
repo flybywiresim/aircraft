@@ -270,6 +270,81 @@ export class FwsAbnormalSensed {
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
+    // 21 - AIR CONDITIONING AND PRESSURIZATION
+    211800001: {
+      // PACK 1 CTL 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac1Channel1Failure,
+      notActiveWhenFaults: ['211800009'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['210300001'],
+    },
+    211800002: {
+      // PACK 1 CTL 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac1Channel2Failure,
+      notActiveWhenFaults: ['211800009'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['210300002'],
+    },
+    211800003: {
+      // PACK 2 CTL 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac2Channel1Failure,
+      notActiveWhenFaults: ['211800010'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['210300003'],
+    },
+    211800004: {
+      // PACK 2 CTL 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac2Channel2Failure,
+      notActiveWhenFaults: ['211800010'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['210300004'],
+    },
+    211800009: {
+      // PACK 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
+        this.fws.fdac1Channel1Failure,
+        this.fws.fdac1Channel2Failure,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, !this.fws.pack1On.get()],
+      failure: 2,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300005'],
+    },
+    211800010: {
+      // PACK 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
+        this.fws.fdac2Channel1Failure,
+        this.fws.fdac2Channel2Failure,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, !this.fws.pack2On.get()],
+      failure: 2,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300006'],
+    },
     // 22 - AUTOFLIGHT
     221800001: {
       // FMC-A FAULT
