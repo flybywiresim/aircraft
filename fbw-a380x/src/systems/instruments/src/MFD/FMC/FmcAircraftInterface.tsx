@@ -473,6 +473,129 @@ export class FmcAircraftInterface {
     }, 200);
   }
 
+  /*
+        When the aircraft is in the holding, predictions assume that the leg is flown at holding speed
+        with a vertical speed equal to - 1000 ft/mn until reaching a restrictive altitude constraint, the
+        FCU altitude or the exit fix. If FCU or constraint altitude is reached first, the rest of the
+        pattern is assumed to be flown level at that altitude
+        */
+  getHoldingSpeed(speedConstraint = null, altitude = null) {
+    const fcuAltitude = SimVar.GetSimVarValue('AUTOPILOT ALTITUDE LOCK VAR:3', 'feet');
+    const alt = Math.max(fcuAltitude, altitude ? altitude : 0);
+
+    let kcas = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
+    if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Approach) {
+      kcas = this.getAppManagedSpeed();
+    }
+
+    if (speedConstraint != null && speedConstraint > 100) {
+      kcas = Math.min(kcas, speedConstraint);
+    }
+
+    // apply icao limits
+    if (alt < 14000) {
+      kcas = Math.min(230, kcas);
+    } else if (alt < 20000) {
+      kcas = Math.min(240, kcas);
+    } else if (alt < 34000) {
+      kcas = Math.min(265, kcas);
+    } else {
+      kcas = this.fmgc.guidanceController?.atmosphericConditions.computeCasFromMach(alt, 0.83);
+    }
+
+    // apply speed limit/alt
+    if (this.fmgc.getFlightPhase() <= FmgcFlightPhase.Cruise) {
+      const climbSpeedLimit = this.fmgc.getClimbSpeedLimit();
+      if (climbSpeedLimit.speed !== null && alt <= climbSpeedLimit.underAltitude) {
+        kcas = Math.min(climbSpeedLimit.speed, kcas);
+      }
+    } else if (this.fmgc.getFlightPhase() < FmgcFlightPhase.GoAround) {
+      const descentSpeedLimit = this.fmgc.getDescentSpeedLimit();
+      if (descentSpeedLimit.speed !== null && alt <= descentSpeedLimit.underAltitude) {
+        kcas = Math.min(descentSpeedLimit.speed, kcas);
+      }
+    }
+
+    kcas = Math.max(kcas, SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number'));
+
+    return Math.ceil(kcas);
+  }
+
+  updateHoldingSpeed() {
+    const plan = this.flightPlanService.active;
+    const currentLegIndex = plan.activeLegIndex;
+    const nextLegIndex = currentLegIndex + 1;
+    const currentLegConstraints = this.managedProfile.get(currentLegIndex) || {};
+    const nextLegConstraints = this.managedProfile.get(nextLegIndex) || {};
+
+    const currentLeg = plan.maybeElementAt(currentLegIndex);
+    const nextLeg = plan.maybeElementAt(nextLegIndex);
+
+    const casWord = ADIRS.getCalibratedAirspeed();
+    const cas = casWord && casWord.isNormalOperation() ? casWord.value : 0;
+
+    let enableHoldSpeedWarning = false;
+    let holdSpeedTarget = 0;
+    let holdDecelReached = this.holdDecelReached;
+    // FIXME big hack until VNAV can do this
+    if (currentLeg && currentLeg.isDiscontinuity === false && currentLeg.type === 'HM') {
+      holdSpeedTarget = this.getHoldingSpeed(currentLegConstraints.descentSpeed, currentLegConstraints.descentAltitude);
+      holdDecelReached = true;
+      enableHoldSpeedWarning = !Simplane.getAutoPilotAirspeedManaged();
+      // this.holdIndex = plan.activeLegIndex; Only needed in A32NX for ATSU it seems
+    } else if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.type === 'HM') {
+      const adirLat = ADIRS.getLatitude();
+      const adirLong = ADIRS.getLongitude();
+
+      if (adirLat && adirLong && adirLat.isNormalOperation() && adirLong.isNormalOperation()) {
+        holdSpeedTarget = this.getHoldingSpeed(nextLegConstraints.descentSpeed, nextLegConstraints.descentAltitude);
+
+        const dtg = this.fmgc.guidanceController?.activeLegDtg;
+        // decel range limits are [3, 20] NM
+        const decelDist = this.calculateDecelDist(cas, holdSpeedTarget);
+        if (dtg != null && dtg < decelDist) {
+          holdDecelReached = true;
+        }
+
+        const gsWord = ADIRS.getGroundSpeed();
+        const gs = gsWord && gsWord.isNormalOperation() ? gsWord.value : 0;
+        const warningDist = decelDist + gs / 120;
+        if (!Simplane.getAutoPilotAirspeedManaged() && dtg != null && dtg <= warningDist) {
+          enableHoldSpeedWarning = true;
+        }
+      }
+      // this.holdIndex = plan.activeLegIndex + 1; Only needed in A32NX for ATSU it seems
+    } else {
+      // this.holdIndex = 0; Only needed in A32NX for ATSU it seems
+      holdDecelReached = false;
+    }
+
+    if (holdDecelReached !== this.holdDecelReached) {
+      this.holdDecelReached = holdDecelReached;
+      SimVar.SetSimVarValue('L:A32NX_FM_HOLD_DECEL', 'bool', this.holdDecelReached);
+    }
+
+    if (holdSpeedTarget !== this.holdSpeedTarget) {
+      this.holdSpeedTarget = holdSpeedTarget;
+      SimVar.SetSimVarValue('L:A32NX_FM_HOLD_SPEED', 'number', this.holdSpeedTarget);
+    }
+
+    if (enableHoldSpeedWarning && cas - this.holdSpeedTarget > 5) {
+      if (!this.setHoldSpeedMessageActive) {
+        this.setHoldSpeedMessageActive = true;
+        this.fmc.addMessageToQueue(
+          NXSystemMessages.setHoldSpeed,
+          () => !this.setHoldSpeedMessageActive,
+          () => SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false),
+        );
+        SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', true);
+      }
+    } else if (this.setHoldSpeedMessageActive) {
+      SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
+      this.setHoldSpeedMessageActive = false;
+    }
+  }
+
   /** in knots or mach */
   private managedSpeedTarget: number | null = null;
 
@@ -496,9 +619,8 @@ export class FmcAircraftInterface {
     let vPfd: number = 0;
     let isMach = false;
 
-    /* FIXME hold port over and fix holds
-        this.updateHoldingSpeed();
-        this.clearCheckSpeedModeMessage(); */
+    this.updateHoldingSpeed();
+    this.fmc.clearCheckSpeedModeMessage();
 
     if (SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1) {
       const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');

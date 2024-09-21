@@ -141,8 +141,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       return;
     }
 
-    console.time('INIT:onNewData');
-
     this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(
       this.props.fmcService.master.flightPlanService.hasUplink &&
         this.props.fmcService.master.flightPlanService.uplink.legCount > 0,
@@ -184,8 +182,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.altnRte.set('NONE');
       }
     }
-
-    console.timeEnd('INIT:onNewData');
   }
 
   private async cpnyFplnRequest() {

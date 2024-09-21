@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 
-const LINE_SPACING = 32;
+const LINE_SPACING = 30;
 const LETTER_WIDTH = 16;
 
 type FormattedFwcTextProps = {

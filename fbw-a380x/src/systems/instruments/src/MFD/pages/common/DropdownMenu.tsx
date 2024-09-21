@@ -85,9 +85,11 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   }
 
   private onFieldSubmit(text: string) {
-    if (this.props.freeTextAllowed && this.props.onModified && !this.props.inactive?.get()) {
+    if (this.props.onModified && !this.props.inactive?.get()) {
       // selected index of -1 marks free text entry
-      this.props.onModified(-1, text);
+      if (this.props.freeTextAllowed) {
+        this.props.onModified(-1, text);
+      }
 
       this.dropdownMenuRef.instance.style.display = 'none';
       this.freeTextEntered = true;
