@@ -1,6 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { PilotSeat, PilotSeatEvents } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerValue,
   EventBus,
@@ -10,7 +11,7 @@ import {
   Subject,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { CameraEvents } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
+
 import { AudioManagementUnit, ComIndex } from './AudioManagementUnit';
 import { RadioNavSelectedNavaid, RmpAmuBusEvents } from './RmpAmuBusPublisher';
 
@@ -149,7 +150,7 @@ export class SimAudioManager implements Instrument {
     },
   };
 
-  private readonly sub = this.bus.getSubscriber<CameraEvents & RmpAmuBusEvents>();
+  private readonly sub = this.bus.getSubscriber<PilotSeatEvents & RmpAmuBusEvents>();
 
   private activeAmuIndex = 1;
 
@@ -183,7 +184,7 @@ export class SimAudioManager implements Instrument {
     }),
   );
 
-  private readonly isPilotSittingFoSide = ConsumerValue.create(this.sub.on('camera_pilot_in_fo_seat'), false);
+  private readonly pilotSeat = ConsumerValue.create(this.sub.on('pilot_seat'), PilotSeat.Left);
 
   constructor(
     private readonly bus: EventBus,
@@ -205,7 +206,7 @@ export class SimAudioManager implements Instrument {
     }
   }
   onUpdate(): void {
-    this.activeAmuIndex = !this.amu1.isHealthy.get() || this.isPilotSittingFoSide.get() ? 2 : 1;
+    this.activeAmuIndex = !this.amu1.isHealthy.get() || this.pilotSeat.get() === PilotSeat.Right ? 2 : 1;
     const activeAmu = this.activeAmuIndex === 2 ? this.amu2 : this.amu1;
     const isAmuHealthy = activeAmu.isHealthy.get();
 

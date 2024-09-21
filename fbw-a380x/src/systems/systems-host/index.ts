@@ -19,10 +19,9 @@ import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
-import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, PilotSeatPublisher, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
-import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
@@ -81,7 +80,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
-  private readonly cameraPublisher = new CameraPublisher(this.bus);
+  private readonly pilotSeatPublisher = new PilotSeatPublisher(this.bus);
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
@@ -109,7 +108,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('AtsuSystem', this.atsu);
     this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
-    this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
+    this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

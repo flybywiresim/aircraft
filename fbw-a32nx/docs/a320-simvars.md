@@ -25,6 +25,7 @@
   - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
   - [ROW / ROP / OANS (ATA 34)](#row--rop--oans-ata-34)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
+  - [Non-Systems Related](#non-systems-related)
 
 ## Uncategorized
 
@@ -4100,3 +4101,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - -1.0
         - 1.0
+
+## Non-Systems Related
+
+- `L:FBW_PILOT_SEAT`
+  - Enum
+  - Which seat the user/pilot occupies in the flight deck.
+  - | Value | Description |
+    |-------|-------------|
+    | 0     | Left Seat   |
+    | 1     | Right Seat  |
