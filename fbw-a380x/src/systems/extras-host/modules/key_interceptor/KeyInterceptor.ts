@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
+import { EventBus, KeyEvents, KeyEventManager, KeyEventData } from '@microsoft/msfs-sdk';
 import { NotificationManager, NotificationType, PopUpDialog } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
@@ -11,6 +11,11 @@ import { AircraftPresetsList } from '../common/AircraftPresetsList';
  * Additional key events can be added in the registerIntercepts() method.
  */
 export class KeyInterceptor {
+  private readonly keys: Record<string, { handler: (data: KeyEventData) => void; passThrough?: true; log?: true }> = {
+    ENGINE_AUTO_START: { handler: this.engineAutoStartAction.bind(this), log: true },
+    ENGINE_AUTO_SHUTDOWN: { handler: this.engineAutoStopAction.bind(this), log: true },
+  };
+
   private eventBus: EventBus;
 
   private keyInterceptManager: KeyEventManager;
@@ -34,24 +39,25 @@ export class KeyInterceptor {
   }
 
   private registerIntercepts() {
-    this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
-    this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
+    for (const [key, config] of Object.entries(this.keys)) {
+      this.keyInterceptManager.interceptKey(key, !!config.passThrough);
+    }
 
     const subscriber = this.eventBus.getSubscriber<KeyEvents>();
-    subscriber.on('key_intercept').handle((keyData) => {
-      switch (keyData.key) {
-        case 'ENGINE_AUTO_START':
-          console.log('KeyInterceptor: ENGINE_AUTO_START');
-          this.engineAutoStartAction();
-          break;
-        case 'ENGINE_AUTO_SHUTDOWN':
-          console.log('KeyInterceptor: ENGINE_AUTO_SHUTDOWN');
-          this.engineAutoStopAction();
-          break;
-        default:
-          break;
-      }
-    });
+    subscriber.on('key_intercept').handle(this.onKeyIntercepted.bind(this));
+  }
+
+  private onKeyIntercepted(data: KeyEventData): void {
+    const config = this.keys[data.key];
+    if (!config) {
+      return;
+    }
+
+    if (config.log) {
+      console.log(`KeyInterceptor: ${data.key}`);
+    }
+
+    config.handler(data);
   }
 
   private engineAutoStartAction() {
