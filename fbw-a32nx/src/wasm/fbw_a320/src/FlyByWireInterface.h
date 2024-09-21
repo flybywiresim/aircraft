@@ -544,6 +544,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
 
+  std::unique_ptr<LocalVariable> idAttHdgSwtgKnob;
+  std::unique_ptr<LocalVariable> idAirDataSwtgKnob;
+
   // FMGC legacy/shim Lvars
   std::unique_ptr<LocalVariable> idAutopilotShimNosewheelDemand;
   std::unique_ptr<LocalVariable> idAutopilotShimFmaLateralMode;
@@ -586,6 +589,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord7[2];
 
   std::unique_ptr<LocalVariable> idStickLockActive;
+
+  std::unique_ptr<LocalVariable> idApInstinctiveDisconnect;
+  std::unique_ptr<LocalVariable> idAthrInstinctiveDisconnect;
 
   std::unique_ptr<LocalVariable> idLightsTest;
 
