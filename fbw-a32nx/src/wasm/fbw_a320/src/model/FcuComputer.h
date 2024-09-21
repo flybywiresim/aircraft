@@ -66,6 +66,7 @@ class FcuComputer final
     boolean_T prevTrkFpaActive_not_empty_c;
     boolean_T pValue_not_empty_m;
     boolean_T Runtime_MODE;
+    rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kq;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kj;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_hd;
     rtDW_MATLABFunction_FcuComputer_k_T sf_MATLABFunction_ho3;
@@ -186,6 +187,7 @@ class FcuComputer final
     real_T BitfromLabel3_bit_o;
     real_T BitfromLabel2_bit_o;
     real_T BitfromLabel5_bit_n;
+    real_T BitfromLabel3_bit_ph;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode1_isRisingEdge;
     real_T MTrigNode2_isRisingEdge;
@@ -312,6 +314,7 @@ class FcuComputer final
     boolean_T PulseNode3_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_d;
     boolean_T PulseNode_isRisingEdge_i;
+    boolean_T PulseNode1_isRisingEdge_ds;
     boolean_T PulseNode_isRisingEdge_g;
     boolean_T PulseNode1_isRisingEdge_i;
     boolean_T PulseNode2_isRisingEdge_m;

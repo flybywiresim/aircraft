@@ -2902,7 +2902,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_FMGC_{number}_DISCRETE_WORD_4
     - Arinc429<Discrete>
-    - | Bit |            Description            |
+    - Bits marked with ? are guessed/unknown
+      | Bit |            Description            |
       |:---:|:---------------------------------:|
       | 11  | AP Instinctive Disc               |
       | 12  | AP Engaged                        |
@@ -2919,6 +2920,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 24  | LAND 3 FAIL PASSIVE Capacity      |
       | 25  | LAND 3 FAIL OP Capacity           |
       | 26  | RWY Heading memorized             |
+      | 27  | ? FD Auto Disengage Command       |
       | 28  | AP/FD Mode reversion              |
       | 29  | V/S Target not held               |
 
@@ -3028,7 +3030,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_FMGC_{number}_DISCRETE_WORD_7
     - Arinc429<Discrete>
-    - Bits marked with ? are not guessed/unknown
+    - Bits marked with ? are guessed/unknown
       | Bit |            Description            |
       |:---:|:---------------------------------:|
       | 11  | AP/FD TCAS mode installed         |
