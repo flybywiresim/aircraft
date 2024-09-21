@@ -1492,7 +1492,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       notActiveWhenFaults: [],
-      failure: 2,
+      failure: -1,
       sysPage: -1,
     },
     // 32 Landing Gear & Brakes
@@ -1532,6 +1532,26 @@ export class FwsAbnormalSensed {
       notActiveWhenFaults: [],
       failure: 2,
       sysPage: 11,
+    },
+    320800022: {
+      // BRAKES PARK BRK ON
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.lgParkBrkOn,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 2,
+      sysPage: -1,
+    },
+    320800030: {
+      // CONFIG PARK BRK ON
+      flightPhaseInhib: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      simVarIsActive: this.fws.configParkBrakeOn,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: -1,
     },
     // 34 NAVIGATION
     340800001: {
