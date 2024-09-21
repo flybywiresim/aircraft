@@ -1093,6 +1093,10 @@ export class FwsCore implements Instrument {
 
   public readonly N1Eng2 = Subject.create(0);
 
+  public readonly N1Eng3 = Subject.create(0);
+
+  public readonly N1Eng4 = Subject.create(0);
+
   public readonly N2Eng1 = Subject.create(0);
 
   public readonly N2Eng2 = Subject.create(0);
@@ -1195,6 +1199,10 @@ export class FwsCore implements Instrument {
   public readonly eng1Or2TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
 
   public readonly eng1Or2TakeoffPower = Subject.create(false);
+
+  public readonly eng3Or4TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
+
+  public readonly eng3Or4TakeoffPower = Subject.create(false);
 
   /* ICE */
 
@@ -1701,6 +1709,8 @@ export class FwsCore implements Instrument {
 
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
+    this.N1Eng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:3', 'number'));
+    this.N1Eng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:4', 'number'));
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
@@ -2155,15 +2165,26 @@ export class FwsCore implements Instrument {
     this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
     // FIXME ECU doesn't have the necessary output words so we go purely on TLA
     const flexThrustLimit = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number') === 3;
-    const toPower =
+    const engOneOrTwoTakeoffPower =
       this.throttle1Position.get() >= 45 ||
       (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
       this.throttle2Position.get() >= 45 ||
       (this.throttle2Position.get() >= 35 && flexThrustLimit);
-    this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
+
+    const engThreeOrFourTakeoffPower =
+      this.throttle1Position.get() >= 45 ||
+      (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
+      this.throttle2Position.get() >= 45 ||
+      (this.throttle2Position.get() >= 35 && flexThrustLimit);
+
+    this.eng1Or2TakeoffPowerConfirm.write(engOneOrTwoTakeoffPower, deltaTime);
+    this.eng3Or4TakeoffPowerConfirm.write(engThreeOrFourTakeoffPower, deltaTime);
     const raAbove1500 =
       this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500 || this.radioHeight3.valueOr(0) > 1500;
-    this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
+    this.eng1Or2TakeoffPower.set(engOneOrTwoTakeoffPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
+    this.eng3Or4TakeoffPower.set(
+      engThreeOrFourTakeoffPower || (this.eng3Or4RunningAndPhaseConfirmationNode.read() && !raAbove1500),
+    );
 
     this.engDualFault.set(
       !this.aircraftOnGround.get() &&
@@ -2877,6 +2898,7 @@ export class FwsCore implements Instrument {
         this.flightPhase89.get() &&
         !this.phase104s5Trigger.read() &&
         !this.eng1Or2TakeoffPower.get() &&
+        !this.eng3Or4TakeoffPower.get() &&
         !allGroundSpoilersInop &&
         !(this.groundSpoiler5sDelayed.read() || this.speedBrake5sDelayed.read()) &&
         (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
@@ -2905,8 +2927,8 @@ export class FwsCore implements Instrument {
     const below750Condition =
       this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.get() &&
       !this.eng1Or2TakeoffPower.get() &&
-      below750Ra &&
-      gearNotDownlocked;
+      !this.eng3Or4TakeoffPower.get();
+    below750Ra && gearNotDownlocked;
     const allRaInvalid =
       this.radioHeight1.isFailureWarning() &&
       this.radioHeight2.isFailureWarning() &&
@@ -2926,10 +2948,25 @@ export class FwsCore implements Instrument {
     this.lgNotDownNoCancel.set((below750Condition || flapsApprCondition) && !lgNotDownResetPulse);
     const n1Eng1 = this.N1Eng1.get();
     const n1Eng2 = this.N1Eng2.get();
-    const apprN1 =
+    const n1Eng3 = this.N1Eng3.get();
+    const n1Eng4 = this.N1Eng4.get();
+    const apprN1Eng1Or2 =
       (n1Eng1 < 75 && n1Eng2 < 75) ||
       (n1Eng1 < 97 && n1Eng2 < 97 && !this.engine1Master.get() && !this.engine2Master.get());
-    this.lgNotDown.set(gearNotDownlocked && !altInhibit && !this.eng1Or2TakeoffPower.get() && apprN1 && below750Ra);
+
+    const apprN1Eng3Or4 =
+      (n1Eng3 < 75 && n1Eng4 < 75) ||
+      (n1Eng3 < 97 && n1Eng4 < 97 && !this.engine3Master.get() && !this.engine4Master.get());
+
+    this.lgNotDown.set(
+      gearNotDownlocked &&
+        !altInhibit &&
+        !this.eng1Or2TakeoffPower.get() &&
+        !this.eng3Or4TakeoffPower.get() &&
+        apprN1Eng1Or2 &&
+        apprN1Eng3Or4 &&
+        below750Ra,
+    );
     // goes to discrete out (RMP02B) and out word 126-11/25
     const redArrow =
       !((flightPhase8 && !allRaInvalid) || flightPhase4567) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
