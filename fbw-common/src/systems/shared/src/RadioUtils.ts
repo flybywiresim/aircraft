@@ -181,6 +181,15 @@ export class RadioUtils {
   }
 
   /**
+   * Converts MSFS BCD16 to BCD32.
+   * @param bcd16 The frequency in BCD16 format.
+   * @returns The frequency in BCD32 format.
+   */
+  public static bcd16ToBcd32(bcd16: number): number {
+    return bcd16 << 8;
+  }
+
+  /**
    * Unpacks a frequency from MSFS BCD32 format into hertz.
    * Primarily useful for debugging (use BCD encoding for systems code).
    * @param bcd32 The freqeuncy in BCD32 format.
