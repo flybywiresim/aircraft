@@ -186,7 +186,7 @@ export class RadioUtils {
    * @returns The frequency in BCD32 format.
    */
   public static bcd16ToBcd32(bcd16: number): number {
-    return bcd16 << 8;
+    return 0x100_000_0 | (bcd16 << 8);
   }
 
   /**
@@ -213,7 +213,7 @@ export class RadioUtils {
    * @returns Frequency in MSFS BCD16
    */
   public static unpackBcd16(frequency: number): number {
-    return this.unpackBcd32(0x100_000_0 | (frequency << 8));
+    return this.unpackBcd32(RadioUtils.bcd16ToBcd32(frequency));
   }
 
   /**
