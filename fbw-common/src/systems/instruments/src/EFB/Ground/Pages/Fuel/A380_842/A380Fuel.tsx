@@ -120,10 +120,10 @@ export const A380Fuel: React.FC<FuelProps> = ({
   massUnitForDisplay,
   isOnGround,
 }) => {
-  const [TOTAL_FUEL_GALLONS] = useState(85471.7); // 323545.6 litres
-  const [FUEL_GALLONS_TO_KG] = useState(3.039075693483925); // Check: MSFS fuel density is currently always fixed, if this changes this will need to read from the var.
-  const [TOTAL_MAX_FUEL_KG] = useState(TOTAL_FUEL_GALLONS * FUEL_GALLONS_TO_KG);
-  const [TOTAL_UI_MAX_FUEL_KG] = useState(220000.0); // Temporarily while we are using WV003, so the slider will not set a value that is far above current MTOW. OFP and manual entry not affected.
+  const TOTAL_FUEL_GALLONS = 85471.7; // 323545.6 litres
+  const FUEL_GALLONS_TO_KG = 3.039075693483925; // Check: MSFS fuel density is currently always fixed, if this changes this will need to read from the var.
+  const TOTAL_MAX_FUEL_KG = TOTAL_FUEL_GALLONS * FUEL_GALLONS_TO_KG;
+  const TOTAL_UI_MAX_FUEL_KG = 220000.0; // Temporarily while we are using WV003, so the slider will not set a value that is far above current MTOW. OFP and manual entry not affected.
 
   const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
   const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
