@@ -233,27 +233,27 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name : 'IF G SYS PRESSURE FLUCTUATES',
-        sensed : false,
+        name: 'IF G SYS PRESSURE FLUCTUATES',
+        sensed: false,
       },
       {
         name: 'G ENG 1 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
-        level : 1,
+        level: 1,
       },
       {
         name: 'G ENG 2 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
-        level : 1
+        level: 1,
       },
       // if on ground and all engines off
       {
         name: 'G ELEC PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
-        level : 1,
+        level: 1,
       },
     ],
   },
@@ -262,28 +262,27 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name : 'IF Y SYS PRESSURE FLUCTUATES',
-        sensed : false,
+        name: 'IF Y SYS PRESSURE FLUCTUATES',
+        sensed: false,
       },
       {
         name: 'Y ENG 3 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
-        level : 1,
-        
+        level: 1,
       },
       {
         name: 'Y ENG 4 PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
-        level : 1
+        level: 1,
       },
       // if on ground and all engines off
       {
         name: 'Y ELEC PMP A AND B',
         sensed: true,
         labelNotCompleted: 'OFF',
-        level : 1,
+        level: 1,
       },
     ],
   },
