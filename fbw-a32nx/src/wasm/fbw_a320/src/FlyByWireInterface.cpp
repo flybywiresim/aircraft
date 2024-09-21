@@ -699,6 +699,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
   idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
 
+  idAttHdgSwtgKnob = std::make_unique<LocalVariable>("A32NX_ATT_HDG_SWITCHING_KNOB");
+  idAirDataSwtgKnob = std::make_unique<LocalVariable>("A32NX_AIR_DATA_SWITCHING_KNOB");
+
   // AP Shim LVars
   idAutopilotShimNosewheelDemand = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
   idAutopilotShimFmaLateralMode = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -747,6 +750,9 @@ void FlyByWireInterface::setupLocalVariables() {
   }
 
   idStickLockActive = std::make_unique<LocalVariable>("A32NX_STICK_LOCK_ACTIVE");
+
+  idApInstinctiveDisconnect = std::make_unique<LocalVariable>("A32NX_AP_INSTINCTIVE_DISCONNECT");
+  idAthrInstinctiveDisconnect = std::make_unique<LocalVariable>("A32NX_ATHR_INSTINCTIVE_DISCONNECT");
 
   // FCU Lvars
   idLightsTest = std::make_unique<LocalVariable>("A32NX_OVHD_INTLT_ANN");
@@ -1726,16 +1732,18 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   fmgcs[fmgcIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
+  bool athr_instinctive_disc = simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
+  bool ap_instinctive_disc = simInputAutopilot.AP_disconnect || idCaptPriorityButtonPressed->get() || idFoPriorityButtonPressed->get();
+
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.is_unit_1 = fmgcIndex == 0;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.athr_opp_engaged = fmgcsDiscreteOutputs[oppFmgcIndex].athr_own_engaged;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.fcu_athr_button = simConnectInterface.getSimInputThrottles().ATHR_push;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.athr_instinctive_disc =
-      simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.athr_instinctive_disc = athr_instinctive_disc;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.fd_opp_engaged = fmgcsDiscreteOutputs[oppFmgcIndex].fd_own_engaged;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.ap_opp_engaged = fmgcsDiscreteOutputs[oppFmgcIndex].ap_own_engaged;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.fcu_ap_button =
       fmgcIndex == 0 ? simInputAutopilot.AP_1_push : simInputAutopilot.AP_2_push;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.ap_instinctive_disc = simInputAutopilot.AP_disconnect || wasInSlew;
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.ap_instinctive_disc = ap_instinctive_disc || wasInSlew;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.powersupply_split =
       !(idElecBtc1Closed->get() || idElecBtc2Closed->get() || idElecDcBatToDc2ContactorClosed->get());
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.fcu_opp_healthy = fcuHealthy;
@@ -1751,8 +1759,8 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.fwc_own_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.pfd_opp_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.pfd_own_valid = true;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.adc_3_switch = false;
-  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.att_3_switch = false;
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.adc_3_switch = idAirDataSwtgKnob->get() == (fmgcIndex == 0 ? 0 : 2);
+  fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.att_3_switch = idAttHdgSwtgKnob->get() == (fmgcIndex == 0 ? 0 : 2);
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.left_wheel_spd_abv_70_kts = simData.wheelRpmLeft * 0.118921 > 70;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.right_wheel_spd_abv_70_kts = simData.wheelRpmRight * 0.118921 > 70;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.bscu_opp_valid = true;
@@ -1869,9 +1877,12 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcABusDiscreteWord6[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_6));
   idFmgcABusDiscreteWord7[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_7));
 
-  // Set the stick lock var (for sounds), after both FMGCs have updated
+  // Set the stick lock var (for sounds) and inst. disc. discretes, after both FMGCs have updated
   if (fmgcIndex == 1) {
     idStickLockActive->set(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged);
+
+    idApInstinctiveDisconnect->set(ap_instinctive_disc);
+    idAthrInstinctiveDisconnect->set(athr_instinctive_disc);
   }
 
   return true;
