@@ -86,7 +86,12 @@ export function coordinateToString(arg0: number | Coordinates, arg1: number | bo
     return `${dmsLat.deg}W${dmsLon.deg}`;
   }
 
-  const lat = `${dmsLat.deg}°${dmsLat.min}.${dmsLat.sec}${dmsLat.dir}`;
-  const lon = `${dmsLon.deg}°${dmsLon.min}.${dmsLon.sec}${dmsLon.dir}`;
-  return `${lat}/${lon}`;
+  const latDegStr = dmsLat.deg.toString().padStart(2, '0');
+  const lonDegStr = dmsLon.deg.toString().padStart(3, '0');
+  const latMinStr = dmsLat.min.toString().padStart(2, '0');
+  const lonMinStr = dmsLon.min.toString().padStart(2, '0');
+
+  const latStr = `${latDegStr}°${latMinStr}.${dmsLat.sec}${dmsLat.dir}`;
+  const lonStr = `${lonDegStr}°${lonMinStr}.${dmsLon.sec}${dmsLon.dir}`;
+  return `${latStr}/${lonStr}`;
 }
