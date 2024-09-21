@@ -16,8 +16,6 @@ export class KeyInterceptor {
     ENGINE_AUTO_SHUTDOWN: { handler: this.engineAutoStopAction.bind(this), log: true },
   };
 
-  private eventBus: EventBus;
-
   private keyInterceptManager: KeyEventManager;
 
   private dialogVisible = false;
@@ -26,8 +24,7 @@ export class KeyInterceptor {
     private readonly bus: EventBus,
     private readonly notification: NotificationManager,
   ) {
-    this.eventBus = bus;
-    KeyEventManager.getManager(this.eventBus).then((manager) => {
+    KeyEventManager.getManager(this.bus).then((manager) => {
       this.keyInterceptManager = manager;
       this.registerIntercepts();
     });
@@ -43,7 +40,7 @@ export class KeyInterceptor {
       this.keyInterceptManager.interceptKey(key, !!config.passThrough);
     }
 
-    const subscriber = this.eventBus.getSubscriber<KeyEvents>();
+    const subscriber = this.bus.getSubscriber<KeyEvents>();
     subscriber.on('key_intercept').handle(this.onKeyIntercepted.bind(this));
   }
 
