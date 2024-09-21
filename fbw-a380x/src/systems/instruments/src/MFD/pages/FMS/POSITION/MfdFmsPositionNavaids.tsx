@@ -178,7 +178,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
             false,
           ),
         );
-      } else if (selectedNavaids[0].facility !== null) {
+      } else if (selectedNavaids[1].facility !== null) {
         this.radioNavMode.set('VOR/DME');
         this.radioNavPosition.set(
           coordinateToString(
