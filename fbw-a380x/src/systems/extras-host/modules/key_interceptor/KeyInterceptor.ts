@@ -118,7 +118,7 @@ export class KeyInterceptor {
       return;
     }
 
-    if (true || config.log) {
+    if (config.log) {
       console.log(`KeyInterceptor: ${data.key}`);
     }
 
