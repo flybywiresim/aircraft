@@ -404,6 +404,18 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
+  private missedThrRedAlt = Subject.create<number>(AirlineModifiableInformation.EK.thrRedAlt);
+
+  private missedThrRedAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private missedAccelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+
+  private missedAccelRedAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private missedEngineOutAccelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+
+  private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
+
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
 
@@ -542,6 +554,30 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     if (fm.approachFlapConfig) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
+    }
+
+    if (pd.missedThrustReductionAltitudeIsPilotEntered) {
+      this.missedThrRedAltIsPilotEntered.set(pd.missedThrustReductionAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedAccelerationAltitudeIsPilotEntered) {
+      this.missedAccelRedAltIsPilotEntered.set(pd.missedAccelerationAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedEngineOutAccelerationAltitudeIsPilotEntered) {
+      this.missedEngineOutAccelAltIsPilotEntered.set(pd.missedEngineOutAccelerationAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedEngineOutAccelerationAltitude) {
+      this.missedEngineOutAccelAlt.set(pd.missedEngineOutAccelerationAltitude);
+    }
+
+    if (pd.missedThrustReductionAltitude) {
+      this.missedThrRedAlt.set(pd.missedThrustReductionAltitude);
+    }
+
+    if (pd.missedAccelerationAltitude) {
+      this.missedAccelAlt.set(pd.missedAccelerationAltitude);
     }
 
     if (pd.transitionLevelIsFromDatabase) {
@@ -2635,11 +2671,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotThrustReductionAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedThrustReductionAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.thrRedAltIsPilotEntered}
-                        value={this.thrRedAlt}
+                        enteredByPilot={this.missedThrRedAltIsPilotEntered}
+                        value={this.missedThrRedAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2656,11 +2692,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotAccelerationAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedAccelerationAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.accelRedAltIsPilotEntered}
-                        value={this.accelAlt}
+                        enteredByPilot={this.missedAccelRedAltIsPilotEntered}
+                        value={this.missedAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2675,11 +2711,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotEngineOutAccelerationAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.eoAccelAltIsPilotEntered}
-                        value={this.eoAccelAlt}
+                        enteredByPilot={this.missedEngineOutAccelAltIsPilotEntered}
+                        value={this.missedEngineOutAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
