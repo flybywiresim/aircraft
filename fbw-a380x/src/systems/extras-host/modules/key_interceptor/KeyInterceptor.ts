@@ -1,8 +1,15 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, KeyEvents, KeyEventManager, KeyEventData } from '@microsoft/msfs-sdk';
-import { NotificationManager, NotificationType, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { EventBus, KeyEvents, KeyEventManager, KeyEventData, ComRadioIndex } from '@microsoft/msfs-sdk';
+import {
+  FrequencyMode,
+  InterRmpBusEvents,
+  NotificationManager,
+  NotificationType,
+  PopUpDialog,
+  RadioUtils,
+} from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
 /**
@@ -11,10 +18,71 @@ import { AircraftPresetsList } from '../common/AircraftPresetsList';
  * Additional key events can be added in the registerIntercepts() method.
  */
 export class KeyInterceptor {
-  private readonly keys: Record<string, { handler: (data: KeyEventData) => void; passThrough?: true; log?: true }> = {
+  private readonly keys: Record<string, { handler?: (data: KeyEventData) => void; passThrough?: true; log?: true }> = {
     ENGINE_AUTO_START: { handler: this.engineAutoStartAction.bind(this), log: true },
     ENGINE_AUTO_SHUTDOWN: { handler: this.engineAutoStopAction.bind(this), log: true },
+    // --- RADIO NAVIGATION COM events ---
+    COM_RADIO: {}, // INOP
+    COM_RADIO_FRACT_DEC: { handler: this.onComFractIncrement.bind(this, 1, -1, false) },
+    COM2_RADIO_FRACT_DEC: { handler: this.onComFractIncrement.bind(this, 2, -1, false) },
+    COM3_RADIO_FRACT_DEC: { handler: this.onComFractIncrement.bind(this, 3, -1, false) },
+    COM_RADIO_FRACT_DEC_CARRY: { handler: this.onComFractIncrement.bind(this, 1, -1, true) },
+    COM2_RADIO_FRACT_DEC_CARRY: { handler: this.onComFractIncrement.bind(this, 2, -1, true) },
+    COM3_RADIO_FRACT_DEC_CARRY: { handler: this.onComFractIncrement.bind(this, 3, -1, true) },
+    COM_RADIO_FRACT_INC: { handler: this.onComFractIncrement.bind(this, 1, 1, false) },
+    COM2_RADIO_FRACT_INC: { handler: this.onComFractIncrement.bind(this, 2, 1, false) },
+    COM3_RADIO_FRACT_INC: { handler: this.onComFractIncrement.bind(this, 3, 1, false) },
+    COM_RADIO_FRACT_INC_CARRY: { handler: this.onComFractIncrement.bind(this, 1, 1, true) },
+    COM2_RADIO_FRACT_INC_CARRY: { handler: this.onComFractIncrement.bind(this, 2, 1, true) },
+    COM3_RADIO_FRACT_INC_CARRY: { handler: this.onComFractIncrement.bind(this, 3, 1, true) },
+    COM_RADIO_SET: { handler: this.onComActiveSet.bind(this, 1, false) },
+    COM2_RADIO_SET: { handler: this.onComActiveSet.bind(this, 2, false) },
+    COM3_RADIO_SET: { handler: this.onComActiveSet.bind(this, 3, false) },
+    COM_RADIO_SET_HZ: { handler: this.onComActiveSet.bind(this, 1, true) },
+    COM2_RADIO_SET_HZ: { handler: this.onComActiveSet.bind(this, 2, true) },
+    COM3_RADIO_SET_HZ: { handler: this.onComActiveSet.bind(this, 3, true) },
+    COM_STBY_RADIO_SET: { handler: this.onComStandbySet.bind(this, 1, false) },
+    COM2_STBY_RADIO_SET: { handler: this.onComStandbySet.bind(this, 2, false) },
+    COM3_STBY_RADIO_SET: { handler: this.onComStandbySet.bind(this, 3, false) },
+    COM_STBY_RADIO_SET_HZ: { handler: this.onComStandbySet.bind(this, 1, true) },
+    COM2_STBY_RADIO_SET_HZ: { handler: this.onComStandbySet.bind(this, 2, true) },
+    COM3_STBY_RADIO_SET_HZ: { handler: this.onComStandbySet.bind(this, 3, true) },
+    COM_STBY_RADIO_SWAP: { handler: this.onComSwap.bind(this, 1) },
+    COM_RADIO_WHOLE_DEC: { handler: this.onComWholeIncrement.bind(this, 1, -1) },
+    COM2_RADIO_WHOLE_DEC: { handler: this.onComWholeIncrement.bind(this, 2, -1) },
+    COM3_RADIO_WHOLE_DEC: { handler: this.onComWholeIncrement.bind(this, 3, -1) },
+    COM_RADIO_WHOLE_INC: { handler: this.onComWholeIncrement.bind(this, 1, 1) },
+    COM2_RADIO_WHOLE_INC: { handler: this.onComWholeIncrement.bind(this, 2, 1) },
+    COM3_RADIO_WHOLE_INC: { handler: this.onComWholeIncrement.bind(this, 3, 1) },
+    COM_RADIO_SWAP: { handler: this.onComSwap.bind(this, 1) },
+    COM1_RADIO_SWAP: { handler: this.onComSwap.bind(this, 1) },
+    COM2_RADIO_SWAP: { handler: this.onComSwap.bind(this, 2) },
+    COM3_RADIO_SWAP: { handler: this.onComSwap.bind(this, 3) },
+    COM1_RECEIVE_SELECT: { handler: this.onComRxSelect.bind(this, 1) },
+    COM2_RECEIVE_SELECT: { handler: this.onComRxSelect.bind(this, 2) },
+    COM3_RECEIVE_SELECT: { handler: this.onComRxSelect.bind(this, 3) },
+    COM_1_SPACING_MODE_SWITCH: {}, // INOP
+    COM_2_SPACING_MODE_SWITCH: {}, // INOP
+    COM_3_SPACING_MODE_SWITCH: {}, // INOP
+    COM1_TRANSMIT_SELECT: { handler: this.onComTxSelect.bind(this, { key: 'PILOT_TRANSMITTER_SET', data0: 0 }) }, // deprecated by MS
+    COM2_TRANSMIT_SELECT: { handler: this.onComTxSelect.bind(this, { key: 'PILOT_TRANSMITTER_SET', data0: 1 }) }, // deprecated by MS
+    COM1_VOLUME_SET: { handler: this.onComVolumeSet.bind(this, 1) },
+    COM2_VOLUME_SET: { handler: this.onComVolumeSet.bind(this, 2) },
+    COM3_VOLUME_SET: { handler: this.onComVolumeSet.bind(this, 3) },
+    COM1_VOLUME_INC: { handler: this.onComVolumeInc.bind(this, 1, 1) },
+    COM2_VOLUME_INC: { handler: this.onComVolumeInc.bind(this, 2, 1) },
+    COM3_VOLUME_INC: { handler: this.onComVolumeInc.bind(this, 3, 1) },
+    COM1_VOLUME_DEC: { handler: this.onComVolumeInc.bind(this, 1, -1) },
+    COM2_VOLUME_DEC: { handler: this.onComVolumeInc.bind(this, 2, -1) },
+    COM3_VOLUME_DEC: { handler: this.onComVolumeInc.bind(this, 3, -1) },
+    COM_RECEIVE_ALL_SET: { handler: this.onComReceiveAll.bind(this, false) },
+    COM_RECEIVE_ALL_TOGGLE: { handler: this.onComReceiveAll.bind(this, true) },
+    // --- RADIO NAVIGATION MISC events ---
+    COPILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
+    PILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
   };
+
+  private publisher = this.bus.getPublisher<InterRmpBusEvents>();
 
   private keyInterceptManager: KeyEventManager;
 
@@ -50,11 +118,11 @@ export class KeyInterceptor {
       return;
     }
 
-    if (config.log) {
+    if (true || config.log) {
       console.log(`KeyInterceptor: ${data.key}`);
     }
 
-    config.handler(data);
+    config.handler?.(data);
   }
 
   private engineAutoStartAction() {
@@ -126,5 +194,53 @@ export class KeyInterceptor {
     console.log(`Setting aircraft preset to ${AircraftPresetsList.getPresetName(presetID)}`);
     SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', presetID);
     this.dialogVisible = false;
+  }
+
+  private onComFractIncrement(index: ComRadioIndex, sign: 1 | -1, carry: boolean): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComWholeIncrement(index: ComRadioIndex, sign: 1 | -1): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComActiveSet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
+    const frequencyEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_active_${index}`;
+    const modeEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_active_mode_${index}`;
+    const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
+    this.publisher.pub(frequencyEvent, frequency, true);
+    this.publisher.pub(modeEvent, FrequencyMode.Frequency, true);
+  }
+
+  private onComStandbySet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
+    const frequencyEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_standby_${index}`;
+    const modeEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_standby_mode_${index}`;
+    const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
+    this.publisher.pub(frequencyEvent, frequency, true);
+    this.publisher.pub(modeEvent, FrequencyMode.Frequency, true);
+  }
+
+  private onComSwap(index: ComRadioIndex): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComRxSelect(index: ComRadioIndex, data: KeyEventData): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComTxSelect(data: KeyEventData): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComVolumeSet(index: ComRadioIndex, data: KeyEventData): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComVolumeInc(index: ComRadioIndex, sign: 1 | -1, data: KeyEventData): void {
+    // FIXME implement, inop for now
+  }
+
+  private onComReceiveAll(toggle: boolean): void {
+    // FIXME implement, inop for now
   }
 }
