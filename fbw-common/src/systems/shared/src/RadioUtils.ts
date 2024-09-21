@@ -198,10 +198,10 @@ export class RadioUtils {
   }
 
   /**
-   * Packs a frequency into MSFS BCD16 format.
+   * Unpacks a frequency from MSFS BCD16 format into hertz.
    * Primarily useful for debugging (use BCD encoding for systems code).
    * @param frequency Frequency in hertz, with precision of 10 kHz max.
-   * @returns Frequency in MSFS BCD16
+   * @returns Frequency in hertz.
    */
   public static unpackBcd16(frequency: number): number {
     return this.unpackBcd32(0x100_000_0 | (frequency << 8));
