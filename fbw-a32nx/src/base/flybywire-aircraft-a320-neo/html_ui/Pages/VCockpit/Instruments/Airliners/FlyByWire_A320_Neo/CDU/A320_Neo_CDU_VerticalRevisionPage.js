@@ -34,7 +34,11 @@ class CDUVerticalRevisionPage {
 
         let waypointIdent = "---";
         if (waypoint) {
-            waypointIdent = waypoint.ident;
+            if (isDestination && targetPlan.destinationRunway) {
+                waypointIdent = targetPlan.destinationRunway.ident;
+            } else {
+                waypointIdent = waypoint.ident;
+            }
         }
 
         let coordinates = "---";

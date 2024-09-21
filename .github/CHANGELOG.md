@@ -92,6 +92,7 @@
 1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
 1. [EFCS] Fix ground spoiler retraction after increasing TLA slightly above 0 - @lukecologne (luke)
 1. [FWC] Improved LDG LT memo to take into account light position - @BravoMike99 (bruno_pt99)
+1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
 1. [PRESS] Add pressurization system failures - @mjuhe (Miquel Juhe)
 1. [EFB] Added simrate indicator to status bar - @2hwk (2Cas)
 1. [EFB] Added simrate and pause on TOD controls to control center - @2hwk (2Cas)
@@ -114,6 +115,10 @@
 1. [FMS] Selected navaids are now reset on entering the done flight phase - @tracernz (Mike)
 1. [FMS] Fix tailwind component of trip wind being treated as a headwind - @BlueberryKing (BlueberryKing)
 1. [FMS] Improved NAVAID page - @tracernz (Mike)
+1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal
+1. [FADEC] Added quick start for engines and APU - @frankkopp (Frank Kopp) - @Gurgel100 (Pascal)
+1. [EFB] Added expedited presets - @frankkopp (Frank Kopp)
+1. [FMS] Show runway ident on lateral/vertical revision page of the missed approach point - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 

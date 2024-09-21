@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type MfdSimvars = {
   coldDark: number;
@@ -43,7 +43,7 @@ export enum MfdVars {
   potentiometerFo = 'LIGHT POTENTIOMETER:90',
   fmsDataKnob = 'L:A32NX_FMS_SWITCHING_KNOB',
   flightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
-  flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+  flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   adirs1MaintWord = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
   adirs2MaintWord = 'L:A32NX_ADIRS_IR_2_MAINT_WORD',
   adirs3MaintWord = 'L:A32NX_ADIRS_IR_3_MAINT_WORD',

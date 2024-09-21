@@ -31,6 +31,8 @@ import {
   TaRaIntrusion,
   Inhibit,
   Limits,
+  RaType2,
+  UpDownAdvisoryStatus,
 } from '../lib/TcasConstants';
 import { TcasSoundManager } from './TcasSoundManager';
 
@@ -205,6 +207,14 @@ export class TcasComputer implements TcasComponent {
 
   private correctiveRa: LocalSimVar<boolean>; // Is currently issuing a corrective RA (yes/no) TODO FIXME: ARINC429
 
+  private raType: LocalSimVar<RaType2>; // The RA type (crossing, increase, reversal, maintain, or neither)
+
+  private rateToMaintain: LocalSimVar<number>; // The rate to maintain (green sector). 0 if up/down advisory status is neither Climb nor Descend or no RA is present
+
+  private upAdvisoryStatus: LocalSimVar<UpDownAdvisoryStatus>; // Up adivsory status (climb, don't descend, don't descent >500 etc.)
+
+  private downAdvisoryStatus: LocalSimVar<UpDownAdvisoryStatus>; // Down adivsory status (descend, don't climb, don't climb >500 etc.)
+
   private isSlewActive: boolean; // Slew Mode on?
 
   private simRate: number; // Simulation Rate
@@ -260,6 +270,10 @@ export class TcasComputer implements TcasComponent {
     this.tcasFault = new LocalSimVar('L:A32NX_TCAS_FAULT', 'bool');
     this.taOnly = new LocalSimVar('L:A32NX_TCAS_TA_ONLY', 'bool');
     this.correctiveRa = new LocalSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'bool');
+    this.raType = new LocalSimVar('L:A32NX_TCAS_RA_TYPE', 'Enum');
+    this.rateToMaintain = new LocalSimVar('L:A32NX_TCAS_RA_RATE_TO_MAINTAIN', 'number');
+    this.upAdvisoryStatus = new LocalSimVar('L:A32NX_TCAS_RA_UP_ADVISORY_STATUS', 'Enum');
+    this.downAdvisoryStatus = new LocalSimVar('L:A32NX_TCAS_RA_DOWN_ADVISORY_STATUS', 'Enum');
     this.airTraffic = [];
     this.raTraffic = [];
     this.sensitivity = new LocalSimVar('L:A32NX_TCAS_SENSITIVITY', 'number');
@@ -1225,6 +1239,10 @@ export class TcasComputer implements TcasComponent {
 
         const isCorrective = this.activeRa.info.type === RaType.CORRECT;
         this.correctiveRa.setVar(isCorrective);
+        this.raType.setVar(this.activeRa.info.type2);
+        this.rateToMaintain.setVar(this.activeRa.info.rateToMaintain);
+        this.upAdvisoryStatus.setVar(this.activeRa.info.upAdvisory);
+        this.downAdvisoryStatus.setVar(this.activeRa.info.downAdvisory);
         SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', this.activeRa.info.vs.red[Limits.MIN]);
         SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', this.activeRa.info.vs.red[Limits.MAX]);
         if (isCorrective) {
@@ -1292,6 +1310,10 @@ export class TcasComputer implements TcasComponent {
       this.advisoryState = TcasState.NONE;
       this.tcasState.setVar(TcasState.NONE);
       this.correctiveRa.setVar(false);
+      this.raType.setVar(RaType2.NONE);
+      this.rateToMaintain.setVar(0);
+      this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+      this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
       SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
       SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
       SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);

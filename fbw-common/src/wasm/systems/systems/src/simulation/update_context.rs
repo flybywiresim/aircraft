@@ -235,6 +235,7 @@ pub struct UpdateContext {
     rotation_vel_x_id: VariableIdentifier,
     rotation_vel_y_id: VariableIdentifier,
     rotation_vel_z_id: VariableIdentifier,
+    aircraft_preset_quick_mode_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -274,6 +275,11 @@ pub struct UpdateContext {
 
     rotation_accel: Vector3<AngularAcceleration>,
     rotation_vel: Vector3<AngularVelocity>,
+
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
+    /// In the context of the apu this means quick startup or shutdown of the apu, and no cooldown
+    /// after using Bleed Air.
+    aircraft_preset_quick_mode: bool,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -315,6 +321,7 @@ impl UpdateContext {
     pub(crate) const ROTATION_VEL_X_KEY: &'static str = "ROTATION VELOCITY BODY X";
     pub(crate) const ROTATION_VEL_Y_KEY: &'static str = "ROTATION VELOCITY BODY Y";
     pub(crate) const ROTATION_VEL_Z_KEY: &'static str = "ROTATION VELOCITY BODY Z";
+    pub(crate) const AIRCRAFT_PRESET_QUICK_MODE_KEY: &'static str = "AIRCRAFT_PRESET_QUICK_MODE";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -387,6 +394,9 @@ impl UpdateContext {
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
 
+            aircraft_preset_quick_mode_id: context
+                .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
+
             delta: delta.into(),
             simulation_time,
             is_ready: true,
@@ -440,6 +450,8 @@ impl UpdateContext {
 
             rotation_accel: Vector3::default(),
             rotation_vel: Vector3::default(),
+
+            aircraft_preset_quick_mode: false,
         }
     }
 
@@ -483,6 +495,9 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+
+            aircraft_preset_quick_mode_id: context
+                .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -533,6 +548,8 @@ impl UpdateContext {
 
             rotation_accel: Vector3::default(),
             rotation_vel: Vector3::default(),
+
+            aircraft_preset_quick_mode: false,
         }
     }
 
@@ -620,6 +637,8 @@ impl UpdateContext {
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_y_id)),
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
+
+        self.aircraft_preset_quick_mode = reader.read(&self.aircraft_preset_quick_mode_id);
 
         self.update_relative_wind();
 
@@ -844,6 +863,12 @@ impl UpdateContext {
             self.rotation_vel[1].get::<radian_per_second>(),
             self.rotation_vel[2].get::<radian_per_second>(),
         )
+    }
+
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
+    /// In the context of the apu this means quick startup or shutdown of the apu, and no cooldown
+    pub fn aircraft_preset_quick_mode(&self) -> bool {
+        self.aircraft_preset_quick_mode
     }
 }
 

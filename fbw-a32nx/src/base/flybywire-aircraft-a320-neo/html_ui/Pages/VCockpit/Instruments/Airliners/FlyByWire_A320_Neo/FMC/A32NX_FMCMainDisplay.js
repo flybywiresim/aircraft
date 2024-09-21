@@ -222,7 +222,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.efisInterfaces = { L: new Fmgc.EfisInterface('L', this.currFlightPlanService), R: new Fmgc.EfisInterface('R', this.currFlightPlanService) };
         this.guidanceController = new Fmgc.GuidanceController(this.bus, this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings, Fmgc.A320AircraftConfig);
-        this.navigation = new Fmgc.Navigation(this.bus, this.currFlightPlanService, this.facilityLoader);
+        this.navigation = new Fmgc.Navigation(this.bus, this.currFlightPlanService);
         this.efisSymbols = new Fmgc.EfisSymbols(
             this.bus,
             this.guidanceController,
@@ -2586,7 +2586,7 @@ class FMCMainDisplay extends BaseAirliners {
         const newLevel = this.cruiseLevel;
         // Keep simvar in sync for the flight phase manager
         if (newLevel !== oldCruiseLevel) {
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
         }
     }
 
@@ -3118,7 +3118,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             // In future we probably want a better way of checking this, as 0 is
             // in the valid flex temperature range (-99 to 99).
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
+            SimVar.SetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
         let value = parseInt(s);
@@ -3137,7 +3137,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = 0.1;
         }
         this.perfTOTemp = value;
-        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
+        SimVar.SetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "Number", value);
         return true;
     }
 
@@ -4677,7 +4677,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (plan) {
             this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level);
             // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
         }
     }
 
