@@ -57,9 +57,9 @@ class SystemsHost extends BaseInstrument {
   private readonly dcBus1Powered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
   private readonly dcBus2Powered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
 
-  private readonly vhf1 = new VhfRadio(VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
-  private readonly vhf2 = new VhfRadio(VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
-  private readonly vhf3 = new VhfRadio(VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
+  private readonly vhf1 = new VhfRadio(this.bus, VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
+  private readonly vhf2 = new VhfRadio(this.bus, VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
+  private readonly vhf3 = new VhfRadio(this.bus, VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
 
   // TODO powered subs
   private readonly amu1 = new AudioManagementUnit(this.bus, 1, this.failuresConsumer);
