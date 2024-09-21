@@ -3057,6 +3057,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         Currently used only for sounds.
     - Boolean
 
+- A32NX_AP_INSTINCTIVE_DISCONNECT
+    - Indicates if the AP instinctive disconnect signal to the FMGC or FWC is high or low
+    - Boolean
+
+- A32NX_ATHR_INSTINCTIVE_DISCONNECT
+    - Indicates if the A/THR instinctive disconnect signal to the FMGC or FWC is high or low
+    - Boolean
+
 ### Flight Control Unit (FCU)
 
 - A32NX_FCU_HEALTHY
