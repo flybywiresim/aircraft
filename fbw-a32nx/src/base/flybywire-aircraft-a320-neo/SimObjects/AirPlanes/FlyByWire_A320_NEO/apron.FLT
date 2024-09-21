@@ -82,9 +82,17 @@ Afterburner=0
 FuelValveOpen=False
 
 [FuelSystem.0]
-Tank.1=0
-Tank.4=0 // Tank 2 & 3 are set through FADEC wasm
-Tank.5=0
+Tank.1=0.4818560183048248291 // Init with reasonable fuel level (only for new ATC ID A/C)
+Tank.2=0.74762970209121704102
+Tank.3=0
+Tank.4=0.14810475707054138184
+Tank.5=0.72874546051025390625
+Tank.6=0.72874546051025390625
+Tank.7=0.14810457825660705566
+Tank.8=0
+Tank.9=0.74762970209121704102
+Tank.10=0.4818560183048248291
+Tank.11=0.55189013481140136719
 Valve.1=False
 Valve.2=False
 Valve.3=False
