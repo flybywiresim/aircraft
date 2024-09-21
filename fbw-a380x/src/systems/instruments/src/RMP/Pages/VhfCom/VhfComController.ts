@@ -187,7 +187,7 @@ export class VhfComController {
     this.isRowSelected.sub((v) => !v && this.standbyEntry.set(VhfComController.EMPTY_STANDBY_ENTRY));
 
     MappedSubject.create(this.standbyEntry, this.standbyFrequency).sub(([entry, frequency]) => {
-      this.isStandbyEntryInvalid.set(entry.frequency !== 0 && !RadioUtils.isValidFrequency(entry.frequency));
+      this.isStandbyEntryInvalid.set(entry.frequency !== 0 && entry.frequency !== 0x1100000 && !RadioUtils.isValidFrequency(entry.frequency));
       const entryInProgress = entry.entered.length > 0;
       this.standbyEntryInProgress.set(entryInProgress);
 
