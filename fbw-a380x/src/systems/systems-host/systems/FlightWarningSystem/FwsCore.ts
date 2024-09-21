@@ -914,15 +914,13 @@ export class FwsCore implements Instrument {
 
   public readonly aircraftOnGround = Subject.create(false);
 
-  public readonly antiskidActive = Subject.create(false);
-
-  public readonly brakeFan = Subject.create(false);
+  public readonly antiSkidSwitchOff = Subject.create(false);
 
   public readonly brakesHot = Subject.create(false);
 
-  public readonly leftLandingLightExtended = Subject.create(false);
+  public readonly phase815MinConfNode = new NXLogicConfirmNode(900);
 
-  public readonly rightlandingLightExtended = Subject.create(false);
+  public readonly phase112 = Subject.create(false);
 
   public readonly lgciu1Fault = Subject.create(false);
 
@@ -1064,6 +1062,8 @@ export class FwsCore implements Instrument {
   public readonly paxOxyMasksDeployed = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
+
+  public readonly oneEngineRunning = Subject.create(false);
 
   public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
 
@@ -1572,6 +1572,9 @@ export class FwsCore implements Instrument {
     this.flightPhase910.set([9, 10].includes(this.fwcFlightPhase.get()));
     const flightPhase6789 = [6, 7, 8, 9].includes(this.fwcFlightPhase.get());
 
+    this.phase815MinConfNode.write(this.fwcFlightPhase.get() === 8, deltaTime);
+    this.phase112.set([1, 12].includes(this.fwcFlightPhase.get()));
+
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
     this.toConfigPulseNode.write(this.toConfigTestRaw, deltaTime);
@@ -1681,6 +1684,8 @@ export class FwsCore implements Instrument {
     this.engine2Running.set(engine2StateSimVar == 1);
     this.engine3Running.set(engine3StateSiMVar == 1);
     this.engine4Running.set(engine4StateSiMVar == 1);
+
+    this.oneEngineRunning.set(engine1StatesimVar || engine2StateSimVar || engine3StateSiMVar || engine4StateSiMVar);
 
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
@@ -2006,14 +2011,9 @@ export class FwsCore implements Instrument {
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
-    this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
-    this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
+    this.antiSkidSwitchOff.set(!SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
     this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
-    // FIX ME ldg lt extended signal should come from SDAC
-    const leftLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_2_POSITION', 'number');
-    const rightLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_3_POSITION', 'number');
-    this.leftLandingLightExtended.set(leftLdgLtPosition >= 30);
-    this.rightlandingLightExtended.set(rightLdgLtPosition >= 30);
+
     this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
     this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
     this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
