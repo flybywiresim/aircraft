@@ -2172,10 +2172,10 @@ export class FwsCore implements Instrument {
       (this.throttle2Position.get() >= 35 && flexThrustLimit);
 
     const engThreeOrFourTakeoffPower =
-      this.throttle1Position.get() >= 45 ||
-      (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
-      this.throttle2Position.get() >= 45 ||
-      (this.throttle2Position.get() >= 35 && flexThrustLimit);
+      this.throttle3Position.get() >= 45 ||
+      (this.throttle3Position.get() >= 35 && flexThrustLimit) ||
+      this.throttle4Position.get() >= 45 ||
+      (this.throttle4Position.get() >= 35 && flexThrustLimit);
 
     this.eng1Or2TakeoffPowerConfirm.write(engOneOrTwoTakeoffPower, deltaTime);
     this.eng3Or4TakeoffPowerConfirm.write(engThreeOrFourTakeoffPower, deltaTime);
@@ -2183,7 +2183,7 @@ export class FwsCore implements Instrument {
       this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500 || this.radioHeight3.valueOr(0) > 1500;
     this.eng1Or2TakeoffPower.set(engOneOrTwoTakeoffPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
     this.eng3Or4TakeoffPower.set(
-      engThreeOrFourTakeoffPower || (this.eng3Or4RunningAndPhaseConfirmationNode.read() && !raAbove1500),
+      engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
     );
 
     this.engDualFault.set(
@@ -2927,8 +2927,9 @@ export class FwsCore implements Instrument {
     const below750Condition =
       this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.get() &&
       !this.eng1Or2TakeoffPower.get() &&
-      !this.eng3Or4TakeoffPower.get();
-    below750Ra && gearNotDownlocked;
+      !this.eng3Or4TakeoffPower.get() &&
+      below750Ra &&
+      gearNotDownlocked;
     const allRaInvalid =
       this.radioHeight1.isFailureWarning() &&
       this.radioHeight2.isFailureWarning() &&

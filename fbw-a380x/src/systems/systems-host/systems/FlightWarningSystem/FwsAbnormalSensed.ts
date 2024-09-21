@@ -1521,14 +1521,14 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.brakesHot,
       whichItemsToShow: () => [
         this.fws.phase112.get(),
-        this.fws.onGroundConf.read(),
-        !this.fws.onGroundConf.read(),
-        !this.fws.onGroundConf.read(),
-        !this.fws.onGroundConf.read(),
+        this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
       ],
       whichItemsChecked: () => [false, false, false, false, false],
-      limitationsPfd: () => ['260400002'],
-      limitationsAllPhases: () => ['260400002'],
+      limitationsPfd: () => [this.fws.aircraftOnGround.get() ? '' : '260400002'],
+      limitationsAllPhases: () => [this.fws.aircraftOnGround.get() ? '' : '260400002'],
       notActiveWhenFaults: [],
       failure: 2,
       sysPage: 11,
@@ -1537,8 +1537,8 @@ export class FwsAbnormalSensed {
       // BRAKES PARK BRK ON
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
       simVarIsActive: this.fws.lgParkBrkOn,
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.parkBrake.get()],
       notActiveWhenFaults: [],
       failure: 2,
       sysPage: -1,
@@ -1554,14 +1554,30 @@ export class FwsAbnormalSensed {
       sysPage: -1,
     },
     320800037: {
-      // L/G NOT DOWN
+      // L/G NOT DOWN NO CANCEL
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
-      simVarIsActive: this.fws.lgNotDown,
+      simVarIsActive: this.fws.lgNotDownNoCancel,
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       notActiveWhenFaults: [],
       failure: 3,
       sysPage: 11,
+      cancel: false,
+    },
+    320800038: {
+      // L/G NOT DOWN CANCEL
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(
+        ([lgNotDown, lgNotDownCancel]) => lgNotDown && !lgNotDownCancel,
+        this.fws.lgNotDown,
+        this.fws.lgNotDownNoCancel,
+      ),
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: 11,
+      cancel: true,
     },
     // 34 NAVIGATION
     340800001: {
