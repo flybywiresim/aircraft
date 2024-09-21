@@ -114,11 +114,11 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
+    this.backplane.addInstrument('LegacyFuel', new LegacyFuelInit());
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.fwc = new LegacyFwc();
     this.soundManager = new LegacySoundManager();
-    this.fuelInit = new LegacyFuelInit();
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
 
@@ -143,7 +143,6 @@ class SystemsHost extends BaseInstrument {
     ]).then(([keyEventManager]) => {
       this.keyInterceptManager = keyEventManager;
       this.initLighting();
-      this.fuelInit.init();
     });
   }
 
