@@ -5,12 +5,16 @@
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
-import { useAppSelector } from '@flybywiresim/flypad';
-import { t } from '../../Localization/translation';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-
+import {
+  PromptModal,
+  SelectGroup,
+  SelectItem,
+  t,
+  Toggle,
+  useAppSelector,
+  useModals,
+  VerticalSelectGroup,
+} from '@flybywiresim/flypad';
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 

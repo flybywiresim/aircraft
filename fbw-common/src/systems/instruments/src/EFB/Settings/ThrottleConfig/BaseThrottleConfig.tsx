@@ -4,7 +4,7 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { t } from '../../Localization/translation';
+import { t } from '@flybywiresim/flypad';
 import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
@@ -53,7 +53,14 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
   activeDetent,
   reverseDisabled,
 }) => {
-  const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${axisNumber}`, 'number', 30);
+  let inputAxisNumber = axisNumber;
+  // this is required the users hardware axis 2 is mapped to logical input axis 3 in the sim
+  // A380 case (4 throttles) with 2 user hardware axes and the second user hardware axis is the current axis to be displayed
+  if (numberOfThrottles === 4 && numberOfAxis === 2 && axisNumber === 2) {
+    inputAxisNumber = 3;
+  }
+  const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${inputAxisNumber}`, 'number', 30);
+
   const [expertMode, setExpertMode] = useState(false);
 
   let throttleNumberString = '';
