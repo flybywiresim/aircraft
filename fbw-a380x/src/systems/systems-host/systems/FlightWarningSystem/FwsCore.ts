@@ -1685,7 +1685,9 @@ export class FwsCore implements Instrument {
     this.engine3Running.set(engine3StateSiMVar == 1);
     this.engine4Running.set(engine4StateSiMVar == 1);
 
-    this.oneEngineRunning.set(engine1StatesimVar || engine2StateSimVar || engine3StateSiMVar || engine4StateSiMVar);
+    this.oneEngineRunning.set(
+      this.engine1Running.get() || this.engine2Running.get() || this.engine3Running.get() || this.engine4Running.get(),
+    );
 
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
@@ -2012,7 +2014,10 @@ export class FwsCore implements Instrument {
     /* LANDING GEAR AND LIGHTS acquisition */
 
     this.antiSkidSwitchOff.set(!SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
-    this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
+
+    const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
+
+    this.brakesHot.set(brakesHot && !this.phase815MinConfNode.read());
 
     this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
     this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));

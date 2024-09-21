@@ -220,9 +220,9 @@ export const EcamInfos: { [n: string]: string } = {
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
   800200001: '\x1b<3mFMS PRED UNRELIABLE',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
-  800200003: '\x1b<5mTAXI WITH CARE',
+  800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
-  800200005: '\x1b<5mNO BRAKED PIVOT TURN',
+  800200005: '\x1b<3mNO BRAKED PIVOT TURN',
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
