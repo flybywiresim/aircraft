@@ -69,11 +69,10 @@ class ExtrasHost extends BaseInstrument {
   constructor() {
     super();
 
-    this.bus = new EventBus();
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
 
-    this.notificationManager = new NotificationManager();
+    this.notificationManager = new NotificationManager(this.bus);
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
