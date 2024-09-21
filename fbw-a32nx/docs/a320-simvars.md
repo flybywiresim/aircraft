@@ -927,7 +927,7 @@
 
 - A32NX_FO_SYNC_EFIS_ENABLED
     - Bool
-    - 1 to sync the status of FD and LS buttons between CPT and FO sides
+    - 1 to sync the status of FD and LS buttons, and audio panel controls, between CPT and FO sides
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
