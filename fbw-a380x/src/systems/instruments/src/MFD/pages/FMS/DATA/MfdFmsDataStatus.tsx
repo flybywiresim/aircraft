@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-
-import './MfdFmsDataStatus.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -14,6 +12,9 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { NavigationDatabaseService } from '@fmgc/index';
 import { DatabaseIdent } from '@flybywiresim/fbw-sdk';
+import { ConfirmationDialog } from '../../common/ConfirmationDialog';
+
+import './MfdFmsDataStatus.scss';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 
@@ -50,6 +51,8 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
   private storedRunways = Subject.create('00');
 
   private deleteStoredElementsDisabled = Subject.create(true);
+
+  private readonly isSwapConfirmVisible = Subject.create(false);
 
   protected onNewData() {
     NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbCycle) => {
@@ -114,7 +117,10 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
           <TopTabNavigator
             pageTitles={Subject.create(['ACFT STATUS', 'FMS P/N'])}
             selectedPageIndex={this.selectedPageIndex}
-            pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
+            pageChangeCallback={(val) => {
+              this.selectedPageIndex.set(val);
+              this.isSwapConfirmVisible.set(false);
+            }}
             selectedTabTextColor="white"
             tabBarSlantedEdgeAngle={25}
           >
@@ -158,6 +164,21 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                 </div>
               </div>
               <div class="mfd-data-status-second-section">
+                <div style="position: relative; display: flex; justify-content: center; width: 100%;">
+                  <ConfirmationDialog
+                    visible={this.isSwapConfirmVisible}
+                    cancelAction={() => {
+                      this.isSwapConfirmVisible.set(false);
+                    }}
+                    confirmAction={() => {
+                      this.props.fmcService.master?.swapNavDatabase();
+                      this.isSwapConfirmVisible.set(false);
+                    }}
+                    contentContainerStyle="width: 325px; height: 165px; transform: translateX(-50%);"
+                  >
+                    SWAP&nbsp;?
+                  </ConfirmationDialog>
+                </div>
                 <div style="margin-bottom: 15px;">
                   <span class="mfd-label" style="margin-right: 25px;">
                     NAV DATABASE
@@ -183,8 +204,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
                         </div>,
                       )}
-                      onClick={() => {}}
-                      disabled={Subject.create(true)}
+                      onClick={() => this.isSwapConfirmVisible.set(true)}
                     />
                   </div>
                   <div style="padding: 15px; display: flex; flex-direction: column;">
