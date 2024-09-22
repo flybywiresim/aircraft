@@ -330,25 +330,6 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static directToTurnStart(segment: EnrouteSegment, location: Coordinates, bearing: DegreesTrue): FlightPlanLeg {
-    const magVar = MagVar.get(location.lat, location.long);
-
-    return new FlightPlanLeg(
-      segment,
-      {
-        procedureIdent: '',
-        type: LegType.FC,
-        overfly: false,
-        waypoint: WaypointFactory.fromPlaceBearingDistance('T-P', location, 0.1, bearing),
-        magneticCourse: A32NX_Util.trueToMagnetic(bearing, magVar),
-        length: 0.1,
-      },
-      '',
-      '',
-      undefined,
-    );
-  }
-
   static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
