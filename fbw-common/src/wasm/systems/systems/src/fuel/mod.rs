@@ -1,10 +1,13 @@
-use crate::simulation::{
-    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, VariableIdentifier, Write, Writer,
+use crate::{
+    shared::{ConsumePower, ElectricalBusType, ElectricalBuses},
+    simulation::{
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+    },
 };
 use nalgebra::Vector3;
 use num_traits::Zero;
-use uom::si::{f64::Mass, mass::kilogram};
+use uom::si::{electric_current::ampere, f64::*, mass::kilogram};
 
 pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 
@@ -37,24 +40,56 @@ pub trait FuelPayload {
 pub trait FuelCG {
     fn center_of_gravity(&self) -> Vector3<f64>;
 }
+
+#[derive(Clone, Copy, Debug)]
+pub struct FuelPumpProperties {
+    pub powered_by: ElectricalBusType,
+    pub consumption_current_ampere: f64,
+}
+
 #[derive(Debug)]
 pub struct FuelInfo<'a> {
     pub fuel_tank_id: &'a str,
+    pub fuel_tank_pumps: &'a [(usize, FuelPumpProperties)],
     pub position: (f64, f64, f64),
     pub total_capacity_gallons: f64,
+}
+impl FuelInfo<'_> {
+    pub fn into_fuel_tank(&self, context: &mut InitContext, write: bool) -> FuelTank {
+        let pumps = self
+            .fuel_tank_pumps
+            .iter()
+            .map(|(id, properties)| FuelPump::new(context, *id, *properties))
+            .collect();
+        FuelTank::new(
+            context,
+            self.fuel_tank_id,
+            pumps,
+            Vector3::new(self.position.0, self.position.1, self.position.2),
+            write,
+        )
+    }
 }
 
 #[derive(Debug)]
 pub struct FuelTank {
     fuel_id: VariableIdentifier,
+    pumps: Vec<FuelPump>,
     location: Vector3<f64>,
     quantity: Mass,
     write: bool,
 }
 impl FuelTank {
-    pub fn new(context: &mut InitContext, id: &str, location: Vector3<f64>, write: bool) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        id: &str,
+        pumps: Vec<FuelPump>,
+        location: Vector3<f64>,
+        write: bool,
+    ) -> Self {
         FuelTank {
             fuel_id: context.get_identifier(id.to_owned()),
+            pumps,
             location,
             quantity: Mass::default(),
             write,
@@ -92,6 +127,8 @@ impl SimulationElement for FuelTank {
         }
     }
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.pumps, visitor);
+
         visitor.visit(self);
     }
 }
@@ -158,5 +195,42 @@ impl<const N: usize> SimulationElement for FuelSystem<N> {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
         self.fuel_total_weight = reader.read(&self.fuel_total_weight_id);
+    }
+}
+
+#[derive(Debug)]
+pub struct FuelPump {
+    pump_id: VariableIdentifier,
+    properties: FuelPumpProperties,
+    available_potential: ElectricPotential,
+    running: bool,
+}
+impl FuelPump {
+    pub fn new(context: &mut InitContext, id: usize, properties: FuelPumpProperties) -> Self {
+        Self {
+            pump_id: context.get_identifier(format!("FUELSYSTEM PUMP ACTIVE:{id}")),
+            properties,
+            available_potential: ElectricPotential::default(),
+            running: false,
+        }
+    }
+}
+impl SimulationElement for FuelPump {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.running = reader.read(&self.pump_id);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.available_potential = buses.potential_of(self.properties.powered_by).raw();
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, power: &mut T) {
+        let consumed_power = if self.running {
+            self.available_potential
+                * ElectricCurrent::new::<ampere>(self.properties.consumption_current_ampere)
+        } else {
+            Power::default()
+        };
+        power.consume_from_bus(self.properties.powered_by, consumed_power);
     }
 }

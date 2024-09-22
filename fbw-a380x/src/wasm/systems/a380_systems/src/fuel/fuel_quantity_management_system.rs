@@ -4,7 +4,7 @@ use crate::systems::simulation::SimulationElement;
 use nalgebra::Vector3;
 use serde::Deserialize;
 use systems::{
-    fuel::{self, FuelInfo, FuelSystem, FuelTank, RefuelRate},
+    fuel::{self, FuelInfo, FuelSystem, RefuelRate},
     pneumatic::EngineState,
     shared::{ElectricalBusType, ElectricalBuses},
     simulation::{
@@ -604,14 +604,7 @@ pub struct A380FuelQuantityManagementSystem {
 }
 impl A380FuelQuantityManagementSystem {
     pub fn new(context: &mut InitContext, fuel_tanks_info: [FuelInfo; 11]) -> Self {
-        let fuel_tanks = fuel_tanks_info.map(|f| {
-            FuelTank::new(
-                context,
-                f.fuel_tank_id,
-                Vector3::new(f.position.0, f.position.1, f.position.2),
-                true,
-            )
-        });
+        let fuel_tanks = fuel_tanks_info.map(|f| f.into_fuel_tank(context, true));
         let fuel_system = FuelSystem::new(context, fuel_tanks);
 
         Self {

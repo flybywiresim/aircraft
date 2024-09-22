@@ -457,6 +457,26 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 141)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 1)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 2)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 3)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 4)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 5)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 6)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 7)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 8)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 9)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 10)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 11)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 12)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 13)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 14)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 15)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 16)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 17)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 18)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 19)?
+    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 20)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?

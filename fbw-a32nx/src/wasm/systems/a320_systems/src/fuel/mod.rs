@@ -2,7 +2,8 @@
 
 use nalgebra::Vector3;
 use systems::{
-    fuel::{FuelCG, FuelInfo, FuelPayload, FuelSystem, FuelTank},
+    fuel::{FuelCG, FuelInfo, FuelPayload, FuelPumpProperties, FuelSystem},
+    shared::ElectricalBusType,
     simulation::{InitContext, SimulationElement, SimulationElementVisitor},
 };
 use uom::si::f64::*;
@@ -51,40 +52,68 @@ impl A320Fuel {
     pub const A320_FUEL: [FuelInfo<'static>; 5] = [
         FuelInfo {
             fuel_tank_id: "FUEL TANK CENTER QUANTITY",
+            fuel_tank_pumps: &[], // No electric fuel pumps
             position: (-4.5, 0., 1.),
             total_capacity_gallons: 2179.,
         },
         FuelInfo {
             fuel_tank_id: "FUEL TANK LEFT MAIN QUANTITY",
+            fuel_tank_pumps: &[
+                (
+                    2,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: implement Gen 1 line
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+                (
+                    5,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2),
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+            ], // TODO: APU fuel pump
             position: (-8., -13., 2.),
             total_capacity_gallons: 1816.,
         },
         FuelInfo {
             fuel_tank_id: "FUEL TANK LEFT AUX QUANTITY",
+            fuel_tank_pumps: &[],
             position: (-16.9, -27., 3.),
             total_capacity_gallons: 228.,
         },
         FuelInfo {
             fuel_tank_id: "FUEL TANK RIGHT MAIN QUANTITY",
+            fuel_tank_pumps: &[
+                (
+                    3,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: implement Gen 1 line
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+                (
+                    6,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2),
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+            ],
             position: (-8., 13., 2.),
             total_capacity_gallons: 1816.,
         },
         FuelInfo {
             fuel_tank_id: "FUEL TANK RIGHT AUX QUANTITY",
+            fuel_tank_pumps: &[],
             position: (-16.9, 27., 3.),
             total_capacity_gallons: 228.,
         },
     ];
 
     pub fn new(context: &mut InitContext) -> Self {
-        let fuel_tanks = Self::A320_FUEL.map(|f| {
-            FuelTank::new(
-                context,
-                f.fuel_tank_id,
-                Vector3::new(f.position.0, f.position.1, f.position.2),
-                false,
-            )
-        });
+        let fuel_tanks = Self::A320_FUEL.map(|f| f.into_fuel_tank(context, false));
         A320Fuel {
             fuel_system: FuelSystem::new(context, fuel_tanks),
         }

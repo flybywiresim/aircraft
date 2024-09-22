@@ -4,7 +4,8 @@ mod fuel_quantity_management_system;
 use fuel_quantity_management_system::A380FuelQuantityManagementSystem;
 use nalgebra::Vector3;
 use systems::{
-    fuel::{FuelCG, FuelInfo, FuelPayload, FuelSystem},
+    fuel::{FuelCG, FuelInfo, FuelPayload, FuelPumpProperties, FuelSystem},
+    shared::ElectricalBusType,
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::f64::*;
@@ -70,66 +71,234 @@ impl A380Fuel {
         FuelInfo {
             // LEFT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_1",
+            fuel_tank_pumps: &[(
+                9,
+                FuelPumpProperties {
+                    powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                    consumption_current_ampere: 8.,
+                },
+            )],
             position: (-25., -100.0, 8.5),
             total_capacity_gallons: 2731.5,
         },
         FuelInfo {
             // FEED_ONE - Capacity: 7299.6
             fuel_tank_id: "FUEL_TANK_QUANTITY_2",
+            fuel_tank_pumps: &[
+                (
+                    1,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(4),
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+                (
+                    2,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2),
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+            ],
             position: (-7.45, -71.0, 7.3),
             total_capacity_gallons: 7299.6,
         },
         FuelInfo {
             // LEFT_MID - Capacity: 9632
             fuel_tank_id: "FUEL_TANK_QUANTITY_3",
+            fuel_tank_pumps: &[
+                (
+                    // FWD
+                    10,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+                (
+                    // AFT
+                    11,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+            ],
             position: (7.1, -46.4, 5.9),
             total_capacity_gallons: 9632.,
         },
         FuelInfo {
             // LEFT_INNER - Capacity: 12189.4
             fuel_tank_id: "FUEL_TANK_QUANTITY_4",
+            fuel_tank_pumps: &[
+                (
+                    // FWD
+                    12,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+                (
+                    // AFT
+                    17,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+            ],
             position: (16.5, -24.7, 3.2),
             total_capacity_gallons: 12189.4,
         },
         FuelInfo {
             // FEED_TWO - Capacity: 7753.2
             fuel_tank_id: "FUEL_TANK_QUANTITY_5",
+            fuel_tank_pumps: &[
+                (
+                    3,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+                (
+                    4,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(3),
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+            ],
             position: (27.3, -18.4, 1.0),
             total_capacity_gallons: 7753.2,
         },
         FuelInfo {
             // FEED_THREE - Capacity: 7753.2
             fuel_tank_id: "FUEL_TANK_QUANTITY_6",
+            fuel_tank_pumps: &[
+                (
+                    5,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(3),
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+                (
+                    6,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+            ],
             position: (27.3, 18.4, 1.0),
             total_capacity_gallons: 7753.2,
         },
         FuelInfo {
             // RIGHT_INNER - Capacity: 12189.4
             fuel_tank_id: "FUEL_TANK_QUANTITY_7",
+            fuel_tank_pumps: &[
+                (
+                    // FWD
+                    13,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+                (
+                    // AFT
+                    18,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+            ],
             position: (16.5, 24.7, 3.2),
             total_capacity_gallons: 12189.4,
         },
         FuelInfo {
             // RIGHT_MID - Capacity: 9632
             fuel_tank_id: "FUEL_TANK_QUANTITY_8",
+            fuel_tank_pumps: &[
+                (
+                    // FWD
+                    15,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+                (
+                    // AFT
+                    16,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
+                        consumption_current_ampere: 8.,
+                    },
+                ),
+            ],
             position: (7.1, 46.4, 5.9),
             total_capacity_gallons: 9632.,
         },
         FuelInfo {
             // FEED_FOUR - Capacity: 7299.6
             fuel_tank_id: "FUEL_TANK_QUANTITY_9",
+            fuel_tank_pumps: &[
+                (
+                    7,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2),
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+                (
+                    8,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(4),
+                        consumption_current_ampere: 9.,
+                    },
+                ),
+            ],
             position: (-7.45, 71., 7.3),
             total_capacity_gallons: 7299.6,
         },
         FuelInfo {
             // RIGHT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_10",
+            fuel_tank_pumps: &[(
+                14,
+                FuelPumpProperties {
+                    powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                    consumption_current_ampere: 8.,
+                },
+            )],
             position: (-25., 100., 8.5),
             total_capacity_gallons: 2731.5,
         },
         FuelInfo {
             // TRIM - Capacity: 6260.3
             fuel_tank_id: "FUEL_TANK_QUANTITY_11",
+            fuel_tank_pumps: &[
+                (
+                    // Left
+                    19,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                        consumption_current_ampere: 5.,
+                    },
+                ),
+                (
+                    // Right
+                    20,
+                    FuelPumpProperties {
+                        powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                        consumption_current_ampere: 5.,
+                    },
+                ),
+            ],
             position: (-87.14, 0., 12.1),
             total_capacity_gallons: 6260.3,
         },
