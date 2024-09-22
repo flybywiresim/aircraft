@@ -1,8 +1,8 @@
-import { TcasComputer } from './components/TcasComputer';
+import { LegacyTcasComputer } from './components/LegacyTcasComputer';
 import { initTcasLoop, updateTcasLoop } from './loop';
 
 export {
-    TcasComputer,
+    LegacyTcasComputer,
     initTcasLoop,
     updateTcasLoop,
 };

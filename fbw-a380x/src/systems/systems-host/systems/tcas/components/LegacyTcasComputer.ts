@@ -5,7 +5,7 @@
 import { UpdateThrottler } from '@shared/UpdateThrottler';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { TcasComponent } from '@tcas/lib/TcasComponent';
+import { TcasComponent } from 'systems-host/systems/tcas/lib/TcasComponent';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { LocalSimVar } from '@shared/simvar';
 import { NXDataStore } from '@shared/persistence';
@@ -16,7 +16,7 @@ import {
     RaParams, RaSense, RaType, TaRaIndex, TaRaIntrusion, Intrude,
     Inhibit, Limits,
 } from '../lib/TcasConstants';
-import { TcasSoundManager } from './TcasSoundManager';
+import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 
 export class NDTcasTraffic {
     ID: string;
@@ -148,9 +148,10 @@ export class ResAdvisory {
 
 /**
  * TCAS computer singleton
+ * This 1:1 port from the A32NX's TCAS Computer serves as temporary replacement, until a more sophisticated system simulation is in place.
  */
-export class TcasComputer implements TcasComponent {
-    private static _instance?: TcasComputer; // for debug
+export class LegacyTcasComputer implements TcasComponent {
+    private static _instance?: LegacyTcasComputer; // for debug
 
     private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
         this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
@@ -220,15 +221,19 @@ export class TcasComputer implements TcasComponent {
 
     private advisoryState: TcasState; // Overall TCAS state for callout latching (None, TA, or RA)
 
-    private soundManager: TcasSoundManager; // Sound manager singleton
+    private soundManager: LegacySoundManager; // Sound manager singleton
 
     private gpwsWarning: boolean; // GPWS warning on/off
 
-    public static get instance(): TcasComputer { // for debug
+    public static get instance(): LegacyTcasComputer { // for debug
         if (!this._instance) {
-            this._instance = new TcasComputer();
+            this._instance = new LegacyTcasComputer(null);
         }
         return this._instance;
+    }
+
+    constructor(legacySoundManager: LegacySoundManager) {
+        this.soundManager = legacySoundManager;
     }
 
     /**
@@ -237,7 +242,7 @@ export class TcasComputer implements TcasComponent {
     init(): void {
         SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
         this.debug = false;
-        NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
+        // NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
         this.tcasPower = false;
         this.tcasMode = new LocalSimVar('L:A32NX_TCAS_MODE', 'Enum');
         this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');
@@ -255,7 +260,6 @@ export class TcasComputer implements TcasComponent {
         this.advisoryState = TcasState.NONE;
         this.sendAirTraffic = [];
         this.activeRa = new ResAdvisory(null, false, 0, false);
-        this.soundManager = new TcasSoundManager();
     }
 
     /**
@@ -263,7 +267,7 @@ export class TcasComputer implements TcasComponent {
      */
     private updateVars(): void {
         // Note: these values are calculated/not used in the real TCAS computer, here we just read SimVars
-        // this.debug = NXDataStore.get('TCAS_DEBUG', '0') !== '0';
+        this.debug = NXDataStore.get('TCAS_DEBUG', '0') !== '0';
         this.verticalSpeed = SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per minute');
         this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -1138,8 +1142,6 @@ export class TcasComputer implements TcasComponent {
      * @param _deltaTime delta time of this frame
      */
     update(_deltaTime: number): void {
-        this.soundManager.update(_deltaTime);
-
         const deltaTime = this.updateThrottler.canUpdate(_deltaTime * (this.simRate || 1));
         if (deltaTime === -1) {
             return;

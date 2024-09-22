@@ -1,8 +1,8 @@
-import { TcasComponent } from '@tcas/lib/TcasComponent';
-import { TcasComputer } from '@tcas/components/TcasComputer';
+import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
+import { TcasComponent } from 'systems-host/systems/tcas/lib/TcasComponent';
 
 const components: TcasComponent[] = [
-    TcasComputer.instance,
+    LegacyTcasComputer.instance,
 ];
 
 export function initTcasLoop(): void {

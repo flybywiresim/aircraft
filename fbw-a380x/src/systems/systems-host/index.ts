@@ -18,6 +18,7 @@ import {
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
@@ -49,6 +50,8 @@ class SystemsHost extends BaseInstrument {
   private gpws: LegacyGpws;
 
   private soundManager: LegacySoundManager;
+
+  private tcas: LegacyTcasComputer;
 
   private keyInterceptManager: KeyEventManager;
 
@@ -118,6 +121,9 @@ class SystemsHost extends BaseInstrument {
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
 
+    this.tcas = new LegacyTcasComputer(this.soundManager);
+    this.tcas.init();
+
     let lastUpdateTime: number;
     // TODO this is really fast for the FWC...
     this.bus
@@ -131,6 +137,7 @@ class SystemsHost extends BaseInstrument {
         this.fwc.update(dt);
         this.soundManager.update(dt);
         this.gpws.update(dt);
+        this.tcas.update(dt);
       });
 
     Promise.all([
