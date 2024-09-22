@@ -4,8 +4,9 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
-  - [Auto Flight System ATA 22](#afs-ata-22)
+  - [Air Conditioning / Pressurisation / Ventilation ATA  21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
+  - [Flight Management System ATA 22](#flight-management-system-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
@@ -111,6 +112,60 @@
 - A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
     - Degrees
     - Angular position of right nose wheel (in wheel axis not steering)
+
+
+- A32NX_LIGHTING_PRESET_LOAD
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+
+- A32NX_LIGHTING_PRESET_SAVE
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be overwritten and saved to an ini file
+    - Will be reset to 0 after saving is done
+
+- A32NX_AIRCRAFT_PRESET_LOAD
+    - Number
+    - ID for preset (1..5)
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+    - When set to 0 during loading will stop and cancel the loading process
+    - | Value | Meaning            |
+            |-------|--------------------|
+      | 1     | Cold & Dark        |
+      | 2     | Powered            |
+      | 3     | Ready for Pushback |
+      | 4     | Ready for Taxi     |
+      | 5     | Ready for Takeoff  |
+
+- A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS
+    - Number (0.0..1.0)
+    - While loading a preset this will contain the percentage of the total progress of loading
+
+- A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE
+    - Bool
+    - When set to true the loading process will be expedited and the loading will be done as fast as possible
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Bool
+    - Read/Write
+    - 0 when pushback system is completely disabled, 1 when system is enabled
+    - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
+    - This prevents conflicts with other pushback add-ons
+
+- A32NX_PUSHBACK_SPD_FACTOR
+    - Number -1.0..1.0
+    - Read/Write
+    - Speed factor for pushback
+    - 0.0 is stopped, 1.0 is full speed forward, -1.0 is full speed backward
+
+- A32NX_PUSHBACK_HDG_FACTOR
+    - Number -1.0..1.0
+    - Read/Write
+    - Turn factor for pushback
+    - -1.0 is full left, 0.0 is straight, 1.0 is full right
 
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
@@ -307,6 +362,13 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+## Flight Management System ATA 22
+
+- A32NX_FMS_SWITCHING_KNOB
+    - FMS used
+    - Position (0-2)
+    - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
 ## Electrical ATA 24
 

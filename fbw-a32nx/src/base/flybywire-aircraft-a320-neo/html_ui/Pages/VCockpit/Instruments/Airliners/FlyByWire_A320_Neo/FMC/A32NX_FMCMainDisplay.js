@@ -2586,7 +2586,7 @@ class FMCMainDisplay extends BaseAirliners {
         const newLevel = this.cruiseLevel;
         // Keep simvar in sync for the flight phase manager
         if (newLevel !== oldCruiseLevel) {
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
         }
     }
 
@@ -2656,13 +2656,13 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number | null} gross weight in tons or null if not available.
      */
     getGrossWeight() {
-        const useFqi = this.isAnEngineOn();
+        const fob = this.getFOB();
 
-        if (this.zeroFuelWeight === undefined || (!useFqi && this.blockFuel === undefined)) {
+        if (this.zeroFuelWeight === undefined || fob === undefined) {
             return null;
         }
 
-        return this.zeroFuelWeight + (useFqi ? this.getFOB() : this.blockFuel);
+        return this.zeroFuelWeight + fob;
     }
 
     getToSpeedsTooLow() {
@@ -3118,7 +3118,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             // In future we probably want a better way of checking this, as 0 is
             // in the valid flex temperature range (-99 to 99).
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
+            SimVar.SetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
         let value = parseInt(s);
@@ -3137,7 +3137,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = 0.1;
         }
         this.perfTOTemp = value;
-        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
+        SimVar.SetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "Number", value);
         return true;
     }
 
@@ -4535,30 +4535,30 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     * Retrieves current fuel on boad in tons.
      *
-     * @returns {*}
+     * @returns {number | undefined} current fuel on board in tons, or undefined if fuel readings are not available.
      */
     //TODO: Can this be util?
     getFOB() {
-        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
+        const useFqi = this.isAnEngineOn();
+
+        // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
+        return useFqi ? (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000 : this.blockFuel;
     }
 
     /**
-     * retrieves GW in Tons
+     * retrieves gross weight in tons or 0 if not available
      * @returns {number}
+     * @deprecated use getGrossWeight() instead
      */
     //TODO: Can this be util?
     getGW() {
-        let fmGW = 0;
-        if (this.isAnEngineOn() && isFinite(this.zeroFuelWeight)) {
-            fmGW = (this.getFOB() + this.zeroFuelWeight);
-        } else if (isFinite(this.blockFuel) && isFinite(this.zeroFuelWeight)) {
-            fmGW = (this.blockFuel + this.zeroFuelWeight);
-        } else {
-            fmGW = 0;
-        }
-        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
-        return fmGW;
+        const fmGwOrNull = this.getGrossWeight();
+        const fmGw = fmGwOrNull !== null ? fmGwOrNull : 0;
+
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGw);
+        return fmGw;
     }
 
     //TODO: Can this be util?
@@ -4677,7 +4677,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (plan) {
             this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level);
             // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
         }
     }
 

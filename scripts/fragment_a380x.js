@@ -4,6 +4,7 @@ const fs = require('fs');
 const execute = async () => {
   try {
     const result = await fragmenter.pack({
+      version: require('./fragmenter_version').version,
       packOptions: { splitFileSize: 102_760_448, keepCompleteModulesAfterSplit: false },
       baseDir: './fbw-a380x/out/flybywire-aircraft-a380-842',
       outDir: './fbw-a380x/out/build-modules',
