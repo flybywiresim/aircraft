@@ -159,19 +159,16 @@ interface LandingGearCtlProps extends ComponentPositionProps {
 const LandingGearCtl = ({ x, y, lgciu1DiscreteWord1, lgciu2DiscreteWord1 }: LandingGearCtlProps) => {
   const anyLgciuValid = lgciu1DiscreteWord1.isNormalOperation() || lgciu2DiscreteWord1.isNormalOperation();
 
-  const leftMainGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.bitValue(14) || lgciu2DiscreteWord1.bitValue(14);
+  const leftMainGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.bitValue(14) || lgciu2DiscreteWord1.bitValue(14);
   const rightMainGearNotDownlockedAndSelectedDown =
     lgciu1DiscreteWord1.bitValue(15) || lgciu2DiscreteWord1.bitValue(15);
-  const noseGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.bitValue(16) || lgciu2DiscreteWord1.bitValue(16);
+  const noseGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.bitValue(16) || lgciu2DiscreteWord1.bitValue(16);
 
   const leftMainGearNotUplockedAndNotSelectedDown =
     lgciu1DiscreteWord1.bitValue(11) || lgciu2DiscreteWord1.bitValue(11);
   const rightMainGearNotUplockedAndNotSelectedDown =
     lgciu1DiscreteWord1.bitValue(12) || lgciu2DiscreteWord1.bitValue(12);
-  const noseGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.bitValue(13) || lgciu2DiscreteWord1.bitValue(13);
+  const noseGearNotUplockedAndNotSelectedDown = lgciu1DiscreteWord1.bitValue(13) || lgciu2DiscreteWord1.bitValue(13);
 
   const landingGearInTransit =
     anyLgciuValid &&

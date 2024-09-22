@@ -1380,8 +1380,7 @@ export class PseudoFWC {
     this.overspeedWarning.set(overspeedWarning);
 
     // TO SPEEDS NOT INSERTED
-    const fmToSpeedsNotInserted =
-      fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
+    const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
 
     this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw, deltaTime);
 
@@ -1757,9 +1756,7 @@ export class PseudoFWC {
 
     // DIRECT LAW computation
     const SPBUL =
-      (false && SFCDC12FT) ||
-      fcdc1DiscreteWord1.bitValueOr(15, false) ||
-      fcdc2DiscreteWord1.bitValueOr(15, false);
+      (false && SFCDC12FT) || fcdc1DiscreteWord1.bitValueOr(15, false) || fcdc2DiscreteWord1.bitValueOr(15, false);
     this.directLawCondition.set(SPBUL && ![1, 10].includes(this.fwcFlightPhase.get()));
 
     // L+R ELEV FAULT computation
@@ -1796,9 +1793,7 @@ export class PseudoFWC {
       (sec3GroundSpoilerFault || sec3SpeedbrakeLeverFault);
 
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
-    this.speedBrakeCommand.set(
-      fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false),
-    );
+    this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
@@ -1848,8 +1843,7 @@ export class PseudoFWC {
       (this.toConfigTestHeldMin1s5Pulse.get() && this.slatsNotTo.get()) || this.slatConfigSr.read(),
     );
 
-    const speedbrakesNotInToPos =
-      fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false);
+    const speedbrakesNotInToPos = fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false);
     this.speedbrakesConfigSr.write(
       this.flightPhase34.get() && speedbrakesNotInToPos,
       !speedbrakesNotInToPos || this.fwcFlightPhase.get() === 5,
