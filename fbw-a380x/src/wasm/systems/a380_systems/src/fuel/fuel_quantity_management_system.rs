@@ -37,7 +37,7 @@ struct ZfwParams {
     target_zfw: Vec<ZfwRange>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize)]
 struct ZfwRange {
     start: u32,
     end: u32,
@@ -308,49 +308,43 @@ impl RefuelApplication {
     }
 
     fn lookup_trim_fuel_from_target_fuel_range(
-        &mut self,
-        zfw_category: &HashMap<u32, Vec<u32>>,
-        total_fuel_desired_rounded: u32,
+        target_zfw_cg_keys: &[u32],
+        target_fuel_range: &[u32],
         zero_fuel_weight_cg_rounded: u32,
     ) -> Mass {
-        let target_fuel_range = zfw_category.get(&total_fuel_desired_rounded).unwrap();
-
-        let cg_index = self
-            .trim_tank_map
-            .params
-            .target_zfw_cg
+        let cg_index = target_zfw_cg_keys
             .iter()
             .position(|&x| x == zero_fuel_weight_cg_rounded)
             .unwrap_or_default();
         Mass::new::<kilogram>(target_fuel_range[cg_index] as f64)
     }
 
-    fn lookup_trim_fuel_from_mapping(
-        &mut self,
+    fn normalise_fuel_range(
+        min_fuel_desired: u32,
+        max_fuel_desired: u32,
+        total_desired_fuel_rounded: u32,
+    ) -> u32 {
+        match total_desired_fuel_rounded {
+            x if x < min_fuel_desired => min_fuel_desired,
+            x if x > max_fuel_desired => max_fuel_desired,
+            _ => total_desired_fuel_rounded,
+        }
+    }
+
+    fn get_target_fuel_range(
         zfw_category: &HashMap<u32, Vec<u32>>,
         total_desired_fuel_rounded: u32,
-        zero_fuel_weight_cg_rounded: u32,
-    ) -> Mass {
-        let lowest_fuel_desired = *(zfw_category.keys().min().unwrap());
-        let largest_fuel_desired = *(zfw_category.keys().max().unwrap());
+    ) -> &Vec<u32> {
+        let min_fuel_desired = *zfw_category.keys().min().unwrap();
+        let max_fuel_desired = *zfw_category.keys().max().unwrap();
 
-        match total_desired_fuel_rounded {
-            x if x < lowest_fuel_desired => self.lookup_trim_fuel_from_target_fuel_range(
-                zfw_category,
-                lowest_fuel_desired,
-                zero_fuel_weight_cg_rounded,
-            ),
-            x if x > largest_fuel_desired => self.lookup_trim_fuel_from_target_fuel_range(
-                zfw_category,
-                largest_fuel_desired,
-                zero_fuel_weight_cg_rounded,
-            ),
-            _ => self.lookup_trim_fuel_from_target_fuel_range(
-                zfw_category,
+        zfw_category
+            .get(&Self::normalise_fuel_range(
+                min_fuel_desired,
+                max_fuel_desired,
                 total_desired_fuel_rounded,
-                zero_fuel_weight_cg_rounded,
-            ),
-        }
+            ))
+            .unwrap()
     }
 
     fn calculate_trim_fuel(
@@ -359,27 +353,31 @@ impl RefuelApplication {
         zero_fuel_weight: Mass,
         zero_fuel_weight_cg_percent_mac: f64,
     ) -> Mass {
+        // Init Inputs
         let total_desired_fuel_rounded =
             ((total_desired_fuel.get::<kilogram>() / 1000.0).floor() * 1000.0) as u32;
         let zero_fuel_weight_cg_rounded = (zero_fuel_weight_cg_percent_mac).floor() as u32;
+        let target_zfw = &self.trim_tank_map.params.target_zfw;
+        let trim_tank_tables = &self.trim_tank_map.trim_tank_targets.tables;
 
-        let mut trim_fuel = Mass::default();
-        let target_zfw = self.trim_tank_map.params.target_zfw.clone();
-        let trim_tank_targets = self.trim_tank_map.trim_tank_targets.tables.clone();
-
-        for (range, zfw_category) in target_zfw.iter().zip(&trim_tank_targets) {
-            if zero_fuel_weight >= Mass::new::<kilogram>(range.start as f64)
-                && zero_fuel_weight <= Mass::new::<kilogram>(range.end as f64)
+        // Find the correct table to use based on ZFW
+        for (range, zfw_category) in target_zfw.iter().zip(trim_tank_tables) {
+            if (range.start as f64..=range.end as f64).contains(&zero_fuel_weight.get::<kilogram>())
             {
-                trim_fuel = self.lookup_trim_fuel_from_mapping(
-                    zfw_category,
-                    total_desired_fuel_rounded,
+                // Fetch 1) Possible ZFWCG% column values and 2) The target fuel row values
+                let target_zfw_cg_keys = &self.trim_tank_map.params.target_zfw_cg;
+                let target_fuel_range =
+                    Self::get_target_fuel_range(zfw_category, total_desired_fuel_rounded);
+
+                // Then, given the current target fuel (row). Shift this value depending on ZFWCG% (column) to find trim fuel value.
+                return Self::lookup_trim_fuel_from_target_fuel_range(
+                    target_zfw_cg_keys,
+                    target_fuel_range,
                     zero_fuel_weight_cg_rounded,
                 );
-                break;
             }
         }
-        trim_fuel
+        Mass::default()
     }
 
     pub fn calculate_auto_refuel(
@@ -389,10 +387,8 @@ impl RefuelApplication {
         zero_fuel_weight_cg_percent_mac: f64,
     ) -> HashMap<A380FuelTankType, Mass> {
         // Note: Does not account for unusable fuel, or non-fixed H-ARM
-        // Also needs to be refactored into a look up table or some kind of easier to modify configuration file
 
-        // Currently uses default (non-entered) data for ZFW at all times
-        // The default values are ZFW = 300 000 kg (661 386 lb), and ZFCG = 36.5 %RC.
+        // TODO FIXME: If no input is provided from the MFD, The default values are ZFW = 300 000 kg (661 386 lb), and ZFCG = 36.5 %RC.
 
         let a = Mass::new::<kilogram>(18000.);
         let b = Mass::new::<kilogram>(26000.);
