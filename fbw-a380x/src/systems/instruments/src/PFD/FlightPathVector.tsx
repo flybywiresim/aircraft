@@ -83,6 +83,8 @@ export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
 
     const moveBirdSub = MappedSubject.create(this.data.roll, this.data.pitch, this.data.fpa, this.data.da).sub(
       this.moveBird.bind(this),
+      true,
+      true,
     );
 
     this.isBirdHidden.sub((isHidden) => {
@@ -91,7 +93,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
       } else {
         moveBirdSub.resume(true);
       }
-    });
+    }, true);
   }
 
   private moveBird() {
