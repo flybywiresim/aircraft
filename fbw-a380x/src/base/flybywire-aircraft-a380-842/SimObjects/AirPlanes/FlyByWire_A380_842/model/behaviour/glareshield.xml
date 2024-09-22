@@ -34,6 +34,8 @@
             <SEQ1_CODE>(L:A32NX_MASTER_WARNING)</SEQ1_CODE>
             <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or</SEQ1_POWERED>
             <DISABLE_SEQ2/>
+            <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
         </UseTemplate>
 
         <!-- MASTER CAUT -->
@@ -45,6 +47,8 @@
             <SEQ1_CODE>(L:A32NX_MASTER_CAUTION)</SEQ1_CODE>
             <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or</SEQ1_POWERED>
             <DISABLE_SEQ2/>
+            <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
         </UseTemplate>
 
         <!-- SIDESTICK PROPRITY -->
@@ -80,13 +84,15 @@
 
         <!-- MASTER WARN -->
         <UseTemplate Name="FBW_Push_Held">
-            <NODE_ID>PUSH_GLARESHIELD_FO_MASTERWARN</NODE_ID> <!-- this typo is intentional, it's like that in the gltf -->
+            <NODE_ID>PUSH_GLARESHIELD_FO_MASTERWARN</NODE_ID>
             <TOOLTIPID>ACKNOWLEDGE MASTER WARNING</TOOLTIPID>
             <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_R</HOLD_SIMVAR>
             <!-- FIXME korry should be split in two, and each half connected to correct CPIOM + power supply  -->
             <SEQ1_CODE>(L:A32NX_MASTER_WARNING)</SEQ1_CODE>
             <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or</SEQ1_POWERED>
             <DISABLE_SEQ2/>
+            <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
         </UseTemplate>
 
         <!-- MASTER CAUT -->
@@ -98,6 +104,8 @@
             <SEQ1_CODE>(L:A32NX_MASTER_CAUTION)</SEQ1_CODE>
             <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or</SEQ1_POWERED>
             <DISABLE_SEQ2/>
+            <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
         </UseTemplate>
 
         <!-- SIDESTICK PROPRITY -->

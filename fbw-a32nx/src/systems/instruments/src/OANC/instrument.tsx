@@ -88,7 +88,7 @@ class A32NX_OANC extends BaseInstrument {
 
   private readonly controlPanelVisible = Subject.create(false);
 
-  private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly oansMessageScreenRef = FSComponent.createRef<HTMLDivElement>();
 
   constructor() {
     super();
@@ -123,7 +123,7 @@ class A32NX_OANC extends BaseInstrument {
         class="oanc-container"
         style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}
       >
-        <div ref={this.waitScreenRef} class="oanc-waiting-screen">
+        <div ref={this.oansMessageScreenRef} class="oanc-message-screen">
           PLEASE WAIT
         </div>
         <Oanc
@@ -134,7 +134,7 @@ class A32NX_OANC extends BaseInstrument {
           contextMenuItems={this.contextMenuItems}
           contextMenuX={this.contextMenuX}
           contextMenuY={this.contextMenuY}
-          waitScreenRef={this.waitScreenRef}
+          messageScreenRef={this.oansMessageScreenRef}
           zoomValues={a320EfisZoomRangeSettings}
         />
         <ControlPanel
