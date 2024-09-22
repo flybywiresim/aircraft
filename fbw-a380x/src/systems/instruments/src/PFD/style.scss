@@ -200,6 +200,27 @@ tspan.White {
   stroke: none;
 }
 
+.Black {
+  fill: none;
+  stroke: $display-background;
+}
+.Black.Fill {
+  fill: $display-background;
+  stroke: none;
+}
+.Black.Fill.Stroke {
+  fill: $display-background;
+  stroke: $display-background;
+}
+text.Black {
+  fill: $display-background;
+  stroke: none;
+}
+tspan.Black {
+  fill: $display-background;
+  stroke: none;
+}
+
 .Green {
   stroke: $display-green;
   fill: none;
