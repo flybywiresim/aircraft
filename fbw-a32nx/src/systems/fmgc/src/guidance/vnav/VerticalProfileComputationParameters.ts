@@ -197,14 +197,9 @@ export class VerticalProfileComputationParametersObserver {
   }
 
   getFuelOnBoard(): Pounds {
-    const fmGw = this.fmgc.getGrossWeight();
-    const fmZfw = this.fmgc.getZeroFuelWeight();
+    const fmFuelOnBoard = this.fmgc.getFOB();
 
-    if (Number.isFinite(fmGw) && Number.isFinite(fmZfw)) {
-      return UnitType.TONNE.convertTo(fmGw - fmZfw, UnitType.POUND);
-    }
-
-    return undefined;
+    return Number.isFinite(fmFuelOnBoard) ? UnitType.TONNE.convertTo(fmFuelOnBoard, UnitType.POUND) : undefined;
   }
 }
 

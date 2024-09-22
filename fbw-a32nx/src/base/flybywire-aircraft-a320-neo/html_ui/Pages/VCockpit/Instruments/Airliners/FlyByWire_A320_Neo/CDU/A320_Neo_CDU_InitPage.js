@@ -338,10 +338,7 @@ class CDUInitPage {
         }
     }
     static fuelPredConditionsMet(mcdu) {
-        const useFqi = mcdu.isAnEngineOn();
-        const blockFuel = mcdu._blockFuelEntered ? mcdu.blockFuel : undefined;
-
-        const fob = useFqi ? mcdu.getFOB() : blockFuel;
+        const fob = mcdu.getFOB();
 
         return Number.isFinite(fob) &&
             Number.isFinite(mcdu.zeroFuelWeightMassCenter) &&
