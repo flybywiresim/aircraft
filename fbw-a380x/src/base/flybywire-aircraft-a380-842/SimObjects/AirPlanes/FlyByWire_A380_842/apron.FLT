@@ -224,6 +224,7 @@ TailhookState=0
 FoldingWingsHandle=False
 FoldingWingsState=0, 0
 ExternalPowerSwitch=False
+SeatBeltsSwitch=False
 
 [LocalVars.0]
 A320_Neo_AIRCOND_LVL_1=50
@@ -419,7 +420,7 @@ XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV=10.5
 XMLVAR_SWITCH_OVHD_CABINPRESS_MANVSCTL=37.5
 XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position=2
 XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position=2
-XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position=1
+XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position=0
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -448,7 +449,6 @@ WingLights=False
 CabinLights=False
 GlareshieldLights=True
 PedestalLights=True
-SeatBeltsSwitch=False
 Potentiometer.7=0
 Potentiometer.8=0
 Potentiometer.9=0
