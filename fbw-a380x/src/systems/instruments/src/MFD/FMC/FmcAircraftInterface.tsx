@@ -1088,16 +1088,16 @@ export class FmcAircraftInterface {
     if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
       const f = Math.max(speeds.f2, Vmcl + 5);
       SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-      this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+      this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
     } else {
       if (flaps === 2) {
         const f = Math.max(speeds.f2, Vmcl + 15);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
       } else if (flaps === 3) {
         const f = Math.max(speeds.f3, Vmcl + 10);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
       }
     }
 
