@@ -396,9 +396,9 @@ export class FmgcDataService implements Fmgc {
     return SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
   }
 
-  getManagedCruiseSpeed(): Knots {
+  getManagedCruiseSpeed(econ?: boolean): Knots {
     const preSel = this.data.cruisePreSelSpeed.get();
-    if (Number.isFinite(preSel) && preSel !== null) {
+    if (!econ && Number.isFinite(preSel) && preSel !== null) {
       return preSel;
     }
 
@@ -444,8 +444,8 @@ export class FmgcDataService implements Fmgc {
     return this.data.takeoffFlapsSetting.get();
   }
 
-  getManagedDescentSpeed(): Knots {
-    if (Number.isFinite(this.data.descentPreSelSpeed.get())) {
+  getManagedDescentSpeed(econ?: boolean): Knots {
+    if (!econ && Number.isFinite(this.data.descentPreSelSpeed.get())) {
       return this.data.descentPreSelSpeed.get() ?? 0;
     }
     // TODO adapt for A380
@@ -463,6 +463,19 @@ export class FmgcDataService implements Fmgc {
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
     return 0.8;
+  }
+
+  getEconSpeedDependingOnPhase(): number {
+    switch (this.getFlightPhase()) {
+      case FmgcFlightPhase.Climb:
+        return this.getManagedClimbSpeed();
+      case FmgcFlightPhase.Cruise:
+        return this.getManagedCruiseSpeed(true);
+      case FmgcFlightPhase.Descent:
+        return this.getManagedDescentSpeed(true);
+      default:
+        return 0;
+    }
   }
 
   getApproachSpeed(): Knots {

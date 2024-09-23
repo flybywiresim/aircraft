@@ -652,6 +652,7 @@ export class FmcAircraftInterface {
 
     let vPfd: number = 0;
     let isMach = false;
+    let descentPhase = false;
 
     this.updateHoldingSpeed();
     this.fmc.clearCheckSpeedModeMessage();
@@ -747,6 +748,7 @@ export class FmcAircraftInterface {
           // We fetch this data from VNAV
           vPfd = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
           this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots');
+          descentPhase = true;
 
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
           // Also, VNAV already does the conversion from Mach if necessary
@@ -809,9 +811,36 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
 
-    if (this.isAirspeedManaged()) {
+    const ismanaged = this.isAirspeedManaged();
+
+    if (ismanaged) {
       Coherent.call('AP_SPD_VAR_SET', 0, Vtap).catch(console.error);
     }
+
+    //short term managed speed
+    let shortTermManagedSpeed = 0;
+    if (ismanaged) {
+      const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
+      const shortTermActiveInmanaged =
+        this.fmgc.getFlightPhase() != FmgcFlightPhase.Cruise &&
+        verticalMode != 23 &&
+        verticalMode != 40 &&
+        verticalMode != 41; // DES, SRS & SRS GA
+      if (shortTermActiveInmanaged && this.isSpeedDifferentGreaterThan2Kt(vPfd, Vtap)) {
+        shortTermManagedSpeed = Vtap;
+      }
+    } else {
+      const selectedSpeed = Simplane.getAutoPilotSelectedAirspeedHoldValue() ?? 0;
+      if (selectedSpeed) {
+        const speedTarget = this.holdDecelReached || descentPhase ? this.fmgc.getEconSpeedDependingOnPhase() : Vtap; // FIX me in decel segments it should use ECON
+        shortTermManagedSpeed = speedTarget;
+      }
+    }
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM', 'knots', shortTermManagedSpeed);
+  }
+
+  private isSpeedDifferentGreaterThan2Kt(speed: number, speed2: number) {
+    return Math.abs(speed - speed2) > 2;
   }
 
   getAppManagedSpeed() {
