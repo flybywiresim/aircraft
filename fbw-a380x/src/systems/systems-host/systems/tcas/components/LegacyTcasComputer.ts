@@ -569,13 +569,11 @@ export class LegacyTcasComputer implements Instrument {
       if (!onGround) {
         if (traffic.groundSpeed >= 30) {
           // Workaround for MSFS live traffic, TODO: add option to disable
-          if (this.tcasAltSelect.get()) {
-            if (
-              traffic.relativeAlt >= TCAS.THREAT[this.tcasAltSelect.get() + 1][Limits.MIN] &&
-              traffic.relativeAlt <= TCAS.THREAT[this.tcasAltSelect.get() + 1][Limits.MAX]
-            ) {
-              isDisplayed = true;
-            }
+          if (
+            traffic.relativeAlt >= TCAS.THREAT[this.tcasAltSelect.get() + 1][Limits.MIN] &&
+            traffic.relativeAlt <= TCAS.THREAT[this.tcasAltSelect.get() + 1][Limits.MAX]
+          ) {
+            isDisplayed = true;
           }
         }
       } else if (this.debug) {
