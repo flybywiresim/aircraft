@@ -53,7 +53,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private readonly xpdrStatusSelectedIndex = Subject.create<number | null>(0);
 
-  private readonly tcasFailed = Subject.create<boolean>(true);
+  private readonly tcasFailed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(2);
 
