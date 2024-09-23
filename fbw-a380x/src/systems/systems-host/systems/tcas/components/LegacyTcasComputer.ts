@@ -409,6 +409,7 @@ export class LegacyTcasComputer implements Instrument {
       this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
       this.tcasPower
     ) {
+      this.resetDisplay();
       this.tcasFault.setVar(true);
     } else {
       this.tcasFault.setVar(false);
@@ -1301,6 +1302,12 @@ export class LegacyTcasComputer implements Instrument {
     );
   }
 
+  private resetDisplay() {
+    this.sendAirTraffic.length = 0;
+    this.syncer.sendEvent('A32NX_TCAS_L_TRAFFIC', this.sendAirTraffic);
+    this.syncer.sendEvent('A32NX_TCAS_R_TRAFFIC', this.sendAirTraffic);
+  }
+
   onUpdate() {}
 
   /**
@@ -1311,28 +1318,28 @@ export class LegacyTcasComputer implements Instrument {
     this.updateVars();
     this.updateInhibitions();
     this.updateStatusFaults();
-    if (this.tcasMode.getVar() === TcasMode.STBY) {
-      this.advisoryState = TcasState.NONE;
-      this.tcasState.setVar(TcasState.NONE);
-      this.correctiveRa.setVar(false);
-      this.raType.setVar(RaType2.NONE);
-      this.rateToMaintain.setVar(0);
-      this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
-      this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
-      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
-      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
-      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);
-      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
-      if (this.sendAirTraffic.length !== 0) {
-        this.sendAirTraffic.length = 0;
-        this.syncer.sendEvent('A32NX_TCAS_L_TRAFFIC', this.sendAirTraffic);
-        this.syncer.sendEvent('A32NX_TCAS_R_TRAFFIC', this.sendAirTraffic);
+    if (this.tcasFault.getVar() !== true) {
+      if (this.tcasMode.getVar() === TcasMode.STBY) {
+        this.advisoryState = TcasState.NONE;
+        this.tcasState.setVar(TcasState.NONE);
+        this.correctiveRa.setVar(false);
+        this.raType.setVar(RaType2.NONE);
+        this.rateToMaintain.setVar(0);
+        this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+        this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
+        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
+        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);
+        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
+        if (this.sendAirTraffic.length !== 0) {
+          this.resetDisplay();
+        }
+        return;
       }
-      return;
+      this.fetchRawTraffic(_deltaTime);
+      this.updateTraffic(_deltaTime);
+      this.updateRa(_deltaTime);
+      this.emitDisplay();
     }
-    this.fetchRawTraffic(_deltaTime);
-    this.updateTraffic(_deltaTime);
-    this.updateRa(_deltaTime);
-    this.emitDisplay();
   }
 }
