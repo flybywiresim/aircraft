@@ -1,4 +1,7 @@
-import { EventBus, UnitType } from '@microsoft/msfs-sdk';
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { EventBus, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -17,13 +20,6 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
  * Essentially part of the FMC (-A/-B/-C)
  */
 export class FmcAircraftInterface {
-  constructor(
-    private bus: EventBus,
-    private fmc: FmcInterface,
-    private fmgc: FmgcDataService,
-    private flightPlanService: FlightPlanService,
-  ) {}
-
   // ARINC words
   // arinc bus output words
   public arincDiscreteWord2 = FmArinc429OutputWord.emptyFm('DISCRETE_WORD_2');
@@ -81,6 +77,44 @@ export class FmcAircraftInterface {
     this.arincTransitionLevel,
     this.arincEisWord2,
   ];
+
+  private readonly speedAlphaProt = Subject.create(0);
+  private readonly speedAlphaMax = Subject.create(0);
+  private readonly speedAlphaStall = Subject.create(0);
+  private readonly speedVs1g = Subject.create(0);
+  private readonly speedVls = Subject.create(0);
+  private readonly speedVmax = Subject.create(0);
+  private readonly speedVfeNext = Subject.create(0);
+  private readonly speedVapp = Subject.create(0);
+
+  constructor(
+    private bus: EventBus,
+    private fmc: FmcInterface,
+    private fmgc: FmgcDataService,
+    private flightPlanService: FlightPlanService,
+  ) {
+    this.init();
+  }
+
+  private init(): void {
+    // write local vars for other systems
+    this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v), true);
+    this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true);
+    this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true);
+
+    this.speedAlphaProt.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', v), true);
+    this.speedAlphaMax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', v), true);
+    this.speedAlphaStall.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', v), true);
+    this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true);
+    this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true);
+    this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true);
+    this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true);
+    this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true);
+
+    this.fmgc.data.approachFlapConfig
+      .map((v) => v === FlapConf.CONF_3)
+      .sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v), true);
+  }
 
   thrustReductionAccelerationChecks() {
     const activePlan = this.flightPlanService.active;
@@ -1079,35 +1113,30 @@ export class FmcAircraftInterface {
       towerHeadwind,
     );
 
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', speeds.alphaProt);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', speeds.alphaMax);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', speeds.alphaStallWarn);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', speeds.vs1g);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', speeds.vls);
+    this.speedAlphaProt.set(Math.round(speeds.alphaProt));
+    this.speedAlphaMax.set(Math.round(speeds.alphaMax));
+    this.speedAlphaStall.set(Math.round(speeds.alphaStallWarn));
+    this.speedVs1g.set(Math.round(speeds.vs1g));
+    this.speedVls.set(Math.round(speeds.vls));
 
     if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Preflight) {
       const f = Math.max(speeds.f2, Vmcl + 5);
-      SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-      this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+      this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
     } else {
       if (flaps === 2) {
         const f = Math.max(speeds.f2, Vmcl + 15);
-        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
       } else if (flaps === 3) {
         const f = Math.max(speeds.f3, Vmcl + 10);
-        SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', f);
-        this.fmgc.data.greenDotSpeed.set(Math.ceil(f));
+        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
       }
     }
 
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', speeds.s);
     this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', speeds.gd);
     this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.gd));
 
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', speeds.vmax);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', speeds.vfeN);
+    this.speedVmax.set(Math.round(speeds.vmax));
+    this.speedVfeNext.set(Math.round(speeds.vfeN));
 
     const approachSpeeds = new A380OperatingSpeeds(
       ldgWeight / 1000,
@@ -1120,13 +1149,7 @@ export class FmcAircraftInterface {
     this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
     this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
     this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', approachSpeeds.vapp); // Needed for ROP/BTV
-
-    SimVar.SetSimVarValue(
-      'L:A32NX_SPEEDS_LANDING_CONF3',
-      'boolean',
-      this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3,
-    );
+    this.speedVapp.set(Math.round(approachSpeeds.vapp));
   }
 
   /** Write gross weight to SimVar */

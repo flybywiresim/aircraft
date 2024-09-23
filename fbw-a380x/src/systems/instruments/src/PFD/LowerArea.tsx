@@ -122,21 +122,21 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('slatsFlapsStatus')
       .whenChanged()
       .handle((s) => {
-        this.configClean = s.getBitValue(17);
-        this.config1 = s.getBitValue(18);
-        this.config2 = s.getBitValue(19);
-        this.config3 = s.getBitValue(20);
-        this.configFull = s.getBitValue(21);
-        this.flaps1AutoRetract = s.getBitValue(26);
+        this.configClean = s.bitValue(17);
+        this.config1 = s.bitValue(18);
+        this.config2 = s.bitValue(19);
+        this.config3 = s.bitValue(20);
+        this.configFull = s.bitValue(21);
+        this.flaps1AutoRetract = s.bitValue(26);
 
-        this.flapReliefEngaged.set(s.getBitValue(22));
-        this.alphaLockEngaged.set(s.getBitValue(24));
+        this.flapReliefEngaged.set(s.bitValue(22));
+        this.alphaLockEngaged.set(s.bitValue(24));
 
-        this.slatsFault.set(s.getBitValue(11));
-        this.flapsFault.set(s.getBitValue(12));
+        this.slatsFault.set(s.bitValue(11));
+        this.flapsFault.set(s.bitValue(12));
 
-        this.slatsDataValid.set(s.getBitValue(28));
-        this.flapsDataValid.set(s.getBitValue(29));
+        this.slatsDataValid.set(s.bitValue(28));
+        this.flapsDataValid.set(s.bitValue(29));
 
         if (this.configClean) {
           this.targetText.set('0');
@@ -469,7 +469,7 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
     // TODO change to proper LGCIS input once LGCIS is implemented
     sub.on('lgciuDiscreteWord1').handle((word) => {
-      const gearDownAndLocked = word.getBitValue(23) && word.getBitValue(24) && word.getBitValue(25);
+      const gearDownAndLocked = word.bitValue(23) && word.bitValue(24) && word.bitValue(25);
       this.landingGearDownAndLocked.set(gearDownAndLocked ? 'visible' : 'hidden');
     });
   }

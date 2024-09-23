@@ -37,10 +37,13 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { ApproachType } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
+
   private activateApprButton = FSComponent.createRef<HTMLDivElement>();
 
   private managedSpeedActive = Subject.create<boolean>(false);
@@ -382,6 +385,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private transFlIsPilotEntered = Subject.create<boolean>(true);
 
   // APPR page subjects, refs and methods
+
+  private precisionApproachSelected = Subject.create<boolean>(false);
+
   private apprIdent = Subject.create<string>('');
 
   private apprHeadwind = Subject.create<string>('');
@@ -393,6 +399,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprLandingWeight = Subject.create<number | null>(null);
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
+
+  private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -520,9 +528,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport.ident);
     }
 
+    let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
       this.apprIdent.set(this.loadedFlightPlan.approach.ident);
+      precisionApproach =
+        this.loadedFlightPlan.approach.type === ApproachType.Ils ||
+        this.loadedFlightPlan.approach.type === ApproachType.Gls;
     }
+
+    this.precisionApproachSelected.set(precisionApproach);
 
     if (fm.approachFlapConfig) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
@@ -703,7 +717,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTablePredLine2.set(null);
           } else {
             this.clbTableModeLine1.set('SELECTED');
-            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.clbTablePredLine1.set(null);
 
@@ -810,7 +824,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
@@ -826,7 +840,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTablePredLine2.set(null);
           } else {
             this.crzTableModeLine1.set('SELECTED');
-            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
+            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : (obs?.fcuSpeed.toFixed(0) ?? null));
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.crzTablePredLine1.set(null);
 
@@ -835,7 +849,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
@@ -875,7 +889,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
@@ -2462,25 +2476,31 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         />
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
-                        <span class="mfd-label mfd-spacing-right perf-appr-weather">RADIO</span>
-                        <InputField<number>
-                          dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
-                          dataHandlerDuringValidation={async (v) => {
-                            if (v === undefined) {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                            } else if (v === null) {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
-                            } else {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
-                            }
-                          }}
-                          mandatory={Subject.create(false)}
-                          value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
-                          containerStyle="width: 150px;"
-                          alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                          hEventConsumer={this.props.mfd.hEventConsumer}
-                          interactionMode={this.props.mfd.interactionMode}
+                        <span class="mfd-label mfd-spacing-right perf-appr-weather">{this.apprRadioText}</span>
+                        <ConditionalComponent
+                          condition={this.precisionApproachSelected}
+                          componentIfTrue={
+                            <InputField<number>
+                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                              dataHandlerDuringValidation={async (v) => {
+                                if (v === undefined) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
+                                } else if (v === null) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                } else {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                }
+                              }}
+                              mandatory={Subject.create(false)}
+                              value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
+                              containerStyle="width: 150px;"
+                              alignText="flex-end"
+                              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                              hEventConsumer={this.props.mfd.hEventConsumer}
+                              interactionMode={this.props.mfd.interactionMode}
+                            />
+                          }
+                          componentIfFalse={<></>}
                         />
                       </div>
                     </div>
@@ -2688,6 +2708,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   onClick={() => this.props.mfd.uiService.navigateTo('back')}
                   buttonStyle="margin-right: 5px;"
                 />
+                <ConfirmationDialog
+                  visible={this.approachPhaseConfirmationDialogVisible}
+                  cancelAction={() => {
+                    this.approachPhaseConfirmationDialogVisible.set(false);
+                  }}
+                  confirmAction={() => {
+                    this.approachPhaseConfirmationDialogVisible.set(false);
+                    this.props.fmcService.master?.tryGoInApproachPhase();
+                  }}
+                  contentContainerStyle="width: 280px; height: 165px; bottom: -6px; left: -5px;"
+                  amberLabel={true}
+                >
+                  {'ACTIVATE APPR ?'}
+                </ConfirmationDialog>
               </div>
               <div ref={this.activateApprButton} style="margin-right: 5px;">
                 <Button
@@ -2701,7 +2735,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>,
                   )}
-                  onClick={() => this.props.fmcService.master?.tryGoInApproachPhase()}
+                  onClick={() => this.approachPhaseConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
               </div>
