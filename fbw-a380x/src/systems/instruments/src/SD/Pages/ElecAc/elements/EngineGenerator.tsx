@@ -28,7 +28,7 @@ export const EngineGenerator: FC<EngineGeneratorProps> = ({ x, y, bus }) => {
 
   return (
     <g id={`engine-generator-${bus}-indication`} transform={`translate(${x} ${y})`}>
-      <image xlinkHref="/Images/SD_ELEC_AC_ENG.png" x={-18} y={-19} width={111} height={185} />
+      <image xlinkHref="/Images/fbw-a380x/SD_ELEC_AC_ENG.png" x={-18} y={-19} width={111} height={185} />
 
       <path className="BackgroundFill" d="M 0,0 l 0,84 l 76,0 l 0,-84 z" />
 

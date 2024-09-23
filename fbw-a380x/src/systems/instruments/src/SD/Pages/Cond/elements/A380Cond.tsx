@@ -5,7 +5,14 @@ import { Triangle } from '@instruments/common/Shapes';
 const A380Cond = () => {
   return (
     <>
-      <image x={16} y={60} width={725} height={460} xlinkHref="/Images/SD_COND.png" preserveAspectRatio="none" />
+      <image
+        x={16}
+        y={60}
+        width={725}
+        height={460}
+        xlinkHref="/Images/fbw-a380x/SD_COND.png"
+        preserveAspectRatio="none"
+      />
       <text x={77} y={142} className="White F23 MiddleAlign">
         AVNCS
       </text>
