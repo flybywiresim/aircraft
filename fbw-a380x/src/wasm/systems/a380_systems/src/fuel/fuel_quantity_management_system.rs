@@ -319,18 +319,6 @@ impl RefuelApplication {
         Mass::new::<kilogram>(target_fuel_range[cg_index] as f64)
     }
 
-    fn normalise_fuel_range(
-        min_fuel_desired: u32,
-        max_fuel_desired: u32,
-        total_desired_fuel_rounded: u32,
-    ) -> u32 {
-        match total_desired_fuel_rounded {
-            x if x < min_fuel_desired => min_fuel_desired,
-            x if x > max_fuel_desired => max_fuel_desired,
-            _ => total_desired_fuel_rounded,
-        }
-    }
-
     fn get_target_fuel_range(
         zfw_category: &HashMap<u32, Vec<u32>>,
         total_desired_fuel_rounded: u32,
@@ -339,11 +327,7 @@ impl RefuelApplication {
         let max_fuel_desired = *zfw_category.keys().max().unwrap();
 
         zfw_category
-            .get(&Self::normalise_fuel_range(
-                min_fuel_desired,
-                max_fuel_desired,
-                total_desired_fuel_rounded,
-            ))
+            .get(&total_desired_fuel_rounded.clamp(min_fuel_desired, max_fuel_desired))
             .unwrap()
     }
 
