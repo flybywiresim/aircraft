@@ -242,6 +242,10 @@ export class LegacyTcasComputer implements Instrument {
 
   private readonly tcasAltSelect = ConsumerSubject.create(this.sub.on('tcas_alt_select'), 0); // TCAS - NORM/ABV/BLW
 
+  private trafficLeftEfisFilter: boolean;
+
+  private trafficRightEfisFilter: boolean;
+
   constructor(
     private readonly bus: EventBus,
     legacySoundManager: LegacySoundManager,
@@ -288,6 +292,8 @@ export class LegacyTcasComputer implements Instrument {
     this.advisoryState = TcasState.NONE;
     this.sendAirTraffic = [];
     this.activeRa = new ResAdvisory(null, false, 0, false);
+    this.trafficLeftEfisFilter = false;
+    this.trafficRightEfisFilter = false;
   }
 
   /**
@@ -323,6 +329,9 @@ export class LegacyTcasComputer implements Instrument {
     this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
     this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
     this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'boolean');
+
+    this.trafficLeftEfisFilter = SimVar.GetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean');
+    this.trafficRightEfisFilter = SimVar.GetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean');
 
     this.tcasMode.setVar(
       this.xpdrStatus === XpdrMode.STBY || this.tcasPower ? TcasMode.STBY : this.tcasAlertLevel.get(),
@@ -1279,7 +1288,19 @@ export class LegacyTcasComputer implements Instrument {
         console.log(`ERROR: RA ${tf.ID} NOT SENT`);
       }
     });
-    this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
+
+    this.syncer.sendEvent(
+      'A32NX_TCAS_L_TRAFFIC',
+      this.trafficLeftEfisFilter
+        ? this.sendAirTraffic
+        : this.sendAirTraffic.filter((traffic) => traffic.intrusionLevel >= TaRaIntrusion.TA),
+    );
+    this.syncer.sendEvent(
+      'A32NX_TCAS_R_TRAFFIC',
+      this.trafficRightEfisFilter
+        ? this.sendAirTraffic
+        : this.sendAirTraffic.filter((traffic) => traffic.intrusionLevel >= TaRaIntrusion.TA),
+    );
   }
 
   onUpdate() {}
@@ -1306,7 +1327,8 @@ export class LegacyTcasComputer implements Instrument {
       SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
       if (this.sendAirTraffic.length !== 0) {
         this.sendAirTraffic.length = 0;
-        this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
+        this.syncer.sendEvent('A32NX_TCAS_L_TRAFFIC', this.sendAirTraffic);
+        this.syncer.sendEvent('A32NX_TCAS_R_TRAFFIC', this.sendAirTraffic);
       }
       return;
     }
