@@ -23,7 +23,6 @@ import {
   TcasState,
   TcasMode,
   XpdrMode,
-  TcasThreat,
   RaParams,
   RaSense,
   RaType,
@@ -35,6 +34,8 @@ import {
   UpDownAdvisoryStatus,
 } from '../lib/TcasConstants';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export class NDTcasTraffic {
   ID: string;
@@ -174,7 +175,7 @@ export class LegacyTcasComputer implements TcasComponent {
     this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
   }); // bind to listener
 
-  private debug: boolean; // TCAS_DEBUG on/off
+  private debug: boolean; // TCAS_DEBUG on/off - NOTE: Do not use with ND, the debug layer has been deprecated/removed.
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
@@ -191,10 +192,6 @@ export class LegacyTcasComputer implements TcasComponent {
   private xpdrStatus: number; // Active XPDR ON/OFF
 
   private tcasPower: boolean; // is TCAS computer powered?
-
-  private tcasSwitchPos: number; // TCAS Switch position STBY/TA/TARA
-
-  private altRptgSwitchPos: number; // ATC Alt Reporting Switch Position
 
   private tcasMode: LocalSimVar<TcasMode>; // TCAS S/MODE TODO FIXME: ARINC429
 
@@ -250,15 +247,16 @@ export class LegacyTcasComputer implements TcasComponent {
 
   private gpwsWarning: boolean; // GPWS warning on/off
 
-  public static get instance(): LegacyTcasComputer {
-    // for debug
-    if (!this._instance) {
-      this._instance = new LegacyTcasComputer(null);
-    }
-    return this._instance;
-  }
+  private readonly sub = this.bus.getSubscriber<MfdSurvEvents>();
 
-  constructor(legacySoundManager: LegacySoundManager) {
+  private readonly tcasAlertLevel = ConsumerSubject.create(this.sub.on('tcas_alert_level'), 0); // TCAS - STBY/TA/TARA
+
+  private readonly tcasDirection = ConsumerSubject.create(this.sub.on('tcas_direction'), 0); // TCAS - NORM/ABV/BLW
+
+  constructor(
+    private readonly bus: EventBus,
+    legacySoundManager: LegacySoundManager,
+  ) {
     this.soundManager = legacySoundManager;
   }
 
@@ -302,12 +300,11 @@ export class LegacyTcasComputer implements TcasComponent {
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-    this.tcasPower = !!SimVar.GetSimVarValue('A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
-    this.tcasSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number');
-    this.altRptgSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC_ALT', 'number');
-    this.tcasThreat = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Traffic_Position', 'number');
-    this.xpdrStatus = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'number');
+    this.tcasPower =
+      SimVar.GetSimVarValue('L:ELEC_AC_ESS_BUS_IS_POWERED', 'boolean') ||
+      SimVar.GetSimVarValue('L:ELEC_AC_2_BUS_IS_POWERED', 'boolean');
     this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_SYSTEM', 'number');
+    this.xpdrStatus = SimVar.GetSimVarValue(`TRANSPONDER STATE:${this.activeXpdr + 1}`, 'number');
     // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
     this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
     this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
@@ -328,9 +325,7 @@ export class LegacyTcasComputer implements TcasComponent {
     this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'boolean');
 
     this.tcasMode.setVar(
-      this.xpdrStatus === XpdrMode.STBY || !this.tcasPower || !this.altRptgSwitchPos
-        ? TcasMode.STBY
-        : this.tcasSwitchPos,
+      this.xpdrStatus === XpdrMode.STBY || this.tcasPower ? TcasMode.STBY : this.tcasAlertLevel.get(),
     ); // 34-43-00:A32
   }
 
@@ -403,7 +398,7 @@ export class LegacyTcasComputer implements TcasComponent {
       !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
       this.radioAlt.isFailureWarning() ||
       this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
-      !this.tcasPower
+      this.tcasPower
     ) {
       this.tcasFault.setVar(true);
     } else {
@@ -565,18 +560,10 @@ export class LegacyTcasComputer implements TcasComponent {
       if (!onGround) {
         if (traffic.groundSpeed >= 30) {
           // Workaround for MSFS live traffic, TODO: add option to disable
-          if (this.tcasThreat === TcasThreat.THREAT) {
+          if (this.tcasDirection.get()) {
             if (
-              traffic.intrusionLevel >= TaRaIntrusion.TA &&
-              traffic.relativeAlt >= TCAS.THREAT[TcasThreat.THREAT][Limits.MIN] &&
-              traffic.relativeAlt <= TCAS.THREAT[TcasThreat.THREAT][Limits.MAX]
-            ) {
-              isDisplayed = true;
-            }
-          } else if (this.tcasThreat) {
-            if (
-              traffic.relativeAlt >= TCAS.THREAT[this.tcasThreat][Limits.MIN] &&
-              traffic.relativeAlt <= TCAS.THREAT[this.tcasThreat][Limits.MAX]
+              traffic.relativeAlt >= TCAS.THREAT[this.tcasDirection.get() + 1][Limits.MIN] &&
+              traffic.relativeAlt <= TCAS.THREAT[this.tcasDirection.get() + 1][Limits.MAX]
             ) {
               isDisplayed = true;
             }
@@ -1292,7 +1279,6 @@ export class LegacyTcasComputer implements TcasComponent {
         console.log(`ERROR: RA ${tf.ID} NOT SENT`);
       }
     });
-
     this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
   }
 

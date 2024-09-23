@@ -55,7 +55,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private readonly tcasFailed = Subject.create<boolean>(true);
 
-  private readonly tcasTaraSelectedIndex = Subject.create<number | null>(0);
+  private readonly tcasTaraSelectedIndex = Subject.create<number | null>(2);
 
   private readonly tcasNormAbvBlwSelectedIndex = Subject.create<number | null>(0);
 
@@ -99,6 +99,16 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
     this.xpdrState.sub(() => this.xpdrStatusChanged(), true);
     this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true);
+
+    sub
+      .on('tcas_alert_level')
+      .whenChanged()
+      .handle((val) => this.tcasTaraSelectedIndex.set(val));
+
+    sub
+      .on('tcas_direction')
+      .whenChanged()
+      .handle((val) => this.tcasNormAbvBlwSelectedIndex.set(val));
 
     sub
       .on('gpwsTerrOff')
@@ -154,7 +164,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     }
 
     if (!this.tcasFailed.get()) {
-      // FIXME replace with appropriate events
       this.tcasTaraSelectedIndex.set(0);
       this.tcasNormAbvBlwSelectedIndex.set(0);
     }
@@ -250,21 +259,23 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
               <div class="mfd-surv-controls-tcas-left">
                 <RadioButtonGroup
                   values={['TA/RA', 'TA ONLY', 'STBY']}
+                  onModified={(val) =>
+                    this.props.bus.getPublisher<MfdSurvEvents>().pub('tcas_alert_level', 2 - val, true)
+                  }
                   selectedIndex={this.tcasTaraSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
                   additionalVerticalSpacing={10}
                   color={Subject.create('green')}
-                  valuesDisabled={Subject.create(Array(3).fill(true))}
                 />
               </div>
               <div class="mfd-surv-controls-tcas-right">
                 <RadioButtonGroup
                   values={['NORM', 'ABV', 'BLW']}
                   selectedIndex={this.tcasNormAbvBlwSelectedIndex}
+                  onModified={(val) => this.props.bus.getPublisher<MfdSurvEvents>().pub('tcas_direction', val, true)}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
                   color={Subject.create('green')}
-                  valuesDisabled={Subject.create(Array(3).fill(true))}
                 />
               </div>
             </div>

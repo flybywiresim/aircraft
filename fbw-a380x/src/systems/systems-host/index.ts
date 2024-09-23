@@ -121,7 +121,7 @@ class SystemsHost extends BaseInstrument {
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
 
-    this.tcas = new LegacyTcasComputer(this.soundManager);
+    this.tcas = new LegacyTcasComputer(this.bus, this.soundManager);
     this.tcas.init();
 
     let lastUpdateTime: number;

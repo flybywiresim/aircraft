@@ -29,6 +29,13 @@ export enum TcasThreat {
   ABOVE = 2,
   BELOW = 3,
 }
+
+export enum TcasDirection {
+  ALL = 0,
+  ABOVE = 1,
+  BELOW = 2,
+}
+
 export enum TcasState {
   NONE = 0,
   TA = 1,
