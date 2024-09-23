@@ -13,6 +13,7 @@ export interface BaseEwdSimvars {
   egt: number;
   n1: number;
   n1_commanded: number;
+  throttle_position_n1: number;
   throttle_position: number;
   reverser_deploying: boolean;
   reverser_deployed: boolean;
@@ -37,6 +38,7 @@ export interface BaseEwdSimvars {
   limitations_all: number;
   memo_left: number;
   memo_right: number;
+  abnormal_debug_line: number;
 }
 
 type IndexedTopics =
@@ -44,6 +46,7 @@ type IndexedTopics =
   | 'egt'
   | 'n1'
   | 'n1_commanded'
+  | 'throttle_position_n1'
   | 'throttle_position'
   | 'reverser_deploying'
   | 'reverser_deployed'
@@ -72,7 +75,11 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         'n1_commanded',
         { name: 'L:A32NX_AUTOTHRUST_N1_COMMANDED:#index#', type: SimVarValueType.Number, indexed: true },
       ],
-      ['throttle_position', { name: 'L:A32NX_AUTOTHRUST_TLA_N1:#index#', type: SimVarValueType.Number, indexed: true }],
+      [
+        'throttle_position_n1',
+        { name: 'L:A32NX_AUTOTHRUST_TLA_N1:#index#', type: SimVarValueType.Number, indexed: true },
+      ],
+      ['throttle_position', { name: 'L:A32NX_AUTOTHRUST_TLA:#index#', type: SimVarValueType.Number, indexed: true }],
       ['reverser_deploying', { name: 'L:A32NX_REVERSER_#index#_DEPLOYING', type: SimVarValueType.Bool, indexed: true }],
       ['reverser_deployed', { name: 'L:A32NX_REVERSER_#index#_DEPLOYED', type: SimVarValueType.Bool, indexed: true }],
       ['thrust_reverse', { name: 'L:A32NX_AUTOTHRUST_REVERSE:#index#', type: SimVarValueType.Bool, indexed: true }],
@@ -102,6 +109,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ],
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
+      ['abnormal_debug_line', { name: 'L:A32NX_EWD_DEBUG_ABNORMAL', type: SimVarValueType.Number }],
     ];
 
     super(new Map(simvars), bus, pacer);

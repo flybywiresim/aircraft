@@ -22,7 +22,10 @@ interface EGTProps {
 export class EGT extends DisplayComponent<EGTProps> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
 
-  private readonly throttleMode = ConsumerSubject.create(this.sub.on('thrust_limit_type').whenChanged(), 0);
+  private readonly throttlePosition = ConsumerSubject.create(
+    this.sub.on(`throttle_position_${this.props.engine}`).whenChanged(),
+    0,
+  );
 
   private readonly egt = ConsumerSubject.create(
     this.sub.on(`egt_${this.props.engine}`).withPrecision(1).whenChanged(),
@@ -45,19 +48,19 @@ export class EGT extends DisplayComponent<EGTProps> {
     return 'Green';
   };
 
-  private readonly amberVisible = this.throttleMode.map((tm) => tm < 4);
+  private readonly amberVisible = this.throttlePosition.map((tm) => tm < 33);
 
   private readonly egtColour = MappedSubject.create(
     ([egt, tm]) => this.warningEGTColor(egt, tm),
     this.egt,
-    this.throttleMode,
+    this.throttlePosition,
   );
 
   // EEC trims EGT to a max value
   private readonly trimmedEGT = MappedSubject.create(
     ([egt, throttleMode]) => Math.min([3, 4].includes(throttleMode) ? 900 : 850, egt),
     this.egt,
-    this.throttleMode,
+    this.throttlePosition,
   );
 
   public onAfterRender(node: VNode): void {
@@ -84,7 +87,9 @@ export class EGT extends DisplayComponent<EGTProps> {
           </g>
           <g visibility={this.props.active.map((it) => (it ? 'inherit' : 'hidden'))}>
             <text class={this.egtColour.map((col) => `Large End ${col}`)} x={this.props.x + 33} y={this.props.y + 11.7}>
-              {this.egt.map((egt) => Math.min([3, 4].includes(this.throttleMode.get()) ? 900 : 850, Math.round(egt)))}
+              {this.egt.map((egt) =>
+                Math.min([3, 4].includes(this.throttlePosition.get()) ? 900 : 850, Math.round(egt)),
+              )}
             </text>
             <GaugeComponent
               x={this.props.x}

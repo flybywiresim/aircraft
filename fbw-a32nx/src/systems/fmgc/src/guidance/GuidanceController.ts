@@ -159,7 +159,7 @@ export class GuidanceController {
 
   private windProfileFactory: WindProfileFactory;
 
-  private atmosphericConditions: AtmosphericConditions;
+  public atmosphericConditions: AtmosphericConditions;
 
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),

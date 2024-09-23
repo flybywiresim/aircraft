@@ -34,13 +34,12 @@ export const CondPage = () => {
   let [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 100);
   let [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
-  const hotAirOpen = !acscDiscreteWord1.getBitValueOr(20, false);
-  const hotAirPositionDisagrees =
-    acsc1DiscreteWord1.getBitValueOr(27, false) && acsc2DiscreteWord1.getBitValueOr(27, false);
-  const hotAirSwitchPosition = acscDiscreteWord1.getBitValueOr(23, false);
+  const hotAirOpen = !acscDiscreteWord1.bitValueOr(20, false);
+  const hotAirPositionDisagrees = acsc1DiscreteWord1.bitValueOr(27, false) && acsc2DiscreteWord1.bitValueOr(27, false);
+  const hotAirSwitchPosition = acscDiscreteWord1.bitValueOr(23, false);
 
-  const cabFanHasFault1 = acscDiscreteWord1.getBitValueOr(25, false);
-  const cabFanHasFault2 = acscDiscreteWord1.getBitValueOr(26, false);
+  const cabFanHasFault1 = acscDiscreteWord1.bitValueOr(25, false);
+  const cabFanHasFault2 = acscDiscreteWord1.bitValueOr(26, false);
 
   if (unit === '0') {
     //  converting to F if 'lbs' selected in EFB

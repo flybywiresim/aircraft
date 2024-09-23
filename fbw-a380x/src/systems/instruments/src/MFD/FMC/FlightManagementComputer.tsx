@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import {
@@ -796,6 +799,15 @@ export class FlightManagementComputer implements FmcInterface {
         },
       );
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', true);
+    }
+  }
+
+  clearCheckSpeedModeMessage() {
+    const checkSpeedModeMessageActive =
+      this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
+    if (checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+      SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }
 
