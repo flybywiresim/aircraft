@@ -7,14 +7,7 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import {
-  MathUtils,
-  Arinc429Word,
-  GenericDataListenerSync,
-  NXDataStore,
-  UpdateThrottler,
-  LocalSimVar,
-} from '@flybywiresim/fbw-sdk';
+import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, LocalSimVar } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
   TCAS_CONST as TCAS,
@@ -177,8 +170,6 @@ export class LegacyTcasComputer implements Instrument {
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
-  private updateThrottler: UpdateThrottler; // Utility to restrict updates
-
   private airTraffic: TcasTraffic[]; // Air Traffic List
 
   private raTraffic: TcasTraffic[]; // Traffic with RA
@@ -263,7 +254,7 @@ export class LegacyTcasComputer implements Instrument {
    */
   init(): void {
     const sub = this.bus.getSubscriber<ClockEvents>();
-
+    // P5566074 pg 11:45
     let lastUpdateTime: number;
     sub
       .on('realTime')
@@ -291,7 +282,6 @@ export class LegacyTcasComputer implements Instrument {
     this.raTraffic = [];
     this.sensitivity = new LocalSimVar('L:A32NX_TCAS_SENSITIVITY', 'number');
     this.sensitivity.setVar(1);
-    this.updateThrottler = new UpdateThrottler(TCAS.REFRESH_RATE); // P5566074 pg 11:45
     this.inhibitions = Inhibit.NONE;
     this.ppos = { lat: NaN, long: NaN };
     this._newRa = new ResAdvisory(null, false, 0, false);
@@ -337,10 +327,6 @@ export class LegacyTcasComputer implements Instrument {
     this.tcasMode.setVar(
       this.xpdrStatus === XpdrMode.STBY || this.tcasPower ? TcasMode.STBY : this.tcasAlertLevel.get(),
     ); // 34-43-00:A32
-
-    console.log('TCAS Mode:', this.tcasMode.getVar());
-    console.log('TCAS Alert Level', this.tcasAlertLevel.get());
-    console.log('TCAS Alt', this.tcasAltSelect.get());
   }
 
   /**
@@ -1294,7 +1280,6 @@ export class LegacyTcasComputer implements Instrument {
       }
     });
     this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
-    console.log('TCAS: SENT TRAFFIC', this.sendAirTraffic.length);
   }
 
   onUpdate() {}
@@ -1304,11 +1289,6 @@ export class LegacyTcasComputer implements Instrument {
    * @param _deltaTime delta time of this frame
    */
   update(_deltaTime: number): void {
-    console.log('delta time', _deltaTime);
-    const deltaTime = this.updateThrottler.canUpdate(_deltaTime * (this.simRate || 1));
-    if (deltaTime === -1) {
-      return;
-    }
     this.updateVars();
     this.updateInhibitions();
     this.updateStatusFaults();
@@ -1330,9 +1310,9 @@ export class LegacyTcasComputer implements Instrument {
       }
       return;
     }
-    this.fetchRawTraffic(deltaTime);
-    this.updateTraffic(deltaTime);
-    this.updateRa(deltaTime);
+    this.fetchRawTraffic(_deltaTime);
+    this.updateTraffic(_deltaTime);
+    this.updateRa(_deltaTime);
     this.emitDisplay();
   }
 }
