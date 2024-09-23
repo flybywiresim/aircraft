@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
-    angle::{degree, radian},
+    angle::degree,
     angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -10,7 +10,7 @@ use uom::si::{
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
-    velocity::{knot, meter_per_second},
+    velocity::knot,
     volume::{cubic_inch, gallon, liter},
     volume_rate::gallon_per_second,
 };
