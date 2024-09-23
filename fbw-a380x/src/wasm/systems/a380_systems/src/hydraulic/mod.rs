@@ -2211,6 +2211,11 @@ impl A380Hydraulic {
         self.gear_system_gravity_extension_controller
             .update(context);
 
+        println!(
+            "PRESSURE BEFORE CONTROLLER {:.0} Sys switch {:?}",
+            self.yellow_circuit.system_section_pressure().get::<psi>(),
+            self.yellow_circuit.system_section_switch_pressurised()
+        );
         self.aileron_system_controller.update();
 
         self.elevator_system_controller.update();
@@ -4743,6 +4748,25 @@ impl AileronSystemHydraulicController {
     fn update(&mut self) {
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
+        self.filter_dual_control();
+
+        println!(
+            "ACTU MODES RIGHT {:?}/{:?}, Posreq {:?}/{:?}",
+            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .mode,
+            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .mode,
+            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .requested_position
+                .get::<ratio>(),
+            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .requested_position
+                .get::<ratio>(),
+        );
     }
 
     fn update_aileron_controllers_positions(&mut self) {
@@ -4823,6 +4847,36 @@ impl AileronSystemHydraulicController {
                 self.right_inboard_position_requests_from_fbw
                     [AileronActuatorPosition::Inward as usize],
             );
+    }
+
+    // FIXME  We don't allow dual control for now as this causes issues in actuator solver
+    // To remove if actuator solver can hadle this case
+    fn filter_dual_control(&mut self) {
+        for controller in &mut self.left_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
+
+        for controller in &mut self.right_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
     }
 
     /// Will drive mode from solenoid state

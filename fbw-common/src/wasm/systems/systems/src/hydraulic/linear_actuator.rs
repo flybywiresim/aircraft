@@ -1574,6 +1574,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
 
+    // Speed cap for all rigid bodies movements. Avoids chain reaction to numerical instability
+    const MAX_ABSOLUTE_ANGULAR_SPEED_RAD_S: f64 = 8.;
+
     pub fn new(
         mass: Mass,
         size: Vector3<f64>,
@@ -1789,6 +1792,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                     * context.delta_as_secs_f64(),
             );
 
+            self.limit_absolute_angular_speed();
             self.limit_angular_speed_from_soft_lock();
 
             self.angular_position += Angle::new::<radian>(
@@ -1827,6 +1831,16 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                 .min(self.max_soft_lock_velocity)
                 .max(self.min_soft_lock_velocity);
         }
+    }
+
+    fn limit_absolute_angular_speed(&mut self) {
+        let max_angular_speed =
+            AngularVelocity::new::<radian_per_second>(Self::MAX_ABSOLUTE_ANGULAR_SPEED_RAD_S);
+
+        self.angular_speed = self
+            .angular_speed
+            .min(max_angular_speed)
+            .max(-max_angular_speed);
     }
 
     fn limit_position_to_range(&mut self) {
