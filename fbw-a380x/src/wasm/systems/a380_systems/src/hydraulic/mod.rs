@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
-    angle::degree,
+    angle::{degree, radian},
     angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -10,7 +10,7 @@ use uom::si::{
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
-    velocity::knot,
+    velocity::{knot, meter_per_second},
     volume::{cubic_inch, gallon, liter},
     volume_rate::gallon_per_second,
 };
@@ -32,8 +32,7 @@ use systems::{
             LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
         nose_steering::{
-            Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
-            SteeringRatioToAngle,
+            SteeringActuator, SteeringAngleLimiter, SteeringController, SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
         pushback::PushbackTug,
@@ -2286,7 +2285,6 @@ impl A380Hydraulic {
             adirs,
             self.left_spoilers.ground_spoilers_are_requested()
                 && self.right_spoilers.ground_spoilers_are_requested(),
-            &self.pushback_tug,
             self.nose_steering.position_feedback(),
         );
 
@@ -3506,7 +3504,7 @@ impl A380ElectricPumpAutoLogic {
         Duration::from_secs(20);
 
     const DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION: Duration =
-        Duration::from_secs(5);
+        Duration::from_secs(30);
     fn new(
         green_a_pump_powered_by: ElectricalBusType,
         green_b_pump_powered_by: ElectricalBusType,
@@ -3888,6 +3886,8 @@ impl BodyWheelSteeringController {
     const NOSE_ANGLE_INPUT_DEGREES: [f64; 4] = [-70., -20., 20., 70.];
     const BODY_STEERING_DEMAND_DEGREES: [f64; 4] = [15., 0., 0., -11.];
 
+    const MAX_BODY_STEERING_SPEED_ENABLING_KNOT: f64 = 30.;
+
     fn new(is_left_side: bool) -> Self {
         Self {
             requested_position: Angle::default(),
@@ -3895,33 +3895,19 @@ impl BodyWheelSteeringController {
         }
     }
 
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        nose_steering_angle: Angle,
-        pushback_tug: &impl Pushback,
-    ) {
-        if nose_steering_angle.get::<degree>().abs() > 20.
-            && context.ground_speed().get::<knot>() < 30.
-            || pushback_tug.steering_angle().get::<degree>().abs() > 5.
-        {
-            let steering_angle_map_input = if pushback_tug.is_nose_wheel_steering_pin_inserted() {
-                pushback_tug.steering_angle()
-            } else {
-                nose_steering_angle
-            };
-
+    fn update(&mut self, context: &UpdateContext, nose_steering_angle: Angle) {
+        if context.ground_speed().get::<knot>() < Self::MAX_BODY_STEERING_SPEED_ENABLING_KNOT {
             self.requested_position = if self.is_left_side {
                 Angle::new::<degree>(interpolation(
                     &Self::NOSE_ANGLE_INPUT_DEGREES,
                     &Self::BODY_STEERING_DEMAND_DEGREES,
-                    steering_angle_map_input.get::<degree>(),
+                    nose_steering_angle.get::<degree>(),
                 ))
             } else {
                 -Angle::new::<degree>(interpolation(
                     &Self::NOSE_ANGLE_INPUT_DEGREES,
                     &Self::BODY_STEERING_DEMAND_DEGREES,
-                    -steering_angle_map_input.get::<degree>(),
+                    -nose_steering_angle.get::<degree>(),
                 ))
             };
         } else {
@@ -3947,16 +3933,10 @@ impl BodyWheelSteeringControl {
         }
     }
 
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        nose_steering_feedback: Angle,
-        pushback_tug: &impl Pushback,
-    ) {
-        self.left_controller
-            .update(context, nose_steering_feedback, pushback_tug);
+    fn update(&mut self, context: &UpdateContext, nose_steering_feedback: Angle) {
+        self.left_controller.update(context, nose_steering_feedback);
         self.right_controller
-            .update(context, nose_steering_feedback, pushback_tug);
+            .update(context, nose_steering_feedback);
     }
 
     fn left_controller(&self) -> &impl SteeringController {
@@ -4217,7 +4197,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
         engine2: &impl Engine,
         adirs: &impl AdirsMeasurementOutputs,
         placeholder_ground_spoilers_out: bool,
-        pushback_tug: &impl Pushback,
         nose_steering_feedback: Angle,
     ) {
         // TODO split steering part from braking part in two different computers instances
@@ -4230,7 +4209,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             nose_steering_feedback,
         );
         self.body_wheel_steering_control
-            .update(context, nose_steering_feedback, pushback_tug);
+            .update(context, nose_steering_feedback);
 
         self.update_normal_braking_availability(current_pressure.pressure());
         self.update_brake_pressure_limitation();
@@ -6797,7 +6776,7 @@ mod tests {
         };
 
         use uom::si::{
-            angle::{degree, radian},
+            angle::degree,
             electric_potential::volt,
             length::foot,
             ratio::{percent, ratio},
@@ -7668,8 +7647,10 @@ mod tests {
                 self
             }
 
-            fn set_pushback_angle(mut self, angle: Angle) -> Self {
-                self.write_by_name("PUSHBACK ANGLE", angle.get::<radian>());
+            fn set_pushback_angle(mut self, angle: AngularVelocity) -> Self {
+                self.write_by_name("ROTATION VELOCITY BODY Y", angle.get::<degree_per_second>());
+                self.write_by_name("VELOCITY BODY Z", -1.);
+
                 self
             }
 
@@ -10582,16 +10563,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(80.))
-                .run_waiting_for(Duration::from_secs_f64(0.5));
-
-            // Do not turn instantly in 0.5s
-            assert!(
-                test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.)
-                    && test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(0.5)
-            );
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(-5.))
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
             // Has turned fully after 5s
             assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.9));
@@ -10599,12 +10572,8 @@ mod tests {
             // Going left
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(-80.))
-                .run_waiting_for(Duration::from_secs_f64(0.5));
-
-            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.2));
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
             // Has turned fully left after 5s
             assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
@@ -10806,7 +10775,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(40.))
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
@@ -10911,7 +10880,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(-80.))
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
                 .run_waiting_for(Duration::from_secs(15));
 
             // Left BWS should be at max right steer (15°) for left turn
@@ -10948,7 +10917,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(80.))
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(-5.))
                 .run_waiting_for(Duration::from_secs(15));
 
             // Right BWS should be at max left steer (15°) for right turn

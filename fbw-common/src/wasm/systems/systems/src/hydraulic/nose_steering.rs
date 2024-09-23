@@ -1,4 +1,5 @@
 use crate::hydraulic::linear_actuator::Actuator;
+use crate::shared::Clamp;
 use crate::shared::{interpolation, low_pass_filter::LowPassFilter, SectionPressure};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -172,8 +173,7 @@ impl SteeringActuator {
         if !bypass_pin.is_nose_wheel_steering_pin_inserted() || !self.is_steered_by_tug {
             let limited_requested_angle = steering_controller
                 .requested_position()
-                .min(self.max_half_angle)
-                .max(-self.max_half_angle);
+                .clamp(-self.max_half_angle, self.max_half_angle);
 
             self.update_current_speed(context, section_pressure, limited_requested_angle);
 
@@ -234,7 +234,7 @@ impl SteeringActuator {
             self.nominal_speed * current_pressure.get::<psi>().sqrt()
                 / self.reference_pressure_for_max_speed.get::<psi>().sqrt()
         } else {
-            (0.03 * context.ground_speed().get::<knot>().abs().sqrt()).clamp(0., 1.)
+            (0.04 * context.ground_speed().get::<knot>().abs().sqrt()).clamp(0., 1.)
                 * self.nominal_speed
         })
         .min(self.nominal_speed)
@@ -710,10 +710,12 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(8));
 
-        assert!(is_equal_angle(
-            test_bed.query(|a| a.steering_actuator.position_feedback()),
-            Angle::new::<degree>(0.)
-        ));
+        assert!(
+            test_bed
+                .query(|a| a.steering_actuator.position_feedback())
+                .abs()
+                < Angle::new::<degree>(0.1)
+        );
     }
 
     fn steering_actuator(context: &mut InitContext) -> SteeringActuator {

@@ -8,13 +8,13 @@ pub(super) fn body_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("LEFT_BODY_STEERING_POSITION_RATIO"),
-        |value| value / 2. + 0.5,
+        |value| -value / 2. + 0.5,
         Variable::named("LEFT_BODY_WHEEL_STEERING_POSITION"),
     );
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("RIGHT_BODY_STEERING_POSITION_RATIO"),
-        |value| value / 2. + 0.5,
+        |value| -value / 2. + 0.5,
         Variable::named("RIGHT_BODY_WHEEL_STEERING_POSITION"),
     );
 
