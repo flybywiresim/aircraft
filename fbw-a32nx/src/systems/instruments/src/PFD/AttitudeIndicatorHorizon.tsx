@@ -169,7 +169,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
       });
 
     apfd.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
-      const isNormalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
+      const isNormalLawActive = fcdcWord1.bitValue(11) && !fcdcWord1.isFailureWarning();
 
       this.pitchProtActiveVisibility.set(isNormalLawActive ? 'visible' : 'hidden');
       this.pitchProtLostVisibility.set(!isNormalLawActive ? 'visible' : 'hidden');
