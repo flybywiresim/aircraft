@@ -30,7 +30,7 @@ export enum TcasThreat {
   BELOW = 3,
 }
 
-export enum TcasDirection {
+export enum TcasAltitudeSelect {
   ALL = 0,
   ABOVE = 1,
   BELOW = 2,

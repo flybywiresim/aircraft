@@ -16,7 +16,6 @@ import {
   LocalSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { TcasComponent } from '../lib/TcasComponent';
 import {
   TCAS_CONST as TCAS,
   JS_NPCPlane,
@@ -32,9 +31,10 @@ import {
   Limits,
   RaType2,
   UpDownAdvisoryStatus,
+  TCAS_CONST,
 } from '../lib/TcasConstants';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
-import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
+import { ClockEvents, ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export class NDTcasTraffic {
@@ -168,9 +168,7 @@ export class ResAdvisory {
  * TCAS computer singleton
  * This 1:1 port from the A32NX's TCAS Computer serves as temporary replacement, until a more sophisticated system simulation is in place.
  */
-export class LegacyTcasComputer implements TcasComponent {
-  private static _instance?: LegacyTcasComputer; // for debug
-
+export class LegacyTcasComputer implements Instrument {
   private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
     this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
   }); // bind to listener
@@ -251,7 +249,7 @@ export class LegacyTcasComputer implements TcasComponent {
 
   private readonly tcasAlertLevel = ConsumerSubject.create(this.sub.on('tcas_alert_level'), 0); // TCAS - STBY/TA/TARA
 
-  private readonly tcasDirection = ConsumerSubject.create(this.sub.on('tcas_direction'), 0); // TCAS - NORM/ABV/BLW
+  private readonly tcasAltSelect = ConsumerSubject.create(this.sub.on('tcas_alt_select'), 0); // TCAS - NORM/ABV/BLW
 
   constructor(
     private readonly bus: EventBus,
@@ -264,6 +262,18 @@ export class LegacyTcasComputer implements TcasComponent {
    * Initialise TCAS singleton
    */
   init(): void {
+    const sub = this.bus.getSubscriber<ClockEvents>();
+
+    let lastUpdateTime: number;
+    sub
+      .on('realTime')
+      .onlyAfter(TCAS_CONST.REFRESH_RATE)
+      .handle((now) => {
+        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        lastUpdateTime = now;
+        this.update(dt);
+      });
+
     SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
     this.debug = false;
     NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
@@ -327,6 +337,10 @@ export class LegacyTcasComputer implements TcasComponent {
     this.tcasMode.setVar(
       this.xpdrStatus === XpdrMode.STBY || this.tcasPower ? TcasMode.STBY : this.tcasAlertLevel.get(),
     ); // 34-43-00:A32
+
+    console.log('TCAS Mode:', this.tcasMode.getVar());
+    console.log('TCAS Alert Level', this.tcasAlertLevel.get());
+    console.log('TCAS Alt', this.tcasAltSelect.get());
   }
 
   /**
@@ -560,10 +574,10 @@ export class LegacyTcasComputer implements TcasComponent {
       if (!onGround) {
         if (traffic.groundSpeed >= 30) {
           // Workaround for MSFS live traffic, TODO: add option to disable
-          if (this.tcasDirection.get()) {
+          if (this.tcasAltSelect.get()) {
             if (
-              traffic.relativeAlt >= TCAS.THREAT[this.tcasDirection.get() + 1][Limits.MIN] &&
-              traffic.relativeAlt <= TCAS.THREAT[this.tcasDirection.get() + 1][Limits.MAX]
+              traffic.relativeAlt >= TCAS.THREAT[this.tcasAltSelect.get() + 1][Limits.MIN] &&
+              traffic.relativeAlt <= TCAS.THREAT[this.tcasAltSelect.get() + 1][Limits.MAX]
             ) {
               isDisplayed = true;
             }
@@ -1280,15 +1294,17 @@ export class LegacyTcasComputer implements TcasComponent {
       }
     });
     this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
+    console.log('TCAS: SENT TRAFFIC', this.sendAirTraffic.length);
   }
+
+  onUpdate() {}
 
   /**
    * Main update loop
    * @param _deltaTime delta time of this frame
    */
   update(_deltaTime: number): void {
-    this.soundManager.update(_deltaTime);
-
+    console.log('delta time', _deltaTime);
     const deltaTime = this.updateThrottler.canUpdate(_deltaTime * (this.simRate || 1));
     if (deltaTime === -1) {
       return;

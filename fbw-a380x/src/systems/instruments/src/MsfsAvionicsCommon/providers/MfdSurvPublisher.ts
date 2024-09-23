@@ -12,6 +12,6 @@ export interface MfdSurvEvents {
   mfd_xpdr_set_alt_reporting: boolean;
   /** (MFD SURV -> TCAS) TCAS Alert Level 0 - STBY | 1 - TA ONLY | 2 - TARA */
   tcas_alert_level: number;
-  /** (MFD SURV -> TCAS) TCAS NORM ABV BLW Setting - 0 - NORM | 1 - ABV | 2 - BLW */
-  tcas_direction: number;
+  /** (MFD SURV -> TCAS) TCAS Alt Select 0 - NORM | 1 - ABV | 2 - BLW */
+  tcas_alt_select: number;
 }

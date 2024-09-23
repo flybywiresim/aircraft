@@ -121,8 +121,7 @@ class SystemsHost extends BaseInstrument {
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
 
-    this.tcas = new LegacyTcasComputer(this.bus, this.soundManager);
-    this.tcas.init();
+    this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
     let lastUpdateTime: number;
     // TODO this is really fast for the FWC...
@@ -137,7 +136,6 @@ class SystemsHost extends BaseInstrument {
         this.fwc.update(dt);
         this.soundManager.update(dt);
         this.gpws.update(dt);
-        this.tcas.update(dt);
       });
 
     Promise.all([
