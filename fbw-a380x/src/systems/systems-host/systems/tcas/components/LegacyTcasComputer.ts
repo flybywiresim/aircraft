@@ -663,8 +663,6 @@ export class LegacyTcasComputer implements Instrument {
       const desiredIntrusionLevel: TaRaIntrusion = Math.min(rangeTest, altTest, accelTest);
       switch (traffic.intrusionLevel) {
         case TaRaIntrusion.RA:
-          SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
-          SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
           if (
             this.activeRa.info === null ||
             this.activeRa.secondsSinceStart < TCAS.MIN_RA_DURATION ||
@@ -678,8 +676,6 @@ export class LegacyTcasComputer implements Instrument {
           }
           break;
         case TaRaIntrusion.TA:
-          SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
-          SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
           switch (desiredIntrusionLevel) {
             case TaRaIntrusion.RA:
               if (!this.isSlewActive) {
@@ -1161,6 +1157,8 @@ export class LegacyTcasComputer implements Instrument {
 
     switch (this.advisoryState) {
       case TcasState.TA:
+        SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
+        SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
         if (raThreatCount > 0 && this.inhibitions !== Inhibit.ALL_RA && this.inhibitions !== Inhibit.ALL_RA_AURAL_TA) {
           this.advisoryState = TcasState.RA;
           this.tcasState.setVar(TcasState.RA);
@@ -1173,6 +1171,8 @@ export class LegacyTcasComputer implements Instrument {
         }
         break;
       case TcasState.RA:
+        SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
+        SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
         if (raThreatCount === 0) {
           if (taThreatCount > 0) {
             this.advisoryState = TcasState.TA;
