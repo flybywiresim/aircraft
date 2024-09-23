@@ -1560,7 +1560,7 @@ const Engine: FC<EngineProps> = ({ x, y, index }) => {
         y={y}
         width={75}
         height={96}
-        xlinkHref="/Images/fbw-a380x/SD_FUEL_ENG_L.png"
+        xlinkHref={index < 3 ? '/Images/fbw-a380x/SD_FUEL_ENG_L.png' : '/Images/fbw-a380x/SD_FUEL_ENG_R.png'}
         preserveAspectRatio="none"
       />
 
