@@ -663,6 +663,8 @@ export class LegacyTcasComputer implements Instrument {
       const desiredIntrusionLevel: TaRaIntrusion = Math.min(rangeTest, altTest, accelTest);
       switch (traffic.intrusionLevel) {
         case TaRaIntrusion.RA:
+          SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
+          SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
           if (
             this.activeRa.info === null ||
             this.activeRa.secondsSinceStart < TCAS.MIN_RA_DURATION ||
@@ -676,6 +678,8 @@ export class LegacyTcasComputer implements Instrument {
           }
           break;
         case TaRaIntrusion.TA:
+          SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
+          SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
           switch (desiredIntrusionLevel) {
             case TaRaIntrusion.RA:
               if (!this.isSlewActive) {
@@ -1318,24 +1322,24 @@ export class LegacyTcasComputer implements Instrument {
     this.updateVars();
     this.updateInhibitions();
     this.updateStatusFaults();
-    if (this.tcasFault.getVar() !== true) {
-      if (this.tcasMode.getVar() === TcasMode.STBY) {
-        this.advisoryState = TcasState.NONE;
-        this.tcasState.setVar(TcasState.NONE);
-        this.correctiveRa.setVar(false);
-        this.raType.setVar(RaType2.NONE);
-        this.rateToMaintain.setVar(0);
-        this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
-        this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
-        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
-        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
-        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);
-        SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
-        if (this.sendAirTraffic.length !== 0) {
-          this.resetDisplay();
-        }
-        return;
+    if (this.tcasMode.getVar() === TcasMode.STBY) {
+      this.advisoryState = TcasState.NONE;
+      this.tcasState.setVar(TcasState.NONE);
+      this.correctiveRa.setVar(false);
+      this.raType.setVar(RaType2.NONE);
+      this.rateToMaintain.setVar(0);
+      this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+      this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
+      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
+      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);
+      SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
+      if (this.sendAirTraffic.length !== 0) {
+        this.resetDisplay();
       }
+      return;
+    }
+    if (this.tcasFault.getVar() !== true) {
       this.fetchRawTraffic(_deltaTime);
       this.updateTraffic(_deltaTime);
       this.updateRa(_deltaTime);
