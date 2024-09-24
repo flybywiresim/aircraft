@@ -5,6 +5,7 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   NodeReference,
   Subject,
   Subscribable,
@@ -235,14 +236,39 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly shortTermVisibility = this.shortTermManagedSpeedExists.map((v) => (v ? 'visible' : 'hidden'));
 
-  private readonly ShortTermStyle = this.airspeed.map(ias => {
-    if(this.shortTermManagedSpeedExists.get() && ias.isNormalOperation()) {
-        return `transform: translate3d(0px,${getSpeedTapeOffsetAlwaysVisible(ias.value, 
-          this.shortTermManagedSpeedConsumer.get())}px,0px)`;
+  private readonly shortTermPath = MappedSubject.create(
+    ([ias, shortTermSpeed]) => {
+      if(ias.isNormalOperation() && shortTermSpeed) {
+      const diff = Math.abs(ias.value - shortTermSpeed);
+      if(diff < DisplayRange ) {
+        return 'm20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z'
+      } else if (ias.value > shortTermSpeed) {
+        return 'm18.26 80.85c4.9e-4 -0.83466 0.67686-1.511 1.511-1.511 0.83418 0 1.5105 0.67635 1.511 1.511h-1.511z'
+      } else {
+        return 'm18.26 80.85c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z'
+      } 
     } else {
       return '';
     }
-  })
+    },
+    this.airspeed,
+    this.shortTermManagedSpeedConsumer
+  )
+
+
+  private readonly shortTermStyle =
+  MappedSubject.create(
+    ([shortTermVisible, ias, shortTermManagedSpeed]) => {
+      if(shortTermVisible && ias.isNormalOperation()) {
+        return `transform: translate(0px, ${getSpeedTapeOffsetAlwaysVisible(ias.value, 
+          shortTermManagedSpeed)}px)`
+      }
+      return '';
+    },
+    this.shortTermManagedSpeedExists,
+    this.airspeed,
+    this.shortTermManagedSpeedConsumer
+  )
 
   render(): VNode {
     return (
@@ -263,11 +289,10 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
             S
           </text>
         </g>
-        <g id="ShortTermManagedSpeed" visibility={this.shortTermVisibility} style={this.ShortTermStyle}>
-          <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
+        <g id="ShortTermManagedSpeed" visibility={this.shortTermVisibility} style={this.shortTermStyle}>
           <path
-            class="ThickStroke Magenta Fill"
-            d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z"
+            class="Fill Magenta"
+            d={this.shortTermPath}
           />
         </g>
       </>
