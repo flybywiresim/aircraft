@@ -51,8 +51,6 @@ class SystemsHost extends BaseInstrument {
 
   private soundManager: LegacySoundManager;
 
-  private fuelInit: LegacyFuelInit;
-
   private keyInterceptManager: KeyEventManager;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
