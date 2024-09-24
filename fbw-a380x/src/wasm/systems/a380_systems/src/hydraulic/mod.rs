@@ -2211,11 +2211,6 @@ impl A380Hydraulic {
         self.gear_system_gravity_extension_controller
             .update(context);
 
-        println!(
-            "PRESSURE BEFORE CONTROLLER {:.0} Sys switch {:?}",
-            self.yellow_circuit.system_section_pressure().get::<psi>(),
-            self.yellow_circuit.system_section_switch_pressurised()
-        );
         self.aileron_system_controller.update();
 
         self.elevator_system_controller.update();
@@ -4749,24 +4744,6 @@ impl AileronSystemHydraulicController {
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
         self.filter_dual_control();
-
-        println!(
-            "ACTU MODES RIGHT {:?}/{:?}, Posreq {:?}/{:?}",
-            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
-                [AileronActuatorPosition::Inward as usize]
-                .mode,
-            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
-                [AileronActuatorPosition::Outward as usize]
-                .mode,
-            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
-                [AileronActuatorPosition::Inward as usize]
-                .requested_position
-                .get::<ratio>(),
-            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
-                [AileronActuatorPosition::Outward as usize]
-                .requested_position
-                .get::<ratio>(),
-        );
     }
 
     fn update_aileron_controllers_positions(&mut self) {
