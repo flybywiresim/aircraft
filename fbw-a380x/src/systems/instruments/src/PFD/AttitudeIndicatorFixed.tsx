@@ -146,6 +146,9 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           <SidestickIndicator bus={this.props.bus} />
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 
+          <FlightPathVector bus={this.props.bus} />
+          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+
           <g style={this.fdVisibilitySub}>
             <FDYawBar bus={this.props.bus} />
             <FlightDirector bus={this.props.bus} />
@@ -161,8 +164,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
             <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
           </g>
-          <FlightPathVector bus={this.props.bus} />
-          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         </g>
       </>
     );
