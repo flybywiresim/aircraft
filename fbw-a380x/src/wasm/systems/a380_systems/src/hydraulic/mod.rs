@@ -6010,6 +6010,17 @@ impl SimulationElement for AileronAssembly {
         writer.write(&self.position_in_id, self.positions[2]);
     }
 }
+impl Debug for AileronAssembly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nAILERON ASSEMBLY => \nAIL OUT {:?}\nAIL MID {:?}\nAIL IN {:?}",
+            self.hydraulic_assemblies[0],
+            self.hydraulic_assemblies[1],
+            self.hydraulic_assemblies[2],
+        )
+    }
+}
 
 struct ElevatorAssembly {
     hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
