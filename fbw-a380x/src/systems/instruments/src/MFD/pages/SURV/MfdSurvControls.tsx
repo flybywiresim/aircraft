@@ -100,7 +100,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     this.xpdrState.sub(() => this.xpdrStatusChanged(), true);
     this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true);
 
-    sub.on('tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(val));
+    sub.on('tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(2 - val));
 
     sub.on('tcas_alt_select').handle((val) => this.tcasNormAbvBlwSelectedIndex.set(val));
 
