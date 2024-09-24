@@ -1160,17 +1160,16 @@
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
-                <NODE_ID>HANDLE_LEFT_YOKE</NODE_ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>HANDLE_LEFT_YOKE</ANIM_NAME>
-                <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
-                <NODE_ID>HANDLE_RIGHT_YOKE</NODE_ID>
+                <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION) 100 * 100 +</ANIM_CODE>
+                <ANIM_LENGTH>200</ANIM_LENGTH>
+	        </UseTemplate>
+	        <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>HANDLE_RIGHT_YOKE</ANIM_NAME>
-                <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
+                <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION) 100 * 100 +</ANIM_CODE>
+                <ANIM_LENGTH>200</ANIM_LENGTH>
             </UseTemplate>
-
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
