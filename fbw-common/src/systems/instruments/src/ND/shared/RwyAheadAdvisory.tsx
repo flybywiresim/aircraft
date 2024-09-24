@@ -19,7 +19,7 @@ export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
 
   private readonly flagDisplay = this.oansWord1Raw.map((word) => {
     const w = new Arinc429Word(word);
-    return w.getBitValueOr(11, false) ? 'block' : 'none';
+    return w.bitValueOr(11, false) ? 'block' : 'none';
   });
 
   onAfterRender(node: VNode) {
