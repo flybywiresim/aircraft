@@ -4827,7 +4827,7 @@ impl AileronSystemHydraulicController {
     }
 
     // FIXME  We don't allow dual control for now as this causes issues in actuator solver
-    // To remove if actuator solver can hadle this case
+    // To remove if actuator solver can handle this case or flight control never request it by design
     fn filter_dual_control(&mut self) {
         for controller in &mut self.left_aileron_controllers {
             if controller[AileronActuatorPosition::Outward as usize].mode
