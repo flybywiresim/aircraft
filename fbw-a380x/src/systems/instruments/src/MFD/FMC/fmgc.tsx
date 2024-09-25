@@ -465,19 +465,6 @@ export class FmgcDataService implements Fmgc {
     return 0.8;
   }
 
-  getEconSpeedDependingOnPhase(): number {
-    switch (this.getFlightPhase()) {
-      case FmgcFlightPhase.Climb:
-        return this.getManagedClimbSpeed();
-      case FmgcFlightPhase.Cruise:
-        return this.getManagedCruiseSpeed(true);
-      case FmgcFlightPhase.Descent:
-        return this.getManagedDescentSpeed(true);
-      default:
-        return 0;
-    }
-  }
-
   getApproachSpeed(): Knots {
     return this.data.approachSpeed.get() ?? 0;
   }
