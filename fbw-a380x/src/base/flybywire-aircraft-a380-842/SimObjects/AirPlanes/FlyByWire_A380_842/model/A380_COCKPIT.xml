@@ -2064,10 +2064,7 @@
                 </UseTemplate>
 
                 <Update Once="True">
-                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 1 == (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == and if{
-                      (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
-                    }
-                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 0 == (A:CABIN SEATBELTS ALERT SWITCH, bool) 1 == and if{
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) (A:CABIN SEATBELTS ALERT SWITCH, bool) != if{
                       (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
                     }
                 </Update>
