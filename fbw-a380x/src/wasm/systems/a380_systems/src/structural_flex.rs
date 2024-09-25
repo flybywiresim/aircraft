@@ -757,6 +757,7 @@ mod tests {
             Self {
                 test_bed: SimulationTestBed::new(WingFlexTestAircraft::new),
             }
+            .with_nominal_height()
         }
 
         fn left_wing_lift_per_node(&self) -> Vector5<f64> {
@@ -792,6 +793,11 @@ mod tests {
                 "TOTAL WEIGHT",
                 Mass::new::<kilogram>(Self::NOMINAL_WEIGHT_KG),
             );
+            self
+        }
+
+        fn with_nominal_height(mut self) -> Self {
+            self.write_by_name("PLANE ALT ABOVE GROUND", 20.);
             self
         }
 
