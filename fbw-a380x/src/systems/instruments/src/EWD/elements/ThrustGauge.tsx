@@ -32,7 +32,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
 
   private readonly n1 = ConsumerSubject.create(
-    this.sub.on(`n1_${this.props.engine}`).withPrecision(1).whenChanged(),
+    this.sub.on(`n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -42,7 +42,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly throttlePositionN1 = ConsumerSubject.create(
-    this.sub.on(`throttle_position_${this.props.engine}`).withPrecision(2).whenChanged(),
+    this.sub.on(`throttle_position_n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -233,6 +233,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 x={this.props.x - 18}
                 y={this.props.y - 14}
                 mesg={this.availRevText}
+                engineNumber={this.props.engine}
                 visible={this.availRevVisible}
                 revDoorOpen={this.revDeployed}
               />
@@ -415,6 +416,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
                 x={this.props.x - 18}
                 y={this.props.y - 14}
                 mesg={this.availRevText}
+                engineNumber={this.props.engine}
                 visible={this.availRevVisible}
                 revDoorOpen={this.revDeployed}
               />
@@ -471,6 +473,7 @@ interface AvailRevProps {
   x: number;
   y: number;
   mesg: Subscribable<'AVAIL' | 'REV'>;
+  engineNumber: number;
   visible: Subscribable<boolean>;
   revDoorOpen: Subscribable<boolean>;
 }
@@ -487,10 +490,10 @@ class AvailRev extends DisplayComponent<AvailRevProps> {
         <g visibility={this.props.mesg.map((mesg) => (mesg === 'REV' ? 'inherit' : 'hidden'))}>
           <text
             class={this.props.revDoorOpen.map((it) => `F26 Spread Centre ${it ? 'Green' : 'Amber'}`)}
-            x={this.props.x - 8}
+            x={this.props.x - 25}
             y={this.props.y + 9}
           >
-            REV
+            {`REV ${this.props.engineNumber}`}
           </text>
         </g>
         <g visibility={this.props.mesg.map((mesg) => (mesg === 'AVAIL' ? 'inherit' : 'hidden'))}>

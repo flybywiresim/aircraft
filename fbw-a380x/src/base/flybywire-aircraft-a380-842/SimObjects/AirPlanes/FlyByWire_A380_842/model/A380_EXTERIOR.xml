@@ -65,6 +65,12 @@
                 <ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
             </UseTemplate>
 
+            <!-- LH Secondary Body Gear Door-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>l_blg_inner_door</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
+            </UseTemplate>
+
             <!-- LH Wing Gear Door-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>l_wing_gear_door</ANIM_NAME>
@@ -76,6 +82,12 @@
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>r_body_gear_door</ANIM_NAME>
                 <ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
+            </UseTemplate>
+
+            <!-- RH Secondary Body Gear Door-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>r_blg_inner_door</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
             </UseTemplate>
 
             <!-- RH Wing Gear Door-->
@@ -98,6 +110,53 @@
             <UseTemplate Name="ASOBO_GEAR_Steering_Template">
                 <ANIM_NAME>r_wheel</ANIM_NAME>
                 <ID>2</ID>
+            </UseTemplate>
+
+            <!-- rear left Steering -->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>left_bws</NODE_ID>
+                <ANIM_NAME>left_bws</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>1</ANIM_LENGTH>
+            </UseTemplate>
+            <!-- rear right Steering -->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>right_bws</NODE_ID>
+                <ANIM_NAME>right_bws</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>1</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR LEFT LH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>ll_tire_key</NODE_ID>
+                <ANIM_NAME>ll_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR LEFT RH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>lr_tire_key</NODE_ID>
+                <ANIM_NAME>lr_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR RIGHT LH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>rl_tire_key</NODE_ID>
+                <ANIM_NAME>rl_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
+            </UseTemplate>
+
+            <!-- Wheel Rotation REAR RIGHT RH-->
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>rr_tire_key</NODE_ID>
+                <ANIM_NAME>rr_tire_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
             <!-- Wheel Rotation LH-->

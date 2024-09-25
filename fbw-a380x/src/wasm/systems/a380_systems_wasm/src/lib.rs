@@ -1,8 +1,10 @@
 mod ailerons;
 mod autobrakes;
+mod body_wheel_steering;
 mod brakes;
 mod cargo_doors;
 mod elevators;
+mod fire;
 mod flaps;
 mod fuel;
 mod gear;
@@ -16,9 +18,11 @@ mod trimmable_horizontal_stabilizer;
 use a380_systems::A380;
 use ailerons::ailerons;
 use autobrakes::autobrakes;
+use body_wheel_steering::body_wheel_steering;
 use brakes::brakes;
 use cargo_doors::cargo_doors;
 use elevators::elevators;
+use fire::fire;
 use flaps::flaps;
 use fuel::fuel;
 use gear::gear;
@@ -30,7 +34,8 @@ use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
 use systems::shared::{
-    ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
+    FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -71,6 +76,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
+        (24_003, FailureType::TransformerRectifier(4)),
         (24_004, FailureType::StaticInverter),
         (24_020, FailureType::Generator(1)),
         (24_021, FailureType::Generator(2)),
@@ -150,26 +156,122 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             24_117,
             FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
         ),
-        (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
-        (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
-        (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
-        (29_003, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
-        (29_004, FailureType::ReservoirAirLeak(HydraulicColor::Blue)),
+        (26_001, FailureType::SetOnFire(FireDetectionZone::Engine(1))),
+        (26_002, FailureType::SetOnFire(FireDetectionZone::Engine(2))),
+        (26_003, FailureType::SetOnFire(FireDetectionZone::Engine(3))),
+        (26_004, FailureType::SetOnFire(FireDetectionZone::Engine(4))),
+        (26_005, FailureType::SetOnFire(FireDetectionZone::Apu)),
+        (26_006, FailureType::SetOnFire(FireDetectionZone::Mlg)),
         (
-            29_005,
+            26_007,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(1)),
+        ),
+        (
+            26_008,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(1)),
+        ),
+        (
+            26_009,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(2)),
+        ),
+        (
+            26_010,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(2)),
+        ),
+        (
+            26_011,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(3)),
+        ),
+        (
+            26_012,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(3)),
+        ),
+        (
+            26_013,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Engine(4)),
+        ),
+        (
+            26_014,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Engine(4)),
+        ),
+        (
+            26_015,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Apu),
+        ),
+        (
+            26_016,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Apu),
+        ),
+        (
+            26_017,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::A, FireDetectionZone::Mlg),
+        ),
+        (
+            26_018,
+            FailureType::FireDetectionLoop(FireDetectionLoopID::B, FireDetectionZone::Mlg),
+        ),
+        (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
+        (29_001, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
+        (29_002, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
+        (
+            29_003,
             FailureType::ReservoirAirLeak(HydraulicColor::Yellow),
         ),
         (
-            29_006,
+            29_004,
             FailureType::ReservoirReturnLeak(HydraulicColor::Green),
         ),
         (
+            29_005,
+            FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+        ),
+        (
+            29_006,
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::GreenA),
+        ),
+        (
             29_007,
-            FailureType::ReservoirReturnLeak(HydraulicColor::Blue),
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::GreenB),
         ),
         (
             29_008,
-            FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::YellowA),
+        ),
+        (
+            29_009,
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::YellowB),
+        ),
+        (
+            29_010,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp1a),
+        ),
+        (
+            29_011,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp1b),
+        ),
+        (
+            29_012,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp2a),
+        ),
+        (
+            29_013,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp2b),
+        ),
+        (
+            29_014,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp3a),
+        ),
+        (
+            29_015,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp3b),
+        ),
+        (
+            29_016,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp4a),
+        ),
+        (
+            29_017,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Edp4b),
         ),
         (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
         (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
@@ -274,6 +376,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 3)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 4)?
+    .provides_aircraft_variable("ENG ON FIRE", "Bool", 1)?
+    .provides_aircraft_variable("ENG ON FIRE", "Bool", 2)?
+    .provides_aircraft_variable("ENG ON FIRE", "Bool", 3)?
+    .provides_aircraft_variable("ENG ON FIRE", "Bool", 4)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
@@ -381,7 +487,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 16)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 17)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 18)?
-    .provides_named_variable("AIRLINER_CRUISE_ALTITUDE")?
     .provides_named_variable("FSDT_GSX_BOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL")?
@@ -432,6 +537,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(cargo_doors)?
     .with_aspect(autobrakes)?
     .with_aspect(nose_wheel_steering)?
+    .with_aspect(body_wheel_steering)?
+    .with_aspect(fire)?
     .with_aspect(flaps)?
     .with_aspect(spoilers)?
     .with_aspect(ailerons)?

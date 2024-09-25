@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachType, ApproachUtils, RunwayUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
+import { ApproachType, ApproachUtils, RadioUtils, RunwayUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -10,7 +10,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { FlightPlanService } from './flightplanning/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
-import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
+import { FlightPhaseManager } from './flightphase';
 import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
 import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
@@ -47,7 +47,6 @@ export {
   NavigationDatabaseService,
   FlightPlanIndex,
   FlightPhaseManager,
-  getFlightPhaseManager,
   GuidanceController,
   initFmgcLoop,
   updateFmgcLoop,
@@ -64,6 +63,7 @@ export {
   CoRouteUplinkAdapter,
   DataManager,
   EventBus,
+  RadioUtils,
   a320EfisRangeSettings,
   A320AircraftConfig,
 };

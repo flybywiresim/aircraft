@@ -370,8 +370,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_EO_ACC_ALT");
   idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_ACC_ALT");
   idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
-  idFmgcCruiseAltitude = std::make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
-  idFmgcFlexTemperature = std::make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
+  idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
+  idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
 
   idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
   idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
@@ -508,8 +508,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 
-  idLs1Active = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
-  idLs2Active = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idLs1Active = std::make_unique<LocalVariable>("A380X_EFIS_L_LS_BUTTON_IS_ON");
+  idLs2Active = std::make_unique<LocalVariable>("A380X_EFIS_R_LS_BUTTON_IS_ON");
   idIsisLsActive = std::make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
@@ -935,7 +935,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   }
 
   // calculate delta time (and ensure it does not get 0 -> max 500 fps)
-  calculatedSampleTime = max(0.002, simData.simulationTime - previousSimulationTime);
+  calculatedSampleTime = std::max(0.002, simData.simulationTime - previousSimulationTime);
 
   monotonicTime += calculatedSampleTime;
 
@@ -996,7 +996,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   if (simData.simulation_rate > idMaximumSimulationRate->get()) {
     // set target simulation rate
     targetSimulationRateModified = true;
-    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    targetSimulationRate = std::max(1., simData.simulation_rate / 2);
     // sed event to reduce simulation rate
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // log event of reduction
@@ -1018,7 +1018,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
       elac2ProtActive || autopilotStateMachineOutput.speed_protection_mode == 1) {
     // set target simulation rate
     targetSimulationRateModified = true;
-    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    targetSimulationRate = std::max(1., simData.simulation_rate / 2);
     // send event to reduce simulation rate
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // reset low performance timer
@@ -1419,10 +1419,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg;
+  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg * 0.146189;
 
   prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
@@ -2593,8 +2593,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
 
   // set rudder pedals position
-  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
-  idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+  idRudderPedalPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]))));
+  idRudderPedalAnimationPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]) + (100. * simData.zeta_trim_pos))));
 
   // provide tracking mode state
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
@@ -2811,7 +2811,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 8 || fwcFlightPhase == 9) {
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 || fwcFlightPhase == 11) {
     idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
     idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
   } else {
@@ -2861,18 +2861,7 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   // get sim data
   auto simData = simConnectInterface.getSimData();
 
-  // FD Button
-  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active) {
-    if (last_fd1_active != simData.ap_fd_1_active) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
-    }
-
-    if (last_fd2_active != simData.ap_fd_2_active) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
-    }
-  }
-  last_fd1_active = simData.ap_fd_1_active;
-  last_fd2_active = simData.ap_fd_2_active;
+  // Only one FD state, no sync needed
 
   // LS Button
   if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active) {

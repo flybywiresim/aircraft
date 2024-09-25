@@ -11,11 +11,12 @@
         "@instruments/common/*": ["./instruments/src/Common/*"],
         "@localization/*": ["../localization/*"],
         "@sentry/*": ["./sentry-client/src/*"],
-        "@simbridge/*": ["./simbridge-client/src/*"],
+        "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
         "@shared/*": ["./shared/src/*"],
         "@tcas/*": ["./tcas/src/*"],
         "@typings/*": ["../../../fbw-common/src/typings/*"],
-        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"]
+        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],
+        "@flybywiresim/rmp": ["../../../fbw-common/src/systems/instruments/src/RMP/index.ts"],
       }
     }
   }

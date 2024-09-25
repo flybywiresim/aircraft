@@ -1,0 +1,525 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions";
+
+.oans-control-panel-background {
+  font-family: "Ecam", monospace !important;
+  z-index: 2;
+  position: absolute;
+  top: 768px;
+  width: 768px;
+  height: 256px;
+  background-color: $display-background;
+}
+
+.oans-control-panel {
+  display: flex;
+  height: 256px;
+}
+
+.oanc-container {
+  width: 768px;
+  height: 768px;
+
+  background-color: $display-background;
+
+  font-family: "Ecam", monospace !important;
+}
+
+.oanc-message-screen {
+  position: absolute;
+
+  width: 768px;
+  height: 768px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 24px;
+
+  background-color: $display-background;
+  color: $display-white;
+
+  z-index: 9999;
+}
+.oanc-message-screen.amber {
+  color: $display-amber;
+}
+
+.oanc-label {
+  position: absolute;
+
+  height: 17px;
+
+  padding-left: 1px;
+
+  font-family: "Ecam", monospace !important;
+  font-size: 19px;
+
+  background-color: black;
+  color: $display-white;
+
+  white-space: pre;
+
+  pointer-events: auto;
+}
+
+.oanc-label-style-taxiway {
+  color: $display-yellow;
+  outline: 0px solid $display-cyan;
+  outline-offset: 0px;
+}
+
+.oanc-label-style-exit-line {
+  color: $display-yellow;
+  outline: 0px solid $display-cyan;
+  outline-offset: 0px;
+}
+
+.oanc-label-style-exit-line:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 4px;
+}
+
+.oanc-label-style-exit-line-btv-selected {
+  color: $display-cyan;
+  outline: 3px solid $display-cyan;
+  outline-offset: 4px;
+}
+
+.oanc-label-style-terminal-building {
+  color: $display-cyan;
+}
+
+.oanc-label-style-runway-end {
+  display: flex;
+  justify-content: center;
+  padding-top: 13px;
+
+  width: 60px;
+  height: 35px;
+
+  font-size: 25px;
+
+  background-color: transparent;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG8AAAA/CAYAAADuS5aXAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHzSURBVHgB7ZrRbYNAEERPqcAluIR0QDpIOrA7IB04HbgESkgJlOASKIESJofYyA4Jx4EwvrnMk/YDycIWT7O+Xdu5DAHw4uvs6+Lr4GvnRLp0gnyVvmr8pvVVdVKdSAdLWWWCYmgsjXsntsdS9mFtcYzapDaB11RK40ZYyuqAjC59Jwy+4/z10dcnwmkslcaVuUlZO5GyIuJee5PbBO7VSX5zYhkmbCplDf5I2Yz3KNC3zdD9K6UxEv+gnidS1loyCrcSlsYjwmmsfR2c+AnCR/zbh1fizvOa0hgJroN0KGXnNVM247PtLI2h0+z/WgCklLJY0LfyCuNtNe8FAKYH6e8j/uYpm4OlscY4DXJYACB+kH5NJWWxoD/kVMhtAYCFgzQrYF8AYMVBmhUwLQCwwSDNClIdOfCAQZoVpLAAAOERPzU2TyMSHqRZwT0XAErZdmCtBQAyGaRZwZIFgL94R4aDNCuIXwDsHMb/sHOSsMeC8AKgGMq7QG0xOXBdALQhefrBMWEGrbR4coIWySNG8oiRPGIkjxjJI0byiJE8YiSPGMkjRvKIkTxiJI8YySNG8oiRPGIkjxjJI0byiJE8YiSPGMkjRvKIkTxiJI8YySNG8oiRPGIkjxjJI0byiJE8YiSPGMkjRvKIkTxiJI8YySPmC1pEKU9OGEigAAAAAElFTkSuQmCC');
+  background-size: cover;
+}
+
+.oanc-label-style-runway-end:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 0px !important;
+}
+
+.oanc-label-style-runway-end-btv-selected {
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+
+  width: 60px;
+  height: 35px;
+
+  font-size: 25px;
+  outline: 3px solid $display-cyan;
+  outline-offset: 0px !important;
+  color: $display-cyan;
+  background-color: transparent;
+  background-image: url('data: image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG8AAAA/CAYAAADuS5aXAAAAAXNSR0IArs4c6QAAAu9JREFUeF7tmuF12zAMhA8bdISO0A3qDZoN4g2STpB0g3SDZIN0giYbdIN2hG6AGDHVZ9eSQvlRFE85/rF/8MnQfTqAgGxY4XL3DYAvAOLzDsAPM/u7tlu1tdyQu38AcAngwvbQjpYD9wAezOxpLfdMDy+57NKAbQ4UB/7s9t0CeDaz+E67KOEll11HajTgU5/6DoTDAs7GgI8De6jdSAUvueymLy12cHzvqu+HNc7dw5UB+mIAYkDuaiONG5uH17nMgJuh/JZcdmtmz2M50N3DgVEXtyNufEy1MT6bXk3CS8AiHQ66LNWuSHtHLstV290/J4i9tTJdP1Lvt1ZrY1Pw3D2AxWlxzGXhiLu3XDYBYrgxTqfxoAzVxoB4b2YPudetsW9xeG8d8UOElBa7dDZbv8bmxsXgdY20AXFq7F2+P0Q8lnJZrhvSAxWHm6uR0+yvpQcAVeG15LIJICOVX7XYclSBl9NIpyP+U22X5UJ8Td/7liMGAicTnJTeqw4AZoM3oZGO1BjTjtlq2RRAOXtTyxGHqkUHAMXhndtI54jW4p4lBwBF4JVspFsElBPTEgOAs+HVaKRzRGtxT62WYzK8JRrpFgHlxJTcONsAIAse4xE/R9yae+Zw4yi8lhvpmsKX/K2SA4ATeHJZSVTj10ol6OwBwD94a2mk60lf9pfOGQCYu8dsMaYGY2+k6RrpstLWu9qEAcDXgPdz4A87J2+k692CfulgHNf7D4Ddm5bNETwHYlJ+3fJ88T1i7QYAuxoXhnpdffC2rb1wfI+whu7Z3X93L4wFj+zJEDwyYIfhCp7gEStAHLqcJ3jEChCHLucJHrECxKHLeYJHrABx6HKe4BErQBy6nCd4xAoQhy7nCR6xAsShy3mCR6wAcehynuARK0AcupwneMQKEIcu5wkesQLEoct5gkesAHHocp7gEStAHLqcJ3jEChCHLucJHrECxKHLeYJHrABx6HKe4BErQBy6nCd4xAoQh/6/814ALkL7B3fOZ9UAAAAASUVORK5CYII=');
+  background-size: cover;
+}
+
+.oanc-label-style-runway-end-btv-selected:hover {
+  outline-offset: 0px !important;
+}
+
+.oanc-label-style-runway-end-fms-selected {
+  font-size: 0.1px;
+  color: transparent;
+  width: 0px;
+  height: 0px;
+  background-color: transparent;
+  border-style: solid;
+  border-width: 0 30px 27.5px 30px;
+  border-color: transparent transparent $display-green transparent;
+}
+
+.oanc-label-style-runway-end-fms-selected:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-runway-arrow-btv-selected {
+  font-size: 0.1px;
+  color: transparent;
+  width: 50px;
+  height: 35px;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iMzUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHBhdGggc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBkPSJtNSw1bDIwLDI1bDIwLC0yNSIgc3Ryb2tlPSIjMDAwMDAwIiBmaWxsPSJub25lIiBzdHJva2Utd2lkdGg9IjMiIC8+CiAgPHBhdGggc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBkPSJtNSw1bDIwLDI1bDIwLC0yNSIgc3Ryb2tlPSIjMDBmZmZmIiBmaWxsPSJub25lIiBzdHJva2Utd2lkdGg9IjIiIC8+Cjwvc3ZnPg==");
+  background-size: auto;
+  background-repeat: no-repeat;
+}
+
+.oanc-label-style-runway-arrow-btv-selected:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-runway-axis {
+  color: $display-white;
+}
+
+.oanc-label-style-btv-stop-line-green {
+  color: $display-green;
+}
+
+.oanc-label-style-btv-stop-line-green:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-btv-stop-line-magenta {
+  color: $display-magenta;
+}
+
+.oanc-label-style-btv-stop-line-magenta:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-btv-stop-line-amber {
+  color: $display-amber;
+}
+
+.oanc-label-style-btv-stop-line-amber:hover {
+  outline: 0px;
+}
+
+.oanc-label-style-btv-stop-line-red {
+  color: $display-red;
+}
+
+.oanc-label-style-btv-stop-line-red:hover {
+  outline: 0px;
+}
+
+
+.oanc-button {
+  padding: 10px 6px;
+  background-color: gray;
+  color: white;
+  border: 3px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.oanc-top-mask {
+  width: 100%;
+  height: 60px;
+  background-color: $display-background;
+}
+
+.oanc-bottom-mask {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: absolute;
+  bottom: 0;
+
+  width: 100%;
+  height: 32px;
+  background-color: $display-background;
+}
+
+.oanc-position {
+  padding: 1px;
+  padding-left: 2px;
+  border: solid 1.5px $display-yellow;
+  color: $display-yellow;
+  font-size: 24px;
+}
+
+.oanc-speed-info {
+  position: absolute;
+  top: 0;
+  left: 5px;
+
+  font-size: 24px;
+  white-space: pre;
+}
+
+#oanc-speed-info-1 {
+  padding-right: 35px;
+
+  font-size: 20px;
+  vertical-align: bottom;
+}
+
+#oanc-speed-info-2 {
+  padding-right: 7px;
+  color: $display-green;
+}
+
+#oanc-speed-info-3 {
+  padding-right: 5px;
+
+  font-size: 20px;
+  vertical-align: bottom;
+}
+
+#oanc-speed-info-4 {
+  width: 40px;
+  padding-right: 10px;
+  color: $display-green;
+}
+
+.oanc-wind-info {
+  position: absolute;
+  top: 27px;
+  left: 5px;
+
+  font-size: 24px;
+  white-space: pre;
+}
+
+#oanc-wind-info-1 {
+  color: $display-green;
+}
+
+#oanc-wind-info-2 {
+  font-size: 20px;
+}
+
+#oanc-wind-info-3 {
+  color: $display-green;
+}
+
+.oanc-airport-info {
+  position: absolute;
+  right: 0;
+  color: $display-white;
+  background-color: $display-background;
+
+  font-size: 20px;
+  white-space: pre;
+}
+
+#oanc-airport-info-line1 {
+  top: 5px;
+}
+
+#oanc-airport-info-line2 {
+  top: 31px;
+}
+
+.oanc-airport-not-in-active-fpln {
+  position: absolute;
+  right: 310px;
+  color: $display-white;
+  background-color: $display-background;
+  text-align: center;
+  font-size: 20px;
+}
+
+.oanc-airplane-shadow {
+  stroke: $display-background;
+  stroke-width: 10px;
+  fill: none;
+}
+
+.oanc-airplane {
+  stroke: $display-magenta;
+  stroke-width: 7.75px;
+  fill: none;
+}
+
+.oanc-svg {
+  font-family: "Ecam", monospace !important;
+
+  //z-index: 9;
+}
+
+.Magenta {
+  fill: none;
+  stroke: $display-magenta;
+}
+
+.Magenta text,
+text.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+
+.Cyan {
+  fill: none;
+  stroke: $display-cyan;
+}
+
+.Cyan text,
+text.Cyan,
+.Cyan tspan,
+tspan.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+
+tspan.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+
+.White {
+  fill: none;
+  stroke: $display-white;
+}
+
+.White.Fill {
+  fill: $display-white;
+  stroke: none;
+}
+
+.White text,
+text.White {
+  fill: $display-white;
+  stroke: none;
+}
+
+.Green {
+  stroke: $display-green;
+  color: $display-green;
+  fill: none;
+}
+
+.Green.Fill {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Green text,
+text.Green,
+.Green tspan,
+tspan.Green {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Amber {
+  stroke: $display-amber;
+  fill: none;
+}
+
+.Amber text,
+text.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+
+.Yellow {
+  stroke: $display-yellow;
+  fill: none;
+}
+
+.Yellow.Fill {
+  fill: $display-yellow;
+  stroke: none;
+}
+
+.Yellow text,
+text.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
+
+.Red {
+  stroke: $display-red;
+  fill: none;
+}
+
+.Red.Fill {
+  fill: $display-red;
+  stroke: none;
+}
+
+.Red text,
+text.Red {
+  fill: $display-red;
+  stroke: none;
+}
+
+.Grey.Fill {
+  fill: $display-grey;
+  stroke: none;
+}
+
+.BackgroundFill {
+  fill: $display-background;
+}
+
+path.rounded {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shadow {
+  stroke: $display-background;
+  fill: none;
+  stroke-width: 3.5px;
+}
+
+.shadow text {
+  stroke-width: 1.5px;
+}
+
+text.shadow {
+  stroke: $display-background;
+  stroke-width: 1px;
+  paint-order: stroke;
+}
+
+
+$font-factor: 5;
+
+.FontLargest {
+  font-size: #{7px * $font-factor};
+}
+
+.FontLarge {
+  font-size: #{6.5px * $font-factor};
+}
+
+.FontMedium {
+  font-size: #{6px * $font-factor};
+}
+
+.FontIntermediate {
+  font-size: #{5.5px * $font-factor};
+}
+
+.FontSmall {
+  font-size: #{5px * $font-factor};
+}
+
+.FontSmallest {
+  font-size: #{4.5px * $font-factor};
+}
+
+.FontTiny {
+  font-size: #{4px * $font-factor};
+}
+
+.StartAlign {
+  text-align: start;
+  text-anchor: start;
+}
+
+.MiddleAlign {
+  text-align: center;
+  text-anchor: middle;
+}
+
+.EndAlign {
+  text-align: end;
+  text-anchor: end;
+}

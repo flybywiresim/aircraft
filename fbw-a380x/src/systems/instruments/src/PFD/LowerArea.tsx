@@ -3,6 +3,7 @@ import {
   ClockEvents,
   ConsumerSubject,
   DisplayComponent,
+  EventSubscriber,
   FSComponent,
   MappedSubject,
   Subject,
@@ -10,7 +11,10 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
+import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
+import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;
@@ -22,10 +26,10 @@ export class LowerArea extends DisplayComponent<{
         <path class="ThickStroke White" d="M 2.1 157.7 h 154.4" />
         <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
-        <Memos />
+        <Memos bus={this.props.bus} />
         <FlapsIndicator bus={this.props.bus} />
 
-        <Limitations visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
+        <Limitations bus={this.props.bus} visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
       </g>
     );
   }
@@ -118,21 +122,21 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('slatsFlapsStatus')
       .whenChanged()
       .handle((s) => {
-        this.configClean = s.getBitValue(17);
-        this.config1 = s.getBitValue(18);
-        this.config2 = s.getBitValue(19);
-        this.config3 = s.getBitValue(20);
-        this.configFull = s.getBitValue(21);
-        this.flaps1AutoRetract = s.getBitValue(26);
+        this.configClean = s.bitValue(17);
+        this.config1 = s.bitValue(18);
+        this.config2 = s.bitValue(19);
+        this.config3 = s.bitValue(20);
+        this.configFull = s.bitValue(21);
+        this.flaps1AutoRetract = s.bitValue(26);
 
-        this.flapReliefEngaged.set(s.getBitValue(22));
-        this.alphaLockEngaged.set(s.getBitValue(24));
+        this.flapReliefEngaged.set(s.bitValue(22));
+        this.alphaLockEngaged.set(s.bitValue(24));
 
-        this.slatsFault.set(s.getBitValue(11));
-        this.flapsFault.set(s.getBitValue(12));
+        this.slatsFault.set(s.bitValue(11));
+        this.flapsFault.set(s.bitValue(12));
 
-        this.slatsDataValid.set(s.getBitValue(28));
-        this.flapsDataValid.set(s.getBitValue(29));
+        this.slatsDataValid.set(s.bitValue(28));
+        this.flapsDataValid.set(s.bitValue(29));
 
         if (this.configClean) {
           this.targetText.set('0');
@@ -465,7 +469,7 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
     // TODO change to proper LGCIS input once LGCIS is implemented
     sub.on('lgciuDiscreteWord1').handle((word) => {
-      const gearDownAndLocked = word.getBitValue(23) && word.getBitValue(24) && word.getBitValue(25);
+      const gearDownAndLocked = word.bitValue(23) && word.bitValue(24) && word.bitValue(25);
       this.landingGearDownAndLocked.set(gearDownAndLocked ? 'visible' : 'hidden');
     });
   }
@@ -482,25 +486,59 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-class Limitations extends DisplayComponent<{ visible: Subscribable<boolean> }> {
+class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private static lineSubject(index: number, sub: EventSubscriber<FwsPfdSimvars>) {
+    return ConsumerSubject.create(sub.on(`limitations_line_${index}`).whenChanged(), 0).map(
+      (it) => EcamLimitations[padMemoCode(it)] ?? '',
+    );
+  }
+
+  private readonly limitationsLine = [
+    Limitations.lineSubject(1, this.sub),
+    Limitations.lineSubject(2, this.sub),
+    Limitations.lineSubject(3, this.sub),
+    Limitations.lineSubject(4, this.sub),
+    Limitations.lineSubject(5, this.sub),
+    Limitations.lineSubject(6, this.sub),
+    Limitations.lineSubject(7, this.sub),
+    Limitations.lineSubject(8, this.sub),
+  ];
+
   render(): VNode {
     return (
       <g visibility={this.props.visible.map((it) => (it ? 'visible' : 'hidden'))}>
-        <text x={76} y={184} class="FontIntermediate Amber">
-          LIMITATIONS NOT AVAIL
-        </text>
+        {this.limitationsLine.map((line, index) => (
+          <MemoFormatter x={70} y={165 + index * 7} message={line} />
+        ))}
       </g>
     );
   }
 }
 
-class Memos extends DisplayComponent<{}> {
+const padMemoCode = (code: number) => code.toString().padStart(9, '0');
+class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memo_line_1').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memo_line_2').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memo_line_3').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
   render(): VNode {
     return (
       <g>
-        <text x={12} y={170} class="FontIntermediate Amber">
-          MEMO NOT AVAIL
-        </text>
+        <MemoFormatter x={4} y={165} message={this.memoLine1} />
+        <MemoFormatter x={4} y={172} message={this.memoLine2} />
+        <MemoFormatter x={4} y={179} message={this.memoLine3} />
       </g>
     );
   }

@@ -4,22 +4,22 @@
     "ChangeATISATCSourceButton": "Αλλαγή πηγής ATIS/ATC",
     "ConnectHoppieACARS": "Σύνδεση Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή τη συχνότητα",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "Αναζήτηση",
     "SelectCorrectATISATCSource": "Αυτή η σελίδα είναι διαθέσιμη μόνο όταν έχει επιλεγεί το IVAO ή το VATSIM ως πηγή ATIS/ATC στη σελίδα ρυθμίσεων.",
     "SetActive": "Θέστε Ενεργό",
     "SetStandby": "Θέστε σε Αναμονή",
-    "ShowAll": "All",
-    "ShowApproach": "Approach",
+    "ShowAll": "Όλα",
+    "ShowApproach": "Προσέγγιση",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "Delivery",
-    "ShowDeparture": "Departure",
-    "ShowGround": "Ground",
-    "ShowRadar": "Radar",
-    "ShowTower": "Tower",
+    "ShowDelivery": "Παράδοση",
+    "ShowDeparture": "Αναχώρηση",
+    "ShowGround": "Εδαφος",
+    "ShowRadar": "Ραντάρ",
+    "ShowTower": "Πύργος ελέγχου",
     "Standby": "Αναμονή",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "Αναζήτηση διακριτικών κλήσης ATC",
+      "AtcTypeFilter": "Φίλτρο για"
     },
     "Title": "Έλεγχος Εναέριας Κυκλοφορίας"
   },
@@ -81,10 +81,12 @@
       "CostIndex": "Δείκτης Κόστους",
       "CruiseAlt": "Ύψος Πλεύσης ",
       "ImportSimBriefData": "Εισαγωγή Δεδομένων Simbrief",
+      "NoImportDueToBoardingOrRefuel": "Δεν είναι δυνατή η εισαγωγή λόγω επιβίβασης ή ανεφοδιασμού καυσίμων σε εξέλιξη!",
       "Route": "Διαδρομή",
       "SimBriefDataNotYetLoaded": "Τα Δεδομένα Simbrief δεν έχουν ακόμη φορτωθεί.",
       "Title": "Η Πτήση σας",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastFuelPayloadImported": "Καύσιμα και φορτίο εισήχθησαν!",
+      "ToastWrongAircraftType": "SimBrief - Εντοπίστηκε μη έγκυρος τύπος αεροσκάφους. Ελέγξτε ότι ο τύπος αεροσκάφους στο SimBrief OFP είναι έγκυρος.",
       "ZFW": "Βάρος Μηδενικού Καυσίμου"
     }
   },
@@ -132,7 +134,7 @@
       "Defueling": "Διαδικασία Εξαγωγής Καυσίμου",
       "EstimatedDuration": "Εκτιμώμενη Διάρκεια (Λεπτά)",
       "EstimatedTime": "Εκτιμώμενος Χρόνος",
-      "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "GSXFuelSyncEnabled": "Ανεφοδιασμός καυσίμων με GSX",
       "LeftInnerTank": "Αριστερή Εσωτερική Δεξαμενή",
       "LeftOuterTank": "Αριστερή Εξωτερική Δεξαμενή",
       "ReadyToStart": "Έτοιμοι για Εκκίνηση",
@@ -142,7 +144,7 @@
       "RightInnerTank": "Δεξιά Εσωτερική Δεξαμενή",
       "RightOuterTank": "Δεξιά Εξωτερική Δεξαμενή",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Το αεροσκάφος πρέπει να είναι σε κατάσταση Cold and Dark για να αλλάξουν οι χρόνοι ανεφοδιασμού",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Το αεροσκάφος πρέπει να είναι στο έδαφος με σβησμένο κινητήρα για να αλλάξει η διάρκεια ανεφοδιασμού",
         "FillBlockFuelFromSimBrief": "Συμπληρώστε το Καύσιμο Θέσης Στάθμευσης από το SimBrief"
       },
       "Title": "Καύσιμα",
@@ -150,50 +152,55 @@
       "Unavailable": "Μη διαθέσιμο"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "Χρόνος Επιβίβασης",
       "Cargo": "Cargo",
       "Current": "Current",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
-      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
+      "DeboardConfirmationBody": "Παρακαλώ επιβεβαίωσε την αποβίβαση όλων των επιβατών.",
+      "DeboardConfirmationCancel": "Ακύρωση",
+      "DeboardConfirmationConfirm": "Αποβίβαση",
+      "DeboardConfirmationTitle": "Αποβίβαση όλων των επιβατών;",
+      "EstimatedDurationUnit": "λεπτά",
+      "GSXPayloadSyncEnabled": "Ενεργοποιημένος συγχρονισμός φορτίου με το GSX",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
-      "Passengers": "Passengers",
+      "Passengers": "Επιβάτες",
       "Planned": "Planned",
+      "SelectItem": {
+        "CargoDeck": "Φορτίο",
+        "MainDeck": "Κύρια",
+        "UpperDeck": "Άνω"
+      },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
-        "MaxPassengers": "Maximum Passengers",
-        "MaxZFW": "Maximum ZFW",
+        "MaxGW": "Μέγιστο GW",
+        "MaxGWCG": "Μέγιστο GW CG",
+        "MaxPassengers": "Μέγιστοι Επιβάτες",
+        "MaxZFW": "Μέγιστο ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
         "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Έναρξη Αποβίβασης"
       },
       "Title": "Payload",
-      "ZFW": "ZFW",
+      "ZFW": "Βάρος Μηδενικού Καυσίμου",
       "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Οπισθοδρόμηση"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "Μονάδα εκκίνησης αέρα",
       "BaggageTruck": "Φορτηγό Αποσκευών",
       "CateringTruck": "Φορτηγό Τροφοδοσίας",
       "Cones": "Safety Cones",
       "DoorAft": "Πίσω Πόρτα",
       "DoorCargo": "Cargo Door",
       "DoorFwd": "Μπροστινή Πόρτα",
-      "ExternalPower": "Εξωτερική Ισχύος ",
+      "ExternalPower": "Επίγεια Μονάδα Ισχύος",
       "FuelTruck": "Φορτηγό Καυσίμων",
       "JetBridge": "Γέφυρα Επιβίβασης ",
       "Title": "Υπηρεσίες",
@@ -211,10 +218,10 @@
     "Altn": "Εναλλακτικό",
     "ExitFullscreenMode": "Έξοδος από Πλήρη Οθόνη",
     "From": "Από",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "Φόρτωση εικόνας",
+    "LoadingImageFailed": "Η φόρτωση της εικόνας απέτυχε",
+    "LoadingPdf": "Φόρτωση PDF",
+    "LoadingPdfFailed": "Αποτυχία φόρτωσης PDF",
     "LocalFiles": {
       "Both": "Και τα δύο",
       "EstablishingConnection": "Δημιουργία Σύνδεσης",
@@ -229,12 +236,12 @@
       "AirportDoesNotExist": "Το Αεροδρόμιο δεν υπάρχει",
       "AuthenticateWithNavigraph": "Έλεγχος ταυτότητας με Navigraph",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "Ρυθμίσεις τρίτων",
+        "Title": "Πηγαίντε στις ρυθμίσεις τρίτων για να συνδέσετε τον Navigraph λογαριασμό σας"
       },
       "InsufficientEnv": "Ανεπαρκές αρχείο.env",
       "IntoYourBrowserAndEnterTheCodeBelow": "στο πρόγραμμα περιήγησής σας και εισάγετε τον παρακάτω κωδικό\n",
-      "LoadingMsg": "Loading",
+      "LoadingMsg": "Φόρτωση",
       "NoAirportSelected": "Δεν Επιλέχθηκε Αεροδρόμιο",
       "ResetNavigraphAuthentication": "Επαναφορά Ελέγχου Ταυτότητας Navigraph",
       "ScanTheQrCodeOrOpen": "Σάρωση του κώδικα QR ή Άνοιγμα",
@@ -377,8 +384,9 @@
       "ColdDark": "Αεροσκάφος σε Σκοτεινή Κατάσταση",
       "ConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε τη φόρτωση της προκαθορισμένης ρύθμισης.",
       "CurrentProcedureStep": "Τρέχουσα Διαδικασία",
+      "ExpediteLoading": "Γρήγορη φόρτωση (μη ρεαλιστική):",
       "PleaseConfirmLoadingOfPreset": "Επιβεβαιώστε τη φόρτωση της προκαθορισμένης ρύθμισης.",
-      "Powered": "Powered",
+      "Powered": "Τροφοδοτείται",
       "ReadyPushback": "Έτοιμοι για οπισθοδρόμηση",
       "ReadyTakeoff": "Έτοιμοι για Απογείωση",
       "ReadyTaxi": "Έτοιμοι για Τροχοδρόμηση ",
@@ -391,12 +399,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Τα αεροσκάφος πρέπει να τροφοδοτείται για να φορτώσει προκαθορισμένες ρυθμίσεις",
       "AircraftNeedsToBePoweredToSavePresets": "Το αεροσκάφος πρέπει να τροφοδοτείται για να εξοικονομήσει προεπιλογές",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "Αυγή/Σούρουπο:",
+      "AutoLoadDay": "Μέρα:",
+      "AutoLoadLightingHelpTitle": "Αυτόματη φόρτωση προεπιλογών",
+      "AutoLoadLightingPreset": "Ενεργοποίηση αυτόματης φόρτωσης προεπιλογών φωτισμού:",
+      "AutoLoadNight": "Νύχτα:",
+      "AutoLoadNoneSelection": "Κανένα",
       "LoadPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "LoadingPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "NewNameConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε το νέο όνομα για την προκαθορισμένη ρύθμιση φωτισμού",
@@ -425,7 +433,7 @@
     "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
     "EnableSystemMessageTitle": "Enable Pushback System",
     "Forward": "Μπροστά",
-    "Halt": "Διακοπή",
+    "Halt": "Σε παύση",
     "LeavePageMessage": "Pausing Pushback",
     "Left": "Left",
     "Moving": "Moving",
@@ -450,7 +458,7 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Ενεργοποίησε/Απενεργοποίησε την είσοδο του χεριστηρίου από το πηδάλιο",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
@@ -458,29 +466,36 @@
     "TugDirection": "Κατεύθυνση Ρυμουλκού",
     "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Ταχύτητα Ρυμουλκού",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Χρησιμοποίησε το χειριστήριο για έλεγχο"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Ευθυγράμμισε τα ADIRS",
+    "FinishBoarding": "Ολοκλήρωση επιβίβασης",
+    "OnScreenKeyboard": "Πληκτρολόγιο οθόνης",
+    "PauseAtTod": "Παύση στην κορυφή της κατάβασης",
+    "PauseAtTodArmed": "Οπλισμένο",
+    "PauseAtTodInactive": "Ανενεργό",
+    "PauseAtTodStandby": "Σε αναμονή",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Συνδέθηκε",
+    "SimBridgeConnecting": "Γίνεται σύνδεση...",
+    "SimBridgeOff": "Ανενεργό",
+    "SimBridgeOffline": "Μη διαθέσιμο",
+    "Simrate": "Ρυθμός Προσομοίωσης",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "Άμεση ευθυγράμμιση των ADIRS.",
+      "AutoBrightness": "Ενεργοποίηση/Απενεργοποίηση της αυτόματης φωτεινότητας",
+      "Brightness": "Ορισμός φωτεινότητας flyPad.",
+      "FinishBoarding": "Ολοκλήρωσε αμέσως την επιβίβαση.",
+      "OnScreenKeyboard": "Ενεργοποίηση/Απενεργοποίηση πληκτρολογίου οθόνης",
+      "PauseAtTod": "Όπλιση ή αφόπλιση παύσης στην κορυφή της κατάβασης",
+      "PowerButton": "Απενεργοποίηση",
+      "Settings": "Μεταβείτε στην σελίδα ρυθμίσεων του flyPad.",
+      "SimBridge": "Διαχειριστείτε την σύνδεση SimBridge",
+      "Simrate": "Αύξηση ή μείωση του ρυθμού προσομοίωσης",
+      "Sleep": "Αναμονή"
     },
-    "Title": "Quick Controls"
+    "Title": "Γρήγοροι έλεγχοι"
   },
   "Settings": {
     "About": {
@@ -495,7 +510,7 @@
       "PaxSigns": "Πινακίδες Επιβατών",
       "RmpVhfSpacing": "Απόσταση VHF RMP",
       "Satcom": "Satcom",
-      "Select": "Select",
+      "Select": "Επίλεξε",
       "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
       "Title": "Επιλογές Αεροσκάφους / Προγράμματα Pin",
       "WeightUnit": "Μονάδα Βάρους"
@@ -534,10 +549,10 @@
       "WindInteriorVolume": "Εσωτερική  Ένταση Ήχου Αέρα "
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "Reset": "Reset",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Title": "Automatic Call Outs"
+      "FiveHundredGlide": "Αναστέλλεται όταν συλλαμβάνεται το Glideslope",
+      "Reset": "Επαναφορά",
+      "ResetStandardConfig": "Επαναφορά στην κανονική διαμόρφωση",
+      "Title": "Αυτόματα Call Outs"
     },
     "Fast": "Γρήγορα",
     "Instant": "Στιγμιαία",
@@ -547,29 +562,29 @@
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Εμφάνιση φιγούρας First Officer",
       "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
       "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
       "McduKeyboardInput": "Είσαγωγή Πληκτρολογίου MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PilotAvatar": "Εμφάνιση φιγούρας πιλότου",
       "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Συγχρονισμός των χειριστηρίων EFIS μεταξύ κυβερνήτη και FO",
       "Title": "Ρεαλισμός"
     },
     "SimOptions": {
       "Active": "Ενεργό",
       "Auto": "Αυτόματο",
-      "Both": "Synchronized",
+      "Both": "Συγχρονισμένο",
       "Calibrate": "Βαθμονόμηση",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "Κυβερνήτης",
+      "CockpitSeatUsedToControl": "Κάθισμα πιλοτηρίου που χρησιμοποιείται για έλεγχο",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Copilot",
+      "Copilot": "Συγκυβερνήτης",
       "DefaultBarometerUnit": "Προκαθορισμένη Βαρομετρική Μονάδα",
       "DynamicRegistrationDecal": "Δυναμική Χαλκομανία Εγγραφής",
-      "EnableSimBridge": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
+      "EnableSimBridge": "Ενεργοποίηση σύνδεσης Simbridge (Αυτόματη απενεργοποίηση μετά απο 5 λεπτά σε περίπτωση μη επιτυχούς σύνδεσης)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
       "ExternalMcduServerPort": "Εξωτερική Θύρα Διακομιστή MCDU",
       "Hpa": "hPa",
@@ -579,8 +594,12 @@
       "Off": "Απενεργοποιημένο",
       "Save": "Αποθήκευση",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
-      "SimBridgePort": "Εξωτερική Θύρα Διακομιστή MCDU",
+      "SimBridgeIp": "Εξωτερική διεύθυνση φιλοξενίας SimBridge",
+      "SimBridgePort": "Εξωτερική Θύρα SimBridge",
+      "SimbridgeEmptyAddress": "Η απομακρυσμένη διεύθυνση IP του SimBridge δεν μπορεί να είναι κενή!",
+      "SimbridgeLocal": "Αυτός ο υπολογιστής",
+      "SimbridgeMachine": "Συσκευή Φιλοξενίας Simbridge",
+      "SimbridgeRemote": "Απομακρυσμένος υπολογιστής",
       "SyncMsfsFlightPlan": "Συγχρονισμός του Σχεδίου Πτήσεως MSFS",
       "ThrottleDetents": "Αναστολέας Γκαζιού",
       "Title": "Επιλογές Sim",
@@ -589,45 +608,45 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxFuelEnabled": "Συγχρονισμός φόρτωσης καυσίμων με GSX.",
+      "GsxPayloadEnabled": "Συγχρονισμός ωφέλιμου φορτίου με GSX.",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "Συνδέθηκε",
+        "Link": "Σύνδεση λογαριασμού",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Σύνδεση λογαριασμού Navigraph"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Σύνδεση Λογαριασμού Navigraph",
         "SubscriptionStatus": {
-          "None": "None",
-          "Unknown": "Unknown",
+          "None": "Κανένα",
+          "Unknown": "Άγνωστο",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Κατάργηση σύνδεσης λογαριασμού"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "Παράκαμψη αναγνωριστικού χρήστη SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Παρακαλώ ελέγξτε ότι έχετε εισάγει σωστά το όνομα χρήστη SimBrief ή το pilot ID σας.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "Εναλλακτικό αναγνωριστικό χρήστη SimBrief για να χρησιμοποιηθεί αντί του συνδεδεμένου λογαριασμού Navigraph"
       },
-      "Title": "3rd Party Options",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "Title": "Ρυθμίσεις τρίτων",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Το Simbrief PilotID παράκαμψης είναι έγκυρο και ενημερώθηκε σε"
     },
     "ThrottleConfig": {
       "Apply": "Εφαρμογή",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Είστε βέβαιοι ότι θέλετε να επαναφέρετε τις τρέχουσες ρυθμίσεις του γκαζιού στις προεπιλεγμένες καταστάσεις τους; Αυτή η ενέργεια είναι μη αναστρέψιμη.",
       "Axis": "Άξονας",
-      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "AxisDescription": "Άξονας $axis για το throttle $throttles",
       "Back": "Προηγούμενο",
       "ConfigureEnd": "Ρύθμιση Τέλους",
       "ConfigureStart": "Ρύθμιση Παραμέτρων Έναρξης",
       "CurrentValue": "Τρέχουσα Τιμή",
       "Deadband": "Νεκρή ζώνη",
       "ErrorOverlapMsg": "επικαλύπτεται με",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "FourThrottleWarning": "Θυμηθείτε να ρυθμίσετε το MSFS να χρησιμοποιήσει τον Άξονα 1 για τα Throttle 1+2 και τον άξονα 2 για τα Throttle 3+4",
       "IndependentAxis": "Ανεξάρτητος Άξονας",
       "LoadFromFile": "Φόρτωση από Aρχείο",
-      "PleaseEnterAValidDeadzone": "Παρακαλώ εισαγάγετε ένα έγκυρο deadzone",
+      "PleaseEnterAValidDeadzone": "Παρακαλώ εισάγετε ένα έγκυρο deadband",
       "ResetToDefaults": "Επαναφορά Προεπιλογών",
       "ReverseFull": "Πλήρης Αναστροφή",
       "ReverseIdle": "Αδρανής Αναστροφή",
@@ -635,14 +654,14 @@
       "SaveAndApply": "Αποθήκευση και Εφαρμογή",
       "SetFromThrottle": "Θέστε από Γκάζι",
       "ThrottleConfigurationReset": "Επαναφορά Ρύθμισης Γκαζιού",
-      "TogaOnAxis": "TOGA On Axis"
+      "TogaOnAxis": "TOGA στον άξονα"
     },
     "Title": "Ρυθμίσεις",
     "Unrealistic": "Μη Ρεαλιστικό",
     "flyPad": {
       "AutoBrightness": "Αυτόματη Φωτεινότητα",
       "AutomaticallyShowOnscreenKeyboard": "Αυτόματη Εμφάνιση Πληκτρολογίου Οθόνης",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Προσομοίωση Διάρκειας Zωής Mπαταρίας",
       "Blue": "Μπλέ",
       "Brightness": "Φωτεινότητα",
       "Dark": "Σκοτεινό",
@@ -681,9 +700,9 @@
     "Sun": "Κυρ",
     "TT": {
       "Brightness": "Click to change Brightness",
-      "ConnectedToLocalApi": "Συνδεδεμένο με Τοπικό API",
-      "DisconnectedFromLocalApi": "Αποσύνδεση από το Τοπικό API",
-      "QuickControls": "Click to open Quick Controls",
+      "ConnectedToLocalApi": "Συνδεδεμένο με το SimBridge",
+      "DisconnectedFromLocalApi": "Αποσυνδεδεμένο από το SimBridge",
+      "QuickControls": "Κάνε κλικ για να ανοίξεις τον γρήγορο έλεγχο",
       "TurnOffOrShutdownEfb": "Απενεργοποίηση ή Τερματισμός EFB"
     },
     "Thu": "Πεμ",
@@ -691,13 +710,13 @@
     "Wed": "Τετ"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Χρησιμοποιείτε την έκδοση $edition με το version:",
+    "LatestVersionText": "Η πιο πρόσφατη $edition έκδοση είναι",
+    "RecommendationText": "Παρακαλώ ενημερώστε το αεροσκάφος χρησιμοποιώντας το πρόγραμμα εγκατάστασης FlyByWire.",
+    "StatusBarWarning": "Χρήση παλαιότερης έκδοσης του αεροσκάφους",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Ενημερώστε το αεροσκάφος σας χρησιμοποιώντας το πρόγραμμα εγκατάστασης FlyByWire."
     },
-    "Title": "New Version Available"
+    "Title": "Νέα έκδοση διαθέσιμη"
   }
 }

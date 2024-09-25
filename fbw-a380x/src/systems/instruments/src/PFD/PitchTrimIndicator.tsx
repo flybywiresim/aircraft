@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
@@ -9,6 +13,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import PitchTrimUtils from '@shared/PitchTrimUtils';
 
 enum PitchTrimStatus {
   AfterLanding,
@@ -45,11 +50,10 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
       if (phase > 9) {
         return PitchTrimStatus.AfterLanding;
       } else {
-        if (this.pitchTrimOutOfRange(trim)) {
+        if (PitchTrimUtils.pitchTrimOutOfRange(trim)) {
           return PitchTrimStatus.OutOfRange;
         } else {
-          const targetTrim = this.cgToPitchTrim(cg);
-          return Math.abs(targetTrim - trim) < 1.5 ? PitchTrimStatus.AtTarget : PitchTrimStatus.NotAtTarget;
+          return PitchTrimUtils.pitchTrimInCyanBand(cg, trim) ? PitchTrimStatus.AtTarget : PitchTrimStatus.NotAtTarget;
         }
       }
     },
@@ -63,7 +67,7 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
       if (phase > 9) {
         return 0;
       } else {
-        return this.cgToPitchTrim(cg);
+        return PitchTrimUtils.cgToPitchTrim(cg);
       }
     },
     this.cgPercent,
@@ -106,35 +110,6 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
     this.optimalPitchTrimCenter,
   );
 
-  /** Find optimal pitch trim setting for GW CG */
-  cgToPitchTrim(cg: number): number {
-    if (cg < 29) {
-      return 5.8;
-    } else if (cg <= 35) {
-      return 5.8 - ((cg - 29) * 1) / 6;
-    } else if (cg <= 43) {
-      return 4.8 - ((cg - 35) * 5) / 8;
-    } else {
-      return -0.2;
-    }
-  }
-
-  /** Find corresponding CG for pitch trim setting */
-  pitchTrimToCg(trim: number) {
-    if (trim > 4.8) {
-      return 35 - (trim - 4.8) * 6;
-    } else {
-      return 43 - ((trim + 0.2) * 8) / 5;
-    }
-  }
-
-  /** Checks for a given pitch trim setting, whether it's within certified ranges
-   * @param pitchTrim pitch trim in degrees. Down is negative
-   */
-  pitchTrimOutOfRange(pitchTrim: number) {
-    return pitchTrim > 5.8 || pitchTrim < -0.2;
-  }
-
   updateCgStatus() {
     this.cgValue.instance.classList.remove(...this.cgValue.instance.classList);
     this.arrowRef.instance.classList.remove(...this.cgValue.instance.classList);
@@ -175,7 +150,7 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
   render(): VNode {
     return (
       <div style={{ visibility: this.props.visible.map((it) => (it ? 'visible' : 'hidden')) }}>
-        <img src="/Images/TRIM_INDICATOR.png" class="TrimIndicatorImage" />
+        <img src="/Images/fbw-a380x/TRIM_INDICATOR.png" class="TrimIndicatorImage" />
         <svg class="TrimIndicatorSvg" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="rightWheelGradient" x1="0%" x2="0%" y1="0%" y2="100%">
@@ -223,7 +198,7 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
                 FOR
               </text>
               <text x={162} y={140} font-size={26.6} class="White" ref={this.cgValue}>
-                {this.trimPosition.map((it) => this.pitchTrimToCg(it).toFixed(1))}
+                {this.trimPosition.map((it) => PitchTrimUtils.pitchTrimToCg(it).toFixed(1))}
               </text>
               <text x={232} y={140} font-size={21.7} class="Cyan">
                 %

@@ -16,7 +16,6 @@ import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 
-import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
@@ -33,6 +32,8 @@ import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -156,7 +157,12 @@ export class GuidanceController {
 
   private windProfileFactory: WindProfileFactory;
 
-  private atmosphericConditions: AtmosphericConditions;
+  public atmosphericConditions: AtmosphericConditions;
+
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   private updateEfisState(side: EfisSide, state: EfisState<number>): void {
     const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
@@ -205,7 +211,7 @@ export class GuidanceController {
     const runway = this.flightPlanService.active.destinationRunway;
 
     if (runway) {
-      const phase = getFlightPhaseManager().phase;
+      const phase = this.flightPhase.get();
       const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
 
       if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
@@ -228,7 +234,7 @@ export class GuidanceController {
 
   private updateEfisData() {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
-    const flightPhase = getFlightPhaseManager().phase;
+    const flightPhase = this.flightPhase.get();
     const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
     const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
     if (activeLeg) {
@@ -262,6 +268,7 @@ export class GuidanceController {
   }
 
   constructor(
+    private readonly bus: EventBus,
     fmgc: Fmgc,
     private readonly flightPlanService: FlightPlanService,
     private efisInterfaces: Record<EfisSide, EfisInterface>,
@@ -286,7 +293,7 @@ export class GuidanceController {
       this.acConfig,
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
-    this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterfaces);
+    this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
   }
 
   init() {

@@ -14,10 +14,6 @@ import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/c
 
 export type PathAngleConstraint = Degrees;
 
-export abstract class FXLeg extends Leg {
-  from: WayPoint;
-}
-
 export function isHold(leg: Leg): boolean {
   return leg instanceof HALeg || leg instanceof HFLeg || leg instanceof HMLeg;
 }

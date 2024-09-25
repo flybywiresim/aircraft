@@ -23,7 +23,7 @@ use std::time::Duration;
 
 use nalgebra::{Vector2, Vector3};
 
-enum GearStrutId {
+pub enum GearStrutId {
     Nose = 0,
     LeftBody = 1,
     RightBody = 2,
@@ -267,6 +267,10 @@ impl WingLift {
     //      0-> Plane not on ground  0.5-> half the weight of the plane on ground ...
     pub fn ground_weight_ratio(&self) -> Ratio {
         Ratio::new::<ratio>(self.ground_weight_ratio.get::<ratio>().clamp(0., 1.))
+    }
+
+    pub fn ground_weight_per_wheel(&self, wheel_id: GearStrutId) -> Mass {
+        self.gear_weight_on_wheels.new_weight_on_wheel(wheel_id)
     }
 
     pub fn total_lift(&self) -> Force {
