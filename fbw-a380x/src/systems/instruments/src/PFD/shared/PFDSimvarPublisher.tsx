@@ -232,7 +232,7 @@ export enum PFDVars {
   markerBeacon = 'MARKER BEACON STATE',
   isAltManaged = 'L:A32NX_FCU_ALT_MANAGED',
   targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
-  shortTermManagedSpeed = 'L:A32NX_SPEEDS_MANAGED_SHORT_TERM',
+  shortTermManagedSpeed = 'L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD',
   mach = 'L:A32NX_ADIRS_ADR_1_MACH',
   flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
   transAlt = 'L:AIRLINER_TRANS_ALT',

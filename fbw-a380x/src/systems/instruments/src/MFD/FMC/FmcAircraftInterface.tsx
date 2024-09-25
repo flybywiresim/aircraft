@@ -852,7 +852,7 @@ export class FmcAircraftInterface {
         }
       }
     }
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM', 'knots', shortTermManagedSpeed);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'knots', shortTermManagedSpeed);
   }
 
   private isSpeedDifferentGreaterThan2Kt(speed: number, speed2: number) {
