@@ -9,11 +9,6 @@ class A32NX_Core {
                 updateInterval: 300,
             },
             {
-                name: 'BrakeTemp',
-                module: new A32NX_BrakeTemp(),
-                updateInterval: 150,
-            },
-            {
                 name: 'Refuel',
                 module: new A32NX_Refuel(),
                 updateInterval: 150,

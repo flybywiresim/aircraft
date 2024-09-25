@@ -241,6 +241,14 @@ impl HydraulicGearSystem {
             self.right_gear_assembly.actuator(),
         ]
     }
+
+    pub fn left_gear_position(&self) -> Ratio {
+        self.left_gear_assembly.position_normalized()
+    }
+
+    pub fn right_gear_position(&self) -> Ratio {
+        self.right_gear_assembly.position_normalized()
+    }
 }
 impl GearSystemSensors for HydraulicGearSystem {
     fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
