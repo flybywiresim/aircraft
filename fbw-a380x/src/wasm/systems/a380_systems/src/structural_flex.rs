@@ -1,6 +1,6 @@
 use systems::{
     fuel::FuelPayload,
-    shared::{height_over_ground, random_from_range, SurfacesPositions},
+    shared::{random_from_range, SurfacesPositions},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -21,7 +21,6 @@ use crate::fuel::A380FuelTankType;
 use uom::si::{
     f64::*,
     force::newton,
-    length::meter,
     mass::kilogram,
     ratio::ratio,
     velocity::{knot, meter_per_second},
@@ -411,6 +410,18 @@ impl WingFlexA380 {
 
     const WING_NODES_X_COORDINATES: [f64; WING_FLEX_NODE_NUMBER] = [0., 11.5, 22.05, 29., 36.85];
 
+    // Section defining points for collision detection of wing tips and outter engines
+    const OUTTER_ENGINE_VERTICAL_OFFSET: f64 = -2.3;
+    const WING_TIP_VERTICAL_OFFSET: f64 = 2.2;
+
+    const RIGHT_OUTTER_ENGINE_COORDINATES: [f64; 3] =
+        [25.60, Self::OUTTER_ENGINE_VERTICAL_OFFSET, 1.22];
+    const LEFT_OUTTER_ENGINE_COORDINATES: [f64; 3] =
+        [-25.60, Self::OUTTER_ENGINE_VERTICAL_OFFSET, 1.22];
+
+    const RIGHT_WING_TIP_COORDINATES: [f64; 3] = [39.624, Self::WING_TIP_VERTICAL_OFFSET, -13.716];
+    const LEFT_WING_TIP_COORDINATES: [f64; 3] = [-39.624, Self::WING_TIP_VERTICAL_OFFSET, -13.716];
+
     pub fn new(context: &mut InitContext) -> Self {
         let empty_mass = Self::EMPTY_MASS_KG.map(Mass::new::<kilogram>);
 
@@ -438,12 +449,27 @@ impl WingFlexA380 {
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
             animation_mapper: WingAnimationMapper::new(Self::WING_NODES_X_COORDINATES),
 
-            flex_physics: [1, 2].map(|_| {
+            flex_physics: ['L', 'R'].map(|side| {
                 FlexPhysicsNG::new(
                     context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
                     Self::DAMPING_COEFFICIENTS,
+                    [
+                        None,
+                        None,
+                        Some(if side == 'L' {
+                            Vector3::from(Self::LEFT_OUTTER_ENGINE_COORDINATES)
+                        } else {
+                            Vector3::from(Self::RIGHT_OUTTER_ENGINE_COORDINATES)
+                        }),
+                        None,
+                        Some(if side == 'L' {
+                            Vector3::from(Self::LEFT_WING_TIP_COORDINATES)
+                        } else {
+                            Vector3::from(Self::RIGHT_WING_TIP_COORDINATES)
+                        }),
+                    ],
                 )
             }),
 
@@ -485,40 +511,6 @@ impl WingFlexA380 {
 
         self.update_fuel_masses(fuel_mass);
 
-        let tip_offset = 2.2;
-        let right_wing_tip_coord = Vector3::new(39.624, 0. + tip_offset, -13.716);
-        let right_min_tip_height_including_plane_angle =
-            -height_over_ground(context, right_wing_tip_coord);
-
-        let left_wing_tip_coord = Vector3::new(-39.624, 0. + tip_offset, -13.716);
-        let left_min_tip_height_including_plane_angle =
-            -height_over_ground(context, left_wing_tip_coord);
-
-        // println!(
-        //     "wing_tip_coord {:.2}/ {:.2}/ {:.2} MIN HEIGHT {:.2}",
-        //     right_wing_tip_coord[0],
-        //     right_wing_tip_coord[1],
-        //     right_wing_tip_coord[2],
-        //     right_min_tip_height_including_plane_angle.get::<meter>(),
-        // );
-
-        let outter_engine_offset = -2.3;
-        let right_outter_engine_coord = Vector3::new(25.60, 0. + outter_engine_offset, 1.22);
-        let right_min_engine_height_including_plane_angle =
-            -height_over_ground(context, right_outter_engine_coord);
-
-        let left_outter_engine_coord = Vector3::new(-25.60, 0. + outter_engine_offset, 1.22);
-        let left_min_engine_height_including_plane_angle =
-            -height_over_ground(context, left_outter_engine_coord);
-
-        println!(
-            "engine_out_coord {:.2}/ {:.2}/ {:.2} MIN HEIGHT {:.2}",
-            left_outter_engine_coord[0],
-            left_outter_engine_coord[1],
-            left_outter_engine_coord[2],
-            left_min_engine_height_including_plane_angle.get::<meter>(),
-        );
-
         self.flex_physics[0].update(
             context,
             self.wing_lift_dynamic
@@ -526,8 +518,6 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper.fuel_masses(self.left_wing_fuel_mass),
             surface_vibration_acceleration + self.left_right_wing_root_position[0].acceleration(),
-            left_min_tip_height_including_plane_angle,
-            left_min_engine_height_including_plane_angle,
         );
 
         self.flex_physics[1].update(
@@ -537,8 +527,6 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper.fuel_masses(self.right_wing_fuel_mass),
             surface_vibration_acceleration + self.left_right_wing_root_position[1].acceleration(),
-            right_min_tip_height_including_plane_angle,
-            right_min_engine_height_including_plane_angle,
         );
     }
 

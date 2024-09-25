@@ -1,6 +1,6 @@
-use crate::shared::local_acceleration_at_plane_coordinate;
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::update_iterator::MaxStepLoop;
+use crate::shared::{height_over_ground, local_acceleration_at_plane_coordinate};
 
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
@@ -453,10 +453,6 @@ impl WingSectionNode {
     pub fn set_min_position(&mut self, min_pos: Length) {
         let new_min = min_pos.max(Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION));
         self.min_position = new_min;
-        println!(
-            "Injected min tip position {:.2}",
-            self.min_position.get::<meter>()
-        );
     }
 
     fn update(&mut self, context: &UpdateContext) {
@@ -540,6 +536,8 @@ pub struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     nodes: [WingSectionNode; NODE_NUMBER],
     flex_constraints: [FlexibleConstraint; LINK_NUMBER],
 
+    height_limit_absolute_coordinate: [Option<Vector3<f64>>; NODE_NUMBER],
+
     // DEV simvars to adjust parameters ingame
     wing_dev_spring_1_id: VariableIdentifier,
     wing_dev_spring_2_id: VariableIdentifier,
@@ -572,6 +570,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         empty_mass: [Mass; NODE_NUMBER],
         springness: [f64; LINK_NUMBER],
         damping: [f64; LINK_NUMBER],
+        height_limit_absolute_coordinate: [Option<Vector3<f64>>; NODE_NUMBER],
     ) -> Self {
         let nodes_array = empty_mass.map(WingSectionNode::new);
 
@@ -596,6 +595,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                 },
             ),
 
+            height_limit_absolute_coordinate,
+
             wing_dev_spring_1_id: context.get_identifier("WING_FLEX_DEV_SPRING_1".to_owned()),
             wing_dev_spring_2_id: context.get_identifier("WING_FLEX_DEV_SPRING_2".to_owned()),
             wing_dev_spring_3_id: context.get_identifier("WING_FLEX_DEV_SPRING_3".to_owned()),
@@ -612,19 +613,25 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         }
     }
 
+    fn update_ground_collision_constraints(&mut self, context: &UpdateContext) {
+        for (node_idx, coordinate) in self.height_limit_absolute_coordinate.iter().enumerate() {
+            if coordinate.is_some() {
+                let min_height = -height_over_ground(context, coordinate.unwrap());
+                self.nodes[node_idx].set_min_position(min_height);
+            }
+        }
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
         lift_forces: &[f64],
         fuel_masses: [Mass; NODE_NUMBER],
         external_acceleration_from_plane_body: Acceleration,
-        wing_tip_limit: Length,
-        outter_engine_limit: Length,
     ) {
         self.updater_max_step.update(context);
 
-        self.nodes[4].set_min_position(wing_tip_limit);
-        self.nodes[3].set_min_position(outter_engine_limit);
+        self.update_ground_collision_constraints(context);
 
         for cur_time_step in &mut self.updater_max_step {
             self.external_accelerations_filtered
