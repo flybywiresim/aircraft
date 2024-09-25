@@ -65,6 +65,14 @@
 
         <!-- External Components -->
 
+        <Component ID="VIBRATION">
+			<!-- Glare shield vibrations -->
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>A380X_GLARESHIELD__FLEX_CTR</ANIM_NAME>
+				<ANIM_CODE>(L:A32NX_GLARESHIELD_FLEX_CTR, number) 100 *</ANIM_CODE>
+			</UseTemplate>
+		</Component>
+
         <Component ID="OVHD">
             <Component ID="CARGO_AIR_COND">
                 <UseTemplate Name="FBW_A380X_Components_OVHD_CARGO_AIR_COND" />
@@ -1152,17 +1160,16 @@
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
-                <NODE_ID>HANDLE_LEFT_YOKE</NODE_ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>HANDLE_LEFT_YOKE</ANIM_NAME>
-                <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
-                <NODE_ID>HANDLE_RIGHT_YOKE</NODE_ID>
+                <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION) 100 * 100 +</ANIM_CODE>
+                <ANIM_LENGTH>200</ANIM_LENGTH>
+	        </UseTemplate>
+	        <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>HANDLE_RIGHT_YOKE</ANIM_NAME>
-                <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
+                <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION) 100 * 100 +</ANIM_CODE>
+                <ANIM_LENGTH>200</ANIM_LENGTH>
             </UseTemplate>
-
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
@@ -2064,9 +2071,8 @@
                 </UseTemplate>
 
                 <Update Once="True">
-                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 1 == (A:CABIN SEATBELTS ALERT
-                    SWITCH, bool) 0 == and if{
-                    (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) (A:CABIN SEATBELTS ALERT SWITCH, bool) != if{
+                      (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
                     }
                 </Update>
                 <UseTemplate Name="FBW_GT_Switch">

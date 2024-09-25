@@ -228,7 +228,6 @@ export const FuelPage = () => {
     leftMidAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD &&
     leftMidAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-
   const [leftInnerAftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:31', 'Percent over 100', 1000);
   const [leftInnerAftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:37', 'Percent over 100', 1000);
   const areBothLeftInnerAftTransferValvesOpen =
@@ -815,7 +814,14 @@ export const FuelPage = () => {
         {Math.floor(eng4FuelUsed / 50) * 50}
       </text>
 
-      <image x={7} y={168} width={751} height={310} xlinkHref="/Images/SD_FUEL_BG.png" preserveAspectRatio="none" />
+      <image
+        x={7}
+        y={168}
+        width={751}
+        height={310}
+        xlinkHref="/Images/fbw-a380x/SD_FUEL_BG.png"
+        preserveAspectRatio="none"
+      />
 
       {/* FEED TANK 1 */}
       <TankQuantity
@@ -988,7 +994,7 @@ export const FuelPage = () => {
         y={571}
         width={227}
         height={80}
-        xlinkHref="/Images/SD_FUEL_BG_TRIM.png"
+        xlinkHref="/Images/fbw-a380x/SD_FUEL_BG_TRIM.png"
         preserveAspectRatio="none"
       />
 
@@ -1549,7 +1555,14 @@ const Engine: FC<EngineProps> = ({ x, y, index }) => {
 
   return (
     <>
-      <image x={x} y={y} width={75} height={96} xlinkHref="/Images/SD_FUEL_ENG_L.png" preserveAspectRatio="none" />
+      <image
+        x={x}
+        y={y}
+        width={75}
+        height={96}
+        xlinkHref={index < 3 ? '/Images/fbw-a380x/SD_FUEL_ENG_L.png' : '/Images/fbw-a380x/SD_FUEL_ENG_R.png'}
+        preserveAspectRatio="none"
+      />
 
       <text x={x + 8} y={y + 25} className={`${isRunning ? 'White' : 'Amber'} T4`}>
         {index}
