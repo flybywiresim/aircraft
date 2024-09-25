@@ -838,14 +838,14 @@ export class FmcAircraftInterface {
           const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
           const shortTermActiveInmanaged =
             !takeoffGoAround && this.fmgc.getFlightPhase() != FmgcFlightPhase.Cruise && verticalMode != 23; // DES
-          if (shortTermActiveInmanaged && this.isSpeedDifferentGreaterThan2Kt(vPfd, Vtap)) {
+          if (shortTermActiveInmanaged && this.isSpeedDifferenceGreaterThan2Kt(vPfd, Vtap)) {
             shortTermManagedSpeed = Vtap;
           }
         } else {
           const selectedSpeed = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number');
           if (selectedSpeed) {
             const speedTarget = phase == FmgcFlightPhase.Approach ? Vtap : vPfd; // FIX me Should use ECON during hold & deceleration segments
-            if (this.isSpeedDifferentGreaterThan2Kt(selectedSpeed, speedTarget)) {
+            if (this.isSpeedDifferenceGreaterThan2Kt(selectedSpeed, speedTarget)) {
               shortTermManagedSpeed = speedTarget;
             }
           }
@@ -855,7 +855,7 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'knots', shortTermManagedSpeed);
   }
 
-  private isSpeedDifferentGreaterThan2Kt(speed: number, speed2: number) {
+  private isSpeedDifferenceGreaterThan2Kt(speed: number, speed2: number) {
     return Math.abs(speed - speed2) > 2;
   }
 
