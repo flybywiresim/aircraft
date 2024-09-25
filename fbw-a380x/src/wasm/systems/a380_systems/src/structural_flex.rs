@@ -1473,4 +1473,74 @@ mod tests {
         assert!((53.1..=53.3).contains(&animation_position_outboard_mid));
         assert!((55. ..=57.).contains(&animation_position_outboard));
     }
+
+    #[test]
+    fn right_wing_is_higher_if_wing_strike_turning_right() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        let mut outboard_angle_left: Angle = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+        let mut outboard_angle_right: Angle = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+
+        println!(
+            "ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(
+            (outboard_angle_left.get::<degree>() - outboard_angle_right.get::<degree>()).abs()
+                < 0.1
+        );
+
+        test_bed.write_by_name("PLANE BANK DEGREES", -45.);
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        outboard_angle_right = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+        outboard_angle_left = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+
+        println!(
+            "!!!!WING STRIKE RIGHT!!!! ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>() > 5.);
+    }
+
+    #[test]
+    fn left_wing_is_higher_if_wing_strike_turning_left() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        let mut outboard_angle_left: Angle = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+        let mut outboard_angle_right: Angle = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+
+        println!(
+            "ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(
+            (outboard_angle_left.get::<degree>() - outboard_angle_right.get::<degree>()).abs()
+                < 0.1
+        );
+
+        test_bed.write_by_name("PLANE BANK DEGREES", 45.);
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        outboard_angle_right = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+        outboard_angle_left = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+
+        println!(
+            "!!!!WING STRIKE LEFT!!!! ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>() < 5.);
+    }
 }
