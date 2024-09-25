@@ -228,7 +228,7 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
         <path
           name="arc-mode-top-map-area"
           d="M0,0 L0,312 a492,492 0 0 1 768,0 L768,0 L0,0"
-          class="nd-inverted-map-area"
+          class="nd-inverted-map-area a380xInvisible"
         />
 
         <ArcModeUnderlay
