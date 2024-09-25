@@ -254,10 +254,10 @@ pub trait AdirsMeasurementOutputs {
 }
 
 pub trait AdirsDiscreteOutputs {
-    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_1(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4(&self, adiru_number: usize) -> bool;
 }
 
 pub enum GearWheel {
