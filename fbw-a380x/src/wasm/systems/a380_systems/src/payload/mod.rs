@@ -81,7 +81,7 @@ impl From<usize> for A380Cargo {
     }
 }
 pub struct A380Payload {
-    payload_manager: PayloadManager<14, 3, 3>,
+    payload_manager: PayloadManager<14, 5, 3>,
 }
 impl A380Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
