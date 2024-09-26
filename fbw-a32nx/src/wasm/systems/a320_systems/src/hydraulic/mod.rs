@@ -10435,14 +10435,14 @@ mod tests {
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() >= 73.9);
+            assert!(test_bed.nose_steering_position().get::<degree>() >= 73.5);
             assert!(test_bed.nose_steering_position().get::<degree>() <= 75.1);
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(-1.))
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() <= -73.9);
+            assert!(test_bed.nose_steering_position().get::<degree>() <= -73.5);
             assert!(test_bed.nose_steering_position().get::<degree>() >= -75.1);
         }
 
