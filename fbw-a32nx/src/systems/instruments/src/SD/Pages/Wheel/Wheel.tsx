@@ -159,19 +159,16 @@ interface LandingGearCtlProps extends ComponentPositionProps {
 const LandingGearCtl = ({ x, y, lgciu1DiscreteWord1, lgciu2DiscreteWord1 }: LandingGearCtlProps) => {
   const anyLgciuValid = lgciu1DiscreteWord1.isNormalOperation() || lgciu2DiscreteWord1.isNormalOperation();
 
-  const leftMainGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(14) || lgciu2DiscreteWord1.getBitValue(14);
+  const leftMainGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.bitValue(14) || lgciu2DiscreteWord1.bitValue(14);
   const rightMainGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(15) || lgciu2DiscreteWord1.getBitValue(15);
-  const noseGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(16) || lgciu2DiscreteWord1.getBitValue(16);
+    lgciu1DiscreteWord1.bitValue(15) || lgciu2DiscreteWord1.bitValue(15);
+  const noseGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.bitValue(16) || lgciu2DiscreteWord1.bitValue(16);
 
   const leftMainGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(11) || lgciu2DiscreteWord1.getBitValue(11);
+    lgciu1DiscreteWord1.bitValue(11) || lgciu2DiscreteWord1.bitValue(11);
   const rightMainGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(12) || lgciu2DiscreteWord1.getBitValue(12);
-  const noseGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(13) || lgciu2DiscreteWord1.getBitValue(13);
+    lgciu1DiscreteWord1.bitValue(12) || lgciu2DiscreteWord1.bitValue(12);
+  const noseGearNotUplockedAndNotSelectedDown = lgciu1DiscreteWord1.bitValue(13) || lgciu2DiscreteWord1.bitValue(13);
 
   const landingGearInTransit =
     anyLgciuValid &&
@@ -285,9 +282,9 @@ const GearDoor = ({
   const anyLgciuValid = lgciu1DiscreteWord1.isNormalOperation() || lgciu2DiscreteWord1.isNormalOperation();
 
   if (location === 'center') {
-    const leftDoorFullyOpen = lgciu1DiscreteWord3.getBitValue(27) || lgciu2DiscreteWord3.getBitValue(27);
-    const rightDoorFullyOpen = lgciu1DiscreteWord3.getBitValue(28) || lgciu2DiscreteWord3.getBitValue(28);
-    const doorNotLockedUp = lgciu1DiscreteWord1.getBitValue(19) || lgciu2DiscreteWord1.getBitValue(19);
+    const leftDoorFullyOpen = lgciu1DiscreteWord3.bitValue(27) || lgciu2DiscreteWord3.bitValue(27);
+    const rightDoorFullyOpen = lgciu1DiscreteWord3.bitValue(28) || lgciu2DiscreteWord3.bitValue(28);
+    const doorNotLockedUp = lgciu1DiscreteWord1.bitValue(19) || lgciu2DiscreteWord1.bitValue(19);
 
     let leftGearDoorSymbol: JSX.Element | null;
     let rightGearDoorSymbol: JSX.Element | null;
@@ -339,11 +336,11 @@ const GearDoor = ({
   let doorFullyOpen: boolean;
   let doorNotLockedUp: boolean;
   if (location === 'left') {
-    doorFullyOpen = lgciu1DiscreteWord3.getBitValue(25) || lgciu2DiscreteWord3.getBitValue(25);
-    doorNotLockedUp = lgciu1DiscreteWord1.getBitValue(17) || lgciu2DiscreteWord1.getBitValue(17);
+    doorFullyOpen = lgciu1DiscreteWord3.bitValue(25) || lgciu2DiscreteWord3.bitValue(25);
+    doorNotLockedUp = lgciu1DiscreteWord1.bitValue(17) || lgciu2DiscreteWord1.bitValue(17);
   } else {
-    doorFullyOpen = lgciu1DiscreteWord3.getBitValue(26) || lgciu2DiscreteWord3.getBitValue(26);
-    doorNotLockedUp = lgciu1DiscreteWord1.getBitValue(18) || lgciu2DiscreteWord1.getBitValue(18);
+    doorFullyOpen = lgciu1DiscreteWord3.bitValue(26) || lgciu2DiscreteWord3.bitValue(26);
+    doorNotLockedUp = lgciu1DiscreteWord1.bitValue(18) || lgciu2DiscreteWord1.bitValue(18);
   }
 
   let gearDoorSymbol: JSX.Element | null;
@@ -417,23 +414,23 @@ const LandingGearPositionIndicators = ({
   let lgciu2GearDownlocked: boolean;
   let upLockFlagShown = lgciu1DataValid && lgciu2DataValid;
   if (location === 'left') {
-    lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(11);
-    lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(11);
-    lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(23);
-    lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(23);
-    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(20) && lgciu2DiscreteWord1.getBitValue(20);
+    lgciu1GearNotUplocked = lgciu1DiscreteWord3.bitValue(11);
+    lgciu2GearNotUplocked = lgciu2DiscreteWord3.bitValue(11);
+    lgciu1GearDownlocked = lgciu1DiscreteWord1.bitValue(23);
+    lgciu2GearDownlocked = lgciu2DiscreteWord1.bitValue(23);
+    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.bitValue(20) && lgciu2DiscreteWord1.bitValue(20);
   } else if (location === 'right') {
-    lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(12);
-    lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(12);
-    lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(24);
-    lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(24);
-    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(21) && lgciu2DiscreteWord1.getBitValue(21);
+    lgciu1GearNotUplocked = lgciu1DiscreteWord3.bitValue(12);
+    lgciu2GearNotUplocked = lgciu2DiscreteWord3.bitValue(12);
+    lgciu1GearDownlocked = lgciu1DiscreteWord1.bitValue(24);
+    lgciu2GearDownlocked = lgciu2DiscreteWord1.bitValue(24);
+    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.bitValue(21) && lgciu2DiscreteWord1.bitValue(21);
   } else {
-    lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(13);
-    lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(13);
-    lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(25);
-    lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(25);
-    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(22) && lgciu2DiscreteWord1.getBitValue(22);
+    lgciu1GearNotUplocked = lgciu1DiscreteWord3.bitValue(13);
+    lgciu2GearNotUplocked = lgciu2DiscreteWord3.bitValue(13);
+    lgciu1GearDownlocked = lgciu1DiscreteWord1.bitValue(25);
+    lgciu2GearDownlocked = lgciu2DiscreteWord1.bitValue(25);
+    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.bitValue(22) && lgciu2DiscreteWord1.bitValue(22);
   }
 
   let lgciu1Color = '';
