@@ -240,7 +240,7 @@ impl WingLift {
             ground_weight_ratio: Ratio::default(),
 
             ground_wow_filtered: LowPassFilter::new(Duration::from_millis(700)),
-            elevator_force_filtered: LowPassFilter::new(Duration::from_millis(1000)),
+            elevator_force_filtered: LowPassFilter::new(Duration::from_millis(700)),
             elevator_to_cg_offset,
         }
     }
@@ -263,7 +263,8 @@ impl WingLift {
         let ground_mode_lift = (lift_1g + self.ground_wow_filtered.output()
             - self.elevator_force_filtered.output().min(0.))
         .max(0.);
-        let flight_mode_lift = lift_1g + lift_delta_from_accel_n;
+        let flight_mode_lift =
+            lift_1g + lift_delta_from_accel_n - self.elevator_force_filtered.output();
 
         let lift_mode_blending_coeff = (total_weight_on_wheels.get::<kilogram>()
             / (context.total_weight().get::<kilogram>()
