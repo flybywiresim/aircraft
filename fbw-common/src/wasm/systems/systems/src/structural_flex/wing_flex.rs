@@ -7,6 +7,7 @@ use crate::simulation::{
     VariableIdentifier,
 };
 
+use uom::si::mass::ton;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
@@ -53,7 +54,7 @@ impl LandingGearWeightOnWheelsEstimator {
     const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
     // For now allowing to select between guesstimate and msfs methods
-    const USE_MSFS_METHOD: bool = false;
+    const USE_MSFS_METHOD: bool = true;
 
     // Method 1 msfs formula. Sadly we don't know exact msfs spring constants
     // MSFS spring formula
@@ -224,19 +225,29 @@ pub struct WingLift {
     ground_weight_ratio: Ratio,
 
     ground_wow_filtered: LowPassFilter<f64>,
+
+    elevator_force_filtered: LowPassFilter<f64>,
+    elevator_to_cg_offset: Length,
 }
 impl WingLift {
-    pub fn new(context: &mut InitContext) -> Self {
+    // Part of the total weight from which ground mode lift is blended into flight mode lift
+    const COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE: f64 = 0.45;
+
+    pub fn new(context: &mut InitContext, elevator_to_cg_offset: Length) -> Self {
         Self {
             gear_weight_on_wheels: LandingGearWeightOnWheelsEstimator::new(context),
             total_lift: Force::default(),
             ground_weight_ratio: Ratio::default(),
 
-            ground_wow_filtered: LowPassFilter::new(Duration::from_millis(650)),
+            ground_wow_filtered: LowPassFilter::new(Duration::from_millis(700)),
+            elevator_force_filtered: LowPassFilter::new(Duration::from_millis(1000)),
+            elevator_to_cg_offset,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
+        self.update_elevator_lift(context);
+
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
@@ -244,19 +255,39 @@ impl WingLift {
 
         let lift_delta_from_accel_n = raw_accel_no_grav * cur_weight_kg;
         let lift_1g = 9.8 * cur_weight_kg;
-        let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
+        let lift_weight_on_wheels = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
-        self.ground_wow_filtered.update(context.delta(), lift_wow);
+        self.ground_wow_filtered
+            .update(context.delta(), lift_weight_on_wheels);
 
-        let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
-            (lift_1g + self.ground_wow_filtered.output()).max(0.)
-        } else {
-            lift_1g + lift_delta_from_accel_n
-        };
+        let ground_mode_lift = (lift_1g + self.ground_wow_filtered.output()
+            - self.elevator_force_filtered.output().min(0.))
+        .max(0.);
+        let flight_mode_lift = lift_1g + lift_delta_from_accel_n;
 
-        self.total_lift = Force::new::<newton>(lift);
+        let lift_mode_blending_coeff = (total_weight_on_wheels.get::<kilogram>()
+            / (context.total_weight().get::<kilogram>()
+                * Self::COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE))
+            .clamp(0., 1.);
+
+        // Blending calculated lift between ground adn flight mode lift
+        let final_lift = ground_mode_lift * lift_mode_blending_coeff
+            + (1. - lift_mode_blending_coeff) * flight_mode_lift;
+
+        self.total_lift = Force::new::<newton>(final_lift);
 
         self.ground_weight_ratio = total_weight_on_wheels / context.total_weight();
+    }
+
+    fn update_elevator_lift(&mut self, context: &UpdateContext) {
+        let pitch_accel = context.rotation_acceleration_rad_s2()[0];
+        let pitch_inertia = context.total_pitch_inertia_kg_m2();
+
+        let elevator_force =
+            pitch_accel * pitch_inertia / self.elevator_to_cg_offset.get::<meter>();
+
+        self.elevator_force_filtered
+            .update(context.delta(), elevator_force);
     }
 
     pub fn total_plane_lift(&self) -> Force {

@@ -21,6 +21,7 @@ use crate::fuel::A380FuelTankType;
 use uom::si::{
     f64::*,
     force::newton,
+    length::meter,
     mass::kilogram,
     ratio::ratio,
     velocity::{knot, meter_per_second},
@@ -410,6 +411,8 @@ impl WingFlexA380 {
 
     const WING_NODES_X_COORDINATES: [f64; WING_FLEX_NODE_NUMBER] = [0., 11.5, 22.05, 29., 36.85];
 
+    const ELEVATOR_TO_CG_LENGTH_METERS: f64 = 30.;
+
     pub fn new(context: &mut InitContext) -> Self {
         let empty_mass = Self::EMPTY_MASS_KG.map(Mass::new::<kilogram>);
 
@@ -428,7 +431,10 @@ impl WingFlexA380 {
                 .get_identifier("WING_FLEX_RIGHT_OUTBOARD_MID".to_owned()),
             right_flex_outboard_id: context.get_identifier("WING_FLEX_RIGHT_OUTBOARD".to_owned()),
 
-            wing_lift: WingLift::new(context),
+            wing_lift: WingLift::new(
+                context,
+                Length::new::<meter>(Self::ELEVATOR_TO_CG_LENGTH_METERS),
+            ),
             wing_lift_dynamic: A380WingLiftModifier::default(),
 
             left_wing_fuel_mass: [Mass::default(); FUEL_TANKS_NUMBER],
