@@ -31,7 +31,7 @@
 1. [MODEL] Replaced overhead decals - @Repsol2k
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
-1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_chaoz_)
 1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
 1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
@@ -115,9 +115,12 @@
 1. [FMS] Selected navaids are now reset on entering the done flight phase - @tracernz (Mike)
 1. [FMS] Fix tailwind component of trip wind being treated as a headwind - @BlueberryKing (BlueberryKing)
 1. [FMS] Improved NAVAID page - @tracernz (Mike)
-1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal 
+1. [MCDU] Fixed ZFW Autofill with lbs during boarding @ShreyasKallingal
 1. [FADEC] Added quick start for engines and APU - @frankkopp (Frank Kopp) - @Gurgel100 (Pascal)
 1. [EFB] Added expedited presets - @frankkopp (Frank Kopp)
+1. [FMS] Show runway ident on lateral/vertical revision page of the missed approach point - @BlueberryKing (BlueberryKing)
+1. [ECAM] Fixed ALL ECAM Button cycling through STS page and being inconsisten on press - @Maximilian-Reuter (\_chaoz_)
+1. [CDU] Fix for EFOB calculation not pulling from block fuel prior to engine start - @PatM (Patrick Macken)
 
 ## 0.11.0
 

@@ -31,7 +31,7 @@ const OutflowValve: React.FC<Position & EngineNumber> = memo(({ x, y, engine }) 
                     radius={ofradius}
                     startAngle={270}
                     endAngle={360}
-                    className={flightPhase >= 5 && flightPhase <= 7 && outflowValueOpenPercentage > 95 ? 'Amber Line' : 'Green Line'}
+                    className={flightPhase >= 6 && flightPhase <= 9 && outflowValueOpenPercentage > 95 ? 'Amber Line' : 'Green Line'}
                     indicator
                     multiplierOuter={1}
                 />

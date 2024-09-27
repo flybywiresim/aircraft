@@ -165,6 +165,8 @@ export interface PFDSimvars {
   cgPercent: number;
   spoilersCommanded: number;
   spoilersArmed: boolean;
+  fcuLeftVelocityVectorOn: boolean;
+  fcuRightVelocityVectorOn: boolean;
 }
 
 export enum PFDVars {
@@ -278,8 +280,8 @@ export enum PFDVars {
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-  ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
-  ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
+  ls1Button = 'L:A380X_EFIS_L_LS_BUTTON_IS_ON',
+  ls2Button = 'L:A380X_EFIS_R_LS_BUTTON_IS_ON',
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
   ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
   ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
@@ -330,6 +332,8 @@ export enum PFDVars {
   cgPercent = 'CG PERCENT',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
+  fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
+  fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -493,6 +497,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['cgPercent', { name: PFDVars.cgPercent, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
+    ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
+    ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

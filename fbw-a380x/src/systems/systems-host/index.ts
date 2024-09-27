@@ -11,13 +11,13 @@ import {
   InstrumentBackplane,
   Clock,
   ClockEvents,
-  Subject,
   ConsumerSubject,
   MappedSubject,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
+import { LegacyFuelInit } from 'systems-host/systems/LegacyFuelInit';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
@@ -28,6 +28,7 @@ import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
+import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -85,6 +86,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
+  private readonly fwsCore = new FwsCore(this.bus, this);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -105,9 +108,11 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
+    this.backplane.addInstrument('LegacyFuel', new LegacyFuelInit());
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.fwc = new LegacyFwc();
