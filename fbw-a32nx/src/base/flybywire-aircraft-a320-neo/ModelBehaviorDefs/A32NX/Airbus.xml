@@ -952,6 +952,7 @@
     <Template Name="A32NX_Audio_Panel_Volume_Dummy">
         <DefaultTemplateParameters>
             <AUDIO_KNOB_POWERED>1</AUDIO_KNOB_POWERED>
+            <PART_ID>#NODE_ID#</PART_ID>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#_Light" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
