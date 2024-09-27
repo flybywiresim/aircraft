@@ -23,20 +23,20 @@ impl A380AirDataInertialReferenceSystemBuilder {
             [
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(50.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(54.),
                 ),
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(260.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(264.),
                 ),
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(100.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(104.),
                 ),
                 // Not used in A380 (but we keep it the same as A320 because there are still some A320 systems)
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(260.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(264.),
                 ),
             ],
         );

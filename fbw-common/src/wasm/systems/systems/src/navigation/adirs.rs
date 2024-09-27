@@ -357,11 +357,8 @@ pub struct LowSpeedWarningThreshold {
     upper: Velocity,
 }
 impl LowSpeedWarningThreshold {
-    pub fn new(threshold: Velocity, hysteresis: Velocity) -> Self {
-        Self {
-            lower: threshold,
-            upper: threshold + hysteresis,
-        }
+    pub fn new(lower: Velocity, upper: Velocity) -> Self {
+        Self { lower, upper }
     }
 
     fn speed_is_below(&self, speed: Velocity) -> bool {
@@ -2085,19 +2082,19 @@ mod tests {
                 [
                     LowSpeedWarningThreshold::new(
                         Velocity::new::<knot>(100.),
-                        Velocity::new::<knot>(4.),
+                        Velocity::new::<knot>(104.),
                     ),
                     LowSpeedWarningThreshold::new(
                         Velocity::new::<knot>(50.),
-                        Velocity::new::<knot>(4.),
+                        Velocity::new::<knot>(54.),
                     ),
                     LowSpeedWarningThreshold::new(
                         Velocity::new::<knot>(155.),
-                        Velocity::new::<knot>(4.),
+                        Velocity::new::<knot>(159.),
                     ),
                     LowSpeedWarningThreshold::new(
                         Velocity::new::<knot>(260.),
-                        Velocity::new::<knot>(4.),
+                        Velocity::new::<knot>(264.),
                     ),
                 ],
             );

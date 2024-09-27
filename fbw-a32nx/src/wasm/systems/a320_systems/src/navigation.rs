@@ -23,19 +23,19 @@ impl A320AirDataInertialReferenceSystemBuilder {
             [
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(100.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(104.),
                 ),
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(50.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(54.),
                 ),
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(155.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(159.),
                 ),
                 LowSpeedWarningThreshold::new(
                     Velocity::new::<knot>(260.),
-                    Velocity::new::<knot>(4.),
+                    Velocity::new::<knot>(264.),
                 ),
             ],
         );
