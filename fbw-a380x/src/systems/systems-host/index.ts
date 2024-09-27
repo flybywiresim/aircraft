@@ -17,6 +17,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
+import { LegacyFuelInit } from 'systems-host/systems/LegacyFuelInit';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import { FailuresConsumer, PilotSeatPublisher, VhfComIndices } from '@flybywiresim/fbw-sdk';
@@ -110,6 +111,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
+    this.backplane.addInstrument('LegacyFuel', new LegacyFuelInit());
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.fwc = new LegacyFwc();

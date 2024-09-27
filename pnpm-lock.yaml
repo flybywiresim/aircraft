@@ -179,8 +179,8 @@ devDependencies:
     specifier: ~7.12.7
     version: 7.12.17(@babel/core@7.23.5)
   '@flybywiresim/fragmenter':
-    specifier: ^0.7.0
-    version: 0.7.4
+    specifier: ^0.8.0
+    version: 0.8.0
   '@flybywiresim/igniter':
     specifier: ^1.2.3
     version: 1.2.3
@@ -2139,8 +2139,8 @@ packages:
       - debug
     dev: false
 
-  /@flybywiresim/fragmenter@0.7.4:
-    resolution: {integrity: sha512-CBNKQyjp5w4pVyqT5H0ixI6SOyQdXBYvkLF9dQiZJ+1RxxpNBG0NN8pH+gNL38+BMdL3Z++0KpHOHvZNyy2uPg==}
+  /@flybywiresim/fragmenter@0.8.0:
+    resolution: {integrity: sha512-IpFfUuJi/Ix4B8s57k0N9glMVmwVT8FOC6qT2LgL1bmrC9Xfjjfuty8IDjNZH0KjAHvolk/7TzTEhbh7qUPnpQ==}
     dependencies:
       axios: 0.27.2
       split-file: 2.3.0

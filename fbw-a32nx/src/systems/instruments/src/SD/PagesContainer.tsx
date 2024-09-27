@@ -31,8 +31,8 @@ enum SdPages {
   Door = 8,
   Wheel = 9,
   Fctl = 10,
-  Status = 11,
-  Crz = 12,
+  Crz = 11,
+  Status = 12,
 }
 
 const CRZ_CONDITION_TIMER_DURATION = 60;
@@ -40,18 +40,20 @@ const ENG_CONDITION_TIMER_DURATION = 10;
 const APU_CONDITION_TIMER_DURATION = 15;
 const FCTL_CONDITION_TIMER_DURATION = 20;
 const STS_DISPLAY_TIMER_DURATION = 3;
+const ECAM_LIGHT_DELAY_ALL = 200;
 
 export const PagesContainer = () => {
   const [currentPage, setCurrentPage] = useState(SdPages.Door);
   const [prevFailPage, setPrevFailPage] = useState(SdPages.Eng);
   const [ecamCycleInterval, setEcamCycleInterval] = useState(-1);
+  const [ecamButtonLightDelayTimer, setEcamButtonLightDelayTimer] = useState(Number.MIN_SAFE_INTEGER);
   const [failPage] = useSimVar('L:A32NX_ECAM_SFAIL', 'Enum', 300);
 
   const [prevEcamAllButtonState, setPrevEcamAllButtonState] = useState(false);
 
   const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
 
-  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 100);
+  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 20);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
   const [crzCondTimer, setCrzCondTimer] = useState(CRZ_CONDITION_TIMER_DURATION);
   const [ecamFCTLTimer, setEcamFCTLTimer] = useState(FCTL_CONDITION_TIMER_DURATION);
@@ -118,17 +120,28 @@ export const PagesContainer = () => {
   };
 
   const updateCallback = (deltaTime) => {
+    if (ecamButtonLightDelayTimer != Number.MIN_SAFE_INTEGER) {
+      setEcamButtonLightDelayTimer((t) => t - deltaTime);
+      if (ecamButtonLightDelayTimer <= 0) {
+        setPage(currentPage);
+        setEcamButtonLightDelayTimer(Number.MIN_SAFE_INTEGER);
+      }
+    }
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
       // button press
-      setPage((prev) => (prev + 1) % 12);
-      setCurrentPage((prev) => (prev + 1) % 12);
+      setCurrentPage((prev) => {
+        prev = page === SdPages.None ? SdPages.Eng : prev + 1;
+        setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
+        return prev % 11;
+      });
       setEcamCycleInterval(
         setInterval(() => {
           setCurrentPage((prev) => {
-            setPage((prev + 1) % 12);
-            return (prev + 1) % 12;
+            prev = Math.min(prev + 1, SdPages.Fctl);
+            setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
+            return prev;
           });
-        }, 1000) as unknown as number,
+        }, 3000) as unknown as number,
       );
     } else if (!ecamAllButtonPushed && prevEcamAllButtonState) {
       // button release
@@ -138,12 +151,13 @@ export const PagesContainer = () => {
         setStsPrevPage(currentPage);
       }
       const newPage = page;
-      if (newPage !== -1) {
-        setCurrentPage(newPage);
-      } else {
-        setCurrentPage(pageWhenUnselected);
+      if (ecamButtonLightDelayTimer === Number.MIN_SAFE_INTEGER) {
+        if (newPage !== -1) {
+          setCurrentPage(newPage);
+        } else {
+          setCurrentPage(pageWhenUnselected);
+        }
       }
-
       switch (fwcFlightPhase) {
         case 10:
         case 1:
@@ -234,19 +248,17 @@ export const PagesContainer = () => {
 
         // Disable user selected page when new failure detected
         if (prevFailPage !== failPage) {
-          setCurrentPage(SdPages.None);
           setPage(SdPages.None);
         }
       }
 
-      // switch page when desired page was changed, or new Failure detected
-      if ((pageWhenUnselected !== newPage && page === SdPages.None) || prevFailPage !== failPage) {
+      // switch page when new Failure detected
+      if (prevFailPage !== failPage) {
         setCurrentPage(pageWhenUnselected);
       }
 
       setPrevFailPage(failPage);
     }
-
     setPrevEcamAllButtonState(ecamAllButtonPushed);
   };
 
@@ -264,8 +276,8 @@ export const PagesContainer = () => {
     8: <DoorPage />,
     9: <WheelPage />,
     10: <FctlPage />,
-    11: <StatusPage />,
-    12: <CrzPage />,
+    11: <CrzPage />,
+    12: <StatusPage />,
   };
 
   return (

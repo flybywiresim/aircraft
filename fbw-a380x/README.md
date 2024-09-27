@@ -56,8 +56,12 @@ These systems are currently not operational / these features are missing and sha
 - Complete SLAT/FLAP CTL implementation (adapted A32NX computers atm)
 
 ### ATA 28 Fuel
-
-- Automatic fuel transfer system
+- Refuel Driver/Refuel Application placeholder pseudo-FQMS implementation (pre-cursor for realistic FQMS implementation while supporting instant load)
+  - CPIOM etc. not implemented yet.
+- Automatic fuel transfer system - Not fully implemented yet i.e. AGT off when 2 engines on
+- Manual refueling - Not supported yet
+- Integrated Refuel Panel - Simulated in the systems but not modeled in the plane model, or fully connected to ELEC
+- MFD entry - Not supported yet (ZFW/ZFWCG entry - Possible via EFB currently for testing)
 
 ### ATA 29 Hydraulic System
 
