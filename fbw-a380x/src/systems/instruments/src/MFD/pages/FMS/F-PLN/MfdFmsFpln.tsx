@@ -32,6 +32,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ConditionalComponent } from '../../common/ConditionalComponent';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -285,7 +286,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           overfly: false,
           annotation: pwp.mcduHeader ?? '',
           etaOrSecondsFromPresent: predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-          transitionAltitude: leg instanceof FlightPlanLeg ? leg.definition.transitionAltitude ?? 18000 : 18000,
+          transitionAltitude: leg instanceof FlightPlanLeg ? (leg.definition.transitionAltitude ?? 18000) : 18000,
           altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
           hasAltitudeConstraint: false, // TODO
           altitudeConstraint: null, // TODO
@@ -920,12 +921,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             </div>
           </div>
           <div class="mfd-fms-fpln-footer">
-            <Button
-              label="INIT"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+            <ConditionalComponent
+              condition={this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight)}
+              width={125}
+              componentIfTrue={
+                <Button
+                  label="INIT"
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+                  }
+                  buttonStyle="width: 125px;"
+                />
               }
-              buttonStyle="width: 125px;"
+              componentIfFalse={<></>}
             />
             <Button
               disabled={Subject.create(true)}
