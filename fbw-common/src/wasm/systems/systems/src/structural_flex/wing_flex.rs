@@ -7,7 +7,6 @@ use crate::simulation::{
     VariableIdentifier,
 };
 
-use uom::si::mass::ton;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
