@@ -66,12 +66,6 @@ pub struct RefuelPanelInput {
     refuel_rate_setting: RefuelRate,
     refuel_rate_setting_id: VariableIdentifier,
 
-    ground_speed_id: VariableIdentifier,
-    ground_speed: Velocity,
-
-    is_on_ground_id: VariableIdentifier,
-    is_on_ground: bool,
-
     engine_state_ids: [VariableIdentifier; 4],
     engine_states: [EngineState; 4],
 
@@ -93,10 +87,6 @@ impl RefuelPanelInput {
 
             refuel_rate_setting_id: context.get_identifier("EFB_REFUEL_RATE_SETTING".to_owned()),
             refuel_rate_setting: RefuelRate::Real,
-            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
-            ground_speed: Velocity::default(),
-            is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
-            is_on_ground: false,
 
             engine_state_ids: [1, 2, 3, 4]
                 .map(|id| context.get_identifier(format!("ENGINE_STATE:{id}"))),
@@ -131,15 +121,15 @@ impl RefuelPanelInput {
         self.refuel_rate_setting
     }
 
-    fn refuel_is_enabled(&self) -> bool {
+    fn refuel_is_enabled(&self, context: &UpdateContext) -> bool {
         // TODO: Should this be if two engines are running instead of just one?
         self.refuel_status
             && self
                 .engine_states
                 .iter()
                 .all(|state| *state == EngineState::Off)
-            && self.is_on_ground
-            && self.ground_speed < Velocity::new::<knot>(0.1)
+            && context.is_on_ground()
+            && context.ground_speed() < Velocity::new::<knot>(0.1)
     }
 
     fn target_zero_fuel_weight(&self) -> Mass {
@@ -156,8 +146,7 @@ impl SimulationElement for RefuelPanelInput {
             Mass::new::<kilogram>(reader.read(&self.total_desired_fuel_id));
         self.refuel_status = reader.read(&self.refuel_status_id);
         self.refuel_rate_setting = reader.read(&self.refuel_rate_setting_id);
-        self.ground_speed = reader.read(&self.ground_speed_id);
-        self.is_on_ground = reader.read(&self.is_on_ground_id);
+
         for (id, state) in self
             .engine_state_ids
             .iter()
@@ -216,8 +205,8 @@ impl IntegratedRefuelPanel {
         self.input.refuel_rate()
     }
 
-    fn refuel_is_enabled(&self) -> bool {
-        self.input.refuel_is_enabled()
+    fn refuel_is_enabled(&self, context: &UpdateContext) -> bool {
+        self.input.refuel_is_enabled(context)
     }
 
     fn target_zero_fuel_weight(&self) -> Mass {
@@ -267,14 +256,13 @@ impl RefuelApplication {
             refuel_panel_input.target_zero_fuel_weight_cg_mac(),
         );
 
-        // TODO: Uncomment when IS_SIM_READY variable is implemented
-        // if !context.is_sim_ready() {
-        //    refuel_panel_input.set_fuel_desired(fuel_system.total_load());
-        //}
+        if !context.is_sim_ready() {
+            refuel_panel_input.set_fuel_desired(fuel_system.total_load());
+        }
 
         match refuel_panel_input.refuel_rate() {
             RefuelRate::Real => {
-                if refuel_panel_input.refuel_is_enabled() {
+                if refuel_panel_input.refuel_is_enabled(context) {
                     self.refuel_driver.execute_timed_refuel(
                         context.delta(),
                         false,
@@ -285,7 +273,7 @@ impl RefuelApplication {
                 }
             }
             RefuelRate::Fast => {
-                if refuel_panel_input.refuel_is_enabled() {
+                if refuel_panel_input.refuel_is_enabled(context) {
                     self.refuel_driver.execute_timed_refuel(
                         context.delta(),
                         true,
