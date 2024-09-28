@@ -813,7 +813,8 @@ export class FmcAircraftInterface {
 
     let Vtap = 0;
     // VLS protection
-    if (this.managedSpeedTarget) {
+    if (!this.fmgc.isOnGround() && this.managedSpeedTarget) {
+      /// VLS is still output on the ground so need to check it here
       const vls = this.speedVls.get();
       if (this.managedSpeedTarget < vls) {
         Vtap = vls;
