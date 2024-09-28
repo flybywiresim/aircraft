@@ -27,7 +27,6 @@ import {
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
-import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -68,11 +67,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private transAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private thrRedAlt = Subject.create<number>(AirlineModifiableInformation.EK.thrRedAlt);
+  private thrRedAlt = Subject.create<number | null>(null);
 
   private thrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private accelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+  private accelAlt = Subject.create<number | null>(null);
 
   private accelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -199,7 +198,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private toSelectedAntiIceIndex = Subject.create<number | null>(0);
 
-  private eoAccelAlt = Subject.create(AirlineModifiableInformation.EK.eoAccAlt);
+  private eoAccelAlt = Subject.create<number | null>(null);
 
   private eoAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -404,15 +403,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
-  private missedThrRedAlt = Subject.create<number>(AirlineModifiableInformation.EK.thrRedAlt);
+  private missedThrRedAlt = Subject.create<number | null>(null);
 
   private missedThrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private missedAccelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+  private missedAccelAlt = Subject.create<number | null>(null);
 
   private missedAccelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private missedEngineOutAccelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+  private missedEngineOutAccelAlt = Subject.create<number | null>(null);
 
   private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -755,7 +754,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTablePredLine2.set(null);
           } else {
             this.clbTableModeLine1.set('SELECTED');
-            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.clbTablePredLine1.set(null);
 
@@ -862,7 +861,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
@@ -878,7 +877,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTablePredLine2.set(null);
           } else {
             this.crzTableModeLine1.set('SELECTED');
-            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
+            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : (obs?.fcuSpeed.toFixed(0) ?? null));
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.crzTablePredLine1.set(null);
 
@@ -887,7 +886,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
@@ -927,7 +926,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
