@@ -86,6 +86,7 @@ export class FmcAircraftInterface {
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
   private readonly speedVapp = Subject.create(0);
+  private readonly speedShortTermManaged = Subject.create(0);
 
   constructor(
     private bus: EventBus,
@@ -110,6 +111,10 @@ export class FmcAircraftInterface {
     this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true);
     this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true);
     this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true);
+    this.speedShortTermManaged.sub(
+      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
+      true,
+    );
 
     this.fmgc.data.approachFlapConfig
       .map((v) => v === FlapConf.CONF_3)
@@ -852,7 +857,7 @@ export class FmcAircraftInterface {
         }
       }
     }
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'knots', shortTermManagedSpeed);
+    this.speedShortTermManaged.set(Math.round(shortTermManagedSpeed));
   }
 
   private isSpeedDifferenceGreaterThan2Kt(speed: number, speed2: number) {
