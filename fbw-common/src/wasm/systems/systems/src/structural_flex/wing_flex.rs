@@ -230,7 +230,7 @@ pub struct WingLift {
 }
 impl WingLift {
     // Part of the total weight from which ground mode lift is blended into flight mode lift
-    const COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE: f64 = 0.45;
+    const COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE: f64 = 0.4;
 
     pub fn new(context: &mut InitContext, elevator_to_cg_offset: Length) -> Self {
         Self {
@@ -270,9 +270,9 @@ impl WingLift {
                 * Self::COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE))
             .clamp(0., 1.);
 
-        // Blending calculated lift between ground adn flight mode lift
-        let final_lift = ground_mode_lift * lift_mode_blending_coeff
-            + (1. - lift_mode_blending_coeff) * flight_mode_lift;
+        // Blending calculated lift between ground and flight mode lift
+        let final_lift = (ground_mode_lift * lift_mode_blending_coeff)
+            + ((1. - lift_mode_blending_coeff) * flight_mode_lift);
 
         self.total_lift = Force::new::<newton>(final_lift);
 
