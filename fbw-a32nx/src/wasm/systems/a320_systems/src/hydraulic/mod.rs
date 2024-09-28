@@ -2120,7 +2120,6 @@ impl A320Hydraulic {
             &self.braking_circuit_altn,
             engine1,
             engine2,
-            &self.bypass_pin,
         );
 
         self.slats_flaps_complex
@@ -3938,7 +3937,6 @@ impl A320BrakingForce {
         altn_brakes: &BrakeCircuit,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        bypass_pin: &BypassPin,
     ) {
         // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
@@ -3960,7 +3958,7 @@ impl A320BrakingForce {
 
         self.correct_with_flaps_state(context);
 
-        self.update_chocks_braking(context, engine1, engine2, bypass_pin);
+        self.update_chocks_braking(context, engine1, engine2);
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -3990,12 +3988,10 @@ impl A320BrakingForce {
         context: &UpdateContext,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        bypass_pin: &BypassPin,
     ) {
         let chocks_on_wheels = context.is_on_ground()
             && engine1.corrected_n1().get::<percent>() < 3.5
             && engine2.corrected_n1().get::<percent>() < 3.5
-            && !bypass_pin.is_nose_wheel_steering_pin_inserted()
             && !self.is_light_beacon_on;
 
         if self.is_chocks_enabled && chocks_on_wheels {
