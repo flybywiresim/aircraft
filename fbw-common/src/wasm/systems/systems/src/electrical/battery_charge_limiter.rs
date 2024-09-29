@@ -242,7 +242,6 @@ impl Open {
 
     fn should_close(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
@@ -262,9 +261,9 @@ impl Open {
             && !self.open_due_to_discharge_protection
             && (self.should_get_ready_for_apu_start(apu, apu_overhead)
                 || on_ground_at_low_speed_with_unpowered_ac_buses(
-                    context,
                     electricity,
                     ac_electrical_system,
+                    lgciu1,
                     adirs,
                 )
                 || self.should_charge_battery())
@@ -333,7 +332,6 @@ impl Open {
         if !battery_push_buttons.bat_is_auto(battery_number) {
             State::Off(Off::new())
         } else if self.should_close(
-            context,
             electricity,
             emergency_elec,
             emergency_generator,
@@ -412,8 +410,8 @@ impl Closed {
         }
     }
 
-    fn should_open_due_to_discharge_protection(&self, context: &UpdateContext) -> bool {
-        context.is_on_ground()
+    fn should_open_due_to_discharge_protection(&self, lgciu1: &impl LgciuWeightOnWheels) -> bool {
+        lgciu1.left_and_right_gear_compressed(false)
             && self.below_23_volt_duration
                 >= Duration::from_secs(Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS)
     }
@@ -427,7 +425,6 @@ impl Closed {
 
     fn should_open(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         lgciu1: &impl LgciuWeightOnWheels,
@@ -441,12 +438,12 @@ impl Closed {
         } else {
             !self.awaiting_apu_start(apu, apu_overhead)
                 && !on_ground_at_low_speed_with_unpowered_ac_buses(
-                    context,
                     electricity,
                     ac_electrical_system,
+                    lgciu1,
                     adirs,
                 )
-                && (self.beyond_charge_duration_on_ground_without_apu_start(context)
+                && (self.beyond_charge_duration_on_ground_without_apu_start(lgciu1)
                     || self
                         .beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(adirs))
         }
@@ -465,8 +462,11 @@ impl Closed {
         apu_overhead.master_sw_is_on() && !apu.is_available()
     }
 
-    fn beyond_charge_duration_on_ground_without_apu_start(&self, context: &UpdateContext) -> bool {
-        (!self.had_apu_start && context.is_on_ground())
+    fn beyond_charge_duration_on_ground_without_apu_start(
+        &self,
+        lgciu1: &impl LgciuWeightOnWheels,
+    ) -> bool {
+        (!self.had_apu_start && lgciu1.left_and_right_gear_compressed(false))
             && self.below_4_ampere_charging_duration
                 >= Duration::from_secs(Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS)
     }
@@ -500,14 +500,13 @@ impl Closed {
 
         if !battery_push_buttons.bat_is_auto(battery_number) {
             State::Off(Off::new())
-        } else if self.should_open_due_to_discharge_protection(context) {
+        } else if self.should_open_due_to_discharge_protection(lgciu1) {
             State::Open(Open::due_to_discharge_protection())
         } else if self
             .should_open_due_to_exceeding_emergency_elec_closed_time_allowance(emergency_elec)
         {
             State::Open(Open::due_to_exceeding_emergency_elec_closing_time_allowance())
         } else if self.should_open(
-            context,
             electricity,
             emergency_elec,
             lgciu1,
@@ -524,13 +523,13 @@ impl Closed {
 }
 
 fn on_ground_at_low_speed_with_unpowered_ac_buses(
-    context: &UpdateContext,
     electricity: &Electricity,
     ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    lgciu1: &impl LgciuWeightOnWheels,
     adirs: &impl AdirsDiscreteOutputs,
 ) -> bool {
     !ac_electrical_system.any_non_essential_bus_powered(electricity)
-        && context.is_on_ground()
+        && lgciu1.left_and_right_gear_compressed(false)
         && !adirs.low_speed_warning_1_104kts(1)
 }
 
@@ -610,8 +609,7 @@ mod tests {
             fn on_the_ground(mut self) -> Self {
                 self.set_on_ground(true);
                 self.set_indicated_altitude(Length::new::<foot>(0.));
-
-                self
+                self.gear_down()
             }
 
             fn indicated_airspeed_of(mut self, indicated_airspeed: Velocity) -> Self {
