@@ -121,6 +121,7 @@ impl A320Electrical {
             apu,
             apu_overhead,
             lgciu1,
+            adirs,
             spd_cond,
         );
 

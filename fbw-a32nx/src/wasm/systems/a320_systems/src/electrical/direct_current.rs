@@ -2,6 +2,7 @@ use super::{
     A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
     A320ElectricalOverheadPanel,
 };
+use systems::shared::AdirsDiscreteOutputs;
 use systems::simulation::InitContext;
 use systems::{
     electrical::{
@@ -98,6 +99,7 @@ impl A320DirectCurrentElectrical {
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         lgciu1: &impl LgciuWeightOnWheels,
+        adirs: &impl AdirsDiscreteOutputs,
         spd_cond: bool,
     ) {
         self.tr_1_contactor
@@ -172,6 +174,7 @@ impl A320DirectCurrentElectrical {
             apu,
             apu_overhead,
             ac_state,
+            adirs,
         );
         self.battery_1_contactor
             .close_when(self.battery_1_charge_limiter.should_close_contactor());
@@ -192,6 +195,7 @@ impl A320DirectCurrentElectrical {
             apu,
             apu_overhead,
             ac_state,
+            adirs,
         );
         self.battery_2_contactor
             .close_when(self.battery_2_charge_limiter.should_close_contactor());
