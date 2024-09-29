@@ -1981,12 +1981,12 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_4, 14, false) &&
              !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 25, false) &&
              !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
-    lateralMode = 32;
+    verticalMode = 32;
   } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_1, 25, false) &&
              !Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
-    lateralMode = 33;
+    verticalMode = 33;
   } else if (Arinc429Utils::bitFromValueOr(fmgcsBusOutputs[fmgcPriorityIndex].fmgc_a_bus.discrete_word_2, 26, false)) {
-    lateralMode = 34;
+    verticalMode = 34;
   } else if (pitchTakeoffMode) {
     verticalMode = 40;
   } else if (pitchGoaroundMode) {
@@ -2287,19 +2287,7 @@ bool FlyByWireInterface::updateFcuShim() {
   };
 
   auto getNdFilter = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
-    if (bit1) {
-      return 1;
-    } else if (bit2) {
-      return 3;
-    } else if (bit3) {
-      return 2;
-    } else if (bit4) {
-      return 4;
-    } else if (bit5) {
-      return 5;
-    } else {
-      return 0;
-    }
+    return bit1 << 0 | bit2 << 2 | bit3 << 1 | bit4 << 3 | bit5 << 4;
   };
 
   auto getBaroMode = [](bool bit1, bool bit2) {
