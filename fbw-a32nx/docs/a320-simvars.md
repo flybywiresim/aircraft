@@ -4254,16 +4254,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - R
 
 - A32NX_EFIS_{side}_OPTION
-    - Enum
-    - Provides the selected EFIS option/overlay
+    - Flags
+    - Provides a bitmask of the selected EFIS option/overlays
       Value | Meaning
       --- | ---
       0 | None
       1 | Constraints
       2 | VOR/DMEs
-      3 | Waypoints
-      4 | NDBs
-      5 | Airports
+      4 | Waypoints
+      8 | NDBs
+      16 | Airports
     - {side}
         - L
         - R
