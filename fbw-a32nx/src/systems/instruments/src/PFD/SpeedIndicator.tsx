@@ -1073,8 +1073,8 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
       );
       const isSpeedManaged =
-        this.speedState.fmgcDiscreteWord5.getBitValueOr(19, false) &&
-        !(this.speedState.fmgcDiscreteWord5.getBitValueOr(20, false) || !fmgcPfdSelectedSpeedValid);
+        this.speedState.fmgcDiscreteWord5.bitValueOr(19, false) &&
+        !(this.speedState.fmgcDiscreteWord5.bitValueOr(20, false) || !fmgcPfdSelectedSpeedValid);
 
       const chosenTargetSpeed = fmgcPfdSelectedSpeedValid
         ? this.speedState.pfdTargetSpeed
@@ -1290,8 +1290,8 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       this.machHysteresis = false;
     }
 
-    const stdBaro = this.fcuEisDiscreteWord2.getBitValueOr(28, false) || this.fcuEisDiscreteWord2.isFailureWarning();
-    const lsDisplay = this.fcuEisDiscreteWord2.getBitValueOr(22, false) || this.fcuEisDiscreteWord2.isFailureWarning();
+    const stdBaro = this.fcuEisDiscreteWord2.bitValueOr(28, false) || this.fcuEisDiscreteWord2.isFailureWarning();
+    const lsDisplay = this.fcuEisDiscreteWord2.bitValueOr(22, false) || this.fcuEisDiscreteWord2.isFailureWarning();
 
     const hideMachDisplay =
       (!this.machHysteresis && this.mach.isNormalOperation()) ||
