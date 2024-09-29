@@ -94,7 +94,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
       .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((word) => {
-        this.lsPressed.set(word.getBitValueOr(22, false) || word.isFailureWarning());
+        this.lsPressed.set(word.bitValueOr(22, false) || word.isFailureWarning());
       });
   }
 
@@ -179,7 +179,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
   }
 
   private handleDelta() {
-    const trkFpaActive = this.fcuDiscreteWord1.getBitValueOr(25, false);
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
     const targetValue = trkFpaActive ? this.selectedTrack : this.selectedHeading;
 
     if (targetValue.isNoComputedData() || targetValue.isFailureWarning()) {

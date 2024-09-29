@@ -79,7 +79,7 @@ export class FlightPathDirector extends DisplayComponent<{
       .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((tr) => {
-        this.data.fdOff = tr.getBitValueOr(23, false);
+        this.data.fdOff = tr.bitValueOr(23, false);
         this.needsUpdate = true;
       });
 
@@ -147,7 +147,7 @@ export class FlightPathDirector extends DisplayComponent<{
     const rollFdInvalid = this.data.rollFdCommand.isFailureWarning() || this.data.rollFdCommand.isNoComputedData();
     const pitchFdInvalid = this.data.pitchFdCommand.isFailureWarning() || this.data.pitchFdCommand.isNoComputedData();
     const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-    const trkFpaActive = this.fcuDiscreteWord1.getBitValueOr(25, false);
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
 
     if (
       rollFdInvalid ||
@@ -193,8 +193,8 @@ export class FlightPathDirector extends DisplayComponent<{
   }
 
   private handleFpdFlashing() {
-    const fdRollBarFlashing = this.fmgcDiscreteWord2.getBitValueOr(28, false);
-    const fdPitchBarFlashing = this.fmgcDiscreteWord5.getBitValueOr(24, false);
+    const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
+    const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
     if (fdRollBarFlashing || fdPitchBarFlashing) {
       this.birdPathWings.instance.classList.add('BlinkInfinite');
