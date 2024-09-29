@@ -81,12 +81,12 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private AB3Message = Subject.create(false);
 
   private handleFMABorders() {
-    const rollOutActive = this.fmgcDiscreteWord2.getBitValueOr(26, false);
-    const flareActive = this.fmgcDiscreteWord2.getBitValueOr(25, false);
-    const landActive = this.fmgcDiscreteWord4.getBitValueOr(14, false) && !flareActive && !rollOutActive;
+    const rollOutActive = this.fmgcDiscreteWord2.bitValueOr(26, false);
+    const flareActive = this.fmgcDiscreteWord2.bitValueOr(25, false);
+    const landActive = this.fmgcDiscreteWord4.bitValueOr(14, false) && !flareActive && !rollOutActive;
 
-    const navActive = this.fmgcDiscreteWord2.getBitValueOr(12, false);
-    const finalActive = this.fmgcDiscreteWord1.getBitValueOr(23, false);
+    const navActive = this.fmgcDiscreteWord2.bitValueOr(12, false);
+    const finalActive = this.fmgcDiscreteWord1.bitValueOr(23, false);
 
     const sharedModeActive = rollOutActive || flareActive || landActive || (navActive && finalActive);
 
@@ -448,14 +448,14 @@ function getA1A2CellText(
   autoBrakeMode: number,
   autoBrakeActive: boolean,
 ): [boolean, boolean, string] {
-  const atEngaged = fcuAtsDiscreteWord.getBitValueOr(13, false);
-  const atActive = fcuAtsDiscreteWord.getBitValueOr(14, false);
+  const atEngaged = fcuAtsDiscreteWord.bitValueOr(13, false);
+  const atActive = fcuAtsDiscreteWord.bitValueOr(14, false);
 
   let text = '';
   let isShown = true;
   let isTwoLine = false;
 
-  if (fcuAtsFmaDiscreteWord.getBitValueOr(11, false)) {
+  if (fcuAtsFmaDiscreteWord.bitValueOr(11, false)) {
     isShown = false;
     isTwoLine = true;
     text = `
@@ -471,7 +471,7 @@ function getA1A2CellText(
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(13, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(13, false)) {
     isShown = false;
     isTwoLine = true;
     const FlexTemp = Math.round(flexTemp);
@@ -484,7 +484,7 @@ function getA1A2CellText(
                                ${FlexText}
                                 </text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(29, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(29, false)) {
     isShown = false;
     isTwoLine = true;
     text = `<g>
@@ -492,7 +492,7 @@ function getA1A2CellText(
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && !atActive) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(12, false) && atEngaged && !atActive) {
     isShown = false;
     isTwoLine = true;
     text = `<g>
@@ -500,7 +500,7 @@ function getA1A2CellText(
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && !atActive) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(15, false) && atEngaged && !atActive) {
     isShown = false;
     isTwoLine = true;
     text = `<g>
@@ -508,29 +508,29 @@ function getA1A2CellText(
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(17, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(17, false)) {
     isShown = false;
     text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(18, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(18, false)) {
     isShown = false;
     text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
                             </g>`;
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(19, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(19, false)) {
     text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(20, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(20, false)) {
     text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(12, false) && atEngaged && atActive) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(12, false) && atEngaged && atActive) {
     text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(14, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(14, false)) {
     text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(15, false) && atEngaged && atActive) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(15, false) && atEngaged && atActive) {
     text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-  } else if (fcuAtsFmaDiscreteWord.getBitValueOr(16, false)) {
+  } else if (fcuAtsFmaDiscreteWord.bitValueOr(16, false)) {
     text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
   } else if (autoBrakeActive) {
     switch (autoBrakeMode) {
@@ -676,11 +676,11 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   private AB3Message = false;
 
   private updateMessage() {
-    const clbDemand = this.fcuAtsFmaDiscreteWord.getBitValueOr(22, false);
-    const mctDemand = this.fcuAtsFmaDiscreteWord.getBitValueOr(23, false);
-    const assymThrust = this.fcuAtsFmaDiscreteWord.getBitValueOr(21, false);
+    const clbDemand = this.fcuAtsFmaDiscreteWord.bitValueOr(22, false);
+    const mctDemand = this.fcuAtsFmaDiscreteWord.bitValueOr(23, false);
+    const assymThrust = this.fcuAtsFmaDiscreteWord.bitValueOr(21, false);
     const thrLocked =
-      this.ecu1MaintenanceWord6.getBitValueOr(12, false) || this.ecu2MaintenanceWord6.getBitValueOr(12, false);
+      this.ecu1MaintenanceWord6.bitValueOr(12, false) || this.ecu2MaintenanceWord6.bitValueOr(12, false);
 
     let text: string = '';
     let className: string = '';
@@ -892,26 +892,26 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private getText(): boolean {
-    const gsMode = this.fmgcDiscreteWord1.getBitValueOr(22, false);
-    const gsTrackMode = this.fmgcDiscreteWord1.getBitValueOr(20, false);
-    const gsCaptureMode = this.fmgcDiscreteWord1.getBitValueOr(21, false);
-    const expedMode = this.fmgcDiscreteWord1.getBitValueOr(24, false);
-    const descentMode = this.fmgcDiscreteWord1.getBitValueOr(12, false);
-    const climbMode = this.fmgcDiscreteWord1.getBitValueOr(11, false);
-    const pitchTakeoffMode = this.fmgcDiscreteWord1.getBitValueOr(15, false);
-    const pitchGoaroundMode = this.fmgcDiscreteWord1.getBitValueOr(16, false);
-    const openMode = this.fmgcDiscreteWord1.getBitValueOr(14, false);
-    const trackMode = this.fmgcDiscreteWord1.getBitValueOr(20, false);
-    const captureMode = this.fmgcDiscreteWord1.getBitValueOr(21, false);
-    const altMode = this.fmgcDiscreteWord1.getBitValueOr(19, false);
-    const dashMode = this.fmgcDiscreteWord1.getBitValueOr(26, false);
+    const gsMode = this.fmgcDiscreteWord1.bitValueOr(22, false);
+    const gsTrackMode = this.fmgcDiscreteWord1.bitValueOr(20, false);
+    const gsCaptureMode = this.fmgcDiscreteWord1.bitValueOr(21, false);
+    const expedMode = this.fmgcDiscreteWord1.bitValueOr(24, false);
+    const descentMode = this.fmgcDiscreteWord1.bitValueOr(12, false);
+    const climbMode = this.fmgcDiscreteWord1.bitValueOr(11, false);
+    const pitchTakeoffMode = this.fmgcDiscreteWord1.bitValueOr(15, false);
+    const pitchGoaroundMode = this.fmgcDiscreteWord1.bitValueOr(16, false);
+    const openMode = this.fmgcDiscreteWord1.bitValueOr(14, false);
+    const trackMode = this.fmgcDiscreteWord1.bitValueOr(20, false);
+    const captureMode = this.fmgcDiscreteWord1.bitValueOr(21, false);
+    const altMode = this.fmgcDiscreteWord1.bitValueOr(19, false);
+    const dashMode = this.fmgcDiscreteWord1.bitValueOr(26, false);
     const altConstraintValid = this.fmAltitudeConstraint.isNormalOperation();
-    const fpaMode = this.fmgcDiscreteWord1.getBitValueOr(18, false);
-    const vsMode = this.fmgcDiscreteWord1.getBitValueOr(17, false);
-    const finalDesMode = this.fmgcDiscreteWord1.getBitValueOr(23, false);
-    const tcasMode = this.fmgcDiscreteWord7.getBitValueOr(13, false);
+    const fpaMode = this.fmgcDiscreteWord1.bitValueOr(18, false);
+    const vsMode = this.fmgcDiscreteWord1.bitValueOr(17, false);
+    const finalDesMode = this.fmgcDiscreteWord1.bitValueOr(23, false);
+    const tcasMode = this.fmgcDiscreteWord7.bitValueOr(13, false);
 
-    const navMode = this.fmgcDiscreteWord2.getBitValueOr(12, false);
+    const navMode = this.fmgcDiscreteWord2.bitValueOr(12, false);
 
     let text: string;
     let additionalText: string = '';
@@ -989,13 +989,13 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       this.displayModeChangedPath(true);
     }
 
-    const targetNotHeld = this.fmgcDiscreteWord4.getBitValueOr(29, false);
+    const targetNotHeld = this.fmgcDiscreteWord4.bitValueOr(29, false);
 
     const inSpeedProtection = targetNotHeld && text !== '';
 
     this.inSpeedProtection.set(inSpeedProtection);
 
-    const longitudinalModeReversion = this.fmgcDiscreteWord3.getBitValueOr(18, false);
+    const longitudinalModeReversion = this.fmgcDiscreteWord3.bitValueOr(18, false);
 
     if (inSpeedProtection || longitudinalModeReversion) {
       this.boxClassSub.set('NormalStroke None');
@@ -1015,7 +1015,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
     }
 
-    const bigBoxDisplayed = tcasMode && this.fmgcDiscreteWord7.getBitValueOr(18, false);
+    const bigBoxDisplayed = tcasMode && this.fmgcDiscreteWord7.bitValueOr(18, false);
     const boxPathString =
       tcasMode && bigBoxDisplayed ? 'm35.756 1.8143h27.918v13.506h-27.918z' : 'm35.756 1.8143h27.918v6.0476h-27.918z';
 
@@ -1155,8 +1155,8 @@ class B2Cell extends DisplayComponent<CellProps> {
   private fmgcDiscreteWord3 = new Arinc429Word(0);
 
   private handleMessage(): void {
-    const altAcqArmed = this.fmgcDiscreteWord3.getBitValueOr(12, false);
-    const clbArmed = this.fmgcDiscreteWord3.getBitValueOr(24, false);
+    const altAcqArmed = this.fmgcDiscreteWord3.bitValueOr(12, false);
+    const clbArmed = this.fmgcDiscreteWord3.bitValueOr(24, false);
 
     let text1: string;
     let color1 = 'Cyan';
@@ -1167,7 +1167,7 @@ class B2Cell extends DisplayComponent<CellProps> {
       text1 = 'ALT';
     } else if (clbArmed) {
       text1 = '      CLB'; // spaces added to center armed FMA as per newer DMC stnadards
-    } else if (this.fmgcDiscreteWord3.getBitValueOr(25, false)) {
+    } else if (this.fmgcDiscreteWord3.bitValueOr(25, false)) {
       text1 = 'DES';
     } else {
       text1 = '';
@@ -1176,9 +1176,9 @@ class B2Cell extends DisplayComponent<CellProps> {
     let text2;
     if (false) {
       text2 = 'F-G/S';
-    } else if (this.fmgcDiscreteWord3.getBitValueOr(22, false)) {
+    } else if (this.fmgcDiscreteWord3.bitValueOr(22, false)) {
       text2 = 'G/S';
-    } else if (this.fmgcDiscreteWord3.getBitValueOr(23, false)) {
+    } else if (this.fmgcDiscreteWord3.bitValueOr(23, false)) {
       text2 = 'FINAL';
     } else {
       text2 = '';
@@ -1274,18 +1274,18 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private updateText(): void {
-    const rollGaActive = this.fmgcDiscreteWord2.getBitValueOr(15, false);
-    const backbeamMode = this.fmgcDiscreteWord3.getBitValueOr(19, false);
-    const locCaptActive = this.fmgcDiscreteWord2.getBitValueOr(13, false);
-    const locTrackActive = this.fmgcDiscreteWord2.getBitValueOr(14, false);
-    const headingActive = this.fmgcDiscreteWord2.getBitValueOr(16, false);
-    const runwayActive = this.fmgcDiscreteWord2.getBitValueOr(11, false);
-    const runwayLocSubmodeActive = this.fmgcDiscreteWord2.getBitValueOr(20, false);
-    const runwayTrackSubmodeActive = this.fmgcDiscreteWord2.getBitValueOr(23, false);
-    const trackActive = this.fmgcDiscreteWord2.getBitValueOr(17, false);
-    const navActive = this.fmgcDiscreteWord2.getBitValueOr(12, false);
-    const finalDesArmed = this.fmgcDiscreteWord3.getBitValueOr(23, false);
-    const finalDesActive = this.fmgcDiscreteWord1.getBitValueOr(23, false);
+    const rollGaActive = this.fmgcDiscreteWord2.bitValueOr(15, false);
+    const backbeamMode = this.fmgcDiscreteWord3.bitValueOr(19, false);
+    const locCaptActive = this.fmgcDiscreteWord2.bitValueOr(13, false);
+    const locTrackActive = this.fmgcDiscreteWord2.bitValueOr(14, false);
+    const headingActive = this.fmgcDiscreteWord2.bitValueOr(16, false);
+    const runwayActive = this.fmgcDiscreteWord2.bitValueOr(11, false);
+    const runwayLocSubmodeActive = this.fmgcDiscreteWord2.bitValueOr(20, false);
+    const runwayTrackSubmodeActive = this.fmgcDiscreteWord2.bitValueOr(23, false);
+    const trackActive = this.fmgcDiscreteWord2.bitValueOr(17, false);
+    const navActive = this.fmgcDiscreteWord2.bitValueOr(12, false);
+    const finalDesArmed = this.fmgcDiscreteWord3.bitValueOr(23, false);
+    const finalDesActive = this.fmgcDiscreteWord1.bitValueOr(23, false);
 
     let text: string;
     this.isShown = true;
@@ -1357,12 +1357,12 @@ class C2Cell extends DisplayComponent<CellProps> {
   private textSub = Subject.create('');
 
   private getText() {
-    const navArmed = this.fmgcDiscreteWord3.getBitValueOr(14, false);
-    const locArmed = this.fmgcDiscreteWord3.getBitValueOr(16, false);
-    const backbeamMode = this.fmgcDiscreteWord3.getBitValueOr(19, false);
+    const navArmed = this.fmgcDiscreteWord3.bitValueOr(14, false);
+    const locArmed = this.fmgcDiscreteWord3.bitValueOr(16, false);
+    const backbeamMode = this.fmgcDiscreteWord3.bitValueOr(19, false);
 
-    const finalArmed = this.fmgcDiscreteWord3.getBitValueOr(23, false);
-    const finalActive = this.fmgcDiscreteWord1.getBitValueOr(23, false);
+    const finalArmed = this.fmgcDiscreteWord3.bitValueOr(23, false);
+    const finalActive = this.fmgcDiscreteWord1.bitValueOr(23, false);
 
     let text: string = '';
     if (locArmed && backbeamMode) {
@@ -1425,12 +1425,12 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    const rollOutActive = this.fmgcDiscreteWord2.getBitValueOr(26, false);
-    const flareActive = this.fmgcDiscreteWord1.getBitValueOr(25, false);
-    const landActive = this.fmgcDiscreteWord4.getBitValueOr(14, false) && !flareActive && !rollOutActive;
+    const rollOutActive = this.fmgcDiscreteWord2.bitValueOr(26, false);
+    const flareActive = this.fmgcDiscreteWord1.bitValueOr(25, false);
+    const landActive = this.fmgcDiscreteWord4.bitValueOr(14, false) && !flareActive && !rollOutActive;
 
-    const navActive = this.fmgcDiscreteWord2.getBitValueOr(12, false);
-    const finalActive = this.fmgcDiscreteWord1.getBitValueOr(23, false);
+    const navActive = this.fmgcDiscreteWord2.bitValueOr(12, false);
+    const finalActive = this.fmgcDiscreteWord1.bitValueOr(23, false);
 
     let text: string;
     this.isShown = true;
@@ -1518,9 +1518,9 @@ const getBC3Message = (
   const flightPhaseForWarning =
     fwcFlightPhase >= 2 && fwcFlightPhase <= 9 && fwcFlightPhase !== 4 && fwcFlightPhase !== 5;
 
-  const TCASArmed = fmgcDiscreteWord7.getBitValueOr(12, false);
-  const tcasRaInhibited = fmgcDiscreteWord7.getBitValueOr(24, false);
-  const trkFpaDeselectedTCAS = fmgcDiscreteWord7.getBitValueOr(25, false);
+  const TCASArmed = fmgcDiscreteWord7.bitValueOr(12, false);
+  const tcasRaInhibited = fmgcDiscreteWord7.bitValueOr(24, false);
+  const trkFpaDeselectedTCAS = fmgcDiscreteWord7.bitValueOr(25, false);
 
   let text: string;
   let className: string;
@@ -1701,11 +1701,11 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    const landModeArmed = this.fmgcDiscreteWord3.getBitValueOr(20, false);
-    const landModeActive = this.fmgcDiscreteWord4.getBitValueOr(14, false);
-    const land2Capacity = this.fmgcDiscreteWord4.getBitValueOr(23, false);
-    const land3FailPassiveCapacity = this.fmgcDiscreteWord4.getBitValueOr(24, false);
-    const land3FailOperationalCapacity = this.fmgcDiscreteWord4.getBitValueOr(25, false);
+    const landModeArmed = this.fmgcDiscreteWord3.bitValueOr(20, false);
+    const landModeActive = this.fmgcDiscreteWord4.bitValueOr(14, false);
+    const land2Capacity = this.fmgcDiscreteWord4.bitValueOr(23, false);
+    const land3FailPassiveCapacity = this.fmgcDiscreteWord4.bitValueOr(24, false);
+    const land3FailOperationalCapacity = this.fmgcDiscreteWord4.bitValueOr(25, false);
 
     let text1: string;
     let text2: string | undefined;
@@ -1897,8 +1897,8 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    const ap1Engaged = this.fmgc1DiscreteWord4.getBitValueOr(12, false);
-    const ap2Engaged = this.fmgc2DiscreteWord4.getBitValueOr(12, false);
+    const ap1Engaged = this.fmgc1DiscreteWord4.bitValueOr(12, false);
+    const ap2Engaged = this.fmgc2DiscreteWord4.bitValueOr(12, false);
 
     let text: string;
     this.isShown = true;
@@ -1978,14 +1978,14 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private getText() {
-    const ap1Engaged = this.fmgc1DiscreteWord4.getBitValueOr(12, false);
-    const ap2Engaged = this.fmgc2DiscreteWord4.getBitValueOr(12, false);
+    const ap1Engaged = this.fmgc1DiscreteWord4.bitValueOr(12, false);
+    const ap2Engaged = this.fmgc2DiscreteWord4.bitValueOr(12, false);
 
-    const fd1Engaged = this.fmgc1DiscreteWord4.getBitValueOr(13, false);
-    const fd2Engaged = this.fmgc2DiscreteWord4.getBitValueOr(13, false);
+    const fd1Engaged = this.fmgc1DiscreteWord4.bitValueOr(13, false);
+    const fd2Engaged = this.fmgc2DiscreteWord4.bitValueOr(13, false);
 
-    const fdLeftOff = this.fcuDiscreteWord2.getBitValueOr(26, false);
-    const fdRightOff = this.fcuDiscreteWord2.getBitValueOr(27, false);
+    const fdLeftOff = this.fcuDiscreteWord2.bitValueOr(26, false);
+    const fdRightOff = this.fcuDiscreteWord2.bitValueOr(27, false);
 
     const fd1EngagedOnLeft = !fdLeftOff && fd1Engaged;
     const fd2EngagedOnRight = !fdRightOff && fd2Engaged;
@@ -2108,8 +2108,8 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
       .on('fcuAtsDiscreteWord')
       .whenChanged()
       .handle((a) => {
-        const atEngaged = a.getBitValueOr(13, false);
-        const atActive = a.getBitValueOr(14, false);
+        const atEngaged = a.bitValueOr(13, false);
+        const atActive = a.bitValueOr(14, false);
 
         const className = `MiddleAlign ${this.getClass(atEngaged, atActive)}`;
 
