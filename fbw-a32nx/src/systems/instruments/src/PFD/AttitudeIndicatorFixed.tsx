@@ -197,7 +197,7 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
   private yawRef = FSComponent.createRef<SVGPathElement>();
 
   private handleFdState() {
-    const fdOff = this.fcuEisDiscreteWord2.getBitValueOr(23, false);
+    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
     const showFd = this.fdEngaged && !fdOff;
 
     const showYaw = showFd && !(this.fdYawCommand.isFailureWarning() || this.fdYawCommand.isNoComputedData());
@@ -286,10 +286,10 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
   private fdFlagVisibleSub = Subject.create('hidden');
 
   private handleFdState() {
-    const fdOff = this.fcuEisDiscreteWord2.getBitValueOr(23, false);
+    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
     const showFd = this.fdEngaged && !fdOff;
 
-    const trkFpaActive = this.fcuDiscreteWord1.getBitValueOr(25, false);
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
 
     const showRoll =
       showFd && !trkFpaActive && !(this.fdRollCommand.isFailureWarning() || this.fdRollCommand.isNoComputedData());
@@ -338,8 +338,8 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 
   private handleFdBarsFlashing() {
-    const fdRollBarFlashing = this.fmgcDiscreteWord2.getBitValueOr(28, false);
-    const fdPitchBarFlashing = this.fmgcDiscreteWord5.getBitValueOr(24, false);
+    const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
+    const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
     if (fdRollBarFlashing) {
       this.lateralRef1.instance.classList.add('BlinkInfinite');

@@ -151,9 +151,9 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       !this.landingElevation.isFailureWarning() &&
       !this.landingElevation.isNoComputedData() &&
       this.inLandingPhases &&
-      this.fcuEisDiscreteWord2.getBitValueOr(29, false);
+      this.fcuEisDiscreteWord2.bitValueOr(29, false);
 
-    this.qfeLandingAltValid = this.inLandingPhases && !this.fcuEisDiscreteWord2.getBitValueOr(29, true);
+    this.qfeLandingAltValid = this.inLandingPhases && !this.fcuEisDiscreteWord2.bitValueOr(29, true);
 
     const altDelta = this.mda.get().value - this.altitude;
 
@@ -427,9 +427,9 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   }
 
   private handleAltManagedChange() {
-    const landTrackActive = this.fmgcDiscreteWord4.getBitValueOr(14, false);
-    const gsActive = this.fmgcDiscreteWord1.getBitValueOr(22, false);
-    const finalDesActive = this.fmgcDiscreteWord1.getBitValueOr(23, false);
+    const landTrackActive = this.fmgcDiscreteWord4.bitValueOr(14, false);
+    const gsActive = this.fmgcDiscreteWord1.bitValueOr(22, false);
+    const finalDesActive = this.fmgcDiscreteWord1.bitValueOr(23, false);
 
     const selectedAltIgnored = landTrackActive || gsActive || finalDesActive;
 
@@ -529,7 +529,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((m) => {
-        this.baroInStd = m.getBitValueOr(28, false) || m.isFailureWarning();
+        this.baroInStd = m.bitValueOr(28, false) || m.isFailureWarning();
 
         if (this.baroInStd) {
           this.selectedAltLowerFLText.instance.style.visibility = 'visible';
@@ -716,7 +716,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       .on('fcuEisDiscreteWord1')
       .whenChanged()
       .handle((word) => {
-        this.baroInInhg = word.getBitValueOr(11, false);
+        this.baroInInhg = word.bitValueOr(11, false);
 
         this.getText();
       });
@@ -725,8 +725,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((word) => {
-        this.baroInStd = word.getBitValueOr(28, false) || word.isFailureWarning();
-        this.baroInQnh = word.getBitValueOr(29, false);
+        this.baroInStd = word.bitValueOr(28, false) || word.isFailureWarning();
+        this.baroInQnh = word.bitValueOr(29, false);
 
         this.getText();
       });
@@ -960,7 +960,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
       this.needsUpdate = false;
 
       const showMetricAlt =
-        this.state.fcuDiscreteWord1.getBitValueOr(20, false) &&
+        this.state.fcuDiscreteWord1.bitValueOr(20, false) &&
         !this.state.targetAlt.isFailureWarning() &&
         !this.state.targetAlt.isNoComputedData();
       if (!showMetricAlt) {

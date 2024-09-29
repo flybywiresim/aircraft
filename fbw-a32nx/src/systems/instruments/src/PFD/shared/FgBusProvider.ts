@@ -217,9 +217,9 @@ export class FgBusProvider implements Instrument {
   private determineFmgcToUseForFlightDirector(publisher: Publisher<FgBus>) {
     const side2 = getDisplayIndex() === 2;
 
-    const fd1Engaged = this.fmgc1DiscreteWord4.getBitValueOr(13, false);
-    const fd2Engaged = this.fmgc2DiscreteWord4.getBitValueOr(13, false);
-    const fdOwnSelectedOn = !this.fcuEisDiscreteWord2.getBitValueOr(23, false);
+    const fd1Engaged = this.fmgc1DiscreteWord4.bitValueOr(13, false);
+    const fd2Engaged = this.fmgc2DiscreteWord4.bitValueOr(13, false);
+    const fdOwnSelectedOn = !this.fcuEisDiscreteWord2.bitValueOr(23, false);
 
     const ownFdEngaged = side2 ? fd2Engaged : fd1Engaged;
     const oppFdEngaged = side2 ? fd1Engaged : fd2Engaged;
@@ -238,17 +238,17 @@ export class FgBusProvider implements Instrument {
   private determineFmgcToUse() {
     const side2 = getDisplayIndex() === 2;
 
-    const ap1Engaged = this.fmgc1DiscreteWord4.getBitValueOr(12, false);
-    const fd1Engaged = this.fmgc1DiscreteWord4.getBitValueOr(13, false);
-    const ap2Engaged = this.fmgc2DiscreteWord4.getBitValueOr(12, false);
-    const fd2Engaged = this.fmgc2DiscreteWord4.getBitValueOr(13, false);
+    const ap1Engaged = this.fmgc1DiscreteWord4.bitValueOr(12, false);
+    const fd1Engaged = this.fmgc1DiscreteWord4.bitValueOr(13, false);
+    const ap2Engaged = this.fmgc2DiscreteWord4.bitValueOr(12, false);
+    const fd2Engaged = this.fmgc2DiscreteWord4.bitValueOr(13, false);
 
     const fg1Inop =
-      this.fmgc1AtsDiscreteWord.getBitValueOr(24, false) ||
+      this.fmgc1AtsDiscreteWord.bitValueOr(24, false) ||
       this.fmgc1AtsDiscreteWord.isFailureWarning() ||
       this.fmgc1DiscreteWord4.isFailureWarning();
     const fg2Inop =
-      this.fmgc2AtsDiscreteWord.getBitValueOr(24, false) ||
+      this.fmgc2AtsDiscreteWord.bitValueOr(24, false) ||
       this.fmgc2AtsDiscreteWord.isFailureWarning() ||
       this.fmgc2DiscreteWord4.isFailureWarning();
 

@@ -50,8 +50,8 @@ class HeadingBug extends DisplayComponent<{
   private yOffset = 0;
 
   private calculateAndSetOffset() {
-    const fdActive = !this.fcuEisDiscreteWord2.getBitValueOr(23, false);
-    const trkFpaActive = this.fcuDiscreteWord1.getBitValueOr(25, false);
+    const fdActive = !this.fcuEisDiscreteWord2.bitValueOr(23, false);
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
 
     const targetValue = trkFpaActive ? this.fcuSelectedTrack : this.fcuSelectedHeading;
 

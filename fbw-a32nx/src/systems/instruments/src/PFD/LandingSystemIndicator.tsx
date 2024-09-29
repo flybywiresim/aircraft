@@ -58,7 +58,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
     const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FcuBus>();
 
     sub.on('fcuEisDiscreteWord2').handle((word) => {
-      this.lsVisible.set(word.getBitValueOr(22, false) || word.isFailureWarning());
+      this.lsVisible.set(word.bitValueOr(22, false) || word.isFailureWarning());
     });
 
     sub.on('baroCorrectedAltitude').handle((altitude) => {
