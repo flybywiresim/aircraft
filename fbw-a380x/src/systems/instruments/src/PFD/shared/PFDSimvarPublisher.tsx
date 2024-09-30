@@ -402,7 +402,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
     ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
     ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
-    ['shortTermManagedSpeed', { name: PFDVars.shortTermManagedSpeed, type: SimVarValueType.Knots }],
+    ['shortTermManagedSpeed', { name: PFDVars.shortTermManagedSpeed, type: SimVarValueType.Number }],
     ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
     ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
     ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
