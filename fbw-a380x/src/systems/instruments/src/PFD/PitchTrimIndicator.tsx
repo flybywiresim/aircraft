@@ -150,7 +150,7 @@ export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visibl
   render(): VNode {
     return (
       <div style={{ visibility: this.props.visible.map((it) => (it ? 'visible' : 'hidden')) }}>
-        <img src="/Images/TRIM_INDICATOR.png" class="TrimIndicatorImage" />
+        <img src="/Images/fbw-a380x/TRIM_INDICATOR.png" class="TrimIndicatorImage" />
         <svg class="TrimIndicatorSvg" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="rightWheelGradient" x1="0%" x2="0%" y1="0%" y2="100%">

@@ -50,7 +50,7 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
     });
 
     sub.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
-      const isNormalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
+      const isNormalLawActive = fcdcWord1.bitValue(11) && !fcdcWord1.isFailureWarning();
 
       this.rollProtSymbol.instance.style.display = isNormalLawActive ? 'block' : 'none';
 
@@ -485,10 +485,10 @@ class SidestickIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       !this.foPitchCommand.isFailureWarning() &&
       !this.foRollCommand.isFailureWarning();
 
-    const foStickDisabledFcdc1 = this.fcdc1DiscreteWord2.getBitValueOr(29, false);
-    const foStickDisabledFcdc2 = this.fcdc2DiscreteWord2.getBitValueOr(29, false);
-    const captStickDisabledFcdc1 = this.fcdc1DiscreteWord2.getBitValueOr(28, false);
-    const captStickDisabledFcdc2 = this.fcdc2DiscreteWord2.getBitValueOr(28, false);
+    const foStickDisabledFcdc1 = this.fcdc1DiscreteWord2.bitValueOr(29, false);
+    const foStickDisabledFcdc2 = this.fcdc2DiscreteWord2.bitValueOr(29, false);
+    const captStickDisabledFcdc1 = this.fcdc1DiscreteWord2.bitValueOr(28, false);
+    const captStickDisabledFcdc2 = this.fcdc2DiscreteWord2.bitValueOr(28, false);
     const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
     const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
 

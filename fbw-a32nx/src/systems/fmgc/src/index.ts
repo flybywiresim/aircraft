@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachType, ApproachUtils, RunwayUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
+import { ApproachType, ApproachUtils, RadioUtils, RunwayUtils, a320EfisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -23,6 +23,7 @@ import { NavigationDatabaseService } from './flightplanning/NavigationDatabaseSe
 import { SimBriefUplinkAdapter } from './flightplanning/uplink/SimBriefUplinkAdapter';
 import { A320FlightPlanPerformanceData } from './flightplanning/plans/performance/FlightPlanPerformanceData';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
+import { LandingSystemUtils } from './flightplanning/data/landingsystem';
 
 function initFmgcLoop(
   baseInstrument: BaseInstrument,
@@ -63,6 +64,8 @@ export {
   CoRouteUplinkAdapter,
   DataManager,
   EventBus,
+  LandingSystemUtils,
+  RadioUtils,
   a320EfisRangeSettings,
   A320AircraftConfig,
 };

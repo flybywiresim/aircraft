@@ -10,6 +10,8 @@ export interface Arinc429WordData {
 
   value: number;
 
+  rawWord: number;
+
   isFailureWarning(): boolean;
 
   isNoComputedData(): boolean;
@@ -20,11 +22,12 @@ export interface Arinc429WordData {
 
   valueOr(defaultValue: number | undefined | null): number;
 
-  getBitValue(bit: number): boolean;
+  bitValue(bit: number): boolean;
 
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean;
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean;
 }
 
+/** @deprecated Use {@link Arinc429Register} instead. */
 export class Arinc429Word implements Arinc429WordData {
   static u32View = new Uint32Array(1);
 
@@ -34,9 +37,9 @@ export class Arinc429Word implements Arinc429WordData {
 
   value: number;
 
-  constructor(word: number) {
-    Arinc429Word.u32View[0] = (word & 0xffffffff) >>> 0;
-    this.ssm = (Math.trunc(word / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
+  constructor(public readonly rawWord: number) {
+    Arinc429Word.u32View[0] = (rawWord & 0xffffffff) >>> 0;
+    this.ssm = (Math.trunc(rawWord / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
     this.value = Arinc429Word.f32View[0];
   }
 
@@ -77,11 +80,11 @@ export class Arinc429Word implements Arinc429WordData {
     return this.isNormalOperation() ? this.value : defaultValue;
   }
 
-  getBitValue(bit: number): boolean {
+  bitValue(bit: number): boolean {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 
@@ -95,7 +98,7 @@ export class Arinc429Word implements Arinc429WordData {
 }
 
 export class Arinc429Register implements Arinc429WordData {
-  word = 0;
+  rawWord = 0;
 
   u32View = new Uint32Array(1);
 
@@ -113,10 +116,10 @@ export class Arinc429Register implements Arinc429WordData {
     this.set(0);
   }
 
-  set(word: number): Arinc429Register {
-    this.word = word;
-    this.u32View[0] = (word & 0xffffffff) >>> 0;
-    this.ssm = (Math.trunc(word / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
+  set(rawWord: number): Arinc429Register {
+    this.rawWord = rawWord;
+    this.u32View[0] = (rawWord & 0xffffffff) >>> 0;
+    this.ssm = (Math.trunc(rawWord / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
     this.value = this.f32View[0];
     return this;
   }
@@ -164,20 +167,10 @@ export class Arinc429Register implements Arinc429WordData {
     return this.isNormalOperation() ? this.value : defaultValue;
   }
 
-  getBitValue(bit: number): boolean {
-    return ((this.value >> (bit - 1)) & 1) !== 0;
-  }
-
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
-  }
-
-  /** @deprecated use {@link getBitValue} */
   bitValue(bit: number): boolean {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  /** @deprecated use {@link getBitValueOr} */
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
@@ -201,6 +194,10 @@ export class Arinc429OutputWord implements Arinc429WordData {
 
   static empty(name: string) {
     return new Arinc429OutputWord(name);
+  }
+
+  get rawWord() {
+    return this.word.rawWord;
   }
 
   get value() {
@@ -247,12 +244,12 @@ export class Arinc429OutputWord implements Arinc429WordData {
     return this.word.valueOr(defaultValue);
   }
 
-  getBitValue(bit: number): boolean {
-    return this.word.getBitValue(bit);
+  bitValue(bit: number): boolean {
+    return this.word.bitValue(bit);
   }
 
-  getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.word.getBitValueOr(bit, defaultValue);
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+    return this.word.bitValueOr(bit, defaultValue);
   }
 
   async writeToSimVarIfDirty() {
