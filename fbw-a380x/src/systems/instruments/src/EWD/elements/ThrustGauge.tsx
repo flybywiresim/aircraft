@@ -87,7 +87,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly thrustLimitMax = MappedSubject.create(
     ([cpiomB, thrustLimitToga]) =>
-      !cpiomB.getBitValueOr(13, false) && !cpiomB.getBitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
     this.cpiomBAgsDiscrete,
     this.thrustLimitToga,
   );

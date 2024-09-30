@@ -24,7 +24,7 @@ export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
   private readonly bleedText = MappedSubject.create(
     ([cpiomB, nai1, nai2, nai3, nai4, wai]) => {
       const text = [];
-      if (cpiomB.getBitValueOr(13, false) || cpiomB.getBitValueOr(14, false)) {
+      if (cpiomB.bitValueOr(13, false) || cpiomB.bitValueOr(14, false)) {
         text.push('PACKS');
       }
 
