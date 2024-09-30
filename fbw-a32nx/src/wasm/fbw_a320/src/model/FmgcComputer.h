@@ -211,6 +211,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_m1w;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_fi;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_ge4;
+    rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_prl;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_pr;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_is;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_p4;
@@ -518,6 +519,7 @@ class FmgcComputer final
     real_T MTrigNode_isRisingEdge_d;
     real_T MTrigNode_isRisingEdge_g;
     real_T MTrigNode_isRisingEdge_i;
+    real_T MTrigNode_isRisingEdge_h;
     real_T MTrigNode_isRisingEdge_k;
     real_T MTrigNode2_isRisingEdge_p;
     real_T MTrigNode_isRisingEdge_jn;
@@ -532,6 +534,7 @@ class FmgcComputer final
     real_T MTrigNode_retriggerable_h;
     real_T MTrigNode_retriggerable_f;
     real_T MTrigNode_retriggerable_a;
+    real_T MTrigNode_retriggerable_g;
     real_T MTrigNode_retriggerable_pd;
     real_T MTrigNode2_retriggerable_i;
     real_T MTrigNode_retriggerable_n;
@@ -600,6 +603,7 @@ class FmgcComputer final
     real_T MTrigNode_triggerDuration_a;
     real_T MTrigNode_triggerDuration_bm;
     real_T MTrigNode_triggerDuration_l;
+    real_T MTrigNode_triggerDuration_e;
     real_T MTrigNode_triggerDuration_bh;
     real_T MTrigNode2_triggerDuration_f;
     real_T MTrigNode_triggerDuration_c;
@@ -988,7 +992,7 @@ class FmgcComputer final
     real_T Gain1_Gain;
     real_T Bias_Bias_p;
     real_T Gain2_Gain;
-    real_T Constant_Value_m;
+    real_T Constant_Value_i;
     real_T Gain3_Gain;
     real_T Gain1_Gain_a;
     real_T fpmtoms_Gain;
@@ -1069,7 +1073,7 @@ class FmgcComputer final
     boolean_T Logic_table_nz[16];
     boolean_T Logic_table_ob[16];
     boolean_T Logic_table_ay[16];
-    boolean_T Constant_Value_md;
+    boolean_T Constant_Value_m;
     boolean_T Logic_table_ny[16];
     boolean_T Logic_table_ns[16];
     boolean_T Logic_table_kw[16];
