@@ -793,7 +793,7 @@ export class FmcAircraftInterface {
                 SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
                 this.fmgc.data.approachSpeed.get() ?? 0,
               ),
-             this.speedVmax.get() - 5,
+              this.speedVmax.get() - 5,
             );
             vPfd = speed;
             this.managedSpeedTarget = speed;
