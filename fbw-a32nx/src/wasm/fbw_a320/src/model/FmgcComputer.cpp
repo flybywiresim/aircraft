@@ -608,6 +608,7 @@ void FmgcComputer::step()
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_jle);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_jd);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_ew);
+      FmgcComputer_MATLABFunction_m_Reset(&FmgcComputer_DWork.sf_MATLABFunction_prl);
       FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_ge4);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_ma);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_k4c);
@@ -2033,11 +2034,13 @@ void FmgcComputer::step()
       FmgcComputer_DWork.Memory_PreviousInput_i1];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_nk, &rtb_DataTypeConversion1_e);
+    FmgcComputer_MATLABFunction_j(FmgcComputer_U.in.fms_inputs.direct_to_nav_engage, FmgcComputer_U.in.time.dt,
+      &rtb_y_h1, FmgcComputer_P.MTrigNode_isRisingEdge_h, FmgcComputer_P.MTrigNode_retriggerable_g,
+      FmgcComputer_P.MTrigNode_triggerDuration_e, &FmgcComputer_DWork.sf_MATLABFunction_prl);
     rtb_Compare_a5 = (((rtb_DataTypeConversion1_e != 0U) && rtb_y_km) || (rtb_y_m &&
       FmgcComputer_U.in.fms_inputs.nav_capture_condition && (FmgcComputer_DWork.Delay_DSTATE.armed_modes.nav_armed ||
-      FmgcComputer_U.in.fms_inputs.direct_to_nav_engage) && ((rtb_raComputationData >=
-      FmgcComputer_P.CompareToConstant_const_oh) || rtb_dualRaFailure) && (rtb_AND1_c0 || (rtb_raComputationData >=
-      FmgcComputer_P.CompareToConstant1_const_b))));
+      rtb_y_h1) && ((rtb_raComputationData >= FmgcComputer_P.CompareToConstant_const_oh) || rtb_dualRaFailure) &&
+      (rtb_AND1_c0 || (rtb_raComputationData >= FmgcComputer_P.CompareToConstant1_const_b))));
     FmgcComputer_MATLABFunction_a(rtb_Compare_a5, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_co,
       FmgcComputer_P.ConfirmNode_timeDelay_d1, &rtb_y_h1, &FmgcComputer_DWork.sf_MATLABFunction_ge4);
     FmgcComputer_DWork.Memory_PreviousInput_ip = FmgcComputer_P.Logic_table_a[(((rtb_OR_o_tmp || rtb_Logic_gj_idx_0_tmp ||
@@ -2442,9 +2445,9 @@ void FmgcComputer::step()
       (rtb_DataTypeConversion2_bh > FmgcComputer_P.CompareToConstant1_const_o)) || (rtb_y_p3 &&
       (rtb_DataTypeConversion2_bh < FmgcComputer_P.CompareToConstant2_const_g)) || ((rtb_y_bv ||
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.final_des_active) && (rtb_DataTypeConversion2_kb > rtb_y_di) &&
-      rtb_fmgcOppPriority_tmp && FmgcComputer_DWork.Delay_DSTATE_k && FmgcComputer_P.Constant_Value_md) || (rtb_y_p3 &&
+      rtb_fmgcOppPriority_tmp && FmgcComputer_DWork.Delay_DSTATE_k && FmgcComputer_P.Constant_Value_m) || (rtb_y_p3 &&
       (rtb_y_di > rtb_y_py + FmgcComputer_P.Bias1_Bias) && rtb_fmgcOppPriority_tmp && FmgcComputer_DWork.Delay_DSTATE_k &&
-      FmgcComputer_P.Constant_Value_md) || (((rtb_DataTypeConversion1_e == 0U) || rtb_y_j) &&
+      FmgcComputer_P.Constant_Value_m) || (((rtb_DataTypeConversion1_e == 0U) || rtb_y_j) &&
       FmgcComputer_DWork.Delay_DSTATE.longitudinal_modes.tcas_active && rtb_y_p));
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_1,
       FmgcComputer_P.BitfromLabel1_bit_ax, &rtb_DataTypeConversion1_e);
@@ -3447,8 +3450,8 @@ void FmgcComputer::step()
                     &rtb_BusAssignment_b_logic_ra_computation_data_ft, &rtb_DataTypeConversion13,
                     &rtb_DataTypeConversion14, &rtb_DataTypeConversion15, &rtb_DataTypeConversion16,
                     &rtb_DataTypeConversion20, &rtb_Gain, &rtb_Gain1, &rtb_Gain2, &FmgcComputer_B.u_lyjj,
-                    &FmgcComputer_P.Constant_Value_m, &FmgcComputer_B.u, (const_cast<real_T*>(&FmgcComputer_RGND)),
-                    &rtb_DataTypeConversion25, &rtb_y_fa, &rtb_DataTypeConversion23,
+                    &FmgcComputer_U.in.fms_inputs.fms_unrealistic_gs_angle_deg, &FmgcComputer_B.u,
+                    &FmgcComputer_P.Constant_Value_i, &rtb_DataTypeConversion25, &rtb_y_fa, &rtb_DataTypeConversion23,
                     &FmgcComputer_U.in.fms_inputs.xtk_nmi, &FmgcComputer_U.in.fms_inputs.tke_deg,
                     &FmgcComputer_U.in.fms_inputs.phi_c_deg, &FmgcComputer_U.in.fms_inputs.phi_limit_deg,
                     &FmgcComputer_U.in.fms_inputs.alt_profile_tgt_ft, &FmgcComputer_U.in.fms_inputs.vs_target_ft_min,
