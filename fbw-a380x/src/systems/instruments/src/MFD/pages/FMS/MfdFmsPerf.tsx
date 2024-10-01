@@ -36,7 +36,8 @@ import { ConditionalComponent } from 'instruments/src/MFD/pages/common/Condition
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
-import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
@@ -530,7 +531,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
-      this.apprIdent.set(this.loadedFlightPlan.approach.ident);
+      this.apprIdent.set(getApproachName(this.loadedFlightPlan.approach, false));
       precisionApproach =
         this.loadedFlightPlan.approach.type === ApproachType.Ils ||
         this.loadedFlightPlan.approach.type === ApproachType.Gls;
@@ -717,7 +718,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTablePredLine2.set(null);
           } else {
             this.clbTableModeLine1.set('SELECTED');
-            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
+            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
             this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.clbTablePredLine1.set(null);
 
@@ -824,7 +825,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : (this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null),
+                : this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
@@ -840,7 +841,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTablePredLine2.set(null);
           } else {
             this.crzTableModeLine1.set('SELECTED');
-            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : (obs?.fcuSpeed.toFixed(0) ?? null));
+            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.crzTablePredLine1.set(null);
 
@@ -849,7 +850,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : (this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null),
+                : this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
@@ -889,7 +890,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
