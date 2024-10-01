@@ -201,9 +201,10 @@ export class MsfsMapping {
             this.approachHasLandingSystem(appr),
         );
         const lsIdent = lsAppr ? FacilityCache.ident(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao) : '';
+        // FIXME need to return an IlsNavaid for ILS
         const lsFrequencyChannel = lsAppr
-          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz ?? 0
-          : 0;
+          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz
+          : undefined;
 
         runways.push({
           sectionCode: SectionCode.Airport,
@@ -615,9 +616,10 @@ export class MsfsMapping {
         .filter((approach) => approach.runwayNumber !== 0)
         .map((approach) => {
           const approachName = this.mapApproachName(approach);
+          const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
           // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-          const authorisationRequired = approach.rnavTypeFlags === 0;
+          const authorisationRequired = approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
           const rnp = authorisationRequired ? 0.3 : undefined;
 
           const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
@@ -632,6 +634,7 @@ export class MsfsMapping {
             databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
             icaoCode,
             ident: approachName,
+            suffix,
             runwayIdent,
             multipleIndicator: approach.approachSuffix,
             type: this.mapApproachType(approach.approachType),
