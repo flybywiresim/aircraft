@@ -286,7 +286,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.machToCasManualCrossoverCurve.add(0.8, 300);
         this.machToCasManualCrossoverCurve.add(0.82, 350);
 
-        this.updateFuelVars();
         this.updatePerfSpeeds();
 
         this.flightPhaseManager.init();
@@ -2062,7 +2061,11 @@ class FMCMainDisplay extends BaseAirliners {
 
     // only used by trySetRouteAlternateFuel
     isAltFuelInRange(fuel) {
-        return 0 < fuel && fuel < (this.blockFuel - this._routeTripFuelWeight);
+        if (Number.isFinite(this.blockFuel)) {
+            return 0 < fuel && fuel < (this.blockFuel - this._routeTripFuelWeight);
+        }
+
+        return 0 < fuel;
     }
 
     async trySetRouteAlternateFuel(altFuel) {
@@ -3969,10 +3972,6 @@ class FMCMainDisplay extends BaseAirliners {
         return this.navigation.getSelectedNavaids(1);
     }
 
-    updateFuelVars() {
-        this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
-    }
-
     /**
      * Set the takeoff flap config
      * @param {0 | 1 | 2 | 3 | null} flaps
@@ -4593,8 +4592,12 @@ class FMCMainDisplay extends BaseAirliners {
         return /^[+-]?\d*(?:\.\d+)?$/.test(str);
     }
 
+    /**
+     * Gets the entered zero fuel weight, or undefined if not entered
+     * @returns {number | undefined} the zero fuel weight in tonnes or undefined
+     */
     getZeroFuelWeight() {
-        return this.zeroFuelWeight * 2204.625;
+        return this.zeroFuelWeight;
     }
 
     getV2Speed() {
