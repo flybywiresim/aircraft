@@ -100,9 +100,9 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     this.xpdrState.sub(() => this.xpdrStatusChanged(), true);
     this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true);
 
-    sub.on('tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(2 - val));
+    sub.on('mfd_tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(2 - val));
 
-    sub.on('tcas_alt_select').handle((val) => this.tcasNormAbvBlwSelectedIndex.set(val));
+    sub.on('mfd_tcas_alt_select').handle((val) => this.tcasNormAbvBlwSelectedIndex.set(val));
 
     sub
       .on('gpwsTerrOff')
@@ -254,7 +254,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 <RadioButtonGroup
                   values={['TA/RA', 'TA ONLY', 'STBY']}
                   onModified={(val) =>
-                    this.props.bus.getPublisher<MfdSurvEvents>().pub('tcas_alert_level', 2 - val, true)
+                    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alert_level', 2 - val, true)
                   }
                   selectedIndex={this.tcasTaraSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
@@ -266,7 +266,9 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 <RadioButtonGroup
                   values={['NORM', 'ABV', 'BLW']}
                   selectedIndex={this.tcasNormAbvBlwSelectedIndex}
-                  onModified={(val) => this.props.bus.getPublisher<MfdSurvEvents>().pub('tcas_alt_select', val, true)}
+                  onModified={(val) =>
+                    this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alt_select', val, true)
+                  }
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
                   color={Subject.create('green')}

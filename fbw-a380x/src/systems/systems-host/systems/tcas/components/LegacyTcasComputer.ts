@@ -238,9 +238,9 @@ export class LegacyTcasComputer implements Instrument {
 
   private readonly sub = this.bus.getSubscriber<MfdSurvEvents>();
 
-  private readonly tcasAlertLevel = ConsumerSubject.create(this.sub.on('tcas_alert_level'), 0); // TCAS - STBY/TA/TARA
+  private readonly tcasAlertLevel = ConsumerSubject.create(this.sub.on('mfd_tcas_alert_level'), 0); // TCAS - STBY/TA/TARA
 
-  private readonly tcasAltSelect = ConsumerSubject.create(this.sub.on('tcas_alt_select'), 0); // TCAS - NORM/ABV/BLW
+  private readonly tcasAltSelect = ConsumerSubject.create(this.sub.on('mfd_tcas_alt_select'), 0); // TCAS - NORM/ABV/BLW
 
   private trafficLeftEfisFilter: boolean;
 
