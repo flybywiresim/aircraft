@@ -228,11 +228,27 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
     0,
   );
 
+  private readonly leftMainGearCompressedConsumer = ConsumerSubject.create(
+    this.sub.on('leftMainGearCompressed').whenChanged(),
+    true,
+  )
+
+  private readonly rightMainGearCompressedConsumer = ConsumerSubject.create(
+    this.sub.on('rightMainGearCompressed').whenChanged(),
+    true,
+  )
+
   private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
 
   private readonly airspeed = Arinc429RegisterSubject.createEmpty();
 
-  private readonly shortTermManagedSpeedExists = this.shortTermManagedSpeedConsumer.map((s) => (s > 0 ? true : false));
+  private readonly shortTermManagedSpeedExists =
+  MappedSubject.create(
+    ([shortTermManagedSpeed, leftGearCompressed, rightGearCompressed, ]) => shortTermManagedSpeed > 0 && (!leftGearCompressed || !rightGearCompressed),
+    this.shortTermManagedSpeedConsumer,
+    this.leftMainGearCompressedConsumer,
+    this.rightMainGearCompressedConsumer
+  )
 
   private readonly shortTermVisibility = this.shortTermManagedSpeedExists.map((v) => (v ? 'visible' : 'hidden'));
 
