@@ -5,11 +5,13 @@ use systems::{
         acs_controller::{AcscId, AirConditioningStateManager, Pack, ZoneController},
         cabin_pressure_controller::PressureScheduleManager,
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, BulkHeaterSignal,
-        CabinFansSignal, Channel, CpiomId, DuctTemperature, OverheadFlowSelector, PackFlow,
+        CabinFansSignal, Channel, DuctTemperature, OverheadFlowSelector, PackFlow,
         PressurizationConstants, PressurizationOverheadShared, VcmShared, ZoneType,
     },
     failures::{Failure, FailureType},
-    integrated_modular_avionics::AvionicsDataCommunicationNetwork,
+    integrated_modular_avionics::{
+        core_processing_input_output_module::CpiomId, AvionicsDataCommunicationNetwork,
+    },
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
@@ -132,14 +134,14 @@ impl CoreProcessingInputOutputModuleB {
         adirs: &impl AdirsToAirCondInterface,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-        ocsm: [&impl OcsmShared; 4],
+        ocsm_shared: [&impl OcsmShared; 4],
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
-        let ocsm_to_use = match self.cpiom_id {
-            CpiomId::B1 => 1,
-            CpiomId::B2 => 3,
-            CpiomId::B3 => 0,
-            CpiomId::B4 => 2,
+        let ocsm = match self.cpiom_id {
+            CpiomId::B1 => ocsm_shared[1],
+            CpiomId::B2 => ocsm_shared[3],
+            CpiomId::B3 => ocsm_shared[0],
+            CpiomId::B4 => ocsm_shared[2],
         };
 
         self.cpcs_app.update(
@@ -148,8 +150,8 @@ impl CoreProcessingInputOutputModuleB {
             engines,
             lgciu,
             pressurization_overhead,
+            ocsm_shared,
             ocsm,
-            ocsm_to_use,
         );
     }
 
@@ -547,6 +549,7 @@ impl SimulationElement for AirGenerationSystemApplication {
             SignStatus::NormalOperation
         };
 
+        // Sent via AFDX in the real aircraft
         self.pack_flow_id
             .iter()
             .zip(self.flow_ratio)
@@ -929,16 +932,16 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         press_overhead: &impl PressurizationOverheadShared,
-        ocsm: [&impl OcsmShared; 4],
-        ocsm_to_use: usize,
+        ocsm_shared: [&impl OcsmShared; 4],
+        ocsm: &impl OcsmShared,
     ) {
         self.adirs_data_is_valid = [1, 2, 3]
             .iter()
             .any(|&adr| adirs.ambient_static_pressure(adr).is_normal_operation());
 
-        self.cabin_pressure = ocsm[ocsm_to_use].cabin_pressure();
-        self.cabin_delta_pressure = ocsm[ocsm_to_use].cabin_delta_pressure();
-        self.outflow_valve_open_amount = ocsm.map(|ocsm| ocsm.outflow_valve_open_amount());
+        self.cabin_pressure = ocsm.cabin_pressure();
+        self.cabin_delta_pressure = ocsm.cabin_delta_pressure();
+        self.outflow_valve_open_amount = ocsm_shared.map(|ocsm| ocsm.outflow_valve_open_amount());
 
         if let Some(manager) = self.pressure_schedule_manager.take() {
             self.pressure_schedule_manager = Some(manager.update(
@@ -954,8 +957,8 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         let target_vertical_speed = self.calculate_cabin_target_vs(context);
         self.cabin_target_vertical_speed
             .update(context.delta(), target_vertical_speed);
-        self.cabin_target_vertical_speed_ocsm = ocsm[ocsm_to_use].cabin_target_vertical_speed();
-        self.cabin_target_altitude = self.calculate_cabin_target_altitude(ocsm);
+        self.cabin_target_vertical_speed_ocsm = ocsm.cabin_target_vertical_speed();
+        self.cabin_target_altitude = self.calculate_cabin_target_altitude(ocsm_shared);
 
         let new_reference_pressure = self.calculate_reference_pressure(adirs, press_overhead);
         let new_cabin_alt = self.calculate_altitude(self.cabin_pressure, new_reference_pressure);
@@ -1167,6 +1170,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
 
     fn calculate_climb_vertical_speed(&self, context: &UpdateContext) -> Velocity {
         const ALT_MARGIN: f64 = 20.; // Foot
+        const TARGET_VELOCITY_FACTOR: f64 = 1.04651e-5; // Linear factor based on references
 
         let target_vs = if self.fma_lateral_mode == 20 {
             // Calculate how long until aircraft reaches target altitude
@@ -1183,7 +1187,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                     .output()
                     .get::<foot_per_minute>()
                     * self.exterior_flight_altitude.get::<foot>()
-                    * 1.04651e-5,
+                    * TARGET_VELOCITY_FACTOR,
             );
             // This avoids the target vs overshooting the target altitude
             if (self.cabin_altitude + (target_velocity * context.delta_as_time()))
@@ -1470,6 +1474,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
             SignStatus::NormalOperation
         };
 
+        // All signals sent via AFDX in the real aircraft
         writer.write_arinc429(
             &self.cabin_altitude_id,
             self.cabin_altitude_out(self.cabin_altitude),
@@ -1524,6 +1529,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
 }
 
 /// This struct centralises the data transmittion of discrete signals from each CPIOM for convenience
+/// Sent via AFDX in the real aircraft
 pub(super) struct CpiomBInterfaceUnit {
     discrete_word_ags_id: VariableIdentifier,
     discrete_word_tcs_id: VariableIdentifier,

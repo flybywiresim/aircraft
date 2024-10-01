@@ -1,7 +1,8 @@
 use crate::air_conditioning::{
     acs_controller::AcscId, cabin_pressure_controller::CpcId, Channel, VcmId, ZoneType,
 };
-use crate::air_conditioning::{CpiomId, FdacId, OcsmId};
+use crate::air_conditioning::{FdacId, OcsmId};
+use crate::integrated_modular_avionics::core_processing_input_output_module::CpiomId;
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,

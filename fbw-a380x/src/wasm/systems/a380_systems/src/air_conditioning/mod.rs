@@ -6,11 +6,13 @@ use systems::{
         cabin_air::CabinAirSimulation,
         pressure_valve::{NegativeRelieveValveSignal, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
-        AirHeater, CabinFan, CpiomId, DuctTemperature, FdacId, MixerUnit, OcsmId, OutletAir,
+        AirHeater, CabinFan, DuctTemperature, FdacId, MixerUnit, OcsmId, OutletAir,
         OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
         PressurizationOverheadShared, TrimAirSystem, VcmId, VcmShared, ZoneType,
     },
-    integrated_modular_avionics::AvionicsDataCommunicationNetwork,
+    integrated_modular_avionics::{
+        core_processing_input_output_module::CpiomId, AvionicsDataCommunicationNetwork,
+    },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         ValueKnob,
@@ -536,11 +538,11 @@ impl A380AirConditioningSystem {
                 );
             });
 
-        let cpiom_to_use = if cpiom_b[0].tcs_has_fault() {
+        let cpiom_to_use = if !cpiom_b[0].tcs_has_fault() {
             &cpiom_b[0]
-        } else if cpiom_b[1].tcs_has_fault() {
+        } else if !cpiom_b[1].tcs_has_fault() {
             &cpiom_b[1]
-        } else if cpiom_b[2].tcs_has_fault() {
+        } else if !cpiom_b[2].tcs_has_fault() {
             &cpiom_b[2]
         } else {
             &cpiom_b[3]

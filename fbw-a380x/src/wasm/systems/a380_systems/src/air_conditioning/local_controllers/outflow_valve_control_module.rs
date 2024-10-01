@@ -556,32 +556,29 @@ impl EmergencyPressurizationPartition {
         }
     }
 
+    /// The safety partition acts in back up mode if the auto partition fails
     fn emergency_vertical_speed_determination(&self) -> Velocity {
-        // The safety partition acts in back up mode if the auto partition fails
+        const TARGET_VELOCITY_FACTOR: f64 = 1.04651e-5; // Linear factor based on references
+
         // Using the same constant as the CPIOM B
-        if self
-            .exterior_vertical_speed
-            .output()
-            .get::<foot_per_minute>()
-            >= 0.
-        {
+        if self.exterior_vertical_speed.output() >= Velocity::default() {
             Velocity::new::<foot_per_minute>(
                 self.exterior_vertical_speed
                     .output()
                     .get::<foot_per_minute>()
                     * self.exterior_flight_altitude.get::<foot>()
-                    * 1.04651e-5,
+                    * TARGET_VELOCITY_FACTOR,
             )
         } else {
             let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev();
             let target_vs = self.get_int_diff_with_ldg_elev()
                 * self.exterior_vertical_speed.output()
                 / ext_diff_with_ldg_elev;
-            Velocity::new::<foot_per_minute>(if ext_diff_with_ldg_elev <= Length::default() {
-                0.
+            if ext_diff_with_ldg_elev <= Length::default() {
+                Velocity::default()
             } else {
-                target_vs.get::<foot_per_minute>()
-            })
+                target_vs
+            }
         }
     }
 

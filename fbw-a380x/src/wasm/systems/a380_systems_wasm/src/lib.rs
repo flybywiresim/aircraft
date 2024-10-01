@@ -32,8 +32,9 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
-use systems::air_conditioning::{Channel, CpiomId, FdacId, OcsmId, VcmId};
+use systems::air_conditioning::{Channel, FdacId, OcsmId, VcmId};
 use systems::failures::FailureType;
+use systems::integrated_modular_avionics::core_processing_input_output_module::CpiomId;
 use systems::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
