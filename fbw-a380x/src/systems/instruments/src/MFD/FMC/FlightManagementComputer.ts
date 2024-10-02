@@ -305,23 +305,11 @@ export class FlightManagementComputer implements FmcInterface {
     if (tf && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // LW = GW - TRIP
-      return this.getGrossWeight() - tf;
+      return this.fmgc.getGrossWeight() - tf;
     }
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
-    return this.getGrossWeight() - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
-  }
-
-  /** in kg */
-  public getGrossWeight(): Kilograms {
-    // Value received from FQMS, or falls back to ZFW + FOB
-    const zfw = this.fmgc.data.zeroFuelWeight.get();
-
-    let fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
-    if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get()) && zfw) {
-      fmGW = this.fmgc.getFOB() * 1_000 + zfw;
-    } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && zfw) fmGW = this.fmgc.data.blockFuel.get() ?? 0 + zfw;
-    return fmGW;
+    return this.fmgc.getGrossWeight() - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
   }
 
   public getTakeoffWeight(): number | null {
@@ -353,7 +341,7 @@ export class FlightManagementComputer implements FmcInterface {
     const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
     return (
       Math.min(
-        A380AltitudeUtils.calculateRecommendedMaxAltitude(this.getGrossWeight(), isaTempDeviation),
+        A380AltitudeUtils.calculateRecommendedMaxAltitude(this.fmgc.getGrossWeight(), isaTempDeviation),
         maxCertifiedAlt,
       ) / 100
     );
@@ -927,7 +915,7 @@ export class FlightManagementComputer implements FmcInterface {
           );
         }
       }
-      this.getGrossWeight();
+      this.fmgc.getGrossWeight();
       this.checkGWParams();
       this.updateMessageQueue();
 

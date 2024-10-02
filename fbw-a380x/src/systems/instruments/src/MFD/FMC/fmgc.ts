@@ -315,6 +315,18 @@ export class FmgcDataService implements Fmgc {
     return (zfw / 1000) * 2204.625;
   }
 
+  /** in kg */
+  public getGrossWeight(): Kilograms {
+    // Value received from FQMS, or falls back to ZFW + FOB
+    const zfw = this.data.zeroFuelWeight.get();
+
+    let fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
+    if (this.isAnEngineOn() && Number.isFinite(this.data.zeroFuelWeight.get()) && zfw) {
+      fmGW = this.getFOB() * 1_000 + zfw;
+    } else if (Number.isFinite(this.data.blockFuel.get()) && zfw) fmGW = this.data.blockFuel.get() ?? 0 + zfw;
+    return fmGW;
+  }
+
   /**
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)

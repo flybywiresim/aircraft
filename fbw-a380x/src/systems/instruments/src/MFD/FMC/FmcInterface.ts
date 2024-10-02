@@ -144,9 +144,6 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   getLandingWeight(): number | null;
 
   /** in kilograms */
-  getGrossWeight(): number;
-
-  /** in kilograms */
   getTakeoffWeight(): number | null;
 
   /** in kilograms */
