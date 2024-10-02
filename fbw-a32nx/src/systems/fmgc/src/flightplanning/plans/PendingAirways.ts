@@ -5,8 +5,10 @@
 
 import { Airway, AirwayDirection, Fix } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 
 export interface PendingAirwayEntry {
   fromIndex?: number;
@@ -45,6 +47,16 @@ export class PendingAirways {
 
   private findFixIndexAlongAirway(airway: Airway, fix: Fix) {
     return airway.fixes.findIndex((it) => it.ident === fix.ident && it.icaoCode === fix.icaoCode);
+  }
+
+  public async fixAlongTailAirway(ident: string) {
+    const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(ident);
+    if (fixes.length === 0) {
+      throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+
+    const fixesOnAirway = fixes.filter((fix) => this.findFixIndexAlongAirway(this.tailElement.airway, fix) !== -1);
+    return fixesOnAirway[0];
   }
 
   private findAutomaticAirwayIntersectionIndex(one: Airway, two: Airway): [number, number] {
