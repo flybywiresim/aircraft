@@ -2538,14 +2538,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <RadioButtonGroup
                         values={['CONF 3', 'FULL']}
                         selectedIndex={this.apprSelectedFlapsIndex}
-                        onModified={(v) => {
-                          this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(v + 3);
-                          if (v === 0) {
-                            SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', true);
-                          } else {
-                            SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', false);
-                          }
-                        }}
+                        onModified={(v) => this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(v + 3)}
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_apprFlapsSettingsRadio`}
                         additionalVerticalSpacing={15}
                       />

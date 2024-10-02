@@ -111,9 +111,10 @@ export class FmcAircraftInterface {
     this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true);
     this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true);
 
-    this.fmgc.data.approachFlapConfig
-      .map((v) => v === FlapConf.CONF_3)
-      .sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v), true);
+    this.fmgc.data.approachFlapConfig.sub(
+      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
+      true,
+    );
   }
 
   thrustReductionAccelerationChecks() {
