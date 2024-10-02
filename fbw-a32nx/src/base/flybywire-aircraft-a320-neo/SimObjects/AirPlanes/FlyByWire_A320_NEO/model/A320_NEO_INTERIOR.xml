@@ -2107,7 +2107,7 @@
                         <NODE_ID>KNOB_OVHD_AUDIOSWITCH</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                        <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
+                        <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                         <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
