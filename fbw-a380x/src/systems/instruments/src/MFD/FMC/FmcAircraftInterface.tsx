@@ -209,12 +209,10 @@ export class FmcAircraftInterface {
     if (!this.flightPlanService.hasActive) {
       return;
     }
-    const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude; // as altitude
-    const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel ?? 18_000; // as FL
 
     this.arincTransitionAltitude.setBnrValue(
-      originTransitionAltitude !== null ? originTransitionAltitude : 0,
-      originTransitionAltitude !== null
+      this.flightPlanService.active.performanceData.transitionAltitude ?? 2_500, // as altitude
+      this.flightPlanService.active.performanceData.transitionAltitude != null
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       17,
@@ -222,21 +220,15 @@ export class FmcAircraftInterface {
       0,
     );
 
-    // Delete once new PFD is integrated
-    SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', originTransitionAltitude ?? 0);
-
     this.arincTransitionLevel.setBnrValue(
-      destinationTransitionLevel !== undefined ? destinationTransitionLevel : 0,
-      destinationTransitionLevel !== undefined
+      this.flightPlanService.active.performanceData.transitionLevel ?? 25, // as FL
+      this.flightPlanService.active.performanceData.transitionLevel != null
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       9,
       512,
       0,
     );
-
-    // Delete once new PFD is integrated
-    SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel * 100 ?? 0);
   }
 
   public updatePerformanceData() {

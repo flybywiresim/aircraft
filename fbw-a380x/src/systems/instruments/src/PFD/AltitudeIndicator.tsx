@@ -14,6 +14,7 @@ import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 const DisplayRange = 600;
 const ValueSpacing = 100;
@@ -687,7 +688,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private transLvlAr = Arinc429Register.empty();
 
-  private flightPhase = 0;
+  private fmgcFlightPhase = 0;
 
   private stdGroup = FSComponent.createRef<SVGGElement>();
 
@@ -732,7 +733,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.flightPhase = fp;
+        this.fmgcFlightPhase = fp;
 
         this.handleBlink();
       });
@@ -781,18 +782,16 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private handleBlink() {
     if (this.mode.get() === 'STD') {
       if (
-        this.flightPhase > 3 &&
-        this.transLvlAr.isNormalOperation() &&
-        100 * this.transLvlAr.value > this.props.altitude.get()
+        this.fmgcFlightPhase > FmgcFlightPhase.Cruise &&
+        100 * (this.transLvlAr.isNormalOperation() ? this.transLvlAr.value : 25) > this.props.altitude.get()
       ) {
         this.stdGroup.instance.classList.add('BlinkInfinite');
       } else {
         this.stdGroup.instance.classList.remove('BlinkInfinite');
       }
     } else if (
-      this.flightPhase <= 3 &&
-      this.transAltAr.isNormalOperation() &&
-      this.transAltAr.value < this.props.altitude.get()
+      this.fmgcFlightPhase <= FmgcFlightPhase.Cruise &&
+      (this.transAltAr.isNormalOperation() ? this.transAltAr.value : 2_500) < this.props.altitude.get()
     ) {
       this.qfeGroup.instance.classList.add('BlinkInfinite');
     } else {

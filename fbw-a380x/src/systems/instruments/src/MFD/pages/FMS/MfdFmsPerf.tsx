@@ -2206,7 +2206,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={
                         new AltitudeOrFlightLevelFormat(
-                          this.transFl.map((it) => (it ?? 180) * 100),
+                          this.transFl.map((it) => (it ?? 25) * 100),
                           Subject.create(0),
                           Subject.create(maxCertifiedAlt),
                         )
