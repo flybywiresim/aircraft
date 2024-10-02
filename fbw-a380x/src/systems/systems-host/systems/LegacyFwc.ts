@@ -451,8 +451,8 @@ export class LegacyFwc {
     }
 
     const warningPressed =
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
+      !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
+      !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
     if (warningPressed === true) {
       this._wasBellowThreshold = false;
       this._wasAboveThreshold = false;
