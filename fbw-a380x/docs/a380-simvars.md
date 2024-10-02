@@ -364,7 +364,7 @@
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
 
 - A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
-    - Knots
+    - Number
     - The short term managed speed displayed on the PFD
 
 ## Flight Management System ATA 22
