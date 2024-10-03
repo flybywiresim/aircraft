@@ -228,9 +228,25 @@ export class SimAudioManager implements Instrument {
     }
 
     for (const [index, state] of this.comStates.entries()) {
-      state.isReceiveOn.set(isAmuHealthy && activeAmu.isComReceiveOn(index));
-      state.isTransmitOn.set(isAmuHealthy && activeAmu.getSelectedComTransmitter() === index);
+      if (!isAmuHealthy || !activeAmu.isComReceiveOn(index)) {
+        state.isReceiveOn.set(false);
+      }
+      if (!isAmuHealthy || activeAmu.getSelectedComTransmitter() !== index) {
+        state.isTransmitOn.set(false);
+      }
       state.volume.set(isAmuHealthy ? activeAmu.getComVolume(index) : 0);
+    }
+
+    // need to set on states after to ensure correct event ordering
+    if (isAmuHealthy) {
+      for (const [index, state] of this.comStates.entries()) {
+        if (activeAmu.isComReceiveOn(index)) {
+          state.isReceiveOn.set(true);
+        }
+        if (activeAmu.getSelectedComTransmitter() === index) {
+          state.isTransmitOn.set(true);
+        }
+      }
     }
   }
 }
