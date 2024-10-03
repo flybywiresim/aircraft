@@ -320,7 +320,7 @@ export class FmgcDataService implements Fmgc {
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
     const zfw = this.data.zeroFuelWeight.get();
-    const fob = this.getFOB();
+    const fob = this.getFOB() * 1_000; // getFOB returns tons
 
     if (zfw == null || fob === undefined) {
       return null;
