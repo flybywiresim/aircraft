@@ -189,15 +189,29 @@ export class SimAudioManager implements Instrument {
 
   private keyEventManager?: KeyEventManager;
 
+  private isInit = false;
+
   constructor(
     private readonly bus: EventBus,
     private readonly amu1: AudioManagementUnit,
     private readonly amu2: AudioManagementUnit,
   ) {
-    KeyEventManager.getManager(bus).then((manager) => (this.keyEventManager = manager));
+    KeyEventManager.getManager(bus).then((manager) => {
+      this.keyEventManager = manager;
+      if (this.isInit) {
+        this.resume();
+      }
+    });
   }
 
   init(): void {
+    if (this.keyEventManager) {
+      this.resume();
+    }
+    this.isInit = true;
+  }
+
+  private resume(): void {
     for (const navaid of this.navaidStates.values()) {
       for (const sub of navaid.subs) {
         sub.resume(true);
@@ -210,6 +224,7 @@ export class SimAudioManager implements Instrument {
       }
     }
   }
+
   onUpdate(): void {
     this.activeAmuIndex = !this.amu1.isHealthy.get() || this.pilotSeat.get() === PilotSeat.Right ? 2 : 1;
     const activeAmu = this.activeAmuIndex === 2 ? this.amu2 : this.amu1;
