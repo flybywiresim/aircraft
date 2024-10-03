@@ -5,7 +5,6 @@
 
 import { Airway, AirwayDirection, Fix } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
@@ -50,13 +49,12 @@ export class PendingAirways {
   }
 
   public async fixAlongTailAirway(ident: string) {
-    const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(ident);
-    if (fixes.length === 0) {
-      throw new FmsError(FmsErrorType.NotInDatabase);
-    }
+    const fixAlongAirway = this.tailElement.airway.fixes.find((fix) => fix.ident === ident);
 
-    const fixesOnAirway = fixes.filter((fix) => this.findFixIndexAlongAirway(this.tailElement.airway, fix) !== -1);
-    return fixesOnAirway[0];
+    if (fixAlongAirway) {
+      return fixAlongAirway;
+    }
+    throw new FmsError(FmsErrorType.NotInDatabase);
   }
 
   private findAutomaticAirwayIntersectionIndex(one: Airway, two: Airway): [number, number] {
