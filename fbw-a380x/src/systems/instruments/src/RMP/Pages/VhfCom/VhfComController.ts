@@ -320,17 +320,19 @@ export class VhfComController {
 
     // try shift 1 right, filling leading 1, see if valid
     // then try shift 2 right, filling leading 11, see if valid
-    for (let i = 0; i < 2; i++) {
-      frequency >>>= 4;
-      frequency |= 0x1000000;
-      if (RadioUtils.isValidFrequency(frequency)) {
-        this.standbyEntry.set({
-          entered,
-          entryOffset: i + 1,
-          displayed: RadioUtils.formatBcd32(frequency, ''),
-          frequency,
-        });
-        return;
+    for (let i = 0; i < 3; i++) {
+      if (i > 0) {
+        frequency >>>= 4;
+        frequency |= 0x1000000;
+        if (RadioUtils.isValidFrequency(frequency)) {
+          this.standbyEntry.set({
+            entered,
+            entryOffset: i,
+            displayed: RadioUtils.formatBcd32(frequency, ''),
+            frequency,
+          });
+          return;
+        }
       }
       // we need to handle the case where the entry could be valid with the correct channel spacing applied
       if (standbyEntry.entryOffset + entered.length === 5) {
@@ -344,7 +346,7 @@ export class VhfComController {
           if (RadioUtils.isValidFrequency(frequency)) {
             this.standbyEntry.set({
               entered,
-              entryOffset: i + 1,
+              entryOffset: i,
               displayed: RadioUtils.formatBcd32(frequency, ''),
               frequency,
             });
