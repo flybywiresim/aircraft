@@ -10,7 +10,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
@@ -309,22 +309,24 @@ export class FmgcDataService implements Fmgc {
 
   constructor(private flightPlanService: FlightPlanService) {}
 
-  getZeroFuelWeight(): Pound {
+  /** in lbs */
+  getZeroFuelWeight(): number {
     // Should be returned in lbs
     const zfw = this.data.zeroFuelWeight.get() ?? minGw;
     return (zfw / 1000) * 2204.625;
   }
 
   /** in kg */
-  public getGrossWeight(): Kilograms {
-    // Value received from FQMS, or falls back to ZFW + FOB
+  public getGrossWeight(): number | null {
+    // Value received from FQMS, or falls back to entered ZFW + entered FOB
     const zfw = this.data.zeroFuelWeight.get();
+    const fob = this.getFOB();
 
-    let fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
-    if (this.isAnEngineOn() && Number.isFinite(this.data.zeroFuelWeight.get()) && zfw) {
-      fmGW = this.getFOB() * 1_000 + zfw;
-    } else if (Number.isFinite(this.data.blockFuel.get()) && zfw) fmGW = this.data.blockFuel.get() ?? 0 + zfw;
-    return fmGW;
+    if (zfw == null || fob === undefined) {
+      return null;
+    }
+
+    return zfw + fob;
   }
 
   /**
@@ -342,17 +344,20 @@ export class FmgcDataService implements Fmgc {
     return fob / 1_000; // Needs to be returned in tonnes
   }
 
-  getV2Speed(): Knots {
+  /** in knots */
+  getV2Speed(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active) && this.flightPlanService.active.performanceData.v2
       ? this.flightPlanService.active.performanceData.v2
       : 150;
   }
 
-  getTropoPause(): Feet {
+  /** in feet */
+  getTropoPause(): number {
     return this.data.tropopause.get();
   }
 
-  getManagedClimbSpeed(): Knots {
+  /** in knots */
+  getManagedClimbSpeed(): number {
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {
       const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
@@ -360,6 +365,7 @@ export class FmgcDataService implements Fmgc {
     return 250;
   }
 
+  /** in mach */
   getManagedClimbSpeedMach(): number {
     /* // Assume FL270 as crossover point
         const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
@@ -369,25 +375,29 @@ export class FmgcDataService implements Fmgc {
     return 0.8;
   }
 
-  getAccelerationAltitude(): Feet {
+  /** in feet */
+  getAccelerationAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
       ? (this.flightPlanService?.active.performanceData.accelerationAltitude as Feet)
       : 1_500;
   }
 
-  getThrustReductionAltitude(): Feet {
+  /** in feet */
+  getThrustReductionAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
       ? (this.flightPlanService?.active.performanceData.thrustReductionAltitude as Feet)
       : 1_500;
   }
 
-  getOriginTransitionAltitude(): Feet | undefined {
+  /** in feet. undefined if not set. */
+  getOriginTransitionAltitude(): number | undefined {
     return this.flightPlanService.has(FlightPlanIndex.Active)
       ? (this.flightPlanService?.active.performanceData.transitionAltitude as Feet)
       : undefined;
   }
 
-  getDestinationTransitionLevel(): Feet | undefined {
+  /** in feet. undefined if not set. */
+  getDestinationTransitionLevel(): number | undefined {
     return this.flightPlanService.has(FlightPlanIndex.Active)
       ? (this.flightPlanService?.active.performanceData.transitionLevel as Feet)
       : undefined;
@@ -397,7 +407,7 @@ export class FmgcDataService implements Fmgc {
    *
    * @returns flight level in steps of 100ft (e.g. 320 instead of 32000 for FL320)
    */
-  getCruiseAltitude(): Feet {
+  getCruiseAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active) &&
       this.flightPlanService?.active.performanceData.cruiseFlightLevel
       ? this.flightPlanService?.active.performanceData.cruiseFlightLevel
@@ -408,7 +418,8 @@ export class FmgcDataService implements Fmgc {
     return SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
   }
 
-  getManagedCruiseSpeed(): Knots {
+  /** in knots */
+  getManagedCruiseSpeed(): number {
     const preSel = this.data.cruisePreSelSpeed.get();
     if (Number.isFinite(preSel) && preSel !== null) {
       return preSel;
@@ -421,6 +432,7 @@ export class FmgcDataService implements Fmgc {
     return 310;
   }
 
+  /** in mach */
   getManagedCruiseSpeedMach(): number {
     /* const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(this.getCruiseAltitude() * 100, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
@@ -437,17 +449,20 @@ export class FmgcDataService implements Fmgc {
     return { speed: 250, underAltitude: 10_000 };
   }
 
-  getPreSelectedClbSpeed(): Knots {
+  /** in knots */
+  getPreSelectedClbSpeed(): number {
     // FIXME fmgc interface should also accept null
     return this.data.climbPreSelSpeed.get() ?? 0;
   }
 
-  getPreSelectedCruiseSpeed(): Knots {
+  /** in knots */
+  getPreSelectedCruiseSpeed(): number {
     // FIXME fmgc interface should also accept null
     return this.data.cruisePreSelSpeed.get() ?? 0;
   }
 
-  getPreSelectedDescentSpeed(): Knots {
+  /** in knots */
+  getPreSelectedDescentSpeed(): number {
     // FIXME fmgc interface should also accept null
     return this.data.descentPreSelSpeed.get() ?? 0;
   }
@@ -456,7 +471,8 @@ export class FmgcDataService implements Fmgc {
     return this.data.takeoffFlapsSetting.get();
   }
 
-  getManagedDescentSpeed(): Knots {
+  /** in knots */
+  getManagedDescentSpeed(): number {
     if (Number.isFinite(this.data.descentPreSelSpeed.get())) {
       return this.data.descentPreSelSpeed.get() ?? 0;
     }
@@ -468,6 +484,7 @@ export class FmgcDataService implements Fmgc {
     return 300;
   }
 
+  /** in mach */
   getManagedDescentSpeedMach(): number {
     /* // Assume FL270 as crossover point
         const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
@@ -477,22 +494,27 @@ export class FmgcDataService implements Fmgc {
     return 0.8;
   }
 
-  getApproachSpeed(): Knots {
+  /** in knots */
+  getApproachSpeed(): number {
     return this.data.approachSpeed.get() ?? 0;
   }
 
-  getFlapRetractionSpeed(): Knots {
+  /** in knots */
+  getFlapRetractionSpeed(): number {
     return this.data.flapRetractionSpeed.get() ?? 0;
   }
 
-  getSlatRetractionSpeed(): Knots {
+  /** in knots */
+  getSlatRetractionSpeed(): number {
     return this.data.slatRetractionSpeed.get() ?? 0;
   }
 
-  getCleanSpeed(): Knots {
+  /** in knots */
+  getCleanSpeed(): number {
     return this.data.greenDotSpeed.get() ?? 0;
   }
 
+  /** in knots */
   getTripWind(): number {
     return this.data.tripWind.get() ?? 0;
   }
@@ -510,14 +532,17 @@ export class FmgcDataService implements Fmgc {
     return this.data.approachWind.get() ?? { direction: 0, speed: 0 };
   }
 
+  /** in hPa */
   getApproachQnh(): number {
     return this.data.approachQnh.get() ?? 1013.15;
   }
 
+  /** in degrees celsius */
   getApproachTemperature(): number {
     return this.data.approachTemperature.get() ?? 0;
   }
 
+  /** in kilograms */
   getDestEFOB(useFob: boolean): number {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
@@ -527,7 +552,8 @@ export class FmgcDataService implements Fmgc {
     return 0;
   }
 
-  getAltEFOB(useFOB = false) {
+  /** in kilograms */
+  getAltEFOB(useFOB = false): number {
     // TODO estimate alternate fuel
     if (this.getDestEFOB(useFOB) === 0) {
       return 0;
@@ -535,13 +561,15 @@ export class FmgcDataService implements Fmgc {
     return this.getDestEFOB(useFOB) - 1.0 > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
   }
 
-  getDepartureElevation(): Feet | null {
+  /** in feet. null if not set */
+  getDepartureElevation(): number | null {
     return this.flightPlanService.has(FlightPlanIndex.Active)
       ? this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt
       : null;
   }
 
-  getDestinationElevation(): Feet {
+  /** in feet */
+  getDestinationElevation(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
       ? this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt
       : 0;
@@ -553,6 +581,7 @@ export class FmgcDataService implements Fmgc {
       : null;
   }
 
+  /** in nautical miles. null if not set */
   getDistanceToDestination(): number | null {
     return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
   }

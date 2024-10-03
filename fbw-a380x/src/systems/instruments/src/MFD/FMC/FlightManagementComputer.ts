@@ -295,6 +295,7 @@ export class FlightManagementComputer implements FmcInterface {
   /** in kg */
   public getLandingWeight(): number | null {
     const tow = this.getTakeoffWeight();
+    const gw = this.fmgc.getGrossWeight();
     const tf = this.getTripFuel();
 
     if (!this.enginesWereStarted.get()) {
@@ -302,14 +303,17 @@ export class FlightManagementComputer implements FmcInterface {
       // LW = TOW - TRIP
       return tow && tf ? tow - tf : null;
     }
-    if (tf && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+    if (gw && tf && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // LW = GW - TRIP
-      return this.fmgc.getGrossWeight() - tf;
+      return gw - tf;
     }
-    // Preflight, engines on
-    // LW = GW - TRIP - TAXI
-    return this.fmgc.getGrossWeight() - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
+    if (gw) {
+      // Preflight, engines on
+      // LW = GW - TRIP - TAXI
+      return gw - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
+    }
+    return null;
   }
 
   public getTakeoffWeight(): number | null {
@@ -334,17 +338,17 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTripFuel(): number | null {
-    return 25_000; // Dummy value
+    return 25_000; // FIXME Dummy value
   }
 
   public getRecMaxFlightLevel(): number | null {
+    const gw = this.fmgc.getGrossWeight();
+    if (!gw) {
+      return null;
+    }
+
     const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
-    return (
-      Math.min(
-        A380AltitudeUtils.calculateRecommendedMaxAltitude(this.fmgc.getGrossWeight(), isaTempDeviation),
-        maxCertifiedAlt,
-      ) / 100
-    );
+    return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt) / 100;
   }
 
   public getOptFlightLevel(): number | null {
