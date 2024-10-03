@@ -6,6 +6,7 @@ import {
   ConsumerValue,
   EventBus,
   Instrument,
+  KeyEventManager,
   MutableSubscribable,
   SimVarValueType,
   Subject,
@@ -50,99 +51,99 @@ enum SimTransmitStates {
  * Manages the sim's audio events to match the state of the AMUs.
  */
 export class SimAudioManager implements Instrument {
-  private static readonly navaidDefinitions: Record<RadioNavSelectedNavaid, NavaidDefinition> = {
+  private readonly navaidDefinitions: Record<RadioNavSelectedNavaid, NavaidDefinition> = {
     [RadioNavSelectedNavaid.Adf1]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:ADF_VOLUME_SET', SimVarValueType.Number, volume),
-      setIdent: (on) => SimVar.SetSimVarValue('K:RADIO_ADF_IDENT_SET', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('ADF_VOLUME_SET', true, volume),
+      setIdent: (on) => this.keyEventManager?.triggerKey('RADIO_ADF_IDENT_SET', true, on ? 1 : 0),
     },
     [RadioNavSelectedNavaid.Adf2]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:ADF2_VOLUME_SET', SimVarValueType.Number, volume),
-      setIdent: (on) => SimVar.SetSimVarValue('K:RADIO_ADF2_IDENT_SET', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('ADF2_VOLUME_SET', true, volume),
+      setIdent: (on) => this.keyEventManager?.triggerKey('RADIO_ADF2_IDENT_SET', true, on ? 1 : 0),
     },
     [RadioNavSelectedNavaid.Ls]: {
       setVolume: (volume, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue('NAV3_VOLUME_SET_EX1', SimVarValueType.Number, amuIndex === 2 ? 0 : volume),
-          SimVar.SetSimVarValue('NAV4_VOLUME_SET_EX1', SimVarValueType.Number, amuIndex === 2 ? volume : 0),
+          this.keyEventManager?.triggerKey('NAV3_VOLUME_SET_EX1', true, amuIndex === 2 ? 0 : volume),
+          this.keyEventManager?.triggerKey('NAV4_VOLUME_SET_EX1', true, amuIndex === 2 ? volume : 0),
         ]);
       },
       setIdent: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue('RADIO_VOR3_IDENT_SET', SimVarValueType.Number, amuIndex === 2 ? 0 : on ? 1 : 0),
-          SimVar.SetSimVarValue('RADIO_VOR4_IDENT_SET', SimVarValueType.Number, amuIndex === 2 ? (on ? 1 : 0) : 0),
+          this.keyEventManager?.triggerKey('RADIO_VOR3_IDENT_SET', true, amuIndex === 2 ? 0 : on ? 1 : 0),
+          this.keyEventManager?.triggerKey('RADIO_VOR4_IDENT_SET', true, amuIndex === 2 ? (on ? 1 : 0) : 0),
         ]);
       },
     },
     [RadioNavSelectedNavaid.Vor1]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:NAV1_VOLUME_SET_EX1', SimVarValueType.Number, volume),
-      setIdent: (on) => SimVar.SetSimVarValue('K:RADIO_VOR1_IDENT_SET', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('NAV1_VOLUME_SET_EX1', true, volume),
+      setIdent: (on) => this.keyEventManager?.triggerKey('RADIO_VOR1_IDENT_SET', true, on ? 1 : 0),
     },
     [RadioNavSelectedNavaid.Vor2]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:NAV2_VOLUME_SET_EX1', SimVarValueType.Number, volume),
-      setIdent: (on) => SimVar.SetSimVarValue('K:RADIO_VOR2_IDENT_SET', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('NAV2_VOLUME_SET_EX1', true, volume),
+      setIdent: (on) => this.keyEventManager?.triggerKey('RADIO_VOR2_IDENT_SET', true, on ? 1 : 0),
     },
     [RadioNavSelectedNavaid.Mkr]: {
       setVolume: () => Promise.resolve(),
       setIdent: (on) => {
         const wasOn = SimVar.GetSimVarValue('MARKER SOUND', SimVarValueType.Bool) > 0;
         if (on !== wasOn) {
-          return SimVar.SetSimVarValue('K:MARKER_SOUND_TOGGLE', SimVarValueType.Number, 0);
+          return this.keyEventManager?.triggerKey('MARKER_SOUND_TOGGLE', true);
         }
         return Promise.resolve();
       },
     },
   };
 
-  private static readonly comDefinitions: Record<ComIndex, ComDefinition> = {
+  private readonly comDefinitions: Record<ComIndex, ComDefinition> = {
     [ComIndex.Vhf1]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:COM1_VOLUME_SET', SimVarValueType.Number, volume),
-      setReceive: (on) => SimVar.SetSimVarValue('K:COM1_RECEIVE_SELECT', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('COM1_VOLUME_SET', true, volume),
+      setReceive: (on) => this.keyEventManager?.triggerKey('COM1_RECEIVE_SELECT', true, on ? 1 : 0),
       setTransmit: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue(
-            amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET',
-            SimVarValueType.Enum,
+          this.keyEventManager?.triggerKey(
+            amuIndex === 2 ? 'COPILOT_TRANSMITTER_SET' : 'PILOT_TRANSMITTER_SET',
+            true,
             on ? SimTransmitStates.Com1 : SimTransmitStates.None,
           ),
-          SimVar.SetSimVarValue(
-            amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET',
-            SimVarValueType.Enum,
+          this.keyEventManager?.triggerKey(
+            amuIndex === 2 ? 'PILOT_TRANSMITTER_SET' : 'COPILOT_TRANSMITTER_SET',
+            true,
             SimTransmitStates.None,
           ),
         ]);
       },
     },
     [ComIndex.Vhf2]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:COM2_VOLUME_SET', SimVarValueType.Number, volume),
-      setReceive: (on) => SimVar.SetSimVarValue('K:COM2_RECEIVE_SELECT', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('COM2_VOLUME_SET', true, volume),
+      setReceive: (on) => this.keyEventManager?.triggerKey('COM2_RECEIVE_SELECT', true, on ? 1 : 0),
       setTransmit: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue(
-            amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET',
-            SimVarValueType.Enum,
+          this.keyEventManager?.triggerKey(
+            amuIndex === 2 ? 'COPILOT_TRANSMITTER_SET' : 'PILOT_TRANSMITTER_SET',
+            true,
             on ? SimTransmitStates.Com2 : SimTransmitStates.None,
           ),
-          SimVar.SetSimVarValue(
-            amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET',
-            SimVarValueType.Enum,
+          this.keyEventManager?.triggerKey(
+            amuIndex === 2 ? 'PILOT_TRANSMITTER_SET' : 'COPILOT_TRANSMITTER_SET',
+            true,
             SimTransmitStates.None,
           ),
         ]);
       },
     },
     [ComIndex.Vhf3]: {
-      setVolume: (volume) => SimVar.SetSimVarValue('K:COM3_VOLUME_SET', SimVarValueType.Number, volume),
-      setReceive: (on) => SimVar.SetSimVarValue('K:COM3_RECEIVE_SELECT', SimVarValueType.Number, on ? 1 : 0),
+      setVolume: (volume) => this.keyEventManager?.triggerKey('COM3_VOLUME_SET', true, volume),
+      setReceive: (on) => this.keyEventManager?.triggerKey('COM3_RECEIVE_SELECT', true, on ? 1 : 0),
       setTransmit: (on, amuIndex) => {
         return Promise.all([
-          SimVar.SetSimVarValue(
-            amuIndex === 2 ? 'K:COPILOT_TRANSMITTER_SET' : 'K:PILOT_TRANSMITTER_SET',
-            SimVarValueType.Enum,
+          this.keyEventManager?.triggerKey(
+            amuIndex === 2 ? 'COPILOT_TRANSMITTER_SET' : 'PILOT_TRANSMITTER_SET',
+            true,
             on ? SimTransmitStates.Com3 : SimTransmitStates.None,
           ),
-          SimVar.SetSimVarValue(
-            amuIndex === 2 ? 'K:PILOT_TRANSMITTER_SET' : 'K:COPILOT_TRANSMITTER_SET',
-            SimVarValueType.Enum,
+          this.keyEventManager?.triggerKey(
+            amuIndex === 2 ? 'PILOT_TRANSMITTER_SET' : 'COPILOT_TRANSMITTER_SET',
+            true,
             SimTransmitStates.None,
           ),
         ]);
@@ -155,7 +156,7 @@ export class SimAudioManager implements Instrument {
   private activeAmuIndex = 1;
 
   private readonly navaidStates: Map<RadioNavSelectedNavaid, NavaidState> = new Map(
-    Object.entries(SimAudioManager.navaidDefinitions).map(([key, def]) => {
+    Object.entries(this.navaidDefinitions).map(([key, def]) => {
       const isIdentOn = Subject.create<boolean>(false);
       const volume = Subject.create<number>(0);
 
@@ -169,7 +170,7 @@ export class SimAudioManager implements Instrument {
   );
 
   private readonly comStates: Map<ComIndex, ComState> = new Map(
-    Object.entries(SimAudioManager.comDefinitions).map(([key, def]) => {
+    Object.entries(this.comDefinitions).map(([key, def]) => {
       const isReceiveOn = Subject.create<boolean>(false);
       const isTransmitOn = Subject.create<boolean>(false);
       const volume = Subject.create<number>(0);
@@ -186,11 +187,15 @@ export class SimAudioManager implements Instrument {
 
   private readonly pilotSeat = ConsumerValue.create(this.sub.on('pilot_seat'), PilotSeat.Left);
 
+  private keyEventManager?: KeyEventManager;
+
   constructor(
     private readonly bus: EventBus,
     private readonly amu1: AudioManagementUnit,
     private readonly amu2: AudioManagementUnit,
-  ) {}
+  ) {
+    KeyEventManager.getManager(bus).then((manager) => (this.keyEventManager = manager));
+  }
 
   init(): void {
     for (const navaid of this.navaidStates.values()) {
