@@ -1,7 +1,15 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, DebounceTimer, EventBus, MappedSubject, ObjectSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DebounceTimer,
+  EventBus,
+  MappedSubject,
+  ObjectSubject,
+  Subject,
+  Subscribable,
+} from '@microsoft/msfs-sdk';
 
 import {
   Arinc429LocalVarConsumerSubject,
@@ -168,7 +176,9 @@ export class VhfComController {
   private readonly transmitOnlyFlashingTimer = new DebounceTimer();
 
   public readonly isLoudspeakerHidden = MappedSubject.create(
-    ([receptionMode, transmitOnlyFlashing, flash1Hz]) => receptionMode === ReceptionMode.Off || (receptionMode === ReceptionMode.TransmitOnly && transmitOnlyFlashing && !flash1Hz),
+    ([receptionMode, transmitOnlyFlashing, flash1Hz]) =>
+      receptionMode === ReceptionMode.Off ||
+      (receptionMode === ReceptionMode.TransmitOnly && transmitOnlyFlashing && !flash1Hz),
     this.receptionMode,
     this.transmitOnlyFlashing,
     this.flash1Hz,
@@ -187,7 +197,9 @@ export class VhfComController {
     this.isRowSelected.sub((v) => !v && this.standbyEntry.set(VhfComController.EMPTY_STANDBY_ENTRY));
 
     MappedSubject.create(this.standbyEntry, this.standbyFrequency).sub(([entry, frequency]) => {
-      this.isStandbyEntryInvalid.set(entry.frequency !== 0 && entry.frequency !== 0x1100000 && !RadioUtils.isValidFrequency(entry.frequency));
+      this.isStandbyEntryInvalid.set(
+        entry.frequency !== 0 && entry.frequency !== 0x1100000 && !RadioUtils.isValidFrequency(entry.frequency),
+      );
       const entryInProgress = entry.entered.length > 0;
       this.standbyEntryInProgress.set(entryInProgress);
 
@@ -207,8 +219,11 @@ export class VhfComController {
 
     this.receptionMode.sub((mode) => {
       if (mode === ReceptionMode.TransmitOnly) {
-        this.transmitOnlyFlashing.set(true)
-        this.transmitOnlyFlashingTimer.schedule(() => this.transmitOnlyFlashing.set(false), VhfComController.TRANSMIT_ONLY_FLASH_TIME);
+        this.transmitOnlyFlashing.set(true);
+        this.transmitOnlyFlashingTimer.schedule(
+          () => this.transmitOnlyFlashing.set(false),
+          VhfComController.TRANSMIT_ONLY_FLASH_TIME,
+        );
       }
     });
   }
