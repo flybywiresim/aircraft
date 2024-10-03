@@ -1,7 +1,7 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
@@ -16,11 +16,15 @@ import {
   VhfNavaidType,
 } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, GameStateProvider, SimVarValueType, Subject, Wait } from '@microsoft/msfs-sdk';
 
-interface NavRadioTuningStatus {
+export interface NavRadioTuningStatus {
   frequency: number | null;
   ident: string | null;
+  /**
+   * Whether either the frequency or ident was set manually by the pilot.
+   * Whether it was manually set by frequency or ident can be determined by the presence of a facility.
+   */
   manual: boolean;
   facility?: VhfNavaid | NdbNavaid | IlsNavaid;
 }
@@ -168,6 +172,8 @@ export class NavaidTuner {
     'VOR4_SET',
   ];
 
+  private isInit = false;
+
   private vorTuningStatus: VorRadioTuningStatus[] = [
     {
       // VOR 1
@@ -258,7 +264,10 @@ export class NavaidTuner {
 
   private tuningActive = false;
 
-  private readonly flightPhaseManager: FlightPhaseManager;
+  private readonly flightPhase = ConsumerSubject.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   /** FM 1 and 2 backbeam selection LVAR output. */
   private readonly backbeamOutput = [
@@ -272,16 +281,13 @@ export class NavaidTuner {
   private notificationManager = new NotificationManager();
 
   constructor(
+    private readonly bus: EventBus,
     private readonly navigationProvider: NavigationProvider,
     private readonly navaidSelectionManager: NavaidSelectionManager,
     private readonly landingSystemSelectionManager: LandingSystemSelectionManager,
-  ) {
-    this.flightPhaseManager = getFlightPhaseManager();
-  }
+  ) {}
 
   init(): void {
-    this.resetAllReceivers();
-
     // FIXME move this to the RMP when it's rewritten in msfs-avionics-framework
     // FIXME use the framework manager when the framework is updated
     Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
@@ -290,10 +296,23 @@ export class NavaidTuner {
     for (const backbeam of this.backbeamOutput) {
       backbeam.selected.sub((v) => SimVar.SetSimVarValue(backbeam.localVar, SimVarValueType.Bool, v), true);
     }
+
+    // All selections are reset upon entering the DONE phase after landing.
+    this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState(false));
+
+    Wait.awaitSubscribable(GameStateProvider.get(), (s) => s === GameState.ingame, true).then(() => {
+      this.resetAllReceivers();
+
+      this.isInit = true;
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(deltaTime: number): void {
+    if (!this.isInit) {
+      return;
+    }
+
     // FIXME RMPs should provide a discrete output for this
     const rmpTuningActive =
       SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'bool') ||
@@ -589,7 +608,7 @@ export class NavaidTuner {
   /** check if MMR tuning is locked during final approach */
   public isMmrTuningLocked() {
     return (
-      this.flightPhaseManager.phase === FmgcFlightPhase.Approach &&
+      this.flightPhase.get() === FmgcFlightPhase.Approach &&
       (this.navigationProvider.getRadioHeight() ?? Infinity) < 700
     );
   }
@@ -602,18 +621,26 @@ export class NavaidTuner {
     return this.adfTuningStatus.map((adfStatus) => adfStatus.facility).filter((fac) => fac !== undefined);
   }
 
-  deselectNavaid(icao: string): void {
-    this.navaidSelectionManager.deselectNavaid(icao);
+  deselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.deselectNavaid(databaseId);
   }
 
-  reselectNavaid(icao: string): void {
-    this.navaidSelectionManager.reselectNavaid(icao);
+  reselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.reselectNavaid(databaseId);
   }
 
   get deselectedNavaids(): string[] {
     return this.navaidSelectionManager.deselectedNavaids;
   }
 
+  /**
+   * Sets the manually (pilot) selected VOR
+   * @param index Index of the VOR receiver to set
+   * @param vor Any of:
+   *   - A VHF navaid if selected by ident
+   *   - A frequency if selected by frequency
+   *   - null to reset the selection
+   */
   setManualVor(index: 1 | 2, vor: VhfNavaid | number | null): void {
     const vorStatus = this.vorTuningStatus[index - 1];
     if (vor === null) {
@@ -641,13 +668,20 @@ export class NavaidTuner {
   /**
    * Set a VOR course
    * @param index Index of the receiver
-   * @param course null to clear
+   * @param course The course in degrees (must be an integral value), or null to clear.
    */
   setVorCourse(index: 1 | 2, course: number | null) {
     const vorStatus = this.vorTuningStatus[index - 1];
     vorStatus.course = course;
   }
 
+  /**
+   * Sets the manually (pilot) selected ILS
+   * @param ils Any of:
+   *   - A VHF navaid if selected by ident
+   *   - A frequency if selected by frequency
+   *   - null to reset the selection
+   */
   async setManualIls(ils: IlsNavaid | number | null): Promise<void> {
     for (const mmrStatus of this.mmrTuningStatus) {
       if (ils === null) {
@@ -758,7 +792,7 @@ export class NavaidTuner {
   }
 
   /** Reset all state e.g. when the nav database is switched */
-  public resetState(): void {
+  public resetState(withLockout = true): void {
     for (let i = 1; i <= 2; i++) {
       const n = i as 1 | 2;
       this.setManualAdf(n, null);
@@ -768,6 +802,8 @@ export class NavaidTuner {
     this.setManualIls(null);
     this.setIlsCourse(null);
 
-    this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    if (withLockout) {
+      this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    }
   }
 }

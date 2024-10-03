@@ -7,6 +7,17 @@
 
 #include "NamedVariable.h"
 
+std::string NamedVariable::addPrefixToVarName(const std::string& varName) {
+  // Check if varName already begins with AIRCRAFT_PREFIX
+  if (varName.compare(0, AIRCRAFT_PREFIX.length(), AIRCRAFT_PREFIX) == 0) {
+    // If it does, return the varName as it is.
+    return varName;
+  } else {
+    // Otherwise, add the prefix.
+    return AIRCRAFT_PREFIX + varName;
+  };
+}
+
 FLOAT64 NamedVariable::rawReadFromSim() const {
   return get_named_variable_typed_value(dataID, unit.id);
 }

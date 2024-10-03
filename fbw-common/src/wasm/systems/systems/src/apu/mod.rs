@@ -94,6 +94,7 @@ impl FuelPressureSwitch {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum TurbineSignal {
     StartOrContinue,
     Stop,
@@ -137,6 +138,7 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
         &mut self,
         context: &UpdateContext,
         overhead: &AuxiliaryPowerUnitOverheadPanel,
+        fire_on_ground: bool,
         fire_overhead: &AuxiliaryPowerUnitFireOverheadPanel,
         apu_bleed_is_on: bool,
         apu_gen_is_used: bool,
@@ -145,6 +147,7 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
     ) {
         self.ecb
             .update_overhead_panel_state(overhead, fire_overhead, apu_bleed_is_on);
+        self.ecb.update_apu_fire(fire_on_ground);
         self.fuel_pressure_switch.update(has_fuel_remaining);
         self.ecb
             .update_fuel_pressure_switch_state(&self.fuel_pressure_switch);
@@ -564,6 +567,7 @@ mod tests {
         apu_gen_is_used: bool,
         engine_1: TestEngine,
         engine_2: TestEngine,
+        fire_detected_on_ground: bool,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         has_fuel_remaining: bool,
@@ -602,6 +606,7 @@ mod tests {
                 apu_gen_is_used: true,
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
+                fire_detected_on_ground: false,
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 has_fuel_remaining: true,
@@ -629,6 +634,7 @@ mod tests {
                 apu_gen_is_used: true,
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
+                fire_detected_on_ground: false,
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 has_fuel_remaining: true,
@@ -654,6 +660,10 @@ mod tests {
         fn set_turbine_infinitely_running_at(&mut self, n: Ratio) {
             self.apu
                 .set_turbine(Some(Box::new(InfinitelyAtNTestTurbine::new(n))));
+        }
+
+        fn set_fire_on_ground(&mut self, fire_on_ground: bool) {
+            self.fire_detected_on_ground = fire_on_ground;
         }
 
         pub fn generator_is_unpowered(&self, electricity: &Electricity) -> bool {
@@ -717,6 +727,7 @@ mod tests {
             self.apu.update_before_electrical(
                 context,
                 &self.apu_overhead,
+                self.fire_detected_on_ground,
                 &self.apu_fire_overhead,
                 self.apu_bleed.is_on(),
                 self.apu_gen_is_used,
@@ -989,6 +1000,11 @@ mod tests {
 
         fn powered_dc_bat_bus(mut self) -> Self {
             self.command(|a| a.power_dc_bat_bus());
+            self
+        }
+
+        fn command_apu_fire_on_ground(mut self, fire: bool) -> Self {
+            self.command(|a| a.set_fire_on_ground(fire));
             self
         }
 
@@ -2713,6 +2729,25 @@ mod tests {
         ) {
             let mut test_bed = bed_with
                 .running_apu_going_in_emergency_shutdown()
+                .run(Duration::from_secs(1));
+
+            assert!(test_bed.is_emergency_shutdown());
+        }
+
+        #[rstest]
+        #[case::pw980(test_bed_pw980())]
+        fn apu_auto_shuts_down_when_fire_detected_on_ground<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu_with_bleed_air()
+                .and()
+                .command_apu_fire_on_ground(true)
                 .run(Duration::from_secs(1));
 
             assert!(test_bed.is_emergency_shutdown());

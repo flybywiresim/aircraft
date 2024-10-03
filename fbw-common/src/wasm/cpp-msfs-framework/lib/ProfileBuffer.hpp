@@ -5,6 +5,7 @@
 #define FLYBYWIRE_AIRCRAFT_PROFILEBUFFER_HPP
 
 #include <algorithm>
+#include <chrono>
 #include <deque>
 #include <iostream>
 #include <numeric>
@@ -29,7 +30,7 @@ struct is_numeric<std::chrono::duration<T>> : std::true_type {};
 template <typename T>
 class ProfileBuffer {
  private:
-  std::size_t _capacity;
+  std::size_t   _capacity;
   std::deque<T> _buffer;
 
  public:
@@ -37,7 +38,7 @@ class ProfileBuffer {
    * @brief Construct a new Profile Buffer object
    * @param capacity the maximum number of values to collect in the buffer
    */
-  explicit ProfileBuffer(std::size_t capacity) : _capacity{capacity}, _buffer{std::deque<T>(capacity)} {
+  explicit ProfileBuffer(std::size_t capacity) : _capacity{capacity}, _buffer{std::deque<T>()} {
     static_assert(is_numeric<T>::value || is_duration<T>::value, "T must be numeric or duration type");
   }
 
@@ -57,7 +58,13 @@ class ProfileBuffer {
    * @brief Calculate the sum of all values in the buffer at the time of the call.
    * @return sum of all values
    */
-  T sum() { return std::reduce(_buffer.begin(), _buffer.end(), T(0)); }
+  T sum() {
+#if __cpp_lib_parallel_algorithm >= 201603
+    return std::reduce(_buffer.begin(), _buffer.end(), T(0));
+#else
+    return std::accumulate(_buffer.begin(), _buffer.end(), T(0));
+#endif
+  }
 
   /**
    * @brief Calculate the average of all values in the buffer at the time of the call.
@@ -76,7 +83,12 @@ class ProfileBuffer {
     auto sorted = _buffer;
     std::sort(sorted.begin(), sorted.end());
     const std::size_t trimSize = sorted.size() * trimPercent;
+
+#if __cpp_lib_parallel_algorithm >= 201603
     return std::reduce(sorted.begin() + trimSize, sorted.end() - trimSize, T(0)) / (sorted.size() - trimSize * 2);
+#else
+    return std::accumulate(sorted.begin() + trimSize, sorted.end() - trimSize, T(0)) / (sorted.size() - trimSize * 2);
+#endif
   }
 
   /**
@@ -91,7 +103,11 @@ class ProfileBuffer {
       auto sorted = _buffer;
       std::sort(sorted.begin(), sorted.end());
       const std::size_t trimSize = sorted.size() * percentile;
+#if __cpp_lib_parallel_algorithm >= 201603
       return std::reduce(sorted.begin(), sorted.begin() + trimSize, T(0)) / trimSize;
+#else
+      return std::accumulate(sorted.begin(), sorted.begin() + trimSize, T(0)) / trimSize;
+#endif
     }
     return *std::min_element(_buffer.begin(), _buffer.end());
   }

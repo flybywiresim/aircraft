@@ -1,3 +1,6 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   FSComponent,
   ComponentProps,
@@ -10,7 +13,7 @@ import {
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
-import { Layer } from '../../Layer';
+import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 
 export interface GlideSlopeProps extends ComponentProps {
   bus: EventBus;

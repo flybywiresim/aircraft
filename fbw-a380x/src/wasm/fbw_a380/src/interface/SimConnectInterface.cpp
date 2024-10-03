@@ -658,10 +658,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, sizeof(base_prim_discrete_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 18; i++) {
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
-  }
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_discrete_inputs));
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -3023,7 +3021,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     }
 
     case Events::SIM_RATE_SET: {
-      long targetSimulationRate = min(maxSimulationRate, max(1, static_cast<long>(data0)));
+      long targetSimulationRate = std::min(static_cast<long>(maxSimulationRate), std::max(1l, static_cast<long>(data0)));
       sendEvent(Events::SIM_RATE_SET, targetSimulationRate, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
       std::cout << "WASM: Simulation Rate set to " << targetSimulationRate << std::endl;
       break;

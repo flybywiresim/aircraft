@@ -146,6 +146,9 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           <SidestickIndicator bus={this.props.bus} />
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 
+          <FlightPathVector bus={this.props.bus} />
+          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+
           <g style={this.fdVisibilitySub}>
             <FDYawBar bus={this.props.bus} />
             <FlightDirector bus={this.props.bus} />
@@ -161,8 +164,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
             <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
           </g>
-          <FlightPathVector bus={this.props.bus} />
-          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         </g>
       </>
     );
@@ -439,7 +440,9 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private sideStickY = 0;
 
-  private onGround = true;
+  private leftGearcompressed = true;
+
+  private rightGearCompressed = true;
 
   private crossHairRef = FSComponent.createRef<SVGPathElement>();
 
@@ -449,14 +452,19 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private engTwoRunning = false;
 
-  private handleSideStickIndication() {
-    const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
+  private engThreeRunning = false;
 
-    if (!this.onGround || !oneEngineRunning) {
-      this.onGroundForVisibility.set('hidden');
-    } else {
+  private engFourRunning = false;
+
+  private handleSideStickIndication() {
+    const onGround = this.leftGearcompressed || this.rightGearCompressed;
+    const oneEngineRunning = this.engOneRunning || this.engTwoRunning || this.engThreeRunning || this.engFourRunning;
+
+    if (onGround && oneEngineRunning) {
       this.onGroundForVisibility.set('visible');
       this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
+    } else {
+      this.onGroundForVisibility.set('hidden');
     }
   }
 
@@ -466,10 +474,18 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
     const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
     sub
-      .on('noseGearCompressed')
+      .on('leftMainGearCompressed')
       .whenChanged()
       .handle((g) => {
-        this.onGround = g;
+        this.leftGearcompressed = g;
+        this.handleSideStickIndication();
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((g) => {
+        this.rightGearCompressed = g;
         this.handleSideStickIndication();
       });
 
@@ -502,6 +518,22 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
       .whenChanged()
       .handle((e) => {
         this.engTwoRunning = e;
+        this.handleSideStickIndication();
+      });
+
+    sub
+      .on('engThreeRunning')
+      .whenChanged()
+      .handle((e) => {
+        this.engThreeRunning = e;
+        this.handleSideStickIndication();
+      });
+
+    sub
+      .on('engFourRunning')
+      .whenChanged()
+      .handle((e) => {
+        this.engFourRunning = e;
         this.handleSideStickIndication();
       });
   }

@@ -97,6 +97,7 @@ export const AtaChaptersDescription = Object.freeze({
   22: 'The Autoflight systems are responsible for a multitude of functions, including but not limited to: Flight Guidance (AP, FD, A/THR), Flight Management, Flight Augmentation (yaw damper, etc.), and Flight Envelope (Speed scale, Alpha floor, etc.).',
   23: 'The communication systems are the link between the cockpit and the world inside the cabin, and outside the plane.',
   24: 'All things related to the electrical system. The electrical system supplies power from the engines, APU, batteries, or emergency generator to all cockpit instruments.',
+  26: 'The fire and smoke protection system the detection and extinguishing of fire in the engines, APU and main landing gear bay and smoke in the cabin, cargo compartments and avionics bays.',
   27: 'The flight controls contain the various systems used to control the aircraft in flight, such as control surfaces, but also flight control computers. Failure of these systems may lead to loss of control over the aircraft, and/or loss of information about the status of the flight controls.',
   29: 'The hydraulic system connects to the flight controls, flaps and landing gear to provide pressure to these surfaces. Failing these can cause loss of control over some flight surfaces.',
   31: 'The cockpit displays give critical flight information to the pilots. In a failure where displays are lost, the pilots must deal with a lack of flight data given to them.',

@@ -39,22 +39,22 @@
 
 @font-face {
   font-family: "Poppins-SemiBold";
-  src: url("/Fonts/Poppins-SemiBold.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/Poppins-SemiBold.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Digital";
-  src: url("/Fonts/A380X_FCU.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/A380X_FCU.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
 }
 
 :root {
-  --main-display-colour-background: hsl(240, 100%, 55%);
+  --main-display-colour-background: hsl(248, 94%, 53%);
   --main-display-colour: hsl(0, 0%, 100%);
-  --main-display-colour-inactive: hsl(240, 100%, 50%);
+  --main-display-colour-inactive: hsl(248, 94%, 48%);
 }
 
 :root text.Common {

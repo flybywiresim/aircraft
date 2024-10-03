@@ -61,6 +61,8 @@ module.exports = {
     'fbw-a380x/*',
     'fbw-ingamepanels-checklist-fix/*',
     '!fbw-a380x/src/systems/instruments/src/PFD/*',
+    '!fbw-a380x/src/systems/instruments/src/MFD/*',
+    '!fbw-a380x/src/systems/instruments/src/Common/*',
   ],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],

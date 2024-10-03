@@ -65,6 +65,7 @@ pub struct A380Fuel {
 }
 
 impl A380Fuel {
+    // TODO: Move to toml cfg
     pub const A380_FUEL: [FuelInfo<'static>; 11] = [
         FuelInfo {
             // LEFT_OUTER - Capacity: 2731.5

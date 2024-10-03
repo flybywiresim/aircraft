@@ -9,7 +9,8 @@ import { Arinc429Register, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 export const Arinc429EqualityFunc = (a: Arinc429WordData, b: Arinc429WordData) =>
   a.value === b.value && a.ssm === b.ssm;
 
-export const Arinc429MutateFunc = (a: Arinc429Register, b: Arinc429Register) => a.set(b.word);
+/** This typing should technically be `a: Arinc429WordData` to match the ConsumerSubject.create signature, but practically arg a is always the initialVal: Arinc429Register.  */
+export const Arinc429MutateFunc = (a: Arinc429Register, b: Arinc429WordData) => a.set(b.rawWord);
 
 export class Arinc429ConsumerSubject {
   static create(initialConsumer: Consumer<Arinc429WordData> | undefined): ConsumerSubject<Arinc429WordData> {
@@ -86,7 +87,7 @@ export class Arinc429LocalVarConsumerSubject extends AbstractSubscribable<Arinc4
   }
 
   private setValue(value: number): void {
-    if (this.arincWord.word !== value) {
+    if (this.arincWord.rawWord !== value) {
       this.arincWord.set(value);
       this.notify();
     }
