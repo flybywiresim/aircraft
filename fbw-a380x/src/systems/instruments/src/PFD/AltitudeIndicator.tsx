@@ -783,7 +783,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     if (this.mode.get() === 'STD') {
       if (
         this.fmgcFlightPhase > FmgcFlightPhase.Cruise &&
-        100 * (this.transLvlAr.isNormalOperation() ? this.transLvlAr.value : 25) > this.props.altitude.get()
+        this.transLvlAr.isNormalOperation() &&
+        100 * this.transLvlAr.value > this.props.altitude.get()
       ) {
         this.stdGroup.instance.classList.add('BlinkInfinite');
       } else {
@@ -791,7 +792,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       }
     } else if (
       this.fmgcFlightPhase <= FmgcFlightPhase.Cruise &&
-      (this.transAltAr.isNormalOperation() ? this.transAltAr.value : 2_500) < this.props.altitude.get()
+      this.transAltAr.isNormalOperation() &&
+      this.transAltAr.value < this.props.altitude.get()
     ) {
       this.qfeGroup.instance.classList.add('BlinkInfinite');
     } else {

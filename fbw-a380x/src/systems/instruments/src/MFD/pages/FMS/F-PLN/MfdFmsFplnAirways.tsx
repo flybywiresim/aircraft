@@ -263,7 +263,9 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 try {
                   chosenFix = await this.props.pendingAirways.fixAlongTailAirway(v);
                 } catch (msg: unknown) {
-                  if (msg instanceof FmsError) this.props.fmc.showFmsErrorMessage(msg.type);
+                  if (msg instanceof FmsError) {
+                    this.props.fmc.showFmsErrorMessage(msg.type);
+                  }
                   return false;
                 }
               } else {
@@ -281,7 +283,9 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 }
               }
 
-              if (!chosenFix) return false;
+              if (!chosenFix) {
+                return false;
+              }
 
               const success = this.props.pendingAirways.thenTo(chosenFix);
               if (success) {
