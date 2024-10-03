@@ -39,6 +39,7 @@ import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -63,7 +64,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private costIndex = Subject.create<number | null>(null);
 
   /** in feet */
-  private transAlt = Subject.create(5000);
+  private transAlt = Subject.create<number | null>(null);
 
   private transAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -2206,7 +2207,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={
                         new AltitudeOrFlightLevelFormat(
-                          this.transFl.map((it) => (it ?? 25) * 100),
+                          this.transFl.map((it) => (it != null ? it * 100 : null)),
                           Subject.create(0),
                           Subject.create(maxCertifiedAlt),
                         )
@@ -2538,7 +2539,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <RadioButtonGroup
                         values={['CONF 3', 'FULL']}
                         selectedIndex={this.apprSelectedFlapsIndex}
-                        onModified={(v) => this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(v + 3)}
+                        onModified={(v) =>
+                          this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(
+                            v === 0 ? FlapConf.CONF_3 : FlapConf.CONF_FULL,
+                          )
+                        }
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_apprFlapsSettingsRadio`}
                         additionalVerticalSpacing={15}
                       />
