@@ -978,6 +978,10 @@ export class FwsCore implements Instrument {
 
   public readonly gearLeverPos = Subject.create(false);
 
+  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(8, false); // When ABRK deactivated, emit this for 8 sec
+
+  public readonly autoBrakeOff = Subject.create(false);
+
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
@@ -2106,6 +2110,11 @@ export class FwsCore implements Instrument {
       (onGroundCount > 2 && !raInvalid) ||
       (onGroundCount > 1 && raInvalid);
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
+
+    // AUTO BRAKE OFF
+    this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+    this.autoBrakeOff.set(this.autoBrakeDeactivatedNode.read());
+    SimVar.SetSimVarValue('L:A32NX_AUDIO_AUTOBRAKE_OFF', SimVarValueType.Bool, this.autoBrakeOff.get());
 
     // Engine Logic
     this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());

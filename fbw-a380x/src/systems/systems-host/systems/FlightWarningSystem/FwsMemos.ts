@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 interface EwdMemoItem {
@@ -399,7 +399,7 @@ export class FwsMemos {
     320000001: {
       // AUTO BRK OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
-      simVarIsActive: Subject.create(false),
+      simVarIsActive: this.fws.autoBrakeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
       memoInhibit: () => false,
