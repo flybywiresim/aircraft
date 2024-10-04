@@ -274,8 +274,8 @@ void FlyByWireInterface::loadConfiguration() {
   std::vector<std::pair<double, double>> mappingTable3d;
   mappingTable3d.emplace_back(-20.0, 0.0);
   mappingTable3d.emplace_back(0.0, 0.0);
-  mappingTable3d.emplace_back(25.0, 50.0);
-  mappingTable3d.emplace_back(35.0, 75.0);
+  mappingTable3d.emplace_back(25.0, 54.0);
+  mappingTable3d.emplace_back(35.0, 71.0);
   mappingTable3d.emplace_back(45.0, 100.0);
   idThrottlePositionLookupTable3d.initialize(mappingTable3d, 0, 100);
 }
@@ -2811,7 +2811,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 || fwcFlightPhase == 11) {
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 ||
+      fwcFlightPhase == 11) {
     idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
     idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
   } else {
