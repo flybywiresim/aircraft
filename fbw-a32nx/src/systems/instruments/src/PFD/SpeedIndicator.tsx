@@ -1116,13 +1116,13 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.spdSelFlagRef.instance.style.display = 'none';
-    } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
+    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.spdSelFlagRef.instance.style.display = 'none';
       this.currentVisible = this.upperBoundRef;
-    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
+    } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange && !this.decelActive) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
@@ -1148,7 +1148,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <>
         <text
-          ref={this.upperBoundRef}
+          ref={this.lowerBoundRef}
           id="SelectedSpeedLowerText"
           class="FontSmallest EndAlign Cyan"
           x="24.078989"
@@ -1157,8 +1157,8 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
           {this.textSub}
         </text>
         <text
-          ref={this.lowerBoundRef}
-          id="SelectedSpeedLowerText"
+          ref={this.upperBoundRef}
+          id="SelectedSpeedUpperText"
           class="FontSmallest EndAlign Cyan"
           x="24.113895"
           y="36.670692"
