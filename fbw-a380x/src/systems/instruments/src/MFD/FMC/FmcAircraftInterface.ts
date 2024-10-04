@@ -253,7 +253,7 @@ export class FmcAircraftInterface {
       return false;
     }
 
-    if (this.fmgc.data.takeoffFlapsSetting === null || this.fmc.fmgc.getGrossWeight() === null) {
+    if (this.fmgc.data.takeoffFlapsSetting === null || this.fmc.fmgc.getGrossWeightKg() === null) {
       return false;
     }
 
@@ -268,7 +268,7 @@ export class FmcAircraftInterface {
     }
 
     const taxiFuel = this.fmgc.data.taxiFuel.get() ?? 0;
-    const tow = (this.fmc.fmgc.getGrossWeight() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
+    const tow = (this.fmc.fmgc.getGrossWeightKg() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
 
     return (
       (this.flightPlanService.active.performanceData.v1 ?? Infinity) < Math.trunc(A380SpeedsUtils.getVmcg(zp)) ||
@@ -1034,7 +1034,7 @@ export class FmcAircraftInterface {
     /** in kg */
     const estLdgWeight = this.tryEstimateLandingWeight();
     let ldgWeight = estLdgWeight;
-    const grossWeight = this.fmc.fmgc.getGrossWeight() ?? maxZfw + this.fmc.fmgc.getFOB();
+    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB();
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Approach || !Number.isFinite(estLdgWeight)) {
@@ -1147,7 +1147,7 @@ export class FmcAircraftInterface {
 
   /** Write gross weight to SimVar */
   updateWeights() {
-    const gw = this.fmc.fmgc.getGrossWeight();
+    const gw = this.fmc.fmgc.getGrossWeightKg();
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
 
     if (this.fmc.enginesWereStarted.get()) {

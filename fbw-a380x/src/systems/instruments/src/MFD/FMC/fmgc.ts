@@ -309,14 +309,13 @@ export class FmgcDataService implements Fmgc {
 
   constructor(private flightPlanService: FlightPlanService) {}
 
-  /** in lbs */
+  /** in tons */
   getZeroFuelWeight(): number {
-    // Should be returned in lbs
     const zfw = this.data.zeroFuelWeight.get() ?? minGw;
-    return (zfw / 1000) * 2204.625;
+    return zfw / 1_000;
   }
 
-  /** in kg */
+  /** in tons */
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
     const zfw = this.data.zeroFuelWeight.get();
@@ -326,7 +325,13 @@ export class FmgcDataService implements Fmgc {
       return null;
     }
 
-    return zfw + fob;
+    return (zfw + fob) / 1_000;
+  }
+
+  /** in kilograms */
+  public getGrossWeightKg(): number | null {
+    const gw = this.getGrossWeight();
+    return gw ? gw * 1_000 : null;
   }
 
   /**

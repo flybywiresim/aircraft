@@ -159,7 +159,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.fuelOnBoard.set(null);
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeight());
+            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg());
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
             const cg: number = SimVar.GetSimVarValue('CG PERCENT', 'Percent over 100') * 100;

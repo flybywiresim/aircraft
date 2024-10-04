@@ -295,7 +295,7 @@ export class FlightManagementComputer implements FmcInterface {
   /** in kg */
   public getLandingWeight(): number | null {
     const tow = this.getTakeoffWeight();
-    const gw = this.fmgc.getGrossWeight();
+    const gw = this.fmgc.getGrossWeightKg();
     const tf = this.getTripFuel();
 
     if (!this.enginesWereStarted.get()) {
@@ -342,7 +342,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getRecMaxFlightLevel(): number | null {
-    const gw = this.fmgc.getGrossWeight();
+    const gw = this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
     }
@@ -919,7 +919,6 @@ export class FlightManagementComputer implements FmcInterface {
           );
         }
       }
-      this.fmgc.getGrossWeight();
       this.checkGWParams();
       this.updateMessageQueue();
 
