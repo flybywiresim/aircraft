@@ -136,27 +136,45 @@ pub struct LandingGear {
     left_compression_id: VariableIdentifier,
     right_compression_id: VariableIdentifier,
 
+    left_auxiliary_compression_id: VariableIdentifier,
+    right_auxiliary_compression_id: VariableIdentifier,
+
     center_compression: Ratio,
     left_compression: Ratio,
     right_compression: Ratio,
+
+    has_auxiliary_wheels: bool,
+    left_aux_compression: Ratio,
+    right_aux_compression: Ratio,
 }
 impl LandingGear {
-    pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
-    pub const GEAR_LEFT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
-    pub const GEAR_RIGHT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
+    pub const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
+    pub const GEAR_LEFT_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
+    pub const GEAR_RIGHT_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
+    pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
+    pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
     // Is extended at 0.5, we set a super small margin of 0.02 from fully extended so 0.52
-    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.52;
+    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.01;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, has_auxiliary_wheels: bool) -> Self {
         Self {
             center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
             left_compression_id: context.get_identifier(Self::GEAR_LEFT_COMPRESSION.to_owned()),
             right_compression_id: context.get_identifier(Self::GEAR_RIGHT_COMPRESSION.to_owned()),
 
+            left_auxiliary_compression_id: context
+                .get_identifier(Self::GEAR_LEFT_WING_COMPRESSION.to_owned()),
+            right_auxiliary_compression_id: context
+                .get_identifier(Self::GEAR_RIGHT_WING_COMPRESSION.to_owned()),
+
             center_compression: Ratio::default(),
             left_compression: Ratio::default(),
             right_compression: Ratio::default(),
+
+            has_auxiliary_wheels,
+            left_aux_compression: Ratio::default(),
+            right_aux_compression: Ratio::default(),
         }
     }
 
@@ -170,6 +188,8 @@ impl LandingGear {
             GearWheel::NOSE => self.center_compression,
             GearWheel::LEFT => self.left_compression,
             GearWheel::RIGHT => self.right_compression,
+            GearWheel::WINGLEFT => self.left_aux_compression,
+            GearWheel::WINGRIGHT => self.right_aux_compression,
         }
     }
 }
@@ -178,6 +198,15 @@ impl SimulationElement for LandingGear {
         self.center_compression = reader.read(&self.center_compression_id);
         self.left_compression = reader.read(&self.left_compression_id);
         self.right_compression = reader.read(&self.right_compression_id);
+
+        // If no auxiliary gears, auxiliary are just a copy of main gears
+        if !self.has_auxiliary_wheels {
+            self.left_aux_compression = self.left_compression;
+            self.right_aux_compression = self.right_compression;
+        } else {
+            self.left_aux_compression = reader.read(&self.left_auxiliary_compression_id);
+            self.right_aux_compression = reader.read(&self.right_auxiliary_compression_id);
+        }
     }
 }
 
@@ -268,9 +297,20 @@ impl LgciuSensorInputs {
         self.external_power_available = external_power_available;
         self.is_powered = is_powered;
 
+        println!(
+            "LGCIU COMPRESS W{:?}/B{:?}/N{:?}/B{:?}/W{:?}",
+            landing_gear.is_wheel_id_compressed(GearWheel::WINGLEFT),
+            landing_gear.is_wheel_id_compressed(GearWheel::LEFT),
+            landing_gear.is_wheel_id_compressed(GearWheel::NOSE),
+            landing_gear.is_wheel_id_compressed(GearWheel::RIGHT),
+            landing_gear.is_wheel_id_compressed(GearWheel::WINGRIGHT),
+        );
+
         self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::NOSE);
-        self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT);
-        self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
+        self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT)
+            || landing_gear.is_wheel_id_compressed(GearWheel::WINGLEFT);
+        self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT)
+            || landing_gear.is_wheel_id_compressed(GearWheel::WINGRIGHT);
 
         self.right_gear_up_and_locked =
             gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.lgciu_id);
@@ -305,11 +345,17 @@ impl LgciuSensorInputs {
             GearWheel::LEFT => self.left_gear_up_and_locked,
             GearWheel::NOSE => self.nose_gear_up_and_locked,
             GearWheel::RIGHT => self.right_gear_up_and_locked,
+            // TODO gear not implemented, wing bogey is copied from body gear state
+            GearWheel::WINGLEFT => self.left_gear_up_and_locked,
+            GearWheel::WINGRIGHT => self.right_gear_up_and_locked,
         };
         let gear_downlocked = match wheel_id {
             GearWheel::LEFT => self.left_gear_down_and_locked,
             GearWheel::NOSE => self.nose_gear_down_and_locked,
             GearWheel::RIGHT => self.right_gear_down_and_locked,
+            // TODO gear not implemented, wing bogey is copied from body gear state
+            GearWheel::WINGLEFT => self.left_gear_down_and_locked,
+            GearWheel::WINGRIGHT => self.right_gear_down_and_locked,
         };
 
         let in_transition = !(gear_downlocked ^ gear_uplocked);
@@ -324,6 +370,9 @@ impl LgciuSensorInputs {
             GearWheel::LEFT => self.left_gear_down_and_locked,
             GearWheel::NOSE => self.nose_gear_down_and_locked,
             GearWheel::RIGHT => self.right_gear_down_and_locked,
+            // TODO gear not implemented, wing bogey is copied from body gear state
+            GearWheel::WINGLEFT => self.left_gear_down_and_locked,
+            GearWheel::WINGRIGHT => self.right_gear_down_and_locked,
         }
     }
 }
@@ -1447,7 +1496,7 @@ mod tests {
     impl TestGearAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                landing_gear: LandingGear::new(context),
+                landing_gear: LandingGear::new(context, false),
                 lgcius: LandingGearControlInterfaceUnitSet::new(
                     context,
                     ElectricalBusType::DirectCurrentEssential,
@@ -1612,9 +1661,9 @@ mod tests {
     #[test]
     fn no_weight_on_wheels_when_all_extended() {
         let test_bed = run_test_bed_on_with_compression(
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
+            Ratio::new::<ratio>(0.0),
+            Ratio::new::<ratio>(0.0),
+            Ratio::new::<ratio>(0.0),
         );
 
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
@@ -1626,8 +1675,8 @@ mod tests {
     fn left_weight_on_wheels_only_when_only_left_compressed() {
         let test_bed = run_test_bed_on_with_compression(
             Ratio::new::<ratio>(0.8),
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
+            Ratio::new::<ratio>(0.),
+            Ratio::new::<ratio>(0.),
         );
 
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
@@ -1954,7 +2003,8 @@ mod tests {
         center: Ratio,
         right: Ratio,
     ) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::from(ElementCtorFn(LandingGear::new));
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| LandingGear::new(context, false)));
         test_bed.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, left);
         test_bed.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, center);
         test_bed.write_by_name(LandingGear::GEAR_RIGHT_COMPRESSION, right);

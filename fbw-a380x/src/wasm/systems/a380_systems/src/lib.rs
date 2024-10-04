@@ -148,7 +148,7 @@ impl A380 {
             hydraulic: A380Hydraulic::new(context),
             hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
             autobrake_panel: A380AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
+            landing_gear: LandingGear::new(context, true),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             cds: A380ControlDisplaySystem::new(context),
