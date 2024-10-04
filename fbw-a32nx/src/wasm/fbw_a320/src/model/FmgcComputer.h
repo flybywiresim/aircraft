@@ -154,6 +154,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_dtd;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_jcu;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_hjm;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_hpe;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_dq;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_hkc;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_lr;
@@ -484,7 +485,8 @@ class FmgcComputer final
     real_T CompareToConstant_const_e;
     real_T CompareToConstant2_const_m;
     real_T CompareToConstant3_const_j;
-    real_T CompareToConstant1_const_m;
+    real_T CompareToConstant4_const_n;
+    real_T CompareToConstant5_const_h;
     real_T CompareToConstant1_const_b3;
     real_T CompareToConstant_const_l3;
     real_T CompareToConstant_const_hh;
@@ -508,8 +510,8 @@ class FmgcComputer final
     real_T CompareToConstant2_const_j;
     real_T CompareToConstant_const_ce;
     real_T CompareToConstant3_const_p;
-    real_T CompareToConstant4_const_n;
-    real_T CompareToConstant5_const_h;
+    real_T CompareToConstant4_const_ny;
+    real_T CompareToConstant5_const_hr;
     real_T CompareToConstant6_const_b;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode_isRisingEdge_j;
@@ -949,6 +951,7 @@ class FmgcComputer final
     boolean_T PulseNode4_isRisingEdge_n;
     boolean_T ConfirmNode_isRisingEdge_h2;
     boolean_T PulseNode6_isRisingEdge_k;
+    boolean_T PulseNode7_isRisingEdge_c;
     boolean_T PulseNode_isRisingEdge_c2;
     boolean_T ConfirmNode1_isRisingEdge_i;
     boolean_T ConfirmNode2_isRisingEdge_i;

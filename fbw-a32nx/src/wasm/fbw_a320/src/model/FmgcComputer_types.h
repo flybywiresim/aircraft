@@ -119,41 +119,6 @@ struct base_fmgc_b_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
-#define DEFINED_TYPEDEF_FOR_lateral_law_
-
-enum class lateral_law
-  : int32_T {
-  NONE = 0,
-  HDG,
-  TRACK,
-  HPATH,
-  LOC_CPT,
-  LOC_TRACK,
-  ROLL_OUT
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
-#define DEFINED_TYPEDEF_FOR_vertical_law_
-
-enum class vertical_law
-  : int32_T {
-  NONE = 0,
-  ALT_HOLD,
-  ALT_ACQ,
-  SPD_MACH,
-  VS,
-  FPA,
-  GS,
-  FLARE,
-  SRS,
-  VPATH
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 
@@ -194,6 +159,41 @@ struct base_fmgc_discrete_inputs
   boolean_T eng_opp_stop;
   boolean_T eng_own_stop;
   boolean_T tcas_ta_display;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
+#define DEFINED_TYPEDEF_FOR_lateral_law_
+
+enum class lateral_law
+  : int32_T {
+  NONE = 0,
+  HDG,
+  TRACK,
+  HPATH,
+  LOC_CPT,
+  LOC_TRACK,
+  ROLL_OUT
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
+#define DEFINED_TYPEDEF_FOR_vertical_law_
+
+enum class vertical_law
+  : int32_T {
+  NONE = 0,
+  ALT_HOLD,
+  ALT_ACQ,
+  SPD_MACH,
+  VS,
+  FPA,
+  GS,
+  FLARE,
+  SRS,
+  VPATH
 };
 
 #endif
