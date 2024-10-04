@@ -92,6 +92,7 @@ impl A380TiltingGearsFactory {
             if is_left { 1 } else { 2 },
             Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
             Angle::new::<degree>(9.89),
+            Length::new::<meter>(0.711),
         )
     }
 
@@ -110,6 +111,7 @@ impl A380TiltingGearsFactory {
             if is_left { 3 } else { 4 },
             Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
             Angle::new::<degree>(9.),
+            Length::new::<meter>(0.711),
         )
     }
 
