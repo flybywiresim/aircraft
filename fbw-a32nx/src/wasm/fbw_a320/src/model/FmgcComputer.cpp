@@ -675,6 +675,7 @@ void FmgcComputer::step()
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_lr);
       FmgcComputer_MATLABFunction_j_Reset(&FmgcComputer_DWork.sf_MATLABFunction_j3h);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_dq);
+      FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_hpe);
       FmgcComputer_MATLABFunction_p_Reset(&FmgcComputer_DWork.sf_MATLABFunction_mw);
       FmgcComputer_DWork.vMemoEo_not_empty = false;
       FmgcComputer_DWork.vMemoGa_not_empty = false;
@@ -3069,12 +3070,15 @@ void FmgcComputer::step()
     rtb_Compare_a5 = (rtb_Compare_du || (rtb_y_m && rtb_Compare_a5 && (rtb_NOT_b || rtb_GreaterThan3)));
     FmgcComputer_MATLABFunction_a(rtb_Compare_a5, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_h2,
       FmgcComputer_P.ConfirmNode_timeDelay_gz, &rtb_Compare_du, &FmgcComputer_DWork.sf_MATLABFunction_j3h);
-    FmgcComputer_MATLABFunction_g((FmgcComputer_U.in.fms_inputs.v_2_kts == FmgcComputer_P.CompareToConstant1_const_m),
-      FmgcComputer_P.PulseNode6_isRisingEdge_k, &rtb_NOT_b, &FmgcComputer_DWork.sf_MATLABFunction_dq);
+    FmgcComputer_MATLABFunction_g((FmgcComputer_U.in.fms_inputs.v_managed_kts ==
+      FmgcComputer_P.CompareToConstant4_const_n), FmgcComputer_P.PulseNode6_isRisingEdge_k, &rtb_GreaterThan3,
+      &FmgcComputer_DWork.sf_MATLABFunction_dq);
+    FmgcComputer_MATLABFunction_g((FmgcComputer_U.in.fms_inputs.v_2_kts == FmgcComputer_P.CompareToConstant5_const_h),
+      FmgcComputer_P.PulseNode7_isRisingEdge_c, &rtb_NOT_b, &FmgcComputer_DWork.sf_MATLABFunction_hpe);
     FmgcComputer_DWork.Memory_PreviousInput_hk = FmgcComputer_P.Logic_table_ds
       [((((FmgcComputer_DWork.Delay_DSTATE.manual_spd_control_active && (!rtb_Compare_du)) || (rtb_y_eq &&
-           (rtb_Compare_mh && rtb_y_ed) && rtb_NOT_b)) + (static_cast<uint32_T>(rtb_Compare_a5) << 1)) << 1) +
-      FmgcComputer_DWork.Memory_PreviousInput_hk];
+           (rtb_Compare_mh && rtb_y_ed && rtb_y_fa) && (rtb_GreaterThan3 || rtb_NOT_b))) + (static_cast<uint32_T>
+          (rtb_Compare_a5) << 1)) << 1) + FmgcComputer_DWork.Memory_PreviousInput_hk];
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.fcu_discrete_word_1,
       FmgcComputer_P.BitfromLabel_bit_as, &rtb_DataTypeConversion1_e);
     FmgcComputer_MATLABFunction_g((rtb_DataTypeConversion1_e != 0U), FmgcComputer_P.PulseNode_isRisingEdge_c2,
@@ -4015,7 +4019,7 @@ void FmgcComputer::step()
     rtb_VectorConcatenate_f[14] = rtb_AND_cf;
     rtb_VectorConcatenate_f[15] = rtb_Compare_bz;
     rtb_VectorConcatenate_f[16] = ((FmgcComputer_U.in.fms_inputs.preset_mach > FmgcComputer_P.CompareToConstant3_const_p)
-      || (FmgcComputer_U.in.fms_inputs.preset_spd_kts > FmgcComputer_P.CompareToConstant4_const_n));
+      || (FmgcComputer_U.in.fms_inputs.preset_spd_kts > FmgcComputer_P.CompareToConstant4_const_ny));
     rtb_VectorConcatenate_f[17] = FmgcComputer_P.Constant7_Value;
     rtb_VectorConcatenate_f[18] = FmgcComputer_P.Constant7_Value;
     FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f, &rtb_y_di);
@@ -4079,7 +4083,7 @@ void FmgcComputer::step()
     rtb_VectorConcatenate_f[15] = FmgcComputer_P.Constant1_Value_a;
     rtb_VectorConcatenate_f[16] = apCondition;
     rtb_VectorConcatenate_f[17] = (rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target >
-      FmgcComputer_P.CompareToConstant5_const_h);
+      FmgcComputer_P.CompareToConstant5_const_hr);
     rtb_VectorConcatenate_f[18] = (rtb_BusAssignment_hk_ap_fd_logic_tcas_vs_target <
       FmgcComputer_P.CompareToConstant6_const_b);
     FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f,
