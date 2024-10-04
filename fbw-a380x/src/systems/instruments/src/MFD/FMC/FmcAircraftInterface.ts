@@ -213,7 +213,8 @@ export class FmcAircraftInterface {
 
     this.arincTransitionAltitude.setBnrValue(
       this.flightPlanService.active.performanceData.transitionAltitude ?? 0, // as altitude
-      this.flightPlanService.active.performanceData.transitionAltitude != null
+      this.flightPlanService.active.performanceData.transitionAltitude !== null &&
+        this.flightPlanService.active.performanceData.transitionAltitude !== undefined
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       17,
@@ -223,7 +224,8 @@ export class FmcAircraftInterface {
 
     this.arincTransitionLevel.setBnrValue(
       this.flightPlanService.active.performanceData.transitionLevel ?? 0, // as FL
-      this.flightPlanService.active.performanceData.transitionLevel != null
+      this.flightPlanService.active.performanceData.transitionLevel !== null &&
+        this.flightPlanService.active.performanceData.transitionLevel !== undefined
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       9,

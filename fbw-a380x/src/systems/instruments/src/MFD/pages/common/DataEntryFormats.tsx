@@ -121,7 +121,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     minValue.sub((val) => (this.minValue = val), true);
     maxValue.sub((val) => (this.maxValue = val), true);
 
-    if (transAlt != null) {
+    if (transAlt !== null) {
       transAlt.sub((val) => {
         this.transAlt = val;
         this.reFormatTrigger.notify();
@@ -133,7 +133,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     }
-    if (this.transAlt != null && value >= this.transAlt) {
+    if (this.transAlt !== null && value >= this.transAlt) {
       return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
