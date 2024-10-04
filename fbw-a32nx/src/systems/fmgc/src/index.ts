@@ -23,6 +23,7 @@ import { NavigationDatabaseService } from './flightplanning/NavigationDatabaseSe
 import { SimBriefUplinkAdapter } from './flightplanning/uplink/SimBriefUplinkAdapter';
 import { A320FlightPlanPerformanceData } from './flightplanning/plans/performance/FlightPlanPerformanceData';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
+import { LandingSystemUtils } from './flightplanning/data/landingsystem';
 
 function initFmgcLoop(
   baseInstrument: BaseInstrument,
@@ -63,6 +64,7 @@ export {
   CoRouteUplinkAdapter,
   DataManager,
   EventBus,
+  LandingSystemUtils,
   RadioUtils,
   a320EfisRangeSettings,
   A320AircraftConfig,
