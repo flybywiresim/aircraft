@@ -154,7 +154,7 @@ impl LandingGear {
     pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
     pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
-    // Is extended at 0.5, we set a super small margin of 0.02 from fully extended so 0.52
+    // Compression is [0 .. 1], this var sets the threshold above which we are "compressed"
     const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.01;
 
     pub fn new(context: &mut InitContext, has_auxiliary_wheels: bool) -> Self {
