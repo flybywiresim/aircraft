@@ -1804,7 +1804,10 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.is_unit_1 = facIndex == 0;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_actuator_healthy = true;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_travel_lim_actuator_healthy = true;
-  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended = false;
+  // This should come from a dedicated discrete from the SFCC
+  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended =
+      !reinterpret_cast<Arinc429DiscreteWord*>(&sfccBusOutputs[facIndex].slat_flap_actual_position_word)->bitFromValueOr(12, false);
+  facs[facIndex].modelInputs.in.discrete_inputs.nose_gear_pressed = idLgciuNoseGearCompressed[facIndex]->get();
   facs[facIndex].modelInputs.in.discrete_inputs.nose_gear_pressed = idLgciuNoseGearCompressed[facIndex]->get();
   facs[facIndex].modelInputs.in.discrete_inputs.ir_3_switch = false;
   facs[facIndex].modelInputs.in.discrete_inputs.adr_3_switch = false;
@@ -2811,7 +2814,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 || fwcFlightPhase == 11) {
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 ||
+      fwcFlightPhase == 11) {
     idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
     idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
   } else {
