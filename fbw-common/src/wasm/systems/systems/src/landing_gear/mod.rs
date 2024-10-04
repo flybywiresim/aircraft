@@ -297,15 +297,6 @@ impl LgciuSensorInputs {
         self.external_power_available = external_power_available;
         self.is_powered = is_powered;
 
-        println!(
-            "LGCIU COMPRESS W{:?}/B{:?}/N{:?}/B{:?}/W{:?}",
-            landing_gear.is_wheel_id_compressed(GearWheel::WINGLEFT),
-            landing_gear.is_wheel_id_compressed(GearWheel::LEFT),
-            landing_gear.is_wheel_id_compressed(GearWheel::NOSE),
-            landing_gear.is_wheel_id_compressed(GearWheel::RIGHT),
-            landing_gear.is_wheel_id_compressed(GearWheel::WINGRIGHT),
-        );
-
         self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::NOSE);
         self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT)
             || landing_gear.is_wheel_id_compressed(GearWheel::WINGLEFT);
