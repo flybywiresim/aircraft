@@ -1,6 +1,7 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { SelectedNavaid } from '@fmgc/navigation/Navigation';
 import { Coordinates } from 'msfs-geo';
 
 /**
@@ -37,4 +38,10 @@ export interface NavigationProvider {
    * @returns radio altimeter height in feet or null if invalid
    */
   getRadioHeight(): number | null;
+
+  /**
+   * Get the navaids selected by the FMS.
+   * @param cdu The CDU to get navaids for, defaults to 1.
+   */
+  getSelectedNavaids(cdu?: 1 | 2): SelectedNavaid[];
 }
