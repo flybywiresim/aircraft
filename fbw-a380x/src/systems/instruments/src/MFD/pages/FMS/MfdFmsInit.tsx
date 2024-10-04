@@ -70,9 +70,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private fromIcao = Subject.create<string | null>(null);
 
-  private fromIcaoDisabled = Subject.create<boolean>(false);
-
   private toIcao = Subject.create<string | null>(null);
+
+  private cityPairDisabled = MappedSubject.create(
+    ([fp, tmpy]) => fp > FmgcFlightPhase.Preflight || tmpy,
+    this.activeFlightPhase,
+    this.tmpyActive,
+  );
 
   private altnIcao = Subject.create<string | null>(null);
 
@@ -317,7 +321,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataHandlerDuringValidation={async (v) => {
                   this.fromIcao.set(v);
                   const toIcao = this.toIcao.get();
-                  if (v && toIcao) {
+                  const cityPairIsDifferent =
+                    v !== this.props.fmcService.master?.flightPlanService.active.originAirport.ident ||
+                    toIcao !== this.props.fmcService.master.flightPlanService.active.destinationAirport.ident;
+                  if (v && toIcao && cityPairIsDifferent) {
                     await this.props.fmcService.master?.flightPlanService.newCityPair(
                       v,
                       toIcao,
@@ -330,7 +337,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 canBeCleared={Subject.create(false)}
                 value={this.fromIcao}
                 alignText="center"
-                disabled={this.fromIcaoDisabled}
+                disabled={this.cityPairDisabled}
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -342,7 +349,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   this.toIcao.set(v);
                   if (this.fromIcao.get() !== undefined && v) {
                     const fromIcao = this.fromIcao.get();
-                    if (v && fromIcao) {
+                    const cityPairIsDifferent =
+                      fromIcao !== this.props.fmcService.master?.flightPlanService.active.originAirport.ident ||
+                      v !== this.props.fmcService.master.flightPlanService.active.destinationAirport.ident;
+                    if (v && fromIcao && cityPairIsDifferent) {
                       await this.props.fmcService.master?.flightPlanService.newCityPair(
                         fromIcao,
                         v,
@@ -356,6 +366,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 canBeCleared={Subject.create(false)}
                 value={this.toIcao}
                 alignText="center"
+                disabled={this.cityPairDisabled}
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
