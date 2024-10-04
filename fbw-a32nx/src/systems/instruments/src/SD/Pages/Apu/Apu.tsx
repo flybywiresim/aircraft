@@ -138,6 +138,9 @@ const ApuGen = ({ x, y }: ComponentPositionProps) => {
 };
 
 const ApuBleed = ({ x, y }: ComponentPositionProps) => {
+  const APU_BLEED_CLOSED_PSI = 0;
+  const APU_BLEED_OPEN_PSI = 36;
+
   const [apuBleedPbOn] = useSimVar('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool', 1000);
   const [apuBleedPbOnConfirmed, setApuBleedPbOnConfirmed] = useState(false);
   const [apuBleedOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 1000);
@@ -146,7 +149,7 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
   // Should be ADIRU static pressure
   const apuBleedPressureGauge = apuBleedPressureAbsolute - 14.7;
   // APU bleed pressure is shown in steps of two.
-  const displayedBleedPressure = apuBleedOpen ? Math.round(apuBleedPressureGauge / 2) * 2 : 0;
+  const [displayedBleedPressure, setDisplayedBleedPressure] = useState(apuBleedOpen ? Math.round(apuBleedPressureGauge / 2) * 2 : 0);
   // This assumes that the SD is displayed by DMC 1, which is the case during normal operation.
   const [attHdgPosition] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Position', 100);
   const adrSource = attHdgPosition === 0 ? 3 : 1;
@@ -167,6 +170,47 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
 
     return () => {};
   }, [apuBleedPbOn]);
+
+  useEffect(() => {
+    if (apuBleedOpen) {
+        if (displayedBleedPressure > APU_BLEED_CLOSED_PSI) {
+            decrementPressure();
+        }
+        incrementPressure();
+    } else {
+        decrementPressure();
+    }
+
+    return () => {};
+  }, [apuBleedOpen]);
+
+  // Function that handles incrementing displayed bleed pressure
+  const incrementPressure = () => {
+    const interval = setInterval(() => {
+        if (displayedBleedPressure === APU_BLEED_OPEN_PSI) {
+            clearInterval(interval);
+        }
+        if (displayedBleedPressure > APU_BLEED_OPEN_PSI) {
+            setDisplayedBleedPressure(APU_BLEED_OPEN_PSI);
+            clearInterval(interval);
+        }
+        setDisplayedBleedPressure(displayedBleedPressure + 2);
+    }, 500);
+  };
+
+  // Function that handles decrementing displayed bleed pressure
+  const decrementPressure = () => {
+    const interval = setInterval(() => {
+        if (displayedBleedPressure === APU_BLEED_CLOSED_PSI) {
+            clearInterval(interval);
+        }
+        if (displayedBleedPressure < APU_BLEED_CLOSED_PSI) {
+            setDisplayedBleedPressure(APU_BLEED_CLOSED_PSI);
+            clearInterval(interval);
+        }
+        setDisplayedBleedPressure(displayedBleedPressure - 2);
+    }, 500);
+  };
 
   // FIXME should be APU bleed absolute pressure label from SDAC
   const apuBleedPressAvailable = apuN.isNormalOperation() && correctedAverageStaticPressure.isNormalOperation();
