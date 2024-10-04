@@ -18,7 +18,7 @@
     "configMajorVersion": 0,
     "configMinorVersion": 1,
     "_throttle": {
-        "numberOfAxis": 2,
+        "numberOfAircraftThrottles": 2,
         "axisOptions": [
             1,
             2
