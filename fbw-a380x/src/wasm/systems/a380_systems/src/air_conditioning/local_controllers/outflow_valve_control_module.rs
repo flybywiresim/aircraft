@@ -628,8 +628,9 @@ impl SimulationElement for EmergencyPressurizationPartition {
 
 /// The Emergency Partition transmits cabin pressure, vertical speed, OFV open amount
 /// and the signal for excessive cabin altitude in case of system malfunction (ie CPIOM failure).
-/// Here we add the cabin altitude and delta pressure as neither the SDAC nor the DMC are modelled.
-/// When that is done, these should be removed from here.
+/// Here we add the cabin altitude and delta pressure to be transmitted as back up signals.
+/// Fixme: This struct is probably not 100% accurate to the real system and will need to be improved
+/// when other systems are in place.
 struct EppEmergencySignals {
     cabin_altitude_man_id: VariableIdentifier,
     cabin_delta_p_man_id: VariableIdentifier,
