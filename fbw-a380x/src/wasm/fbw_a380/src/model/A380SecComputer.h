@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380SecComputer_h_
-#define RTW_HEADER_A380SecComputer_h_
+#ifndef A380SecComputer_h_
+#define A380SecComputer_h_
 #include "rtwtypes.h"
 #include "A380SecComputer_types.h"
 #include "A380LateralDirectLaw.h"

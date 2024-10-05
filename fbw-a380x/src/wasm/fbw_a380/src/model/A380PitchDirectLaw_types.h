@@ -1,4 +1,4 @@
-#ifndef RTW_HEADER_A380PitchDirectLaw_types_h_
-#define RTW_HEADER_A380PitchDirectLaw_types_h_
+#ifndef A380PitchDirectLaw_types_h_
+#define A380PitchDirectLaw_types_h_
 #endif
 
