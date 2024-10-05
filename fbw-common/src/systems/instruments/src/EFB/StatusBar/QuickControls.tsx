@@ -33,6 +33,7 @@ import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
 import { PiAirplaneLandingFill } from 'react-icons/pi';
+import { useAppSelector } from '@flybywiresim/flypad';
 
 interface QuickSettingsButtonProps {
   onClick: () => void;
@@ -168,6 +169,7 @@ export const QuickControlsPane = ({
 }: {
   setShowQuickControlsPane: (value: boolean) => void;
 }) => {
+  const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
   const history = useHistory();
   const power = usePower();
 
@@ -421,16 +423,18 @@ export const QuickControlsPane = ({
         </div>
         {/* Second Row */}
         <div className="flex flex-row items-center justify-between">
-          <TooltipWrapper text={t('QuickControls.TT.PauseAtTod')}>
-            <LargeQuickSettingsToggle
-              onClick={handleTogglePauseAtTod}
-              icon={<PiAirplaneLandingFill size={42} />}
-              className={pauseAtTodStyle}
-            >
-              {t('QuickControls.PauseAtTod')} <br />
-              {pauseAtTodString}
-            </LargeQuickSettingsToggle>
-          </TooltipWrapper>
+          {flypadInfo.realism.pauseOnTod == false && (
+            <TooltipWrapper text={t('QuickControls.TT.PauseAtTod')}>
+              <LargeQuickSettingsToggle
+                onClick={handleTogglePauseAtTod}
+                icon={<PiAirplaneLandingFill size={42} />}
+                className={pauseAtTodStyle}
+              >
+                {t('QuickControls.PauseAtTod')} <br />
+                {pauseAtTodString}
+              </LargeQuickSettingsToggle>
+            </TooltipWrapper>
+          )}
           <TooltipWrapper text={t('QuickControls.TT.Simrate')}>
             <LargeQuickSettingsIncrementer
               onDownClick={decreaseSimrate}

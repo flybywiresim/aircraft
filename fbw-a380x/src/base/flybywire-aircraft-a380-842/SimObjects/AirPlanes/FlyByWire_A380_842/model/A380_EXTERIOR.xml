@@ -578,7 +578,7 @@
             <!-- Wingflex InboardLeft -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_inboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_INBOARD, number) 23.25 * 55.35 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number)  (L:A32NX_WING_FLEX_LEFT_INBOARD, number) * 23.25 * 55.35 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -586,7 +586,7 @@
             <!-- Wingflex Inner Midboard Left -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_inner_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_INBOARD_MID, number) 16.125 * 67 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number)  (L:A32NX_WING_FLEX_LEFT_INBOARD_MID, number) * 16.125 * 67 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -594,7 +594,7 @@
             <!-- Wingflex Outer Midboard Left -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_outer_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_OUTBOARD_MID, number) 29.41 * 31.9 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_WING_FLEX_LEFT_OUTBOARD_MID, number) * 29.41 * 31.9 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -602,7 +602,7 @@
             <!-- Wingflex Outboard Left -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_outboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_OUTBOARD, number) 29.41 * 50 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_WING_FLEX_LEFT_OUTBOARD, number) * 29.41 * 50 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -610,7 +610,7 @@
             <!-- Wingflex Inboard Right  -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_inboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_INBOARD, number) 23.25 * 55.35 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_WING_FLEX_RIGHT_INBOARD, number) * 23.25 * 55.35 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -618,7 +618,7 @@
             <!-- Wingflex Inner Midboard Right -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_inner_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_INBOARD_MID, number) 16.125 * 67 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_WING_FLEX_RIGHT_INBOARD_MID, number) * 16.125 * 67 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -626,7 +626,7 @@
             <!-- Wingflex Outer Midboard Right -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_outer_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_OUTBOARD_MID, number) 29.41 * 31.9 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_WING_FLEX_RIGHT_OUTBOARD_MID, number) * 29.41 * 31.9 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -634,7 +634,7 @@
             <!-- Wingflex Outboard Right -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_outboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_OUTBOARD, number) 29.41 * 50 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_WING_FLEX_RIGHT_OUTBOARD, number) * 29.41 * 50 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -642,7 +642,7 @@
 			<!-- ENG1 WOBBLE -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>ENG1_WOBBLE</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ENGINE_1_WOBBLE_X_POSITION, number) 100 *</ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_ENGINE_1_WOBBLE_X_POSITION, number) * 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -650,7 +650,7 @@
 			<!-- ENG2 WOBBLE -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>ENG2_WOBBLE</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ENGINE_2_WOBBLE_X_POSITION, number) 100 *</ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_ENGINE_2_WOBBLE_X_POSITION, number) * 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -658,7 +658,7 @@
 			<!-- ENG3 WOBBLE -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>ENG3_WOBBLE</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ENGINE_3_WOBBLE_X_POSITION, number) 100 *</ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number)  (L:A32NX_ENGINE_3_WOBBLE_X_POSITION, number) * 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -666,7 +666,7 @@
 			<!-- ENG4 WOBBLE -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>ENG4_WOBBLE</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ENGINE_4_WOBBLE_X_POSITION, number) 100 *</ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number) (L:A32NX_ENGINE_4_WOBBLE_X_POSITION, number) * 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -691,7 +691,7 @@
 			<!-- LEFT ELEVATOR WINGFLEX -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>left_elevator_flex</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ELEVATOR_LEFT_WOBBLE_Y_POSITION, number) 100 * </ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number)  (L:A32NX_ELEVATOR_LEFT_WOBBLE_Y_POSITION, number) * 100 * </ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -699,7 +699,7 @@
 			<!-- RIGHT ELEVATOR WINGFLEX -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>right_elevator_flex</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ELEVATOR_RIGHT_WOBBLE_Y_POSITION, number) 100 * </ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number)  (L:A32NX_ELEVATOR_RIGHT_WOBBLE_Y_POSITION, number) * 100 * </ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -707,7 +707,7 @@
 			<!-- AFT FUSELAGE FLEX -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>AFT_FLEX</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_AFT_FLEX_POSITION, number) 100 *</ANIM_CODE>
+				<ANIM_CODE>(L:A32NX_ANIM_SENSITIVITY_FACTOR, number)  (L:A32NX_AFT_FLEX_POSITION, number) * 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 

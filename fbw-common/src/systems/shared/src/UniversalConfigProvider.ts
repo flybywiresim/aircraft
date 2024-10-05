@@ -78,6 +78,7 @@ export class UniversalConfigProvider {
         seatDisplay: jsonPayload.seatDisplay,
       },
       throttle: jsonMisc._throttle,
+      realism: jsonMisc._realism,
       pushback: jsonMisc._pushback,
     };
 

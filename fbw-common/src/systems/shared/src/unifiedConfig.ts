@@ -54,6 +54,7 @@ export interface AirframeDimensions {
 export interface FlypadInfo {
   payload: PayloadFlypadInfo;
   throttle: ThrottleFlypadInfo;
+  realism: RealismFlyPadInfo;
   pushback: PushbackFlypadInfo;
 }
 
@@ -70,6 +71,12 @@ export interface ThrottleFlypadAxisMapping {
   4?: number[][];
 }
 
+export interface RealismFlyPadInfo {
+  mcduKeyboard: boolean;
+  pauseOnTod: boolean;
+  pilotAvatars: boolean;
+  wingFlex: boolean;
+}
 export interface PushbackFlypadInfo {
   turnIndicatorTuningDefault: number;
 }

@@ -639,8 +639,9 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
-      "Title": "Realism"
+      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "Title": "Realism",
+      "WingFlex": "Wing Flex Sensitivity"
     },
     "SimOptions": {
       "Active": "Active",

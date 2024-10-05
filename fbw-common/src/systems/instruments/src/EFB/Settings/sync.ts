@@ -99,6 +99,17 @@ export const globalSyncedSettings: SyncedSettingDefinition[] = [
     defaultValue: '0',
   },
   {
+    configKey: 'CONFIG_ANIM_SENSITIVITY_FACTOR',
+    localVarName: 'L:A32NX_ANIM_SENSITIVITY_FACTOR',
+    localVarUnit: 'number',
+    defaultValue: '0',
+    mapFunction: (v: string) => {
+      // DataStore: -50 -> 0 (Default) -> 50
+      // L:Var: 0.5 -> 1 -> 1.5
+      return (parseFloat(v) + 100) / 100;
+    },
+  },
+  {
     configKey: 'CONFIG_PILOT_AVATAR_VISIBLE',
     localVarName: 'L:A32NX_PILOT_AVATAR_VISIBLE_0',
     localVarUnit: 'bool',

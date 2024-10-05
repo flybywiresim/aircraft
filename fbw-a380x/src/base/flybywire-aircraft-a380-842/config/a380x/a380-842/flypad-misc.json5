@@ -13,10 +13,12 @@
 //
 // Please follow the instructions in the documentation to create a new configuration file!
 // =======================================================================================
-// Last updated: 2 April 2024
+// 0.1 - Init
+// 0.2 - Added "_realism" object
+// Last updated: 5 October 2024
 {
     "configMajorVersion": 0,
-    "configMinorVersion": 1,
+    "configMinorVersion": 2,
     "_throttle": {
         "numberOfAircraftThrottles": 4,
         "axisOptions": [
@@ -29,6 +31,12 @@
             [[1, 2], [3, 4]],    // 2
             [[1], [2], [3], [4]] // 4
         ]
+    },
+    "_realism": {
+        "mcduKeyboard": false,
+        "pauseOnTod": true,
+        "pilotAvatars": false,
+        "wingFlex": true
     },
     "_pushback": {
         "turnIndicatorTuningDefault": 1.35, // determined by testing

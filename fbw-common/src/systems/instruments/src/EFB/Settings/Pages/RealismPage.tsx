@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   usePersistentBooleanProperty,
   usePersistentNumberProperty,
@@ -15,12 +15,16 @@ import { ButtonType, SettingGroup, SettingItem, SettingsPage } from '../Settings
 
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import Slider from 'rc-slider';
+import { useAppSelector } from '@flybywiresim/flypad';
 
 type SimVarButton = {
   simVarValue: number;
 };
 
 export const RealismPage = () => {
+  const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
+
   const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
   const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
   const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
@@ -29,6 +33,7 @@ export const RealismPage = () => {
   const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
   const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
   const [todOffset, setTodOffset] = usePersistentNumberProperty('PAUSE_AT_TOD_DISTANCE', 10);
+  const [animSensitivity, setAnimSensitivity] = usePersistentNumberProperty('CONFIG_ANIM_SENSITIVITY_FACTOR', 0);
   const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
   const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
   const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
@@ -55,6 +60,8 @@ export const RealismPage = () => {
     { name: t('Settings.Fast'), setting: 'FAST' },
     { name: t('Settings.Real'), setting: 'REAL' },
   ];
+
+  const animSensitivityRef = useRef<any>(null);
 
   return (
     <SettingsPage name={t('Settings.Realism.Title')}>
@@ -111,62 +118,93 @@ export const RealismPage = () => {
         <Toggle value={!!realisticTiller} onToggle={(value) => setRealisticTiller(value ? 1 : 0)} />
       </SettingItem>
 
-      <SettingGroup>
-        <SettingItem name={t('Settings.Realism.McduKeyboardInput')} unrealistic groupType="parent">
-          <Toggle value={mcduInput} onToggle={(value) => setMcduInput(value)} />
-        </SettingItem>
-
-        {mcduInput && (
-          <SettingItem name={t('Settings.Realism.McduFocusTimeout')} groupType="sub">
-            <SimpleInput
-              className="w-30 text-center"
-              value={mcduTimeout}
-              min={5}
-              max={120}
-              disabled={!mcduInput}
-              onChange={(event) => {
-                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
-                  setMcduTimeout(event.trim());
-                }
-              }}
-            />
+      {flypadInfo.realism.mcduKeyboard && (
+        <SettingGroup>
+          <SettingItem name={t('Settings.Realism.McduKeyboardInput')} unrealistic groupType="parent">
+            <Toggle value={mcduInput} onToggle={(value) => setMcduInput(value)} />
           </SettingItem>
-        )}
-      </SettingGroup>
+
+          {mcduInput && (
+            <SettingItem name={t('Settings.Realism.McduFocusTimeout')} groupType="sub">
+              <SimpleInput
+                className="w-30 text-center"
+                value={mcduTimeout}
+                min={5}
+                max={120}
+                disabled={!mcduInput}
+                onChange={(event) => {
+                  if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                    setMcduTimeout(event.trim());
+                  }
+                }}
+              />
+            </SettingItem>
+          )}
+        </SettingGroup>
+      )}
 
       <SettingItem name={t('Settings.Realism.SyncEfis')} unrealistic>
         <Toggle value={!!syncEfis} onToggle={(value) => setFoEfis(value ? 1 : 0)} />
       </SettingItem>
 
-      <SettingItem name={t('Settings.Realism.PilotAvatar')}>
-        <Toggle value={!!pilotAvatar} onToggle={(value) => setPilotAvatar(value ? 1 : 0)} />
-      </SettingItem>
-
-      <SettingItem name={t('Settings.Realism.FirstOfficerAvatar')}>
-        <Toggle value={!!firstOfficerAvatar} onToggle={(value) => setFirstOfficerAvatar(value ? 1 : 0)} />
-      </SettingItem>
-
-      <SettingGroup>
-        <SettingItem name={t('Settings.Realism.PauseAtTod')} unrealistic groupType="parent">
-          <Toggle value={pauseAtTod} onToggle={(value) => setPauseAtTod(value)} />
-        </SettingItem>
-        {pauseAtTod && (
-          <SettingItem name={t('Settings.Realism.PauseAtTodDistance')} groupType="sub">
-            <SimpleInput
-              className="w-30 text-center"
-              value={todOffset}
-              min={0}
-              max={50.0}
-              disabled={!pauseAtTod}
-              onChange={(event) => {
-                if (!Number.isNaN(event) && parseInt(event) >= 0 && parseInt(event) <= 50.0) {
-                  setTodOffset(parseFloat(event.trim()));
-                }
-              }}
-            />
+      {flypadInfo.realism.pilotAvatars && (
+        <>
+          <SettingItem name={t('Settings.Realism.PilotAvatar')}>
+            <Toggle value={!!pilotAvatar} onToggle={(value) => setPilotAvatar(value ? 1 : 0)} />
           </SettingItem>
-        )}
-      </SettingGroup>
+
+          <SettingItem name={t('Settings.Realism.FirstOfficerAvatar')}>
+            <Toggle value={!!firstOfficerAvatar} onToggle={(value) => setFirstOfficerAvatar(value ? 1 : 0)} />
+          </SettingItem>
+        </>
+      )}
+
+      {flypadInfo.realism.pauseOnTod && (
+        <SettingGroup>
+          <SettingItem name={t('Settings.Realism.PauseAtTod')} unrealistic groupType="parent">
+            <Toggle value={pauseAtTod} onToggle={(value) => setPauseAtTod(value)} />
+          </SettingItem>
+          {pauseAtTod && (
+            <SettingItem name={t('Settings.Realism.PauseAtTodDistance')} groupType="sub">
+              <SimpleInput
+                className="w-30 text-center"
+                value={todOffset}
+                min={0}
+                max={50.0}
+                disabled={!pauseAtTod}
+                onChange={(event) => {
+                  if (!Number.isNaN(event) && parseInt(event) >= 0 && parseInt(event) <= 50.0) {
+                    setTodOffset(parseFloat(event.trim()));
+                  }
+                }}
+              />
+            </SettingItem>
+          )}
+        </SettingGroup>
+      )}
+      {flypadInfo.realism.wingFlex && (
+        <SettingItem name={t('Settings.Realism.WingFlex')}>
+          <div className="flex flex-row items-center space-x-8">
+            <Slider
+              ref={animSensitivityRef}
+              style={{ width: '24rem' }}
+              value={animSensitivity + 50}
+              onChange={(value) => {
+                setAnimSensitivity(value - 50);
+              }}
+              onAfterChange={() => animSensitivityRef.current.blur()}
+            />
+            <SimpleInput
+              min={1}
+              max={100}
+              value={animSensitivity + 50}
+              className="w-20 text-center"
+              onChange={(value) => setAnimSensitivity(Number.parseInt(value) - 50)}
+              number
+            />
+          </div>
+        </SettingItem>
+      )}
     </SettingsPage>
   );
 };
