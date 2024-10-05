@@ -5,7 +5,7 @@
 /* eslint-disable no-underscore-dangle */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 /**
  * Contains the ${aircraft}_build_info.json file's information in a structured way.
@@ -43,8 +43,6 @@ export enum KnowBranchNames {
  *  published GitHub version
  */
 export class AircraftGithubVersionChecker {
-  private static notification: NotificationManager;
-
   private static versionChecked = false;
 
   private static releaseInfo: ReleaseInfo[];
@@ -62,8 +60,6 @@ export class AircraftGithubVersionChecker {
    */
   public static async checkVersion(aircraft: string): Promise<boolean> {
     console.log(`Checking aircraft version for A/C project: ${aircraft}`);
-
-    this.notification = new NotificationManager();
 
     // reset previous check data
     this.versionChecked = false;
