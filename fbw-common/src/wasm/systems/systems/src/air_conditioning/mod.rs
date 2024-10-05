@@ -1284,6 +1284,7 @@ impl SimulationElement for AirHeater {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
     }
+    // TODO: Add power consumtion of cargo heater
 }
 
 #[derive(Clone, Copy)]

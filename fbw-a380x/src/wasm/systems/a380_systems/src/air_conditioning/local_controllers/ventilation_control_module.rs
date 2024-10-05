@@ -5,7 +5,7 @@ use systems::{
         PressurizationOverheadShared, VcmId, VcmShared,
     },
     failures::{Failure, FailureType},
-    shared::{ControllerSignal, ElectricalBusType},
+    shared::{ControllerSignal, ElectricalBusType, ElectricalBuses},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
         VariableIdentifier, Write,
@@ -61,8 +61,10 @@ impl VentilationControlModule {
             ),
             hp_cabin_fans_are_enabled: false,
 
-            fcvcs: ForwardCargoVentilationControlSystem::new(),
-            bvcs: BulkVentilationControlSystem::new(),
+            fcvcs: ForwardCargoVentilationControlSystem::new(
+                ElectricalBusType::AlternatingCurrent(1),
+            ),
+            bvcs: BulkVentilationControlSystem::new(ElectricalBusType::AlternatingCurrent(4)),
 
             orvp: OverpressureReliefValveDump::new(),
 
@@ -211,16 +213,22 @@ struct ForwardCargoVentilationControlSystem {
 
     fwd_isol_valve_failure: Failure,
     fwd_extract_fan_failure: Failure,
+
+    fwd_extract_fan_is_powered: bool,
+    fwd_extract_fan_powered_by: ElectricalBusType,
 }
 
 impl ForwardCargoVentilationControlSystem {
-    fn new() -> Self {
+    fn new(fwd_extract_fan_powered_by: ElectricalBusType) -> Self {
         Self {
             extraction_fan_is_on: false,
             isolation_valves_open_allowed: false,
 
             fwd_isol_valve_failure: Failure::new(FailureType::FwdIsolValve),
             fwd_extract_fan_failure: Failure::new(FailureType::FwdExtractFan),
+
+            fwd_extract_fan_is_powered: false,
+            fwd_extract_fan_powered_by,
         }
     }
 
@@ -236,7 +244,8 @@ impl ForwardCargoVentilationControlSystem {
             && !self.fwd_isol_valve_failure.is_active();
         self.extraction_fan_is_on = self.isolation_valves_open_allowed
             && !pressurization_overhead.ditching_is_on()
-            && !self.fwd_extract_fan_failure.is_active();
+            && !self.fwd_extract_fan_failure.is_active()
+            && self.fwd_extract_fan_is_powered;
     }
 
     fn fwd_extraction_fan_is_on(&self) -> bool {
@@ -258,6 +267,11 @@ impl SimulationElement for ForwardCargoVentilationControlSystem {
         self.fwd_extract_fan_failure.accept(visitor);
         visitor.visit(self);
     }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.fwd_extract_fan_is_powered = buses.is_powered(self.fwd_extract_fan_powered_by);
+    }
+    // TODO: Add power consumtion of forward extraction fan
 }
 
 struct BulkVentilationControlSystem {
@@ -268,10 +282,13 @@ struct BulkVentilationControlSystem {
     bulk_isol_valve_failure: Failure,
     bulk_extract_fan_failure: Failure,
     bulk_heater_failure: Failure,
+
+    bulk_extract_fan_is_powered: bool,
+    bulk_extract_fan_powered_by: ElectricalBusType,
 }
 
 impl BulkVentilationControlSystem {
-    fn new() -> Self {
+    fn new(bulk_extract_fan_powered_by: ElectricalBusType) -> Self {
         Self {
             duct_heater_on_allowed: false,
             isolation_valves_open_allowed: false,
@@ -280,6 +297,9 @@ impl BulkVentilationControlSystem {
             bulk_isol_valve_failure: Failure::new(FailureType::BulkIsolValve),
             bulk_extract_fan_failure: Failure::new(FailureType::BulkExtractFan),
             bulk_heater_failure: Failure::new(FailureType::CargoHeater),
+
+            bulk_extract_fan_is_powered: false,
+            bulk_extract_fan_powered_by,
         }
     }
 
@@ -295,7 +315,8 @@ impl BulkVentilationControlSystem {
             && !self.bulk_isol_valve_failure.is_active();
         self.extraction_fan_is_on = self.isolation_valves_open_allowed
             && !pressurization_overhead.ditching_is_on()
-            && !self.bulk_extract_fan_failure.is_active();
+            && !self.bulk_extract_fan_failure.is_active()
+            && self.bulk_extract_fan_is_powered;
         self.duct_heater_on_allowed = acs_overhead.bulk_cargo_heater_is_on()
             && self.extraction_fan_is_on
             && !self.bulk_heater_failure.is_active();
@@ -329,6 +350,11 @@ impl SimulationElement for BulkVentilationControlSystem {
         self.bulk_heater_failure.accept(visitor);
         visitor.visit(self);
     }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.bulk_extract_fan_is_powered = buses.is_powered(self.bulk_extract_fan_powered_by);
+    }
+    // TODO: Add power consumtion of bulk extraction fan
 }
 
 struct OverpressureReliefValveDump {

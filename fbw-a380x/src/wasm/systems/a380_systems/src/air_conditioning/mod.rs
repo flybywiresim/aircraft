@@ -5105,6 +5105,19 @@ mod tests {
             }
 
             #[test]
+            fn fwd_fans_are_off_when_no_power() {
+                let mut test_bed = test_bed()
+                    .command_fwd_isolation_valves_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.fwd_extraction_fan_is_on());
+
+                test_bed = test_bed.unpowered_ac_1_bus().iterate(5);
+
+                assert!(!test_bed.fwd_extraction_fan_is_on());
+            }
+
+            #[test]
             fn fwd_isolation_and_fans_are_off_when_conditions_not_met() {
                 let mut test_bed = test_bed()
                     .command_fwd_isolation_valves_pb_on(false)
@@ -5130,6 +5143,19 @@ mod tests {
 
                 assert!(test_bed.bulk_extraction_fan_is_on());
                 assert!(test_bed.bulk_isolation_valves_are_open());
+            }
+
+            #[test]
+            fn bulk_fans_are_off_when_no_power() {
+                let mut test_bed = test_bed()
+                    .command_bulk_isolation_valves_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.bulk_extraction_fan_is_on());
+
+                test_bed = test_bed.unpowered_ac_4_bus().iterate(5);
+
+                assert!(!test_bed.bulk_extraction_fan_is_on());
             }
 
             #[test]
@@ -5162,6 +5188,22 @@ mod tests {
                 test_bed = test_bed.command_bulk_heater_pb_on(false).iterate(5);
 
                 assert!(!test_bed.bulk_duct_heater_on_allowed());
+            }
+
+            #[test]
+            fn bulk_heater_is_off_when_no_power() {
+                let mut test_bed = test_bed()
+                    .and_run()
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        10.,
+                    ))
+                    .iterate(5);
+
+                assert!(test_bed.bulk_duct_heater_is_on());
+
+                test_bed = test_bed.unpowered_ac_2_bus().iterate(5);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
             }
 
             #[test]
