@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
@@ -14,8 +14,10 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
+import { AircraftContext } from '@flybywiresim/flypad';
 
 export const SimOptionsPage = () => {
+  const aircraftContext = useContext(AircraftContext);
   const [showThrottleSettings, setShowThrottleSettings] = useState(false);
 
   const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
@@ -142,13 +144,14 @@ export const SimOptionsPage = () => {
               }}
             />
           </SettingItem>
-
-          <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
-            <Toggle
-              value={dynamicRegistration === '1'}
-              onToggle={(value) => setDynamicRegistration(value ? '1' : '0')}
-            />
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.registrationDecal && (
+            <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
+              <Toggle
+                value={dynamicRegistration === '1'}
+                onToggle={(value) => setDynamicRegistration(value ? '1' : '0')}
+              />
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.UseCalculatedIlsSignals')}>
             <Toggle
@@ -160,23 +163,27 @@ export const SimOptionsPage = () => {
             />
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
-            <Toggle
-              value={wheelChocksEnabled === 1}
-              onToggle={(value) => {
-                setWheelChocksEnabled(value ? 1 : 0);
-              }}
-            />
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.wheelChocks && (
+            <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
+              <Toggle
+                value={wheelChocksEnabled === 1}
+                onToggle={(value) => {
+                  setWheelChocksEnabled(value ? 1 : 0);
+                }}
+              />
+            </SettingItem>
+          )}
 
-          <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
-            <Toggle
-              value={conesEnabled === 1}
-              onToggle={(value) => {
-                setConesEnabled(value ? 1 : 0);
-              }}
-            />
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.cones && (
+            <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
+              <Toggle
+                value={conesEnabled === 1}
+                onToggle={(value) => {
+                  setConesEnabled(value ? 1 : 0);
+                }}
+              />
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
             <button

@@ -26,7 +26,43 @@ render(
         takeoff: new A320251NTakeoffPerformanceCalculator(),
         landing: new A320251NLandingCalculator(),
       },
+      pushbackPage: {
+        turnIndicatorTuningDefault: 1.35,
+      },
       settingsPages: {
+        audio: {
+          announcements: true,
+          boardingMusic: true,
+          engineVolume: true,
+          masterVolume: true,
+          windVolume: true,
+          ptuCockpit: true,
+          paxAmbience: true,
+        },
+        pinProgram: {
+          latLonExtend: true,
+          paxSign: true,
+          rmpVhfSpacing: true,
+          satcom: true,
+        },
+        realism: {
+          mcduKeyboard: true,
+          pauseOnTod: true,
+          pilotAvatars: true,
+        },
+        sim: {
+          cones: true,
+          registrationDecal: true,
+          wheelChocks: true,
+        },
+        throttle: {
+          numberOfAircraftThrottles: 2,
+          axisOptions: [1, 2],
+          axisMapping: [
+            [[1, 2]], // 1
+            [[1], [2]], // 2
+          ],
+        },
         autoCalloutsPage: AutomaticCallOutsPage,
       },
     }}
