@@ -1,6 +1,6 @@
-use crate::shared::local_acceleration_at_plane_coordinate;
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::update_iterator::MaxStepLoop;
+use crate::shared::{local_acceleration_at_plane_coordinate, DelayedTrueLogicGate};
 
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
@@ -227,10 +227,12 @@ pub struct WingLift {
 
     elevator_force_filtered: LowPassFilter<f64>,
     elevator_to_cg_offset: Length,
+
+    allow_flight_blending_mode: DelayedTrueLogicGate,
 }
 impl WingLift {
     // Part of the total weight from which ground mode lift is blended into flight mode lift
-    const COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE: f64 = 0.4;
+    const COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE: f64 = 0.7;
 
     pub fn new(context: &mut InitContext, elevator_to_cg_offset: Length) -> Self {
         Self {
@@ -241,6 +243,8 @@ impl WingLift {
             ground_wow_filtered: LowPassFilter::new(Duration::from_millis(700)),
             elevator_force_filtered: LowPassFilter::new(Duration::from_millis(700)),
             elevator_to_cg_offset,
+
+            allow_flight_blending_mode: DelayedTrueLogicGate::new(Duration::from_millis(350)),
         }
     }
 
@@ -259,6 +263,12 @@ impl WingLift {
         self.ground_wow_filtered
             .update(context.delta(), lift_weight_on_wheels);
 
+        // We allow blending ground to flight only after some time on ground
+        // This is because at touchdown, we don't want any flight mode lift active at first or else it would cause
+        //  the system to think there's a massive lift increase due to plane accelerating up at impact
+        self.allow_flight_blending_mode
+            .update(context, total_weight_on_wheels.get::<kilogram>() > 1.);
+
         let ground_mode_lift = (lift_1g + self.ground_wow_filtered.output()
             - self.elevator_force_filtered.output().min(0.))
         .max(0.);
@@ -271,8 +281,18 @@ impl WingLift {
             .clamp(0., 1.);
 
         // Blending calculated lift between ground and flight mode lift
-        let final_lift = (ground_mode_lift * lift_mode_blending_coeff)
+        let blended_ground_flight_lift = (ground_mode_lift * lift_mode_blending_coeff)
             + ((1. - lift_mode_blending_coeff) * flight_mode_lift);
+
+        let final_lift = if total_weight_on_wheels.get::<kilogram>() > 1. {
+            if self.allow_flight_blending_mode.output() {
+                blended_ground_flight_lift
+            } else {
+                ground_mode_lift
+            }
+        } else {
+            flight_mode_lift
+        };
 
         self.total_lift = Force::new::<newton>(final_lift);
 
