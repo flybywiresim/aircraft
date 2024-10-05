@@ -94,6 +94,11 @@ impl TiltingGear {
             )
             .max(AngularVelocity::default())
         };
+
+        println!(
+            "WHEEL SPEED {:.2}",
+            self.wheel_speed.get::<revolution_per_minute>()
+        );
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
@@ -2047,7 +2052,7 @@ mod tests {
 
         test_bed.run();
 
-        let wheel_speed =
+        let mut wheel_speed =
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
         assert!(wheel_speed.get::<revolution_per_minute>() > 200.);
@@ -2057,6 +2062,9 @@ mod tests {
         test_bed.write_by_name("GPS GROUND SPEED", 150);
 
         test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        wheel_speed =
+            AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
         assert!(wheel_speed.get::<revolution_per_minute>() >= 0.);
         assert!(wheel_speed.get::<revolution_per_minute>() < 50.);
