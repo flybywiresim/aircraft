@@ -1,14 +1,5 @@
-import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-
-import './MfdFmsPositionNavaids.scss';
-import { NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import {
   FrequencyILSFormat,
   FrequencyVORDMEFormat,
@@ -16,12 +7,39 @@ import {
   LsCourseFormat,
   NavaidIdentFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
-import { NavigationDatabaseService } from '@fmgc/index';
+import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+
+import { coordinateToString, NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
+import { NavigationDatabaseService, SelectedNavaidType } from '@fmgc/index';
 import { NavRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
+import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
+
+import './MfdFmsPositionNavaids.scss';
 
 interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {}
+
+interface SelectedNavaid {
+  ident: Subject<string>;
+  frequencyOrChannel: Subject<string>;
+  class: Subject<string>;
+}
+
+const NAVAID_TYPE_STRINGS: Record<SelectedNavaidType, string> = {
+  [SelectedNavaidType.None]: '',
+  [SelectedNavaidType.Dme]: 'DME',
+  [SelectedNavaidType.Vor]: 'VOR',
+  [SelectedNavaidType.VorDme]: 'VOR/DME',
+  [SelectedNavaidType.VorTac]: 'VOR/TAC',
+  [SelectedNavaidType.Tacan]: 'TACAN',
+  [SelectedNavaidType.Ils]: 'ILS/DME',
+  [SelectedNavaidType.Gls]: 'GLS',
+  [SelectedNavaidType.Mls]: 'MLS',
+};
 
 export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
   private navaidsSelectedPageIndex = Subject.create<number>(0);
@@ -66,25 +84,15 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   private lsCourseEnteredByPilot = Subject.create<boolean>(false);
 
-  private firstRowIdent = Subject.create<string | null>(null);
+  private readonly selectedNavaids: SelectedNavaid[] = Array.from({ length: 3 }, () => ({
+    ident: Subject.create(''),
+    frequencyOrChannel: Subject.create(''),
+    class: Subject.create(''),
+  }));
 
-  private firstRowFrequency = Subject.create<string | null>(null);
+  private readonly radioNavMode = Subject.create('');
 
-  private firstRowClass = Subject.create<string | null>(null);
-
-  private secondRowIdent = Subject.create<string | null>(null);
-
-  private secondRowFrequency = Subject.create<string | null>(null);
-
-  private secondRowClass = Subject.create<string | null>(null);
-
-  private thirdRowIdentRef = FSComponent.createRef<HTMLDivElement>();
-
-  private thirdRowIdent = Subject.create<string | null>(null);
-
-  private thirdRowFrequency = Subject.create<string | null>(null);
-
-  private thirdRowClass = Subject.create<string | null>(null);
+  private readonly radioNavPosition = Subject.create('');
 
   private deselectedNavaids = [
     Subject.create<string | null>(null),
@@ -146,11 +154,51 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       }
     });
 
-    // Third line for selected navaids table: Display LS if set
-    this.thirdRowFrequency.set(mmr.frequency ? mmr.frequency.toFixed(2) : '');
-    this.thirdRowClass.set(mmr.ident ? 'ILS/DME' : '');
-    this.thirdRowIdent.set(mmr.ident ?? null);
-    this.thirdRowIdentRef.instance.style.visibility = mmr.ident ? 'visible' : 'hidden';
+    const selectedNavaids = this.props.fmcService.master?.navigation.getSelectedNavaids();
+
+    if (selectedNavaids) {
+      for (const [i, navaid] of selectedNavaids.entries()) {
+        if (i === 0) {
+          // display vor is not shown on this page on A380
+          continue;
+        }
+        this.selectedNavaids[i - 1].ident.set(navaid.ident ?? '');
+        this.selectedNavaids[i - 1].frequencyOrChannel.set(
+          navaid.facility === null || navaid.frequency === null ? '' : navaid.frequency.toFixed(2),
+        );
+        this.selectedNavaids[i - 1].class.set(navaid.facility !== null ? NAVAID_TYPE_STRINGS[navaid.type] : '');
+      }
+      // fake it until we make it
+      if (selectedNavaids[1].facility !== null && selectedNavaids[2].facility !== null) {
+        this.radioNavMode.set('DME/DME');
+        this.radioNavPosition.set(
+          coordinateToString(
+            SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree),
+            SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree),
+            false,
+          ),
+        );
+      } else if (selectedNavaids[1].facility !== null) {
+        this.radioNavMode.set('VOR/DME');
+        this.radioNavPosition.set(
+          coordinateToString(
+            SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree),
+            SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree),
+            false,
+          ),
+        );
+      } else {
+        this.radioNavMode.set('');
+      }
+    } else {
+      for (const sel of this.selectedNavaids) {
+        sel.ident.set('');
+        sel.frequencyOrChannel.set('');
+        sel.class.set('');
+      }
+      this.radioNavMode.set('');
+      this.radioNavPosition.set('');
+    }
   }
 
   private async parseNavaid(navaid: string, onlyVor = false) {
@@ -414,16 +462,10 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-label br bb">IDENT</div>
                 <div class="mfd-label br bb">FREQ/CHAN</div>
                 <div class="mfd-label bb">CLASS</div>
-                <div class="mfd-label br">{this.firstRowIdent}</div>
-                <div class="mfd-value br">{this.firstRowFrequency}</div>
-                <div class="mfd-value">{this.firstRowClass}</div>
-                <div class="mfd-label br">{this.secondRowIdent}</div>
-                <div class="mfd-value br">{this.secondRowFrequency}</div>
-                <div class="mfd-value">{this.secondRowClass}</div>
                 <div class="mfd-label br">
-                  <div ref={this.thirdRowIdentRef}>
+                  <div class={{ invisible: this.selectedNavaids[0].ident.map((v) => v.length === 0) }}>
                     <Button
-                      label={this.thirdRowIdent.map((it) => (
+                      label={this.selectedNavaids[0].ident.map((it) => (
                         <>{it}</>
                       ))}
                       onClick={() => {}}
@@ -431,17 +473,60 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
                       disabled={Subject.create(true)}
+                      buttonStyle="min-width: 107px;"
                     />
                   </div>
                 </div>
-                <div class="mfd-value br">{this.thirdRowFrequency}</div>
-                <div class="mfd-value">{this.thirdRowClass}</div>
+                <div class="mfd-value br">{this.selectedNavaids[0].frequencyOrChannel}</div>
+                <div class="mfd-value">{this.selectedNavaids[0].class}</div>
+                <div class="mfd-label br">
+                  <div class={{ invisible: this.selectedNavaids[1].ident.map((v) => v.length === 0) }}>
+                    <Button
+                      label={this.selectedNavaids[1].ident.map((it) => (
+                        <>{it}</>
+                      ))}
+                      onClick={() => {}}
+                      showArrow
+                      menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
+                      disabled={Subject.create(true)}
+                      buttonStyle="min-width: 107px;"
+                    />
+                  </div>
+                </div>
+                <div class="mfd-value br">{this.selectedNavaids[1].frequencyOrChannel}</div>
+                <div class="mfd-value">{this.selectedNavaids[1].class}</div>
+                <div class="mfd-label br">
+                  <div class={{ invisible: this.selectedNavaids[2].ident.map((v) => v.length === 0) }}>
+                    <Button
+                      label={this.selectedNavaids[2].ident.map((it) => (
+                        <>{it}</>
+                      ))}
+                      onClick={() => {}}
+                      showArrow
+                      menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
+                      disabled={Subject.create(true)}
+                      buttonStyle="min-width: 107px;"
+                    />
+                  </div>
+                </div>
+                <div class="mfd-value br">{this.selectedNavaids[2].frequencyOrChannel}</div>
+                <div class="mfd-value">{this.selectedNavaids[2].class}</div>
               </div>
-              <div class="mfd-label" style="padding-left: 30px; margin-bottom: 20px;">
-                RADIO NAV MODE
-              </div>
-              <div class="mfd-label" style="padding-left: 30px; margin-bottom: 10px;">
-                RADIO POSITION
+              <div style="display: grid; grid-template-columns: 190px 320px; margin-left: 80px;">
+                <div class="mfd-label" style="justify-content: right; margin-bottom: 20px;">
+                  RADIO NAV MODE
+                </div>
+                <div class="mfd-value" style="justify-content: left; margin-left: 20px; margin-bottom: 20px;">
+                  {this.radioNavMode}
+                </div>
+                <div class="mfd-label" style="justify-content: right; margin-bottom: 20px;">
+                  RADIO POSITION
+                </div>
+                <div class="mfd-value" style="justify-content: left; margin-left: 20px; margin-bottom: 20px;">
+                  {this.radioNavPosition}
+                </div>
               </div>
               <div style="border-bottom: 1px solid lightgrey; width: 100%; height: 3px; margin-bottom: 15px;" />
               <div class="mfd-label" style="padding-left: 15px; margin-bottom: 10px;">

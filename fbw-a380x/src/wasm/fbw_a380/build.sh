@@ -126,11 +126,9 @@ clang++ \
   "${DIR}/src/model/FacComputer_data.cpp" \
   "${DIR}/src/model/FacComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
-  "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_pbinlxpw.cpp" \
-  "${DIR}/src/model/mod_mvZvttxs.cpp" \
-  "${DIR}/src/model/mod_2RcCQkwc.cpp" \
+  "${DIR}/src/model/mod_OlzklkXq.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
