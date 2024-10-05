@@ -28,13 +28,13 @@ render(
       },
       settingsPages: {
         audio: {
-          announcements: true,
-          boardingMusic: true,
+          announcements: false,
+          boardingMusic: false,
           engineVolume: true,
           masterVolume: true,
           windVolume: true,
           ptuCockpit: false,
-          paxAmbience: true,
+          paxAmbience: false,
         },
         pinProgram: {
           paxSign: false,
