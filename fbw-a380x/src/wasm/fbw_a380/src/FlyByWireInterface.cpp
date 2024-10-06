@@ -1131,10 +1131,10 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   // failure
   additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
   // aoa
-  // additionalData.alpha_floor_condition =
-  //     reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
-  //     reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
-  // // these are not correct yet
+  additionalData.alpha_floor_condition =
+      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
+  // these are not correct yet
   // additionalData.high_aoa_protection =
   //     reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
   //     reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
@@ -2700,6 +2700,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
     autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
     autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
+    autoThrustInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
+    autoThrustInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
     autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
@@ -2721,6 +2723,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.corrected_engine_N1_4_percent = simData.corrected_engine_N1_4_percent;
     autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
     autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
+    autoThrustInput.in.data.ambient_density_kg_per_m3 = simData.ambient_density_kg_per_m3;
 
     autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
     autoThrustInput.in.input.ATHR_disconnect =
@@ -2742,9 +2745,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
     autoThrustInput.in.input.mode_requested = autopilotStateMachineOutput.autothrust_mode;
     autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
-    // autoThrustInput.in.input.alpha_floor_condition =
-    //     reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
-    //     reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
+    autoThrustInput.in.input.alpha_floor_condition =
+        reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+        reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
     autoThrustInput.in.input.is_approach_mode_active =
         (autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34) ||
         autopilotStateMachineOutput.vertical_mode == 24;
