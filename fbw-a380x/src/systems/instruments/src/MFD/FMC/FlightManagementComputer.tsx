@@ -995,4 +995,15 @@ export class FlightManagementComputer implements FmcInterface {
   tryGoInApproachPhase(): void {
     this.flightPhaseManager.tryGoInApproachPhase();
   }
+
+  async swapNavDatabase(): Promise<void> {
+    // FIXME reset ATSU when it is added to A380X
+    // this.atsu.resetAtisAutoUpdate();
+    await this.flightPlanService.reset();
+    this.initSimVars();
+    this.deleteAllStoredWaypoints();
+    this.clearLatestFmsErrorMessage();
+    this.mfdReference?.uiService.navigateTo('fms/data/status');
+    this.navigation.resetState();
+  }
 }
