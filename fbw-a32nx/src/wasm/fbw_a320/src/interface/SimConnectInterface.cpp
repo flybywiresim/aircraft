@@ -2433,6 +2433,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       sendEvent(Events::BAROMETRIC, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
 
       std::cout << "WASM: event triggered: BAROMETRIC" << std::endl;
+      break;
     }
 
     case Events::AUTO_THROTTLE_ARM: {
