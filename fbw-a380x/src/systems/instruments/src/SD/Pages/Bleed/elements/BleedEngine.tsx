@@ -1,9 +1,10 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+
 import Valve from './Valve';
+import BleedGauge from './BleedGauge';
 
 import '../../../../index.scss';
-import BleedGauge from './BleedGauge';
 
 interface BleedPageProps {
   x: number;
@@ -52,7 +53,7 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
         y={y}
         width={80}
         height={124}
-        xlinkHref="/Images/Engine-Hyd-Bleed-Dithered.png"
+        xlinkHref="/Images/fbw-a380x/Engine-Hyd-Bleed-Dithered.png"
         preserveAspectRatio="none"
       />
 

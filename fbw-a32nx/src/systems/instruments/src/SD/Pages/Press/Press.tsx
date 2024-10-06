@@ -17,14 +17,14 @@ export const PressPage: FC = () => {
   const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
   const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
-  const activeCpcNumber = cpc1DiscreteWord.getBitValueOr(11, false) ? 1 : 2;
+  const activeCpcNumber = cpc1DiscreteWord.bitValueOr(11, false) ? 1 : 2;
 
   const cpc1SysFault = cpc1DiscreteWord.isFailureWarning();
   const cpc2SysFault = cpc2DiscreteWord.isFailureWarning();
 
   // SYS is visible if the system is active or if it is failed
-  const cpc1SysVisible = (autoMode && cpc1DiscreteWord.getBitValueOr(11, false)) || cpc1SysFault;
-  const cpc2SysVisible = (autoMode && cpc2DiscreteWord.getBitValueOr(11, false)) || cpc2SysFault;
+  const cpc1SysVisible = (autoMode && cpc1DiscreteWord.bitValueOr(11, false)) || cpc1SysFault;
+  const cpc2SysVisible = (autoMode && cpc2DiscreteWord.bitValueOr(11, false)) || cpc2SysFault;
 
   const arincCabinAlt = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_ALTITUDE`, 500);
   const [manCabinAlt] = useSimVar('L:A32NX_PRESS_MAN_CABIN_ALTITUDE', 'feet', 500);
@@ -413,10 +413,10 @@ const PressureComponent = () => {
   const cpc1DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
   const cpc2DiscreteWord = useArinc429Var('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
 
-  const activeCpcNumber = cpc1DiscreteWord.getBitValueOr(11, false) ? 1 : 2;
+  const activeCpcNumber = cpc1DiscreteWord.bitValueOr(11, false) ? 1 : 2;
   const cpcDiscreteWordToUse = activeCpcNumber === 1 ? cpc1DiscreteWord : cpc2DiscreteWord;
 
-  const landingElevationIsMan = cpcDiscreteWordToUse.getBitValueOr(17, false);
+  const landingElevationIsMan = cpcDiscreteWordToUse.bitValueOr(17, false);
 
   const cpcLandingElevation = useArinc429Var(`L:A32NX_PRESS_CPC_${activeCpcNumber}_LANDING_ELEVATION`, 500);
   const fmLandingElevation = useArinc429Var('L:A32NX_FM1_LANDING_ELEVATION', 1000);

@@ -32,8 +32,8 @@ export const FctlPage = () => {
         F/CTL
       </PageTitle>
 
-      <image xlinkHref="/Images/SD_FCTL_WING.png" x={-2} y={518} width={774} height={204} />
-      <image xlinkHref="/Images/SD_FCTL_TAIL.png" x={100} y={-15} width={570} height={570} />
+      <image xlinkHref="/Images/fbw-a380x/SD_FCTL_WING.png" x={-2} y={518} width={774} height={204} />
+      <image xlinkHref="/Images/fbw-a380x/SD_FCTL_TAIL.png" x={100} y={-15} width={570} height={570} />
 
       <Prims x={0} y={0} />
       <Secs x={0} y={78} />

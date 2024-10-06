@@ -66,14 +66,14 @@ export class Slats extends DisplayComponent<SlatsProps> {
       .on('slatsFlapsStatus')
       .whenChanged()
       .handle((s) => {
-        this.configClean = s.getBitValue(17);
-        this.config1 = s.getBitValue(18);
-        this.config2 = s.getBitValue(19);
-        this.config3 = s.getBitValue(20);
-        this.configFull = s.getBitValue(21);
-        this.flaps1AutoRetract = s.getBitValue(26);
+        this.configClean = s.bitValue(17);
+        this.config1 = s.bitValue(18);
+        this.config2 = s.bitValue(19);
+        this.config3 = s.bitValue(20);
+        this.configFull = s.bitValue(21);
+        this.flaps1AutoRetract = s.bitValue(26);
 
-        const alphaLockEngaged = s.getBitValue(24);
+        const alphaLockEngaged = s.bitValue(24);
         this.alphaLockEngaged.set(alphaLockEngaged);
 
         if (this.configClean) {

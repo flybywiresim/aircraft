@@ -46,7 +46,7 @@ export const Engine = ({ x, y, engineNumber }: EngineProps) => {
 
   return (
     <g transform={`translate(${x} ${y})`}>
-      <image xlinkHref="/Images/HYD_8-7_TRIMMED.png" x={0} y={0} width={146} height={211} />
+      <image xlinkHref="/Images/fbw-a380x/HYD_8-7_TRIMMED.png" x={0} y={0} width={146} height={211} />
 
       <text x={10} y={47} className={`${!isRunning ? 'Amber' : 'White'} F35`}>
         {engineNumber}
