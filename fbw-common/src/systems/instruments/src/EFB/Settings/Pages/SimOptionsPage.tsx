@@ -209,19 +209,21 @@ export const SimOptionsPage = () => {
             </button>
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.PilotSeat')}>
-            <SelectGroup>
-              {pilotSeatButtons.map((button) => (
-                <SelectItem
-                  key={button.setting}
-                  onSelect={() => setPilotSeat(button.setting)}
-                  selected={pilotSeat === button.setting}
-                >
-                  {button.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.pilotSeat && (
+            <SettingItem name={t('Settings.SimOptions.PilotSeat')}>
+              <SelectGroup>
+                {pilotSeatButtons.map((button) => (
+                  <SelectItem
+                    key={button.setting}
+                    onSelect={() => setPilotSeat(button.setting)}
+                    selected={pilotSeat === button.setting}
+                  >
+                    {button.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SettingItem>
+          )}
         </SettingsPage>
       )}
       <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />

@@ -52,6 +52,7 @@ render(
         },
         sim: {
           cones: true,
+          pilotSeat: false,
           registrationDecal: true,
           wheelChocks: true,
         },
