@@ -613,6 +613,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idPrimPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PUSHBUTTON_PRESSED");
     idPrimHealthy[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_HEALTHY");
+    idPrimApAuthorised[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_AP_AUTHORISED");
+    idPrimFctlLawStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FCTL_LAW_STATUS_WORD");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -1499,6 +1501,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   }
 
   idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
+  idPrimApAuthorised[primIndex]->set(primsDiscreteOutputs[primIndex].ap_authorised);
+  idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl_law_status_word));
 
   return true;
 }
@@ -2048,7 +2052,13 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 
   bool doDisconnect = false;
   if (autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2) {
-    doDisconnect = false;
+    // Select PRIM master, check for AP authorised signal
+    for (int i = 0; i < 3; i++) {
+      if (primsDiscreteOutputs[i].prim_healthy) {
+        doDisconnect = !primsDiscreteOutputs[i].ap_authorised;
+        break;
+      }
+    }
   }
 
   // update state machine ---------------------------------------------------------------------------------------------
