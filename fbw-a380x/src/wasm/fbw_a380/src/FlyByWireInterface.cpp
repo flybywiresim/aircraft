@@ -2763,12 +2763,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_anti_ice_wing_active = additionalData.wingAntiIce == 1;
     autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
     autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
-    // autoThrustInput.in.input.is_anti_ice_engine_3_active = simData.engineAntiIce_3 == 1; FIXME enable
-    // autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1; FIXME enable
+    autoThrustInput.in.input.is_anti_ice_engine_3_active = simData.engineAntiIce_3 == 1;
+    autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1;
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
-    // autoThrustInput.in.input.is_air_conditioning_3_active = idAirConditioningPack_3->get(); FIXME enable
-    // autoThrustInput.in.input.is_air_conditioning_4_active = idAirConditioningPack_4->get(); FIXME enable
+    autoThrustInput.in.input.is_air_conditioning_3_active = idAirConditioningPack_3->get();
+    autoThrustInput.in.input.is_air_conditioning_4_active = idAirConditioningPack_4->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
     autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;

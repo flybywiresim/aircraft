@@ -94,6 +94,10 @@ Autothrust::Parameters_Autothrust_T Autothrust::Autothrust_P{
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
       0.0
     },
 
