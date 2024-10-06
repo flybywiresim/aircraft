@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PitchAlternateLaw_h_
-#define RTW_HEADER_A380PitchAlternateLaw_h_
+#ifndef A380PitchAlternateLaw_h_
+#define A380PitchAlternateLaw_h_
 #include "rtwtypes.h"
 #include "A380PitchAlternateLaw_types.h"
 #include <cstring>

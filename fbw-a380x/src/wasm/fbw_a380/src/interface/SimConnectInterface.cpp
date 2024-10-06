@@ -274,6 +274,11 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:2", "RPM");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:3", "RPM");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:4", "RPM");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:1", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:3", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:4", "PERCENT");
 
   return result;
 }

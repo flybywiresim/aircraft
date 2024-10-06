@@ -142,6 +142,11 @@ struct SimData {
   double wheelRpmRightBlg;
   double wheelRpmLeftWlg;
   double wheelRpmRightWlg;
+  double contact_point_compression_0;
+  double contact_point_compression_1;
+  double contact_point_compression_2;
+  double contact_point_compression_3;
+  double contact_point_compression_4;
 };
 
 struct SimInput {

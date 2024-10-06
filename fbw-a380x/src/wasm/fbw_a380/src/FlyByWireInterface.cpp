@@ -274,8 +274,8 @@ void FlyByWireInterface::loadConfiguration() {
   std::vector<std::pair<double, double>> mappingTable3d;
   mappingTable3d.emplace_back(-20.0, 0.0);
   mappingTable3d.emplace_back(0.0, 0.0);
-  mappingTable3d.emplace_back(25.0, 50.0);
-  mappingTable3d.emplace_back(35.0, 75.0);
+  mappingTable3d.emplace_back(25.0, 54.0);
+  mappingTable3d.emplace_back(35.0, 71.0);
   mappingTable3d.emplace_back(45.0, 100.0);
   idThrottlePositionLookupTable3d.initialize(mappingTable3d, 0, 100);
 }
@@ -2129,8 +2129,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
     autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotStateMachineInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autopilotStateMachineInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autopilotStateMachineInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autopilotStateMachineInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
@@ -2479,8 +2481,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autopilotLawsInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autopilotLawsInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autopilotLawsInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
@@ -2705,8 +2709,10 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autoThrustInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
     autoThrustInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
-    autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autoThrustInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autoThrustInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
     autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
