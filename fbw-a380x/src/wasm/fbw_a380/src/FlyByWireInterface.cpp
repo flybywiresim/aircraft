@@ -421,6 +421,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAirConditioningPack_1 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_1_PB_IS_ON");
   idAirConditioningPack_2 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_2_PB_IS_ON");
+  idAirConditioningPack_3 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_3_PB_IS_ON");
+  idAirConditioningPack_4 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_4_PB_IS_ON");
 
   idAutothrustThrustLimitType = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
   idAutothrustThrustLimit = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");
@@ -2665,8 +2667,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         idFmgcFlexTemperature->get(),
         autopilotStateMachineOutput.autothrust_mode,
         simData.is_mach_mode_active,
-        // reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
-        //     reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false),
+        reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+            reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false),
         autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34,
         autopilotStateMachineOutput.vertical_mode == 40,
         autopilotStateMachineOutput.vertical_mode == 41,
@@ -2761,8 +2763,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_anti_ice_wing_active = additionalData.wingAntiIce == 1;
     autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
     autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
+    // autoThrustInput.in.input.is_anti_ice_engine_3_active = simData.engineAntiIce_3 == 1; FIXME enable
+    // autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1; FIXME enable
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
+    // autoThrustInput.in.input.is_air_conditioning_3_active = idAirConditioningPack_3->get(); FIXME enable
+    // autoThrustInput.in.input.is_air_conditioning_4_active = idAirConditioningPack_4->get(); FIXME enable
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
     autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
@@ -2805,6 +2811,14 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustOutput.status = static_cast<athr_status>(clientData.status);
     autoThrustOutput.mode = static_cast<athr_mode>(clientData.mode);
     autoThrustOutput.mode_message = static_cast<athr_mode_message>(clientData.mode_message);
+
+    ClientDataAutothrustA380 clientDataA380 = simConnectInterface.getClientDataAutothrustA380();
+    autoThrustOutput.N1_TLA_3_percent = clientDataA380.N1_TLA_3_percent;
+    autoThrustOutput.N1_TLA_4_percent = clientDataA380.N1_TLA_4_percent;
+    autoThrustOutput.is_in_reverse_3 = clientDataA380.is_in_reverse_3;
+    autoThrustOutput.is_in_reverse_4 = clientDataA380.is_in_reverse_4;
+    autoThrustOutput.N1_c_3_percent = clientDataA380.N1_c_3_percent;
+    autoThrustOutput.N1_c_4_percent = clientDataA380.N1_c_4_percent;
   }
 
   // update local variables

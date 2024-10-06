@@ -272,6 +272,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;
+  std::unique_ptr<LocalVariable> idAirConditioningPack_3;
+  std::unique_ptr<LocalVariable> idAirConditioningPack_4;
 
   std::unique_ptr<LocalVariable> thrustLeverAngle_1;
   std::unique_ptr<LocalVariable> thrustLeverAngle_2;
