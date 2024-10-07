@@ -1,6 +1,8 @@
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::update_iterator::MaxStepLoop;
-use crate::shared::{local_acceleration_at_plane_coordinate, DelayedTrueLogicGate};
+use crate::shared::{
+    height_over_ground, local_acceleration_at_plane_coordinate, DelayedTrueLogicGate,
+};
 
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
@@ -476,11 +478,16 @@ struct WingSectionNode {
     position: Length,
     acceleration: Acceleration,
 
+    min_position: Length,
+
     external_position_offset: Length,
 
     sum_of_forces: Force,
 }
 impl WingSectionNode {
+    const ABSOLUTE_MIN_POSITION: f64 = -10.;
+    const ABSOLUTE_MAX_POSITION: f64 = 10.;
+
     fn new(empty_mass: Mass) -> Self {
         Self {
             empty_mass,
@@ -488,11 +495,17 @@ impl WingSectionNode {
             speed: Velocity::default(),
             position: Length::default(),
             acceleration: Acceleration::default(),
+            min_position: Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION),
 
             external_position_offset: Length::default(),
 
             sum_of_forces: Force::default(),
         }
+    }
+
+    pub fn set_min_position(&mut self, min_pos: Length) {
+        let new_min = min_pos.max(Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION));
+        self.min_position = new_min;
     }
 
     fn update(&mut self, context: &UpdateContext) {
@@ -528,6 +541,14 @@ impl WingSectionNode {
             self.speed += self.acceleration * context.delta_as_time();
 
             self.position += self.speed * context.delta_as_time();
+
+            if self.position < self.min_position {
+                self.position = self.min_position;
+                self.speed = Velocity::default();
+            } else if self.position > Length::new::<meter>(Self::ABSOLUTE_MAX_POSITION) {
+                self.position = Length::new::<meter>(Self::ABSOLUTE_MAX_POSITION);
+                self.speed = Velocity::default();
+            }
         }
 
         self.sum_of_forces = Force::default();
@@ -568,6 +589,8 @@ pub struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     nodes: [WingSectionNode; NODE_NUMBER],
     flex_constraints: [FlexibleConstraint; LINK_NUMBER],
 
+    height_limit_absolute_coordinate: [Option<Vector3<f64>>; NODE_NUMBER],
+
     // DEV simvars to adjust parameters ingame
     wing_dev_spring_1_id: VariableIdentifier,
     wing_dev_spring_2_id: VariableIdentifier,
@@ -600,6 +623,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         empty_mass: [Mass; NODE_NUMBER],
         springness: [f64; LINK_NUMBER],
         damping: [f64; LINK_NUMBER],
+        height_limit_absolute_coordinate: [Option<Vector3<f64>>; NODE_NUMBER],
     ) -> Self {
         let nodes_array = empty_mass.map(WingSectionNode::new);
 
@@ -624,6 +648,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                 },
             ),
 
+            height_limit_absolute_coordinate,
+
             wing_dev_spring_1_id: context.get_identifier("WING_FLEX_DEV_SPRING_1".to_owned()),
             wing_dev_spring_2_id: context.get_identifier("WING_FLEX_DEV_SPRING_2".to_owned()),
             wing_dev_spring_3_id: context.get_identifier("WING_FLEX_DEV_SPRING_3".to_owned()),
@@ -640,6 +666,15 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         }
     }
 
+    fn update_ground_collision_constraints(&mut self, context: &UpdateContext) {
+        for (node_idx, coordinate) in self.height_limit_absolute_coordinate.iter().enumerate() {
+            if coordinate.is_some() {
+                let min_height = -height_over_ground(context, coordinate.unwrap());
+                self.nodes[node_idx].set_min_position(min_height);
+            }
+        }
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -648,6 +683,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         external_acceleration_from_plane_body: Acceleration,
     ) {
         self.updater_max_step.update(context);
+
+        self.update_ground_collision_constraints(context);
 
         for cur_time_step in &mut self.updater_max_step {
             self.external_accelerations_filtered
