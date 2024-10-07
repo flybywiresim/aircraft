@@ -42,9 +42,20 @@ export class TransmitMessageMonitor implements Instrument {
   ];
 
   private readonly monitorSubs = TransmitMessageMonitor.monitorDefinitions.map((def) => {
-    const receiveState = ConsumerSubject.create(this.sub.on(`${def.type.toLowerCase()}_receive_${def.index}` as keyof AudioControlLocalVarEvents), false);
-    const transmitState = ConsumerSubject.create(this.sub.on(`${def.type.toLowerCase()}_transmit_${def.index}` as keyof AudioControlLocalVarEvents), false);
-    return transmitState.sub((tx) => tx && !receiveState.get() && this.pub.pub('rmp_message_set', `${def.type}${def.index} RECEPTION NOT SELECTED`), false, true);
+    const receiveState = ConsumerSubject.create(
+      this.sub.on(`${def.type.toLowerCase()}_receive_${def.index}` as keyof AudioControlLocalVarEvents),
+      false,
+    );
+    const transmitState = ConsumerSubject.create(
+      this.sub.on(`${def.type.toLowerCase()}_transmit_${def.index}` as keyof AudioControlLocalVarEvents),
+      false,
+    );
+    return transmitState.sub(
+      (tx) =>
+        tx && !receiveState.get() && this.pub.pub('rmp_message_set', `${def.type}${def.index} RECEPTION NOT SELECTED`),
+      false,
+      true,
+    );
   });
 
   constructor(private readonly bus: EventBus) {}

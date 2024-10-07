@@ -4965,6 +4965,7 @@ impl AileronSystemHydraulicController {
     fn update(&mut self) {
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
+        self.filter_dual_control();
     }
 
     fn update_aileron_controllers_positions(&mut self) {
@@ -5045,6 +5046,36 @@ impl AileronSystemHydraulicController {
                 self.right_inboard_position_requests_from_fbw
                     [AileronActuatorPosition::Inward as usize],
             );
+    }
+
+    // FIXME  We don't allow dual control for now as this causes issues in actuator solver
+    // To remove if actuator solver can handle this case or flight control never request it by design
+    fn filter_dual_control(&mut self) {
+        for controller in &mut self.left_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
+
+        for controller in &mut self.right_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
     }
 
     /// Will drive mode from solenoid state
@@ -6176,6 +6207,17 @@ impl SimulationElement for AileronAssembly {
         writer.write(&self.position_out_id, self.positions[0]);
         writer.write(&self.position_mid_id, self.positions[1]);
         writer.write(&self.position_in_id, self.positions[2]);
+    }
+}
+impl Debug for AileronAssembly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nAILERON ASSEMBLY => \nAIL OUT {:?}\nAIL MID {:?}\nAIL IN {:?}",
+            self.hydraulic_assemblies[0],
+            self.hydraulic_assemblies[1],
+            self.hydraulic_assemblies[2],
+        )
     }
 }
 
