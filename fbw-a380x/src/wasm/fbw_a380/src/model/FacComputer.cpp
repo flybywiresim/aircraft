@@ -17,6 +17,8 @@ const uint8_T FacComputer_IN_NO_ACTIVE_CHILD{ 0U };
 
 const uint8_T FacComputer_IN_Takeoff100ft{ 4U };
 
+const uint8_T FacComputer_IN_Landing2500ft{ 3U };
+
 void FacComputer::FacComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y)
 {
   *rty_y = (rtu_u->SSM != static_cast<uint32_T>(SignStatusMatrix::FailureWarning));
@@ -226,19 +228,19 @@ void FacComputer::step()
   real_T fractions[3];
   real_T fractions_0[3];
   real_T fractions_1[3];
+  real_T fractions_2[3];
   real_T Vcas;
-  real_T rtb_BusAssignment_c_flight_envelope_v_alpha_prot_kn;
+  real_T rtb_BusAssignment_c_flight_envelope_v_ls_kn;
+  real_T rtb_BusAssignment_c_flight_envelope_v_stall_kn;
   real_T rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg;
+  real_T rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn;
+  real_T rtb_BusAssignment_f_flight_envelope_v_alpha_prot_kn;
   real_T rtb_BusAssignment_f_flight_envelope_v_fe_next_kn;
-  real_T rtb_BusAssignment_f_flight_envelope_v_stall_kn;
-  real_T rtb_BusAssignment_g5_flight_envelope_v_4_kn;
   real_T rtb_BusAssignment_g5_flight_envelope_v_man_kn;
-  real_T rtb_BusAssignment_kv_flight_envelope_v_alpha_max_kn;
   real_T rtb_Gain;
   real_T rtb_Switch;
-  real_T rtb_Switch1;
+  real_T rtb_Switch1_a;
   real_T rtb_Switch4_f;
-  real_T rtb_Switch4_j;
   real_T rtb_Switch6;
   real_T rtb_Switch_b;
   real_T rtb_Y_br;
@@ -246,6 +248,7 @@ void FacComputer::step()
   real_T rtb_Y_l;
   real_T rtb_beta;
   real_T rtb_vs1g;
+  real_T rtb_vs1g_h;
   int32_T rtb_alpha_floor_inhib;
   int32_T rtb_speed_trend_kn_SSM;
   int32_T rtb_v_3_kn_SSM;
@@ -280,6 +283,7 @@ void FacComputer::step()
   uint32_T bpIndices[3];
   uint32_T bpIndices_0[3];
   uint32_T bpIndices_1[3];
+  uint32_T bpIndices_2[3];
   uint32_T rtb_y_a;
   uint32_T rtb_y_dq;
   uint32_T rtb_y_e;
@@ -347,6 +351,8 @@ void FacComputer::step()
       FacComputer_RateLimiter_o_Reset(&FacComputer_DWork.sf_RateLimiter_g0);
       FacComputer_DWork.takeoff_config = 0.0;
       FacComputer_RateLimiter_o_Reset(&FacComputer_DWork.sf_RateLimiter_g);
+      FacComputer_DWork.is_active_c8_FacComputer = 0U;
+      FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_NO_ACTIVE_CHILD;
       FacComputer_DWork.takeoff_config_g = 0.0;
       FacComputer_LagFilter_Reset(&FacComputer_DWork.sf_LagFilter_i);
       FacComputer_RateLimiter_o_Reset(&FacComputer_DWork.sf_RateLimiter_f);
@@ -562,9 +568,11 @@ void FacComputer::step()
       rtb_phi_dot = 0.0F;
     }
 
-    rtb_BusAssignment_c_flight_envelope_v_alpha_prot_kn = rtb_phi;
-    rtb_BusAssignment_kv_flight_envelope_v_alpha_max_kn = rtb_q;
-    rtb_Switch1 = rtb_theta_dot;
+    rtb_BusAssignment_f_flight_envelope_v_alpha_prot_kn = rtb_phi;
+    rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn = rtb_q;
+    rtb_vs1g_h = rtb_r;
+    rtb_vs1g = rtb_n_x;
+    rtb_Switch1_a = rtb_theta_dot;
     rtb_BusAssignment_m_logic_sfcc_own_valid = rtb_DataTypeConversion_kr;
     rtb_AND1_d = ((!rtb_DataTypeConversion_kr) && (!rtb_AND1_d));
     rtb_DataTypeConversion_kr = (rtb_y_k5 || rtb_Switch_io_idx_1);
@@ -609,7 +617,7 @@ void FacComputer::step()
       rtb_Y_l = rtb_alpha;
     }
 
-    FacComputer_LagFilter(rtb_Y_l, FacComputer_P.LagFilter2_C1, FacComputer_U.in.time.dt, &rtb_Switch1,
+    FacComputer_LagFilter(rtb_Y_l, FacComputer_P.LagFilter2_C1, FacComputer_U.in.time.dt, &rtb_Switch1_a,
                           &FacComputer_DWork.sf_LagFilter_f);
     FacComputer_LagFilter_k(FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_left_percent.Data -
       FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_right_percent.Data, FacComputer_P.LagFilter3_C1,
@@ -622,8 +630,8 @@ void FacComputer::step()
       rtb_Switch6 = rtb_V_ias;
     }
 
-    rtb_beta = (rtb_Switch1 * rtb_y_na * FacComputer_P.Gain5_Gain + FacComputer_P.Gain4_Gain * rtb_y_hb) / rtb_Switch6 /
-      rtb_Switch6 * FacComputer_P.Gain_Gain_k;
+    rtb_beta = (rtb_Switch1_a * rtb_y_na * FacComputer_P.Gain5_Gain + FacComputer_P.Gain4_Gain_o * rtb_y_hb) /
+      rtb_Switch6 / rtb_Switch6 * FacComputer_P.Gain_Gain_k;
     FacComputer_LagFilter(static_cast<real_T>(rtb_alpha), FacComputer_P.LagFilter_C1, FacComputer_U.in.time.dt,
                           &rtb_Switch6, &FacComputer_DWork.sf_LagFilter_c);
     rtb_BusAssignment_d_logic_speed_scale_visible = rtb_y_gg;
@@ -641,8 +649,8 @@ void FacComputer::step()
     FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       FacComputer_P.alphafloor_bp01Data, FacComputer_P.alphafloor_bp02Data, FacComputer_P.alphafloor_tableData,
       FacComputer_P.alphafloor_maxIndex, 4U), FacComputer_P.RateLimiterGenericVariableTs1_up,
-      FacComputer_P.RateLimiterGenericVariableTs1_lo, FacComputer_U.in.time.dt, FacComputer_P.reset_Value, &rtb_Switch1,
-      &FacComputer_DWork.sf_RateLimiter);
+      FacComputer_P.RateLimiterGenericVariableTs1_lo, FacComputer_U.in.time.dt, FacComputer_P.reset_Value,
+      &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter);
     rtb_Gain = FacComputer_P.DiscreteDerivativeVariableTs_Gain * rtb_V_ias;
     rtb_Switch6 = rtb_Gain - FacComputer_DWork.Delay_DSTATE;
     FacComputer_LagFilter(rtb_Switch6 / FacComputer_U.in.time.dt, FacComputer_P.LagFilter_C1_k, FacComputer_U.in.time.dt,
@@ -715,7 +723,7 @@ void FacComputer::step()
         rtb_v_ls_kn_SSM = 0;
       }
 
-      if ((rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg > FacComputer_P.Gain3_Gain * rtb_Switch1 + std::fmin
+      if ((rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg > FacComputer_P.Gain3_Gain * rtb_Switch1_a + std::fmin
            (std::fmax(rtb_Switch6, static_cast<real_T>(rtb_v_ls_kn_SSM)), 0.0)) && FacComputer_P.Constant1_Value_mf) {
         FacComputer_DWork.sAlphaFloor = 1.0;
       } else {
@@ -736,30 +744,30 @@ void FacComputer::step()
     FacComputer_RateLimiter(look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0), FacComputer_P.alpha0_bp01Data,
       FacComputer_P.alpha0_tableData, 5U), FacComputer_P.RateLimiterGenericVariableTs1_up_g,
       FacComputer_P.RateLimiterGenericVariableTs1_lo_n, FacComputer_U.in.time.dt, FacComputer_P.reset_Value_k,
-      &rtb_Switch4_f, &FacComputer_DWork.sf_RateLimiter_c);
+      &rtb_vs1g_h, &FacComputer_DWork.sf_RateLimiter_c);
     FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       FacComputer_P.alphamax_bp01Data, FacComputer_P.alphamax_bp02Data, FacComputer_P.alphamax_tableData,
       FacComputer_P.alphamax_maxIndex, 4U), FacComputer_P.RateLimiterGenericVariableTs4_up,
       FacComputer_P.RateLimiterGenericVariableTs4_lo, FacComputer_U.in.time.dt, FacComputer_P.reset_Value_o,
-      &rtb_Switch1, &FacComputer_DWork.sf_RateLimiter_a);
+      &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_a);
     FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
-      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_Switch4_f, rtb_Switch1,
-      &rtb_BusAssignment_kv_flight_envelope_v_alpha_max_kn);
+      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch1_a,
+      &rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn);
     FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       FacComputer_P.alphaprotection_bp01Data, FacComputer_P.alphaprotection_bp02Data,
       FacComputer_P.alphaprotection_tableData, FacComputer_P.alphaprotection_maxIndex, 4U),
       FacComputer_P.RateLimiterGenericVariableTs3_up, FacComputer_P.RateLimiterGenericVariableTs3_lo,
-      FacComputer_U.in.time.dt, FacComputer_P.reset_Value_a, &rtb_Switch1, &FacComputer_DWork.sf_RateLimiter_n);
+      FacComputer_U.in.time.dt, FacComputer_P.reset_Value_a, &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_n);
     FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
-      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_Switch4_f, rtb_Switch1,
-      &rtb_BusAssignment_c_flight_envelope_v_alpha_prot_kn);
+      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch1_a,
+      &rtb_BusAssignment_f_flight_envelope_v_alpha_prot_kn);
     FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       FacComputer_P.alphastallwarn_bp01Data, FacComputer_P.alphastallwarn_bp02Data,
       FacComputer_P.alphastallwarn_tableData, FacComputer_P.alphastallwarn_maxIndex, 4U),
       FacComputer_P.RateLimiterGenericVariableTs2_up, FacComputer_P.RateLimiterGenericVariableTs2_lo,
       FacComputer_U.in.time.dt, FacComputer_P.reset_Value_i, &rtb_Switch6, &FacComputer_DWork.sf_RateLimiter_j);
     FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
-      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_Switch4_f, rtb_Switch6, &rtb_Switch);
+      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch6, &rtb_Switch);
     if (FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_weight_lbs.SSM == static_cast<uint32_T>(SignStatusMatrix::
          NormalOperation)) {
       rtb_DataTypeConversion2 = FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_weight_lbs.Data;
@@ -768,10 +776,10 @@ void FacComputer::step()
     }
 
     rtb_Switch6 = FacComputer_P.Gain2_Gain_d * rtb_DataTypeConversion2;
-    rtb_Switch1 = FacComputer_P.Gain3_Gain_h * FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data;
     bpIndices[0U] = plook_binx(rtb_Switch6, FacComputer_P.nDLookupTable_bp01Data, 7U, &rtb_vs1g);
     fractions[0U] = rtb_vs1g;
-    bpIndices[1U] = plook_binx(rtb_Switch1, FacComputer_P.nDLookupTable_bp02Data, 1U, &rtb_vs1g);
+    bpIndices[1U] = plook_binx(FacComputer_P.Gain3_Gain_h * FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data,
+      FacComputer_P.nDLookupTable_bp02Data, 1U, &rtb_vs1g);
     fractions[1U] = rtb_vs1g;
     bpIndices[2U] = plook_binx(static_cast<real_T>(rtb_Switch_i_idx_0), FacComputer_P.nDLookupTable_bp03Data, 5U,
       &rtb_vs1g);
@@ -783,10 +791,16 @@ void FacComputer::step()
       (rtb_Switch_i_idx_0), &rtb_Switch6);
     FacComputer_RateLimiter_f(rtb_Switch6, FacComputer_P.RateLimiterGenericVariableTs1_up_d,
       FacComputer_P.RateLimiterGenericVariableTs1_lo_f, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterGenericVariableTs1_InitialCondition, FacComputer_P.reset_Value_k5, &rtb_Y_g4,
+      FacComputer_P.RateLimiterGenericVariableTs1_InitialCondition, FacComputer_P.reset_Value_k5, &rtb_Y_br,
       &FacComputer_DWork.sf_RateLimiter_g0);
-    rtb_OR1 = ((!rtb_AND1) && rtb_y_k5 && rtb_Switch_io_idx_1);
-    if (rtb_OR1) {
+    rtb_Switch6 = std::fmax(FacComputer_U.in.analog_inputs.left_spoiler_pos_deg,
+      FacComputer_U.in.analog_inputs.right_spoiler_pos_deg);
+    rtb_Switch1_a = rtb_Switch6 / look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0),
+      FacComputer_P.spoilermaxdeflection_bp01Data, FacComputer_P.spoilermaxdeflection_tableData, 5U) * look1_binlxpw(
+      static_cast<real_T>(rtb_Switch_i_idx_0), FacComputer_P.VLSincreasemaxdeflection_bp01Data,
+      FacComputer_P.VLSincreasemaxdeflection_tableData, 5U);
+    rtb_DataTypeConversion_kr = ((!rtb_AND1) && rtb_y_k5 && rtb_Switch_io_idx_1);
+    if (rtb_DataTypeConversion_kr) {
       FacComputer_DWork.takeoff_config = rtb_Switch_i_idx_0;
     } else if (FacComputer_DWork.takeoff_config != rtb_Switch_i_idx_0) {
       FacComputer_DWork.takeoff_config = -1.0;
@@ -804,58 +818,131 @@ void FacComputer::step()
 
     FacComputer_RateLimiter_f(rtb_Y_l, FacComputer_P.RateLimiterGenericVariableTs_up,
       FacComputer_P.RateLimiterGenericVariableTs_lo, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterGenericVariableTs_InitialCondition, FacComputer_P.reset_Value_m, &rtb_Switch1,
+      FacComputer_P.RateLimiterGenericVariableTs_InitialCondition, FacComputer_P.reset_Value_m, &rtb_Switch6,
       &FacComputer_DWork.sf_RateLimiter_g);
-    rtb_Switch1 = std::fmax(FacComputer_P.Vmcl_Value, rtb_Switch1 * rtb_Y_g4) + look1_binlxpw
-      (FacComputer_P.Constant1_Value.left_spoiler_pos_deg, FacComputer_P.uDLookupTable_bp01Data,
-       FacComputer_P.uDLookupTable_tableData, 1U);
-    rtb_Y_br = FacComputer_P.Gain2_Gain_o * rtb_DataTypeConversion2;
-    if (rtb_OR1) {
+    rtb_BusAssignment_c_flight_envelope_v_ls_kn = std::fmax(FacComputer_P.Vmcl_Value, rtb_Switch6 * rtb_Y_br) +
+      rtb_Switch1_a;
+    rtb_BusAssignment_c_flight_envelope_v_stall_kn = rtb_Y_br;
+    rtb_Switch1_a = FacComputer_P.Gain2_Gain_j * rtb_DataTypeConversion2;
+    bpIndices_0[0U] = plook_binx(rtb_Switch1_a, FacComputer_P.nDLookupTable_bp01Data_p, 7U, &rtb_vs1g);
+    fractions_0[0U] = rtb_vs1g;
+    bpIndices_0[1U] = plook_binx(FacComputer_P.Gain3_Gain_d *
+      FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data, FacComputer_P.nDLookupTable_bp02Data_b, 1U, &rtb_vs1g);
+    fractions_0[1U] = rtb_vs1g;
+    bpIndices_0[2U] = plook_binx(FacComputer_P._Value, FacComputer_P.nDLookupTable_bp03Data_h, 5U, &rtb_vs1g);
+    fractions_0[2U] = rtb_vs1g;
+    FacComputer_VS1GfromVLS(look2_binlxpw(rtb_Switch1_a, static_cast<real_T>(rtb_alt),
+      FacComputer_P.uDLookupTable1_bp01Data_p, FacComputer_P.uDLookupTable1_bp02Data_n,
+      FacComputer_P.uDLookupTable1_tableData_j, FacComputer_P.uDLookupTable1_maxIndex_k, 8U), intrp3d_l_pw(bpIndices_0,
+      fractions_0, FacComputer_P.nDLookupTable_tableData_e, FacComputer_P.nDLookupTable_dimSizes_l),
+      FacComputer_P._Value, &rtb_vs1g_h);
+    FacComputer_MATLABFunction(&FacComputer_U.in.bus_inputs.fmgc_own_bus.fg_radio_height_ft, &rtb_y_gg);
+    if (rtb_y_gg) {
+      rtb_Switch1_a = FacComputer_U.in.bus_inputs.fmgc_own_bus.fg_radio_height_ft.Data;
+    } else {
+      rtb_Switch1_a = FacComputer_P.Constant3_Value;
+    }
+
+    if (FacComputer_DWork.is_active_c8_FacComputer == 0) {
+      FacComputer_DWork.is_active_c8_FacComputer = 1U;
+      FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Landed;
+      rtb_alpha_floor_inhib = 0;
+    } else {
+      switch (FacComputer_DWork.is_c8_FacComputer) {
+       case FacComputer_IN_Flying:
+        if (rtb_Switch1_a < 2500.0) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Landing2500ft;
+          rtb_alpha_floor_inhib = 0;
+        } else if (rtb_BusAssignment_h_logic_on_ground) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Landed;
+          rtb_alpha_floor_inhib = 0;
+        } else {
+          rtb_alpha_floor_inhib = 0;
+        }
+        break;
+
+       case FacComputer_IN_Landed:
+        if (rtb_OR1) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Takeoff100ft;
+          rtb_alpha_floor_inhib = 1;
+        } else {
+          rtb_alpha_floor_inhib = 0;
+        }
+        break;
+
+       case FacComputer_IN_Landing2500ft:
+        if (rtb_Switch1_a > 2500.0) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Flying;
+          rtb_alpha_floor_inhib = 0;
+        } else if (rtb_BusAssignment_h_logic_on_ground) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Landed;
+          rtb_alpha_floor_inhib = 0;
+        } else {
+          rtb_alpha_floor_inhib = 0;
+        }
+        break;
+
+       default:
+        if (rtb_BusAssignment_h_logic_on_ground) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Landed;
+          rtb_alpha_floor_inhib = 0;
+        } else if (rtb_Switch1_a > 2500.0) {
+          FacComputer_DWork.is_c8_FacComputer = FacComputer_IN_Flying;
+          rtb_alpha_floor_inhib = 0;
+        } else {
+          rtb_alpha_floor_inhib = 1;
+        }
+        break;
+      }
+    }
+
+    rtb_Switch1_a = FacComputer_P.Gain2_Gain_o * rtb_DataTypeConversion2;
+    if (rtb_DataTypeConversion_kr) {
       FacComputer_DWork.takeoff_config_g = rtb_Switch_i_idx_0;
     } else if (FacComputer_DWork.takeoff_config_g != rtb_Switch_i_idx_0) {
       FacComputer_DWork.takeoff_config_g = -1.0;
     }
 
     if (FacComputer_DWork.takeoff_config_g != -1.0) {
-      rtb_Switch4_f = 2.0;
+      rtb_Y_br = 2.0;
     } else {
-      rtb_Switch4_f = rtb_Switch_i_idx_0;
+      rtb_Y_br = rtb_Switch_i_idx_0;
     }
 
-    bpIndices_0[0U] = plook_binx(rtb_Y_br, FacComputer_P.nDLookupTable_bp01Data_a, 7U, &rtb_vs1g);
-    fractions_0[0U] = rtb_vs1g;
-    bpIndices_0[1U] = plook_binx(FacComputer_P.Gain3_Gain_n *
-      FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data, FacComputer_P.nDLookupTable_bp02Data_f, 1U, &rtb_vs1g);
-    fractions_0[1U] = rtb_vs1g;
-    bpIndices_0[2U] = plook_binx(rtb_Switch4_f, FacComputer_P.nDLookupTable_bp03Data_m, 5U, &rtb_vs1g);
-    fractions_0[2U] = rtb_vs1g;
-    FacComputer_VS1GfromVLS(look2_binlxpw(rtb_Y_br, static_cast<real_T>(rtb_alt),
-      FacComputer_P.uDLookupTable1_bp01Data_a, FacComputer_P.uDLookupTable1_bp02Data_l,
-      FacComputer_P.uDLookupTable1_tableData_o, FacComputer_P.uDLookupTable1_maxIndex_b, 8U), intrp3d_l_pw(bpIndices_0,
-      fractions_0, FacComputer_P.nDLookupTable_tableData_p, FacComputer_P.nDLookupTable_dimSizes_p), rtb_Switch4_f,
-      &rtb_Y_br);
-    rtb_Switch4_f = std::fmax(rtb_Y_br * look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0),
-      FacComputer_P.uDLookupTable_bp01Data_b, FacComputer_P.uDLookupTable_tableData_c, 3U), FacComputer_P.Vmcl_Value_a +
-      FacComputer_P.Bias_Bias);
-    rtb_Y_br = FacComputer_P.Gain2_Gain_c * rtb_DataTypeConversion2;
-    bpIndices_1[0U] = plook_binx(rtb_Y_br, FacComputer_P.nDLookupTable_bp01Data_o, 7U, &rtb_vs1g);
+    bpIndices_1[0U] = plook_binx(rtb_Switch1_a, FacComputer_P.nDLookupTable_bp01Data_a, 7U, &rtb_vs1g);
     fractions_1[0U] = rtb_vs1g;
-    bpIndices_1[1U] = plook_binx(FacComputer_P.Gain3_Gain_a *
-      FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data, FacComputer_P.nDLookupTable_bp02Data_m, 1U, &rtb_vs1g);
+    bpIndices_1[1U] = plook_binx(FacComputer_P.Gain3_Gain_n *
+      FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data, FacComputer_P.nDLookupTable_bp02Data_f, 1U, &rtb_vs1g);
     fractions_1[1U] = rtb_vs1g;
-    bpIndices_1[2U] = plook_binx(FacComputer_P.Constant2_Value_c, FacComputer_P.nDLookupTable_bp03Data_md, 5U, &rtb_vs1g);
+    bpIndices_1[2U] = plook_binx(rtb_Y_br, FacComputer_P.nDLookupTable_bp03Data_m, 5U, &rtb_vs1g);
     fractions_1[2U] = rtb_vs1g;
-    if (FacComputer_P.Constant2_Value_c == 0.0) {
-      rtb_vs1g = look2_binlxpw(rtb_Y_br, static_cast<real_T>(rtb_alt), FacComputer_P.uDLookupTable1_bp01Data_l,
-        FacComputer_P.uDLookupTable1_bp02Data_p, FacComputer_P.uDLookupTable1_tableData_i,
-        FacComputer_P.uDLookupTable1_maxIndex_g, 8U) / 1.23;
+    FacComputer_VS1GfromVLS(look2_binlxpw(rtb_Switch1_a, static_cast<real_T>(rtb_alt),
+      FacComputer_P.uDLookupTable1_bp01Data_a, FacComputer_P.uDLookupTable1_bp02Data_l,
+      FacComputer_P.uDLookupTable1_tableData_o, FacComputer_P.uDLookupTable1_maxIndex_b, 8U), intrp3d_l_pw(bpIndices_1,
+      fractions_1, FacComputer_P.nDLookupTable_tableData_p, FacComputer_P.nDLookupTable_dimSizes_p), rtb_Y_br, &rtb_vs1g);
+    if (rtb_alpha_floor_inhib > FacComputer_P.Switch_Threshold) {
+      rtb_Switch1_a = std::fmax(FacComputer_P.Vmcl5_Value, FacComputer_P.Gain4_Gain * rtb_vs1g_h);
     } else {
-      rtb_vs1g = intrp3d_l_pw(bpIndices_1, fractions_1, FacComputer_P.nDLookupTable_tableData_k,
-        FacComputer_P.nDLookupTable_dimSizes_i) / 1.23;
+      rtb_Switch1_a = std::fmin(FacComputer_P.Vfe_35_Value, std::fmax(rtb_vs1g * look1_binlxpw(static_cast<real_T>
+        (rtb_Switch_i_idx_0), FacComputer_P.uDLookupTable_bp01Data, FacComputer_P.uDLookupTable_tableData, 1U),
+        FacComputer_P.Vmcl10_Value));
     }
 
-    rtb_BusAssignment_g5_flight_envelope_v_4_kn = std::fmax(FacComputer_P.Gain2_Gain_e * rtb_vs1g,
-      FacComputer_P.Vmcl_Value_a + FacComputer_P.Bias2_Bias);
+    rtb_vs1g_h = FacComputer_P.Gain2_Gain_c * rtb_DataTypeConversion2;
+    rtb_Y_br = FacComputer_P.Gain3_Gain_a * FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data;
+    bpIndices_2[0U] = plook_binx(rtb_vs1g_h, FacComputer_P.nDLookupTable_bp01Data_o, 7U, &rtb_vs1g);
+    fractions_2[0U] = rtb_vs1g;
+    bpIndices_2[1U] = plook_binx(rtb_Y_br, FacComputer_P.nDLookupTable_bp02Data_m, 1U, &rtb_vs1g);
+    fractions_2[1U] = rtb_vs1g;
+    bpIndices_2[2U] = plook_binx(FacComputer_P.Constant2_Value_c, FacComputer_P.nDLookupTable_bp03Data_md, 5U, &rtb_vs1g);
+    fractions_2[2U] = rtb_vs1g;
+    FacComputer_VS1GfromVLS(look2_binlxpw(rtb_vs1g_h, static_cast<real_T>(rtb_alt),
+      FacComputer_P.uDLookupTable1_bp01Data_l, FacComputer_P.uDLookupTable1_bp02Data_p,
+      FacComputer_P.uDLookupTable1_tableData_i, FacComputer_P.uDLookupTable1_maxIndex_g, 8U), intrp3d_l_pw(bpIndices_2,
+      fractions_2, FacComputer_P.nDLookupTable_tableData_k, FacComputer_P.nDLookupTable_dimSizes_i),
+      FacComputer_P.Constant2_Value_c, &rtb_vs1g_h);
+    rtb_vs1g_h = std::fmin(std::fmax(FacComputer_P.Gain2_Gain_e * rtb_vs1g_h, FacComputer_P.Vmcl20_Value),
+      FacComputer_P.Vfe_25_Value);
     rtb_BusAssignment_g5_flight_envelope_v_man_kn = look2_binlxpw(FacComputer_P.Gain3_Gain_b * rtb_DataTypeConversion2,
       static_cast<real_T>(rtb_alt), FacComputer_P.uDLookupTable_bp01Data_n, FacComputer_P.uDLookupTable_bp02Data,
       FacComputer_P.uDLookupTable_tableData_m, FacComputer_P.uDLookupTable_maxIndex, 8U);
@@ -865,10 +952,10 @@ void FacComputer::step()
     if (rtb_Switch_io_idx_2) {
       rtb_Y_l = FacComputer_P.Constant2_Value;
     } else {
-      rtb_Y_l = FacComputer_P.Constant3_Value;
+      rtb_Y_l = FacComputer_P.Constant3_Value_p;
     }
 
-    rtb_Switch4_j = std::fmin(std::fmin(rtb_Y_l, std::sqrt(std::pow((std::pow(FacComputer_P.Constant1_Value_p *
+    rtb_Switch4_f = std::fmin(std::fmin(rtb_Y_l, std::sqrt(std::pow((std::pow(FacComputer_P.Constant1_Value_p *
       FacComputer_P.Constant1_Value_p * 0.2 + 1.0, 3.5) - 1.0) * (rtb_p_s_c / 1013.25) + 1.0, 0.2857142857142857) - 1.0)
       * 1479.1), look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0), FacComputer_P.uDLookupTable_bp01Data_a,
       FacComputer_P.uDLookupTable_tableData_a, 5U));
@@ -889,11 +976,10 @@ void FacComputer::step()
       FacComputer_P.RateLimiterGenericVariableTs_InitialCondition_o, FacComputer_P.reset_Value_i3, &rtb_Switch6,
       &FacComputer_DWork.sf_RateLimiter_f);
     rtb_Switch_b = FacComputer_P.Gain_Gain_j * rtb_Switch6;
-    rtb_BusAssignment_f_flight_envelope_v_stall_kn = rtb_Y_g4;
     rtb_BusAssignment_f_flight_envelope_v_3_visible = ((rtb_Switch_i_idx_0 == FacComputer_P.CompareToConstant4_const) ||
       (rtb_Switch_i_idx_0 == FacComputer_P.CompareToConstant2_const));
     rtb_BusAssignment_f_flight_envelope_v_fe_next_kn = look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0),
-      FacComputer_P.uDLookupTable1_bp01Data_p, FacComputer_P.uDLookupTable1_tableData_ow, 5U);
+      FacComputer_P.uDLookupTable1_bp01Data_pi, FacComputer_P.uDLookupTable1_tableData_ow, 5U);
     rtb_y_gg = (FacComputer_U.in.discrete_inputs.ap_own_engaged || FacComputer_U.in.discrete_inputs.ap_opp_engaged);
     rtb_AND = (FacComputer_U.in.discrete_inputs.rudder_trim_reset_button && (!rtb_y_gg));
     if (!FacComputer_DWork.previousInput_not_empty) {
@@ -985,10 +1071,10 @@ void FacComputer::step()
       FacComputer_DWork.pY_not_empty = true;
     }
 
-    rtb_Y_br = FacComputer_U.in.time.dt * FacComputer_P.WashoutFilter_C1;
-    rtb_Y_g4 = rtb_Y_br + 2.0;
-    rtb_Switch6 = 2.0 / (rtb_Y_br + 2.0);
-    FacComputer_DWork.pY = (2.0 - rtb_Y_br) / (rtb_Y_br + 2.0) * FacComputer_DWork.pY + (rtb_r * rtb_Switch6 -
+    rtb_Y_g4 = FacComputer_U.in.time.dt * FacComputer_P.WashoutFilter_C1;
+    rtb_Y_br = rtb_Y_g4 + 2.0;
+    rtb_Switch6 = 2.0 / (rtb_Y_g4 + 2.0);
+    FacComputer_DWork.pY = (2.0 - rtb_Y_g4) / (rtb_Y_g4 + 2.0) * FacComputer_DWork.pY + (rtb_r * rtb_Switch6 -
       FacComputer_DWork.pU * rtb_Switch6);
     FacComputer_DWork.pU = rtb_r;
     if (rtb_AND || (rtb_y_gg && FacComputer_U.in.discrete_inputs.elac_2_healthy && (rtb_y_a != 0U))) {
@@ -1217,8 +1303,6 @@ void FacComputer::step()
     FacComputer_Y.out.logic.rudder_travel_lim_has_priority = rudderTravelLimHasPriority;
     FacComputer_Y.out.logic.speed_scale_lost = FacComputer_P.Constant_Value_b5;
     FacComputer_Y.out.logic.speed_scale_visible = rtb_BusAssignment_d_logic_speed_scale_visible;
-    FacComputer_Y.out.logic.left_spoiler_pos_deg = FacComputer_P.Constant1_Value.left_spoiler_pos_deg;
-    FacComputer_Y.out.logic.right_spoiler_pos_deg = FacComputer_P.Constant1_Value.right_spoiler_pos_deg;
     FacComputer_Y.out.flight_envelope.estimated_beta_deg = Vcas;
     FacComputer_Y.out.flight_envelope.beta_target_deg = rtb_beta;
     FacComputer_Y.out.flight_envelope.beta_target_visible = rtb_BusAssignment_d_flight_envelope_beta_target_visible;
@@ -1226,19 +1310,19 @@ void FacComputer::step()
     FacComputer_Y.out.flight_envelope.alpha_filtered_deg = rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg;
     FacComputer_Y.out.flight_envelope.computed_weight_lbs = rtb_DataTypeConversion2;
     FacComputer_Y.out.flight_envelope.computed_cg_percent = FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data;
-    FacComputer_Y.out.flight_envelope.v_alpha_max_kn = rtb_BusAssignment_kv_flight_envelope_v_alpha_max_kn;
-    FacComputer_Y.out.flight_envelope.v_alpha_prot_kn = rtb_BusAssignment_c_flight_envelope_v_alpha_prot_kn;
+    FacComputer_Y.out.flight_envelope.v_alpha_max_kn = rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn;
+    FacComputer_Y.out.flight_envelope.v_alpha_prot_kn = rtb_BusAssignment_f_flight_envelope_v_alpha_prot_kn;
     FacComputer_Y.out.flight_envelope.v_stall_warn_kn = rtb_Switch;
-    FacComputer_Y.out.flight_envelope.v_ls_kn = rtb_Switch1;
-    FacComputer_Y.out.flight_envelope.v_stall_kn = rtb_BusAssignment_f_flight_envelope_v_stall_kn;
-    FacComputer_Y.out.flight_envelope.v_3_kn = rtb_Switch4_f;
+    FacComputer_Y.out.flight_envelope.v_ls_kn = rtb_BusAssignment_c_flight_envelope_v_ls_kn;
+    FacComputer_Y.out.flight_envelope.v_stall_kn = rtb_BusAssignment_c_flight_envelope_v_stall_kn;
+    FacComputer_Y.out.flight_envelope.v_3_kn = rtb_Switch1_a;
     FacComputer_Y.out.flight_envelope.v_3_visible = rtb_BusAssignment_f_flight_envelope_v_3_visible;
-    FacComputer_Y.out.flight_envelope.v_4_kn = rtb_BusAssignment_g5_flight_envelope_v_4_kn;
+    FacComputer_Y.out.flight_envelope.v_4_kn = rtb_vs1g_h;
     FacComputer_Y.out.flight_envelope.v_4_visible = ((rtb_Switch_i_idx_0 == FacComputer_P.CompareToConstant3_const) ||
       (rtb_Switch_i_idx_0 == FacComputer_P.CompareToConstant1_const));
     FacComputer_Y.out.flight_envelope.v_man_kn = rtb_BusAssignment_g5_flight_envelope_v_man_kn;
     FacComputer_Y.out.flight_envelope.v_man_visible = rtb_DataTypeConversion_kr;
-    FacComputer_Y.out.flight_envelope.v_max_kn = rtb_Switch4_j;
+    FacComputer_Y.out.flight_envelope.v_max_kn = rtb_Switch4_f;
     FacComputer_Y.out.flight_envelope.v_fe_next_kn = rtb_BusAssignment_f_flight_envelope_v_fe_next_kn;
     FacComputer_Y.out.flight_envelope.v_fe_next_visible = rtb_OR1;
     FacComputer_Y.out.flight_envelope.v_c_trend_kn = rtb_Switch_b;
@@ -1332,25 +1416,25 @@ void FacComputer::step()
     FacComputer_Y.out.bus_outputs.estimated_sideslip_deg.Data = static_cast<real32_T>(Vcas);
     FacComputer_Y.out.bus_outputs.v_alpha_lim_kn.SSM = static_cast<uint32_T>(rtb_alpha_floor_inhib);
     FacComputer_Y.out.bus_outputs.v_alpha_lim_kn.Data = static_cast<real32_T>
-      (rtb_BusAssignment_kv_flight_envelope_v_alpha_max_kn);
+      (rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn);
     FacComputer_Y.out.bus_outputs.v_ls_kn.SSM = static_cast<uint32_T>(rtb_v_ls_kn_SSM);
-    FacComputer_Y.out.bus_outputs.v_ls_kn.Data = static_cast<real32_T>(rtb_Switch1);
+    FacComputer_Y.out.bus_outputs.v_ls_kn.Data = static_cast<real32_T>(rtb_BusAssignment_c_flight_envelope_v_ls_kn);
     FacComputer_Y.out.bus_outputs.v_stall_kn.SSM = static_cast<uint32_T>(rtb_v_stall_kn_SSM);
-    FacComputer_Y.out.bus_outputs.v_stall_kn.Data = static_cast<real32_T>(rtb_BusAssignment_f_flight_envelope_v_stall_kn);
+    FacComputer_Y.out.bus_outputs.v_stall_kn.Data = static_cast<real32_T>(rtb_BusAssignment_c_flight_envelope_v_stall_kn);
     FacComputer_Y.out.bus_outputs.v_alpha_prot_kn.SSM = static_cast<uint32_T>(rtb_v_alpha_prot_kn_SSM);
     FacComputer_Y.out.bus_outputs.v_alpha_prot_kn.Data = static_cast<real32_T>
-      (rtb_BusAssignment_c_flight_envelope_v_alpha_prot_kn);
+      (rtb_BusAssignment_f_flight_envelope_v_alpha_prot_kn);
     FacComputer_Y.out.bus_outputs.v_stall_warn_kn.SSM = static_cast<uint32_T>(rtb_v_stall_warn_kn_SSM);
     FacComputer_Y.out.bus_outputs.v_stall_warn_kn.Data = static_cast<real32_T>(rtb_Switch);
     FacComputer_Y.out.bus_outputs.speed_trend_kn.SSM = static_cast<uint32_T>(rtb_speed_trend_kn_SSM);
     FacComputer_Y.out.bus_outputs.speed_trend_kn.Data = static_cast<real32_T>(rtb_Switch_b);
     FacComputer_Y.out.bus_outputs.v_3_kn.SSM = static_cast<uint32_T>(rtb_v_3_kn_SSM);
-    FacComputer_Y.out.bus_outputs.v_3_kn.Data = static_cast<real32_T>(rtb_Switch4_f);
+    FacComputer_Y.out.bus_outputs.v_3_kn.Data = static_cast<real32_T>(rtb_Switch1_a);
     FacComputer_Y.out.bus_outputs.v_4_kn.SSM = static_cast<uint32_T>(rtb_v_4_kn_SSM);
-    FacComputer_Y.out.bus_outputs.v_4_kn.Data = static_cast<real32_T>(rtb_BusAssignment_g5_flight_envelope_v_4_kn);
+    FacComputer_Y.out.bus_outputs.v_4_kn.Data = static_cast<real32_T>(rtb_vs1g_h);
     FacComputer_Y.out.bus_outputs.v_man_kn.SSM = static_cast<uint32_T>(rtb_v_man_kn_SSM);
     FacComputer_Y.out.bus_outputs.v_man_kn.Data = static_cast<real32_T>(rtb_BusAssignment_g5_flight_envelope_v_man_kn);
-    FacComputer_Y.out.bus_outputs.v_max_kn.Data = static_cast<real32_T>(rtb_Switch4_j);
+    FacComputer_Y.out.bus_outputs.v_max_kn.Data = static_cast<real32_T>(rtb_Switch4_f);
     FacComputer_Y.out.bus_outputs.v_fe_next_kn.Data = static_cast<real32_T>
       (rtb_BusAssignment_f_flight_envelope_v_fe_next_kn);
     FacComputer_Y.out.bus_outputs.discrete_word_3.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);

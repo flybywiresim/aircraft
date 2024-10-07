@@ -2591,6 +2591,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   fmgcBBusOutputs.fac_weight_lbs.Data = simData.total_weight_kg * 2.20462262;
   fmgcBBusOutputs.fac_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fac_cg_percent.Data = simData.CG_percent_MAC;
+  fmgcBBusOutputs.n1_left_percent.SSM = Arinc429SignStatus::NormalOperation;
+  fmgcBBusOutputs.n1_left_percent.Data = simData.engine_N1_1_percent;
+  fmgcBBusOutputs.n1_right_percent.SSM = Arinc429SignStatus::NormalOperation;
+  fmgcBBusOutputs.n1_right_percent.Data = simData.engine_N1_4_percent;
 
   if (primDisabled != -1 || facDisabled != -1) {
     simConnectInterface.setClientDataFmgcB(fmgcBBusOutputs, 0);
