@@ -211,6 +211,14 @@ export interface FlightPlanPerformanceData {
    */
   get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
+  climbSpeedLimitSpeed: number | null;
+
+  climbSpeedLimitAltitude: number | null;
+
+  descentSpeedLimitSpeed: number | null;
+
+  descentSpeedLimitAltitude: number | null;
+
   clone(): this;
 }
 
@@ -514,6 +522,36 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     return this.pilotTransitionLevel === null;
   }
 
+  /**
+   * The maximum speed imposed by the climb speed limit or null if not set.
+   */
+  climbSpeedLimitSpeed: number | null = 250;
+
+  /**
+   * The altitude below which the climb speed limit applies or null if not set.
+   */
+  climbSpeedLimitAltitude: number | null = 10_000;
+
+  /**
+   * Whether the climb speed limit is pilot entered.
+   */
+  isClimbSpeedLimitPilotEntered: boolean = false;
+
+  /**
+   * The maximum speed imposed by the descent speed limit or null if not set.
+   */
+  descentSpeedLimitSpeed: number | null = 250;
+
+  /**
+   * The altitude below which the descent speed limit applies or null if not set.
+   */
+  descentSpeedLimitAltitude: number | null = 10_000;
+
+  /**
+   * Whether the descent speed limit is pilot entered.
+   */
+  isDescentSpeedLimitPilotEntered: boolean = false;
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel,
@@ -539,6 +577,12 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       pilotTransitionAltitude: this.pilotTransitionAltitude,
       databaseTransitionLevel: this.databaseTransitionLevel,
       pilotTransitionLevel: this.pilotTransitionLevel,
+      climbSpeedLimitSpeed: this.climbSpeedLimitSpeed,
+      climbSpeedLimitAltitude: this.climbSpeedLimitAltitude,
+      isClimbSpeedLimitPilotEntered: this.isClimbSpeedLimitPilotEntered,
+      descentSpeedLimitSpeed: this.descentSpeedLimitSpeed,
+      descentSpeedLimitAltitude: this.descentSpeedLimitAltitude,
+      isDescentSpeedLimitPilotEntered: this.isDescentSpeedLimitPilotEntered,
     };
   }
 }
@@ -578,4 +622,12 @@ export interface SerializedFlightPlanPerformanceData {
 
   databaseTransitionLevel: number | null;
   pilotTransitionLevel: number | null;
+
+  climbSpeedLimitSpeed: number | null;
+  climbSpeedLimitAltitude: number | null;
+  isClimbSpeedLimitPilotEntered: boolean;
+
+  descentSpeedLimitSpeed: number | null;
+  descentSpeedLimitAltitude: number | null;
+  isDescentSpeedLimitPilotEntered: boolean;
 }
