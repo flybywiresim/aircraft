@@ -19,6 +19,7 @@
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
   - [Autobrakes](#autobrakes)
+  - [Non-Systems Related](#non-systems-related)
 
 ## Uncategorized
 
@@ -949,3 +950,13 @@
 - A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED
     - Boolean
     - RTO autobrake button is pressed
+
+## Non-Systems Related
+
+- `L:FBW_PILOT_SEAT`
+  - Enum
+  - Which seat the user/pilot occupies in the flight deck.
+  - | Value | Description |
+    |-------|-------------|
+    | 0     | Left Seat   |
+    | 1     | Right Seat  |

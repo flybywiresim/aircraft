@@ -579,42 +579,42 @@
 
         <Sound WwiseEvent="smoothtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="FEET PER MINUTE" Index="0">
                 <Range LowerBound="-150" UpperBound="-50" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="medtouch380" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="FEET PER MINUTE" Index="0">
                 <Range LowerBound="-350" UpperBound="-151" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="firmtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="FEET PER MINUTE" Index="0">
                 <Range UpperBound="-351" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="cabtouchsmooth1" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="HublotIn002" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="FEET PER MINUTE" Index="0">
                 <Range LowerBound="-150" UpperBound="-50" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="cabtouchmed1" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="HublotIn002" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="FEET PER MINUTE" Index="0">
                 <Range LowerBound="-350" UpperBound="-151" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="a380cabtouchhard" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="CENTRAL" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="FEET PER MINUTE" Index="0">
                 <Range UpperBound="-351" />
             </Requires>
         </Sound>
@@ -793,58 +793,66 @@
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
-            <Range LowerBound="73" UpperBound="77" />
+            <Range LowerBound="96" UpperBound="100" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
-            <Range LowerBound="73" UpperBound="77" />
+            <Range LowerBound="96" UpperBound="100" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_3" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_3" Units="PERCENT">
-            <Range LowerBound="73" UpperBound="77" />
+            <Range LowerBound="96" UpperBound="100" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_4" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_4" Units="PERCENT">
-            <Range LowerBound="73" UpperBound="77" />
+            <Range LowerBound="96" UpperBound="100" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
-            <Range LowerBound="48" UpperBound="52" />
+            <Range LowerBound="69" UpperBound="73" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
-            <Range LowerBound="48" UpperBound="52" />
+            <Range LowerBound="69" UpperBound="73" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_3" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_3" Units="PERCENT">
-            <Range LowerBound="48" UpperBound="52" />
+            <Range LowerBound="69" UpperBound="73" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_4" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_4" Units="PERCENT">
-            <Range LowerBound="48" UpperBound="52" />
+            <Range LowerBound="69" UpperBound="73" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="52" UpperBound="56" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="52" UpperBound="56" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_3" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_3" Units="PERCENT">
+            <Range LowerBound="52" UpperBound="56" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_4" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_4" Units="PERCENT">
+            <Range LowerBound="52" UpperBound="56" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
-            <Range LowerBound="23" UpperBound="27" />
-            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
-            <Range LowerBound="23" UpperBound="27" />
-            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_3" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_3" Units="PERCENT">
-            <Range LowerBound="23" UpperBound="27" />
-            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_4" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_4" Units="PERCENT">
-            <Range LowerBound="23" UpperBound="27" />
-            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
