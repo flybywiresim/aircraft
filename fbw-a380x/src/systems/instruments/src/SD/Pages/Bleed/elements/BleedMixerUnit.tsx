@@ -14,7 +14,8 @@ const BleedMixerUnit: FC<BleedMixerUnitProps> = ({ x, y, sdacDatum }) => {
     const [hpValve1] = useSimVar('L:A32NX_PNEU_ENG_1_HP_VALVE_OPEN', 'bool', 500);
     const [hpValve2] = useSimVar('L:A32NX_PNEU_ENG_2_HP_VALVE_OPEN', 'bool', 500);
     const airSuppliedToCabinAndCockpit = hpValve1 || hpValve2;
-    const ramInletOpen = false;
+    // TODO: Replace with signal from systems once implemented
+    const [ramInletOpen] = useSimVar('L:A32NX_OVHD_COND_RAM_AIR_PB_IS_ON', 'bool', 100);
 
     return (
         <g id='MixerUnit'>
