@@ -8,10 +8,10 @@ interface BleedHotAirProps {
   x: number;
   y: number;
   hotAir: number;
-  sdacDatum: boolean;
+  _sdacDatum: boolean;
 }
 
-const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir, sdacDatum }) => {
+const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir, _sdacDatum }) => {
   const [packValveOpen1] = useSimVar(`L:A32NX_COND_PACK_${hotAir}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
   const [packValveOpen2] = useSimVar(`L:A32NX_COND_PACK_${hotAir}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
   const anyPackValveOpen = packValveOpen1 || packValveOpen2;

@@ -109,7 +109,7 @@ export const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentPr
       onClick={handleChecklistItemClick}
     >
       {item.item && isAnyItemType && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center border-4 border-current text-current">
+        <div className="flex size-8 shrink-0 items-center justify-center border-4 border-current text-current">
           {!!autoFillChecklists && item.condition && (
             <Link45deg
               size={40}
