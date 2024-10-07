@@ -57,14 +57,14 @@ class CDUVerticalRevisionPage {
         let speedLimitCell = "";
         if (showDesSpeedLim) {
             speedLimitTitle = "\xa0DES SPD LIM";
-            if (mcdu.descentSpeedLimit !== undefined) {
+            if (mcdu.descentSpeedLimit !== null) {
                 speedLimitCell = `{magenta}{${mcdu.descentSpeedLimitPilot ? 'big' : 'small'}}${mcdu.descentSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, performanceData.transitionLevel * 100)}{end}{end}`;
             } else {
                 speedLimitCell = "{cyan}*[ ]/[   ]{end}";
             }
         } else if (showSpeedLim) {
             speedLimitTitle = "\xa0CLB SPD LIM";
-            if (mcdu.climbSpeedLimit !== undefined) {
+            if (mcdu.climbSpeedLimit !== null) {
                 speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, performanceData.transitionAltitude)}{end}{end}`;
             } else {
                 speedLimitCell = "{cyan}*[ ]/[   ]{end}";
@@ -166,8 +166,8 @@ class CDUVerticalRevisionPage {
                         mcdu.descentSpeedLimit = 250;
                         mcdu.descentSpeedLimitAlt = 10000;
                     } else {
-                        mcdu.descentSpeedLimit = undefined;
-                        mcdu.descentSpeedLimitAlt = undefined;
+                        mcdu.descentSpeedLimit = null;
+                        mcdu.descentSpeedLimitAlt = null;
                     }
                     mcdu.descentSpeedLimitPilot = false;
                 } else {
@@ -175,8 +175,8 @@ class CDUVerticalRevisionPage {
                         mcdu.climbSpeedLimit = 250;
                         mcdu.climbSpeedLimitAlt = 10000;
                     } else {
-                        mcdu.climbSpeedLimit = undefined;
-                        mcdu.climbSpeedLimitAlt = undefined;
+                        mcdu.climbSpeedLimit = null;
+                        mcdu.climbSpeedLimitAlt = null;
                     }
                     mcdu.climbSpeedLimitPilot = false;
                 }
