@@ -41,6 +41,7 @@ const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 export interface Fmgc {
   getZeroFuelWeight(): number;
   getFOB(): number;
+  getGrossWeight(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
   getManagedClimbSpeed(): Knots;

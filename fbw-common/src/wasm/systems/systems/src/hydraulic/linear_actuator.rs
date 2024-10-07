@@ -832,8 +832,12 @@ impl CoreHydraulicForce {
         speed: Velocity,
     ) -> Force {
         if self.is_dev_tuning_active {
-            self.pid_controller
-                .set_gains(self.test_p_gain, self.test_i_gain, self.test_force_gain);
+            self.pid_controller.set_gains(
+                self.test_p_gain,
+                self.test_i_gain,
+                0.,
+                self.test_force_gain,
+            );
         }
 
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
