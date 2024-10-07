@@ -280,7 +280,7 @@ export const PushbackPage = () => {
 
   return (
     <>
-      <div className="relative flex size-full flex-col space-y-4">
+      <div className="size-full relative flex flex-col space-y-4">
         {/* Map Container */}
         <div className="flex grow flex-col space-y-4">
           <PushbackMap />

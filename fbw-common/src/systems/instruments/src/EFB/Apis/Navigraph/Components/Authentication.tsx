@@ -112,7 +112,7 @@ export const NavigraphAuthUI = () => {
   const hasQr = !!params?.verification_uri_complete;
 
   return (
-    <div className="flex size-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
+    <div className="size-full flex items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
       <div className="flex flex-col items-center justify-center">
         <ShieldLock className="mr-2" size={40} />
 
