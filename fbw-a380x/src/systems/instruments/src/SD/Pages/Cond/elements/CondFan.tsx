@@ -1,15 +1,44 @@
 import React, { FC } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { Position } from '@instruments/common/types';
 import { Triangle } from '@instruments/common/Shapes';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 
 export const CondFan = () => {
-  const [fwdCargoExtractFanIsOn] = useSimVar('L:A32NX_VENT_FWD_EXTRACTION_FAN_ON', 'bool', 1000);
-  const [bulkCargoExtractFanIsOn] = useSimVar('L:A32NX_VENT_BULK_EXTRACTION_FAN_ON', 'bool', 1000);
+  const vcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
+  const vcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
+  const vcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
+  const vcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
+
+  let vcsDiscreteWordToUse;
+
+  if (vcsB1DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB1DiscreteWord;
+  } else if (vcsB2DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB2DiscreteWord;
+  } else if (vcsB3DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB3DiscreteWord;
+  } else {
+    vcsDiscreteWordToUse = vcsB4DiscreteWord;
+  }
+
+  const fwdCargoExtractFanIsOn = vcsDiscreteWordToUse.bitValueOr(13, false);
+  const bulkCargoExtractFanIsOn = vcsDiscreteWordToUse.bitValueOr(15, false);
+  const cabinFansEnabled = vcsDiscreteWordToUse.bitValueOr(17, false);
+  const fan1Failure = vcsDiscreteWordToUse.bitValueOr(18, false);
+  const fan2Failure = vcsDiscreteWordToUse.bitValueOr(19, false);
+  const fan3Failure = vcsDiscreteWordToUse.bitValueOr(20, false);
+  const fan4Failure = vcsDiscreteWordToUse.bitValueOr(21, false);
 
   return (
     <g>
-      <PrimaryFanGroup x={315} y={415} />
+      <PrimaryFanGroup
+        x={315}
+        y={415}
+        cabinFansEnabled={cabinFansEnabled}
+        fan1Failure={fan1Failure}
+        fan2Failure={fan2Failure}
+        fan3Failure={fan3Failure}
+        fan4Failure={fan4Failure}
+      />
 
       {/* Fwd Cargo Extraction Fan */}
       <Fan x={240} y={390} css={fwdCargoExtractFanIsOn ? 'Hide' : 'Show Amber Line'} />
@@ -19,37 +48,54 @@ export const CondFan = () => {
   );
 };
 
-const PrimaryFanGroup: FC<Position> = ({ x, y }) => {
-  const [cabinFansEnabled] = useSimVar('L:A32NX_VENT_PRIMARY_FANS_ENABLED', 'bool', 1000);
-  // TODO: Add vars for individual fan failures
+interface PrimaryFanGroupProps {
+  x: number;
+  y: number;
+  cabinFansEnabled: boolean;
+  fan1Failure: boolean;
+  fan2Failure: boolean;
+  fan3Failure: boolean;
+  fan4Failure: boolean;
+}
+
+const PrimaryFanGroup: FC<PrimaryFanGroupProps> = ({
+  x,
+  y,
+  cabinFansEnabled,
+  fan1Failure,
+  fan2Failure,
+  fan3Failure,
+  fan4Failure,
+}) => {
+  const anyFanFailure = fan1Failure || fan2Failure || fan3Failure || fan4Failure;
   return (
-    <g id="PrimaryFanGroup" className={cabinFansEnabled ? 'Hide' : 'Show'}>
+    <g id="PrimaryFanGroup" className={cabinFansEnabled && !anyFanFailure ? 'Hide' : 'Show'}>
       <Fan
         x={x}
         y={y}
         css={`
-          ${cabinFansEnabled ? 'Green' : 'Amber'} Line
+          ${cabinFansEnabled && !fan1Failure ? 'Green' : 'Amber'} Line
         `}
       />
       <Fan
         x={x}
         y={y + 15}
         css={`
-          ${cabinFansEnabled ? 'Green' : 'Amber'} Line
+          ${cabinFansEnabled && !fan2Failure ? 'Green' : 'Amber'} Line
         `}
       />
       <Fan
         x={x + 120}
         y={y}
         css={`
-          ${cabinFansEnabled ? 'Green' : 'Amber'} Line
+          ${cabinFansEnabled && !fan3Failure ? 'Green' : 'Amber'} Line
         `}
       />
       <Fan
         x={x + 120}
         y={y + 15}
         css={`
-          ${cabinFansEnabled ? 'Green' : 'Amber'} Line
+          ${cabinFansEnabled && !fan4Failure ? 'Green' : 'Amber'} Line
         `}
       />
 

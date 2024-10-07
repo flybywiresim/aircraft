@@ -1,14 +1,33 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position } from '@instruments/common/types';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 
 const CargoTemperatures: React.FC<Position> = ({ x, y }) => {
   const [fwdCargoTemp] = useSimVar('L:A32NX_COND_CARGO_FWD_TEMP', 'celsius', 1000);
   const [bulkCargoTemp] = useSimVar('L:A32NX_COND_CARGO_BULK_TEMP', 'celsius', 1000);
+
+  const vcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
+  const vcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
+  const vcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
+  const vcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
+
+  let vcsDiscreteWordToUse;
+
+  if (vcsB1DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB1DiscreteWord;
+  } else if (vcsB2DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB2DiscreteWord;
+  } else if (vcsB3DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB3DiscreteWord;
+  } else {
+    vcsDiscreteWordToUse = vcsB4DiscreteWord;
+  }
+
+  const bulkHeaterFault = vcsDiscreteWordToUse.bitValueOr(22, true);
   // TODO: Replace with actual LVars when failures simulated
   const fwdCargoOverheat = false;
   const fwdCargoSmoke = false;
-  const bulkHeaterFault = false;
   const bulkCargoSmoke = false;
 
   return (

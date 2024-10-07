@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Triangle } from '@instruments/common/Shapes';
 import Valve from './Valve';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 
 interface BleedHotAirProps {
   x: number;
@@ -10,11 +11,24 @@ interface BleedHotAirProps {
   sdacDatum: boolean;
 }
 
-const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir }) => {
-  const [packValveOpen1] = useSimVar(`L:A32NX_PNEU_ENG_${hotAir + (hotAir === 1 ? 0 : 1)}_HP_VALVE_OPEN`, 'bool', 500);
-  const [packValveOpen2] = useSimVar(`L:A32NX_PNEU_ENG_${hotAir + (hotAir === 1 ? 1 : 2)}_HP_VALVE_OPEN`, 'bool', 500);
+const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir, sdacDatum }) => {
+  const [packValveOpen1] = useSimVar(`L:A32NX_COND_PACK_${hotAir}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
+  const [packValveOpen2] = useSimVar(`L:A32NX_COND_PACK_${hotAir}_FLOW_VALVE_1_IS_OPEN`, 'bool', 500);
   const anyPackValveOpen = packValveOpen1 || packValveOpen2;
-  const [hotAirValveOpen] = useSimVar(`L:A32NX_COND_HOT_AIR_VALVE_${hotAir}_IS_OPEN`, 'bool', 500);
+
+  const tcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
+  const tcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
+  const tcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
+  const tcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
+
+  const bitNumber = 14 + hotAir;
+  const hotAirValveOpen = tcsB1DiscreteWord.bitValueOr(
+    bitNumber,
+    tcsB2DiscreteWord.bitValueOr(
+      bitNumber,
+      tcsB3DiscreteWord.bitValueOr(bitNumber, tcsB4DiscreteWord.bitValueOr(bitNumber, false)),
+    ),
+  );
 
   const xoffset = 66;
 

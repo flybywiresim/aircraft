@@ -1,5 +1,6 @@
 import React from 'react';
-import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { Position } from '@instruments/common/types';
+import { useArinc429Var, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../Generic/PageTitle';
 import A380Cond from './elements/A380Cond';
 import CabinTemperatures from './elements/CabinTemperatures';
@@ -14,9 +15,27 @@ import '../../../index.scss';
 
 export const CondPage = () => {
   const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+
+  const vcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
+  const vcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
+  const vcsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
+  const vcsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
+
+  let vcsDiscreteWordToUse;
+
+  if (vcsB1DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB1DiscreteWord;
+  } else if (vcsB2DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB2DiscreteWord;
+  } else if (vcsB3DiscreteWord.isNormalOperation()) {
+    vcsDiscreteWordToUse = vcsB3DiscreteWord;
+  } else {
+    vcsDiscreteWordToUse = vcsB4DiscreteWord;
+  }
+
+  const fwdIsolationValveOpen = vcsDiscreteWordToUse.bitValueOr(14, false);
+  const bulkIsolationValveOpen = vcsDiscreteWordToUse.bitValueOr(16, false);
   const [cabinExtractValveOpen] = useSimVar('L:A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN', 'bool', 100);
-  const [fwdIsolationValveOpen] = useSimVar('L:A32NX_VENT_FWD_ISOLATION_VALVE_OPEN', 'bool', 100);
-  const [bulkIsolationValveOpen] = useSimVar('L:A32NX_VENT_BULK_ISOLATION_VALVE_OPEN', 'bool', 100);
   // TODO: Replace with signal from systems once implemented
   const [ramAirIsOpen] = useSimVar('L:A32NX_OVHD_COND_RAM_AIR_PB_IS_ON', 'bool', 100);
 
