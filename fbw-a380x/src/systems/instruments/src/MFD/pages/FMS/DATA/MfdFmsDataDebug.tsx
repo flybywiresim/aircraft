@@ -80,7 +80,7 @@ export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
     this.tab1lineLabels[6].set('V_A_PROT (PSEUDO FAC)');
     this.tab1lineValues[6].set(this.facV_a_prot.value.toFixed(1));
 
-    this.facV_a_max.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_ALPHA_MAX', 'number'));
+    this.facV_a_max.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_ALPHA_LIM', 'number'));
     this.tab1lineLabels[7].set('V_A_MAX (PSEUDO FAC)');
     this.tab1lineValues[7].set(this.facV_a_max.value.toFixed(1));
 
