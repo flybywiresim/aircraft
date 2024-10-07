@@ -2105,7 +2105,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       if (bothXf) {
         if (element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
-          // Use leg from the first segment, do not transfer any information from the second segment, see FBW-22-08
+          // Use leg from the first segment for annotation and ident, see FBW-22-08,
+          // but merge constraints
           this.mergeConstraints(element, firstLegInSecond);
 
           second.allLegs.shift();
