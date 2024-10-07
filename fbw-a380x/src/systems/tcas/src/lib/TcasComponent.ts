@@ -1,7 +1,5 @@
 export interface TcasComponent {
+  init(): void;
 
-    init(): void;
-
-    update(deltaTime: number): void;
-
+  update(deltaTime: number): void;
 }

@@ -39,40 +39,42 @@ type SimVarValue = number | any;
  * @see {@link useGlobalVar} if you have a Global Var instead
  */
 export const useSimVar = (
-    name: string,
-    unit: UnitName,
-    refreshInterval = 0,
-): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
-) => void] => {
-    const lastUpdate = useRef(Date.now() - refreshInterval - 1);
+  name: string,
+  unit: UnitName,
+  refreshInterval = 0,
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+  const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
-    const [stateValue, setStateValue] = useState(() => SimVar.GetSimVarValue(name, unit));
+  const [stateValue, setStateValue] = useState(() => SimVar.GetSimVarValue(name, unit));
 
-    const updateCallback = useCallback(() => {
-        const delta = Date.now() - lastUpdate.current;
+  const updateCallback = useCallback(() => {
+    const delta = Date.now() - lastUpdate.current;
 
-        if (delta >= refreshInterval) {
-            lastUpdate.current = Date.now();
+    if (delta >= refreshInterval) {
+      lastUpdate.current = Date.now();
 
-            const newValue = SimVar.GetSimVarValue(name, unit);
+      const newValue = SimVar.GetSimVarValue(name, unit);
 
-            setStateValue(newValue);
-        }
-    }, [name, unit, refreshInterval]);
+      setStateValue(newValue);
+    }
+  }, [name, unit, refreshInterval]);
 
-    useUpdate(updateCallback);
+  useUpdate(updateCallback);
 
-    const setter = useCallback((valueOrSetter: any | SimVarSetter) => {
-        const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
+  const setter = useCallback(
+    (valueOrSetter: any | SimVarSetter) => {
+      const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
 
-        SimVar.SetSimVarValue(name, unit, executedValue);
+      SimVar.SetSimVarValue(name, unit, executedValue);
 
-        setStateValue(executedValue);
+      setStateValue(executedValue);
 
-        return stateValue;
-    }, [name, unit, stateValue]);
+      return stateValue;
+    },
+    [name, unit, stateValue],
+  );
 
-    return [stateValue, setter];
+  return [stateValue, setter];
 };
 
 /**
@@ -93,30 +95,26 @@ export const useSimVar = (
  *
  * @see {@link useSimVar} if you're trying to access a SimVar instead
  */
-export const useGlobalVar = (
-    name: string,
-    unit: UnitName,
-    refreshInterval = 0,
-): SimVarValue => {
-    const lastUpdate = useRef(Date.now() - refreshInterval - 1);
+export const useGlobalVar = (name: string, unit: UnitName, refreshInterval = 0): SimVarValue => {
+  const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
-    const [stateValue, setStateValue] = useState(() => SimVar.GetGlobalVarValue(name, unit));
+  const [stateValue, setStateValue] = useState(() => SimVar.GetGlobalVarValue(name, unit));
 
-    const updateCallback = useCallback(() => {
-        const delta = Date.now() - lastUpdate.current;
+  const updateCallback = useCallback(() => {
+    const delta = Date.now() - lastUpdate.current;
 
-        if (delta >= refreshInterval) {
-            lastUpdate.current = Date.now();
+    if (delta >= refreshInterval) {
+      lastUpdate.current = Date.now();
 
-            const newValue = SimVar.GetGlobalVarValue(name, unit);
+      const newValue = SimVar.GetGlobalVarValue(name, unit);
 
-            setStateValue(newValue);
-        }
-    }, [name, unit, refreshInterval]);
+      setStateValue(newValue);
+    }
+  }, [name, unit, refreshInterval]);
 
-    useUpdate(updateCallback);
+  useUpdate(updateCallback);
 
-    return stateValue;
+  return stateValue;
 };
 
 /**
@@ -137,30 +135,26 @@ export const useGlobalVar = (
  *
  * @see {@link useSimVar} if you're trying to access a SimVar instead
  */
-export const useGameVar = (
-    name: string,
-    unit: UnitName,
-    refreshInterval = 0,
-): SimVarValue => {
-    const lastUpdate = useRef(Date.now() - refreshInterval - 1);
+export const useGameVar = (name: string, unit: UnitName, refreshInterval = 0): SimVarValue => {
+  const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
-    const [stateValue, setStateValue] = useState(() => SimVar.GetGameVarValue(name, unit));
+  const [stateValue, setStateValue] = useState(() => SimVar.GetGameVarValue(name, unit));
 
-    const updateCallback = useCallback(() => {
-        const delta = Date.now() - lastUpdate.current;
+  const updateCallback = useCallback(() => {
+    const delta = Date.now() - lastUpdate.current;
 
-        if (delta >= refreshInterval) {
-            lastUpdate.current = Date.now();
+    if (delta >= refreshInterval) {
+      lastUpdate.current = Date.now();
 
-            const newValue = SimVar.GetGameVarValue(name, unit);
+      const newValue = SimVar.GetGameVarValue(name, unit);
 
-            setStateValue(newValue);
-        }
-    }, [name, unit, refreshInterval]);
+      setStateValue(newValue);
+    }
+  }, [name, unit, refreshInterval]);
 
-    useUpdate(updateCallback);
+  useUpdate(updateCallback);
 
-    return stateValue;
+  return stateValue;
 };
 
 /**
@@ -195,46 +189,48 @@ export const useGameVar = (
  * @see useSimVar if you do not have an H event indicating this SimVar has changed
  */
 export const useInteractionSimVar = (
-    name: string,
-    unit: UnitName,
-    interactionEvents: string | string[],
-    refreshInterval = 500,
-): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
-) => void] => {
-    const lastUpdate = useRef(Date.now() - refreshInterval - 1);
+  name: string,
+  unit: UnitName,
+  interactionEvents: string | string[],
+  refreshInterval = 500,
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+  const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
-    const [stateValue, setStateValue] = useState(() => SimVar.GetSimVarValue(name, unit));
+  const [stateValue, setStateValue] = useState(() => SimVar.GetSimVarValue(name, unit));
 
-    const updateCallback = useCallback(() => {
-        const delta = Date.now() - lastUpdate.current;
+  const updateCallback = useCallback(() => {
+    const delta = Date.now() - lastUpdate.current;
 
-        if (delta >= refreshInterval) {
-            lastUpdate.current = Date.now();
+    if (delta >= refreshInterval) {
+      lastUpdate.current = Date.now();
 
-            const newValue = SimVar.GetSimVarValue(name, unit);
+      const newValue = SimVar.GetSimVarValue(name, unit);
 
-            setStateValue(newValue);
-        }
-    }, [name, unit, refreshInterval]);
+      setStateValue(newValue);
+    }
+  }, [name, unit, refreshInterval]);
 
-    useUpdate(updateCallback);
+  useUpdate(updateCallback);
 
-    useInteractionEvents(
-        Array.isArray(interactionEvents) ? interactionEvents : [interactionEvents],
-        () => setStateValue(SimVar.GetSimVarValue(name, unit)), // force an update
-    );
+  useInteractionEvents(
+    Array.isArray(interactionEvents) ? interactionEvents : [interactionEvents],
+    () => setStateValue(SimVar.GetSimVarValue(name, unit)), // force an update
+  );
 
-    const setter = useCallback((valueOrSetter: any | SimVarSetter) => {
-        const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
+  const setter = useCallback(
+    (valueOrSetter: any | SimVarSetter) => {
+      const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
 
-        SimVar.SetSimVarValue(name, unit, executedValue);
+      SimVar.SetSimVarValue(name, unit, executedValue);
 
-        setStateValue(executedValue);
+      setStateValue(executedValue);
 
-        return stateValue;
-    }, [name, unit]);
+      return stateValue;
+    },
+    [name, unit],
+  );
 
-    return [stateValue, setter];
+  return [stateValue, setter];
 };
 
 /**
@@ -261,28 +257,30 @@ export const useInteractionSimVar = (
  * @see useSimVar if you're reading and writing from the same SimVar
  */
 export const useSplitSimVar = (
-    readName: string,
-    readUnit: UnitName,
-    writeName: string,
-    writeUnit?: UnitName,
-    refreshInterval = 0,
-): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
-) => void] => {
-    const [readValue] = useSimVar(readName, readUnit, refreshInterval);
-    const [, writeSetter] = useSimVar(writeName, writeUnit || readUnit);
+  readName: string,
+  readUnit: UnitName,
+  writeName: string,
+  writeUnit?: UnitName,
+  refreshInterval = 0,
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+  const [readValue] = useSimVar(readName, readUnit, refreshInterval);
+  const [, writeSetter] = useSimVar(writeName, writeUnit || readUnit);
 
-    const [stateValue, setStateValue] = useState(readValue);
+  const [stateValue, setStateValue] = useState(readValue);
 
-    useEffect(() => {
-        setStateValue(readValue);
-    }, [readValue]);
+  useEffect(() => {
+    setStateValue(readValue);
+  }, [readValue]);
 
-    const setter = useCallback((valueOrSetter: any | SimVarSetter) => {
-        const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
+  const setter = useCallback(
+    (valueOrSetter: any | SimVarSetter) => {
+      const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
 
-        writeSetter(executedValue);
-        setStateValue(executedValue);
-    }, [stateValue, writeName]);
+      writeSetter(executedValue);
+      setStateValue(executedValue);
+    },
+    [stateValue, writeName],
+  );
 
-    return [stateValue, setter];
+  return [stateValue, setter];
 };
