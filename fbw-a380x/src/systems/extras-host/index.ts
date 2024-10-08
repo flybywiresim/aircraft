@@ -8,6 +8,7 @@ import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/Pushbutton
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
+import { LoadFltStateManager } from 'extras-host/modules/flt_sync/LoadFltStateManager';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -58,6 +59,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
+  private readonly loadFltState: LoadFltStateManager;
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -80,6 +83,7 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
+    this.loadFltState = new LoadFltStateManager(this.bus);
 
     console.log('A380X_EXTRASHOST: Created');
   }
@@ -122,6 +126,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor.startPublish();
         this.simVarPublisher.startPublish();
         this.aircraftSync.startPublish();
+        this.loadFltState.startPublish();
 
         // Signal that the aircraft is ready via L:A32NX_IS_READY
         SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
