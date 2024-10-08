@@ -491,7 +491,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         sensed: true,
         labelNotCompleted: 'HI',
       },
-        {
+      {
         name: 'CAB FANS',
         sensed: true,
         labelNotCompleted: 'ON',
@@ -517,98 +517,98 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS L BLOWING FAULT',
     sensed: true,
     items: [
-        {
-          name: 'AIR FLOW',
-          sensed: true,
-          labelNotCompleted: 'HI',
-        },
-        {
-          name: 'CAB FANS',
-          sensed: true,
-          labelNotCompleted: 'ON',
-        },
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'HI',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
     ],
   },
   212800017: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS R BLOWING FAULT',
     sensed: true,
     items: [
-        {
-          name: 'AIR FLOW',
-          sensed: true,
-          labelNotCompleted: 'HI',
-        },
-        {
-          name: 'CAB FANS',
-          sensed: true,
-          labelNotCompleted: 'ON',
-        },
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'HI',
+      },
+      {
+        name: 'CAB FANS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
     ],
   },
   212800018: {
     title: '\x1b<4m\x1b4mVENT\x1bm AVNCS OVBD VLV FAULT',
     sensed: true,
     items: [
-        {
-          name: 'VENT AVNCS EXTRACT',
-          sensed: true,
-          labelNotCompleted: 'OVRD',
-        },
-        {
-          name: 'MAX FL : 100/MEA',
-          sensed: false,
-          level: 1,
-        },
-        {
-          name: 'CABIN ALT MODE',
-          sensed: true,
-          labelNotCompleted: 'MAN',
-          level: 1,
-        },
-        {
-          name: 'CAB V/S TRGT',
-          sensed: true,
-          labelNotCompleted: '+2500 FT/MIN',
-          level: 1,
-        },
+      {
+        name: 'VENT AVNCS EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+      },
+      {
+        name: 'MAX FL : 100/MEA',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'CABIN ALT MODE',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 1,
+      },
+      {
+        name: 'CAB V/S TRGT',
+        sensed: true,
+        labelNotCompleted: '+2500 FT/MIN',
+        level: 1,
+      },
     ],
   },
   212800019: {
     title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS 1 OVHT',
     sensed: true,
     items: [
-        {
-          name: 'COOLG SYS 1 OVHT ISOLATED',
-          sensed: false,
-        },
-        {
-          name: 'COOLG SYS 1 AUTO SHUTDOWN',
-          sensed: false,
-        },
-        {
-          name: 'VENT COOLG',
-          sensed: true,
-          labelNotCompleted: 'OFF',
-        },
+      {
+        name: 'COOLG SYS 1 OVHT ISOLATED',
+        sensed: false,
+      },
+      {
+        name: 'COOLG SYS 1 AUTO SHUTDOWN',
+        sensed: false,
+      },
+      {
+        name: 'VENT COOLG',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
     ],
   },
   212800020: {
     title: '\x1b<4m\x1b4mVENT\x1bm COOLG SYS 2 OVHT',
     sensed: true,
     items: [
-        {
-          name: 'COOLG SYS 2 OVHT ISOLATED',
-          sensed: false,
-        },
-        {
-          name: 'COOLG SYS 2 AUTO SHUTDOWN',
-          sensed: false,
-        },
-        {
-          name: 'VENT COOLG',
-          sensed: true,
-          labelNotCompleted: 'OFF',
-        },
+      {
+        name: 'COOLG SYS 2 OVHT ISOLATED',
+        sensed: false,
+      },
+      {
+        name: 'COOLG SYS 2 AUTO SHUTDOWN',
+        sensed: false,
+      },
+      {
+        name: 'VENT COOLG',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
     ],
   },
   212800021: {
@@ -625,15 +625,15 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mVENT\x1bm IFE BAY VENT FAULT',
     sensed: true,
     items: [
-        {
-          name: 'IFEC',
-          sensed: true,
-          labelNotCompleted: 'OFF',
-        },
-        {
-          name: 'IFE BAY VENT AVAIL IN FLT',
-          sensed: false,
-        },
+      {
+        name: 'IFEC',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'IFE BAY VENT AVAIL IN FLT',
+        sensed: false,
+      },
     ],
   },
   212800024: {
