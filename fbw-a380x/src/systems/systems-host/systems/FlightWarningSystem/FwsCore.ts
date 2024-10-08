@@ -44,6 +44,7 @@ import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/Fw
 import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { FwsAbnormalNonSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalNonSensed';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -620,11 +621,14 @@ export class FwsCore implements Instrument {
 
   public slatFlapSelectionS22F20 = false;
 
+  // Really hard to get references for these obscure internal position names, consider using more readable variable names
   public readonly flapsInferiorToPositionA = Subject.create(false);
 
   public readonly flapsSuperiorToPositionD = Subject.create(false);
 
   public readonly flapsSuperiorToPositionF = Subject.create(false);
+
+  public readonly flapsSuperiorToConf3 = Subject.create(false);
 
   public readonly slatsInferiorToPositionD = Subject.create(false);
 
@@ -1282,6 +1286,7 @@ export class FwsCore implements Instrument {
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
 
   constructor(
+    public readonly fwsNumber: 1 | 2,
     public readonly bus: EventBus,
     public readonly instrument: BaseInstrument,
   ) {
@@ -2001,10 +2006,18 @@ export class FwsCore implements Instrument {
         this.ir3MaintWord.bitValueOr(13, false),
     );
 
-    this.adr1Fault.set(this.adr1Cas.get().isFailureWarning() || this.ir1MaintWord.bitValueOr(8, false));
-    this.adr2Fault.set(this.adr2Cas.isFailureWarning() || this.ir2MaintWord.bitValueOr(8, false));
-    this.adr3Fault.set(this.adr3Cas.isFailureWarning() || this.ir3MaintWord.bitValueOr(8, false));
-    // console.log('2', this.adr1Cas.get().isFailureWarning(), this.ir1MaintWord.bitValueOr(8, false));
+    this.adr1Fault.set(
+      (this.adr1Cas.get().isFailureWarning() && this.adiru1ModeSelector.get() !== 0) ||
+        this.ir1MaintWord.bitValueOr(8, false),
+    );
+    this.adr2Fault.set(
+      (this.adr2Cas.get().isFailureWarning() && this.adiru2ModeSelector.get() !== 0) ||
+        this.ir2MaintWord.bitValueOr(8, false),
+    );
+    this.adr3Fault.set(
+      (this.adr3Cas.get().isFailureWarning() && this.adiru3ModeSelector.get() !== 0) ||
+        this.ir3MaintWord.bitValueOr(8, false),
+    );
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
@@ -2017,6 +2030,9 @@ export class FwsCore implements Instrument {
     this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
     this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
     this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
+    this.adiru1ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'enum'));
+    this.adiru2ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB', 'enum'));
+    this.adiru3ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB', 'enum'));
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
@@ -2167,10 +2183,12 @@ export class FwsCore implements Instrument {
     }
 
     let overspeedWarning = this.adr3OverspeedWarning.write(
-      this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && this.adr3Cas.value > adr3MaxCas.value + 8,
+      this.adr3Cas.get().isNormalOperation() &&
+        adr3MaxCas.isNormalOperation() &&
+        this.adr3Cas.get().value > adr3MaxCas.value + 8,
       this.aircraftOnGround.get() ||
-        !(this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
-        this.adr3Cas.value < adr3MaxCas.value + 4,
+        !(this.adr3Cas.get().isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
+        this.adr3Cas.get().value < adr3MaxCas.value + 4,
     );
     if (
       !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
@@ -2181,13 +2199,18 @@ export class FwsCore implements Instrument {
     }
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
-    this.overspeedVmo.set(!this.isAllGearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(340));
-    this.overspeedVle.set(this.isAllGearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(250));
-    this.overspeedVfeConf1.set(this.flapsHandle.get() === 1 && isOverspeed(263)); // FIXME
-    // this.overspeedVfeConf1F.set(this.flapsHandle.get() === 1 && isOverspeed(222));
-    this.overspeedVfeConf2.set(this.flapsHandle.get() === 2 && isOverspeed(220));
-    this.overspeedVfeConf3.set(this.flapsHandle.get() === 3 && isOverspeed(196));
-    this.overspeedVfeConfFull.set(this.flapsHandle.get() === 4 && isOverspeed(182));
+    const isOverMach = (limit: number) => this.machSelectedFromAdr.get() > limit + 0.006;
+    this.overspeedVmo.set(
+      !this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vmo) || isOverMach(Mmo)),
+    );
+    this.overspeedVle.set(
+      this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vle) || isOverMach(Mle)),
+    );
+    this.overspeedVfeConf1.set(this.flapsIndex.get() === 1 && isOverspeed(VfeF1));
+    this.overspeedVfeConf1F.set(this.flapsIndex.get() === 2 && isOverspeed(VfeF1F));
+    this.overspeedVfeConf2.set(this.flapsIndex.get() === 3 && isOverspeed(VfeF2));
+    this.overspeedVfeConf3.set(this.flapsIndex.get() === 4 && isOverspeed(VfeF3));
+    this.overspeedVfeConfFull.set(this.flapsIndex.get() === 5 && isOverspeed(VfeFF));
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
@@ -2643,17 +2666,18 @@ export class FwsCore implements Instrument {
 
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
-    this.flapsInferiorToPositionA.set(flapsPos.isNormalOperation() && flapsPos.value < 65);
-    this.flapsSuperiorToPositionD.set(flapsPos.isNormalOperation() && flapsPos.value > 152);
+    this.flapsInferiorToPositionA.set(flapsPos.isNormalOperation() && flapsPos.value < 50);
+    this.flapsSuperiorToPositionD.set(flapsPos.isNormalOperation() && flapsPos.value > 120);
     this.flapsSuperiorToPositionF.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
-    this.slatsInferiorToPositionD.set(slatsPos.isNormalOperation() && slatsPos.value < 210.46);
-    this.slatsSuperiorToPositionG.set(slatsPos.isNormalOperation() && slatsPos.value > 309.53);
+    this.flapsSuperiorToConf3.set(flapsPos.isNormalOperation() && flapsPos.value > 203);
+    this.slatsInferiorToPositionD.set(slatsPos.isNormalOperation() && slatsPos.value < 247.0);
+    this.slatsSuperiorToPositionG.set(slatsPos.isNormalOperation() && slatsPos.value > 280.0);
     this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.set(
       this.flapsSuperiorToPositionD.get() || (slatsPos.isNormalOperation() && slatsPos.value > 198.1),
     );
 
     // flap, slat and speedbrake config warning logic
-    const flapsNotInToPos = this.flapsSuperiorToPositionF.get() || this.flapsInferiorToPositionA.get();
+    const flapsNotInToPos = this.flapsSuperiorToConf3.get() || this.flapsInferiorToPositionA.get();
     this.flapConfigSr.write(
       this.flightPhase345.get() && flapsNotInToPos,
       !flapsNotInToPos || this.fwcFlightPhase.get() === 6 || this.fwcFlightPhase.get() === 7,
