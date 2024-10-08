@@ -239,8 +239,13 @@ export class GuidanceController {
     const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
     const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
     if (activeLeg) {
-      const termination =
-        activeLeg instanceof XFLeg ? activeLeg.terminationWaypoint.location : activeLeg.getPathEndPoint();
+      const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
+      // Don't transmit bearing for manual legs
+      const termination = isXMLeg
+        ? null
+        : activeLeg instanceof XFLeg
+          ? activeLeg.terminationWaypoint.location
+          : activeLeg.getPathEndPoint();
       const ppos = this.lnavDriver.ppos;
       const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(ppos, termination) : -1;
       const efisBearing = termination
@@ -248,7 +253,6 @@ export class GuidanceController {
         : -1;
 
       // Don't compute distance and ETA for XM legs
-      const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
       const efisEta = isXMLeg || !etaComputable ? -1 : this.lnavDriver.legEta(gs, termination);
 
