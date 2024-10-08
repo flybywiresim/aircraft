@@ -3076,8 +3076,7 @@ impl A380GearHydraulicController {
         lgciu1: &(impl LgciuWeightOnWheels + LandingGearHandle),
         lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        let speed_condition =
-            adirs.low_speed_warning_4_260kts(1) || adirs.low_speed_warning_4_260kts(3);
+        let speed_condition = adirs.low_speed_warning_4(1) || adirs.low_speed_warning_4(3);
 
         let on_ground_condition = lgciu1.left_and_right_gear_compressed(true)
             || lgciu2.left_and_right_gear_compressed(true);
@@ -4965,6 +4964,7 @@ impl AileronSystemHydraulicController {
     fn update(&mut self) {
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
+        self.filter_dual_control();
     }
 
     fn update_aileron_controllers_positions(&mut self) {
@@ -5045,6 +5045,36 @@ impl AileronSystemHydraulicController {
                 self.right_inboard_position_requests_from_fbw
                     [AileronActuatorPosition::Inward as usize],
             );
+    }
+
+    // FIXME  We don't allow dual control for now as this causes issues in actuator solver
+    // To remove if actuator solver can handle this case or flight control never request it by design
+    fn filter_dual_control(&mut self) {
+        for controller in &mut self.left_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
+
+        for controller in &mut self.right_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
     }
 
     /// Will drive mode from solenoid state
@@ -6178,6 +6208,17 @@ impl SimulationElement for AileronAssembly {
         writer.write(&self.position_in_id, self.positions[2]);
     }
 }
+impl Debug for AileronAssembly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nAILERON ASSEMBLY => \nAIL OUT {:?}\nAIL MID {:?}\nAIL IN {:?}",
+            self.hydraulic_assemblies[0],
+            self.hydraulic_assemblies[1],
+            self.hydraulic_assemblies[2],
+        )
+    }
+}
 
 struct ElevatorAssembly {
     hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
@@ -6803,19 +6844,19 @@ mod tests {
             }
         }
         impl AdirsDiscreteOutputs for A380TestAdirus {
-            fn low_speed_warning_1_104kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 104.
+            fn low_speed_warning_1(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 50.
             }
 
-            fn low_speed_warning_2_54kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 54.
+            fn low_speed_warning_2(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 260.
             }
 
-            fn low_speed_warning_3_159kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 159.
+            fn low_speed_warning_3(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 100.
             }
 
-            fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
+            fn low_speed_warning_4(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() < 260.
             }
         }
