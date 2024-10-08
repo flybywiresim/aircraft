@@ -106,9 +106,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   );
 
   private departureButtonDisabled = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, phase]) => !toIcao || !fromIcao || phase !== FmgcFlightPhase.Preflight,
     this.fromIcao,
     this.toIcao,
+    this.activeFlightPhase,
   );
 
   public onAfterRender(node: VNode): void {
