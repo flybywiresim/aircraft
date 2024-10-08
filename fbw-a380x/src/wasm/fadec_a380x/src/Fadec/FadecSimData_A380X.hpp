@@ -38,7 +38,7 @@ class FadecSimData_A380X {
     char atcID[32];
   };
   DataDefinitionVector atcIdDataDef = {
-  // MSFS docs say this is max 10 chars - we use 32 for safety
+      // MSFS docs say this is max 10 chars - we use 32 for safety
       {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}  //
   };
   /**
@@ -136,17 +136,17 @@ class FadecSimData_A380X {
 
   // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
-    FLOAT64 animationDeltaTime;       // in Seconds
-    FLOAT64 airSpeedMach;             // in Mach
-    FLOAT64 ambientPressure;          // in Millibars
-    FLOAT64 ambientTemperature;       // in Celsius
-    FLOAT64 pressureAltitude;         // in Feet
-    FLOAT64 fuelWeightLbsPerGallon;   // in Pounds
-    FLOAT64 engineAntiIce[4];         // 0 or 1
-    FLOAT64 engineIgniter[4];         // 0 or 1
-    FLOAT64 engineStarter[4];         // 0 or 1
-    FLOAT64 simEngineN1[4];           // in Percent
-    FLOAT64 simEngineN2[4];           // in Percent
+    FLOAT64 animationDeltaTime;      // in Seconds
+    FLOAT64 airSpeedMach;            // in Mach
+    FLOAT64 ambientPressure;         // in Millibars
+    FLOAT64 ambientTemperature;      // in Celsius
+    FLOAT64 pressureAltitude;        // in Feet
+    FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
+    FLOAT64 engineAntiIce[4];        // 0 or 1
+    FLOAT64 engineIgniter[4];        // 0 or 1
+    FLOAT64 engineStarter[4];        // 0 or 1
+    FLOAT64 simEngineN1[4];          // in Percent
+    FLOAT64 simEngineN2[4];          // in Percent
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -225,7 +225,7 @@ class FadecSimData_A380X {
   NamedVariablePtr fuelRightOuterPre;  // Pounds
   NamedVariablePtr fuelTrimPre;        // Pounds
   NamedVariablePtr fuelPumpState[4];
-  NamedVariablePtr packsState[2];
+  NamedVariablePtr packsState[4];
   NamedVariablePtr refuelRate;
   NamedVariablePtr refuelStartedByUser;
   NamedVariablePtr startState;
@@ -422,6 +422,8 @@ class FadecSimData_A380X {
 
     packsState[0]       = dm->make_named_var("A32NX_COND_PACK_1_IS_OPERATING", UNITS.Number, AUTO_READ);
     packsState[1]       = dm->make_named_var("A32NX_COND_PACK_2_IS_OPERATING", UNITS.Number, AUTO_READ);
+    packsState[2]       = dm->make_named_var("A32NX_COND_PACK_3_IS_OPERATING", UNITS.Number, AUTO_READ);
+    packsState[3]       = dm->make_named_var("A32NX_COND_PACK_4_IS_OPERATING", UNITS.Number, AUTO_READ);
     wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
     refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);

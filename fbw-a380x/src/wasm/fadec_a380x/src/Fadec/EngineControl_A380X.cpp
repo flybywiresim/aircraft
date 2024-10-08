@@ -102,14 +102,16 @@ void EngineControl_A380X::update() {
   updateFuel(deltaTime);
 
   // Update thrust limits while considering the current bleed air settings (packs, nai, wai)
-  const int packs = (simData.packsState[0]->get() || simData.packsState[1]->get()) ? 1 : 0;
-  const int nai   = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5     //
+  const int packs =
+      (simData.packsState[0]->get() || simData.packsState[1]->get() || simData.packsState[2]->get() || simData.packsState[3]->get()) ? 1
+                                                                                                                                     : 0;
+  const int nai = (simData.simVarsDataPtr->data().engineAntiIce[E1] > 0.5     //
                    || simData.simVarsDataPtr->data().engineAntiIce[E2] > 0.5  //
                    || simData.simVarsDataPtr->data().engineAntiIce[E3] > 0.5  //
                    || simData.simVarsDataPtr->data().engineAntiIce[E4] > 0.5)
-                        ? 1
-                        : 0;
-  const int wai   = simData.wingAntiIce->getAsInt64();
+                      ? 1
+                      : 0;
+  const int wai = simData.wingAntiIce->getAsInt64();
   updateThrustLimits(msfsHandlerPtr->getSimulationTime(), pressureAltitude, ambientTemperature, ambientPressure, mach, packs, nai, wai);
 
 #ifdef PROFILING
