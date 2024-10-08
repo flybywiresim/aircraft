@@ -24,8 +24,7 @@ class CDUVerticalRevisionPage {
 
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
-        // Use performance data of primary for waypoints in alternaten
-        const performanceData = mcdu.flightPlan(forPlan, false).performanceData;
+        const performanceData = targetPlan.performanceData;
 
         const confirmConstraint = Number.isFinite(confirmSpeed) || Number.isFinite(confirmAlt);
         const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, wpIndex, forPlan, inAlternate);
@@ -41,11 +40,6 @@ class CDUVerticalRevisionPage {
             }
         }
 
-        let coordinates = "---";
-        if (waypoint.isXF()) {
-            coordinates = CDUPilotsWaypoint.formatLatLong(waypoint.terminationWaypoint().location);
-        }
-
         const showSpeedLim = mcdu._fuelPredDone || isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
         // the conditions other than isDestination are a workaround for no ToC
         const showDesSpeedLim = showSpeedLim && (isDestination ||
@@ -57,15 +51,15 @@ class CDUVerticalRevisionPage {
         let speedLimitCell = "";
         if (showDesSpeedLim) {
             speedLimitTitle = "\xa0DES SPD LIM";
-            if (mcdu.descentSpeedLimit !== null) {
-                speedLimitCell = `{magenta}{${mcdu.descentSpeedLimitPilot ? 'big' : 'small'}}${mcdu.descentSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, performanceData.transitionLevel * 100)}{end}{end}`;
+            if (performanceData.descentSpeedLimitSpeed !== null) {
+                speedLimitCell = `{magenta}{${performanceData.isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${performanceData.descentSpeedLimitSpeed.toFixed(0).padStart(3, "0")}/${this.formatFl(performanceData.descentSpeedLimitAltitude, performanceData.transitionLevel * 100)}{end}{end}`;
             } else {
                 speedLimitCell = "{cyan}*[ ]/[   ]{end}";
             }
         } else if (showSpeedLim) {
             speedLimitTitle = "\xa0CLB SPD LIM";
-            if (mcdu.climbSpeedLimit !== null) {
-                speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, performanceData.transitionAltitude)}{end}{end}`;
+            if (performanceData.climbSpeedLimitSpeed !== null) {
+                speedLimitCell = `{magenta}{${performanceData.isClimbSpeedLimitPilotEntered ? 'big' : 'small'}}${performanceData.climbSpeedLimitSpeed.toFixed(0).padStart(3, "0")}/${this.formatFl(performanceData.climbSpeedLimitAltitude, performanceData.transitionAltitude)}{end}{end}`;
             } else {
                 speedLimitCell = "{cyan}*[ ]/[   ]{end}";
             }
@@ -162,23 +156,13 @@ class CDUVerticalRevisionPage {
 
             if (value === FMCMainDisplay.clrValue) {
                 if (showDesSpeedLim) {
-                    if (mcdu.descentSpeedLimitPilot) {
-                        mcdu.descentSpeedLimit = 250;
-                        mcdu.descentSpeedLimitAlt = 10000;
-                    } else {
-                        mcdu.descentSpeedLimit = null;
-                        mcdu.descentSpeedLimitAlt = null;
-                    }
-                    mcdu.descentSpeedLimitPilot = false;
+                    targetPlan.setPerformanceData('descentSpeedLimitSpeed', null);
+                    targetPlan.setPerformanceData('descentSpeedLimitAltitude', null);
+                    targetPlan.setPerformanceData('isDescentSpeedLimitPilotEntered', false);
                 } else {
-                    if (mcdu.climbSpeedLimitPilot) {
-                        mcdu.climbSpeedLimit = 250;
-                        mcdu.climbSpeedLimitAlt = 10000;
-                    } else {
-                        mcdu.climbSpeedLimit = null;
-                        mcdu.climbSpeedLimitAlt = null;
-                    }
-                    mcdu.climbSpeedLimitPilot = false;
+                    targetPlan.setPerformanceData('climbSpeedLimitSpeed', null);
+                    targetPlan.setPerformanceData('climbSpeedLimitAltitude', null);
+                    targetPlan.setPerformanceData('isClimbSpeedLimitPilotEntered', false);
                 }
                 CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 return;
@@ -203,13 +187,13 @@ class CDUVerticalRevisionPage {
             alt = Math.round(alt / 10) * 10;
 
             if (showDesSpeedLim) {
-                mcdu.descentSpeedLimit = speed;
-                mcdu.descentSpeedLimitAlt = alt;
-                mcdu.descentSpeedLimitPilot = true;
+                targetPlan.setPerformanceData('descentSpeedLimitSpeed', speed);
+                targetPlan.setPerformanceData('descentSpeedLimitAltitude', alt);
+                targetPlan.setPerformanceData('isDescentSpeedLimitPilotEntered', true);
             } else {
-                mcdu.climbSpeedLimit = speed;
-                mcdu.climbSpeedLimitAlt = alt;
-                mcdu.climbSpeedLimitPilot = true;
+                targetPlan.setPerformanceData('climbSpeedLimitSpeed', speed);
+                targetPlan.setPerformanceData('climbSpeedLimitAltitude', alt);
+                targetPlan.setPerformanceData('isClimbSpeedLimitPilotEntered', true);
             }
 
             CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
