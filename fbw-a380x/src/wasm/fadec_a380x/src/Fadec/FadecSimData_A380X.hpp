@@ -225,7 +225,7 @@ class FadecSimData_A380X {
   NamedVariablePtr fuelRightOuterPre;  // Pounds
   NamedVariablePtr fuelTrimPre;        // Pounds
   NamedVariablePtr fuelPumpState[4];
-  NamedVariablePtr packsState[4];
+  NamedVariablePtr packsState[2];
   NamedVariablePtr refuelRate;
   NamedVariablePtr refuelStartedByUser;
   NamedVariablePtr startState;
@@ -422,8 +422,6 @@ class FadecSimData_A380X {
 
     packsState[0]       = dm->make_named_var("A32NX_COND_PACK_1_IS_OPERATING", UNITS.Number, AUTO_READ);
     packsState[1]       = dm->make_named_var("A32NX_COND_PACK_2_IS_OPERATING", UNITS.Number, AUTO_READ);
-    packsState[2]       = dm->make_named_var("A32NX_COND_PACK_3_IS_OPERATING", UNITS.Number, AUTO_READ);
-    packsState[3]       = dm->make_named_var("A32NX_COND_PACK_4_IS_OPERATING", UNITS.Number, AUTO_READ);
     wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
     refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
