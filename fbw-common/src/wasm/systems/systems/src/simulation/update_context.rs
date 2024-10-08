@@ -227,6 +227,7 @@ pub struct UpdateContext {
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
+    total_pitch_inertia_id: VariableIdentifier,
     precipitation_rate_id: VariableIdentifier,
     in_cloud_id: VariableIdentifier,
     surface_id: VariableIdentifier,
@@ -267,6 +268,7 @@ pub struct UpdateContext {
 
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
+    total_pitch_inertia_slug_foot_squared: f64,
 
     // From msfs in millimeters
     precipitation_rate: Length,
@@ -317,6 +319,7 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
+    pub(crate) const TOTAL_PITCH_INERTIA: &'static str = "TOTAL WEIGHT PITCH MOI";
     pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
     pub(crate) const ROTATION_ACCEL_X_KEY: &'static str = "ROTATION ACCELERATION BODY X";
     pub(crate) const ROTATION_ACCEL_Y_KEY: &'static str = "ROTATION ACCELERATION BODY Y";
@@ -388,6 +391,8 @@ impl UpdateContext {
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
+            total_pitch_inertia_id: context.get_identifier(Self::TOTAL_PITCH_INERTIA.to_owned()),
+
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
             in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
 
@@ -449,6 +454,7 @@ impl UpdateContext {
             latitude,
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 10.,
+            total_pitch_inertia_slug_foot_squared: 10.,
             precipitation_rate: Length::default(),
             in_cloud: false,
 
@@ -491,6 +497,7 @@ impl UpdateContext {
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
+            total_pitch_inertia_id: context.get_identifier("TOTAL WEIGHT PITCH MOI".to_owned()),
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
             in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
 
@@ -549,6 +556,7 @@ impl UpdateContext {
             latitude: Default::default(),
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 1.,
+            total_pitch_inertia_slug_foot_squared: 1.,
             precipitation_rate: Length::default(),
             in_cloud: false,
 
@@ -620,6 +628,7 @@ impl UpdateContext {
         self.total_weight = reader.read(&self.total_weight_id);
 
         self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
+        self.total_pitch_inertia_slug_foot_squared = reader.read(&self.total_pitch_inertia_id);
 
         let precipitation_height_millimeter = reader.read(&self.precipitation_rate_id);
         self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
@@ -859,6 +868,11 @@ impl UpdateContext {
 
     pub fn total_yaw_inertia_kg_m2(&self) -> f64 {
         self.total_yaw_inertia_slug_foot_squared
+            * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
+    }
+
+    pub fn total_pitch_inertia_kg_m2(&self) -> f64 {
+        self.total_pitch_inertia_slug_foot_squared
             * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
     }
 
