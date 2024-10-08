@@ -284,6 +284,75 @@ pub trait CabinPressure {
     fn cabin_pressure(&self) -> Pressure;
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum FdacId {
+    One,
+    Two,
+}
+
+impl Display for FdacId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FdacId::One => write!(f, "1"),
+            FdacId::Two => write!(f, "2"),
+        }
+    }
+}
+
+impl From<FdacId> for usize {
+    fn from(value: FdacId) -> Self {
+        match value {
+            FdacId::One => 1,
+            FdacId::Two => 2,
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum VcmId {
+    Fwd,
+    Aft,
+}
+
+impl Display for VcmId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VcmId::Fwd => write!(f, "FWD"),
+            VcmId::Aft => write!(f, "AFT"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum OcsmId {
+    One,
+    Two,
+    Three,
+    Four,
+}
+
+impl OcsmId {
+    pub fn index(&self) -> usize {
+        match self {
+            OcsmId::One => 0,
+            OcsmId::Two => 1,
+            OcsmId::Three => 2,
+            OcsmId::Four => 3,
+        }
+    }
+}
+
+impl Display for OcsmId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OcsmId::One => write!(f, "1"),
+            OcsmId::Two => write!(f, "2"),
+            OcsmId::Three => write!(f, "3"),
+            OcsmId::Four => write!(f, "4"),
+        }
+    }
+}
+
 // Future work this can be different types of failure.
 enum OperatingChannelFault {
     NoFault,
@@ -1215,6 +1284,7 @@ impl SimulationElement for AirHeater {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
     }
+    // TODO: Add power consumtion of cargo heater
 }
 
 #[derive(Clone, Copy)]
