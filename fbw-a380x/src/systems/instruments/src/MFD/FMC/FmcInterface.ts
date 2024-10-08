@@ -140,11 +140,10 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
    */
   deleteAllStoredWaypoints(): void;
 
-  /** in kilograms */
-  getLandingWeight(): number | null;
+  swapNavDatabase(): Promise<void>;
 
   /** in kilograms */
-  getGrossWeight(): number;
+  getLandingWeight(): number | null;
 
   /** in kilograms */
   getTakeoffWeight(): number | null;

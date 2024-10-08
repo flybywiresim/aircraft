@@ -295,6 +295,7 @@ export class FlightManagementComputer implements FmcInterface {
   /** in kg */
   public getLandingWeight(): number | null {
     const tow = this.getTakeoffWeight();
+    const gw = this.fmgc.getGrossWeightKg();
     const tf = this.getTripFuel();
 
     if (!this.enginesWereStarted.get()) {
@@ -302,26 +303,17 @@ export class FlightManagementComputer implements FmcInterface {
       // LW = TOW - TRIP
       return tow && tf ? tow - tf : null;
     }
-    if (tf && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+    if (gw && tf && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // LW = GW - TRIP
-      return this.getGrossWeight() - tf;
+      return gw - tf;
     }
-    // Preflight, engines on
-    // LW = GW - TRIP - TAXI
-    return this.getGrossWeight() - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
-  }
-
-  /** in kg */
-  public getGrossWeight(): Kilograms {
-    // Value received from FQMS, or falls back to ZFW + FOB
-    const zfw = this.fmgc.data.zeroFuelWeight.get();
-
-    let fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
-    if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get()) && zfw) {
-      fmGW = this.fmgc.getFOB() * 1_000 + zfw;
-    } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && zfw) fmGW = this.fmgc.data.blockFuel.get() ?? 0 + zfw;
-    return fmGW;
+    if (gw) {
+      // Preflight, engines on
+      // LW = GW - TRIP - TAXI
+      return gw - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
+    }
+    return null;
   }
 
   public getTakeoffWeight(): number | null {
@@ -346,17 +338,17 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTripFuel(): number | null {
-    return 25_000; // Dummy value
+    return 25_000; // FIXME Dummy value
   }
 
   public getRecMaxFlightLevel(): number | null {
+    const gw = this.fmgc.getGrossWeightKg();
+    if (!gw) {
+      return null;
+    }
+
     const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
-    return (
-      Math.min(
-        A380AltitudeUtils.calculateRecommendedMaxAltitude(this.getGrossWeight(), isaTempDeviation),
-        maxCertifiedAlt,
-      ) / 100
-    );
+    return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt) / 100;
   }
 
   public getOptFlightLevel(): number | null {
@@ -927,7 +919,6 @@ export class FlightManagementComputer implements FmcInterface {
           );
         }
       }
-      this.getGrossWeight();
       this.checkGWParams();
       this.updateMessageQueue();
 
@@ -994,5 +985,16 @@ export class FlightManagementComputer implements FmcInterface {
 
   tryGoInApproachPhase(): void {
     this.flightPhaseManager.tryGoInApproachPhase();
+  }
+
+  async swapNavDatabase(): Promise<void> {
+    // FIXME reset ATSU when it is added to A380X
+    // this.atsu.resetAtisAutoUpdate();
+    await this.flightPlanService.reset();
+    this.initSimVars();
+    this.deleteAllStoredWaypoints();
+    this.clearLatestFmsErrorMessage();
+    this.mfdReference?.uiService.navigateTo('fms/data/status');
+    this.navigation.resetState();
   }
 }
