@@ -3,6 +3,7 @@
 
 import { EventBus } from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { TcasMode } from '../../../systems-host/systems/tcas/lib/TcasConstants';
 
 /**
  * This class is used to sync event consumers when starting from a spawn state (Gate/Cold and Dark vs Runway/Approach/Cruise)
@@ -42,6 +43,7 @@ export class LoadFltStateManager {
       case FltState.Final:
       default:
         this.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', true, true);
+        this.bus.getPublisher<MfdSurvEvents>().pub('tcas_alert_level', TcasMode.TARA, true);
         break;
     }
   }
