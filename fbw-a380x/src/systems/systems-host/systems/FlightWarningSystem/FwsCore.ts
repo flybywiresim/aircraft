@@ -231,6 +231,44 @@ export class FwsCore implements Instrument {
 
   public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
+  /* MISC STUFF */
+
+  public readonly airKnob = Subject.create(0);
+
+  public readonly airDataCaptOn3 = this.airKnob.map((it) => it === 0);
+
+  public readonly airDataFoOn3 = this.airKnob.map((it) => it === 0);
+
+  public readonly attKnob = Subject.create(0);
+
+  public readonly compMesgCount = Subject.create(0);
+
+  public readonly fmsSwitchingKnob = Subject.create(0);
+
+  public readonly landAsapRed = Subject.create(false);
+
+  public readonly ndXfrKnob = Subject.create(0);
+
+  public readonly manLandingElevation = Subject.create(false);
+
+  public readonly noMobileSwitchPosition = Subject.create(0);
+
+  public readonly predWSOn = Subject.create(false);
+
+  public readonly seatBelt = Subject.create(0);
+
+  public readonly strobeLightsOn = Subject.create(0);
+
+  public readonly tcasFault = Subject.create(false);
+
+  public readonly tcasSensitivity = Subject.create(0);
+
+  public readonly toConfigNormal = Subject.create(false);
+
+  public readonly wingAntiIce = Subject.create(false);
+
+  public readonly voiceVhf3 = Subject.create(false);
+
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
   public readonly acsc1DiscreteWord1 = Arinc429Register.empty();
@@ -983,22 +1021,43 @@ export class FwsCore implements Instrument {
   public readonly adirsRemainingAlignTime = Subject.create(0);
 
   public readonly adiru1State = Subject.create(0);
+  public readonly adiru1ModeSelector = Subject.create(0);
 
   public readonly adiru2State = Subject.create(0);
+  public readonly adiru2ModeSelector = Subject.create(0);
 
   public readonly adiru3State = Subject.create(0);
+  public readonly adiru3ModeSelector = Subject.create(0);
 
-  public readonly adr1Cas = Subject.create(Arinc429Word.empty());
-  public readonly adr2Cas = Arinc429Register.empty();
-  public readonly adr3Cas = Arinc429Register.empty();
+  public readonly adr1Cas = Arinc429RegisterSubject.createEmpty();
+  public readonly adr2Cas = Arinc429RegisterSubject.createEmpty();
+  public readonly adr3Cas = Arinc429RegisterSubject.createEmpty();
+
+  public readonly adr1Mach = Arinc429RegisterSubject.createEmpty();
+  public readonly adr2Mach = Arinc429RegisterSubject.createEmpty();
+  public readonly adr3Mach = Arinc429RegisterSubject.createEmpty();
 
   public readonly adr1Fault = Subject.create(false);
   public readonly adr2Fault = Subject.create(false);
   public readonly adr3Fault = Subject.create(false);
 
-  public readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
+  public readonly computedAirSpeedToNearest2 = MappedSubject.create(
+    ([cas1, cas2, cas3, sideOn3]) =>
+      Math.round((sideOn3 ? cas3.value : this.fwsNumber === 2 ? cas2.value : cas1.value) / 2) * 2,
+    this.adr1Cas,
+    this.adr2Cas,
+    this.adr3Cas,
+    this.fwsNumber === 2 ? this.airDataFoOn3 : this.airDataCaptOn3,
+  );
 
-  public readonly adr1Mach = Subject.create(Arinc429Word.empty());
+  public readonly machSelectedFromAdr = MappedSubject.create(
+    ([mach1, mach2, mach3, sideOn3]) =>
+      Math.round((sideOn3 ? mach3.value : this.fwsNumber === 2 ? mach2.value : mach1.value) / 2) * 2,
+    this.adr1Mach,
+    this.adr2Mach,
+    this.adr3Mach,
+    this.fwsNumber === 2 ? this.airDataFoOn3 : this.airDataCaptOn3,
+  );
 
   public readonly ir1MaintWord = Arinc429Register.empty();
   public readonly ir2MaintWord = Arinc429Register.empty();
@@ -1205,40 +1264,6 @@ export class FwsCore implements Instrument {
   public readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
-
-  /* OTHER STUFF */
-
-  public readonly airKnob = Subject.create(0);
-
-  public readonly attKnob = Subject.create(0);
-
-  public readonly compMesgCount = Subject.create(0);
-
-  public readonly fmsSwitchingKnob = Subject.create(0);
-
-  public readonly landAsapRed = Subject.create(false);
-
-  public readonly ndXfrKnob = Subject.create(0);
-
-  public readonly manLandingElevation = Subject.create(false);
-
-  public readonly noMobileSwitchPosition = Subject.create(0);
-
-  public readonly predWSOn = Subject.create(false);
-
-  public readonly seatBelt = Subject.create(0);
-
-  public readonly strobeLightsOn = Subject.create(0);
-
-  public readonly tcasFault = Subject.create(false);
-
-  public readonly tcasSensitivity = Subject.create(0);
-
-  public readonly toConfigNormal = Subject.create(false);
-
-  public readonly wingAntiIce = Subject.create(false);
-
-  public readonly voiceVhf3 = Subject.create(false);
 
   private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
     if (val) {
@@ -1635,11 +1660,13 @@ export class FwsCore implements Instrument {
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
-    this.adr1Cas.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
-    this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
-    this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
+    this.adr1Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 'number'));
+    this.adr2Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED', 'number'));
+    this.adr3Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED', 'number'));
 
-    this.adr1Mach.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_MACH'));
+    this.adr1Mach.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_MACH', 'number'));
+    this.adr2Mach.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_MACH', 'number'));
+    this.adr3Mach.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_3_MACH', 'number'));
 
     this.ir1Pitch.setFromSimVar('L:A32NX_ADIRS_IR_1_PITCH');
     this.ir2Pitch.setFromSimVar('L:A32NX_ADIRS_IR_2_PITCH');
@@ -2908,7 +2935,7 @@ export class FwsCore implements Instrument {
     const isNormalLaw = fcdc1DiscreteWord1.bitValue(11) || fcdc2DiscreteWord1.bitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
-      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.valueOr(0) > 60 || this.adr3Cas.valueOr(0) > 60;
+      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.get().valueOr(0) > 60 || this.adr3Cas.get().valueOr(0) > 60;
     this.stallWarning.set(
       !isNormalLaw &&
         isCasAbove60 &&

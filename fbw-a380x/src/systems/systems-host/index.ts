@@ -85,7 +85,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
-  private readonly fwsCore = new FwsCore(this.bus, this);
+  private readonly fwsCore = new FwsCore(1, this.bus, this);
 
   /**
    * "mainmenu" = 0

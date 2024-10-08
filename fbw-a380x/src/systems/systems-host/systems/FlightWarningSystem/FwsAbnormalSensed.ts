@@ -954,8 +954,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.mlgFireDetected,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        // Fixme: this should probably check the 3 adrs data
-        this.fws.adr1Cas.get().valueOr(0) > 250 || this.fws.adr1Mach.get().valueOr(0) > 0.55,
+        this.fws.computedAirSpeedToNearest2.get() > 250 || this.fws.machSelectedFromAdr.get() > 0.55,
         true,
         true,
         true,
