@@ -31,8 +31,10 @@ export interface BaseEwdSimvars {
   n1Idle: number;
   flex: number;
   athrTogaWarning: boolean;
-  packs1: boolean;
-  packs2: boolean;
+  cpiomB1AgsDiscreteRaw: number;
+  cpiomB2AgsDiscreteRaw: number;
+  cpiomB3AgsDiscreteRaw: number;
+  cpiomB4AgsDiscreteRaw: number;
   fwc_flight_phase: number;
   limitations_apprldg: number;
   limitations_all: number;
@@ -96,8 +98,10 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['n1Idle', { name: 'L:A32NX_ENGINE_IDLE_N1', type: SimVarValueType.Number }],
       ['flex', { name: 'L:A32NX_AIRLINER_TO_FLEX_TEMP', type: SimVarValueType.Number }],
       ['athrTogaWarning', { name: 'L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', type: SimVarValueType.Bool }],
-      ['packs1', { name: 'L:A32NX_COND_PACK_1_IS_OPERATING', type: SimVarValueType.Bool }],
-      ['packs2', { name: 'L:A32NX_COND_PACK_2_IS_OPERATING', type: SimVarValueType.Bool }],
+      ['cpiomB1AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
+      ['cpiomB2AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
+      ['cpiomB3AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
+      ['cpiomB4AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
       ['fwc_flight_phase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Enum }],
       [
         'limitations_apprldg',
