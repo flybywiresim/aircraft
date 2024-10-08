@@ -211,6 +211,22 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     );
   }
 
+  private async cityPairModified() {
+    const fromIcao = this.fromIcao.get();
+    const toIcao = this.toIcao.get();
+    const cityPairIsDifferent =
+      fromIcao !== this.props.fmcService.master?.flightPlanService.active.originAirport?.ident ||
+      toIcao !== this.props.fmcService.master.flightPlanService.active.destinationAirport?.ident;
+    if (fromIcao && toIcao && cityPairIsDifferent) {
+      await this.props.fmcService.master?.flightPlanService.newCityPair(
+        fromIcao,
+        toIcao,
+        this.altnIcao.get() ?? undefined,
+      );
+      this.props.fmcService.master?.acInterface.updateOansAirports();
+    }
+  }
+
   private async insertCpnyFpln() {
     if (!this.props.fmcService.master) {
       return;
@@ -320,18 +336,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
                   this.fromIcao.set(v);
-                  const toIcao = this.toIcao.get();
-                  const cityPairIsDifferent =
-                    v !== this.props.fmcService.master?.flightPlanService.active.originAirport.ident ||
-                    toIcao !== this.props.fmcService.master.flightPlanService.active.destinationAirport.ident;
-                  if (v && toIcao && cityPairIsDifferent) {
-                    await this.props.fmcService.master?.flightPlanService.newCityPair(
-                      v,
-                      toIcao,
-                      this.altnIcao.get() ?? undefined,
-                    );
-                    this.props.fmcService.master?.acInterface.updateOansAirports();
-                  }
+                  this.cityPairModified();
                 }}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
@@ -347,20 +352,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
                   this.toIcao.set(v);
-                  if (this.fromIcao.get() !== undefined && v) {
-                    const fromIcao = this.fromIcao.get();
-                    const cityPairIsDifferent =
-                      fromIcao !== this.props.fmcService.master?.flightPlanService.active.originAirport.ident ||
-                      v !== this.props.fmcService.master.flightPlanService.active.destinationAirport.ident;
-                    if (v && fromIcao && cityPairIsDifferent) {
-                      await this.props.fmcService.master?.flightPlanService.newCityPair(
-                        fromIcao,
-                        v,
-                        this.altnIcao.get() ?? undefined,
-                      );
-                      this.props.fmcService.master?.acInterface.updateOansAirports();
-                    }
-                  }
+                  this.cityPairModified();
                 }}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}

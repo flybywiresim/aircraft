@@ -1150,7 +1150,9 @@ export class FmcAircraftInterface {
   /** Write gross weight to SimVar */
   updateWeights() {
     const gw = this.fmc.fmgc.getGrossWeightKg();
-    SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
+    if (gw) {
+      SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
+    }
 
     if (this.fmc.enginesWereStarted.get()) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
