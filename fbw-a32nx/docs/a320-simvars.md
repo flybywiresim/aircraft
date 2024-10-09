@@ -1164,9 +1164,8 @@
       1 | Conf1
       2 | Conf1F
       3 | Conf2
-      4 | Conf3 (A380X: Conf2S)
-      5 | ConfFull (A380X: Conf3)
-      6 | not defined (A380X: Conf4)
+      4 | Conf3
+      5 | ConfFull
 
 - A32NX_SPOILERS_ARMED
     - Bool
