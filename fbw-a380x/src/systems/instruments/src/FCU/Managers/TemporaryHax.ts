@@ -1,11 +1,14 @@
-import { EventBus, HEvent, Instrument } from '@microsoft/msfs-sdk';
+import { EventBus, HEvent } from '@microsoft/msfs-sdk';
 
 export abstract class TemporaryHax {
   private readonly tempSub = this.tempBus.getSubscriber<HEvent>();
 
   protected textValue: Element | null;
 
-  constructor(private readonly tempBus: EventBus, protected divRef: HTMLElement) {
+  constructor(
+    private readonly tempBus: EventBus,
+    protected divRef: HTMLElement,
+  ) {
     this.textValue = this.getTextElement('Value');
 
     this.tempSub.on('hEvent').handle((event) => {
@@ -15,7 +18,7 @@ export abstract class TemporaryHax {
     });
   }
 
-  protected onEvent(event: string): void {}
+  protected onEvent(_event: string): void {}
 
   protected abstract init(): void;
 

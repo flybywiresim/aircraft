@@ -1,12 +1,23 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, GameStateProvider, HEvent, Instrument, MappedSubject, SimVarValueType, Subscribable, Wait } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  GameStateProvider,
+  HEvent,
+  Instrument,
+  MappedSubject,
+  SimVarValueType,
+  Subscribable,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { FGVars, FgVerticalArmedFlags } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
 
 export class AltitudeManager implements Instrument {
-  private static readonly MANAGED_ARMED_MASK = FgVerticalArmedFlags.AltCst | FgVerticalArmedFlags.Clb | FgVerticalArmedFlags.Des | FgVerticalArmedFlags.Gs;
+  private static readonly MANAGED_ARMED_MASK =
+    FgVerticalArmedFlags.AltCst | FgVerticalArmedFlags.Clb | FgVerticalArmedFlags.Des | FgVerticalArmedFlags.Gs;
   private static readonly MANAGED_MODES = [
     VerticalMode.ALT_CST,
     VerticalMode.ALT_CST_CPT,
@@ -25,7 +36,8 @@ export class AltitudeManager implements Instrument {
   private readonly verticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly verticalArmed = ConsumerSubject.create(this.sub.on('fg.fma.verticalArmedBitmask'), 0);
   private readonly _isVerticalManaged = MappedSubject.create(
-    ([verticalMode, verticalArmed]) => (verticalArmed & AltitudeManager.MANAGED_ARMED_MASK) > 0 || AltitudeManager.MANAGED_MODES.includes(verticalMode),
+    ([verticalMode, verticalArmed]) =>
+      (verticalArmed & AltitudeManager.MANAGED_ARMED_MASK) > 0 || AltitudeManager.MANAGED_MODES.includes(verticalMode),
     this.verticalMode,
     this.verticalArmed,
   );

@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NavAidMode } from '@flybywiresim/fbw-sdk';
-import {
-    EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType
-} from '@microsoft/msfs-sdk';
+import { EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
 
 interface FcuBaseEvents {
   /** Whether TRK/FPA mode is active. */
@@ -16,10 +14,7 @@ interface FcuBaseEvents {
 type IndexedTopics = 'fcu_left_navaid_mode' | 'fcu_right_navaid_mode';
 
 type FcuIndexedEvents = {
-  [P in keyof Pick<
-    FcuBaseEvents,
-    IndexedTopics
-  > as `${P}_${1 | 2}`]: FcuBaseEvents[P];
+  [P in keyof Pick<FcuBaseEvents, IndexedTopics> as `${P}_${1 | 2}`]: FcuBaseEvents[P];
 };
 
 export interface FcuEvents extends FcuBaseEvents, FcuIndexedEvents {}
@@ -33,8 +28,14 @@ export class FcuPublisher extends SimVarPublisher<FcuEvents> {
   public constructor(bus: EventBus, pacer?: PublishPacer<FcuEvents>) {
     const simvars = new Map<keyof FcuEvents, SimVarPublisherEntry<any>>([
       ['fcu_trk_fpa_active', { name: `L:A32NX_TRK_FPA_MODE_ACTIVE`, type: SimVarValueType.Bool }],
-      ['fcu_left_navaid_mode', { name: `L:A32NX_EFIS_L_NAVAID_#index#_MODE`, type: SimVarValueType.Enum, indexed: true }],
-      ['fcu_right_navaid_mode', { name: `L:A32NX_EFIS_R_NAVAID_#index#_MODE`, type: SimVarValueType.Enum, indexed: true }],
+      [
+        'fcu_left_navaid_mode',
+        { name: `L:A32NX_EFIS_L_NAVAID_#index#_MODE`, type: SimVarValueType.Enum, indexed: true },
+      ],
+      [
+        'fcu_right_navaid_mode',
+        { name: `L:A32NX_EFIS_R_NAVAID_#index#_MODE`, type: SimVarValueType.Enum, indexed: true },
+      ],
     ]);
 
     super(simvars, bus, pacer);

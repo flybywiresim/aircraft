@@ -10,31 +10,31 @@ import { FcuFsInstrument } from './FcuFsInstrument';
 export class FcuBaseInstrument extends FsBaseInstrument<FcuFsInstrument> {
   /** @inheritdoc */
   public get isInteractive(): boolean {
-      return false;
+    return false;
   }
 
   /** @inheritdoc */
   public constructInstrument(): FcuFsInstrument {
-      return new FcuFsInstrument(this);
+    return new FcuFsInstrument(this);
   }
 
   /** @inheritdoc */
   get templateID(): string {
-      return 'A380X_FCU';
+    return 'A380X_FCU';
   }
 
   /** @inheritdoc */
   public onPowerOn(): void {
-      super.onPowerOn();
+    super.onPowerOn();
 
-      this.fsInstrument.onPowerOn();
+    this.fsInstrument.onPowerOn();
   }
 
   /** @inheritdoc */
   public onShutDown(): void {
-      super.onShutDown();
+    super.onShutDown();
 
-      this.fsInstrument.onPowerOff();
+    this.fsInstrument.onPowerOff();
   }
 }
 

@@ -11,8 +11,7 @@ export class AutopilotManager extends TemporaryHax implements Instrument {
     this.onUpdate();
   }
 
-  public init(): void {
-  }
+  public init(): void {}
 
   protected override onEvent(_event: string): void {
     if (_event === 'AP_1_PUSH') {
@@ -30,6 +29,5 @@ export class AutopilotManager extends TemporaryHax implements Instrument {
     }
   }
 
-  public onUpdate(): void {
-  }
+  public onUpdate(): void {}
 }

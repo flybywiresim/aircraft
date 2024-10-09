@@ -104,12 +104,12 @@ export class FcuFsInstrument implements FsInstrument {
   }
 
   /** @inheritdoc */
-  public onGameStateChanged(oldState: GameState, newState: GameState): void {
+  public onGameStateChanged(_oldState: GameState, _newState: GameState): void {
     // noop
   }
 
   /** @inheritdoc */
-  public onSoundEnd(soundEventId: Name_Z): void {
+  public onSoundEnd(_soundEventId: Name_Z): void {
     // noop
   }
 

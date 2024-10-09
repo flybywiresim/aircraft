@@ -6,7 +6,7 @@ import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPubli
 import { MsfsAutopilotAssistanceEvents } from '@flybywiresim/fbw-sdk';
 
 export interface AltitudeProps {
-  readonly bus: EventBus,
+  readonly bus: EventBus;
 }
 
 export class Altitude extends DisplayComponent<AltitudeProps> {
@@ -32,8 +32,12 @@ export class Altitude extends DisplayComponent<AltitudeProps> {
     return (
       <div id="Altitude">
         <svg width="125%" height="100%">
-          <text id="ALT" class="Common Active" x="31%" y="20%">ALT</text>
-          <text id="Value" class="Common Value" x="4%" y="86%">{this.altText}</text>
+          <text id="ALT" class="Common Active" x="31%" y="20%">
+            ALT
+          </text>
+          <text id="Value" class="Common Value" x="4%" y="86%">
+            {this.altText}
+          </text>
         </svg>
       </div>
     );

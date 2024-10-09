@@ -16,9 +16,15 @@ export interface OverheadEvents {
 
 export class OverheadPublisher extends SimVarPublisher<OverheadEvents> {
   constructor(bus: EventBus) {
-    super(new Map<keyof OverheadEvents, SimVarPublisherEntry<any>>([
-      ['ovhd_ann_lt_test_switch', { name: 'L:A32NX_OVHD_INTLT_ANN', type: SimVarValueType.Enum }],
-      ['ovhd_ann_lt_test_active', { name: 'L:A32NX_OVHD_INTLT_ANN', type: SimVarValueType.Enum, map: (v) => v === AnnLightTestState.Test }],
-    ]), bus);
+    super(
+      new Map<keyof OverheadEvents, SimVarPublisherEntry<any>>([
+        ['ovhd_ann_lt_test_switch', { name: 'L:A32NX_OVHD_INTLT_ANN', type: SimVarValueType.Enum }],
+        [
+          'ovhd_ann_lt_test_active',
+          { name: 'L:A32NX_OVHD_INTLT_ANN', type: SimVarValueType.Enum, map: (v) => v === AnnLightTestState.Test },
+        ],
+      ]),
+      bus,
+    );
   }
 }

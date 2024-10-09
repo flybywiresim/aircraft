@@ -34,8 +34,11 @@ export class BaroManager implements Instrument {
   private readonly correctionEventKey: keyof BaroEvents = `baro_correction_${this.index}`;
   private readonly preselectChangedEventKey: keyof BaroEvents = `baro_preselect_changed_${this.index}`;
 
-  constructor(private readonly bus: EventBus, private readonly index: BaroIndex) {
-    KeyEventManager.getManager(this.bus).then((manager) => this.keyEventManager = manager);
+  constructor(
+    private readonly bus: EventBus,
+    private readonly index: BaroIndex,
+  ) {
+    KeyEventManager.getManager(this.bus).then((manager) => (this.keyEventManager = manager));
   }
 
   public init(): void {
@@ -45,7 +48,8 @@ export class BaroManager implements Instrument {
       if (v !== 'STD') {
         // put pre-select into altimeter
         const correction = this.correction.get();
-        const preSelectKohlsman = 16 * (correction < 100 ? UnitType.HPA.convertFrom(correction, UnitType.IN_HG) : correction);
+        const preSelectKohlsman =
+          16 * (correction < 100 ? UnitType.HPA.convertFrom(correction, UnitType.IN_HG) : correction);
         // FIXME danger, need to setup altimeter 2 in systems.cfg for fo side rather than isis
         this.keyEventManager?.triggerKey('KOHLSMAN_SET', true, preSelectKohlsman, this.index);
       }
@@ -83,7 +87,7 @@ export class BaroManager implements Instrument {
         this.publisher.pub(this.preselectChangedEventKey, null);
         break;
       }
-      case 'A380X_FCU_BARO_PRESEL_INC':{
+      case 'A380X_FCU_BARO_PRESEL_INC': {
         const correction = this.correction.get();
         this.correction.set(correction + (correction > 100 ? 1 : 0.01));
         this.publisher.pub(this.preselectChangedEventKey, null);

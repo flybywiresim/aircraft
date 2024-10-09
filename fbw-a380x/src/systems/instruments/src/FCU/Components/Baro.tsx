@@ -1,12 +1,21 @@
 //  Copyright (c) 2023-2024 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DebounceTimer,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPublisher';
 import { BaroEvents } from '../Managers/BaroManager';
 
 export interface BaroProps {
-  readonly bus: EventBus,
+  readonly bus: EventBus;
 }
 
 export class Baro extends DisplayComponent<BaroProps> {
@@ -57,12 +66,13 @@ export class Baro extends DisplayComponent<BaroProps> {
   );
 
   private readonly preSelBaroText = MappedSubject.create(
-    ([correction, isVisible]) => isVisible ? (correction < 100 ? correction.toFixed(2) : correction.toFixed(0).padStart(4, '0')) : '',
+    ([correction, isVisible]) =>
+      isVisible ? (correction < 100 ? correction.toFixed(2) : correction.toFixed(0).padStart(4, '0')) : '',
     this.correction,
     this.isPreSelVisible,
   );
 
-  onAfterRender(node: VNode): void {
+  onAfterRender(_node: VNode): void {
     this.sub.on('baro_preselect_changed_1').handle(() => {
       this.isPreSelVisible.set(true);
       this.preSelVisibileTimer.schedule(() => this.isPreSelVisible.set(false), Baro.PRESEL_TIME);
@@ -97,10 +107,14 @@ export class Baro extends DisplayComponent<BaroProps> {
                 Visible: this.isQfeLabelVisible,
               }}
             >
-                QFE
+              QFE
             </text>
-            <text id="PreSelBaroValue" class="Common Active" x="100%" y="26%" text-anchor="end">{this.preSelBaroText}</text>
-            <text id="Value" class="Common Value" x="4%" y="86%">{this.baroText}</text>
+            <text id="PreSelBaroValue" class="Common Active" x="100%" y="26%" text-anchor="end">
+              {this.preSelBaroText}
+            </text>
+            <text id="Value" class="Common Value" x="4%" y="86%">
+              {this.baroText}
+            </text>
           </svg>
         </div>
       </div>
