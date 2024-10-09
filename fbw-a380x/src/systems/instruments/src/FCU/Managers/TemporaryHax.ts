@@ -59,8 +59,8 @@ export abstract class TemporaryHax {
     }
   }
 
-  protected setElementVisibility(_element: HTMLElement | null, _show: boolean) {
-    if (_element != null) {
+  protected setElementVisibility(_element?: HTMLElement | null, _show?: boolean) {
+    if (_element !== undefined && _element !== null) {
       _element.style.display = _show ? 'block' : 'none';
     }
   }
