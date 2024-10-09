@@ -3,6 +3,7 @@
 
 import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 enum A320_Neo_FCU_VSpeed_State {
   Idle = 0,
@@ -124,7 +125,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     return Utils.Clamp(Math.round(Simplane.getVerticalSpeed() / 100) * 100, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
   }
 
-  private _enterIdleState(idleVSpeed: unknown): void {
+  private _enterIdleState(): void {
     this.selectedVs = 0;
     this.selectedFpa = 0;
     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
@@ -226,19 +227,16 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       }
       this.setTextElementActive(this.textVS, !this.isFPAMode);
       this.setTextElementActive(this.textFPA, this.isFPAMode);
+
+      const currentValue = this.currentValue ?? 0;
       if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
-        const sign = this.currentValue < 0 ? '-' : '+';
+        const sign = currentValue < 0 ? '-' : '+';
         if (this.isFPAMode) {
-          let value = Math.abs(this.currentValue);
-          value = Math.round(value * 10)
-            .toString()
-            .padStart(2, '0');
-          value = `${value.substring(0, 1)}.${value.substring(1)}`;
-          this.textValueContent = sign + value;
+          this.textValueContent = `${sign}${MathUtils.round(Math.abs(currentValue), 0.1).toFixed(1)}`;
         } else if (this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
           this.textValueContent = '~00oo';
         } else {
-          let value = Math.floor(this.currentValue);
+          let value = Math.floor(currentValue);
           value = Math.abs(value);
           this.textValueContent = `${
             sign +
@@ -257,21 +255,21 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
 
   protected onEvent(_event: string): void {
     if (_event === 'VS_INC_VS') {
-      this.selectedVs = Utils.Clamp(Math.round(this.selectedVs + 100), -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
+      this.selectedVs = Utils.Clamp(Math.round((this.selectedVs ?? 0) + 100), -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
       this.onRotate();
     } else if (_event === 'VS_DEC_VS') {
-      this.selectedVs = Utils.Clamp(Math.round(this.selectedVs - 100), -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
+      this.selectedVs = Utils.Clamp(Math.round((this.selectedVs ?? 0) - 100), -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
       this.onRotate();
     } else if (_event === 'VS_INC_FPA') {
       this.selectedFpa = Utils.Clamp(
-        Math.round((this.selectedFpa + 0.1) * 10) / 10,
+        Math.round(((this.selectedFpa ?? 0) + 0.1) * 10) / 10,
         -this.ABS_MINMAX_FPA,
         this.ABS_MINMAX_FPA,
       );
       this.onRotate();
     } else if (_event === 'VS_DEC_FPA') {
       this.selectedFpa = Utils.Clamp(
-        Math.round((this.selectedFpa - 0.1) * 10) / 10,
+        Math.round(((this.selectedFpa ?? 0) - 0.1) * 10) / 10,
         -this.ABS_MINMAX_FPA,
         this.ABS_MINMAX_FPA,
       );
@@ -310,7 +308,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
    * @returns {number} The corresponding vertical speed in feet per minute.
    */
   private calculateVerticalSpeedForAngle(_angle?: number): number {
-    if (_angle == 0) {
+    if (_angle === undefined || _angle === 0) {
       return 0;
     }
     const _groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Meters per second');
@@ -326,7 +324,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
    * @returns {number} The corresponding flight path angle in degrees.
    */
   private calculateAngleForVerticalSpeed(verticalSpeed?: number): number {
-    if (Math.abs(verticalSpeed) < 10) {
+    if (verticalSpeed === undefined || Math.abs(verticalSpeed) < 10) {
       return 0;
     }
     const _groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Meters per second');
