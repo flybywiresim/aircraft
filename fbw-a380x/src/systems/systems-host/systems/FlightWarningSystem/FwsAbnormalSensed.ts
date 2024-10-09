@@ -1494,22 +1494,10 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
-    // 32 LANDING GEAR
-    320800037: {
-      // GEAR NOT DOWN
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
-      simVarIsActive: this.fws.lgNotDown,
-      notActiveWhenFaults: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
-      failure: 3,
-      sysPage: -1,
-    },
     // 34 NAVIGATION
     340800001: {
       // ADR 1 FAULT
-      // FIXME according to FCOM, these are not suppressed in flight phase 1+12, but I don't want the fault to trigger if you set IR mode sel. to OFF when securing the a/c
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: this.fws.adr1Faulty,
       notActiveWhenFaults: ['340800004', '340800008', '340800005'],
       whichItemsToShow: () => [true, true, true, true],
@@ -1531,7 +1519,7 @@ export class FwsAbnormalSensed {
     },
     340800002: {
       // ADR 2 FAULT
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: this.fws.adr2Faulty,
       notActiveWhenFaults: ['340800004', '340800008', '340800006'],
       whichItemsToShow: () => [true, true],
@@ -1551,7 +1539,7 @@ export class FwsAbnormalSensed {
     },
     340800003: {
       // ADR 3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: this.fws.adr3Faulty,
       notActiveWhenFaults: ['340800005', '340800006', '340800008'],
       whichItemsToShow: () => [true, true, true, true],
@@ -1569,7 +1557,7 @@ export class FwsAbnormalSensed {
     },
     340800004: {
       // ADR 1+2 FAULT
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Faulty, this.fws.adr2Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
@@ -1601,7 +1589,7 @@ export class FwsAbnormalSensed {
     },
     340800005: {
       // ADR 1+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Faulty, this.fws.adr3Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
@@ -1633,7 +1621,7 @@ export class FwsAbnormalSensed {
     },
     340800006: {
       // ADR 2+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Faulty, this.fws.adr3Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
@@ -1665,7 +1653,7 @@ export class FwsAbnormalSensed {
     },
     340800008: {
       // ADR 1+2+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10, 12],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
         this.fws.adr1Faulty,
