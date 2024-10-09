@@ -200,7 +200,8 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       // ugly hack because the FG doesn't understand true heading
       // FIXME teach the A380 FG about true/mag
       // this.trueRef = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean') > 0;
-      const correctedHeading = this.trueRef ? (_value - SimVar.GetSimVarValue('MAGVAR', 'degree')) % 360 : _value;
+      const valueNum = _value ?? 0;
+      const correctedHeading = this.trueRef ? (valueNum - SimVar.GetSimVarValue('MAGVAR', 'degree')) % 360 : valueNum;
 
       SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', _showSelectedHeading == true ? 1 : 0);
       if (_value !== this.currentValue) {
@@ -219,7 +220,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       this.showSelectedHeading = _showSelectedHeading;
       this.currentValue = _value;
       this.setTextElementActive(this.textHDG, !this.isTRKMode);
-      this.setTextElementActive(this.textTRK, this.isTRKMode);
+      this.setTextElementActive(this.textTRK, !!this.isTRKMode);
       this.lightsTest = _lightsTest;
       if (this.lightsTest) {
         this.setTextElementActive(this.textHDG, true);
@@ -232,7 +233,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
         this.textValueContent = '---';
         this.setElementVisibility(this.signDegrees, false);
       } else {
-        const value = Math.round(Math.max(this.currentValue, 0)) % 360;
+        const value = Math.round(Math.max(this.currentValue ?? 0, 0)) % 360;
         this.textValueContent = value.toString().padStart(3, '0');
         this.setElementVisibility(this.signDegrees, true);
       }
@@ -259,9 +260,9 @@ export class HeadingManager extends TemporaryHax implements Instrument {
 
   private onTRKModeChanged(_newValue: number | boolean): void {
     if (_newValue) {
-      this.selectedValue = this.calculateTrackForHeading(this.selectedValue);
+      this.selectedValue = this.calculateTrackForHeading(this.selectedValue ?? 0);
     } else {
-      this.selectedValue = this.calculateHeadingForTrack(this.selectedValue);
+      this.selectedValue = this.calculateHeadingForTrack(this.selectedValue ?? 0);
     }
   }
 
@@ -306,7 +307,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
     const swc = (windVelocity / trueAirspeed) * Math.sin(windDirection - track);
     const heading = track + (Math.asin(swc) % (2 * Math.PI));
     const _heading = ((((heading * 180) / Math.PI) % 360) + 360) % 360;
-    return _heading == NaN ? _track : _heading;
+    return Number.isNaN(_heading) ? _track : _heading;
   }
 
   private getRotationSpeed(): number {
@@ -322,18 +323,18 @@ export class HeadingManager extends TemporaryHax implements Instrument {
     return Math.min(this._rotaryEncoderMaximumSpeed, Math.floor(this._rotaryEncoderCurrentSpeed));
   }
 
-  protected onEvent(_event): void {
+  protected onEvent(_event: string): void {
     if (_event === 'HDG_INC_HEADING') {
-      this.selectedValue = ((Math.round(this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
+      this.selectedValue = ((Math.round((this.selectedValue ?? 0) + this.getRotationSpeed()) % 360) + 360) % 360;
       this.onRotate();
     } else if (_event === 'HDG_DEC_HEADING') {
-      this.selectedValue = ((Math.round(this.selectedValue - this.getRotationSpeed()) % 360) + 360) % 360;
+      this.selectedValue = ((Math.round((this.selectedValue ?? 0) - this.getRotationSpeed()) % 360) + 360) % 360;
       this.onRotate();
     } else if (_event === 'HDG_INC_TRACK') {
-      this.selectedValue = ((Math.round(this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
+      this.selectedValue = ((Math.round((this.selectedValue ?? 0) + this.getRotationSpeed()) % 360) + 360) % 360;
       this.onRotate();
     } else if (_event === 'HDG_DEC_TRACK') {
-      this.selectedValue = ((Math.round(this.selectedValue - this.getRotationSpeed()) % 360) + 360) % 360;
+      this.selectedValue = ((Math.round((this.selectedValue ?? 0) - this.getRotationSpeed()) % 360) + 360) % 360;
       this.onRotate();
     } else if (_event === 'HDG_PUSH') {
       this.onPush();
