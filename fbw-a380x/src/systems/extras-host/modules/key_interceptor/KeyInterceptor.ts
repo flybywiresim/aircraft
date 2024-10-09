@@ -196,11 +196,11 @@ export class KeyInterceptor {
     this.dialogVisible = false;
   }
 
-  private onComFractIncrement(index: ComRadioIndex, sign: 1 | -1, carry: boolean): void {
+  private onComFractIncrement(_index: ComRadioIndex, _sign: 1 | -1, _carry: boolean): void {
     // FIXME implement, inop for now
   }
 
-  private onComWholeIncrement(index: ComRadioIndex, sign: 1 | -1): void {
+  private onComWholeIncrement(_index: ComRadioIndex, _sign: 1 | -1): void {
     // FIXME implement, inop for now
   }
 
@@ -220,27 +220,27 @@ export class KeyInterceptor {
     this.publisher.pub(modeEvent, FrequencyMode.Frequency, true);
   }
 
-  private onComSwap(index: ComRadioIndex): void {
+  private onComSwap(_index: ComRadioIndex): void {
     // FIXME implement, inop for now
   }
 
-  private onComRxSelect(index: ComRadioIndex, data: KeyEventData): void {
+  private onComRxSelect(_index: ComRadioIndex, _data: KeyEventData): void {
     // FIXME implement, inop for now
   }
 
-  private onComTxSelect(data: KeyEventData): void {
+  private onComTxSelect(_data: KeyEventData): void {
     // FIXME implement, inop for now
   }
 
-  private onComVolumeSet(index: ComRadioIndex, data: KeyEventData): void {
+  private onComVolumeSet(_index: ComRadioIndex, _data: KeyEventData): void {
     // FIXME implement, inop for now
   }
 
-  private onComVolumeInc(index: ComRadioIndex, sign: 1 | -1, data: KeyEventData): void {
+  private onComVolumeInc(_index: ComRadioIndex, _sign: 1 | -1, _data: KeyEventData): void {
     // FIXME implement, inop for now
   }
 
-  private onComReceiveAll(toggle: boolean): void {
+  private onComReceiveAll(_toggle: boolean): void {
     // FIXME implement, inop for now
   }
 }

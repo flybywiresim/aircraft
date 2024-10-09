@@ -20,14 +20,11 @@ export class AudioControlManager implements Instrument {
 
   private readonly sub = this.bus.getSubscriber<AudioControlLocalVarEvents & KeypadEvents>();
 
-  private readonly offsideRmpIndices = [
-    this.rmpIndex === 1 ? 2 : 1,
-    this.rmpIndex === 3 ? 1 : 3,
-  ];
+  private readonly offsideRmpIndices = [this.rmpIndex === 1 ? 2 : 1, this.rmpIndex === 3 ? 1 : 3];
 
   private readonly keyEventMap: Record<
     any, // TODO fix type
-    { localVar: string, syncVars: string[]; state: MutableSubscribable<boolean> }
+    { localVar: string; syncVars: string[]; state: MutableSubscribable<boolean> }
   > = {
     [SystemKeys.Vhf1Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_VHF_TX_1`,
@@ -183,7 +180,7 @@ export class AudioControlManager implements Instrument {
       );
     }
 
-    NXDataStore.getAndSubscribe('FO_SYNC_EFIS_ENABLED', (_, v) => this.isSyncEnabled = v === '1', '0')
+    NXDataStore.getAndSubscribe('FO_SYNC_EFIS_ENABLED', (_, v) => (this.isSyncEnabled = v === '1'), '0');
   }
 
   // TODO only two tx can be active at a time
