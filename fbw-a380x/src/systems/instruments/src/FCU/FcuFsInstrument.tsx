@@ -125,7 +125,7 @@ export class FcuFsInstrument implements FsInstrument {
   private doInit(): void {
     // this.failuresConsumer.register(this.isFailedKey);
 
-    // very dubious code from old FCU
+    // FIXME: very dubious code from old FCU
     this.isOperating.sub((v) => {
       if (v) {
         if (!SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool')) {
