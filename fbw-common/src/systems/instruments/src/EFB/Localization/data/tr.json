@@ -86,7 +86,7 @@
       "SimBriefDataNotYetLoaded": "SimBrief verileri henüz yüklenmedi.",
       "Title": "Uçuşunuz",
       "ToastFuelPayloadImported": "Yakıt ve Yük ithal edildi!",
-      "ToastWrongAircraftType": "SimBrief - Invalid aircraft type detected. Check that aircraft type in SimBrief OFP is correct.",
+      "ToastWrongAircraftType": "SimBrief - Geçersiz uçak tipi tespit edildi. SimBrief OFP'deki uçak tipinin doğru olup olmadığını kontrol edin.",
       "ZFW": "ZFW"
     }
   },
@@ -101,7 +101,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Henüz herhangi bir SimBrief verisini içe aktarmadınız."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "Asıl GW",
       "Engines": "Motorlar",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -114,7 +114,7 @@
       "Range": "Menzil",
       "Title": "Genel Bakış"
     },
-    "Title": "Harekat"
+    "Title": "Sevkiyat"
   },
   "Failures": {
     "Comfort": {
@@ -168,8 +168,8 @@
       "Planned": "Planned",
       "SelectItem": {
         "CargoDeck": "Kargo",
-        "MainDeck": "Main",
-        "UpperDeck": "Upper"
+        "MainDeck": "Ana",
+        "UpperDeck": "Üst"
       },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
@@ -178,12 +178,12 @@
         "MaxGW": "Maxsimum Gw",
         "MaxGWCG": "Maksimum GW CG",
         "MaxPassengers": "Maksimum Yolcu",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
+        "MaxZFW": "Maksimum ZFW",
+        "MaxZFWCG": "Maksimum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Uçaktan indirmeye başla"
+        "StartBoarding": "Yolcu Bindirmeyi Başlat",
+        "StartDeboarding": "Yolcu İndirmeyi Başlat"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -234,9 +234,9 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "Havaalanı Mevcut Değil",
-      "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
+      "AuthenticateWithNavigraph": "Navigraph ile Giriş Yap",
       "GoToThirdPartyOptions": {
-        "Button": "3. Taraf Ayarları",
+        "Button": "3. Parti Ayarları",
         "Title": "Navigraph hesabını bağlamak için 3. Taraf Seçenekleri'ne gidin"
       },
       "InsufficientEnv": "Yetersiz .env dosyası",
@@ -472,10 +472,10 @@
     "AlignAdirs": "ADIRS'i Hizala",
     "FinishBoarding": "Uçağa binmeyi bitir",
     "OnScreenKeyboard": "Ekran Klavyesi",
-    "PauseAtTod": "Pause at Top of Descent",
-    "PauseAtTodArmed": "Armed",
+    "PauseAtTod": "Top of Descent Noktasında Durdur",
+    "PauseAtTodArmed": "Hazır",
     "PauseAtTodInactive": "Aktif değil",
-    "PauseAtTodStandby": "Standby",
+    "PauseAtTodStandby": "Beklemede",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Bağlandı",
     "SimBridgeConnecting": "Bağlanıyor...",
@@ -488,11 +488,11 @@
       "Brightness": "flyPad parlaklığını ayarla",
       "FinishBoarding": "Uçağa binmeyi anında bitir",
       "OnScreenKeyboard": "Ekran Klavyesini Açma/Kapatma",
-      "PauseAtTod": "Arm or Disarm Pause at Top of Descent",
+      "PauseAtTod": "Top of Descent Noktasını Hazırla",
       "PowerButton": "Gücü Kapat",
       "Settings": "flyPad Ayarlar sayfasına git",
       "SimBridge": "SimBridge Bağlantısını Kontrol Et",
-      "Simrate": "Increase or Decrease Simulation Rate",
+      "Simrate": "Simülasyon Oranını Artırma veya Azaltma",
       "Sleep": "Beklemede"
     },
     "Title": "Hızlı Kontroller"
@@ -517,7 +517,7 @@
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Kaynağı",
-      "AutomaticallyImportSimBriefData": "SimBrief Verilerini Otomatik Olarak Al",
+      "AutomaticallyImportSimBriefData": "SimBrief Verilerini Otomatik Olarak İndir",
       "Enable": "Etkinleştir",
       "EnableTelex": "TELEX'i Etkinleştir",
       "ErrorReporting": "Hata Raporlama",
@@ -549,7 +549,7 @@
       "WindInteriorVolume": "Rüzgar iç ses seviyesi"
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Kayma Eğimi Yakalandığında Engellendi",
+      "FiveHundredGlide": "Glideslope Yakalandığında Engellenir",
       "Reset": "Sıfırla",
       "ResetStandardConfig": "Standart Yapılandırmaya Sıfırla",
       "Title": "Otomatik Çağrılar"
@@ -558,7 +558,7 @@
     "Instant": "Anında",
     "Real": "Gerçek",
     "Realism": {
-      "AdirsAlignTime": "ADIRS Hizalama Zamanı",
+      "AdirsAlignTime": "ADIRS Hizalama Süresi",
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
@@ -638,8 +638,8 @@
       "Axis": "Eksen",
       "AxisDescription": "Gaz Kelebeği için Eksen $axis $throttles",
       "Back": "Geri",
-      "ConfigureEnd": "Sonu Yapılandır",
-      "ConfigureStart": "Başlat",
+      "ConfigureEnd": "Kalibre Etmeyi Sonlandır",
+      "ConfigureStart": "Kalibre Etmeyi Başlat",
       "CurrentValue": "Geçerli Değer",
       "Deadband": "Ölü bant",
       "ErrorOverlapMsg": "ile örtüşen",
@@ -657,7 +657,7 @@
       "TogaOnAxis": "TOGA Eksende"
     },
     "Title": "Ayarlar",
-    "Unrealistic": "Gerçekçi olmayan",
+    "Unrealistic": "Gerçekçi Değil",
     "flyPad": {
       "AutoBrightness": "Otomatik Parlaklık",
       "AutomaticallyShowOnscreenKeyboard": "Ekran Klavyesini Otomatik Olarak Göster",
@@ -675,7 +675,7 @@
       "Theme": "Tema",
       "TimeDisplayed": "Gösterilen Süre",
       "Title": "flyPad",
-      "TwelveHours": "12h",
+      "TwelveHours": "12 saat",
       "TwentyFourHours": "24 saat",
       "Utc": "UTC",
       "UtcAndLocal": "UTC ve Yerel"
