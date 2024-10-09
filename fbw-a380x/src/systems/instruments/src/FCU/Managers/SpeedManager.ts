@@ -198,7 +198,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       this.currentValue = _machActive ? _value * 100 : _value;
       this.isMachActive = _machActive;
       this.setTextElementActive(this.textSPD, !_machActive);
-      this.setTextElementActive(this.textMACH, _machActive);
+      this.setTextElementActive(this.textMACH, !!_machActive);
       if (this.isMachActive) {
         this.setTextElementActive(this.textKNOTS, false);
       } else {
@@ -212,19 +212,23 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         this.setTextElementActive(this.textKNOTS, true);
         return;
       }
-      let value = _machActive ? Math.max(this.currentValue, 0) : Math.max(this.currentValue, 100);
-      value = Math.round(value).toString().padStart(3, '0');
+      const value = _machActive ? Math.max(this.currentValue, 0) : Math.max(this.currentValue, 100);
+      let valueText: string;
       if (!_isManaged && this.currentValue > 0) {
         if (_machActive) {
-          value = `${value.substring(0, 1)}.${value.substring(1)}`;
+          valueText = `${value.toFixed(1)}`;
+        } else {
+          valueText = Math.round(value).toString().padStart(3, '0');
         }
-        this.textValueContent = value;
+        this.textValueContent = valueText;
       } else if (_isManaged || this.currentValue < 0) {
         if (_showSelectedSpeed) {
           if (_machActive) {
-            value = `${value.substring(0, 1)}.${value.substring(1)}`;
+            valueText = value.toFixed(1);
+          } else {
+            valueText = Math.round(value).toString().padStart(3, '0');
           }
-          this.textValueContent = value;
+          this.textValueContent = valueText;
         } else {
           this.textValueContent = '---';
         }
