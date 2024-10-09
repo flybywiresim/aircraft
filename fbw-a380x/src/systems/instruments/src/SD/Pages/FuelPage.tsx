@@ -252,13 +252,23 @@ export const FuelPage = () => {
     rightOuterAftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD ||
     rightOuterAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
-  const [trimTankInletValveOpen] = useSimVar('FUELSYSTEM VALVE OPEN:43', 'Percent over 100', 1000);
+  const [trimTankInletValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:43', 'Percent over 100', 1000);
+  const [trimTankInletValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:60', 'Percent over 100', 1000);
+
   const [trimLineIsolationValveFwdOpen] = useSimVar('FUELSYSTEM VALVE OPEN:44', 'Percent over 100', 1000);
-  const [trimLineIsolationValveAftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100', 1000);
-  const isTrimLineIsolated =
-    trimTankInletValveOpen < TRANSFER_VALVE_CLOSED_THRESHOLD &&
+  const [trimLineIsolationValveAft1Open] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100', 1000);
+  const [trimLineIsolationValveAft2Open] = useSimVar('FUELSYSTEM VALVE OPEN:59', 'Percent over 100', 1000);
+
+  const areTrimLineIsolationValvesClosed =
     trimLineIsolationValveFwdOpen < TRANSFER_VALVE_CLOSED_THRESHOLD &&
-    trimLineIsolationValveAftOpen < TRANSFER_VALVE_CLOSED_THRESHOLD;
+    trimLineIsolationValveAft1Open < TRANSFER_VALVE_CLOSED_THRESHOLD &&
+    trimLineIsolationValveAft2Open < TRANSFER_VALVE_CLOSED_THRESHOLD;
+
+  const areTrimTankInletValvesClosed =
+    trimTankInletValve1Open < TRANSFER_VALVE_CLOSED_THRESHOLD &&
+    trimTankInletValve2Open < TRANSFER_VALVE_CLOSED_THRESHOLD;
+
+  const isTrimLineIsolated = areTrimLineIsolationValvesClosed && areTrimTankInletValvesClosed;
 
   const fwdGalleryPumps: PumpProps[] = [
     // Pump.9
