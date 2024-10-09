@@ -289,6 +289,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idLoggingFlightControlsEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
 
+  // regsiter L variables for wheel speeds
+  idLeftWingWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_3");
+  idRightWingWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_4");
+  idLeftBodyWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_1");
+  idRightBodyWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_2");
+
   // register L variables for Autoland
   idDevelopmentAutoland_condition_Flare = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
   idDevelopmentAutoland_H_dot_c_fpm = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
@@ -1419,10 +1425,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = idLeftBodyWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = idLeftWingWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = idRightBodyWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = idRightWingWheelSpeed_rpm->get() * 0.146189;
 
   prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
