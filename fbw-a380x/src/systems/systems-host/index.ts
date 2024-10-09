@@ -20,10 +20,9 @@ import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
 import { LegacyFuelInit } from 'systems-host/systems/LegacyFuelInit';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
-import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, PilotSeatPublisher, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
-import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
@@ -59,9 +58,9 @@ class SystemsHost extends BaseInstrument {
   private readonly dcBus1Powered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
   private readonly dcBus2Powered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
 
-  private readonly vhf1 = new VhfRadio(VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
-  private readonly vhf2 = new VhfRadio(VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
-  private readonly vhf3 = new VhfRadio(VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
+  private readonly vhf1 = new VhfRadio(this.bus, VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
+  private readonly vhf2 = new VhfRadio(this.bus, VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
+  private readonly vhf3 = new VhfRadio(this.bus, VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
 
   // TODO powered subs
   private readonly amu1 = new AudioManagementUnit(this.bus, 1, this.failuresConsumer);
@@ -82,7 +81,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
-  private readonly cameraPublisher = new CameraPublisher(this.bus);
+  private readonly pilotSeatPublisher = new PilotSeatPublisher(this.bus);
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
@@ -110,7 +109,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('AtsuSystem', this.atsu);
     this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
-    this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
+    this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
     this.backplane.addInstrument('LegacyFuel', new LegacyFuelInit());
 

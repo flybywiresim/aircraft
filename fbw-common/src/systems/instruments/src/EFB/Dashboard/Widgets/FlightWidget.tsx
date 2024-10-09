@@ -239,9 +239,7 @@ export const FlightWidget = () => {
               </div>
             </div>
           )}
-          <div
-            className={simbriefDataLoaded ? '' : 'flex h-full w-full flex-col items-center justify-center space-y-4'}
-          >
+          <div className={simbriefDataLoaded ? '' : 'size-full flex flex-col items-center justify-center space-y-4'}>
             {simbriefDataPending ? (
               <CloudArrowDown
                 className={`${simbriefDataLoaded ? 'w-full justify-self-center' : ''} animate-bounce`}

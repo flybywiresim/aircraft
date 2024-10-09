@@ -1,4 +1,4 @@
-#ifndef RTW_HEADER_A380LateralDirectLaw_types_h_
-#define RTW_HEADER_A380LateralDirectLaw_types_h_
+#ifndef A380LateralDirectLaw_types_h_
+#define A380LateralDirectLaw_types_h_
 #endif
 
