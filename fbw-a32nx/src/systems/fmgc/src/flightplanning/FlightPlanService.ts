@@ -121,13 +121,28 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       temporaryPlan.alternateFlightPlan.pendingAirways.finalize();
     }
 
-    const fromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
+    const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
+    const activeFromLeg = this.active.maybeElementAt(temporaryPlan.activeLegIndex - 1);
+
+    const directToInTmpy =
+      tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
+    const directToInActive =
+      activeFromLeg?.isDiscontinuity === false && activeFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
+
+    const directToBeingInserted = directToInTmpy && !directToInActive;
 
     // Update T-P
-    if (fromLeg?.isDiscontinuity === false && fromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint) {
+    if (directToBeingInserted) {
       // TODO fm pos
-      fromLeg.definition.waypoint.location.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-      fromLeg.definition.waypoint.location.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+      temporaryPlan.editLegDefinition(temporaryPlan.activeLegIndex - 1, {
+        waypoint: {
+          ...tmpyFromLeg.definition.waypoint,
+          location: {
+            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
+            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
+          },
+        },
+      });
     }
 
     this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);
