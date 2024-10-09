@@ -647,6 +647,7 @@ export class FmcAircraftInterface {
 
     let vPfd: number = 0;
     let isMach = false;
+    let takeoffGoAround = false;
 
     this.updateHoldingSpeed();
     this.fmc.clearCheckSpeedModeMessage();
@@ -693,6 +694,7 @@ export class FmcAircraftInterface {
           if (activePerformanceData.v2) {
             vPfd = activePerformanceData.v2;
             this.managedSpeedTarget = activePerformanceData.v2 + 10;
+            takeoffGoAround = true;
           }
           break;
         }
@@ -705,6 +707,7 @@ export class FmcAircraftInterface {
                   Math.max(activePerformanceData.v2, this.takeoffEngineOutSpeed ? this.takeoffEngineOutSpeed : 0),
                 )
               : activePerformanceData.v2 + 10;
+            takeoffGoAround = true;
           }
           break;
         }
@@ -771,9 +774,9 @@ export class FmcAircraftInterface {
               ),
               SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number') - 5,
             );
-
             vPfd = speed;
             this.managedSpeedTarget = speed;
+            takeoffGoAround = true;
           } else {
             const speedConstraint = this.getSpeedConstraint();
             const speed = Math.min(this.fmgc.data.greenDotSpeed.get() ?? Infinity, speedConstraint);
@@ -798,15 +801,57 @@ export class FmcAircraftInterface {
       this.managedSpeedTargetIsMach = isMach;
     }
 
-    // Overspeed protection
-    const Vtap = Math.min(this.managedSpeedTarget ?? Vmo, SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number'));
+    let Vtap = 0;
+    // VLS protection
+    if (this.managedSpeedTarget) {
+      const vls = this.speedVls.get();
+      if (this.managedSpeedTarget < vls) {
+        Vtap = vls;
+      }
+    }
 
+    if (!Vtap) {
+      // Overspeed protection
+      const vMax = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number');
+      Vtap = Math.min(this.managedSpeedTarget ?? Vmo - 5, vMax - 5);
+    }
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
 
-    if (this.isAirspeedManaged()) {
+    const ismanaged = this.isAirspeedManaged();
+
+    if (ismanaged) {
       Coherent.call('AP_SPD_VAR_SET', 0, Vtap).catch(console.error);
     }
+
+    //short term managed speed
+    let shortTermManagedSpeed = 0;
+    const phase = this.fmgc.getFlightPhase();
+    if (phase != FmgcFlightPhase.Preflight) {
+      if (this.managedSpeedTarget) {
+        if (ismanaged) {
+          const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
+          const shortTermActiveInmanaged =
+            !takeoffGoAround && this.fmgc.getFlightPhase() != FmgcFlightPhase.Cruise && verticalMode != 23; // DES
+          if (shortTermActiveInmanaged && this.isSpeedDifferenceGreaterThan2Kt(vPfd, Vtap)) {
+            shortTermManagedSpeed = Vtap;
+          }
+        } else {
+          const selectedSpeed = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number');
+          if (selectedSpeed) {
+            const speedTarget = phase == FmgcFlightPhase.Approach ? Vtap : vPfd; // FIX me Should use ECON during hold & deceleration segments
+            if (this.isSpeedDifferenceGreaterThan2Kt(selectedSpeed, speedTarget)) {
+              shortTermManagedSpeed = speedTarget;
+            }
+          }
+        }
+      }
+    }
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'knots', shortTermManagedSpeed);
+  }
+
+  private isSpeedDifferenceGreaterThan2Kt(speed: number, speed2: number) {
+    return Math.abs(speed - speed2) > 2;
   }
 
   getAppManagedSpeed() {

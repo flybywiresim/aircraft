@@ -1,9 +1,11 @@
+/* eslint-disable prettier/prettier */
 import {
   ClockEvents,
   ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   NodeReference,
   Subject,
   Subscribable,
@@ -212,15 +214,71 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
+
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>()
+
   private greenDotBug = FSComponent.createRef<SVGGElement>();
 
   private flapsBug = FSComponent.createRef<SVGGElement>();
 
   private slatBug = FSComponent.createRef<SVGGElement>();
 
+  private readonly shortTermManagedSpeedConsumer = ConsumerSubject.create(
+    this.sub.on('shortTermManagedSpeed').whenChanged(),
+    0,
+  );
+
+  private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
+
+  private readonly airspeed = Arinc429RegisterSubject.createEmpty();
+
+  private readonly shortTermManagedSpeedExists = this.shortTermManagedSpeedConsumer.map((s) => (s > 0 ? true : false));
+
+  private readonly shortTermVisibility = this.shortTermManagedSpeedExists.map((v) => (v ? 'visible' : 'hidden'));
+
+  private readonly shortTermPath = MappedSubject.create(
+    ([ias, shortTermSpeed]) => {
+      if(ias.isNormalOperation() && shortTermSpeed) {
+      const diff = Math.abs(ias.value - shortTermSpeed);
+      if(diff < DisplayRange ) {
+        return 'm20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z'
+      } else if (ias.value > shortTermSpeed) {
+        return 'm 17.91,80.60c 4.07e-4,0.6238 0.5384,1.1293 1.2019,1.1293 0.6635,0 1.2015,-0.5055 1.2019,-1.1293h -1.2019z';
+      } else {
+        return 'm 17.91,80.60c 4.07e-4,0.6743 0.5612,1.2207 1.2530,1.2207 0.6917,0 1.2525,-0.5464 1.2530,-1.2207h -1.2530z';
+      } 
+    } else {
+      return '';
+    }
+    },
+    this.airspeed,
+    this.shortTermManagedSpeedConsumer
+  )
+
+
+  private readonly shortTermStyle =
+  MappedSubject.create(
+    ([shortTermVisible, ias, shortTermManagedSpeed]) => {
+      if(shortTermVisible && ias.isNormalOperation()) {
+        return `transform: translate(0px, ${getSpeedTapeOffsetAlwaysVisible(ias.value, 
+          shortTermManagedSpeed)}px)`
+      }
+      return '';
+    },
+    this.shortTermManagedSpeedExists,
+    this.airspeed,
+    this.shortTermManagedSpeedConsumer
+  )
+
   render(): VNode {
     return (
       <>
+          <g id="ShortTermManagedSpeed" visibility={this.shortTermVisibility} style={this.shortTermStyle}>
+          <path
+            class="Fill Magenta"
+            d={this.shortTermPath}
+          />
+        </g>
         <g id="GreenDotSpeedMarker" ref={this.greenDotBug} style="transform:translate3d(0px, 0px,0px)">
           <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
           <path class="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
@@ -237,6 +295,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
             S
           </text>
         </g>
+
       </>
     );
   }
@@ -244,9 +303,10 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
-    sub
+    this.airspeedRaw.sub((w) => this.airspeed.setWord(w));
+
+    this.sub
       .on('vMan')
       .withArinc429Precision(2)
       .handle((gd) => {
@@ -257,7 +317,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
           this.greenDotBug.instance.style.visibility = 'hidden';
         }
       });
-    sub
+    this.sub
       .on('v4')
       .withArinc429Precision(2)
       .handle((sls) => {
@@ -268,7 +328,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
           this.slatBug.instance.style.visibility = 'hidden';
         }
       });
-    sub
+    this.sub
       .on('v3')
       .withArinc429Precision(2)
       .handle((fs) => {
@@ -283,6 +343,14 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 const getSpeedTapeOffset = (speed: number): number => (-speed * DistanceSpacing) / ValueSpacing;
+const getSpeedTapeOffsetAlwaysVisible = (currentSpeed : number, bugSpeed : number) => {
+  const diff = Math.abs(currentSpeed - bugSpeed);
+  if(diff < DisplayRange) { 
+    return getSpeedTapeOffset(bugSpeed);
+  } else {
+   return getSpeedTapeOffset(currentSpeed > bugSpeed? currentSpeed - DisplayRange : currentSpeed + DisplayRange); // speed always visible on tape
+  }
+}
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
   private lowerRef = FSComponent.createRef<SVGGElement>();
