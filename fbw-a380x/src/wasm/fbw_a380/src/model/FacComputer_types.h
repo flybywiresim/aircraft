@@ -14,33 +14,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-
-struct base_fac_analog_outputs
-{
-  real_T yaw_damper_order_deg;
-  real_T rudder_trim_order_deg;
-  real_T rudder_travel_limit_order_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-
-struct base_fac_discrete_outputs
-{
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
 #define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
@@ -89,6 +62,18 @@ struct base_fac_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+
+struct base_fac_analog_outputs
+{
+  real_T yaw_damper_order_deg;
+  real_T rudder_trim_order_deg;
+  real_T rudder_travel_limit_order_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fac_analog_inputs_
 
@@ -99,6 +84,21 @@ struct base_fac_analog_inputs
   real_T rudder_travel_lim_position_deg;
   real_T left_spoiler_pos_deg;
   real_T right_spoiler_pos_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+
+struct base_fac_discrete_outputs
+{
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
 };
 
 #endif
