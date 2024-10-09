@@ -53,8 +53,8 @@ export abstract class TemporaryHax {
     return this.getElement('text', _name);
   }
 
-  protected setTextElementActive(_text: Element | null, _active: boolean, _baro?: boolean) {
-    if (_text != null) {
+  protected setTextElementActive(_text?: Element | null, _active?: boolean, _baro?: boolean) {
+    if (_text !== undefined && _text !== null) {
       _text.setAttribute('class', `Common ${_active ? 'Active' : 'Inactive'} ${_baro ? 'BaroValue' : ''}`);
     }
   }
