@@ -5,7 +5,7 @@ authors = ["FlyByWire Simulations"]
 edition = "2021"
 
 [dependencies]
-uom = "0.33.0"
+uom = "0.36.0"
 rand = { version = "0.8.0", features = ["small_rng"] }
 rand_distr = "0.4.3"
 rand_pcg = "0.3.1"
