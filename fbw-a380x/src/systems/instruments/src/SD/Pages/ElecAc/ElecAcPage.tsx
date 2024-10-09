@@ -13,29 +13,31 @@ import { AcBusTie } from './elements/AcBusTie';
 import '../../../index.scss';
 
 export const ElecAcPage = () => (
-    <>
-        <PageTitle x={6} y={29}>ELEC AC</PageTitle>
+  <>
+    <PageTitle x={6} y={29}>
+      ELEC AC
+    </PageTitle>
 
-        <BusBar x={316} y={28} bus={AcElecBus.AcEmerBus} />
-        <BusBar x={316} y={137} bus={AcElecBus.AcEssBus} />
+    <BusBar x={316} y={28} bus={AcElecBus.AcEmerBus} />
+    <BusBar x={316} y={137} bus={AcElecBus.AcEssBus} />
 
-        <Ac23BusTie />
+    <Ac23BusTie />
 
-        <AcBusTie />
+    <AcBusTie />
 
-        <AcEssToAcEmerFeedLine />
+    <AcEssToAcEmerFeedLine />
 
-        <ApuGeneratorSet x={386} y={389} />
+    <ApuGeneratorSet x={386} y={389} />
 
-        <StaticInverter x={497} y={47} />
-        <EmergencyGenerator x={290} y={95} />
+    <StaticInverter x={497} y={47} />
+    <EmergencyGenerator x={290} y={95} />
 
-        <ElectricalNetwork x={58} y={258} bus={AcElecBus.Ac1Bus} />
-        <ElectricalNetwork x={181} y={258} bus={AcElecBus.Ac2Bus} />
-        <ElectricalNetwork x={482} y={258} bus={AcElecBus.Ac3Bus} />
-        <ElectricalNetwork x={605} y={258} bus={AcElecBus.Ac4Bus} />
+    <ElectricalNetwork x={58} y={258} bus={AcElecBus.Ac1Bus} />
+    <ElectricalNetwork x={181} y={258} bus={AcElecBus.Ac2Bus} />
+    <ElectricalNetwork x={482} y={258} bus={AcElecBus.Ac3Bus} />
+    <ElectricalNetwork x={605} y={258} bus={AcElecBus.Ac4Bus} />
 
-        <AcEssFeedLine side={1} />
-        <AcEssFeedLine side={2} />
-    </>
+    <AcEssFeedLine side={1} />
+    <AcEssFeedLine side={2} />
+  </>
 );
