@@ -2,7 +2,7 @@
   "index": "./instrument.tsx",
   "isInteractive": true,
   "extraDeps": [
-    "fbw-common/src/systems/instruments/src/ND",
-    "fbw-common/src/systems/instruments/src/OANC"
+    "/fbw-common/src/systems/instruments/src/ND",
+    "/fbw-common/src/systems/instruments/src/OANC"
   ]
 }

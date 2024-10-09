@@ -313,7 +313,6 @@ export const EcamNormalProceduresBefore2020: { [n: number]: NormalProcedure } = 
         labelNotCompleted: 'LDG',
         sensed: true,
       },
-
     ],
   },
   1000007: {

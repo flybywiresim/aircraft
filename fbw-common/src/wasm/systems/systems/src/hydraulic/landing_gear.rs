@@ -248,6 +248,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_gear_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGLEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
@@ -256,6 +258,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_gear_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::WINGLEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
@@ -264,6 +268,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_door_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGLEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
@@ -272,6 +278,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_door_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::WINGLEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
         }
     }
 }

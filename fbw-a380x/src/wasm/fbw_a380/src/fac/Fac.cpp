@@ -99,7 +99,7 @@ base_fac_bus Fac::getBusOutputs() {
     output.center_of_gravity_pos_percent.SSM = Arinc429SignStatus::FailureWarning;
     output.sideslip_target_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.fac_slat_angle_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.fac_flap_angle.SSM = Arinc429SignStatus::FailureWarning;
+    output.fac_flap_angle_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_travel_limit_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.delta_r_yaw_damper_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.estimated_sideslip_deg.SSM = Arinc429SignStatus::FailureWarning;

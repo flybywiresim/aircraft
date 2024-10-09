@@ -44,6 +44,8 @@ export default class PitchTrimUtils {
    * @param pitchTrim pitch trim in degrees. Down is negative
    */
   static pitchTrimInCyanBand(cg: number, pitchTrim: number): boolean {
-    return Math.abs(PitchTrimUtils.cgToPitchTrim(cg) - pitchTrim) < 1.5 && !PitchTrimUtils.pitchTrimOutOfRange(pitchTrim);
+    return (
+      Math.abs(PitchTrimUtils.cgToPitchTrim(cg) - pitchTrim) < 1.5 && !PitchTrimUtils.pitchTrimOutOfRange(pitchTrim)
+    );
   }
 }

@@ -395,9 +395,9 @@ impl<T: Aircraft> SimulationTestBed<T> {
     fn set_on_ground(&mut self, on_ground: bool) {
         self.write_by_name(UpdateContext::IS_ON_GROUND_KEY, on_ground);
 
-        let mut gear_compression = Ratio::new::<ratio>(0.5);
+        let mut gear_compression = Ratio::new::<ratio>(0.);
         if on_ground {
-            gear_compression = Ratio::new::<ratio>(0.8);
+            gear_compression = Ratio::new::<ratio>(0.95);
             self.write_by_name(UpdateContext::ALT_ABOVE_GROUND_KEY, 0.);
         }
 

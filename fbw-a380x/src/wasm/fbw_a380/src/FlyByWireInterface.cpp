@@ -289,6 +289,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idLoggingFlightControlsEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
 
+  // regsiter L variables for wheel speeds
+  idLeftWingWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_3");
+  idRightWingWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_4");
+  idLeftBodyWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_1");
+  idRightBodyWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_2");
+
   // register L variables for Autoland
   idDevelopmentAutoland_condition_Flare = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
   idDevelopmentAutoland_H_dot_c_fpm = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
@@ -1419,10 +1425,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = idLeftBodyWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = idLeftWingWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = idRightBodyWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = idRightWingWheelSpeed_rpm->get() * 0.146189;
 
   prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
@@ -1858,7 +1864,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacCenterOfGravity[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].center_of_gravity_pos_percent));
   idFacSideslipTarget[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].sideslip_target_deg));
   idFacSlatAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_slat_angle_deg));
-  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle));
+  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle_deg));
   idFacDiscreteWord2[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_2));
   idFacRudderTravelLimitCommand[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].rudder_travel_limit_command_deg));
   idFacDeltaRYawDamperVoted[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].delta_r_yaw_damper_deg));
@@ -2121,8 +2127,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
     autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotStateMachineInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autopilotStateMachineInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autopilotStateMachineInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autopilotStateMachineInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
@@ -2471,8 +2479,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autopilotLawsInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autopilotLawsInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autopilotLawsInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
@@ -2686,8 +2696,10 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
     autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
     autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
-    autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autoThrustInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autoThrustInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
     autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;

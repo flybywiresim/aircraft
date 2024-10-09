@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380LateralNormalLaw_h_
-#define RTW_HEADER_A380LateralNormalLaw_h_
+#ifndef A380LateralNormalLaw_h_
+#define A380LateralNormalLaw_h_
 #include "rtwtypes.h"
 #include "A380LateralNormalLaw_types.h"
 #include <cstring>
@@ -25,12 +25,12 @@ class A380LateralNormalLaw final
     real_T pY;
     real_T pU;
     real_T pY_f;
-    real_T pY_h;
+    real_T pY_f5;
     boolean_T icLoad;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T pY_not_empty_o;
-    boolean_T pY_not_empty_l;
+    boolean_T pY_not_empty_g;
+    boolean_T pY_not_empty_m;
     rtDW_TransportDelay_A380LateralNormalLaw_T sf_TransportDelay_p;
     rtDW_TransportDelay_A380LateralNormalLaw_T sf_TransportDelay;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_go;

@@ -1,6 +1,6 @@
-#include "rtwtypes.h"
-#include <cmath>
 #include "uMultiWord2Double.h"
+#include <cmath>
+#include "rtwtypes.h"
 
 real_T uMultiWord2Double(const uint32_T u1[], int32_T n1, int32_T e1)
 {

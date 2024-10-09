@@ -182,7 +182,7 @@ impl A380Electrical {
         // TODO: take LGRDC latching relay output (the current LGCIU don't provide the latching behavior)
         // Represents the value of the corresponding relay 14XR (one relay is powered by DC ESS)
         let flt_condition = (!context.is_on_ground() && dc_ess_powered)
-            && (adirs.low_speed_warning_1_104kts(1) || adirs.low_speed_warning_1_104kts(3));
+            && (adirs.low_speed_warning_3(1) || adirs.low_speed_warning_3(3));
 
         if emer_evac {
             self.tefo_condition.reset();
@@ -3367,19 +3367,19 @@ mod a380_electrical_circuit_tests {
         }
     }
     impl AdirsDiscreteOutputs for TestAdirs {
-        fn low_speed_warning_1_104kts(&self, _adiru_number: usize) -> bool {
-            self.airspeed.get::<knot>() > 100.
-        }
-
-        fn low_speed_warning_2_54kts(&self, _adiru_number: usize) -> bool {
+        fn low_speed_warning_1(&self, _adiru_number: usize) -> bool {
             self.airspeed.get::<knot>() > 50.
         }
 
-        fn low_speed_warning_3_159kts(&self, _adiru_number: usize) -> bool {
-            false
+        fn low_speed_warning_2(&self, _adiru_number: usize) -> bool {
+            self.airspeed.get::<knot>() > 260.
         }
 
-        fn low_speed_warning_4_260kts(&self, _adiru_number: usize) -> bool {
+        fn low_speed_warning_3(&self, _adiru_number: usize) -> bool {
+            self.airspeed.get::<knot>() > 100.
+        }
+
+        fn low_speed_warning_4(&self, _adiru_number: usize) -> bool {
             false
         }
     }

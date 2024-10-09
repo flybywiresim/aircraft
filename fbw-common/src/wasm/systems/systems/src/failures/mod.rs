@@ -1,4 +1,8 @@
-use crate::air_conditioning::{acs_controller::AcscId, cabin_pressure_controller::CpcId, ZoneType};
+use crate::air_conditioning::{
+    acs_controller::AcscId, cabin_pressure_controller::CpcId, Channel, VcmId, ZoneType,
+};
+use crate::air_conditioning::{FdacId, OcsmId};
+use crate::integrated_modular_avionics::core_processing_input_output_module::CpiomId;
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
@@ -19,6 +23,20 @@ pub enum FailureType {
     OutflowValveFault,
     SafetyValveFault,
     RapidDecompression,
+    Fdac(FdacId, Channel),
+    Tadd(Channel),
+    Vcm(VcmId, Channel),
+    OcsmAutoPartition(OcsmId),
+    Ocsm(OcsmId, Channel),
+    AgsApp(CpiomId),
+    TcsApp(CpiomId),
+    VcsApp(CpiomId),
+    CpcsApp(CpiomId),
+    FwdIsolValve,
+    FwdExtractFan,
+    BulkIsolValve,
+    BulkExtractFan,
+    CargoHeater,
     // ATA24
     Generator(usize),
     ApuGenerator(usize),

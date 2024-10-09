@@ -1,7 +1,7 @@
 #include "rtwtypes.h"
-#include <cfloat>
-#include <cmath>
 #include "rt_remd.h"
+#include <cmath>
+#include <cfloat>
 
 real_T rt_remd(real_T u0, real_T u1)
 {

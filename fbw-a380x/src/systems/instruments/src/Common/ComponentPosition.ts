@@ -1,4 +1,4 @@
 export interface ComponentPositionProps {
-    x: number,
-    y: number,
+  x: number;
+  y: number;
 }

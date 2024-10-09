@@ -4,11 +4,13 @@
 import {
   ConsumerSubject,
   EventBus,
+  GameStateProvider,
   IndexedEvents,
   Instrument,
   MutableSubscribable,
   Subject,
   Subscription,
+  Wait,
 } from '@microsoft/msfs-sdk';
 
 import { Arinc429SignStatusMatrix, Arinc429Word, RadioUtils } from '@flybywiresim/fbw-sdk';
@@ -43,10 +45,9 @@ export class VhfComManager implements Instrument {
 
   private readonly pub = this.bus.getPublisher<InterRmpBusEvents & VhfComManagerDataEvents>();
 
-  // TODO load defaults from file
-  private readonly activeFrequency = Subject.create<number | null>(RadioUtils.packBcd32(122_500_000));
+  private readonly activeFrequency = Subject.create<number | null>(null);
 
-  private readonly standbyFrequency = Subject.create<number | null>(RadioUtils.packBcd32(113_900_000));
+  private readonly standbyFrequency = Subject.create<number | null>(null);
 
   private readonly activeMode = Subject.create<FrequencyMode>(
     this.index === 3 ? FrequencyMode.Data : FrequencyMode.Frequency,
@@ -163,6 +164,11 @@ export class VhfComManager implements Instrument {
         this.powerOffRelaySub?.resume();
       }
     }, true);
+
+    Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame, true).then(() => {
+      this.activeFrequency.set(SimVar.GetSimVarValue(`COM ACTIVE FREQUENCY:${this.index}`, 'Frequency BCD32'));
+      this.standbyFrequency.set(SimVar.GetSimVarValue(`COM STANDBY FREQUENCY:${this.index}`, 'Frequency BCD32'));
+    });
   }
 
   /** @inheritdoc */

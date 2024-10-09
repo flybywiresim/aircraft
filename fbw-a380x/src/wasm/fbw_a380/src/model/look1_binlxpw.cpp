@@ -1,5 +1,5 @@
-#include "rtwtypes.h"
 #include "look1_binlxpw.h"
+#include "rtwtypes.h"
 
 real_T look1_binlxpw(real_T u0, const real_T bp0[], const real_T table[], uint32_T maxIndex)
 {

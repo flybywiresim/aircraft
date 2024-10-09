@@ -85,6 +85,7 @@ export class AudioControlLocalVarPublisher extends SimVarPublisher<AudioControlL
   /**
    * Create an FuelSystemSimvarPublisher
    * @param bus The EventBus to publish to
+   * @param rmpIndex  The index of the RMP
    * @param pacer An optional pacer to use to control the rate of publishing
    */
   public constructor(bus: EventBus, rmpIndex: 1 | 2 | 3, pacer?: PublishPacer<AudioControlLocalVarEvents>) {

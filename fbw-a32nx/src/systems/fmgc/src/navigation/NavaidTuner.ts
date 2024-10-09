@@ -278,7 +278,7 @@ export class NavaidTuner {
   /** Whether the tuning event blocked message has been shown before. It is only shown once. */
   private blockEventMessageShown = false;
 
-  private notificationManager = new NotificationManager();
+  private notificationManager = new NotificationManager(this.bus);
 
   constructor(
     private readonly bus: EventBus,

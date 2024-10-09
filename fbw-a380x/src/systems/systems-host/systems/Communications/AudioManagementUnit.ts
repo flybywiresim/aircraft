@@ -8,7 +8,7 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
-  Subscribable
+  Subscribable,
 } from '@microsoft/msfs-sdk';
 import { RadioNavSelectedNavaid, RmpAmuBusEvents } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';

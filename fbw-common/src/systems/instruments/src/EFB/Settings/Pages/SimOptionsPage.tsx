@@ -3,7 +3,13 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import {
+  DefaultPilotSeatConfig,
+  PilotSeatConfig,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  useSimVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
@@ -29,6 +35,7 @@ export const SimOptionsPage = () => {
   const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
   const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
   const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+  const [pilotSeat, setPilotSeat] = usePersistentProperty('CONFIG_PILOT_SEAT', DefaultPilotSeatConfig);
 
   const defaultBaroButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -40,6 +47,12 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.None'), setting: 'NONE' },
     { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
     { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
+  ];
+
+  const pilotSeatButtons: ButtonType[] = [
+    { name: t('Settings.SimOptions.Auto'), setting: PilotSeatConfig.Auto },
+    { name: t('Settings.SimOptions.Left'), setting: PilotSeatConfig.Left },
+    { name: t('Settings.SimOptions.Right'), setting: PilotSeatConfig.Right },
   ];
 
   return (
@@ -187,6 +200,20 @@ export const SimOptionsPage = () => {
             >
               {t('Settings.SimOptions.Calibrate')}
             </button>
+          </SettingItem>
+
+          <SettingItem name={t('Settings.SimOptions.PilotSeat')}>
+            <SelectGroup>
+              {pilotSeatButtons.map((button) => (
+                <SelectItem
+                  key={button.setting}
+                  onSelect={() => setPilotSeat(button.setting)}
+                  selected={pilotSeat === button.setting}
+                >
+                  {button.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SettingItem>
         </SettingsPage>
       )}

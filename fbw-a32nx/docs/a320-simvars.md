@@ -30,6 +30,7 @@
   - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
   - [ROW / ROP / OANS (ATA 34)](#row--rop--oans-ata-34)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
+    - [Non-Systems Related](#non-systems-related)
 - [Deprecated](#deprecated)
 
 ## Uncategorized
@@ -916,7 +917,7 @@
 
 - A32NX_FO_SYNC_EFIS_ENABLED
     - Bool
-    - 1 to sync the status of FD and LS buttons between CPT and FO sides
+    - 1 to sync the status of FD and LS buttons, and audio panel controls, between CPT and FO sides
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
@@ -4199,6 +4200,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - -1.0
         - 1.0
 
+## Non-Systems Related
+
+- `L:FBW_PILOT_SEAT`
+  - Enum
+  - Which seat the user/pilot occupies in the flight deck.
+  - | Value | Description |
+    |-------|-------------|
+    | 0     | Left Seat   |
+    | 1     | Right Seat  |
+  
 # Deprecated
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE

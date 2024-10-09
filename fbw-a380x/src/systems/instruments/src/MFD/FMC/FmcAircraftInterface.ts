@@ -111,9 +111,10 @@ export class FmcAircraftInterface {
     this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true);
     this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true);
 
-    this.fmgc.data.approachFlapConfig
-      .map((v) => v === FlapConf.CONF_3)
-      .sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v), true);
+    this.fmgc.data.approachFlapConfig.sub(
+      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
+      true,
+    );
   }
 
   thrustReductionAccelerationChecks() {
@@ -209,12 +210,11 @@ export class FmcAircraftInterface {
     if (!this.flightPlanService.hasActive) {
       return;
     }
-    const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude; // as altitude
-    const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel ?? 18_000; // as FL
 
     this.arincTransitionAltitude.setBnrValue(
-      originTransitionAltitude !== null ? originTransitionAltitude : 0,
-      originTransitionAltitude !== null
+      this.flightPlanService.active.performanceData.transitionAltitude ?? 0, // as altitude
+      this.flightPlanService.active.performanceData.transitionAltitude !== null &&
+        this.flightPlanService.active.performanceData.transitionAltitude !== undefined
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       17,
@@ -222,21 +222,16 @@ export class FmcAircraftInterface {
       0,
     );
 
-    // Delete once new PFD is integrated
-    SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', originTransitionAltitude ?? 0);
-
     this.arincTransitionLevel.setBnrValue(
-      destinationTransitionLevel !== undefined ? destinationTransitionLevel : 0,
-      destinationTransitionLevel !== undefined
+      this.flightPlanService.active.performanceData.transitionLevel ?? 0, // as FL
+      this.flightPlanService.active.performanceData.transitionLevel !== null &&
+        this.flightPlanService.active.performanceData.transitionLevel !== undefined
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       9,
       512,
       0,
     );
-
-    // Delete once new PFD is integrated
-    SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel * 100 ?? 0);
   }
 
   public updatePerformanceData() {
@@ -260,7 +255,7 @@ export class FmcAircraftInterface {
       return false;
     }
 
-    if (this.fmgc.data.takeoffFlapsSetting === null || this.fmc.getGrossWeight() === null) {
+    if (this.fmgc.data.takeoffFlapsSetting === null || this.fmc.fmgc.getGrossWeightKg() === null) {
       return false;
     }
 
@@ -275,7 +270,7 @@ export class FmcAircraftInterface {
     }
 
     const taxiFuel = this.fmgc.data.taxiFuel.get() ?? 0;
-    const tow = (this.fmc.getGrossWeight() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
+    const tow = (this.fmc.fmgc.getGrossWeightKg() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
 
     return (
       (this.flightPlanService.active.performanceData.v1 ?? Infinity) < Math.trunc(A380SpeedsUtils.getVmcg(zp)) ||
@@ -1041,7 +1036,7 @@ export class FmcAircraftInterface {
     /** in kg */
     const estLdgWeight = this.tryEstimateLandingWeight();
     let ldgWeight = estLdgWeight;
-    const grossWeight = this.fmc.getGrossWeight();
+    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB();
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Approach || !Number.isFinite(estLdgWeight)) {
@@ -1154,8 +1149,10 @@ export class FmcAircraftInterface {
 
   /** Write gross weight to SimVar */
   updateWeights() {
-    const gw = this.fmc.getGrossWeight();
-    SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
+    const gw = this.fmc.fmgc.getGrossWeightKg();
+    if (gw) {
+      SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
+    }
 
     if (this.fmc.enginesWereStarted.get()) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);

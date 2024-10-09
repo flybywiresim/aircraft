@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PrimComputer_types_h_
-#define RTW_HEADER_A380PrimComputer_types_h_
+#ifndef A380PrimComputer_types_h_
+#define A380PrimComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
 #define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
@@ -30,33 +30,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
-
-struct base_prim_temporary_ap_input
-{
-  boolean_T ap_engaged;
-  real_T roll_command;
-  real_T pitch_command;
-  real_T yaw_command;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
 
@@ -82,6 +55,33 @@ struct base_prim_discrete_inputs
   boolean_T pitch_trim_down_pressed;
   boolean_T green_low_pressure;
   boolean_T yellow_low_pressure;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+
+struct base_prim_temporary_ap_input
+{
+  boolean_T ap_engaged;
+  real_T roll_command;
+  real_T pitch_command;
+  real_T yaw_command;
 };
 
 #endif

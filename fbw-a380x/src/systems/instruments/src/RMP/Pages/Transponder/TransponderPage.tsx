@@ -103,6 +103,12 @@ export class TransponderPage extends DisplayComponent<TransponderPageProps> impl
     }
   }
 
+  onKeyReleased(key: PageKeys): void {
+    if (key === PageKeys.Clear) {
+      this.clearHeldTimer.clear();
+    }
+  }
+
   // FIXME _ missing in size 19 font
 
   render(): VNode | null {

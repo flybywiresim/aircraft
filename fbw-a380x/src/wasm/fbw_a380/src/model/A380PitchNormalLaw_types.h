@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PitchNormalLaw_types_h_
-#define RTW_HEADER_A380PitchNormalLaw_types_h_
+#ifndef A380PitchNormalLaw_types_h_
+#define A380PitchNormalLaw_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
 #define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_

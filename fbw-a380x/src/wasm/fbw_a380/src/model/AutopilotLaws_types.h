@@ -1,7 +1,6 @@
-#ifndef RTW_HEADER_AutopilotLaws_types_h_
-#define RTW_HEADER_AutopilotLaws_types_h_
+#ifndef AutopilotLaws_types_h_
+#define AutopilotLaws_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
 #define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
 
@@ -280,13 +279,23 @@ struct ap_laws_output
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_ap_output_law_
-#define DEFINED_TYPEDEF_FOR_ap_output_law_
+#ifndef DEFINED_TYPEDEF_FOR_lateral_mode_
+#define DEFINED_TYPEDEF_FOR_lateral_mode_
 
-struct ap_output_law
-{
-  real_T flight_director;
-  real_T autopilot;
+enum class lateral_mode
+  : int32_T {
+  NONE = 0,
+  HDG = 10,
+  TRACK = 11,
+  NAV = 20,
+  LOC_CPT = 30,
+  LOC_TRACK = 31,
+  LAND = 32,
+  FLARE = 33,
+  ROLL_OUT = 34,
+  RWY = 40,
+  RWY_TRACK = 41,
+  GA_TRACK = 50
 };
 
 #endif
@@ -294,48 +303,29 @@ struct ap_output_law
 #ifndef DEFINED_TYPEDEF_FOR_vertical_mode_
 #define DEFINED_TYPEDEF_FOR_vertical_mode_
 
-typedef enum {
-  vertical_mode_NONE = 0,
-  vertical_mode_ALT = 10,
-  vertical_mode_ALT_CPT = 11,
-  vertical_mode_OP_CLB = 12,
-  vertical_mode_OP_DES = 13,
-  vertical_mode_VS = 14,
-  vertical_mode_FPA = 15,
-  vertical_mode_ALT_CST = 20,
-  vertical_mode_ALT_CST_CPT = 21,
-  vertical_mode_CLB = 22,
-  vertical_mode_DES = 23,
-  vertical_mode_FINAL_DES = 24,
-  vertical_mode_GS_CPT = 30,
-  vertical_mode_GS_TRACK = 31,
-  vertical_mode_LAND = 32,
-  vertical_mode_FLARE = 33,
-  vertical_mode_ROLL_OUT = 34,
-  vertical_mode_SRS = 40,
-  vertical_mode_SRS_GA = 41,
-  vertical_mode_TCAS = 50
-} vertical_mode;
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_lateral_mode_
-#define DEFINED_TYPEDEF_FOR_lateral_mode_
-
-typedef enum {
-  lateral_mode_NONE = 0,
-  lateral_mode_HDG = 10,
-  lateral_mode_TRACK = 11,
-  lateral_mode_NAV = 20,
-  lateral_mode_LOC_CPT = 30,
-  lateral_mode_LOC_TRACK = 31,
-  lateral_mode_LAND = 32,
-  lateral_mode_FLARE = 33,
-  lateral_mode_ROLL_OUT = 34,
-  lateral_mode_RWY = 40,
-  lateral_mode_RWY_TRACK = 41,
-  lateral_mode_GA_TRACK = 50
-} lateral_mode;
+enum class vertical_mode
+  : int32_T {
+  NONE = 0,
+  ALT = 10,
+  ALT_CPT = 11,
+  OP_CLB = 12,
+  OP_DES = 13,
+  VS = 14,
+  FPA = 15,
+  ALT_CST = 20,
+  ALT_CST_CPT = 21,
+  CLB = 22,
+  DES = 23,
+  FINAL_DES = 24,
+  GS_CPT = 30,
+  GS_TRACK = 31,
+  LAND = 32,
+  FLARE = 33,
+  ROLL_OUT = 34,
+  SRS = 40,
+  SRS_GA = 41,
+  TCAS = 50
+};
 
 #endif
 #endif

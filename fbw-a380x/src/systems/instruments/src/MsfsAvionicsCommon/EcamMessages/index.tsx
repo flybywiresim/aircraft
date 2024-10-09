@@ -560,7 +560,6 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
 
-
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
   activeProcedure: boolean;
@@ -575,5 +574,9 @@ export interface WdLineData {
 }
 
 export enum WdSpecialLine {
-  ClComplete, Reset, Clear, Empty, SeparationLine,
+  ClComplete,
+  Reset,
+  Clear,
+  Empty,
+  SeparationLine,
 }

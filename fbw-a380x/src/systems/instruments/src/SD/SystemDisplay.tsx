@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 // import { useInteractionEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { LegacyCdsDisplayUnit, DisplayUnitID } from '@instruments/common/LegacyCdsDisplayUnit';
@@ -268,32 +268,32 @@ export const SystemDisplay = () => {
 
   useUpdate(updateCallback);
 
-    const PAGES = {
-        0: <EngPage />,
-        1: <BleedPage />,
-        2: <PressPage />,
-        3: <ElecAcPage />,
-        4: <FuelPage />,
-        5: <HydPage />,
-        6: <CbPage />,
-        7: <ApuPage />,
-        8: <CondPage />,
-        9: <DoorPage />,
-        10: <ElecDcPage />,
-        11: <WheelPage />,
-        12: <FctlPage />,
-        13: <CruisePage />, // TODO video page
-        14: <CruisePage />,
-        15: <StatusPage />,
-    };
+  const PAGES = {
+    0: <EngPage />,
+    1: <BleedPage />,
+    2: <PressPage />,
+    3: <ElecAcPage />,
+    4: <FuelPage />,
+    5: <HydPage />,
+    6: <CbPage />,
+    7: <ApuPage />,
+    8: <CondPage />,
+    9: <DoorPage />,
+    10: <ElecDcPage />,
+    11: <WheelPage />,
+    12: <FctlPage />,
+    13: <CruisePage />, // TODO video page
+    14: <CruisePage />,
+    15: <StatusPage />,
+  };
 
-    return (
-        <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
-            <g>
-                {PAGES[currentPage]}
-                <StatusArea />
-                <Mailbox />
-            </g>
-        </LegacyCdsDisplayUnit>
-    );
+  return (
+    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
+      <g>
+        {PAGES[currentPage]}
+        <StatusArea />
+        <Mailbox />
+      </g>
+    </LegacyCdsDisplayUnit>
+  );
 };

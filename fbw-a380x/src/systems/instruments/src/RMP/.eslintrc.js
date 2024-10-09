@@ -1,24 +1,15 @@
 'use strict';
 
 module.exports = {
+  extends: ['../../../../../../.eslintrc.js', 'plugin:jsdoc/recommended-typescript-error'],
 
-    extends: [
-        '../../../../.eslintrc.js',
-        'plugin:jsdoc/recommended-typescript-error',
-    ],
+  plugins: ['eslint-plugin-jsdoc'],
 
-    plugins: [
-        'eslint-plugin-tsdoc',
-        'eslint-plugin-jsdoc',
-    ],
-
-    // overrides airbnb, use sparingly
-    rules: {
-        'react/no-unknown-property': 'off',
-        'react/style-prop-object': 'off',
-        'arrow-body-style': 'off',
-        'camelcase': 'off',
-        'tsdoc/syntax': 'warn'
-    },
-
+  // overrides airbnb, use sparingly
+  rules: {
+    'react/no-unknown-property': 'off',
+    'react/style-prop-object': 'off',
+    'arrow-body-style': 'off',
+    camelcase: 'off',
+  },
 };

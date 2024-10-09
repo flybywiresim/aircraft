@@ -86,10 +86,6 @@ export class LegacyFwc {
 
   memoLdgInhibit_conf01: NXLogic_ConfirmNode;
 
-  warningPressed: boolean;
-
-  cautionPressed: boolean;
-
   previousTargetAltitude: number;
 
   _wasBellowThreshold: boolean;
@@ -158,10 +154,6 @@ export class LegacyFwc {
 
     // ESDL 1. 0.320
     this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
-
-    // master warning & caution buttons
-    this.warningPressed = false;
-    this.cautionPressed = false;
 
     // altitude warning
     this.previousTargetAltitude = NaN;
@@ -458,7 +450,10 @@ export class LegacyFwc {
       SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
     }
 
-    if (this.warningPressed === true) {
+    const warningPressed =
+      !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
+      !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
+    if (warningPressed === true) {
       this._wasBellowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;

@@ -56,7 +56,7 @@ export const AutomaticCallOutsPage: React.FC = () => {
       backRoute={`/settings/${pathify('Aircraft Options / Pin Programs')}`}
     >
       <div className="grid grid-cols-2 gap-x-6">
-        <div className="divide-theme-accent mr-3 divide-y-2">
+        <div className="mr-3 divide-y-2 divide-theme-accent">
           <SettingItem name="Two Thousand Five Hundred">
             <Toggle
               value={(autoCallOuts & A380XRadioAutoCallOutFlags.TwoThousandFiveHundred) > 0}
@@ -123,7 +123,7 @@ export const AutomaticCallOutsPage: React.FC = () => {
             />
           </SettingItem>
         </div>
-        <div className="divide-theme-accent ml-3 divide-y-2">
+        <div className="ml-3 divide-y-2 divide-theme-accent">
           <SettingItem name="Ninety">
             <Toggle
               value={(autoCallOuts & A380XRadioAutoCallOutFlags.Ninety) > 0}
@@ -198,8 +198,8 @@ export const AutomaticCallOutsPage: React.FC = () => {
       <SettingItem name={t('Settings.AutomaticCallOuts.ResetStandardConfig')}>
         <button
           type="button"
-          className="border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight
-                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
+          className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                       py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
           onClick={() => setAutoCallOuts(A380X_DEFAULT_RADIO_AUTO_CALL_OUTS)}
         >
           {t('Settings.AutomaticCallOuts.Reset')}

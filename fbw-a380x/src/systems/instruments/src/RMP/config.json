@@ -2,8 +2,8 @@
   "index": "./instrument.tsx",
   "isInteractive": false,
   "extraDeps": [
-    "fbw-common/src/systems/instruments/src/RMP",
-    "fbw-common/src/systems/shared/src",
-    "fbw-a380x/src/systems/shared/src"
+    "/fbw-common/src/systems/instruments/src/RMP",
+    "/fbw-common/src/systems/shared/src",
+    "../../../shared/src"
   ]
 }

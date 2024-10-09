@@ -1,15 +1,19 @@
 use systems::{
     air_conditioning::{
-        AirConditioningOverheadShared, OperatingChannel, PackFlow, PackFlowControllers,
-        PackFlowValveSignal, PressurizationOverheadShared,
+        AirConditioningOverheadShared, Channel, FdacId, OperatingChannel, PackFlow,
+        PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
     },
+    failures::FailureType,
     pneumatic::{EngineState, PneumaticValveSignal},
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, EngineBleedPushbutton,
         EngineCorrectedN1, EngineFirePushButtons, EngineStartState, PackFlowValveState,
         PneumaticBleed,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
 
 use uom::si::{
@@ -27,10 +31,14 @@ enum FdacFault {
 #[derive(Clone, Copy)]
 enum FcvFault {
     PositionDisagree,
+    FdacBothChannelsFault,
     //More to be added
 }
 
 pub struct FullDigitalAGUController<const ENGINES: usize> {
+    fdac_channel_1_failure_id: VariableIdentifier,
+    fdac_channel_2_failure_id: VariableIdentifier,
+
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
     flow_control: FDACFlowControl<ENGINES>,
@@ -39,11 +47,28 @@ pub struct FullDigitalAGUController<const ENGINES: usize> {
 }
 
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
-    pub fn new(fdac_id: usize, powered_by: [ElectricalBusType; 2]) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        fdac_id: FdacId,
+        powered_by: [ElectricalBusType; 2],
+    ) -> Self {
         Self {
-            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
-            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
-            flow_control: FDACFlowControl::new(fdac_id),
+            fdac_channel_1_failure_id: context
+                .get_identifier(format!("COND_FDAC_{}_CHANNEL_1_FAILURE", fdac_id)),
+            fdac_channel_2_failure_id: context
+                .get_identifier(format!("COND_FDAC_{}_CHANNEL_2_FAILURE", fdac_id)),
+
+            active_channel: OperatingChannel::new(
+                1,
+                Some(FailureType::Fdac(fdac_id, Channel::ChannelOne)),
+                &[powered_by[0]],
+            ),
+            stand_by_channel: OperatingChannel::new(
+                2,
+                Some(FailureType::Fdac(fdac_id, Channel::ChannelTwo)),
+                &[powered_by[1]],
+            ),
+            flow_control: FDACFlowControl::new(fdac_id.into()),
             // agu_control
             fault: None,
         }
@@ -63,21 +88,18 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     ) {
         self.fault_determination();
 
-        if !matches!(self.fault, Some(FdacFault::BothChannelsFault))
-            && !self.active_channel.has_fault()
-        {
-            self.flow_control.update(
-                context,
-                acs_overhead,
-                any_door_open,
-                engine_fire_push_buttons,
-                engines,
-                pack_flow_demand,
-                pneumatic,
-                pneumatic_overhead,
-                pressurization_overhead,
-            )
-        }
+        self.flow_control.update(
+            context,
+            acs_overhead,
+            any_door_open,
+            engine_fire_push_buttons,
+            engines,
+            matches!(self.fault, Some(FdacFault::BothChannelsFault)),
+            pack_flow_demand,
+            pneumatic,
+            pneumatic_overhead,
+            pressurization_overhead,
+        )
     }
 
     fn fault_determination(&mut self) {
@@ -123,6 +145,19 @@ impl<const ENGINES: usize> PackFlowControllers for FullDigitalAGUController<ENGI
 }
 
 impl<const ENGINES: usize> SimulationElement for FullDigitalAGUController<ENGINES> {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let (channel_1_failure, channel_2_failure) = match self.fault {
+            None => (false, false),
+            Some(FdacFault::OneChannelFault) => (
+                self.stand_by_channel.id() == Channel::ChannelOne,
+                self.stand_by_channel.id() == Channel::ChannelTwo,
+            ),
+            Some(FdacFault::BothChannelsFault) => (true, true),
+        };
+        writer.write(&self.fdac_channel_1_failure_id, channel_1_failure);
+        writer.write(&self.fdac_channel_2_failure_id, channel_2_failure);
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.active_channel.accept(visitor);
         self.stand_by_channel.accept(visitor);
@@ -157,6 +192,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         any_door_open: bool,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN1; ENGINES],
+        fdac_both_channels_fault: bool,
         pack_flow_demand: &impl PackFlow,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
@@ -170,6 +206,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
                 any_door_open,
                 engine_fire_push_buttons,
                 id,
+                fdac_both_channels_fault,
                 pressurization_overhead,
                 pneumatic,
             )
@@ -201,6 +238,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
                     context,
                     fcv_id[id],
                     self.fcv_open_allowed[id],
+                    fdac_both_channels_fault,
                     self.should_open_fcv[id],
                     pack_flow_demand.pack_flow_demand(self.fdac_id.into()) / 2.,
                     pneumatic,
@@ -214,6 +252,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         any_door_open: bool,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         fcv_id: usize,
+        fdac_both_channels_fault: bool,
         pressurization_overhead: &impl PressurizationOverheadShared,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
@@ -236,6 +275,8 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
             // On ground, one door (or more) is opened, and at least one engine is running
             && !(any_door_open
                 && (1..=4).any(|engine| pneumatic.engine_state(engine) == EngineState::On))
+            // Both channels of the corresponding FDAC have failed
+            && !fdac_both_channels_fault
         // && ! pack overheat
         // && mixer unit burst
     }
@@ -305,11 +346,17 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         context: &UpdateContext,
         fcv_id: usize,
         fcv_open_allowed: bool,
+        fdac_both_channels_fault: bool,
         should_open_fcv: bool,
         pack_flow_demand: MassRate,
         pneumatic: &impl PackFlowValveState,
     ) {
-        self.fault_determination(fcv_id, fcv_open_allowed, pneumatic);
+        self.fault_determination(
+            fcv_id,
+            fcv_open_allowed,
+            fdac_both_channels_fault,
+            pneumatic,
+        );
 
         self.should_open_fcv = should_open_fcv;
         self.pack_flow = pneumatic.pack_flow_valve_air_flow(fcv_id);
@@ -328,10 +375,13 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         &mut self,
         fcv_id: usize,
         fcv_open_allowed: bool,
+        fdac_both_channels_fault: bool,
         pneumatic: &impl PackFlowValveState,
     ) {
         self.fault = if fcv_open_allowed != pneumatic.pack_flow_valve_is_open(fcv_id) {
             Some(FcvFault::PositionDisagree)
+        } else if fdac_both_channels_fault {
+            Some(FcvFault::FdacBothChannelsFault)
         } else {
             None
         }

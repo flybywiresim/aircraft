@@ -3,8 +3,8 @@
 
 import React from 'react';
 import { render } from '@instruments/common/index';
-import { AircraftContext, EfbWrapper, syncSettingsFromPersistentStorage} from '@flybywiresim/flypad';
-import { A380FailureDefinitions } from "../../../failures";
+import { AircraftContext, EfbWrapper, syncSettingsFromPersistentStorage } from '@flybywiresim/flypad';
+import { A380FailureDefinitions } from '../../../failures';
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a380xSyncedSettings } from 'instruments/src/EFB/settingsSync';
 
@@ -25,9 +25,9 @@ render(
       },
       settingsPages: {
         autoCalloutsPage: AutomaticCallOutsPage,
-      }
+      },
     }}
   >
     <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} />
-  </AircraftContext.Provider>
+  </AircraftContext.Provider>,
 );

@@ -38,7 +38,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   /** in feet */
-  private transitionAltitude = Subject.create<number>(0);
+  private transitionAltitude = Subject.create<number | null>(null);
 
   // RTA page
 
@@ -190,7 +190,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const ac = leg.altitudeConstraint;
         this.altConstraintDisabled.set(true);
         // ALT window
-        if (ac.altitude1 && ac.altitude1 > this.transitionAltitude.get()) {
+        const transAlt = this.transitionAltitude.get();
+        if (ac.altitude1 && transAlt && ac.altitude1 > transAlt) {
           // FL
           this.altWindowUnitLeading.set('FL');
           this.altWindowUnitTrailing.set('');

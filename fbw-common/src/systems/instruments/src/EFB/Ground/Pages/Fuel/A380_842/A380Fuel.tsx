@@ -545,7 +545,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
           </table>
         </Card>{' '}
         <A380FuelOutline
-          className="absolute inset-x-0 right-4 top-20 mx-auto flex h-full w-full text-theme-text"
+          className="size-full absolute inset-x-0 right-4 top-20 mx-auto flex text-theme-text"
           feed1Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / OUTER_FEED_MAX_KG) * 100}
           feed2Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / INNER_FEED_MAX_KG) * 100}
           feed3Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / INNER_FEED_MAX_KG) * 100}

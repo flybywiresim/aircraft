@@ -19,6 +19,8 @@ import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageM
 export class TransponderController {
   /** IDENT inhibit time in ms. */
   private static readonly IDENT_TIME = 5_000;
+  /** Time after entering last digit before automatic validation occurs. */
+  private static readonly AUTO_VALIDATE_TIME = 1_000;
 
   private readonly sub = this.bus.getSubscriber<TransponderEvents>();
 
@@ -32,6 +34,9 @@ export class TransponderController {
   public readonly entryInvalid = this._entryInvalid as Subscribable<boolean>;
 
   public readonly entryInProgress = this.enteredCode.map((v) => v !== null) as Subscribable<boolean>;
+
+  private readonly autoValidateTimer = new DebounceTimer();
+  private readonly onValidateHandler = this.onValidate.bind(this);
 
   public readonly displayedCode = MappedSubject.create(
     ([activeCode, enteredCode]) =>
@@ -87,6 +92,7 @@ export class TransponderController {
   }
 
   public onClear(singleDigit = true): void {
+    this.autoValidateTimer.clear();
     const oldCode = this.enteredCode.get();
     if (oldCode !== null) {
       if (!singleDigit) {
@@ -101,6 +107,7 @@ export class TransponderController {
   }
 
   public onDigitEntered(digit: number): void {
+    this.autoValidateTimer.clear();
     const enteredCode = this.enteredCode.get();
     if (this._entryInvalid.get() || (enteredCode !== null && enteredCode.indexOf('_') === -1)) {
       return;
@@ -109,7 +116,11 @@ export class TransponderController {
     if (enteredCode === null) {
       this.enteredCode.set(`${digit}___`);
     } else {
-      this.enteredCode.set(`${enteredCode.slice(0, enteredCode.indexOf('_'))}${digit}`.padEnd(4, '_'));
+      const enteredDigits = `${enteredCode.slice(0, enteredCode.indexOf('_'))}${digit}`;
+      this.enteredCode.set(enteredDigits.padEnd(4, '_'));
+      if (enteredDigits.length === 4) {
+        this.autoValidateTimer.schedule(this.onValidateHandler, TransponderController.AUTO_VALIDATE_TIME);
+      }
     }
 
     if (digit === 8 || digit === 9) {
@@ -118,6 +129,7 @@ export class TransponderController {
   }
 
   public onValidate(): void {
+    this.autoValidateTimer.clear();
     const newCode = this.enteredCode.get();
     if (newCode === null) {
       return;

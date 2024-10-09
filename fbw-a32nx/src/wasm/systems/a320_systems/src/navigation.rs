@@ -1,13 +1,47 @@
+use systems::navigation::adirs::{
+    AirDataInertialReferenceSystem, AirDataInertialReferenceUnitProgramming,
+    LowSpeedWarningThreshold,
+};
 use systems::navigation::ala52b::{
     Ala52BAircraftInstallationDelay, Ala52BRadioAltimeter, Ala52BTransceiverPair,
 };
 use systems::navigation::radio_altimeter::AntennaInstallation;
-use systems::shared::ElectricalBusType;
+use systems::shared::{ElectricalBusType, MachNumber};
 use systems::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
 };
-use uom::si::f64::Length;
+use uom::si::f64::*;
 use uom::si::length::{foot, meter};
+use uom::si::velocity::knot;
+
+pub(crate) struct A320AirDataInertialReferenceSystemBuilder;
+impl A320AirDataInertialReferenceSystemBuilder {
+    pub(crate) fn build(context: &mut InitContext) -> AirDataInertialReferenceSystem {
+        let adirs_programming = AirDataInertialReferenceUnitProgramming::new(
+            Velocity::new::<knot>(350.),
+            MachNumber(0.82),
+            [
+                LowSpeedWarningThreshold::new(
+                    Velocity::new::<knot>(100.),
+                    Velocity::new::<knot>(104.),
+                ),
+                LowSpeedWarningThreshold::new(
+                    Velocity::new::<knot>(50.),
+                    Velocity::new::<knot>(54.),
+                ),
+                LowSpeedWarningThreshold::new(
+                    Velocity::new::<knot>(155.),
+                    Velocity::new::<knot>(159.),
+                ),
+                LowSpeedWarningThreshold::new(
+                    Velocity::new::<knot>(260.),
+                    Velocity::new::<knot>(264.),
+                ),
+            ],
+        );
+        AirDataInertialReferenceSystem::new(context, adirs_programming)
+    }
+}
 
 pub struct A320RadioAltimeters {
     radio_altimeter_1: A320RadioAltimeter,
