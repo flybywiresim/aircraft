@@ -12,6 +12,7 @@ enum A320_Neo_FCU_VSpeed_State {
   Flying = 3,
 }
 
+// FIXME port to MSFS avionics framework style
 export class VerticalSpeedManager extends TemporaryHax implements Instrument {
   private forceUpdate = true;
   private ABS_MINMAX_FPA = 9.9;

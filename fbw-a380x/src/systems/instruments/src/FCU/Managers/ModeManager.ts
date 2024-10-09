@@ -4,6 +4,7 @@
 import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
+// FIXME port to MSFS avionics framework style
 export class ModeManager extends TemporaryHax implements Instrument {
   private textHDG?: ReturnType<typeof this.getTextElement>;
   private textVS?: ReturnType<typeof this.getTextElement>;

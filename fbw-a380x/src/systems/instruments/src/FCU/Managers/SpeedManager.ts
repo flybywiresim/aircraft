@@ -4,6 +4,7 @@
 import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
+// FIXME port to MSFS avionics framework style
 export class SpeedManager extends TemporaryHax implements Instrument {
   private readonly backToIdleTimeout = 10000;
   private readonly MIN_SPEED = 100;

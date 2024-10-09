@@ -4,6 +4,7 @@
 import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
+// FIXME port to MSFS avionics framework style
 export class AutopilotManager extends TemporaryHax implements Instrument {
   constructor(private readonly bus: EventBus) {
     super(bus, document.getElementById('Autopilot')!);

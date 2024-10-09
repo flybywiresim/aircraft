@@ -4,6 +4,7 @@
 import { EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 
+// FIXME port to MSFS avionics framework style
 export class HeadingManager extends TemporaryHax implements Instrument {
   private backToIdleTimeout = 45000;
   private inSelection = false;

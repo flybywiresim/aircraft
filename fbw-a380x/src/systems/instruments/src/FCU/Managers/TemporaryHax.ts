@@ -1,5 +1,6 @@
 import { EventBus, HEvent } from '@microsoft/msfs-sdk';
 
+/** This is a small class to fill in the old NavSystem code until all of the windows are ported to MSFS avionics framework. */
 export abstract class TemporaryHax {
   private readonly tempSub = this.tempBus.getSubscriber<HEvent>();
 
