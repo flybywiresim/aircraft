@@ -48,8 +48,8 @@ export class ModeManager extends TemporaryHax implements Instrument {
       }
       this.setTextElementActive(this.textHDG, !this.isTRKFPADisplayMode);
       this.setTextElementActive(this.textVS, !this.isTRKFPADisplayMode);
-      this.setTextElementActive(this.textTRK, this.isTRKFPADisplayMode);
-      this.setTextElementActive(this.textFPA, this.isTRKFPADisplayMode);
+      this.setTextElementActive(this.textTRK, !!this.isTRKFPADisplayMode);
+      this.setTextElementActive(this.textFPA, !!this.isTRKFPADisplayMode);
     }
   }
 }
