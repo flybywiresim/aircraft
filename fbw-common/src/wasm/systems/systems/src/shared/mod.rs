@@ -265,6 +265,8 @@ pub enum GearWheel {
     NOSE = 0,
     LEFT = 1,
     RIGHT = 2,
+    WINGLEFT = 3,
+    WINGRIGHT = 4,
 }
 
 pub trait SectionPressure {
