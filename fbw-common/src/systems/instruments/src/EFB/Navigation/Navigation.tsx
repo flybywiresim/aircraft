@@ -56,7 +56,7 @@ export const Navigation = () => {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="size-full">
       <div className="relative">
         <h1 className="font-bold">{t('NavigationAndCharts.Title')}</h1>
         <Navbar

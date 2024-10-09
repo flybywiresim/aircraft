@@ -530,7 +530,7 @@ export const A380Services: React.FC = () => {
         main2LeftStatus={main2LeftDoorOpen >= 1.0}
         main4RightStatus={main4RightDoorOpen >= 1.0}
         upper1LeftStatus={upper1LeftDoorOpen >= 1.0}
-        className="inset-x-0 mx-auto h-full w-full text-theme-text"
+        className="size-full inset-x-0 mx-auto text-theme-text"
       />
 
       <ServiceButtonWrapper xr={930} y={24}>

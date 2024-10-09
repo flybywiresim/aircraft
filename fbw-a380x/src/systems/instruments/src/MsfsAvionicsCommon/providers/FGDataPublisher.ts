@@ -19,19 +19,22 @@ export enum FgVerticalArmedFlags {
 }
 
 export interface FGVars {
-    'fg.fma.lateralMode': LateralMode,
-    'fg.fma.lateralArmedBitmask': FgLateralArmedFlags,
-    'fg.fma.verticalMode': VerticalMode,
-    'fg.fma.verticalArmedBitmask': FgVerticalArmedFlags,
+  'fg.fma.lateralMode': LateralMode;
+  'fg.fma.lateralArmedBitmask': FgLateralArmedFlags;
+  'fg.fma.verticalMode': VerticalMode;
+  'fg.fma.verticalArmedBitmask': FgVerticalArmedFlags;
 }
 
 export class FGDataPublisher extends SimVarPublisher<FGVars> {
-    constructor(bus: EventBus) {
-        super(new Map([
-            ['fg.fma.lateralMode', { name: 'L:A32NX_FMA_LATERAL_MODE', type: SimVarValueType.Number }],
-            ['fg.fma.lateralArmedBitmask', { name: 'L:A32NX_FMA_LATERAL_ARMED', type: SimVarValueType.Number }],
-            ['fg.fma.verticalMode', { name: 'L:A32NX_FMA_VERTICAL_MODE', type: SimVarValueType.Number }],
-            ['fg.fma.verticalArmedBitmask', { name: 'L:A32NX_FMA_VERTICAL_ARMED', type: SimVarValueType.Number }],
-        ]), bus);
-    }
+  constructor(bus: EventBus) {
+    super(
+      new Map([
+        ['fg.fma.lateralMode', { name: 'L:A32NX_FMA_LATERAL_MODE', type: SimVarValueType.Number }],
+        ['fg.fma.lateralArmedBitmask', { name: 'L:A32NX_FMA_LATERAL_ARMED', type: SimVarValueType.Number }],
+        ['fg.fma.verticalMode', { name: 'L:A32NX_FMA_VERTICAL_MODE', type: SimVarValueType.Number }],
+        ['fg.fma.verticalArmedBitmask', { name: 'L:A32NX_FMA_VERTICAL_ARMED', type: SimVarValueType.Number }],
+      ]),
+      bus,
+    );
+  }
 }
