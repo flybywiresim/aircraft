@@ -1,7 +1,15 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, DebounceTimer, EventBus, MappedSubject, ObjectSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DebounceTimer,
+  EventBus,
+  MappedSubject,
+  ObjectSubject,
+  Subject,
+  Subscribable,
+} from '@microsoft/msfs-sdk';
 
 import {
   Arinc429LocalVarConsumerSubject,
@@ -168,7 +176,9 @@ export class VhfComController {
   private readonly transmitOnlyFlashingTimer = new DebounceTimer();
 
   public readonly isLoudspeakerHidden = MappedSubject.create(
-    ([receptionMode, transmitOnlyFlashing, flash1Hz]) => receptionMode === ReceptionMode.Off || (receptionMode === ReceptionMode.TransmitOnly && transmitOnlyFlashing && !flash1Hz),
+    ([receptionMode, transmitOnlyFlashing, flash1Hz]) =>
+      receptionMode === ReceptionMode.Off ||
+      (receptionMode === ReceptionMode.TransmitOnly && transmitOnlyFlashing && !flash1Hz),
     this.receptionMode,
     this.transmitOnlyFlashing,
     this.flash1Hz,
@@ -187,7 +197,9 @@ export class VhfComController {
     this.isRowSelected.sub((v) => !v && this.standbyEntry.set(VhfComController.EMPTY_STANDBY_ENTRY));
 
     MappedSubject.create(this.standbyEntry, this.standbyFrequency).sub(([entry, frequency]) => {
-      this.isStandbyEntryInvalid.set(entry.frequency !== 0 && !RadioUtils.isValidFrequency(entry.frequency));
+      this.isStandbyEntryInvalid.set(
+        entry.frequency !== 0 && entry.frequency !== 0x1100000 && !RadioUtils.isValidFrequency(entry.frequency),
+      );
       const entryInProgress = entry.entered.length > 0;
       this.standbyEntryInProgress.set(entryInProgress);
 
@@ -207,8 +219,11 @@ export class VhfComController {
 
     this.receptionMode.sub((mode) => {
       if (mode === ReceptionMode.TransmitOnly) {
-        this.transmitOnlyFlashing.set(true)
-        this.transmitOnlyFlashingTimer.schedule(() => this.transmitOnlyFlashing.set(false), VhfComController.TRANSMIT_ONLY_FLASH_TIME);
+        this.transmitOnlyFlashing.set(true);
+        this.transmitOnlyFlashingTimer.schedule(
+          () => this.transmitOnlyFlashing.set(false),
+          VhfComController.TRANSMIT_ONLY_FLASH_TIME,
+        );
       }
     });
   }
@@ -305,17 +320,19 @@ export class VhfComController {
 
     // try shift 1 right, filling leading 1, see if valid
     // then try shift 2 right, filling leading 11, see if valid
-    for (let i = 0; i < 2; i++) {
-      frequency >>>= 4;
-      frequency |= 0x1000000;
-      if (RadioUtils.isValidFrequency(frequency)) {
-        this.standbyEntry.set({
-          entered,
-          entryOffset: i + 1,
-          displayed: RadioUtils.formatBcd32(frequency, ''),
-          frequency,
-        });
-        return;
+    for (let i = 0; i < 3; i++) {
+      if (i > 0) {
+        frequency >>>= 4;
+        frequency |= 0x1000000;
+        if (RadioUtils.isValidFrequency(frequency)) {
+          this.standbyEntry.set({
+            entered,
+            entryOffset: i,
+            displayed: RadioUtils.formatBcd32(frequency, ''),
+            frequency,
+          });
+          return;
+        }
       }
       // we need to handle the case where the entry could be valid with the correct channel spacing applied
       if (standbyEntry.entryOffset + entered.length === 5) {
@@ -329,7 +346,7 @@ export class VhfComController {
           if (RadioUtils.isValidFrequency(frequency)) {
             this.standbyEntry.set({
               entered,
-              entryOffset: i + 1,
+              entryOffset: i,
               displayed: RadioUtils.formatBcd32(frequency, ''),
               frequency,
             });

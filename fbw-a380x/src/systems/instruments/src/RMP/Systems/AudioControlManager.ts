@@ -11,9 +11,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { KeypadEvents, SystemKeys } from './KeypadController';
 import { AudioControlLocalVarEvents } from '../Data/AudioControlPublisher';
-
-// FIXME need to limit to two COMs transmitting due to MSFS limitation
-// TODO add 380 ms debounce to RX toggle, output actual state to `L:A380X_RMP_#RMP_ID#_#KNOB_NAME#_RX_#ID#`
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 /** Manages the external interfaces to the AMUs. */
 export class AudioControlManager implements Instrument {
@@ -22,52 +20,65 @@ export class AudioControlManager implements Instrument {
 
   private readonly sub = this.bus.getSubscriber<AudioControlLocalVarEvents & KeypadEvents>();
 
+  private readonly offsideRmpIndices = [this.rmpIndex === 1 ? 2 : 1, this.rmpIndex === 3 ? 1 : 3];
+
   private readonly keyEventMap: Record<
     any, // TODO fix type
-    { localVar: string; state: MutableSubscribable<boolean> }
+    { localVar: string; syncVars: string[]; state: MutableSubscribable<boolean> }
   > = {
     [SystemKeys.Vhf1Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_VHF_TX_1`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_VHF_TX_1`),
       state: Subject.create(false),
     },
     [SystemKeys.Vhf2Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_VHF_TX_2`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_VHF_TX_2`),
       state: Subject.create(false),
     },
     [SystemKeys.Vhf3Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_VHF_TX_3`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_VHF_TX_3`),
       state: Subject.create(false),
     },
     [SystemKeys.Hf1Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_HF_TX_1`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_HF_TX_1`),
       state: Subject.create(false),
     },
     [SystemKeys.Hf2Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_HF_TX_2`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_HF_TX_2`),
       state: Subject.create(false),
     },
     [SystemKeys.Tel1Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_TEL_TX_1`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_TEL_TX_1`),
       state: Subject.create(false),
     },
     [SystemKeys.Tel2Call]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_TEL_TX_2`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_TEL_TX_2`),
       state: Subject.create(false),
     },
     [SystemKeys.MechCall]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_INT_TX`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_INT_TX`),
       state: Subject.create(false),
     },
     [SystemKeys.CabCall]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_CAB_TX`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_CAB_TX`),
       state: Subject.create(false),
     },
     [SystemKeys.PaCall]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_PA_TX`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_PA_TX`),
       state: Subject.create(false),
     },
     [SystemKeys.Voice]: {
       localVar: `L:A380X_RMP_${this.rmpIndex}_NAV_FILTER`,
+      syncVars: this.offsideRmpIndices.map((v) => `L:A380X_RMP_${v}_NAV_FILTER`),
       state: Subject.create(false),
     },
   };
@@ -141,6 +152,8 @@ export class AudioControlManager implements Instrument {
     };
   });
 
+  private isSyncEnabled = false;
+
   private readonly subs = [
     this.sub.on(`keypad_system_key_pressed`).handle(this.onKeyPressed.bind(this), true),
     ...this.rxStates.map((s) => s.sub),
@@ -155,12 +168,19 @@ export class AudioControlManager implements Instrument {
         keyEvent.state.sub(
           (v) => {
             SimVar.SetSimVarValue(keyEvent.localVar, SimVarValueType.Bool, v);
+            if (this.isSyncEnabled) {
+              for (const localVar of keyEvent.syncVars) {
+                SimVar.SetSimVarValue(localVar, SimVarValueType.Bool, v);
+              }
+            }
           },
           true,
           true,
         ),
       );
     }
+
+    NXDataStore.getAndSubscribe('FO_SYNC_EFIS_ENABLED', (_, v) => (this.isSyncEnabled = v === '1'), '0');
   }
 
   // TODO only two tx can be active at a time

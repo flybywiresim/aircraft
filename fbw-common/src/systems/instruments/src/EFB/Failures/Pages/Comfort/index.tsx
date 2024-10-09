@@ -32,7 +32,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
       <div className="flex w-1/5 items-center justify-center rounded-md bg-theme-accent font-title text-5xl font-bold">
         {`ATA ${ataNumber}`}
 
-        <div className="relative -right-7 bottom-16 inline-block h-0 w-0 fill-current text-utility-red">
+        <div className="size-0 relative -right-7 bottom-16 inline-block fill-current text-utility-red">
           {hasActiveFailure && (
             <svg style={{ width: '30px', height: '30px' }} viewBox="0 0 20 20">
               <circle cx={10} cy={10} r={5} />
