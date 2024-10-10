@@ -2012,19 +2012,16 @@ export class FwsCore implements Instrument {
     );
 
     this.adr1Faulty.set(
-      (!(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
-        adr1Discrete1.isFailureWarning()) ||
-        adr1Discrete1.bitValueOr(3, false),
+      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
+        (adr1Discrete1.isFailureWarning() || adr1Discrete1.bitValueOr(3, false)),
     );
     this.adr2Faulty.set(
-      (!(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
-        adr2Discrete1.isFailureWarning()) ||
-        adr2Discrete1.bitValueOr(3, false),
+      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
+        (adr2Discrete1.isFailureWarning() || adr2Discrete1.bitValueOr(3, false)),
     );
     this.adr3Faulty.set(
-      (!(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
-        adr3Discrete1.isFailureWarning()) ||
-        adr3Discrete1.bitValueOr(3, false),
+      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
+        (adr3Discrete1.isFailureWarning() || adr3Discrete1.bitValueOr(3, false)),
     );
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
