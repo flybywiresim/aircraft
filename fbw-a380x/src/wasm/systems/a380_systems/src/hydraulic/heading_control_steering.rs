@@ -25,7 +25,7 @@ pub(crate) struct HeadingControlFunction {
 
     steering_controller: PidController,
 
-    steering_output: Angle,
+    steering_output: LowPassFilter<Angle>,
 }
 impl HeadingControlFunction {
     const MAX_SPEED_KNOT: f64 = 50.;
@@ -44,8 +44,8 @@ impl HeadingControlFunction {
             yaw_rate: LowPassFilter::new(Duration::from_millis(200)),
             oloop_gain: 6.,
 
-            steering_controller: PidController::new(5., 0.3, 5., -3., 3., 0., 1.),
-            steering_output: Angle::default(),
+            steering_controller: PidController::new(4., 0.3, 3., -3., 3., 0., 1.),
+            steering_output: LowPassFilter::new(Duration::from_millis(30)),
         }
     }
 
@@ -99,7 +99,7 @@ impl HeadingControlFunction {
                 self.tracked_heading = self.new_heading;
 
                 // If no input, and steering close to center openloop mode tries to stop yaw rate
-                self.steering_output = if !is_any_steering_input
+                let steering_output_raw = if !is_any_steering_input
                     && nose_steering_feedback.get::<degree>().abs() < 3.5
                 {
                     Angle::new::<degree>(
@@ -111,18 +111,22 @@ impl HeadingControlFunction {
                 } else {
                     Angle::default()
                 };
+                self.steering_output
+                    .update(context.delta(), steering_output_raw);
                 self.steering_controller
-                    .reset_with_output(self.steering_output.get::<degree>());
+                    .reset_with_output(self.steering_output.output().get::<degree>());
             }
             HCFState::Tracking => {
                 self.steering_controller.change_setpoint(
                     self.normalize_angle(self.tracked_heading.unwrap().get::<degree>()),
                 );
-                self.steering_output =
+                self.steering_output.update(
+                    context.delta(),
                     Angle::new::<degree>(self.steering_controller.next_control_output(
                         self.normalize_angle(self.new_heading.unwrap().get::<degree>()),
                         Some(context.delta()),
-                    ));
+                    )),
+                );
             }
         }
     }
@@ -176,11 +180,11 @@ impl HeadingControlFunction {
     }
 
     pub fn steering_output(&self) -> Angle {
-        self.steering_output
+        self.steering_output.output()
     }
 
     fn reset(&mut self) {
-        self.steering_output = Angle::default();
+        self.steering_output.reset(Angle::default());
         self.steering_controller.reset_with_output(0.);
     }
 
