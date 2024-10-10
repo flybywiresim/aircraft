@@ -649,7 +649,7 @@ export class FwsMemos {
     '343000001': {
       // TCAS STBY
       flightPhaseInhib: [1, 12],
-      simVarIsActive: MappedSubject.create(([tcasSensitivity]) => tcasSensitivity === 1, this.fws.tcasSensitivity),
+      simVarIsActive: this.fws.tcasStandbyMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['343000001'],
       memoInhibit: () => false,
