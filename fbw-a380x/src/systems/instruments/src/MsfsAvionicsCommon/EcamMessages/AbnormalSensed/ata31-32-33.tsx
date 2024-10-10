@@ -748,6 +748,11 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   320800038: {
+    title: '\x1b<2m\x1b4mL/G\x1bm GEAR NOT DOWN',
+    sensed: true,
+    items: [],
+  },
+  320800039: {
     title: '\x1b<2m\x1b4mL/G\x1bm GEAR NOT LOCKED DOWN',
     sensed: true,
     items: [
@@ -787,7 +792,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800039: {
+  320800040: {
     title: '\x1b<4m\x1b4mL/G\x1bm GEAR NOT LOCKED UP',
     sensed: true,
     items: [
@@ -832,7 +837,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800040: {
+  320800041: {
     title: '\x1b<4m\x1b4mL/G\x1bm GEAR UPLOCK FAULT',
     sensed: true,
     items: [
@@ -843,17 +848,17 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800041: {
+  320800042: {
     title: '\x1b<4m\x1b4mL/G\x1bm GRVTY EXTN FAULT',
     sensed: true,
     items: [],
   },
-  320800042: {
+  320800043: {
     title: '\x1b<4m\x1b4mL/G\x1bm OLEO PRESS MONITORING FAULT',
     sensed: true,
     items: [],
   },
-  320800043: {
+  320800044: {
     title: '\x1b<4m\x1b4mL/G\x1bm RETRACTION FAULT',
     sensed: true,
     items: [
@@ -933,22 +938,22 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800044: {
+  320800045: {
     title: '\x1b<4m\x1b4mL/G\x1bm SYSTEM DISAGREE',
     sensed: true,
     items: [],
   },
-  320800045: {
+  320800046: {
     title: '\x1b<4m\x1b4mL/G\x1bm WEIGHT ON WHEELS FAULT',
     sensed: true,
     items: [],
   },
-  320800046: {
+  320800047: {
     title: '\x1b<4m\x1b4mSTEER\x1bm ALTN N/W STEER FAULT',
     sensed: true,
     items: [],
   },
-  320800047: {
+  320800048: {
     title: '\x1b<4m\x1b4mSTEER\x1bm ALTN STEER SYS HOT',
     sensed: true,
     items: [
@@ -959,7 +964,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800048: {
+  320800049: {
     title: '\x1b<4m\x1b4mSTEER\x1bm B/W STEER FAULT',
     sensed: true,
     items: [
@@ -970,7 +975,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800049: {
+  320800050: {
     title: '\x1b<4m\x1b4mSTEER\x1bm B/W STEER FAULT',
     sensed: true,
     items: [
@@ -987,32 +992,32 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800050: {
+  320800051: {
     title: '\x1b<4m\x1b4mSTEER\x1bm CAPT STEER TILLER FAULT',
     sensed: true,
     items: [],
   },
-  320800051: {
+  320800052: {
     title: '\x1b<4m\x1b4mSTEER\x1bm FO STEER TILLER FAULT',
     sensed: true,
     items: [],
   },
-  320800052: {
+  320800053: {
     title: '\x1b<4m\x1b4mSTEER\x1bm CTL 1 FAULT',
     sensed: true,
     items: [],
   },
-  320800053: {
+  320800054: {
     title: '\x1b<4m\x1b4mSTEER\x1bm CTL 2 FAULT',
     sensed: true,
     items: [],
   },
-  320800054: {
+  320800055: {
     title: '\x1b<4m\x1b4mSTEER\x1bm N/W + B/W STEER FAULT',
     sensed: true,
     items: [],
   },
-  320800055: {
+  320800056: {
     title: '\x1b<4m\x1b4mSTEER\x1bm N/W STEER ANGLE LIMIT EXCEEDED',
     sensed: true,
     items: [
@@ -1023,7 +1028,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800056: {
+  320800057: {
     title: '\x1b<4m\x1b4mSTEER\x1bm N/W STEER DISC FAULT',
     sensed: true,
     items: [
@@ -1039,12 +1044,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800057: {
+  320800058: {
     title: '\x1b<4m\x1b4mSTEER\x1bm N/W STEER FAULT',
     sensed: true,
     items: [],
   },
-  320800058: {
+  320800059: {
     title: '\x1b<4m\x1b4mSTEER\x1bm N/W STEER NOT DISC',
     sensed: true,
     items: [
@@ -1059,7 +1064,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800059: {
+  320800060: {
     title: '\x1b<4m\x1b4mSTEER\x1bm NORM N/W STEER FAULT',
     sensed: true,
     items: [
@@ -1069,12 +1074,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800060: {
+  320800061: {
     title: '\x1b<4m\x1b4mSTEER\x1bm PEDAL STEER CTL FAULT',
     sensed: true,
     items: [],
   },
-  320800061: {
+  320800062: {
     title: '\x1b<4m\x1b4mSTEER\x1bm SEL VLV JAMMED OPEN',
     sensed: true,
     items: [
@@ -1096,7 +1101,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  320800062: {
+  320800063: {
     title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE PRESS LO',
     sensed: true,
     items: [],

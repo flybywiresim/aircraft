@@ -152,22 +152,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000190': {
-      // LDG LT
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([leftLandingLightExtended, rightLandingLightExtended]) =>
-          leftLandingLightExtended || rightLandingLightExtended,
-        this.fws.leftLandingLightExtended,
-        this.fws.rightlandingLightExtended,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000019001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000290': {
       // SWITCHING PNL
       flightPhaseInhib: [],
