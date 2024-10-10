@@ -4754,7 +4754,8 @@ class FMCMainDisplay extends BaseAirliners {
     get climbSpeedLimit() {
         const plan = this.currFlightPlanService.active;
 
-        return plan ? plan.performanceData.climbSpeedLimitSpeed : null;
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitSpeed : DefaultPerformanceData.ClimbSpeedLimitSpeed;
     }
 
     /**
@@ -4775,7 +4776,8 @@ class FMCMainDisplay extends BaseAirliners {
     get climbSpeedLimitAlt() {
         const plan = this.currFlightPlanService.active;
 
-        return plan ? plan.performanceData.climbSpeedLimitAltitude : null;
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitAltitude : DefaultPerformanceData.ClimbSpeedLimitAltitude;
     }
 
     /**
@@ -4810,7 +4812,8 @@ class FMCMainDisplay extends BaseAirliners {
     get descentSpeedLimit() {
         const plan = this.currFlightPlanService.active;
 
-        return plan ? plan.performanceData.descentSpeedLimitSpeed : null;
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitSpeed : DefaultPerformanceData.DescentSpeedLimitSpeed;
     }
 
     set descentSpeedLimit(speed) {
@@ -4828,7 +4831,8 @@ class FMCMainDisplay extends BaseAirliners {
     get descentSpeedLimitAlt() {
         const plan = this.currFlightPlanService.active;
 
-        return plan ? plan.performanceData.descentSpeedLimitAltitude : null;
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitAltitude : DefaultPerformanceData.DescentSpeedLimitAltitude;
     }
 
     set descentSpeedLimitAlt(alt) {
@@ -5167,6 +5171,13 @@ FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
+});
+
+const DefaultPerformanceData = Object.freeze({
+    ClimbSpeedLimitSpeed: 250,
+    ClimbSpeedLimitAltitude: 10_000,
+    DescentSpeedLimitSpeed: 250,
+    DescentSpeedLimitAltitude: 10_000,
 });
 
 class FmArinc429OutputWord extends Arinc429Word {
