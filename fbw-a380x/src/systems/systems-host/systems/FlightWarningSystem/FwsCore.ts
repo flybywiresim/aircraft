@@ -2962,10 +2962,10 @@ export class FwsCore implements Instrument {
 
     this.tcas1AdrInopOrIrConfNode.write(oneUsedLeftAdrInop || oneLeftUsedIrInop || leftIrFaultyOrInAlign, deltaTime);
     this.tcas1FaultAndNoAdiruInop.write(
-      tcasFaulty && flightPhase112 && !this.tcas1AdrInopOrIrConfNode.read(),
+      tcasFaulty && !(flightPhase112 && this.tcas1AdrInopOrIrConfNode.read()),
       deltaTime,
     );
-    this.tcas1FaultCond.set(!allRaInvalid && !this.acESSBusPowered.get() && this.tcas1FaultAndNoAdiruInop.read());
+    this.tcas1FaultCond.set(!allRaInvalid && this.acESSBusPowered.get() && this.tcas1FaultAndNoAdiruInop.read());
 
     // SYS 2 FIXME: REplace with proper TCAS var once implemented
     const oneUsedRightAdrInop =
@@ -2983,10 +2983,10 @@ export class FwsCore implements Instrument {
 
     this.tcas2AdrInopOrIrConfNode.write(oneUsedRightAdrInop || oneUsedRightIrInop || rightIrFaultyOrInAlign, deltaTime);
     this.tcas2FaultAndNoAdiruInop.write(
-      tcasFaulty && flightPhase112 && !this.tcas2AdrInopOrIrConfNode.read(),
+      tcasFaulty && !(flightPhase112 && this.tcas2AdrInopOrIrConfNode.read()),
       deltaTime,
     );
-    this.tcas2FaultCond.set(!allRaInvalid && !this.ac2BusPowered.get() && this.tcas2FaultAndNoAdiruInop.read());
+    this.tcas2FaultCond.set(!allRaInvalid && this.ac2BusPowered.get() && this.tcas2FaultAndNoAdiruInop.read());
 
     this.tcas1Fault.set(this.tcas1FaultCond.get() && !this.tcas2FaultCond.get());
     this.tcas2Fault.set(this.tcas2FaultCond.get() && !this.tcas1FaultCond.get());

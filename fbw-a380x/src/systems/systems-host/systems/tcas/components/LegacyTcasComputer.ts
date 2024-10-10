@@ -374,6 +374,24 @@ export class LegacyTcasComputer implements Instrument {
    * Set TCAS status
    */
   private updateStatusFaults(): void {
+    // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
+    if (
+      !this.baroCorrectedAltitude1 ||
+      !this.adr3BaroCorrectedAltitude1 ||
+      !this.baroCorrectedAltitude1.isNormalOperation() ||
+      !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
+      this.radioAlt.isFailureWarning() ||
+      this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
+      this.tcasPower
+    ) {
+      this.resetDisplay();
+      this.tcasFault.setVar(true);
+      this.tcasMode.setVar(TcasMode.STBY);
+      return;
+    } else {
+      this.tcasFault.setVar(false);
+    }
+
     // If in STBY, inhibit all, set sens to 1, clear all existing RAs
     if (this.tcasMode.getVar() === TcasMode.STBY) {
       this.taOnly.setVar(false);
@@ -397,22 +415,6 @@ export class LegacyTcasComputer implements Instrument {
       this.taOnly.setVar(true);
     } else {
       this.taOnly.setVar(false);
-    }
-
-    // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
-    if (
-      !this.baroCorrectedAltitude1 ||
-      !this.adr3BaroCorrectedAltitude1 ||
-      !this.baroCorrectedAltitude1.isNormalOperation() ||
-      !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
-      this.radioAlt.isFailureWarning() ||
-      this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
-      this.tcasPower
-    ) {
-      this.resetDisplay();
-      this.tcasFault.setVar(true);
-    } else {
-      this.tcasFault.setVar(false);
     }
 
     // Update sensitivity
