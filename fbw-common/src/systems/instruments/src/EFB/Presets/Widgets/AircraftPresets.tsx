@@ -83,7 +83,7 @@ export const AircraftPresets = () => {
       <div className="flex h-20 flex-row items-center justify-center space-x-2 rounded-md border-2 border-theme-accent p-2">
         {loadPresetVar ? (
           <>
-            <div className="size-full content-center justify-center overflow-hidden rounded-md bg-theme-accent">
+            <div className="h-full w-full content-center justify-center overflow-hidden rounded-md bg-theme-accent">
               <span className="h-1/2 pl-3 pt-1 text-xl">
                 {t('Presets.AircraftStates.CurrentProcedureStep')} : {currentStepDescription}
               </span>
