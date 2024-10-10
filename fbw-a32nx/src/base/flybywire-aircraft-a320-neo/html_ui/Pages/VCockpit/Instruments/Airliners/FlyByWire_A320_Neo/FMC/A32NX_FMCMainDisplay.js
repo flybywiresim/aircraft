@@ -2259,27 +2259,22 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 
-    updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
+    async updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsu.connectToNetworks(flightNo)
-                .then((code) => {
-                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
-                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
-                        this.addNewAtsuMessage(code);
-                        this.flightNo = "";
-                        return callback(false);
-                    }
+        this.flightNumber = flightNo;
+        await SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC");
 
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
-                    this.flightNumber = flightNo;
-                    return callback(true);
-                });
-        });
+        // FIXME move ATSU code to ATSU
+        const code = await this.atsu.connectToNetworks(flightNo);
+        if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
+            this.addNewAtsuMessage(code);
+        }
+
+        return callback(true);
     }
 
     async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
