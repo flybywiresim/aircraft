@@ -276,6 +276,8 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
+  ClientDataAutothrustA380 getClientDataAutothrustA380();
+
   bool setClientDataFlyByWireInput(ClientDataFlyByWireInput output);
 
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
@@ -332,6 +334,7 @@ class SimConnectInterface {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
+    AUTOTHRUST_A380,
     PRIM_DISCRETE_INPUTS,
     PRIM_ANALOG_INPUTS,
     PRIM_DISCRETE_OUTPUTS,
@@ -406,6 +409,7 @@ class SimConnectInterface {
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
+  ClientDataAutothrustA380 clientDataAutothrustA380 = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
 
   base_prim_discrete_outputs clientDataPrimDiscreteOutputs = {};
