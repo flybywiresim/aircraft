@@ -69,7 +69,7 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
     this.events.push(
       new GenericDataListenerSync((ev, data: NdTraffic[]) => {
         this.publish('traffic', data);
-      }, 'A32NX_TCAS_TRAFFIC'),
+      }, `A32NX_TCAS_${side}_TRAFFIC`),
     );
   }
 }
