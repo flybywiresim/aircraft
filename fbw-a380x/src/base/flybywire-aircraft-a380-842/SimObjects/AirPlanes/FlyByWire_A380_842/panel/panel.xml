@@ -1,8 +1,14 @@
 <!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
-<!--TODO: Do we even need this files?`If not it should be removed -->
-
 <PlaneHTMLConfig>
-
+    <Instrument>
+        <Name>A380X_FCU</Name>
+		<Electric>
+            <Or>
+                <Simvar name="L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED" unit="Boolean"/>
+                <Simvar name="L:A32NX_ELEC_DC_2_BUS_IS_POWERED" unit="Boolean"/>
+            </Or>
+		</Electric>
+    </Instrument>
 </PlaneHTMLConfig>
