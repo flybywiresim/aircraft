@@ -393,7 +393,6 @@ export class LegacyTcasComputer implements Instrument {
     ) {
       this.resetDisplay();
       this.tcasFault.setVar(true);
-      this.tcasMode.setVar(TcasMode.STBY);
       return;
     } else {
       this.tcasFault.setVar(false);
