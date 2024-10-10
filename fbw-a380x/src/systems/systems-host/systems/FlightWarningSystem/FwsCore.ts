@@ -1968,9 +1968,22 @@ export class FwsCore implements Instrument {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
-    this.ir1Fault.set(this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true));
-    this.ir2Fault.set(this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true));
-    this.ir3Fault.set(this.ir3Pitch.isFailureWarning() || this.ir3MaintWord.bitValueOr(9, true));
+    this.ir1Fault.set(
+      ![1, 12].includes(this.fwcFlightPhase.get()) &&
+        (this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true)),
+    );
+    this.ir2Fault.set(
+      ![1, 12].includes(this.fwcFlightPhase.get()) &&
+        (this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true)),
+    );
+    this.ir3Fault.set(
+      ![1, 12].includes(this.fwcFlightPhase.get()) &&
+        (this.ir3Pitch.isFailureWarning() || this.ir3MaintWord.bitValueOr(9, true)),
+    );
+
+    const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
+    const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
+    const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
 
     this.irExcessMotion.set(
       this.ir1MaintWord.bitValueOr(13, false) ||
@@ -1981,13 +1994,9 @@ export class FwsCore implements Instrument {
     this.adr1Fault.set(this.adr1Cas.get().isFailureWarning() || this.ir1MaintWord.bitValueOr(8, false));
     this.adr2Fault.set(this.adr2Cas.isFailureWarning() || this.ir2MaintWord.bitValueOr(8, false));
     this.adr3Fault.set(this.adr3Cas.isFailureWarning() || this.ir3MaintWord.bitValueOr(8, false));
-    // console.log('2', this.adr1Cas.get().isFailureWarning(), this.ir1MaintWord.bitValueOr(8, false));
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
-    const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
-    const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
-    const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
     // TODO use GPS alt if ADRs not available
     const pressureAltitude =
       adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
