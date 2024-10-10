@@ -152,22 +152,24 @@ impl A320Payload {
                 Mass::new::<kilogram>(c.max_cargo_kg),
             )
         });
+        let default_boarding_agent = BoardingAgent::new(None, [0, 1, 2, 3]);
+
         let boarding_agents = [
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned()),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned())),
                 [0, 1, 2, 3],
             ),
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:1".to_owned()),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:1".to_owned())),
                 [0, 1, 2, 3],
             ),
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned()),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned())),
                 [3, 2, 1, 0],
             ),
         ];
 
-        let passenger_deck = PassengerDeck::new(pax, boarding_agents);
+        let passenger_deck = PassengerDeck::new(pax, default_boarding_agent, boarding_agents);
         let cargo_deck = CargoDeck::new(cargo);
 
         A320Payload {
