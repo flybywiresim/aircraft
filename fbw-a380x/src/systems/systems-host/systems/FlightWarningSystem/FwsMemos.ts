@@ -190,17 +190,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000250': {
-      // FUEL X FEED
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.fuelXFeedPBOn,
-      whichCodeToReturn: () => [[3, 4, 5].includes(this.fws.fwcFlightPhase.get()) ? 1 : 0],
-      codesToReturn: ['000025001', '000025002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '230000001': {
       // CAPT ON RMP 3
       flightPhaseInhib: [],

@@ -1136,6 +1136,81 @@ export class FwsAbnormalSensed {
       sysPage: -1,
       inopSysAllPhases: () => [],
     },
+    // 29 FUEL
+    281800023: {
+      // FEED TK 1 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank1Low,
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800102'],
+      inopSysAllPhases: () => [],
+    },
+    281800024: {
+      // FEED TK 2 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank2Low,
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800102'],
+      inopSysAllPhases: () => [],
+    },
+    281800025: {
+      // FEED TK 3 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank3Low,
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800103'],
+      inopSysAllPhases: () => [],
+    },
+    281800026: {
+      // FEED TK 4 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank4Low,
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800103'],
+      inopSysAllPhases: () => [],
+    },
+    281800102: {
+      // FEED TKs 1+2 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank1Low,
+        this.fws.feedTank2Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => [],
+    },
+    281800103: {
+      // FEED TKs 3+4 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank3Low,
+        this.fws.feedTank4Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => [],
+    },
     // 29 Hydraulic
     290800001: {
       // G ELEC PMP A FAULT

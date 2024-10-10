@@ -82,8 +82,6 @@ export const EcamMemos: { [n: string]: string } = {
   '242000002': '\x1b<3mRAT OUT',
   '243000001': '\x1b<3mREMOTE C/B CTL ON',
   '000023001': '\x1b<3mMAN LDG ELEV',
-  '000025001': '\x1b<3mFUEL X FEED',
-  '000025002': '\x1b<4mFUEL X FEED',
   '000029001': '\x1b<3mSWITCHG PNL',
   '000035001': '\x1b<2mLAND ASAP',
   '000036001': '\x1b<4mLAND ASAP',
@@ -560,7 +558,6 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
 
-
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
   activeProcedure: boolean;
@@ -575,5 +572,9 @@ export interface WdLineData {
 }
 
 export enum WdSpecialLine {
-  ClComplete, Reset, Clear, Empty, SeparationLine,
+  ClComplete,
+  Reset,
+  Clear,
+  Empty,
+  SeparationLine,
 }

@@ -684,25 +684,27 @@ export class FwsCore implements Instrument {
 
   public readonly centerFuelPump1Auto = ConsumerValue.create(null, false);
 
+  public readonly feedTank1Low = Subject.create(false);
+
   public readonly centerFuelPump2Auto = ConsumerValue.create(null, false);
 
-  public readonly centerFuelQuantity = Subject.create(0);
+  public readonly feedTank1LowConfirm = new NXLogicConfirmNode(30, true);
 
-  public readonly fuelXFeedPBOn = Subject.create(false);
+  public readonly feedTank2Low = Subject.create(false);
+
+  public readonly feedTank2LowConfirm = new NXLogicConfirmNode(30, true);
 
   public readonly leftOuterInnerValve = ConsumerSubject.create(null, 0);
 
-  public readonly leftFuelLow = Subject.create(false);
+  public readonly feedTank3Low = Subject.create(false);
 
-  public readonly leftFuelLowConfirm = new NXLogicConfirmNode(30, true);
+  public readonly feedTank3LowConfirm = new NXLogicConfirmNode(30, true);
+
+  public readonly feedTank4Low = Subject.create(false);
 
   public readonly leftFuelPump1Auto = ConsumerValue.create(null, false);
 
   public readonly leftFuelPump2Auto = ConsumerValue.create(null, false);
-
-  public readonly lrTankLow = Subject.create(false);
-
-  public readonly lrTankLowConfirm = new NXLogicConfirmNode(30, true);
 
   public readonly rightOuterInnerValve = ConsumerSubject.create(null, 0);
 
@@ -713,6 +715,7 @@ export class FwsCore implements Instrument {
   public readonly rightFuelPump1Auto = ConsumerValue.create(null, false);
 
   public readonly rightFuelPump2Auto = ConsumerValue.create(null, false);
+  public readonly feedTank4LowConfirm = new NXLogicConfirmNode(30, true);
 
   public readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
 
@@ -2450,17 +2453,17 @@ export class FwsCore implements Instrument {
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
 
     /* FUEL */
-    const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
-    this.centerFuelQuantity.set(SimVar.GetSimVarValue('FUEL TANK CENTER QUANTITY', 'gallons') * fuelGallonsToKg);
-    this.fuelXFeedPBOn.set(SimVar.GetSimVarValue('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool'));
+    const feedTank1Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:2', 'kilogram') < 1375;
+    this.feedTank1Low.set(this.feedTank1LowConfirm.write(feedTank1Low, deltaTime));
 
-    const leftInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK LEFT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
-    const rightInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK RIGHT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
-    const leftFuelLow = leftInnerFuelQuantity < 750;
-    const rightFuelLow = rightInnerFuelQuantity < 750;
-    this.lrTankLow.set(this.lrTankLowConfirm.write(leftFuelLow && rightFuelLow, deltaTime));
-    this.leftFuelLow.set(this.leftFuelLowConfirm.write(leftFuelLow && !this.lrTankLow.get(), deltaTime));
-    this.rightFuelLow.set(this.rightFuelLowConfirm.write(rightFuelLow && !this.lrTankLow.get(), deltaTime));
+    const feedTank2Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:5', 'kilogram') < 1375;
+    this.feedTank2Low.set(this.feedTank1LowConfirm.write(feedTank2Low, deltaTime));
+
+    const feedTank3Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:6', 'kilogram') < 1375;
+    this.feedTank3Low.set(this.feedTank1LowConfirm.write(feedTank3Low, deltaTime));
+
+    const feedTank4Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:9', 'kilogram') < 1375;
+    this.feedTank4Low.set(this.feedTank1LowConfirm.write(feedTank4Low, deltaTime));
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
