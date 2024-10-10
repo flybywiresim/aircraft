@@ -789,6 +789,18 @@
       | 28  | Slat System Jam                          |
       | 29  | Flap System Jam                          |
 
+- A32NX_FLAPS_CONF_INDEX
+  - Number
+  - Indicates the desired flap configuration index according to the table
+  - Value | Meaning
+            --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf2S
+      5 | Conf3
+      6 | Conf4
 
 ## Indicating-Recording ATA 31
 
