@@ -982,11 +982,11 @@ export class FwsCore implements Instrument {
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
 
-  public readonly adiru1State = Subject.create(0);
+  public readonly ir1Align = Subject.create(false);
 
-  public readonly adiru2State = Subject.create(0);
+  public readonly ir2Align = Subject.create(false);
 
-  public readonly adiru3State = Subject.create(0);
+  public readonly ir3Align = Subject.create(false);
 
   public readonly adr1Cas = Subject.create(Arinc429Word.empty());
   public readonly adr2Cas = Arinc429Register.empty();
@@ -2015,9 +2015,9 @@ export class FwsCore implements Instrument {
     // TODO use GPS alt if ADRs not available
     const pressureAltitude =
       adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
-    this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
-    this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
-    this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
+    this.ir1Align.set(this.ir1MaintWord.bitValueOr(15, false) || this.ir1MaintWord.bitValueOr(16,false) || this.ir1MaintWord.bitValueOr(17, false))
+    this.ir2Align.set(this.ir2MaintWord.bitValueOr(15, false) || this.ir2MaintWord.bitValueOr(16,false) || this.ir2MaintWord.bitValueOr(17, false))
+    this.ir3Align.set(this.ir3MaintWord.bitValueOr(15, false) || this.ir3MaintWord.bitValueOr(16,false) || this.ir3MaintWord.bitValueOr(17, false))
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
@@ -2957,8 +2957,8 @@ export class FwsCore implements Instrument {
     const oneLeftUsedIrInop =
       (this.ir1Fault.get() && !this.ir3UsedLeft.get()) || (this.ir3Fault.get() && this.ir3UsedLeft.get());
     const leftIrFaultyOrInAlign = this.ir3UsedLeft.get()
-      ? this.ir3Fault.get() || this.adiru3State.get() === 1 // FIX ME USE IR IN ALIGN SIGNALS
-      : this.ir1Fault.get() || this.adiru1State.get() === 1;
+      ? this.ir3Fault.get() || this.ir3Align.get() // FIX ME USE IR IN ALIGN SIGNALS
+      : this.ir1Fault.get() || this.ir1Align.get();
 
     this.tcas1AdrInopOrIrConfNode.write(oneUsedLeftAdrInop || oneLeftUsedIrInop || leftIrFaultyOrInAlign, deltaTime);
     this.tcas1FaultAndNoAdiruInop.write(
@@ -2978,8 +2978,8 @@ export class FwsCore implements Instrument {
     const oneUsedRightIrInop =
       (this.ir2Fault.get() && !this.ir3UsedRight.get()) || (this.ir3Fault.get() && this.ir3UsedRight.get());
     const rightIrFaultyOrInAlign = this.ir3UsedRight.get()
-      ? this.ir3Fault.get() || this.adiru3State.get() === 1 // FIX ME USE IR IN ALIGN SIGNALS
-      : this.ir3Fault.get() || this.adiru2State.get() === 1;
+      ? this.ir3Fault.get() || this.ir3Align.get()
+      : this.ir2Fault.get() || this.ir2Align.get();
 
     this.tcas2AdrInopOrIrConfNode.write(oneUsedRightAdrInop || oneUsedRightIrInop || rightIrFaultyOrInAlign, deltaTime);
     this.tcas2FaultAndNoAdiruInop.write(
