@@ -7,7 +7,7 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, LocalSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, LocalSimVar, Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
   TCAS_CONST as TCAS,
@@ -220,7 +220,7 @@ export class LegacyTcasComputer implements Instrument {
 
   private verticalSpeed: number | null; // Vertical Speed
 
-  private irTrueheading: Arinc429Word | null; // True heading
+  private irTrueheading: Arinc429Register  = Arinc429Register.empty(); // True heading
 
   private sensitivity: LocalSimVar<number>;
 
@@ -328,7 +328,7 @@ export class LegacyTcasComputer implements Instrument {
     const irSwitchingKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
     const irToUse = irSwitchingKnob === 1? this.activeXpdr + 1 : 3;
     this.adr3BaroCorrectedAltitude1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_BARO_CORRECTED_ALTITUDE_1');
-    this.irTrueheading = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${irToUse}_TRUE_HEADING`);
+    this.irTrueheading.setFromSimVar(`L:A32NX_ADIRS_IR_${irToUse}_TRUE_HEADING`);
     this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
     this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
     this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'boolean');
