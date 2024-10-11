@@ -112,7 +112,7 @@ impl A320 {
             hydraulic: A320Hydraulic::new(context),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
+            landing_gear: LandingGear::new(context, false),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
