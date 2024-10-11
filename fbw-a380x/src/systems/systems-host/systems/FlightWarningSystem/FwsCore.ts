@@ -301,6 +301,22 @@ export class FwsCore implements Instrument {
 
   public readonly oneTcsAppFailed = Subject.create(false);
 
+  public readonly vcmFwdChannel1Failure = Subject.create(false);
+
+  public readonly vcmFwdChannel2Failure = Subject.create(false);
+
+  public readonly vcmAftChannel1Failure = Subject.create(false);
+
+  public readonly vcmAftChannel2Failure = Subject.create(false);
+
+  public readonly fwdVentCtrDegraded = Subject.create(false);
+
+  public readonly fwdVentRedundLost = Subject.create(false);
+
+  public readonly aftVentCtrDegraded = Subject.create(false);
+
+  public readonly aftVentRedundLost = Subject.create(false);
+
   // A32NX - REMOVE LABEL
 
   public readonly acsc1DiscreteWord1 = Arinc429Register.empty();
@@ -2298,14 +2314,14 @@ export class FwsCore implements Instrument {
     let vcsDiscreteWordToUse;
 
     if (cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
-        vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord1
+      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord1;
     } else if (cpiomBVcsAppDiscreteWord2.isNormalOperation()) {
-        vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord2
+      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord2;
     } else if (cpiomBVcsAppDiscreteWord3.isNormalOperation()) {
-        vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord3
+      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord3;
     } else {
-        vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord4
-    };
+      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord4;
+    }
 
     const cpiomBTcsAppDiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
     const cpiomBTcsAppDiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
@@ -2315,22 +2331,35 @@ export class FwsCore implements Instrument {
     let tcsDiscreteWordToUse;
 
     if (cpiomBTcsAppDiscreteWord1.isNormalOperation()) {
-        tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord1
+      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord1;
     } else if (cpiomBTcsAppDiscreteWord2.isNormalOperation()) {
-        tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord2
+      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord2;
     } else if (cpiomBTcsAppDiscreteWord3.isNormalOperation()) {
-        tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord3
+      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord3;
     } else {
-        tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4
-    };
+      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
+    }
 
-    this.oneTcsAppFailed.set(cpiomBTcsAppDiscreteWord1.isFailureWarning() || cpiomBTcsAppDiscreteWord2.isFailureWarning() || cpiomBTcsAppDiscreteWord3.isFailureWarning() || cpiomBTcsAppDiscreteWord4.isFailureWarning());
+    this.oneTcsAppFailed.set(
+      cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
+        cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
+        cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
+        cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+    );
 
-    this.pack1Degraded.set(cpiomBAgsAppDiscreteWord1.isFailureWarning() && cpiomBAgsAppDiscreteWord3.isFailureWarning());
-    this.pack1Degraded.set(cpiomBAgsAppDiscreteWord2.isFailureWarning() && cpiomBAgsAppDiscreteWord4.isFailureWarning());
+    this.pack1Degraded.set(
+      cpiomBAgsAppDiscreteWord1.isFailureWarning() && cpiomBAgsAppDiscreteWord3.isFailureWarning(),
+    );
+    this.pack1Degraded.set(
+      cpiomBAgsAppDiscreteWord2.isFailureWarning() && cpiomBAgsAppDiscreteWord4.isFailureWarning(),
+    );
 
-    this.pack1RedundLost.set(cpiomBAgsAppDiscreteWord1.isFailureWarning() || cpiomBAgsAppDiscreteWord3.isFailureWarning());
-    this.pack2RedundLost.set(cpiomBAgsAppDiscreteWord2.isFailureWarning() || cpiomBAgsAppDiscreteWord4.isFailureWarning());
+    this.pack1RedundLost.set(
+      cpiomBAgsAppDiscreteWord1.isFailureWarning() || cpiomBAgsAppDiscreteWord3.isFailureWarning(),
+    );
+    this.pack2RedundLost.set(
+      cpiomBAgsAppDiscreteWord2.isFailureWarning() || cpiomBAgsAppDiscreteWord4.isFailureWarning(),
+    );
 
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
@@ -2338,8 +2367,12 @@ export class FwsCore implements Instrument {
     // TODO: Add fault when on ground, with one engine running and one door open
     // TODO: Add pack overheat
     this.pack1And2Fault.set(
-      ((this.fdac1Channel1Failure.get() && this.fdac1Channel2Failure.get() && this.fdac2Channel1Failure.get() && this.fdac2Channel2Failure.get()) ||
-      (!this.pack1On.get() && !this.pack2On.get())) && (this.fwcFlightPhase.get() != 8 || phase8ConfirmationNode.read())
+      ((this.fdac1Channel1Failure.get() &&
+        this.fdac1Channel2Failure.get() &&
+        this.fdac2Channel1Failure.get() &&
+        this.fdac2Channel2Failure.get()) ||
+        (!this.pack1On.get() && !this.pack2On.get())) &&
+        (this.fwcFlightPhase.get() != 8 || phase8ConfirmationNode.read()),
     );
 
     this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool'));
@@ -2351,7 +2384,7 @@ export class FwsCore implements Instrument {
     const fan3Fault = vcsDiscreteWordToUse.getBitValueOr(20, false);
     const fan4Fault = vcsDiscreteWordToUse.getBitValueOr(21, false);
 
-    this.numberOfCabinFanFaults.set([fan1Fault, fan2Fault, fan3Fault, fan4Fault].filter(fan => fan===true).length);
+    this.numberOfCabinFanFaults.set([fan1Fault, fan2Fault, fan3Fault, fan4Fault].filter((fan) => fan === true).length);
 
     this.allCabinFansFault.set(fan1Fault && fan2Fault && fan3Fault && fan4Fault);
 
@@ -2378,8 +2411,29 @@ export class FwsCore implements Instrument {
 
     this.tempCtlFault.set(
       (this.taddChannel1Failure.get() && this.taddChannel2Failure.get()) ||
-      (this.fdac1Channel1Failure.get() && this.fdac1Channel2Failure.get()
-        && this.fdac2Channel1Failure.get() && this.fdac2Channel2Failure.get())
+        (this.fdac1Channel1Failure.get() &&
+          this.fdac1Channel2Failure.get() &&
+          this.fdac2Channel1Failure.get() &&
+          this.fdac2Channel2Failure.get()),
+    );
+
+    this.vcmFwdChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_1_FAILURE', 'bool'));
+    this.vcmFwdChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_2_FAILURE', 'bool'));
+    this.vcmAftChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_1_FAILURE', 'bool'));
+    this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool'));
+
+    this.fwdVentCtrDegraded.set(
+      !cpiomBVcsAppDiscreteWord1.isNormalOperation() && !cpiomBVcsAppDiscreteWord3.isNormalOperation(),
+    );
+    this.fwdVentRedundLost.set(
+      !cpiomBVcsAppDiscreteWord1.isNormalOperation() || !cpiomBVcsAppDiscreteWord3.isNormalOperation(),
+    );
+
+    this.aftVentCtrDegraded.set(
+      !cpiomBVcsAppDiscreteWord2.isNormalOperation() && !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
+    );
+    this.aftVentRedundLost.set(
+      !cpiomBVcsAppDiscreteWord2.isNormalOperation() || !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
     );
 
     // A32NX - REMOVE LABEL
