@@ -143,6 +143,12 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
+        name: 'CROSSFEED 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
         name: 'TRIM TK FEED', // If gravity transfer from the trim tank is in progress
         sensed: true,
         labelNotCompleted: 'AUTO',
@@ -182,6 +188,12 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'IF NO FUEL LEAK',
         sensed: true,
         style: ChecklistLineStyle.SubHeadline,
+      },
+      {
+        name: 'CROSSFEED 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
       },
       {
         name: 'CROSSFEED 2',
@@ -237,6 +249,12 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
         name: 'TRIM TK FEED',
         sensed: true,
         labelNotCompleted: 'AUTO',
@@ -276,6 +294,12 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'IF NO FUEL LEAK',
         sensed: true,
         style: ChecklistLineStyle.SubHeadline,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
       },
       {
         name: 'CROSSFEED 4',
@@ -561,7 +585,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   281800076: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm NO ZFW OR ZFCG DATA',
+    title: '\x1b<4m\x1b4mFUEL\x1bm NO ZFW OR ZFWCG DATA',
     sensed: true,
     items: [
       {

@@ -71,7 +71,7 @@ export class FwsCore implements Instrument {
   private static readonly FWC_STARTUP_TIME = 5000;
 
   /** Time to inhibit SCs after one is trigger in ms */
-  private static readonly AURAL_SC_INHIBIT_TIME = 2000;
+  private static readonly AURAL_SC_INHIBIT_TIME = 5000;
 
   /** The time to play the single chime sound in ms */
   private static readonly AURAL_SC_PLAY_TIME = 500;
@@ -715,9 +715,24 @@ export class FwsCore implements Instrument {
   public readonly rightFuelPump1Auto = ConsumerValue.create(null, false);
 
   public readonly rightFuelPump2Auto = ConsumerValue.create(null, false);
+
   public readonly feedTank4LowConfirm = new NXLogicConfirmNode(30, true);
 
+  public readonly crossFeed1ValveOpen = Subject.create(false);
+  public readonly crossFeed2ValveOpen = Subject.create(false);
+  public readonly crossFeed3ValveOpen = Subject.create(false);
+  public readonly crossFeed4ValveOpen = Subject.create(false);
+  public readonly allCrossFeedValvesOpen = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.crossFeed1ValveOpen,
+    this.crossFeed2ValveOpen,
+    this.crossFeed3ValveOpen,
+    this.crossFeed4ValveOpen,
+  );
+
   public readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
+
+  public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
 
   /* HYDRAULICS */
 
@@ -2464,6 +2479,16 @@ export class FwsCore implements Instrument {
 
     const feedTank4Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:9', 'kilogram') < 1375;
     this.feedTank4Low.set(this.feedTank1LowConfirm.write(feedTank4Low, deltaTime));
+
+    this.crossFeed1ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:46', 'kilogram') > 0.1);
+    this.crossFeed2ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:47', 'kilogram') > 0.1);
+    this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
+    this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
+
+    this.fmsZfwOrZfwCgNotSet.set(
+      !SimVar.GetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT', 'number') ||
+        !SimVar.GetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT_CG', 'number'),
+    );
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
