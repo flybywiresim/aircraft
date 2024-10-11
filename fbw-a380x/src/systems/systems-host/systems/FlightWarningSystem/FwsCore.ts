@@ -260,10 +260,6 @@ export class FwsCore implements Instrument {
 
   public readonly strobeLightsOn = Subject.create(0);
 
-  public readonly tcasFault = Subject.create(false);
-
-  public readonly tcasSensitivity = Subject.create(0);
-
   public readonly toConfigNormal = Subject.create(false);
 
   public readonly wingAntiIce = Subject.create(false);
@@ -2028,6 +2024,9 @@ export class FwsCore implements Instrument {
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
     const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
     const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
+    const adr1Fault = adr1Discrete1.isFailureWarning() || adr1Discrete1.bitValueOr(3, false);
+    const adr2Fault = adr2Discrete1.isFailureWarning() || adr2Discrete1.bitValueOr(3, false);
+    const adr3Fault = adr3Discrete1.isFailureWarning() || adr3Discrete1.bitValueOr(3, false);
 
     this.ir1Fault.set(this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true));
     this.ir2Fault.set(this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true));
@@ -2043,18 +2042,9 @@ export class FwsCore implements Instrument {
         this.ir3MaintWord.bitValueOr(13, false),
     );
 
-    this.adr1Faulty.set(
-      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
-        (adr1Discrete1.isFailureWarning() || adr1Discrete1.bitValueOr(3, false)),
-    );
-    this.adr2Faulty.set(
-      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
-        (adr2Discrete1.isFailureWarning() || adr2Discrete1.bitValueOr(3, false)),
-    );
-    this.adr3Faulty.set(
-      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
-        (adr3Discrete1.isFailureWarning() || adr3Discrete1.bitValueOr(3, false)),
-    );
+    this.adr1Faulty.set(!(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) && adr1Fault);
+    this.adr2Faulty.set(!(!this.ac4BusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) && adr2Fault);
+    this.adr3Faulty.set(!(!this.ac2BusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) && adr3Fault);
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
@@ -3013,8 +3003,8 @@ export class FwsCore implements Instrument {
 
     // TCAS fault
     const oneUsedLeftAdrInop =
-      (this.adr1Fault.get() && !this.adr3UsedLeft.get()) ||
-      (this.adr3Fault.get() &&
+      (adr1Fault && !this.adr3UsedLeft.get()) ||
+      (adr3Fault &&
         (adr3PressureAltitude.isFailureWarning() || adr3PressureAltitude.isNoComputedData()) &&
         this.adr3UsedLeft.get());
     const oneLeftUsedIrInop =
@@ -3032,10 +3022,10 @@ export class FwsCore implements Instrument {
 
     // SYS 2 FIXME: REplace with proper TCAS var once implemented
     const oneUsedRightAdrInop =
-      (this.adr2Fault.get() &&
+      (adr2Fault &&
         (adr2PressureAltitude.isFailureWarning() || adr2PressureAltitude.isNoComputedData()) &&
         !this.adr3UsedRight.get()) ||
-      (this.adr3Fault.get() &&
+      (adr3Fault &&
         (adr3PressureAltitude.isFailureWarning() || adr3PressureAltitude.isNoComputedData()) &&
         this.adr3UsedRight.get());
     const oneUsedRightIrInop =
