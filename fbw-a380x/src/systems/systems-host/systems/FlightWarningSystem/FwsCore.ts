@@ -732,6 +732,9 @@ export class FwsCore implements Instrument {
 
   public readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
 
+  public readonly fmsZeroFuelWeight = Arinc429Register.empty();
+  public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
+
   public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
 
   /* HYDRAULICS */
@@ -1279,6 +1282,7 @@ export class FwsCore implements Instrument {
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
 
   constructor(
+    public readonly fwsNumber: 1 | 2,
     public readonly bus: EventBus,
     public readonly instrument: BaseInstrument,
   ) {
@@ -2485,9 +2489,11 @@ export class FwsCore implements Instrument {
     this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
     this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
 
+    this.fmsZeroFuelWeight.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`);
+    this.fmsZeroFuelWeightCg.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`);
+
     this.fmsZfwOrZfwCgNotSet.set(
-      !SimVar.GetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT', 'number') ||
-        !SimVar.GetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT_CG', 'number'),
+      this.fmsZeroFuelWeight.isNoComputedData() || this.fmsZeroFuelWeightCg.isNoComputedData(),
     );
 
     /* F/CTL */

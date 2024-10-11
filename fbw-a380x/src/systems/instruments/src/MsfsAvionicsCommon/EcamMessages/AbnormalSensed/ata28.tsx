@@ -727,7 +727,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK:',
-        sensed: false,
+        sensed: true,
       },
       {
         name: 'ALL CROSSFEEDs',
@@ -773,7 +773,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK:',
-        sensed: false,
+        sensed: true,
       },
       {
         name: 'ALL CROSSFEEDs',

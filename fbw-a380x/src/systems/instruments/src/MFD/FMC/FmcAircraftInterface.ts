@@ -54,6 +54,10 @@ export class FmcAircraftInterface {
 
   public arincTransitionLevel = FmArinc429OutputWord.emptyFm('TRANS_LVL');
 
+  public arincZeroFuelWeight = FmArinc429OutputWord.emptyFm('ZERO_FUEL_WEIGHT');
+
+  public arincZeroFuelWeightCg = FmArinc429OutputWord.emptyFm('ZERO_FUEL_WEIGHT_CG');
+
   /** contains fm messages (not yet implemented) and nodh bit */
   public arincEisWord2 = FmArinc429OutputWord.emptyFm('EIS_DISCRETE_WORD_2');
 
@@ -75,6 +79,8 @@ export class FmcAircraftInterface {
     this.arincMissedEoAccelerationAltitude,
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
+    this.arincZeroFuelWeight,
+    this.arincZeroFuelWeightCg,
     this.arincEisWord2,
   ];
 
@@ -115,6 +121,41 @@ export class FmcAircraftInterface {
       (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
       true,
     );
+
+    this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
+      console.log(zfw);
+      this.arincZeroFuelWeight.setBnrValue(
+        zfw ? zfw : 0,
+        zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+        19,
+        524288,
+        0,
+      );
+    });
+
+    this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.sub((zfwCg) =>
+      this.arincZeroFuelWeightCg.setBnrValue(
+        zfwCg ? zfwCg : 0,
+        zfwCg ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+        12,
+        64,
+        0,
+      ),
+    );
+
+    const initZfwFromSimVar = SimVar.GetSimVarValue('L:A32NX_FM_INIT_ZERO_FUEL_WEIGHT', 'Number');
+    const initZfwCgFromSimVar = SimVar.GetSimVarValue('L:A32NX_FM_INIT_ZERO_FUEL_WEIGHT_CG', 'Number');
+
+    if (
+      initZfwFromSimVar &&
+      initZfwCgFromSimVar &&
+      !this.fmgc.data.zeroFuelWeight.get() &&
+      !this.fmgc.data.zeroFuelWeightCenterOfGravity.get()
+    ) {
+      // Update FMS ZFW and ZFWCG from SimVars, e.g. when spawning on a runway
+      this.fmc.fmgc.data.zeroFuelWeight.set(initZfwFromSimVar);
+      this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.set(initZfwCgFromSimVar);
+    }
   }
 
   thrustReductionAccelerationChecks() {
@@ -1150,29 +1191,9 @@ export class FmcAircraftInterface {
   /** Write gross weight to SimVar */
   updateWeights() {
     const gw = this.fmc.fmgc.getGrossWeightKg();
-    const zfw = this.fmc.fmgc.data.zeroFuelWeight.get();
-    const zfwCg = this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.get();
 
     if (gw) {
       SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
-    }
-
-    const zfwFromSimVar = SimVar.GetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT', 'Number');
-    const zfwCgFromSimVar = SimVar.GetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT_CG', 'Number');
-
-    if (zfwFromSimVar && !zfw && zfwCgFromSimVar && !zfwCg) {
-      // Update FMS ZFW and ZFWCG from SimVars, e.g. when spawning on a runway
-      this.fmc.fmgc.data.zeroFuelWeight.set(zfwFromSimVar);
-      this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.set(zfwCgFromSimVar);
-    } else {
-      // Update SimVars from FMS ZFW and ZFWCG
-      if (zfw) {
-        SimVar.SetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT', 'Number', zfw);
-      }
-
-      if (zfwCg) {
-        SimVar.SetSimVarValue('L:A32NX_FM_ZERO_FUEL_WEIGHT_CG', 'Number', zfwCg);
-      }
     }
 
     if (this.fmc.enginesWereStarted.get()) {
