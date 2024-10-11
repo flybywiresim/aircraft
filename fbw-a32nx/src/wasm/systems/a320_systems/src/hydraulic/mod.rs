@@ -1025,12 +1025,14 @@ impl A320GearDoorFactory {
             GearWheel::NOSE => Self::a320_nose_gear_door_body(),
             GearWheel::LEFT => Self::a320_left_gear_door_body(),
             GearWheel::RIGHT => Self::a320_right_gear_door_body(),
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => panic!("No wing bogey on 32NX"),
         };
         let gear_door_actuator = match wheel_id {
             GearWheel::NOSE => Self::a320_nose_gear_door_actuator(context, &gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a320_main_gear_door_actuator(context, &gear_door_body)
             }
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => panic!("No wing bogey on 32NX"),
         };
 
         HydraulicLinearActuatorAssembly::new([gear_door_actuator], gear_door_body)
@@ -1249,6 +1251,8 @@ impl A320GearFactory {
             GearWheel::LEFT => Self::a320_left_gear_body(init_downlocked),
 
             GearWheel::RIGHT => Self::a320_right_gear_body(init_downlocked),
+
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => panic!("No wing bogey on 32NX"),
         };
 
         let gear_actuator = match wheel_id {
@@ -1257,6 +1261,8 @@ impl A320GearFactory {
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a320_main_gear_actuator(context, &gear_body)
             }
+
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => panic!("No wing bogey on 32NX"),
         };
 
         HydraulicLinearActuatorAssembly::new([gear_actuator], gear_body)
@@ -2696,8 +2702,7 @@ impl A320GearHydraulicController {
         lgciu1: &(impl LgciuWeightOnWheels + LandingGearHandle),
         lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        let speed_condition =
-            adirs.low_speed_warning_4_260kts(1) || adirs.low_speed_warning_4_260kts(3);
+        let speed_condition = adirs.low_speed_warning_4(1) || adirs.low_speed_warning_4(3);
 
         let on_ground_condition = lgciu1.left_and_right_gear_compressed(true)
             || lgciu2.left_and_right_gear_compressed(true);
@@ -6044,19 +6049,19 @@ mod tests {
             }
         }
         impl AdirsDiscreteOutputs for A320TestAdirus {
-            fn low_speed_warning_1_104kts(&self, _: usize) -> bool {
+            fn low_speed_warning_1(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 104.
             }
 
-            fn low_speed_warning_2_54kts(&self, _: usize) -> bool {
+            fn low_speed_warning_2(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 54.
             }
 
-            fn low_speed_warning_3_159kts(&self, _: usize) -> bool {
+            fn low_speed_warning_3(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 159.
             }
 
-            fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
+            fn low_speed_warning_4(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() < 260.
             }
         }
@@ -6182,7 +6187,7 @@ mod tests {
                         context,
                     ),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
-                    landing_gear: LandingGear::new(context),
+                    landing_gear: LandingGear::new(context, false),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
                         context,
                         ElectricalBusType::DirectCurrentEssential,
@@ -6809,7 +6814,7 @@ mod tests {
                 self.set_indicated_airspeed(Velocity::new::<knot>(135.));
                 self.write_by_name(
                     LandingGear::GEAR_CENTER_COMPRESSION,
-                    Ratio::new::<ratio>(0.5),
+                    Ratio::new::<ratio>(0.),
                 );
                 self.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, Ratio::new::<ratio>(0.8));
                 self.write_by_name(
@@ -7053,6 +7058,7 @@ mod tests {
                     GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_RIGHT_POSITION"),
+                    GearWheel::WINGLEFT | GearWheel::WINGRIGHT => panic!("No wing bogey on 32NX"),
                 }
             }
 
@@ -7061,6 +7067,7 @@ mod tests {
                     GearWheel::NOSE => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_DOOR_RIGHT_POSITION"),
+                    GearWheel::WINGLEFT | GearWheel::WINGRIGHT => panic!("No wing bogey on 32NX"),
                 }
             }
 

@@ -74,7 +74,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'NEUTRAL',
         sensed: true,
       },
-
     ],
   },
   1000004: {
@@ -247,7 +246,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'LDG',
         sensed: true,
       },
-
     ],
   },
   1000009: {

@@ -193,7 +193,12 @@ export class FwsMemos {
     '230000001': {
       // CAPT ON RMP 3
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.rmp1Off,
+      simVarIsActive: MappedSubject.create(
+        ([r1Off, r2Off, r3Off]) => r1Off && !r3Off && !r2Off,
+        this.fws.rmp1Off,
+        this.fws.rmp2Off,
+        this.fws.rmp3Off,
+      ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000001'],
       memoInhibit: () => false,
@@ -204,7 +209,12 @@ export class FwsMemos {
     '230000002': {
       // F/O ON RMP 3
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.rmp2Off,
+      simVarIsActive: MappedSubject.create(
+        ([r1Off, r2Off, r3Off]) => r2Off && !r3Off && !r1Off,
+        this.fws.rmp1Off,
+        this.fws.rmp2Off,
+        this.fws.rmp3Off,
+      ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000002'],
       memoInhibit: () => false,
@@ -215,7 +225,12 @@ export class FwsMemos {
     '230000003': {
       // CAPT+F/O ON RMP 3
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp1Off, this.fws.rmp2Off),
+      simVarIsActive: MappedSubject.create(
+        ([r1Off, r2Off, r3Off]) => r1Off && r2Off && !r3Off,
+        this.fws.rmp1Off,
+        this.fws.rmp2Off,
+        this.fws.rmp3Off,
+      ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000003'],
       memoInhibit: () => false,
@@ -242,7 +257,12 @@ export class FwsMemos {
     '230000010': {
       // RMP 1+3 OFF
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp1Off, this.fws.rmp3Off),
+      simVarIsActive: MappedSubject.create(
+        ([r1Off, r2Off, r3Off]) => r1Off && r3Off && !r2Off,
+        this.fws.rmp1Off,
+        this.fws.rmp2Off,
+        this.fws.rmp3Off,
+      ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000010'],
       memoInhibit: () => false,
@@ -253,7 +273,12 @@ export class FwsMemos {
     '230000011': {
       // RMP 2+3 OFF
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp2Off, this.fws.rmp3Off),
+      simVarIsActive: MappedSubject.create(
+        ([r1Off, r2Off, r3Off]) => r2Off && r3Off && !r1Off,
+        this.fws.rmp1Off,
+        this.fws.rmp2Off,
+        this.fws.rmp3Off,
+      ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000011'],
       memoInhibit: () => false,
@@ -264,7 +289,12 @@ export class FwsMemos {
     '230000012': {
       // RMP 3 OFF
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.rmp3Off,
+      simVarIsActive: MappedSubject.create(
+        ([r1Off, r2Off, r3Off]) => r3Off && !r1Off && !r2Off,
+        this.fws.rmp1Off,
+        this.fws.rmp2Off,
+        this.fws.rmp3Off,
+      ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000012'],
       memoInhibit: () => false,

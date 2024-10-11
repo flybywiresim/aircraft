@@ -8,13 +8,14 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import './MfdFmsFpln.scss';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
-import { DatabaseItem, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, isFix, isIlsNavaid, isNdbNavaid, isVhfNavaid } from '@flybywiresim/fbw-sdk';
+
+import './MfdFmsFpln.scss';
 
 interface MfdFmsFplnDuplicateNamesProps extends ComponentProps {
   visible: Subject<boolean>;
@@ -30,14 +31,6 @@ type DuplicateWaypointData = {
   freqChan?: number;
   fixData: DatabaseItem<any>;
 };
-
-function isNavaid(fix: DatabaseItem<any>): fix is VhfNavaid | NdbNavaid {
-  return 'frequency' in fix;
-}
-
-function isNavaidOrWaypoint(fix: DatabaseItem<any>): fix is VhfNavaid | NdbNavaid | Waypoint {
-  return 'location' in fix;
-}
 
 export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplicateNamesProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -89,16 +82,17 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
     const result: DuplicateWaypointData[] = [];
     items.forEach((fx) => {
       const ppos = this.props.fmcService?.master?.navigation.getPpos();
-      if (isNavaid(fx)) {
+      if (isVhfNavaid(fx) || isNdbNavaid(fx) || isIlsNavaid(fx)) {
+        const location = isIlsNavaid(fx) ? fx.locLocation : fx.location;
         const dwd: DuplicateWaypointData = {
           ident: fx.ident,
-          distance: ppos ? distanceTo(fx.location, ppos) : null,
-          location: fx.location,
+          distance: ppos ? distanceTo(location, ppos) : null,
+          location,
           freqChan: fx.frequency,
           fixData: fx,
         };
         result.push(dwd);
-      } else if (isNavaidOrWaypoint(fx)) {
+      } else if (isFix(fx)) {
         const dwd: DuplicateWaypointData = {
           ident: fx.ident,
           distance: ppos ? distanceTo(fx.location, ppos) : null,

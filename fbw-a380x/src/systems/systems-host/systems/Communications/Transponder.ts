@@ -1,4 +1,13 @@
-import { ConsumerSubject, EventBus, GameStateProvider, Instrument, SimVarValueType, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  GameStateProvider,
+  Instrument,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';

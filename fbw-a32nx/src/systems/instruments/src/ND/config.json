@@ -2,7 +2,8 @@
   "index": "./instrument.tsx",
   "isInteractive": false,
   "extraDeps": [
-    "fbw-common/src/systems/instruments/src/ND",
-    "fbw-common/src/systems/instruments/src/OANC"
+    "../MsfsAvionicsCommon",
+    "/fbw-common/src/systems/instruments/src/ND",
+    "/fbw-common/src/systems/instruments/src/OANC"
   ]
 }
