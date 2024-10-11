@@ -2015,9 +2015,21 @@ export class FwsCore implements Instrument {
     // TODO use GPS alt if ADRs not available
     const pressureAltitude =
       adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
-    this.ir1Align.set(this.ir1MaintWord.bitValueOr(16, false) || this.ir1MaintWord.bitValueOr(17,false) || this.ir1MaintWord.bitValueOr(18, false));
-    this.ir2Align.set(this.ir2MaintWord.bitValueOr(16, false) || this.ir2MaintWord.bitValueOr(17,false) || this.ir2MaintWord.bitValueOr(18, false));
-    this.ir3Align.set(this.ir3MaintWord.bitValueOr(16, false) || this.ir3MaintWord.bitValueOr(17,false) || this.ir3MaintWord.bitValueOr(18, false));
+    this.ir1Align.set(
+      this.ir1MaintWord.bitValueOr(16, false) ||
+        this.ir1MaintWord.bitValueOr(17, false) ||
+        this.ir1MaintWord.bitValueOr(18, false),
+    );
+    this.ir2Align.set(
+      this.ir2MaintWord.bitValueOr(16, false) ||
+        this.ir2MaintWord.bitValueOr(17, false) ||
+        this.ir2MaintWord.bitValueOr(18, false),
+    );
+    this.ir3Align.set(
+      this.ir3MaintWord.bitValueOr(16, false) ||
+        this.ir3MaintWord.bitValueOr(17, false) ||
+        this.ir3MaintWord.bitValueOr(18, false),
+    );
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');

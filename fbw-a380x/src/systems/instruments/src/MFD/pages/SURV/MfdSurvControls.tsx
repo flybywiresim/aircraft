@@ -56,10 +56,11 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   private readonly tcasFailed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
   private readonly tcasRadioGroupDisabled = MappedSubject.create(
-    ([tcasFailed, xpdrState] ) => Array(3).fill(tcasFailed || xpdrState === TransponderState.Off || xpdrState === TransponderState.Standby),
+    ([tcasFailed, xpdrState]) =>
+      Array(3).fill(tcasFailed || xpdrState === TransponderState.Off || xpdrState === TransponderState.Standby),
     this.tcasFailed,
-    this.xpdrState
-  )
+    this.xpdrState,
+  );
 
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(2);
 

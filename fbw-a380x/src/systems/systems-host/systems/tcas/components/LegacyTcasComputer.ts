@@ -7,7 +7,14 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, LocalSimVar, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import {
+  MathUtils,
+  Arinc429Word,
+  GenericDataListenerSync,
+  NXDataStore,
+  LocalSimVar,
+  Arinc429Register,
+} from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
   TCAS_CONST as TCAS,
@@ -220,7 +227,7 @@ export class LegacyTcasComputer implements Instrument {
 
   private verticalSpeed: number | null; // Vertical Speed
 
-  private irTrueheading: Arinc429Register  = Arinc429Register.empty(); // True heading
+  private irTrueheading: Arinc429Register = Arinc429Register.empty(); // True heading
 
   private sensitivity: LocalSimVar<number>;
 
@@ -326,7 +333,7 @@ export class LegacyTcasComputer implements Instrument {
       `L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_BARO_CORRECTED_ALTITUDE_1`,
     );
     const irSwitchingKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
-    const irToUse = irSwitchingKnob === 1? this.activeXpdr + 1 : 3;
+    const irToUse = irSwitchingKnob === 1 ? this.activeXpdr + 1 : 3;
     this.adr3BaroCorrectedAltitude1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_BARO_CORRECTED_ALTITUDE_1');
     this.irTrueheading.setFromSimVar(`L:A32NX_ADIRS_IR_${irToUse}_TRUE_HEADING`);
     this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
@@ -337,7 +344,9 @@ export class LegacyTcasComputer implements Instrument {
     this.trafficRightEfisFilter = SimVar.GetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean');
 
     this.tcasMode.setVar(
-      this.xpdrStatus === XpdrMode.STBY || !this.tcasPower || this.tcasFault.getVar() ? TcasMode.STBY : this.tcasAlertLevel.get(),
+      this.xpdrStatus === XpdrMode.STBY || !this.tcasPower || this.tcasFault.getVar()
+        ? TcasMode.STBY
+        : this.tcasAlertLevel.get(),
     ); // 34-43-00:A32
   }
 
@@ -380,9 +389,8 @@ export class LegacyTcasComputer implements Instrument {
     // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
     if (
       !this.irTrueheading ||
-      !this.irTrueheading.isNormalOperation()
-      || this.irTrueheading.isNoComputedData()
-      ||
+      !this.irTrueheading.isNormalOperation() ||
+      this.irTrueheading.isNoComputedData() ||
       !this.baroCorrectedAltitude1 ||
       !this.adr3BaroCorrectedAltitude1 ||
       !this.baroCorrectedAltitude1.isNormalOperation() ||

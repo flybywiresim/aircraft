@@ -2011,7 +2011,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
       simVarIsActive: this.fws.tcas1Fault,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [false],
+      whichItemsToShow: () => [false], // TODO replace with SURV SYS logic once implemented
       whichItemsChecked: () => [false],
       failure: 2,
       sysPage: -1,
