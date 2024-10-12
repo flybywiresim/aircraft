@@ -99,7 +99,6 @@ These systems are currently not operational / these features are missing and sha
 - Gear system not implemented (copy from 32NX)
   - Wrong door sequence
   - Wrong hydraulic behavior
-- Rear wheel steering hydraulics not implemented
 - Brake system not implemented (copy from 32NX)
   - Wrong hydraulic behavior
 - BTV simplified logic only
