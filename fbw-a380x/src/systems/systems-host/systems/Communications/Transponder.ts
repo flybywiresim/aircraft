@@ -9,7 +9,7 @@ import {
   Wait,
 } from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
-import { FailuresConsumer, FltState, getFltState } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
 // FIXME implement the rest of the transponder and it's ARINC bus interface
@@ -68,19 +68,8 @@ export class Transponder implements Instrument {
     Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame).then(() => {
       // set initial squawk code as the cfg file param doesn't seem to work
       SimVar.SetSimVarValue('K:XPNDR_SET', 'number', 0x2000);
-      switch (getFltState()) {
-        case FltState.Hanger:
-        case FltState.Apron:
-          break;
-        case FltState.Taxi:
-        case FltState.Runway:
-        case FltState.Climb:
-        case FltState.Cruise:
-        case FltState.Approach:
-        case FltState.Final:
-        default:
-          this.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', true, true);
-          break;
+      if (!SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool')) {
+        this.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', true, true);
       }
     });
   }

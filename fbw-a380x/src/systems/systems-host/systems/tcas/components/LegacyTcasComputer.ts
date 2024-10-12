@@ -7,15 +7,7 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import {
-  MathUtils,
-  Arinc429Word,
-  GenericDataListenerSync,
-  NXDataStore,
-  LocalSimVar,
-  getFltState,
-  FltState,
-} from '@flybywiresim/fbw-sdk';
+import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, LocalSimVar } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
   TCAS_CONST as TCAS,
@@ -304,19 +296,8 @@ export class LegacyTcasComputer implements Instrument {
     this.trafficRightEfisFilter = false;
 
     Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame).then(() => {
-      switch (getFltState()) {
-        case FltState.Hanger:
-        case FltState.Apron:
-          break;
-        case FltState.Taxi:
-        case FltState.Runway:
-        case FltState.Climb:
-        case FltState.Cruise:
-        case FltState.Approach:
-        case FltState.Final:
-        default:
-          this.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alert_level', TcasMode.TARA, true);
-          break;
+      if (!SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool')) {
+        this.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alert_level', TcasMode.TARA, true);
       }
     });
   }

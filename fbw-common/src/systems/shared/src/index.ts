@@ -9,7 +9,6 @@ export * from './ArincEventBusSubscriber';
 export * from './checklists';
 export * from './Constants';
 export * from './FbwAircraftSentryClient';
-export * from './FlightState';
 export * from './FmMessages';
 export * from './GenericDataListenerSync';
 export * from './MathUtils';
