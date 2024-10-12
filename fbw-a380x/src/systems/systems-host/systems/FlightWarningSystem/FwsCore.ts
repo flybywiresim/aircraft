@@ -250,8 +250,6 @@ export class FwsCore implements Instrument {
 
   public readonly ndXfrKnob = Subject.create(0);
 
-  public readonly manLandingElevation = Subject.create(false);
-
   public readonly noMobileSwitchPosition = Subject.create(0);
 
   public readonly predWSOn = Subject.create(false);
@@ -270,9 +268,9 @@ export class FwsCore implements Instrument {
 
   public readonly voiceVhf3 = Subject.create(false);
 
-  /* 21 - AIR CONDITIONING AND PRESSURIZATION */
+  public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
 
-  // A380X - REMOVE LABEL
+  /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
   public readonly flightLevel = Subject.create(0);
 
@@ -340,6 +338,8 @@ export class FwsCore implements Instrument {
 
   public readonly hotAir2PbOn = Subject.create(false);
 
+  public readonly apuBleedValveOpen = Subject.create(false);
+
   public readonly taddChannel1Failure = Subject.create(false);
 
   public readonly taddChannel2Failure = Subject.create(false);
@@ -365,110 +365,6 @@ export class FwsCore implements Instrument {
   public readonly aftVentCtrDegraded = Subject.create(false);
 
   public readonly aftVentRedundLost = Subject.create(false);
-
-  // A32NX - REMOVE LABEL
-
-  public readonly acsc1DiscreteWord1 = Arinc429Register.empty();
-
-  public readonly acsc1DiscreteWord2 = Arinc429Register.empty();
-
-  public readonly acsc2DiscreteWord1 = Arinc429Register.empty();
-
-  public readonly acsc2DiscreteWord2 = Arinc429Register.empty();
-
-  public readonly cpc1DiscreteWord = Arinc429Register.empty();
-
-  public readonly cpc2DiscreteWord = Arinc429Register.empty();
-
-  public readonly apuBleedValveOpen = Subject.create(false);
-
-  public readonly cabAltSetReset1 = new NXLogicMemoryNode();
-
-  public readonly cabAltSetReset2 = new NXLogicMemoryNode();
-
-  public readonly cabAltSetResetState1 = Subject.create(false);
-
-  public readonly cabAltSetResetState2 = Subject.create(false);
-
-  public readonly excessPressure = Subject.create(false);
-
-  public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
-
-  public readonly excessResidualPrConfirm = new NXLogicConfirmNode(5);
-
-  public readonly excessResidualPr = Subject.create(false);
-
-  public readonly lowDiffPress = Subject.create(false);
-
-  public readonly acsc1Lane1Fault = Subject.create(false);
-
-  public readonly acsc1Lane2Fault = Subject.create(false);
-
-  public readonly acsc2Lane1Fault = Subject.create(false);
-
-  public readonly acsc2Lane2Fault = Subject.create(false);
-
-  public readonly acsc1Fault = Subject.create(false);
-
-  public readonly acsc2Fault = Subject.create(false);
-
-  public readonly trimAirFault = Subject.create(false);
-
-  public readonly ckptTrimFault = Subject.create(false);
-
-  public readonly fwdTrimFault = Subject.create(false);
-
-  public readonly aftTrimFault = Subject.create(false);
-
-  public readonly trimAirHighPressure = Subject.create(false);
-
-  public readonly ckptDuctOvht = Subject.create(false);
-
-  public readonly fwdDuctOvht = Subject.create(false);
-
-  public readonly aftDuctOvht = Subject.create(false);
-
-  public readonly anyDuctOvht = Subject.create(false);
-
-  public readonly lavGalleyFanFault = Subject.create(false);
-
-  public readonly packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
-
-  public readonly packOffBleedAvailable2 = new NXLogicConfirmNode(5, false);
-
-  public readonly packOffNotFailed1 = new NXLogicConfirmNode(60);
-
-  public readonly packOffNotFailed1Status = Subject.create(false);
-
-  public readonly packOffNotFailed2 = new NXLogicConfirmNode(60);
-
-  public readonly packOffNotFailed2Status = Subject.create(false);
-
-  public readonly cpc1Fault = Subject.create(false);
-
-  public readonly cpc2Fault = Subject.create(false);
-
-  public readonly bothCpcFault = new NXLogicConfirmNode(3, false);
-
-  public readonly bothCpcFaultOutput = Subject.create(false);
-
-  public readonly pressurizationAuto = Subject.create(false);
-
-  public readonly outflowValveOpenAmount = Subject.create(0);
-
-  public readonly outflowValveNotOpen = new NXLogicConfirmNode(70);
-
-  public readonly outflowValveResetCondition = new NXLogicConfirmNode(30);
-
-  public readonly outflowValveNotOpenOutput = Subject.create(false);
-
-  public readonly outflowValveNotOpenSetReset = new NXLogicMemoryNode();
-
-  public readonly safetyValveNotClosedAir = new NXLogicConfirmNode(60);
-
-  public readonly safetyValveNotClosedOutput = Subject.create(false);
-
-  public readonly cabinDeltaPressure = Subject.create(0);
 
   /* 22 - AUTOFLIGHT */
 
@@ -2349,8 +2245,6 @@ export class FwsCore implements Instrument {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-    // A380X - REMOVE LABEL
-
     this.flightLevel.set(Math.round(pressureAltitude / 100) * 100);
 
     this.phase8ConfirmationNode60.write(this.fwcFlightPhase.get() === 8, deltaTime);
@@ -2522,151 +2416,6 @@ export class FwsCore implements Instrument {
       !cpiomBVcsAppDiscreteWord2.isNormalOperation() || !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
     );
 
-    // A32NX - REMOVE LABEL
-
-    this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
-    this.acsc1DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2');
-    this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
-    this.acsc2DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_2');
-
-    this.acsc1Lane1Fault.set(this.acsc1DiscreteWord1.bitValueOr(21, false));
-    this.acsc1Lane2Fault.set(this.acsc1DiscreteWord1.bitValueOr(22, false));
-    this.acsc2Lane1Fault.set(this.acsc2DiscreteWord1.bitValueOr(21, false));
-    this.acsc2Lane2Fault.set(this.acsc2DiscreteWord1.bitValueOr(22, false));
-
-    const acsc1FT = this.acsc1DiscreteWord1.isFailureWarning();
-    const acsc2FT = this.acsc2DiscreteWord1.isFailureWarning();
-    this.acsc1Fault.set(acsc1FT && !acsc2FT);
-    this.acsc2Fault.set(!acsc1FT && acsc2FT);
-
-    this.trimAirFault.set(
-      this.acsc1DiscreteWord1.bitValueOr(28, false) || this.acsc2DiscreteWord1.bitValueOr(28, false),
-    );
-    this.ckptTrimFault.set(
-      this.acsc1DiscreteWord2.bitValueOr(18, false) || this.acsc2DiscreteWord2.bitValueOr(18, false),
-    );
-    this.fwdTrimFault.set(
-      this.acsc1DiscreteWord2.bitValueOr(19, false) || this.acsc2DiscreteWord2.bitValueOr(19, false),
-    );
-    this.aftTrimFault.set(
-      this.acsc1DiscreteWord2.bitValueOr(20, false) || this.acsc2DiscreteWord2.bitValueOr(20, false),
-    );
-    this.trimAirHighPressure.set(
-      this.acsc1DiscreteWord1.bitValueOr(18, false) || this.acsc2DiscreteWord1.bitValueOr(18, false),
-    );
-
-    this.ckptDuctOvht.set(
-      this.acsc1DiscreteWord1.bitValueOr(11, false) || this.acsc2DiscreteWord1.bitValueOr(11, false),
-    );
-    this.fwdDuctOvht.set(
-      this.acsc1DiscreteWord1.bitValueOr(12, false) || this.acsc2DiscreteWord1.bitValueOr(12, false),
-    );
-    this.aftDuctOvht.set(
-      this.acsc1DiscreteWord1.bitValueOr(13, false) || this.acsc2DiscreteWord1.bitValueOr(13, false),
-    );
-    this.anyDuctOvht.set(this.ckptDuctOvht.get() || this.fwdDuctOvht.get() || this.aftDuctOvht.get());
-
-    this.lavGalleyFanFault.set(
-      this.acsc1DiscreteWord1.bitValueOr(24, false) || this.acsc2DiscreteWord1.bitValueOr(24, false),
-    );
-
-    const crossbleedFullyClosed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED', 'bool');
-    const eng1Bleed = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', 'bool');
-    const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
-    const eng2Bleed = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', 'bool');
-    const eng2BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool');
-    const pack1Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
-    const pack2Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
-
-    this.cpc1DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_1_DISCRETE_WORD');
-    this.cpc2DiscreteWord.setFromSimVar('L:A32NX_PRESS_CPC_2_DISCRETE_WORD');
-
-    const activeCpcNumber = this.cpc1DiscreteWord.bitValueOr(11, false) ? 1 : 2;
-    const activeCpc = activeCpcNumber === 1 ? this.cpc1DiscreteWord : this.cpc2DiscreteWord;
-
-    this.cpc1Fault.set(this.cpc1DiscreteWord.isFailureWarning());
-    this.cpc2Fault.set(this.cpc2DiscreteWord.isFailureWarning());
-    this.bothCpcFaultOutput.set(this.bothCpcFault.write(this.cpc1Fault.get() && this.cpc2Fault.get(), deltaTime));
-
-    const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
-    this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
-
-    const engNotRunning =
-      !this.engine1Running.get() &&
-      !this.engine2Running.get() &&
-      !this.engine3Running.get() &&
-      !this.engine4Running.get();
-    this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // FIXME eng running should use core speed at above min idle
-    const residualPressureSignal = SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_RESIDUAL_PR', 'bool');
-    this.excessResidualPr.set(
-      this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),
-    );
-
-    this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
-
-    this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));
-
-    this.cabAltSetResetState1.set(
-      this.cabAltSetReset1.write(
-        (pressureAltitude ?? 0) > 10000 && this.excessPressure.get(),
-        this.excessPressure.get() && [3, 12].includes(this.fwcFlightPhase.get()),
-      ),
-    );
-    this.cabAltSetResetState2.set(
-      this.cabAltSetReset2.write(
-        (pressureAltitude ?? 0) > 16000 && this.excessPressure.get(),
-        this.excessPressure.get() && [3, 12].includes(this.fwcFlightPhase.get()),
-      ),
-    );
-    this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || !crossbleedFullyClosed, deltaTime);
-    this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || !crossbleedFullyClosed, deltaTime);
-    this.packOffNotFailed1Status.set(
-      this.packOffNotFailed1.write(
-        !this.pack1On.get() && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 8,
-        deltaTime,
-      ),
-    );
-    this.packOffNotFailed2Status.set(
-      this.packOffNotFailed2.write(
-        !this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 8,
-        deltaTime,
-      ),
-    );
-
-    const manOutflowValueOpenPercentage = SimVar.GetSimVarValue(
-      'L:A32NX_PRESS_MAN_OUTFLOW_VALVE_OPEN_PERCENTAGE',
-      'percent',
-    );
-    this.outflowValveOpenAmount.set(
-      Arinc429Word.fromSimVarValue(`L:A32NX_PRESS_CPC_${activeCpcNumber}_OUTFLOW_VALVE_OPEN_PERCENTAGE`).valueOr(
-        manOutflowValueOpenPercentage,
-      ),
-    );
-    this.outflowValveNotOpenOutput.set(
-      this.outflowValveNotOpenSetReset.write(
-        this.outflowValveNotOpen.write(
-          this.outflowValveOpenAmount.get() < 85 && [10, 11, 12].includes(this.fwcFlightPhase.get()),
-          deltaTime,
-        ),
-        this.outflowValveOpenAmount.get() > 95 ||
-          this.outflowValveResetCondition.write(this.fwcFlightPhase.get() === 1, deltaTime),
-      ),
-    );
-
-    const safetyValveNotClosed = SimVar.GetSimVarValue('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percent') > 0;
-    this.safetyValveNotClosedAir.write(safetyValveNotClosed, deltaTime);
-    this.safetyValveNotClosedOutput.set(
-      (safetyValveNotClosed && [1, 2, 3].includes(this.fwcFlightPhase.get())) ||
-        (this.safetyValveNotClosedAir.read() && this.fwcFlightPhase.get() === 8),
-    );
-
-    const manCabinDeltaPressure = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', 'percent');
-    this.cabinDeltaPressure.set(
-      Arinc429Word.fromSimVarValue(`L:A32NX_PRESS_CPC_${activeCpcNumber}_CABIN_DELTA_PRESSURE`).valueOr(
-        manCabinDeltaPressure,
-      ),
-    );
-
     /* 23 - COMMUNICATION */
     this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal
     this.rmp1Off.set(SimVar.GetSimVarValue('L:A380X_RMP_1_BRIGHTNESS_KNOB', 'number') === 0);
@@ -2700,7 +2449,6 @@ export class FwsCore implements Instrument {
     this.attKnob.set(SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum'));
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
-    this.manLandingElevation.set(activeCpc.bitValueOr(17, false));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
