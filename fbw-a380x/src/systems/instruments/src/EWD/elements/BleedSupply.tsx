@@ -5,6 +5,7 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
+  Subscribable,
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -15,6 +16,7 @@ interface BleedSupplyProps {
   bus: EventBus;
   x: number;
   y: number;
+  hidden: Subscribable<boolean>;
 }
 
 export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
@@ -57,10 +59,12 @@ export class BleedSupply extends DisplayComponent<BleedSupplyProps> {
   );
 
   private readonly bleedSupplyVisible = MappedSubject.create(
-    ([onGround, thrustLimit, oneEngineRunning]) => (onGround && oneEngineRunning) || (!onGround && thrustLimit >= 2), // MCT, FLEX TOGA
+    ([onGround, thrustLimit, oneEngineRunning, revSelected]) =>
+      !revSelected && ((onGround && oneEngineRunning) || (!onGround && thrustLimit >= 2)), // MCT, FLEX TOGA
     this.onGround,
     this.thrustLimit,
     this.oneEngineRunning,
+    this.props.hidden,
   );
 
   private readonly bleedText = MappedSubject.create(

@@ -118,7 +118,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['abnormal_debug_line', { name: 'L:A32NX_EWD_DEBUG_ABNORMAL', type: SimVarValueType.Number }],
       [
         'nose_gear_compressed',
-        { name: 'A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
+        { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
       ],
     ];
 
