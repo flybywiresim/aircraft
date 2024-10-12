@@ -58,7 +58,7 @@ export interface FlypadInfo {
 }
 
 export interface ThrottleFlypadInfo {
-  numberOfAxis: number;
+  numberOfAircraftThrottles: number;
   axisOptions: number[];
   axisMapping: ThrottleFlypadAxisMapping;
 }

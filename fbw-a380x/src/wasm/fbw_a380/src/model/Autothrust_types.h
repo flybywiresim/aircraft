@@ -1,7 +1,6 @@
-#ifndef RTW_HEADER_Autothrust_types_h_
-#define RTW_HEADER_Autothrust_types_h_
+#ifndef Autothrust_types_h_
+#define Autothrust_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_athr_mode_
 #define DEFINED_TYPEDEF_FOR_athr_mode_
 
