@@ -369,7 +369,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['211800021'],
       whichItemsToShow: () => [true, true],
-      whichItemsChecked: () => [true, !this.fws.pack1On.get()],
+      whichItemsChecked: () => [false, !this.fws.pack1On.get()],
       failure: 2,
       sysPage: 1,
       inopSysAllPhases: () => ['210300009'],
@@ -384,7 +384,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: ['211800021'],
       whichItemsToShow: () => [true, true],
-      whichItemsChecked: () => [true, !this.fws.pack2On.get()],
+      whichItemsChecked: () => [false, !this.fws.pack2On.get()],
       failure: 2,
       sysPage: 1,
       inopSysAllPhases: () => ['210300010'],
@@ -392,7 +392,7 @@ export class FwsAbnormalSensed {
     211800011: {
       // PACK 1 OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: MappedSubject.create(([packPb]) => !packPb, this.fws.pack1On),
+      simVarIsActive: this.fws.pack1Off,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -403,7 +403,7 @@ export class FwsAbnormalSensed {
     211800012: {
       // PACK 2 OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: MappedSubject.create(([packPb]) => !packPb, this.fws.pack2On),
+      simVarIsActive: this.fws.pack2Off,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -441,7 +441,7 @@ export class FwsAbnormalSensed {
         false,
         false,
         false,
-        false,
+        true,
         true,
         true,
         this.fws.ramAirOn.get(),
@@ -644,7 +644,7 @@ export class FwsAbnormalSensed {
       // TEMP CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
       simVarIsActive: this.fws.taddChannel1Failure,
-      notActiveWhenFaults: [],
+      notActiveWhenFaults: ['211800041'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 1,
@@ -655,12 +655,23 @@ export class FwsAbnormalSensed {
       // TEMP CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
       simVarIsActive: this.fws.taddChannel2Failure,
-      notActiveWhenFaults: [],
+      notActiveWhenFaults: ['211800041'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 1,
       sysPage: 8,
       redundLoss: () => ['210300022'],
+    },
+    211800050: {
+      // TEMP CTL DEGRADED
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tempCtrDegraded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => ['210300028'],
     },
     211800041: {
       // TEMP CTL FAULT
@@ -678,7 +689,7 @@ export class FwsAbnormalSensed {
       // TEMP CTL REDUNDANCY LOST
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
       simVarIsActive: this.fws.oneTcsAppFailed,
-      notActiveWhenFaults: [],
+      notActiveWhenFaults: ['211800050'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 1,

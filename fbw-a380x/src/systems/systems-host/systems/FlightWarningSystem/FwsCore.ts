@@ -237,6 +237,10 @@ export class FwsCore implements Instrument {
 
   public readonly flightLevel = Subject.create(0);
 
+  public readonly phase8ConfirmationNode60 = new NXLogicConfirmNode(60);
+
+  public readonly phase8ConfirmationNode180 = new NXLogicConfirmNode(180);
+
   public readonly fdac1Channel1Failure = Subject.create(false);
 
   public readonly fdac1Channel2Failure = Subject.create(false);
@@ -256,6 +260,10 @@ export class FwsCore implements Instrument {
   public readonly pack1On = Subject.create(false);
 
   public readonly pack2On = Subject.create(false);
+
+  public readonly pack1Off = Subject.create(false);
+
+  public readonly pack2Off = Subject.create(false);
 
   public readonly pack1And2Fault = Subject.create(false);
 
@@ -300,6 +308,8 @@ export class FwsCore implements Instrument {
   public readonly tempCtlFault = Subject.create(false);
 
   public readonly oneTcsAppFailed = Subject.create(false);
+
+  public readonly tempCtrDegraded = Subject.create(false);
 
   public readonly vcmFwdChannel1Failure = Subject.create(false);
 
@@ -2293,23 +2303,44 @@ export class FwsCore implements Instrument {
 
     this.flightLevel.set(Math.round(pressureAltitude / 100) * 100);
 
-    const phase8ConfirmationNode = new NXLogicConfirmNode(180);
-    phase8ConfirmationNode.write(this.fwcFlightPhase.get() === 8, deltaTime);
+    this.phase8ConfirmationNode60.write(this.fwcFlightPhase.get() === 8, deltaTime);
+
+    this.phase8ConfirmationNode180.write(this.fwcFlightPhase.get() === 8, deltaTime);
 
     this.fdac1Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_1_FAILURE', 'bool'));
     this.fdac1Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_2_FAILURE', 'bool'));
     this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
     this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
 
-    const cpiomBAgsAppDiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
-    const cpiomBAgsAppDiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
-    const cpiomBAgsAppDiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
-    const cpiomBAgsAppDiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
+    const cpiomBAgsAppDiscreteWord1 = Arinc429Register.empty();
+    const cpiomBAgsAppDiscreteWord2 = Arinc429Register.empty();
+    const cpiomBAgsAppDiscreteWord3 = Arinc429Register.empty();
+    const cpiomBAgsAppDiscreteWord4 = Arinc429Register.empty();
 
-    const cpiomBVcsAppDiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
-    const cpiomBVcsAppDiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
-    const cpiomBVcsAppDiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
-    const cpiomBVcsAppDiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
+    cpiomBAgsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
+    cpiomBAgsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
+    cpiomBAgsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
+    cpiomBAgsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
+
+    const cpiomBVcsAppDiscreteWord1 = Arinc429Register.empty();
+    const cpiomBVcsAppDiscreteWord2 = Arinc429Register.empty();
+    const cpiomBVcsAppDiscreteWord3 = Arinc429Register.empty();
+    const cpiomBVcsAppDiscreteWord4 = Arinc429Register.empty();
+
+    cpiomBVcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
+    cpiomBVcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
+    cpiomBVcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
+    cpiomBVcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
+
+    const cpiomBTcsAppDiscreteWord1 = Arinc429Register.empty();
+    const cpiomBTcsAppDiscreteWord2 = Arinc429Register.empty();
+    const cpiomBTcsAppDiscreteWord3 = Arinc429Register.empty();
+    const cpiomBTcsAppDiscreteWord4 = Arinc429Register.empty();
+
+    cpiomBTcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
+    cpiomBTcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
+    cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
+    cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
 
     let vcsDiscreteWordToUse;
 
@@ -2322,11 +2353,6 @@ export class FwsCore implements Instrument {
     } else {
       vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord4;
     }
-
-    const cpiomBTcsAppDiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
-    const cpiomBTcsAppDiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
-    const cpiomBTcsAppDiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
-    const cpiomBTcsAppDiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
 
     let tcsDiscreteWordToUse;
 
@@ -2347,10 +2373,17 @@ export class FwsCore implements Instrument {
         cpiomBTcsAppDiscreteWord4.isFailureWarning(),
     );
 
+    this.tempCtrDegraded.set(
+      cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
+        cpiomBTcsAppDiscreteWord2.isFailureWarning() &&
+        cpiomBTcsAppDiscreteWord3.isFailureWarning() &&
+        cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+    );
+
     this.pack1Degraded.set(
       cpiomBAgsAppDiscreteWord1.isFailureWarning() && cpiomBAgsAppDiscreteWord3.isFailureWarning(),
     );
-    this.pack1Degraded.set(
+    this.pack2Degraded.set(
       cpiomBAgsAppDiscreteWord2.isFailureWarning() && cpiomBAgsAppDiscreteWord4.isFailureWarning(),
     );
 
@@ -2364,6 +2397,9 @@ export class FwsCore implements Instrument {
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
+    this.pack1Off.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
+    this.pack2Off.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
+
     // TODO: Add fault when on ground, with one engine running and one door open
     // TODO: Add pack overheat
     this.pack1And2Fault.set(
@@ -2372,39 +2408,39 @@ export class FwsCore implements Instrument {
         this.fdac2Channel1Failure.get() &&
         this.fdac2Channel2Failure.get()) ||
         (!this.pack1On.get() && !this.pack2On.get())) &&
-        (this.fwcFlightPhase.get() != 8 || phase8ConfirmationNode.read()),
+        this.phase8ConfirmationNode180.read(),
     );
 
-    this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool'));
+    this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_RAM_AIR_PB_IS_ON', 'bool'));
 
     this.cabinAirExtractOn.set(SimVar.GetSimVarValue('L:A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN', 'bool'));
 
-    const fan1Fault = vcsDiscreteWordToUse.getBitValueOr(18, false);
-    const fan2Fault = vcsDiscreteWordToUse.getBitValueOr(19, false);
-    const fan3Fault = vcsDiscreteWordToUse.getBitValueOr(20, false);
-    const fan4Fault = vcsDiscreteWordToUse.getBitValueOr(21, false);
+    const fan1Fault = vcsDiscreteWordToUse.bitValueOr(18, false);
+    const fan2Fault = vcsDiscreteWordToUse.bitValueOr(19, false);
+    const fan3Fault = vcsDiscreteWordToUse.bitValueOr(20, false);
+    const fan4Fault = vcsDiscreteWordToUse.bitValueOr(21, false);
 
     this.numberOfCabinFanFaults.set([fan1Fault, fan2Fault, fan3Fault, fan4Fault].filter((fan) => fan === true).length);
 
     this.allCabinFansFault.set(fan1Fault && fan2Fault && fan3Fault && fan4Fault);
 
-    this.bulkCargoHeaterFault.set(vcsDiscreteWordToUse.getBitValueOr(22, false));
-    this.fwdIsolValveOpen.set(vcsDiscreteWordToUse.getBitValueOr(14, false));
-    this.fwdIsolValveFault.set(vcsDiscreteWordToUse.getBitValueOr(23, false));
-    this.bulkIsolValveOpen.set(vcsDiscreteWordToUse.getBitValueOr(16, false));
-    this.bulkIsolValveFault.set(vcsDiscreteWordToUse.getBitValueOr(24, false));
+    this.bulkCargoHeaterFault.set(vcsDiscreteWordToUse.bitValueOr(22, false));
+    this.fwdIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(14, false));
+    this.fwdIsolValveFault.set(vcsDiscreteWordToUse.bitValueOr(23, false));
+    this.bulkIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(16, false));
+    this.bulkIsolValveFault.set(vcsDiscreteWordToUse.bitValueOr(24, false));
 
     this.fwdIsolValvePbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_CARGO_AIR_ISOL_VALVES_FWD_PB_IS_ON', 'bool'));
     this.bulkIsolValvePbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_CARGO_AIR_ISOL_VALVES_BULK_PB_IS_ON', 'bool'));
 
-    this.hotAir1Disagrees.set(tcsDiscreteWordToUse.getBitValueOr(13, false));
-    this.hotAir2Disagrees.set(tcsDiscreteWordToUse.getBitValueOr(14, false));
+    this.hotAir1Disagrees.set(tcsDiscreteWordToUse.bitValueOr(13, false));
+    this.hotAir2Disagrees.set(tcsDiscreteWordToUse.bitValueOr(14, false));
 
-    this.hotAir1Open.set(tcsDiscreteWordToUse.getBitValueOr(15, false));
-    this.hotAir2Open.set(tcsDiscreteWordToUse.getBitValueOr(16, false));
+    this.hotAir1Open.set(tcsDiscreteWordToUse.bitValueOr(15, false));
+    this.hotAir2Open.set(tcsDiscreteWordToUse.bitValueOr(16, false));
 
     this.hotAir1PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool'));
-    this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool'));
+    this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_2_PB_IS_ON', 'bool'));
 
     this.taddChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool'));
     this.taddChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool'));
@@ -2452,7 +2488,6 @@ export class FwsCore implements Instrument {
     const acsc2FT = this.acsc2DiscreteWord1.isFailureWarning();
     this.acsc1Fault.set(acsc1FT && !acsc2FT);
     this.acsc2Fault.set(!acsc1FT && acsc2FT);
-    const acscBothFault = acsc1FT && acsc2FT;
 
     this.trimAirFault.set(
       this.acsc1DiscreteWord1.bitValueOr(28, false) || this.acsc2DiscreteWord1.bitValueOr(28, false),
@@ -2546,11 +2581,6 @@ export class FwsCore implements Instrument {
         !this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 8,
         deltaTime,
       ),
-    );
-    this.pack1And2Fault.set(
-      acscBothFault ||
-        (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) ||
-        (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()),
     );
 
     const manOutflowValueOpenPercentage = SimVar.GetSimVarValue(

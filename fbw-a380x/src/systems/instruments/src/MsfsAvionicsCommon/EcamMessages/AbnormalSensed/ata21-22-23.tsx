@@ -18,7 +18,6 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   // ATA 21: AC
-  // TODO: items is not done yet for most abnormal procedures
   211800001: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 CTL 1 FAULT',
     sensed: true,
@@ -466,6 +465,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   },
   211800049: {
     title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 2 VLV OPEN',
+    sensed: true,
+    items: [],
+  },
+  211800050: {
+    title: '\x1b<4m\x1b4mCOND\x1bm TEMP CTL DEGRADED',
     sensed: true,
     items: [],
   },
