@@ -199,6 +199,8 @@ export class FwsCore implements Instrument {
   private requestMasterCautionFromABrkOff = false;
   private requestMasterCautionFromAThrOff = false;
 
+  private requestSingleChimeFromAThrOff = false;
+
   private requestMasterWarningFromFaults = false;
   private requestMasterWarningFromApOff = false;
 
@@ -426,6 +428,28 @@ export class FwsCore implements Instrument {
   public readonly fms1Fault = Subject.create(false);
 
   public readonly fms2Fault = Subject.create(false);
+
+  public readonly autoThrustDisengagedPulse = new NXLogicPulseNode(true);
+
+  public readonly autoThrustInstinctiveDiscPressed = new NXLogicTriggeredMonostableNode(1, true); // Save event for 1 sec
+
+  public readonly autoThrustOffVoluntaryMemoNode = new NXLogicTriggeredMonostableNode(9, false); // Emit memo for max. 9 sec
+
+  public readonly autoThrustOffVoluntaryCautionNode = new NXLogicTriggeredMonostableNode(3, false); // Emit master caution for max. 3 sec
+
+  public readonly autoThrustOffInvoluntaryNode = new NXLogicMemoryNode(false);
+
+  public autoThrustInhibitCaution = false; // Inhibit for 10 sec
+
+  public readonly autoThrustOffVoluntary = Subject.create(false);
+
+  public readonly autoThrustOffInvoluntary = Subject.create(false);
+
+  public readonly autoPilotOffVoluntary = Subject.create(false);
+
+  public readonly autoPilotOffInvoluntary = Subject.create(false);
+
+  public autoThrustOffVoluntaryMemoInhibited = false;
 
   /* 23 - COMMUNICATION */
   public readonly rmp1Fault = Subject.create(false);
@@ -1053,7 +1077,7 @@ export class FwsCore implements Instrument {
 
   public readonly autoBrakeOff = Subject.create(false);
 
-  public readonly autoBrakeOffMemoInhibited = Subject.create(false);
+  public autoBrakeOffMemoInhibited = false;
 
   /* NAVIGATION */
 
@@ -2205,16 +2229,69 @@ export class FwsCore implements Instrument {
       (onGroundCount > 1 && raInvalid);
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
+    // AP OFF TODO
+
+    // A/THR OFF
+    const aThrDisengaged = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'boolean') !== 2;
+    this.autoThrustDisengagedPulse.write(aThrDisengaged, deltaTime);
+    this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
+
+    const below50ft =
+      this.radioHeight1.valueOr(2500) < 50 &&
+      this.radioHeight2.valueOr(2500) < 50 &&
+      this.radioHeight3.valueOr(2500) < 50;
+    const voluntaryAThrDisc =
+      !this.aircraftOnGround.get() &&
+      this.autoThrustDisengagedPulse.read() &&
+      (this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get())) &&
+      !this.autoThrustInhibitCaution;
+
+    const involuntaryAThrDisc =
+      !this.aircraftOnGround.get() &&
+      this.autoThrustDisengagedPulse.read() &&
+      !(this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get()));
+
+    // Voluntary A/THR disconnect
+    this.autoThrustOffVoluntaryMemoNode.write(voluntaryAThrDisc && aThrDisengaged, deltaTime);
+    this.autoThrustOffVoluntaryCautionNode.write(voluntaryAThrDisc && aThrDisengaged, deltaTime);
+
+    if (!this.autoThrustOffVoluntaryMemoNode.read()) {
+      this.autoThrustInhibitCaution = false;
+    }
+
+    if (
+      this.autoThrustOffVoluntaryCautionNode.read() &&
+      !this.autoThrustOffVoluntary.get() &&
+      !this.autoThrustInhibitCaution
+    ) {
+      // First triggered in this cycle, request master caution
+      this.requestMasterCautionFromAThrOff = true;
+      this.requestSingleChimeFromAThrOff = true;
+    } else if (!this.autoThrustOffVoluntaryCautionNode.read() || this.autoThrustInhibitCaution) {
+      this.requestMasterCautionFromAThrOff = false;
+      this.requestSingleChimeFromAThrOff = false;
+    }
+    this.autoThrustOffVoluntary.set(
+      this.autoThrustOffVoluntaryMemoNode.read() && !this.autoThrustInhibitCaution && aThrDisengaged,
+    );
+
+    // Involuntary A/THR disconnect
+    this.autoThrustOffInvoluntaryNode.write(
+      involuntaryAThrDisc && aThrDisengaged,
+      !aThrDisengaged || voluntaryAThrDisc,
+    );
+    this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
+
     // AUTO BRAKE OFF
     this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
 
     if (!this.autoBrakeDeactivatedNode.read()) {
-      this.autoBrakeOffMemoInhibited.set(false);
+      this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
     }
 
     this.autoBrakeOffAuralConfirmNode.write(
-      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited.get(),
+      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited,
       deltaTime,
     );
 
@@ -2222,7 +2299,7 @@ export class FwsCore implements Instrument {
       this.aircraftOnGround.get() &&
       this.computedAirSpeedToNearest2.get() > 33 &&
       this.autoBrakeDeactivatedNode.read() &&
-      !this.autoBrakeOffMemoInhibited.get();
+      !this.autoBrakeOffMemoInhibited;
 
     if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
       // Triggered in this cycle -> request master caution
@@ -3171,6 +3248,7 @@ export class FwsCore implements Instrument {
       this.requestMasterCautionFromFaults = false;
       this.requestMasterCautionFromABrkOff = false;
       this.requestMasterCautionFromAThrOff = false;
+      this.autoThrustInhibitCaution = true;
     }
     if (masterWarningButtonLeft || masterWarningButtonRight) {
       this.requestMasterWarningFromFaults = !(this.nonCancellableWarningCount === 0);
@@ -3563,9 +3641,10 @@ export class FwsCore implements Instrument {
     );
 
     // This does not consider interrupting c-chord, priority of synthetic voice etc.
-    // We shall wait for the rust FWC for those nice things!
-    if (this.auralSingleChimePending && !this.auralCrcActive.get() && !this.auralSingleChimeInhibitTimer.isPending()) {
+    const chimeRequested = this.auralSingleChimePending || this.requestSingleChimeFromAThrOff;
+    if (chimeRequested && !this.auralCrcActive.get() && !this.auralSingleChimeInhibitTimer.isPending()) {
       this.auralSingleChimePending = false;
+      this.requestSingleChimeFromAThrOff = false;
       SimVar.SetSimVarValue('L:A32NX_FWC_SC', 'bool', true);
       // there can only be one SC per 2 seconds, non-cumulative, so clear any pending ones at the end of that inhibit period
       this.auralSingleChimeInhibitTimer.schedule(
@@ -3617,8 +3696,16 @@ export class FwsCore implements Instrument {
     // When instinctive A/THR disc. p/b is pressed after ABRK deactivation, inhibit audio+memo, don't request master caution
     // Unclear refs, whether this has to happen within the audio confirm node time (1s)
     if (this.autoBrakeDeactivatedNode.read()) {
-      this.autoBrakeOffMemoInhibited.set(true);
+      this.autoBrakeOffMemoInhibited = true;
       this.requestMasterCautionFromABrkOff = false;
+    }
+
+    this.autoThrustInstinctiveDiscPressed.write(true, this.instrument.deltaTime);
+
+    if (this.autoThrustOffVoluntary.get()) {
+      // Pressed a second time -> silence
+      this.autoThrustInhibitCaution = true;
+      this.requestMasterCautionFromAThrOff = false;
     }
   }
 }

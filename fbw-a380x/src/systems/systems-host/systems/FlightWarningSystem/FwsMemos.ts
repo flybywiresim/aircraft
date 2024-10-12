@@ -206,6 +206,29 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
+    // 22 - Flight guidance
+    220000001: {
+      // A/THR OFF
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoPilotOffVoluntary,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['220000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    220000002: {
+      // A/THR OFF
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoThrustOffVoluntary,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['220000002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     '230000002': {
       // F/O ON RMP 3
       flightPhaseInhib: [],

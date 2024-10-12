@@ -270,6 +270,18 @@ export class FwsAbnormalSensed {
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
+    // 22 - FLIGHT GUIDANCE
+    220800004: {
+      // A/THR OFF involuntary
+      flightPhaseInhib: [3, 4, 5, 10],
+      simVarIsActive: this.fws.autoThrustOffInvoluntary,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
+      failure: 2,
+      sysPage: -1,
+      info: () => [],
+    },
     // 22 - AUTOFLIGHT
     221800001: {
       // FMC-A FAULT

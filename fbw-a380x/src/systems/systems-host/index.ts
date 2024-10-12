@@ -242,6 +242,7 @@ class SystemsHost extends BaseInstrument {
 
   private registerKeyEvents() {
     this.keyEventManager.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
+    this.keyEventManager.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 }
 
