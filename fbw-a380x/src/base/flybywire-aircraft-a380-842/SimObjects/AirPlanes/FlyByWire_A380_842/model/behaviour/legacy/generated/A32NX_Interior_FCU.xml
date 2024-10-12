@@ -35,9 +35,9 @@
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
             <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
             <BARO_ID>#ID#</BARO_ID>
-            <MODE_BARO>0</MODE_BARO>
+            <MODE_QFE>0</MODE_QFE>
             <MODE_QNH>1</MODE_QNH>
-            <MODE_STD_BARO>2</MODE_STD_BARO>
+            <MODE_STD_QFE>2</MODE_STD_QFE>
             <MODE_STD_QNH>3</MODE_STD_QNH>
             <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
             <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
@@ -46,73 +46,41 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <ANTICLOCKWISE_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
                         (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
                             #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
                         } els{
                             #BARO_ID# (&gt;K:KOHLSMAN_DEC)
                         }
                     } els{
-                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                            (L:A380X_EFIS_L_BARO_PRESELECTED) 1 - (&gt;L:A380X_EFIS_L_BARO_PRESELECTED)
-                        } els{
-                            (L:A380X_EFIS_L_BARO_PRESELECTED) 0.01 - (&gt;L:A380X_EFIS_L_BARO_PRESELECTED)
-                        }
+                        (&gt;H:A380X_FCU_BARO_PRESEL_DEC)
                     }
                 </ANTICLOCKWISE_CODE>
 
                 <CLOCKWISE_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
                         (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
                             #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
                         } els{
                             #BARO_ID# (&gt;K:KOHLSMAN_INC)
                         }
                     } els{
-                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                            (L:A380X_EFIS_L_BARO_PRESELECTED) 1 + (&gt;L:A380X_EFIS_L_BARO_PRESELECTED)
-                        } els{
-                            (L:A380X_EFIS_L_BARO_PRESELECTED) 0.01 + (&gt;L:A380X_EFIS_L_BARO_PRESELECTED)
-                        }
+                        (&gt;H:A380X_FCU_BARO_PRESEL_INC)
                     }
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_BARO# == if{
-                        #MODE_STD_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                    } els{
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_QNH# == if{
-                            #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                            (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                                1013.25 (&gt;L:A380X_EFIS_L_BARO_PRESELECTED)
-                            } els{
-                                29.92 (&gt;L:A380X_EFIS_L_BARO_PRESELECTED)
-                            }
-                        }
-                    }
+                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# == if{
-                        #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                    } els{
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == if{
-                            (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                                #BARO_ID# (L:A380X_EFIS_L_BARO_PRESELECTED) 16 * (&gt;K:2:KOHLSMAN_SET)
-                            } els{
-                                #BARO_ID# (L:A380X_EFIS_L_BARO_PRESELECTED) 541.822 * (&gt;K:2:KOHLSMAN_SET)
-                            }
-                            #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                        } els{
-                            (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                        }
-                    }
+                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <COUNT>36</COUNT>
                 <OVERRIDE_PUSH_ANIM_CODE>
                     0 100
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# ==
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# ==
                         (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == or ?
                     50
                         (O:_PushAnimVar) ?
