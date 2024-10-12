@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
+import { EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -20,6 +20,7 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
  * Essentially part of the FMC (-A/-B/-C)
  */
 export class FmcAircraftInterface {
+  private gameState = GameStateProvider.get();
   // ARINC words
   // arinc bus output words
   public arincDiscreteWord2 = FmArinc429OutputWord.emptyFm('DISCRETE_WORD_2');
@@ -142,20 +143,6 @@ export class FmcAircraftInterface {
         0,
       ),
     );
-
-    const initZfwFromSimVar = SimVar.GetSimVarValue('L:A32NX_FM_INIT_ZERO_FUEL_WEIGHT', 'Number');
-    const initZfwCgFromSimVar = SimVar.GetSimVarValue('L:A32NX_FM_INIT_ZERO_FUEL_WEIGHT_CG', 'Number');
-
-    if (
-      initZfwFromSimVar &&
-      initZfwCgFromSimVar &&
-      !this.fmgc.data.zeroFuelWeight.get() &&
-      !this.fmgc.data.zeroFuelWeightCenterOfGravity.get()
-    ) {
-      // Update FMS ZFW and ZFWCG from SimVars, e.g. when spawning on a runway
-      this.fmc.fmgc.data.zeroFuelWeight.set(initZfwFromSimVar);
-      this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.set(initZfwCgFromSimVar);
-    }
   }
 
   thrustReductionAccelerationChecks() {
@@ -1191,6 +1178,21 @@ export class FmcAircraftInterface {
   /** Write gross weight to SimVar */
   updateWeights() {
     const gw = this.fmc.fmgc.getGrossWeightKg();
+
+    if (
+      this.gameState.get() === GameState.ingame &&
+      !this.fmc.fmgc.data.zeroFuelWeight.get() &&
+      !this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.get() &&
+      !SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', SimVarValueType.Bool)
+    ) {
+      const initZfw = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW', 'number');
+      const initZfwCg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number');
+      console.log(initZfw, initZfwCg);
+
+      // Update FMS ZFW and ZFWCG from SimVars, e.g. when spawning on a runway
+      this.fmc.fmgc.data.zeroFuelWeight.set(initZfw);
+      this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.set(initZfwCg);
+    }
 
     if (gw) {
       SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
