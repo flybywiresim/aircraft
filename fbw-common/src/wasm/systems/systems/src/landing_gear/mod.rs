@@ -94,11 +94,6 @@ impl TiltingGear {
             )
             .max(AngularVelocity::default())
         };
-
-        println!(
-            "WHEEL SPEED {:.2}",
-            self.wheel_speed.get::<revolution_per_minute>()
-        );
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
