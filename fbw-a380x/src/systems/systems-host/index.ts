@@ -51,7 +51,7 @@ class SystemsHost extends BaseInstrument {
 
   private soundManager: LegacySoundManager;
 
-  private keyInterceptManager: KeyEventManager;
+  private keyEventManager: KeyEventManager;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
@@ -141,8 +141,9 @@ class SystemsHost extends BaseInstrument {
       KeyEventManager.getManager(this.bus),
       Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
     ]).then(([keyEventManager]) => {
-      this.keyInterceptManager = keyEventManager;
+      this.keyEventManager = keyEventManager;
       this.initLighting();
+      this.registerKeyEvents();
     });
   }
 
@@ -236,7 +237,11 @@ class SystemsHost extends BaseInstrument {
   }
 
   private setPotentiometer(potentiometer: number, brightness: number) {
-    this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
+    this.keyEventManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
+  }
+
+  private registerKeyEvents() {
+    this.keyEventManager.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
   }
 }
 

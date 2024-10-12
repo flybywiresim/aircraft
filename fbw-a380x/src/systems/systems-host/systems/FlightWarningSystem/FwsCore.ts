@@ -14,6 +14,7 @@ import {
   StallWarningEvents,
   Instrument,
   MapSubject,
+  KeyEvents,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -68,6 +69,7 @@ export enum FwcAuralWarning {
 export class FwsCore implements Instrument {
   public readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents>();
   public readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
+
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
 
@@ -192,6 +194,13 @@ export class FwsCore implements Instrument {
   public readonly activeAbnormalSensedList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   public recallFailures: string[] = [];
+
+  private requestMasterCautionFromFaults = false;
+  private requestMasterCautionFromABrkOff = false;
+  private requestMasterCautionFromAThrOff = false;
+
+  private requestMasterWarningFromFaults = false;
+  private requestMasterWarningFromApOff = false;
 
   private auralCrcKeys: string[] = [];
 
@@ -1038,9 +1047,13 @@ export class FwsCore implements Instrument {
 
   public readonly gearLeverPos = Subject.create(false);
 
-  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(8, false); // When ABRK deactivated, emit this for 8 sec
+  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+
+  public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
 
   public readonly autoBrakeOff = Subject.create(false);
+
+  public readonly autoBrakeOffMemoInhibited = Subject.create(false);
 
   /* NAVIGATION */
 
@@ -1384,6 +1397,16 @@ export class FwsCore implements Instrument {
   }
 
   init(): void {
+    const sub = this.bus.getSubscriber<FuelSystemEvents & KeyEvents>();
+
+    sub.on('key_intercept').handle((keyData) => {
+      switch (keyData.key) {
+        case 'A32NX.AUTO_THROTTLE_DISCONNECT':
+          this.autoThrottleDisconnectTriggered();
+          break;
+      }
+    });
+
     this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
@@ -1432,8 +1455,6 @@ export class FwsCore implements Instrument {
 
     // FIXME depend on FWC state
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-
-    const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
     this.fuelCtrTankModeSelMan.setConsumer(sub.on('fuel_ctr_tk_mode_sel_man'));
     this.engine1ValueSwitch.setConsumer(sub.on('fuel_valve_switch_1'));
@@ -2186,8 +2207,35 @@ export class FwsCore implements Instrument {
 
     // AUTO BRAKE OFF
     this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
-    this.autoBrakeOff.set(this.autoBrakeDeactivatedNode.read());
-    SimVar.SetSimVarValue('L:A32NX_AUDIO_AUTOBRAKE_OFF', SimVarValueType.Bool, this.autoBrakeOff.get());
+
+    if (!this.autoBrakeDeactivatedNode.read()) {
+      this.autoBrakeOffMemoInhibited.set(false);
+      this.requestMasterCautionFromABrkOff = false;
+    }
+
+    this.autoBrakeOffAuralConfirmNode.write(
+      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited.get(),
+      deltaTime,
+    );
+
+    const autoBrakeOffShouldTrigger =
+      this.aircraftOnGround.get() &&
+      this.computedAirSpeedToNearest2.get() > 33 &&
+      this.autoBrakeDeactivatedNode.read() &&
+      !this.autoBrakeOffMemoInhibited.get();
+
+    if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
+      // Triggered in this cycle -> request master caution
+      this.requestMasterCautionFromABrkOff = true;
+    }
+
+    // FIXME double callout if ABRK fails
+    this.autoBrakeOff.set(autoBrakeOffShouldTrigger);
+    SimVar.SetSimVarValue(
+      'L:A32NX_AUDIO_AUTOBRAKE_OFF',
+      SimVarValueType.Bool,
+      autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read(),
+    );
 
     // Engine Logic
     this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
@@ -3119,11 +3167,14 @@ export class FwsCore implements Instrument {
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
     if (masterCautionButtonLeft || masterCautionButtonRight) {
-      this.masterCaution.set(false);
       this.auralSingleChimePending = false;
+      this.requestMasterCautionFromFaults = false;
+      this.requestMasterCautionFromABrkOff = false;
+      this.requestMasterCautionFromAThrOff = false;
     }
-    if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
-      this.masterWarning.set(false);
+    if (masterWarningButtonLeft || masterWarningButtonRight) {
+      this.requestMasterWarningFromFaults = !(this.nonCancellableWarningCount === 0);
+      this.requestMasterWarningFromApOff = false;
       this.auralCrcActive.set(false);
     }
 
@@ -3256,10 +3307,10 @@ export class FwsCore implements Instrument {
           failureKeys.push(key);
 
           if (value.failure === 3) {
-            this.masterWarning.set(true);
+            this.requestMasterWarningFromFaults = true;
           }
           if (value.failure === 2) {
-            this.masterCaution.set(true);
+            this.requestMasterCautionFromFaults = true;
           }
         }
 
@@ -3466,12 +3517,17 @@ export class FwsCore implements Instrument {
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft);
     const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight);
 
-    if (this.allCurrentFailures.length === 0) {
-      this.masterCaution.set(false);
-      if (this.nonCancellableWarningCount === 0) {
-        this.masterWarning.set(false);
-      }
+    if (allFailureKeys.length === 0) {
+      this.requestMasterCautionFromFaults = false;
     }
+
+    this.masterCaution.set(
+      this.requestMasterCautionFromFaults ||
+        this.requestMasterCautionFromABrkOff ||
+        this.requestMasterCautionFromAThrOff,
+    );
+
+    this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
 
     if (failureSystemCount + rightFailureSystemCount === 0) {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
@@ -3555,5 +3611,14 @@ export class FwsCore implements Instrument {
       'bool',
       ias <= 80 && ias > 4 && (w.bitValueOr(12, false) || w.bitValueOr(13, false)),
     );
+  }
+
+  autoThrottleDisconnectTriggered() {
+    // When instinctive A/THR disc. p/b is pressed after ABRK deactivation, inhibit audio+memo, don't request master caution
+    // Unclear refs, whether this has to happen within the audio confirm node time (1s)
+    if (this.autoBrakeDeactivatedNode.read()) {
+      this.autoBrakeOffMemoInhibited.set(true);
+      this.requestMasterCautionFromABrkOff = false;
+    }
   }
 }
