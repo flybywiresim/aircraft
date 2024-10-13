@@ -36,6 +36,7 @@ render(
           ptuCockpit: false,
           paxAmbience: false,
         },
+        // FIXME: just inject the aircraft options page from the aircraft context (or plugin in flypadOSv4).
         pinProgram: {
           paxSign: false,
           satcom: false,
@@ -50,7 +51,7 @@ render(
         sim: {
           cones: false,
           pilotSeat: true,
-          registrationDecal: false,
+          registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
           wheelChocks: false,
         },
         throttle: {
