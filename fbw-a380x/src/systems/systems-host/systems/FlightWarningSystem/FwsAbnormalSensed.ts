@@ -242,21 +242,21 @@ export class FwsAbnormalSensed {
       this.showAbnormalSensed.set(false);
     }
 
-    /* if (this.fws.clDownTriggerRisingEdge) {
+    /*if (this.fws.clDownPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveDown();
     }
 
-    if (this.fws.clUpTriggerRisingEdge) {
+    if (this.fws.clUpPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveUp();
-    } */
+    }*/
 
-    if (this.fws.clCheckTriggerRisingEdge) {
+    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
@@ -271,6 +271,22 @@ export class FwsAbnormalSensed {
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
     // 22 - FLIGHT GUIDANCE
+    220800001: {
+      // AP OFF involuntary
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoPilotOffInvoluntary,
+      auralWarning: this.fws.autoPilotOffInvoluntary.map((a) =>
+        a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      cancel: true,
+      sysPage: -1,
+
+      info: () => [],
+    },
     220800004: {
       // A/THR OFF involuntary
       flightPhaseInhib: [3, 4, 5, 10],

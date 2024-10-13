@@ -194,7 +194,7 @@ export class FwsMemos {
     220000001: {
       // A/THR OFF
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.autoPilotOffVoluntary,
+      simVarIsActive: this.fws.autoPilotOffShowMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['220000001'],
       memoInhibit: () => false,
