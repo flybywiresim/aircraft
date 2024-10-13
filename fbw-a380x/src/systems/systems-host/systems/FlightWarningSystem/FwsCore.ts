@@ -3774,8 +3774,12 @@ export class FwsCore implements Instrument {
       }
     }
 
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft);
-    const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight);
+    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft).sort(
+      (a, b) => this.memoPriority(a) - this.memoPriority(b),
+    );
+    const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight).sort(
+      (a, b) => this.memoPriority(a) - this.memoPriority(b),
+    );
 
     if (allFailureKeys.length === 0) {
       this.requestMasterCautionFromFaults = false;
@@ -3797,10 +3801,14 @@ export class FwsCore implements Instrument {
     }
 
     this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
+    // TODO order by decreasing importance
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
     // TODO order by decreasing importance
-    this.pfdMemoLines.forEach((l, i) => l.set(orderedMemoArrayRight.filter((it) => pfdMemoDisplay.includes(it))[i]));
+    const pfdMemos = orderedMemoArrayRight
+      .filter((it) => pfdMemoDisplay.includes(it))
+      .sort((a, b) => this.memoPriority(a) - this.memoPriority(b));
+    this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i]));
 
     // TODO order by decreasing importance
     this.sdStatusInfoLines.forEach((l, i) => l.set(stsInfoKeys[i]));
@@ -3901,5 +3909,22 @@ export class FwsCore implements Instrument {
 
   autoPilotInstinctiveDisconnect() {
     this.autoPilotInstinctiveDiscPressedPulse.write(true, this.instrument.deltaTime);
+  }
+
+  memoPriority(memoKey: string): number {
+    const memo = EcamMemos[memoKey];
+    // Highest importance: priority 0
+    switch (memo.trim().substring(0, 3)) {
+      case '\x1b<6':
+        return 0;
+      case '\x1b<2':
+        return 1;
+      case '\x1b<4':
+        return 2;
+      case '\x1b<3':
+        return 3;
+      default:
+        return 10;
+    }
   }
 }
