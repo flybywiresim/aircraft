@@ -105,14 +105,10 @@ impl<const P: usize> BoardingAgent<P> {
 }
 impl<const P: usize> SimulationElement for BoardingAgent<P> {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        match &self.door_id {
-            Some(door_id) => {
-                self.door_open_ratio = reader.read(door_id);
-            }
-            None => {
-                self.door_open_ratio = Ratio::default();
-            }
-        }
+        self.door_open_ratio = self
+            .door_id
+            .map(|door_id| reader.read(&door_id))
+            .unwrap_or_default();
     }
 }
 
