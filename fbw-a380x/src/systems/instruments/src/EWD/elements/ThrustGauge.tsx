@@ -10,6 +10,8 @@ import {
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
+
 import {
   GaugeComponent,
   GaugeMarkerComponent,
@@ -18,6 +20,7 @@ import {
   ThrottlePositionDonutComponent,
   ThrustTransientComponent,
 } from 'instruments/src/MsfsAvionicsCommon/gauges';
+import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface ThrustGaugeProps {
   bus: EventBus;
@@ -29,10 +32,10 @@ interface ThrustGaugeProps {
 }
 
 export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & EwdSimvars>();
 
   private readonly n1 = ConsumerSubject.create(
-    this.sub.on(`n1_${this.props.engine}`).withPrecision(1).whenChanged(),
+    this.sub.on(`n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -42,7 +45,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly throttlePositionN1 = ConsumerSubject.create(
-    this.sub.on(`throttle_position_${this.props.engine}`).withPrecision(2).whenChanged(),
+    this.sub.on(`throttle_position_n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -60,8 +63,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
   private readonly thrustLimitRev = ConsumerSubject.create(this.sub.on('thrust_limit_rev').whenChanged(), 0);
 
-  private readonly packs1 = ConsumerSubject.create(this.sub.on('packs1').whenChanged(), false);
-  private readonly packs2 = ConsumerSubject.create(this.sub.on('packs2').whenChanged(), false);
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
 
   private readonly revDeploying = ConsumerSubject.create(
     this.sub.on(`reverser_deploying_${this.props.engine}`).whenChanged(),
@@ -84,9 +86,9 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly thrustLimitMax = MappedSubject.create(
-    ([packs1, packs2, thrustLimitToga]) => (!packs1 && !packs2 ? thrustLimitToga : thrustLimitToga + 0.6),
-    this.packs1,
-    this.packs2,
+    ([cpiomB, thrustLimitToga]) =>
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+    this.cpiomBAgsDiscrete,
     this.thrustLimitToga,
   );
 
@@ -168,6 +170,12 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private revRadius = 58;
   private revMin = 0;
   private revMax = 3;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.cpiomBAgsDiscrete.setConsumer(this.sub.on('cpiomBAgsDiscrete'));
+  }
 
   render() {
     return (

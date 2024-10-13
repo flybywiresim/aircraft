@@ -11,23 +11,24 @@ import {
   InstrumentBackplane,
   Clock,
   ClockEvents,
-  Subject,
   ConsumerSubject,
   MappedSubject,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
+import { LegacyFuelInit } from 'systems-host/systems/LegacyFuelInit';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
-import { FailuresConsumer, VhfComIndices } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, PilotSeatPublisher, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
-import { CameraPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/CameraPublisher';
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
+import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -58,9 +59,9 @@ class SystemsHost extends BaseInstrument {
   private readonly dcBus1Powered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
   private readonly dcBus2Powered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
 
-  private readonly vhf1 = new VhfRadio(VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
-  private readonly vhf2 = new VhfRadio(VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
-  private readonly vhf3 = new VhfRadio(VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
+  private readonly vhf1 = new VhfRadio(this.bus, VhfComIndices.Vhf1, 36, this.dcEssBusPowered, this.failuresConsumer);
+  private readonly vhf2 = new VhfRadio(this.bus, VhfComIndices.Vhf2, 38, this.dcBus2Powered, this.failuresConsumer);
+  private readonly vhf3 = new VhfRadio(this.bus, VhfComIndices.Vhf3, 40, this.dcBus1Powered, this.failuresConsumer);
 
   // TODO powered subs
   private readonly amu1 = new AudioManagementUnit(this.bus, 1, this.failuresConsumer);
@@ -81,9 +82,11 @@ class SystemsHost extends BaseInstrument {
 
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
-  private readonly cameraPublisher = new CameraPublisher(this.bus);
+  private readonly pilotSeatPublisher = new PilotSeatPublisher(this.bus);
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
+
+  private readonly fwsCore = new FwsCore(1, this.bus, this);
 
   /**
    * "mainmenu" = 0
@@ -105,15 +108,19 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
-    this.backplane.addPublisher('CameraPublisher', this.cameraPublisher);
+    this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
+    this.backplane.addInstrument('LegacyFuel', new LegacyFuelInit());
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.fwc = new LegacyFwc();
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
+
+    this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
     let lastUpdateTime: number;
     // TODO this is really fast for the FWC...

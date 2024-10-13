@@ -195,8 +195,8 @@ class A32NX_GPWS {
         const isLdgFlap3On = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") === 1;
 
         const sfccPositionWord = Arinc429Word.fromSimVarValue("L:A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
-        const isFlapsFull = sfccPositionWord.getBitValueOr(22, false);
-        const isFlaps3 = sfccPositionWord.getBitValueOr(21, false) && !isFlapsFull;
+        const isFlapsFull = sfccPositionWord.bitValueOr(22, false);
+        const isFlaps3 = sfccPositionWord.bitValueOr(21, false) && !isFlapsFull;
 
         const areFlapsInLandingConfig = !sfccPositionWord.isNormalOperation() || isFlapModeOff || (isLdgFlap3On ? isFlaps3 : isFlapsFull);
         const isGearDownLocked = SimVar.GetSimVarValue("L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED", "Bool") === 1;

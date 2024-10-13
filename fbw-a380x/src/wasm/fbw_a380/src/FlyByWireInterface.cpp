@@ -274,8 +274,8 @@ void FlyByWireInterface::loadConfiguration() {
   std::vector<std::pair<double, double>> mappingTable3d;
   mappingTable3d.emplace_back(-20.0, 0.0);
   mappingTable3d.emplace_back(0.0, 0.0);
-  mappingTable3d.emplace_back(25.0, 50.0);
-  mappingTable3d.emplace_back(35.0, 75.0);
+  mappingTable3d.emplace_back(25.0, 54.0);
+  mappingTable3d.emplace_back(35.0, 71.0);
   mappingTable3d.emplace_back(45.0, 100.0);
   idThrottlePositionLookupTable3d.initialize(mappingTable3d, 0, 100);
 }
@@ -288,6 +288,12 @@ void FlyByWireInterface::setupLocalVariables() {
   // regsiter L variable for logging
   idLoggingFlightControlsEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
+
+  // regsiter L variables for wheel speeds
+  idLeftWingWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_3");
+  idRightWingWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_4");
+  idLeftBodyWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_1");
+  idRightBodyWheelSpeed_rpm = std::make_unique<LocalVariable>("A32NX_WHEEL_RPM_2");
 
   // register L variables for Autoland
   idDevelopmentAutoland_condition_Flare = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
@@ -370,8 +376,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_EO_ACC_ALT");
   idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_ACC_ALT");
   idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
-  idFmgcCruiseAltitude = std::make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
-  idFmgcFlexTemperature = std::make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
+  idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
+  idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
 
   idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
   idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
@@ -508,8 +514,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 
-  idLs1Active = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
-  idLs2Active = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idLs1Active = std::make_unique<LocalVariable>("A380X_EFIS_L_LS_BUTTON_IS_ON");
+  idLs2Active = std::make_unique<LocalVariable>("A380X_EFIS_R_LS_BUTTON_IS_ON");
   idIsisLsActive = std::make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
@@ -935,7 +941,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   }
 
   // calculate delta time (and ensure it does not get 0 -> max 500 fps)
-  calculatedSampleTime = max(0.002, simData.simulationTime - previousSimulationTime);
+  calculatedSampleTime = std::max(0.002, simData.simulationTime - previousSimulationTime);
 
   monotonicTime += calculatedSampleTime;
 
@@ -996,7 +1002,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   if (simData.simulation_rate > idMaximumSimulationRate->get()) {
     // set target simulation rate
     targetSimulationRateModified = true;
-    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    targetSimulationRate = std::max(1., simData.simulation_rate / 2);
     // sed event to reduce simulation rate
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // log event of reduction
@@ -1018,7 +1024,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
       elac2ProtActive || autopilotStateMachineOutput.speed_protection_mode == 1) {
     // set target simulation rate
     targetSimulationRateModified = true;
-    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    targetSimulationRate = std::max(1., simData.simulation_rate / 2);
     // send event to reduce simulation rate
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // reset low performance timer
@@ -1419,10 +1425,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = idLeftBodyWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = idLeftWingWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = idRightBodyWheelSpeed_rpm->get() * 0.146189;
+  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = idRightWingWheelSpeed_rpm->get() * 0.146189;
 
   prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
@@ -1858,7 +1864,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacCenterOfGravity[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].center_of_gravity_pos_percent));
   idFacSideslipTarget[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].sideslip_target_deg));
   idFacSlatAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_slat_angle_deg));
-  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle));
+  idFacFlapAngle[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].fac_flap_angle_deg));
   idFacDiscreteWord2[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_2));
   idFacRudderTravelLimitCommand[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].rudder_travel_limit_command_deg));
   idFacDeltaRYawDamperVoted[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].delta_r_yaw_damper_deg));
@@ -2121,8 +2127,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
     autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotStateMachineInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autopilotStateMachineInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autopilotStateMachineInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autopilotStateMachineInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
@@ -2471,8 +2479,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autopilotLawsInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autopilotLawsInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autopilotLawsInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
@@ -2593,8 +2603,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
 
   // set rudder pedals position
-  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
-  idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+  idRudderPedalPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]))));
+  idRudderPedalAnimationPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]) + (100. * simData.zeta_trim_pos))));
 
   // provide tracking mode state
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
@@ -2686,8 +2696,10 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
     autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
     autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
-    autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
-    autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
+    autoThrustInput.in.data.gear_strut_compression_1 =
+        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+    autoThrustInput.in.data.gear_strut_compression_2 =
+        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
     autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
     autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
@@ -2811,7 +2823,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 8 || fwcFlightPhase == 9) {
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 ||
+      fwcFlightPhase == 11) {
     idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
     idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
   } else {
@@ -2861,18 +2874,7 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   // get sim data
   auto simData = simConnectInterface.getSimData();
 
-  // FD Button
-  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active) {
-    if (last_fd1_active != simData.ap_fd_1_active) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
-    }
-
-    if (last_fd2_active != simData.ap_fd_2_active) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
-    }
-  }
-  last_fd1_active = simData.ap_fd_1_active;
-  last_fd2_active = simData.ap_fd_2_active;
+  // Only one FD state, no sync needed
 
   // LS Button
   if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active) {

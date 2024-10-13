@@ -24,17 +24,17 @@
 class FuelConfiguration_A32NX {
  private:
   // Fuel tank default quantities in gallons
-  static constexpr double fuelCenterDefault = 0;
-  static constexpr double fuelLeftDefault = 411.34;
-  static constexpr double fuelRightDefault = fuelLeftDefault;
-  static constexpr double fuelLeftAuxDefault = 0;
+  static constexpr double fuelCenterDefault   = 0;
+  static constexpr double fuelLeftDefault     = 411.34;
+  static constexpr double fuelRightDefault    = fuelLeftDefault;
+  static constexpr double fuelLeftAuxDefault  = 0;
   static constexpr double fuelRightAuxDefault = fuelLeftAuxDefault;
 
   // Actual fuel tank quantities in gallons
-  double fuelCenter = fuelCenterDefault;
-  double fuelLeft = fuelLeftDefault;
-  double fuelRight = fuelRightDefault;
-  double fuelLeftAux = fuelLeftAuxDefault;
+  double fuelCenter   = fuelCenterDefault;
+  double fuelLeft     = fuelLeftDefault;
+  double fuelRight    = fuelRightDefault;
+  double fuelLeftAux  = fuelLeftAuxDefault;
   double fuelRightAux = fuelRightAuxDefault;
 
   std::string configFilename{"A32NX-default-fuel-config.ini"};
@@ -72,12 +72,12 @@ class FuelConfiguration_A32NX {
   void saveConfigurationToIni();
 
   /**
- * @brief Converts the current fuel configuration to a string.
- *
- * This method is used to convert the current state of the fuel configuration into a string format.
- * The string includes the quantities of fuel in each tank.
- *
- * @return A string representation of the current fuel configuration.
+   * @brief Converts the current fuel configuration to a string.
+   *
+   * This method is used to convert the current state of the fuel configuration into a string format.
+   * The string includes the quantities of fuel in each tank.
+   *
+   * @return A string representation of the current fuel configuration.
    */
   std::string toString() const;
 

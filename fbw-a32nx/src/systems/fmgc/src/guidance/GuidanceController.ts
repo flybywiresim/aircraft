@@ -41,6 +41,7 @@ const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 export interface Fmgc {
   getZeroFuelWeight(): number;
   getFOB(): number;
+  getGrossWeight(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
   getManagedClimbSpeed(): Knots;
@@ -157,7 +158,7 @@ export class GuidanceController {
 
   private windProfileFactory: WindProfileFactory;
 
-  private atmosphericConditions: AtmosphericConditions;
+  public atmosphericConditions: AtmosphericConditions;
 
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),

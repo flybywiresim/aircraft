@@ -36,11 +36,14 @@ class SimpleProfiler {
 
  private:
   const std::string _name;
-  ProfileBuffer<std::chrono::nanoseconds> _samples;
   Clock::time_point _start{};
-  bool _started = false;
+  bool              _started = false;
+
+  ProfileBuffer<std::chrono::nanoseconds> _samples;
 
  public:
+  SimpleProfiler() = delete;
+
   /**
    * @brief Construct a new Simple Profiler object
    * @param name Name of the profiler for the output
@@ -53,7 +56,7 @@ class SimpleProfiler {
    */
   void start() {
     _started = true;
-    _start = Clock::now();
+    _start   = Clock::now();
   }
 
   /**
@@ -81,7 +84,8 @@ class SimpleProfiler {
   /**
    * @brief Return the avg minimum execution time of a percentile of the collected samples at the time of calling this method.
    * If no percentile is given, the minimum of all samples is returned.
-   * @param percentile Percentile to return, e.g. 0.05 for the 5% minimum. If no percentile is given, the minimum of all samples is returned.
+   * @param percentile Percentile to return, e.g. 0.05 for the 5% minimum. If no percentile is given, the minimum of all samples is
+   * returned.
    * @return Average execution time of the minimum percentile of the collected samples at the time of calling this method or the minimum of
    * all samples if no percentile is given
    */
@@ -89,7 +93,8 @@ class SimpleProfiler {
 
   /**
    * @brief Return the avg maximum execution time of a percentile of the collected samples at the time of calling this method.
-   * @param percentile Percentile to return, e.g. 0.95 for the 95% maximum. If no percentile is given, the maximum of all samples is returned.
+   * @param percentile Percentile to return, e.g. 0.95 for the 95% maximum. If no percentile is given, the maximum of all samples is
+   * returned.
    * @return Average execution time of the maximum percentile of the collected samples at the time of calling this method or the maximum of
    * all samples if no percentile is given
    */
@@ -114,7 +119,7 @@ class SimpleProfiler {
    * @return String with the average execution time of the collected samples at the time of calling this method
    */
   [[nodiscard]] std::string str() {
-    auto avg = _samples.avg();
+    auto              avg = _samples.avg();
     std::stringstream os{};
     os << "Profiler: " << std::setw(10) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count()) << " (" << std::setw(10)
        << std::right << helper::StringUtils::insertThousandsSeparator(_samples.minimum().count()) << " / " << std::setw(10) << std::right

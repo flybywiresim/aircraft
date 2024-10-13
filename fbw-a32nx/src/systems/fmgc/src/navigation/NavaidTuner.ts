@@ -16,7 +16,7 @@ import {
   VhfNavaidType,
 } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ConsumerSubject, EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, GameStateProvider, SimVarValueType, Subject, Wait } from '@microsoft/msfs-sdk';
 
 export interface NavRadioTuningStatus {
   frequency: number | null;
@@ -172,6 +172,8 @@ export class NavaidTuner {
     'VOR4_SET',
   ];
 
+  private isInit = false;
+
   private vorTuningStatus: VorRadioTuningStatus[] = [
     {
       // VOR 1
@@ -276,7 +278,7 @@ export class NavaidTuner {
   /** Whether the tuning event blocked message has been shown before. It is only shown once. */
   private blockEventMessageShown = false;
 
-  private notificationManager = new NotificationManager();
+  private notificationManager = new NotificationManager(this.bus);
 
   constructor(
     private readonly bus: EventBus,
@@ -286,8 +288,6 @@ export class NavaidTuner {
   ) {}
 
   init(): void {
-    this.resetAllReceivers();
-
     // FIXME move this to the RMP when it's rewritten in msfs-avionics-framework
     // FIXME use the framework manager when the framework is updated
     Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
@@ -299,10 +299,20 @@ export class NavaidTuner {
 
     // All selections are reset upon entering the DONE phase after landing.
     this.flightPhase.sub((v) => v === FmgcFlightPhase.Done && this.resetState(false));
+
+    Wait.awaitSubscribable(GameStateProvider.get(), (s) => s === GameState.ingame, true).then(() => {
+      this.resetAllReceivers();
+
+      this.isInit = true;
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(deltaTime: number): void {
+    if (!this.isInit) {
+      return;
+    }
+
     // FIXME RMPs should provide a discrete output for this
     const rmpTuningActive =
       SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'bool') ||
@@ -611,12 +621,12 @@ export class NavaidTuner {
     return this.adfTuningStatus.map((adfStatus) => adfStatus.facility).filter((fac) => fac !== undefined);
   }
 
-  deselectNavaid(icao: string): void {
-    this.navaidSelectionManager.deselectNavaid(icao);
+  deselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.deselectNavaid(databaseId);
   }
 
-  reselectNavaid(icao: string): void {
-    this.navaidSelectionManager.reselectNavaid(icao);
+  reselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.reselectNavaid(databaseId);
   }
 
   get deselectedNavaids(): string[] {

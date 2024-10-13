@@ -500,7 +500,6 @@ impl A380AutobrakeController {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         placeholder_ground_spoilers_out: bool,
-        ground_speed: Velocity,
     ) {
         self.update_input_conditions(
             context,
@@ -513,7 +512,6 @@ impl A380AutobrakeController {
 
         self.braking_distance_calculator.update_braking_estimations(
             context,
-            ground_speed,
             if self.mode == A380AutobrakeMode::BTV {
                 self.btv_scheduler.predicted_decel()
             } else if self.mode != A380AutobrakeMode::DISARM {
@@ -558,13 +556,12 @@ impl A380AutobrakeController {
             context,
             self.ground_spoilers_are_deployed,
             &self.braking_distance_calculator,
-            ground_speed,
             &self.autobrake_runway_overrun_protection,
         );
 
         self.autobrake_runway_overrun_protection.update(
+            context,
             self.deceleration_governor.is_engaged(),
-            ground_speed,
             &self.braking_distance_calculator,
             lgciu1,
             lgciu2,
@@ -618,7 +615,6 @@ struct AutobrakeRunwayOverrunProtection {
     is_actively_braking: bool,
 
     is_any_autobrake_active: bool,
-    ground_speed: Velocity,
 
     status_word: Arinc429Word<u32>,
 }
@@ -647,15 +643,13 @@ impl AutobrakeRunwayOverrunProtection {
 
             is_any_autobrake_active: false,
 
-            ground_speed: Velocity::default(),
-
             status_word: Arinc429Word::new(0, SignStatus::NormalOperation),
         }
     }
 
-    fn is_row_rop_operative(&self) -> bool {
+    fn is_row_rop_operative(&self, context: &UpdateContext) -> bool {
         self.distance_to_runway_end.is_normal_operation()
-            && self.ground_speed.get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
+            && context.ground_speed().get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
     }
 
     fn distance_to_runway_end(&self) -> Length {
@@ -668,14 +662,13 @@ impl AutobrakeRunwayOverrunProtection {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         is_any_autobrake_active: bool,
-        ground_speed: Velocity,
         braking_distances: &BrakingDistanceCalculator,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
         self.is_any_autobrake_active = is_any_autobrake_active;
-        self.ground_speed = ground_speed;
 
         let is_on_ground = lgciu1.left_and_right_gear_compressed(false)
             || lgciu2.left_and_right_gear_compressed(false);
@@ -683,7 +676,7 @@ impl AutobrakeRunwayOverrunProtection {
         let max_braking_prediction = braking_distances.max_braking();
 
         // Can engage only above min speed
-        if self.is_row_rop_operative() && self.is_any_autobrake_active {
+        if self.is_row_rop_operative(context) && self.is_any_autobrake_active {
             if max_braking_prediction >= self.distance_to_runway_end.value() {
                 self.is_actively_braking = true;
             }
@@ -696,7 +689,8 @@ impl AutobrakeRunwayOverrunProtection {
         }
 
         // IS operative
-        self.status_word.set_bit(11, self.is_row_rop_operative());
+        self.status_word
+            .set_bit(11, self.is_row_rop_operative(context));
 
         // Is active under autobrake
         self.status_word.set_bit(12, self.is_actively_braking);
@@ -704,10 +698,10 @@ impl AutobrakeRunwayOverrunProtection {
         // Is active under manual braking
         self.status_word.set_bit(
             13,
-            self.should_show_manual_braking_warning(max_braking_prediction, is_on_ground),
+            self.should_show_manual_braking_warning(context, max_braking_prediction, is_on_ground),
         );
 
-        let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative();
+        let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative(context);
         // Too short if wet
         self.status_word.set_bit(
             14,
@@ -729,6 +723,7 @@ impl AutobrakeRunwayOverrunProtection {
 
     fn should_show_manual_braking_warning(
         &self,
+        context: &UpdateContext,
         dry_stopping_prediction: Length,
         is_on_ground: bool,
     ) -> bool {
@@ -737,7 +732,7 @@ impl AutobrakeRunwayOverrunProtection {
         if is_on_ground
             && !any_engine_not_idle_or_reverse
             && !self.is_any_autobrake_active
-            && self.is_row_rop_operative()
+            && self.is_row_rop_operative(context)
         {
             dry_stopping_prediction >= self.distance_to_runway_end.value()
         } else {
@@ -827,24 +822,21 @@ impl BrakingDistanceCalculator {
         }
     }
 
-    fn update_braking_estimations(
-        &mut self,
-        context: &UpdateContext,
-        ground_speed: Velocity,
-        deceleration: Acceleration,
-    ) {
+    fn update_braking_estimations(&mut self, context: &UpdateContext, deceleration: Acceleration) {
         // TODO use correct input to switch speed used
         let speed_used_for_prediction = if context.plane_height_over_ground().get::<foot>()
             < Self::ALTITUDE_THRESHOLD_TO_SWITCH_ESTIMATION_TO_GROUND_SPEED_FT
         {
-            ground_speed
+            context.ground_speed()
         } else {
             self.predicted_touchdown_speed.max(Velocity::new::<knot>(
                 Self::MIN_PREDICTED_TOUCHDOWN_SPEED_KNOT,
             ))
         };
 
-        if ground_speed.get::<meter_per_second>() > Self::MIN_SPEED_FOR_STOPPING_ESTIMATION_MS {
+        if context.ground_speed().get::<meter_per_second>()
+            > Self::MIN_SPEED_FOR_STOPPING_ESTIMATION_MS
+        {
             self.wet_landing_estimated_distance.update(
                 context.delta(),
                 self.stopping_distance_estimation_for_wet(speed_used_for_prediction),
@@ -860,16 +852,17 @@ impl BrakingDistanceCalculator {
 
         if context.long_accel().get::<meter_per_second_squared>()
             < Self::MIN_DECEL_FOR_STOPPING_ESTIMATION_MS2
-            && ground_speed.get::<meter_per_second>() > Self::MIN_SPEED_FOR_STOPPING_ESTIMATION_MS
+            && context.ground_speed().get::<meter_per_second>()
+                > Self::MIN_SPEED_FOR_STOPPING_ESTIMATION_MS
         {
             self.braking_estimated_distance_at_current_decel.update(
                 context.delta(),
-                self.stopping_distance_estimation_for_decel(ground_speed, deceleration),
+                self.stopping_distance_estimation_for_decel(context.ground_speed(), deceleration),
             );
             self.braking_estimated_distance_at_max_decel.update(
                 context.delta(),
                 self.stopping_distance_estimation_for_decel(
-                    ground_speed,
+                    context.ground_speed(),
                     Acceleration::new::<meter_per_second_squared>(Self::MAX_DECEL_DRY_MS2),
                 ),
             );
@@ -1090,7 +1083,6 @@ impl BtvDecelScheduler {
         context: &UpdateContext,
         spoilers_active: bool,
         braking_distance: &BrakingDistanceCalculator,
-        ground_speed: Velocity,
         rop: &AutobrakeRunwayOverrunProtection,
     ) {
         self.distance_to_rwy_end = rop.distance_to_runway_end();
@@ -1101,11 +1093,11 @@ impl BtvDecelScheduler {
         self.spoilers_active = spoilers_active;
         self.actual_deceleration = context.long_accel();
 
-        self.integrate_distance(context, ground_speed);
+        self.integrate_distance(context);
 
-        self.compute_decel(ground_speed);
+        self.compute_decel(context);
 
-        self.state = self.update_state(ground_speed);
+        self.state = self.update_state(context);
     }
 
     fn braking_distance_remaining(&self) -> Length {
@@ -1115,19 +1107,18 @@ impl BtvDecelScheduler {
             self.oans_distance_to_exit.value()
         };
 
-        let distance_from_btv_exit = Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M);
+        // Distance to runway end minus a margin from FCOM reference (cannot be negative)
+        let distance_to_runway_end_minus_margin = (self.distance_to_rwy_end
+            - Length::new::<meter>(Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS))
+        .max(Length::default());
 
-        // Max distance clamped to end of rwy minus a margin
-        (distance_remaining_raw - distance_from_btv_exit).clamp(
-            Length::default(),
-            self.distance_to_rwy_end
-                - Length::new::<meter>(
-                    Self::REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS,
-                ),
-        )
+        // BTV remaining distance is raw distance minus a small offset before exit
+        //      Max distance is clamped to end of rwy minus margin as BTV will never target a further end of decel point
+        (distance_remaining_raw - Length::new::<meter>(Self::DISTANCE_OFFSET_TO_RELEASE_BTV_M))
+            .clamp(Length::default(), distance_to_runway_end_minus_margin)
     }
 
-    fn compute_decel(&mut self, ground_speed: Velocity) {
+    fn compute_decel(&mut self, context: &UpdateContext) {
         match self.state {
             BTVState::RotOptimization | BTVState::Decel | BTVState::EndOfBraking => {
                 let speed_at_btv_release =
@@ -1136,7 +1127,7 @@ impl BtvDecelScheduler {
 
                 self.final_distance_remaining = self.braking_distance_remaining();
 
-                let delta_speed_to_achieve = ground_speed - speed_at_btv_release;
+                let delta_speed_to_achieve = context.ground_speed() - speed_at_btv_release;
 
                 let target_deceleration_raw =
                     -delta_speed_to_achieve.get::<meter_per_second>().powi(2)
@@ -1194,7 +1185,7 @@ impl BtvDecelScheduler {
         }
     }
 
-    fn update_state(&mut self, ground_speed: Velocity) -> BTVState {
+    fn update_state(&mut self, context: &UpdateContext) -> BTVState {
         match self.state {
             BTVState::Armed => {
                 if self.spoilers_active {
@@ -1219,7 +1210,7 @@ impl BtvDecelScheduler {
             }
             BTVState::Decel => {
                 if self.final_distance_remaining.get::<meter>() < Self::DISTANCE_TO_RELEASE_BTV_M
-                    || ground_speed.get::<meter_per_second>()
+                    || context.ground_speed().get::<meter_per_second>()
                         <= Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
                 {
                     self.end_of_decel_acceleration = self.deceleration_request;
@@ -1229,7 +1220,9 @@ impl BtvDecelScheduler {
                 }
             }
             BTVState::EndOfBraking => {
-                if ground_speed.get::<meter_per_second>() <= Self::TARGET_SPEED_TO_RELEASE_BTV_M_S {
+                if context.ground_speed().get::<meter_per_second>()
+                    <= Self::TARGET_SPEED_TO_RELEASE_BTV_M_S
+                {
                     self.disarm();
                     BTVState::Disabled
                 } else {
@@ -1240,10 +1233,10 @@ impl BtvDecelScheduler {
         }
     }
 
-    fn integrate_distance(&mut self, context: &UpdateContext, ground_speed: Velocity) {
+    fn integrate_distance(&mut self, context: &UpdateContext) {
         match self.state {
             BTVState::RotOptimization | BTVState::Decel | BTVState::EndOfBraking => {
-                let distance_this_tick = ground_speed * context.delta_as_time();
+                let distance_this_tick = context.ground_speed() * context.delta_as_time();
                 self.rolling_distance += distance_this_tick;
             }
 
@@ -1377,7 +1370,7 @@ impl SimulationElement for BtvDecelScheduler {
 
 #[cfg(test)]
 mod braking_distance_tests {
-    use systems::simulation::test::TestBed;
+    use systems::simulation::test::{TestBed, WriteByName};
 
     use super::*;
     use crate::systems::simulation::test::{ElementCtorFn, SimulationTestBed};
@@ -1386,14 +1379,11 @@ mod braking_distance_tests {
     fn landing_140_knot_dry_line() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(BrakingDistanceCalculator::new))
             .with_update_after_power_distribution(|e, context| {
-                e.update_braking_estimations(
-                    context,
-                    Velocity::new::<knot>(140.),
-                    Acceleration::default(),
-                )
+                e.update_braking_estimations(context, Acceleration::default())
             });
 
         test_bed.set_on_ground(true);
+        test_bed.write_by_name("GPS GROUND SPEED", 140.);
         test_bed.run_multiple_frames(Duration::from_secs(5));
 
         assert!(
@@ -1406,13 +1396,10 @@ mod braking_distance_tests {
     fn landing_140_knot_wet_line() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(BrakingDistanceCalculator::new))
             .with_update_after_power_distribution(|e, context| {
-                e.update_braking_estimations(
-                    context,
-                    Velocity::new::<knot>(140.),
-                    Acceleration::default(),
-                )
+                e.update_braking_estimations(context, Acceleration::default())
             });
 
+        test_bed.write_by_name("GPS GROUND SPEED", 140.);
         test_bed.run_multiple_frames(Duration::from_secs(5));
 
         assert!(

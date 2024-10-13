@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-
-import './MfdFmsDataStatus.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -13,20 +11,36 @@ import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { NavigationDatabaseService } from '@fmgc/index';
+import { DatabaseIdent } from '@flybywiresim/fbw-sdk';
+import { ConfirmationDialog } from '../../common/ConfirmationDialog';
+
+import './MfdFmsDataStatus.scss';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 
-const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const DB_MONTHS: Record<string, string> = {
+  '01': 'JAN',
+  '02': 'FEB',
+  '03': 'MAR',
+  '04': 'APR',
+  '05': 'MAY',
+  '06': 'JUN',
+  '07': 'JUL',
+  '08': 'AUG',
+  '09': 'SEP',
+  '10': 'OCT',
+  '11': 'NOV',
+  '12': 'DEC',
+};
 
 export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
   private selectedPageIndex = Subject.create<number>(0);
 
-  private navDatabase = Subject.create('FBW2301001');
+  private navDatabase = Subject.create('');
 
-  private activeDatabase = Subject.create('30DEC-27JAN');
+  private activeDatabase = Subject.create('');
 
-  private secondDatabase = Subject.create('27JAN-24FEB');
+  private secondDatabase = Subject.create('');
 
   private storedWaypoints = Subject.create('00');
 
@@ -38,19 +52,18 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
 
   private deleteStoredElementsDisabled = Subject.create(true);
 
+  private readonly isSwapConfirmVisible = Subject.create(false);
+
   protected onNewData() {
-    console.time('DATA/STATUS:onNewData');
+    NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbCycle) => {
+      const navCycleDates = dbCycle === null ? '' : MfdFmsDataStatus.calculateActiveDate(dbCycle);
+      const navSerial =
+        dbCycle === null ? '' : `${dbCycle.provider.substring(0, 2).toUpperCase()}${dbCycle.airacCycle}0001`;
 
-    NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((db) => {
-      const from = new Date(db.effectiveFrom);
-      const to = new Date(db.effectiveTo);
-      this.activeDatabase.set(`${from.getDay()}${months[from.getMonth()]}-${to.getDay()}${months[to.getMonth()]}`);
+      this.activeDatabase.set(navCycleDates);
+      this.secondDatabase.set(navCycleDates);
+      this.navDatabase.set(navSerial);
     });
-
-    const date = this.props.fmcService.master?.fmgc.getNavDataDateRange();
-    if (date) {
-      this.secondDatabase.set(this.calculateSecDate(date));
-    }
 
     const storedElements = this.props.fmcService.master?.getDataManager()?.numberOfStoredElements();
     if (storedElements) {
@@ -60,8 +73,6 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
       this.storedRunways.set(storedElements.runways.toFixed(0).padStart(2, '0'));
       this.deleteStoredElementsDisabled.set(storedElements.total === 0);
     }
-
-    console.timeEnd('DATA/STATUS:onNewData');
   }
 
   public onAfterRender(node: VNode): void {
@@ -88,63 +99,13 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
     );
   }
 
-  private findNewMonthIndex(index: number) {
-    if (index === 0) {
-      return 11;
-    }
-    return index - 1;
-  }
+  private static calculateActiveDate(dbIdent: DatabaseIdent): string {
+    const effDay = dbIdent.effectiveFrom.substring(8);
+    const effMonth = dbIdent.effectiveFrom.substring(5, 7);
+    const expDay = dbIdent.effectiveTo.substring(8);
+    const expMonth = dbIdent.effectiveTo.substring(5, 7);
 
-  private lessThan10(num: number) {
-    if (num < 10) {
-      return `0${num}`;
-    }
-    return num;
-  }
-
-  private calculateActiveDate(date: string): string {
-    if (date.length === 13) {
-      const startMonth = date.slice(0, 3);
-      const startDay = date.slice(3, 5);
-
-      const endMonth = date.slice(5, 8);
-      const endDay = date.slice(8, 10);
-
-      return `${startDay}${startMonth}-${endDay}${endMonth}`;
-    }
-    return date;
-  }
-
-  private calculateSecDate(date: string): string {
-    if (date.length === 13) {
-      const primStartMonth = date.slice(0, 3);
-      const primStartDay = Number(date.slice(3, 5));
-
-      const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
-
-      if (primStartMonthIndex === -1) {
-        return 'ERR';
-      }
-
-      let newEndMonth = primStartMonth;
-      let newEndDay = primStartDay - 1;
-
-      let newStartDay = newEndDay - 27;
-      let newStartMonth = primStartMonth;
-
-      if (newEndDay === 0) {
-        newEndMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
-        newEndDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)];
-      }
-
-      if (newStartDay <= 0) {
-        newStartMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
-        newStartDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)] + newStartDay;
-      }
-
-      return `${this.lessThan10(newStartDay)}${newStartMonth}-${this.lessThan10(newEndDay)}${newEndMonth}`;
-    }
-    return 'ERR';
+    return `${effDay}${DB_MONTHS[effMonth]}-${expDay}${DB_MONTHS[expMonth]}`;
   }
 
   render(): VNode {
@@ -156,7 +117,10 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
           <TopTabNavigator
             pageTitles={Subject.create(['ACFT STATUS', 'FMS P/N'])}
             selectedPageIndex={this.selectedPageIndex}
-            pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
+            pageChangeCallback={(val) => {
+              this.selectedPageIndex.set(val);
+              this.isSwapConfirmVisible.set(false);
+            }}
             selectedTabTextColor="white"
             tabBarSlantedEdgeAngle={25}
           >
@@ -200,6 +164,21 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                 </div>
               </div>
               <div class="mfd-data-status-second-section">
+                <div style="position: relative; display: flex; justify-content: center; width: 100%;">
+                  <ConfirmationDialog
+                    visible={this.isSwapConfirmVisible}
+                    cancelAction={() => {
+                      this.isSwapConfirmVisible.set(false);
+                    }}
+                    confirmAction={() => {
+                      this.props.fmcService.master?.swapNavDatabase();
+                      this.isSwapConfirmVisible.set(false);
+                    }}
+                    contentContainerStyle="width: 325px; height: 165px; transform: translateX(-50%);"
+                  >
+                    SWAP&nbsp;?
+                  </ConfirmationDialog>
+                </div>
                 <div style="margin-bottom: 15px;">
                   <span class="mfd-label" style="margin-right: 25px;">
                     NAV DATABASE
@@ -225,8 +204,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
                         </div>,
                       )}
-                      onClick={() => {}}
-                      disabled={Subject.create(true)}
+                      onClick={() => this.isSwapConfirmVisible.set(true)}
                     />
                   </div>
                   <div style="padding: 15px; display: flex; flex-direction: column;">
