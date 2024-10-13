@@ -443,17 +443,22 @@ export class FwsCore implements Instrument {
 
   public readonly fms2Fault = Subject.create(false);
 
-  public readonly autoPilotDisengagedPulse = new NXLogicPulseNode(true);
+  public readonly autoPilotDisengagedInstantPulse = new NXLogicPulseNode(false);
 
-  public readonly autoPilotDisengagedDelay = new NXLogicConfirmNode(0.1, true);
+  public readonly autoPilotDisengagedDelay = new NXLogicTriggeredMonostableNode(0.1, true);
 
-  public readonly autoPilotInstinctiveDiscPressedInLast1p8Sec = new NXLogicTriggeredMonostableNode(1.8, false);
+  public readonly autoPilotDisengagedDelayedPulse = new NXLogicPulseNode(false);
+
+  public readonly autoPilotInstinctiveDiscPressedInLast1p8Sec = new NXLogicTriggeredMonostableNode(1.9, false);
 
   public readonly autoPilotInstinctiveDiscPressedPulse = new NXLogicPulseNode(true);
 
-  public readonly autoPilotOffVoluntaryEndAfter1p8s = new NXLogicTriggeredMonostableNode(1.8, true); // Stay in first warning stage for 1.8s
+  /** Stay in first warning stage for 1.8s. Raised to 1.9s to allow for triple click to finish */
+  public readonly autoPilotOffVoluntaryEndAfter1p8s = new NXLogicTriggeredMonostableNode(1.9, true);
 
-  public readonly autoPilotOffVoluntaryCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
+  public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
+
+  public readonly autoPilotOffSendTripleClickAfterFirstCavalryCharge = new NXLogicPulseNode(false);
 
   public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
 
@@ -467,9 +472,11 @@ export class FwsCore implements Instrument {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
-  public readonly autoThrustDisengagedPulse = new NXLogicPulseNode(true);
+  public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
 
-  public readonly autoThrustDisengagedDelay = new NXLogicConfirmNode(0.1, true);
+  public readonly autoThrustDisengagedDelayedPulse = new NXLogicPulseNode(false);
+
+  public readonly autoThrustDisengagedDelay = new NXLogicTriggeredMonostableNode(0.1, true);
 
   public readonly autoThrustInstinctiveDiscPressed = new NXLogicTriggeredMonostableNode(1.5, true); // Save event for 1.5 sec
 
@@ -1880,6 +1887,11 @@ export class FwsCore implements Instrument {
         this.throttle4Position.get() == 0,
     );
 
+    const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
+    const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
+    const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
+    const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+
     /* HYDRAULICS acquisition */
 
     const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
@@ -2305,9 +2317,11 @@ export class FwsCore implements Instrument {
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
+    this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
     // Delay AP disengagement by one cycle, to resolve race condition with instinctive disc. button
-    this.autoPilotDisengagedDelay.write(!apEngaged, deltaTime);
-    this.autoPilotDisengagedPulse.write(this.autoPilotDisengagedDelay.read(), deltaTime);
+
+    this.autoPilotDisengagedDelay.write(this.autoPilotDisengagedInstantPulse.read(), deltaTime);
+    this.autoPilotDisengagedDelayedPulse.write(this.autoPilotDisengagedDelay.read(), deltaTime);
 
     this.autoPilotInstinctiveDiscPressedInLast1p8Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
 
@@ -2315,11 +2329,20 @@ export class FwsCore implements Instrument {
       this.autoPilotInstinctiveDiscPressedInLast1p8Sec.read() && this.autoPilotInstinctiveDiscPressedPulse.read();
 
     const voluntaryApDisc =
-      this.autoPilotDisengagedPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p8Sec.read();
+      this.autoPilotDisengagedDelayedPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p8Sec.read();
     this.autoPilotOffVoluntaryEndAfter1p8s.write(voluntaryApDisc, deltaTime);
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
-    this.autoPilotOffVoluntaryCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
+    this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
+    this.autoPilotOffSendTripleClickAfterFirstCavalryCharge.write(
+      this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
+      deltaTime,
+    );
+    SimVar.SetSimVarValue(
+      'L:A32NX_FMA_TRIPLE_CLICK',
+      'Bool',
+      this.autoPilotOffSendTripleClickAfterFirstCavalryCharge.read(),
+    );
 
     this.autoPilotOffVoluntaryMemory.write(
       this.autoPilotOffVoluntaryDiscPulse.read(),
@@ -2327,10 +2350,11 @@ export class FwsCore implements Instrument {
     );
 
     const discPbPressedAfterDisconnection =
-      !this.autoPilotDisengagedPulse.read() && this.autoPilotInstinctiveDiscPressedPulse.read();
+      !this.autoPilotDisengagedDelayedPulse.read() &&
+      (this.autoPilotInstinctiveDiscPressedPulse.read() || masterWarningButtonLeft || masterCautionButtonRight);
 
     this.autoPilotOffUnacknowledged.write(
-      this.autoPilotDisengagedPulse.read(),
+      this.autoPilotDisengagedDelayedPulse.read(),
       apEngaged || pressedTwiceWithin1p8s || discPbPressedAfterDisconnection,
     );
 
@@ -2341,12 +2365,12 @@ export class FwsCore implements Instrument {
     this.autoPilotOffInvoluntary.set(this.autoPilotOffInvoluntaryMemory.read());
     this.autoPilotOffShowMemo.set(this.autoPilotOffVoluntaryMemory.read() || this.autoPilotOffInvoluntaryMemory.read());
 
-    if (this.autoPilotDisengagedPulse.read()) {
+    if (this.autoPilotDisengagedDelayedPulse.read()) {
       // Request CRC one time
       this.requestMasterWarningFromApOff = true;
       this.auralCavalryChargeActive.set(true);
     }
-    if (!this.autoPilotOffVoluntaryCavalryChargeActive.read()) {
+    if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
       this.auralCavalryChargeActive.set(false);
     }
     if (!this.autoPilotOffVoluntaryMemory.read() && !this.autoPilotOffInvoluntaryMemory.read()) {
@@ -2358,9 +2382,13 @@ export class FwsCore implements Instrument {
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2;
+    this.autoThrustDisengagedInstantPulse.write(aThrEngaged, deltaTime);
     // Delay disengagement by one cycle, to resolve race condition with instinctive disc. button
-    this.autoThrustDisengagedDelay.write(!aThrEngaged, deltaTime);
-    this.autoThrustDisengagedPulse.write(this.autoThrustDisengagedDelay.read(), deltaTime);
+    this.autoThrustDisengagedDelay.write(
+      this.autoThrustDisengagedInstantPulse.read() && this.fwcFlightPhase.get() !== 1,
+      deltaTime,
+    );
+    this.autoThrustDisengagedDelayedPulse.write(this.autoThrustDisengagedDelay.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 
     const below50ft =
@@ -2369,7 +2397,7 @@ export class FwsCore implements Instrument {
       this.radioHeight3.valueOr(2500) < 50;
     const voluntaryAThrDisc =
       !this.aircraftOnGround.get() &&
-      this.autoThrustDisengagedPulse.read() &&
+      this.autoThrustDisengagedDelayedPulse.read() &&
       (this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get())) &&
       !this.autoThrustInhibitCaution;
 
@@ -2400,7 +2428,7 @@ export class FwsCore implements Instrument {
     // Involuntary A/THR disconnect
     const involuntaryAThrDisc =
       !this.aircraftOnGround.get() &&
-      this.autoThrustDisengagedPulse.read() &&
+      this.autoThrustDisengagedDelayedPulse.read() &&
       !(this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get()));
 
     this.autoThrustOffInvoluntaryNode.write(involuntaryAThrDisc, aThrEngaged || voluntaryAThrDisc);
@@ -3393,11 +3421,6 @@ export class FwsCore implements Instrument {
     }
 
     /* MASTER CAUT/WARN BUTTONS */
-
-    const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
-    const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
-    const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
-    const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
     if (masterCautionButtonLeft || masterCautionButtonRight) {
       this.auralSingleChimePending = false;
       this.requestMasterCautionFromFaults = false;
