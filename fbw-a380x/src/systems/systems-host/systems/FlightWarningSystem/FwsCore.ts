@@ -3001,7 +3001,7 @@ export class FwsCore implements Instrument {
     this.tcasStandby.set(this.tcasStandby3sConfNode.read() && flightPhase8);
     this.tcasStandbyMemo.set(this.tcasStandbyMemo3sConfNode.read());
 
-    // TCAS fault
+    // TCAS fault SYS 1
     const oneUsedLeftAdrInop =
       (adr1Fault && !this.adr3UsedLeft.get()) ||
       (adr3Fault &&
@@ -3010,7 +3010,7 @@ export class FwsCore implements Instrument {
     const oneLeftUsedIrInop =
       (this.ir1Fault.get() && !this.ir3UsedLeft.get()) || (this.ir3Fault.get() && this.ir3UsedLeft.get());
     const leftIrFaultyOrInAlign = this.ir3UsedLeft.get()
-      ? this.ir3Fault.get() || this.ir3Align.get() // FIX ME USE IR IN ALIGN SIGNALS
+      ? this.ir3Fault.get() || this.ir3Align.get()
       : this.ir1Fault.get() || this.ir1Align.get();
 
     this.tcas1AdrInopOrIrConfNode.write(oneUsedLeftAdrInop || oneLeftUsedIrInop || leftIrFaultyOrInAlign, deltaTime);
@@ -3020,7 +3020,7 @@ export class FwsCore implements Instrument {
     );
     this.tcas1FaultCond.set(!allRaInvalid && this.acESSBusPowered.get() && this.tcas1FaultAndNoAdiruInop.read());
 
-    // SYS 2 FIXME: REplace with proper TCAS var once implemented
+    // TCAS FAULT SYS 2 FIXME: Replace with proper independent TCAS fault var once implemented as only one system exists currently
     const oneUsedRightAdrInop =
       (adr2Fault &&
         (adr2PressureAltitude.isFailureWarning() || adr2PressureAltitude.isNoComputedData()) &&
