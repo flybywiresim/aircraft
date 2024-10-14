@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, Instrument, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 export interface BtvData {
   /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */
@@ -20,6 +20,7 @@ export interface BtvData {
 
   radioAltitude_1: number;
   radioAltitude_2: number;
+  radioAltitude_3: number;
   fwcFlightPhase: number;
 }
 
@@ -32,6 +33,7 @@ export enum BtvSimVars {
   stopBarDistance = 'L:A32NX_OANS_BTV_STOP_BAR_DISTANCE_ESTIMATED',
   radioAltitude_1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
   radioAltitude_2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
+  radioAltitude_3 = 'L:A32NX_RA_3_RADIO_ALTITUDE',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
 }
 
@@ -45,6 +47,7 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
     ['stopBarDistance', { name: BtvSimVars.stopBarDistance, type: SimVarValueType.Number }],
     ['radioAltitude_1', { name: BtvSimVars.radioAltitude_1, type: SimVarValueType.Number }],
     ['radioAltitude_2', { name: BtvSimVars.radioAltitude_2, type: SimVarValueType.Number }],
+    ['radioAltitude_3', { name: BtvSimVars.radioAltitude_3, type: SimVarValueType.Number }],
     ['fwcFlightPhase', { name: BtvSimVars.fwcFlightPhase, type: SimVarValueType.Enum }],
   ]);
 
@@ -55,15 +58,21 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
 
 export interface BtvDataArinc429 {
   /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */
-  btvRot: Arinc429Word;
+  btvRot: Arinc429Register;
   /** (BTV -> OANS) Estimated turnaround time, when using idle reverse during deceleration, in minutes. */
-  btvTurnAroundIdleReverse: Arinc429Word;
+  btvTurnAroundIdleReverse: Arinc429Register;
   /** (BTV -> OANS) Estimated turnaround time, when using max. reverse during deceleration, in minutes. */
-  btvTurnAroundMaxReverse: Arinc429Word;
+  btvTurnAroundMaxReverse: Arinc429Register;
 }
 
 export class BtvArincProvider implements Instrument {
   constructor(private readonly bus: EventBus) {}
+
+  private readonly btvRot = Arinc429Register.empty();
+
+  private readonly btvTurnAroundIdleReverse = Arinc429Register.empty();
+
+  private readonly btvTurnAroundMaxReverse = Arinc429Register.empty();
 
   /** @inheritdoc */
   public init(): void {
@@ -74,21 +83,24 @@ export class BtvArincProvider implements Instrument {
       .on('btvRotRaw')
       .whenChanged()
       .handle((w) => {
-        publisher.pub('btvRot', new Arinc429Word(w));
+        this.btvRot.set(w);
+        publisher.pub('btvRot', this.btvRot);
       });
 
     subscriber
       .on('btvTurnAroundIdleReverseRaw')
       .whenChanged()
       .handle((w) => {
-        publisher.pub('btvTurnAroundIdleReverse', new Arinc429Word(w));
+        this.btvTurnAroundIdleReverse.set(w);
+        publisher.pub('btvTurnAroundIdleReverse', this.btvTurnAroundIdleReverse);
       });
 
     subscriber
       .on('btvTurnAroundMaxReverseRaw')
       .whenChanged()
       .handle((w) => {
-        publisher.pub('btvTurnAroundMaxReverse', new Arinc429Word(w));
+        this.btvTurnAroundMaxReverse.set(w);
+        publisher.pub('btvTurnAroundMaxReverse', this.btvTurnAroundMaxReverse);
       });
   }
 

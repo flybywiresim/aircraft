@@ -8,6 +8,7 @@ import {
   ArraySubject,
   ClockEvents,
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -22,6 +23,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import {
   BrakeToVacateUtils,
+  BtvData,
   ControlPanelAirportSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
@@ -33,6 +35,7 @@ import {
 } from '@flybywiresim/oanc';
 import {
   AmdbAirportSearchResult,
+  Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
   EfisSide,
   FeatureType,
@@ -75,6 +78,10 @@ const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', '
 
 export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
+
+  private readonly sub = this.props.bus.getSubscriber<
+    ClockEvents & FmsOansDataArinc429 & AdirsSimVars & NDSimvars & BtvData
+  >();
 
   private readonly navigraphAvailable = Subject.create(false);
 
@@ -154,6 +161,27 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
+  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('radioAltitude_1').whenChanged(),
+  );
+  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('radioAltitude_2').whenChanged(),
+  );
+  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('radioAltitude_3').whenChanged(),
+  );
+
+  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase').whenChanged(), 0);
+
+  private readonly below300ftRaAndLanding = MappedSubject.create(
+    ([ra1, ra2, ra3, fp]) =>
+      fp > 8 && fp < 11 && (ra1.valueOr(2500) <= 300 || ra2.valueOr(2500) <= 300 || ra3.valueOr(2500) <= 300),
+    this.radioAltitude1,
+    this.radioAltitude2,
+    this.radioAltitude3,
+    this.fwsFlightPhase,
+  );
+
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
       this.mapDataLdgShiftPanelRef.instance.style.display = 'flex';
@@ -229,21 +257,25 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       }, true),
     );
 
-    const sub = this.props.bus.getSubscriber<ClockEvents & FmsOansDataArinc429 & AdirsSimVars & NDSimvars>();
-
-    sub
+    this.sub
       .on('latitude')
       .whenChanged()
       .handle((value) => {
         this.pposLatWord.setWord(value);
       });
 
-    sub
+    this.sub
       .on('longitude')
       .whenChanged()
       .handle((value) => {
         this.pposLonWord.setWord(value);
       });
+
+    this.below300ftRaAndLanding.sub((v) => {
+      if (v && !this.btvUtils.runwayIsSet()) {
+        this.setBtvRunwayFromFmsRunway();
+      }
+    });
 
     this.fmsDataStore.landingRunway.sub(async (it) => {
       // Set control panel display
@@ -272,40 +304,17 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.runwayTora.set('N/A');
           }
         } else if (destination && this.navigraphAvailable.get() === false) {
-          const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-          const arps = await db.getAirports([destination]);
-          this.arpCoordinates = arps[0].location;
-
-          const runways = await db.getRunways(destination);
-          this.landingRunwayNavdata = runways.filter((rw) => rw.ident === it)[0];
-          this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
-          this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
-          const oppositeThreshold = placeBearingDistance(
-            this.landingRunwayNavdata.thresholdLocation,
-            this.landingRunwayNavdata.bearing,
-            this.landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
-          );
-          const localThr = globalToAirportCoordinates(this.arpCoordinates, this.landingRunwayNavdata.thresholdLocation);
-          const localOppThr = globalToAirportCoordinates(this.arpCoordinates, oppositeThreshold);
-
-          this.btvUtils.selectRunwayFromNavdata(
-            it,
-            this.landingRunwayNavdata.length,
-            this.landingRunwayNavdata.bearing,
-            localThr,
-            localOppThr,
-          );
+          this.setBtvRunwayFromFmsRunway();
         }
       }
     });
 
-    sub
+    this.sub
       .on('realTime')
       .atFrequency(1)
       .handle((_) => this.autoLoadAirport());
 
-    sub
+    this.sub
       .on('realTime')
       .atFrequency(5)
       .handle((_) => {
@@ -319,14 +328,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }
       });
 
-    sub
+    this.sub
       .on('oansRequestedStoppingDistance')
       .whenChanged()
       .handle((it) => this.reqStoppingDistance.set(it.isNormalOperation() ? it.value : 0));
 
     this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
 
-    sub
+    this.sub
       .on(this.props.side === 'L' ? 'kccuOnL' : 'kccuOnR')
       .whenChanged()
       .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen));
@@ -466,6 +475,37 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           return;
         }
       }
+    }
+  }
+
+  private async setBtvRunwayFromFmsRunway() {
+    const destination = this.fmsDataStore.destination.get();
+    const rwyIdent = this.fmsDataStore.landingRunway.get();
+    if (destination && rwyIdent) {
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+      const arps = await db.getAirports([destination]);
+      this.arpCoordinates = arps[0].location;
+
+      const runways = await db.getRunways(destination);
+      this.landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+      this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
+      this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
+      const oppositeThreshold = placeBearingDistance(
+        this.landingRunwayNavdata.thresholdLocation,
+        this.landingRunwayNavdata.bearing,
+        this.landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+      );
+      const localThr = globalToAirportCoordinates(this.arpCoordinates, this.landingRunwayNavdata.thresholdLocation);
+      const localOppThr = globalToAirportCoordinates(this.arpCoordinates, oppositeThreshold);
+
+      this.btvUtils.selectRunwayFromNavdata(
+        rwyIdent,
+        this.landingRunwayNavdata.length,
+        this.landingRunwayNavdata.bearing,
+        localThr,
+        localOppThr,
+      );
     }
   }
 
