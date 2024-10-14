@@ -44,6 +44,7 @@ import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/Fw
 import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { FwsAbnormalNonSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalNonSensed';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -230,6 +231,44 @@ export class FwsCore implements Instrument {
   public readonly ecamStsNormal = Subject.create(true);
 
   public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
+
+  /* MISC STUFF */
+
+  public readonly airKnob = Subject.create(0);
+
+  public readonly airDataCaptOn3 = this.airKnob.map((it) => it === 0);
+
+  public readonly airDataFoOn3 = this.airKnob.map((it) => it === 0);
+
+  public readonly attKnob = Subject.create(0);
+
+  public readonly compMesgCount = Subject.create(0);
+
+  public readonly fmsSwitchingKnob = Subject.create(0);
+
+  public readonly landAsapRed = Subject.create(false);
+
+  public readonly ndXfrKnob = Subject.create(0);
+
+  public readonly manLandingElevation = Subject.create(false);
+
+  public readonly noMobileSwitchPosition = Subject.create(0);
+
+  public readonly predWSOn = Subject.create(false);
+
+  public readonly seatBelt = Subject.create(0);
+
+  public readonly strobeLightsOn = Subject.create(0);
+
+  public readonly tcasFault = Subject.create(false);
+
+  public readonly tcasSensitivity = Subject.create(0);
+
+  public readonly toConfigNormal = Subject.create(false);
+
+  public readonly wingAntiIce = Subject.create(false);
+
+  public readonly voiceVhf3 = Subject.create(false);
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -582,17 +621,17 @@ export class FwsCore implements Instrument {
 
   public slatFlapSelectionS22F20 = false;
 
-  public readonly flapsInferiorToPositionA = Subject.create(false);
+  public readonly flapsInferiorTo8Deg = Subject.create(false);
 
-  public readonly flapsSuperiorToPositionD = Subject.create(false);
+  public readonly flapsSuperiorTo8Deg = Subject.create(false);
 
-  public readonly flapsSuperiorToPositionF = Subject.create(false);
+  public readonly flapsSuperiorTo17Deg = Subject.create(false);
 
-  public readonly slatsInferiorToPositionD = Subject.create(false);
+  public readonly flapsSuperiorTo26Deg = Subject.create(false);
 
-  public readonly slatsSuperiorToPositionG = Subject.create(false);
+  public readonly slatsInferiorTo20Deg = Subject.create(false);
 
-  public readonly flapsSuperiorToPositionDOrSlatsSuperiorToPositionC = Subject.create(false);
+  public readonly flapsInConf3OrFull = Subject.create(false);
 
   public readonly flapsNotTo = Subject.create(false);
 
@@ -914,15 +953,13 @@ export class FwsCore implements Instrument {
 
   public readonly aircraftOnGround = Subject.create(false);
 
-  public readonly antiskidActive = Subject.create(false);
-
-  public readonly brakeFan = Subject.create(false);
+  public readonly antiSkidSwitchOff = Subject.create(false);
 
   public readonly brakesHot = Subject.create(false);
 
-  public readonly leftLandingLightExtended = Subject.create(false);
+  public readonly phase815MinConfNode = new NXLogicConfirmNode(900);
 
-  public readonly rightlandingLightExtended = Subject.create(false);
+  public readonly phase112 = Subject.create(false);
 
   public readonly lgciu1Fault = Subject.create(false);
 
@@ -941,6 +978,14 @@ export class FwsCore implements Instrument {
   public readonly nwSteeringDisc = Subject.create(false);
 
   public readonly parkBrake = Subject.create(false);
+
+  private readonly parkBrake2sConfNode = new NXLogicConfirmNode(2);
+
+  public readonly lgParkBrkOn = Subject.create(false);
+
+  private readonly confingParkBrakeOnMemoryNode = new NXLogicMemoryNode();
+
+  public readonly configParkBrakeOn = Subject.create(false);
 
   public readonly lgNotDown = Subject.create(false);
 
@@ -983,22 +1028,43 @@ export class FwsCore implements Instrument {
   public readonly adirsRemainingAlignTime = Subject.create(0);
 
   public readonly adiru1State = Subject.create(0);
+  public readonly adiru1ModeSelector = Subject.create(0);
 
   public readonly adiru2State = Subject.create(0);
+  public readonly adiru2ModeSelector = Subject.create(0);
 
   public readonly adiru3State = Subject.create(0);
+  public readonly adiru3ModeSelector = Subject.create(0);
 
-  public readonly adr1Cas = Subject.create(Arinc429Word.empty());
-  public readonly adr2Cas = Arinc429Register.empty();
-  public readonly adr3Cas = Arinc429Register.empty();
+  public readonly adr1Cas = Arinc429RegisterSubject.createEmpty();
+  public readonly adr2Cas = Arinc429RegisterSubject.createEmpty();
+  public readonly adr3Cas = Arinc429RegisterSubject.createEmpty();
 
-  public readonly adr1Fault = Subject.create(false);
-  public readonly adr2Fault = Subject.create(false);
-  public readonly adr3Fault = Subject.create(false);
+  public readonly adr1Mach = Arinc429RegisterSubject.createEmpty();
+  public readonly adr2Mach = Arinc429RegisterSubject.createEmpty();
+  public readonly adr3Mach = Arinc429RegisterSubject.createEmpty();
 
-  public readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
+  public readonly adr1Faulty = Subject.create(false);
+  public readonly adr2Faulty = Subject.create(false);
+  public readonly adr3Faulty = Subject.create(false);
 
-  public readonly adr1Mach = Subject.create(Arinc429Word.empty());
+  public readonly computedAirSpeedToNearest2 = MappedSubject.create(
+    ([cas1, cas2, cas3, sideOn3]) =>
+      Math.round((sideOn3 ? cas3.value : this.fwsNumber === 2 ? cas2.value : cas1.value) / 2) * 2,
+    this.adr1Cas,
+    this.adr2Cas,
+    this.adr3Cas,
+    this.fwsNumber === 2 ? this.airDataFoOn3 : this.airDataCaptOn3,
+  );
+
+  public readonly machSelectedFromAdr = MappedSubject.create(
+    ([mach1, mach2, mach3, sideOn3]) =>
+      Math.round((sideOn3 ? mach3.value : this.fwsNumber === 2 ? mach2.value : mach1.value) / 2) * 2,
+    this.adr1Mach,
+    this.adr2Mach,
+    this.adr3Mach,
+    this.fwsNumber === 2 ? this.airDataFoOn3 : this.airDataCaptOn3,
+  );
 
   public readonly ir1MaintWord = Arinc429Register.empty();
   public readonly ir2MaintWord = Arinc429Register.empty();
@@ -1065,6 +1131,8 @@ export class FwsCore implements Instrument {
 
   /** ENGINE AND THROTTLE */
 
+  public readonly oneEngineRunning = Subject.create(false);
+
   public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
 
   public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
@@ -1084,6 +1152,10 @@ export class FwsCore implements Instrument {
   public readonly N1Eng1 = Subject.create(0);
 
   public readonly N1Eng2 = Subject.create(0);
+
+  public readonly N1Eng3 = Subject.create(0);
+
+  public readonly N1Eng4 = Subject.create(0);
 
   public readonly N2Eng1 = Subject.create(0);
 
@@ -1188,6 +1260,10 @@ export class FwsCore implements Instrument {
 
   public readonly eng1Or2TakeoffPower = Subject.create(false);
 
+  public readonly eng3Or4TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
+
+  public readonly eng3Or4TakeoffPower = Subject.create(false);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -1206,40 +1282,6 @@ export class FwsCore implements Instrument {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
-  /* OTHER STUFF */
-
-  public readonly airKnob = Subject.create(0);
-
-  public readonly attKnob = Subject.create(0);
-
-  public readonly compMesgCount = Subject.create(0);
-
-  public readonly fmsSwitchingKnob = Subject.create(0);
-
-  public readonly landAsapRed = Subject.create(false);
-
-  public readonly ndXfrKnob = Subject.create(0);
-
-  public readonly manLandingElevation = Subject.create(false);
-
-  public readonly noMobileSwitchPosition = Subject.create(0);
-
-  public readonly predWSOn = Subject.create(false);
-
-  public readonly seatBelt = Subject.create(0);
-
-  public readonly strobeLightsOn = Subject.create(0);
-
-  public readonly tcasFault = Subject.create(false);
-
-  public readonly tcasSensitivity = Subject.create(0);
-
-  public readonly toConfigNormal = Subject.create(false);
-
-  public readonly wingAntiIce = Subject.create(false);
-
-  public readonly voiceVhf3 = Subject.create(false);
-
   private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
     if (val) {
       // Push only unique keys
@@ -1257,6 +1299,7 @@ export class FwsCore implements Instrument {
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
 
   constructor(
+    public readonly fwsNumber: 1 | 2,
     public readonly bus: EventBus,
     public readonly instrument: BaseInstrument,
   ) {
@@ -1559,7 +1602,9 @@ export class FwsCore implements Instrument {
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
-    this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
+    const phase3 = this.fwcFlightPhase.get() === 3;
+    const phase6 = this.fwcFlightPhase.get() === 6;
+    this.flightPhase3PulseNode.write(phase3, deltaTime);
     // flight phase convenience vars
     this.flightPhase128.set([1, 2, 8].includes(this.fwcFlightPhase.get()));
     this.flightPhase23.set([2, 3].includes(this.fwcFlightPhase.get()));
@@ -1571,6 +1616,9 @@ export class FwsCore implements Instrument {
     this.flightPhase89.set([8, 9].includes(this.fwcFlightPhase.get()));
     this.flightPhase910.set([9, 10].includes(this.fwcFlightPhase.get()));
     const flightPhase6789 = [6, 7, 8, 9].includes(this.fwcFlightPhase.get());
+
+    this.phase815MinConfNode.write(this.fwcFlightPhase.get() === 8, deltaTime);
+    this.phase112.set([1, 12].includes(this.fwcFlightPhase.get()));
 
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
@@ -1635,11 +1683,13 @@ export class FwsCore implements Instrument {
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
-    this.adr1Cas.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
-    this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
-    this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
+    this.adr1Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 'number'));
+    this.adr2Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED', 'number'));
+    this.adr3Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED', 'number'));
 
-    this.adr1Mach.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_MACH'));
+    this.adr1Mach.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_MACH', 'number'));
+    this.adr2Mach.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_MACH', 'number'));
+    this.adr3Mach.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_3_MACH', 'number'));
 
     this.ir1Pitch.setFromSimVar('L:A32NX_ADIRS_IR_1_PITCH');
     this.ir2Pitch.setFromSimVar('L:A32NX_ADIRS_IR_2_PITCH');
@@ -1682,8 +1732,14 @@ export class FwsCore implements Instrument {
     this.engine3Running.set(engine3StateSiMVar == 1);
     this.engine4Running.set(engine4StateSiMVar == 1);
 
+    this.oneEngineRunning.set(
+      this.engine1Running.get() || this.engine2Running.get() || this.engine3Running.get() || this.engine4Running.get(),
+    );
+
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
+    this.N1Eng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:3', 'number'));
+    this.N1Eng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:4', 'number'));
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
@@ -1836,7 +1892,10 @@ export class FwsCore implements Instrument {
     const eng1APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1APumpFault.set(
       this.eng1APumpOffConfirmationNode.read() ||
-        (this.engine1Running.get() && eng1APumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine1Running.get() &&
+          eng1APumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.greenRsvOverheat.get()),
     );
 
     this.eng1BPumpOffConfirmationNode.write(
@@ -1850,7 +1909,10 @@ export class FwsCore implements Instrument {
     const eng1BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1BPumpFault.set(
       this.eng1BPumpOffConfirmationNode.read() ||
-        (this.engine1Running.get() && eng1BPumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine1Running.get() &&
+          eng1BPumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.greenRsvOverheat.get()),
     );
 
     this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
@@ -1869,7 +1931,10 @@ export class FwsCore implements Instrument {
     const eng2APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2APumpFault.set(
       this.eng2APumpOffConfirmationNode.read() ||
-        (this.engine2Running.get() && eng2APumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine2Running.get() &&
+          eng2APumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.greenRsvOverheat.get()),
     );
 
     this.eng2BPumpOffConfirmationNode.write(
@@ -1884,7 +1949,10 @@ export class FwsCore implements Instrument {
     const eng2BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2BPumpFault.set(
       this.eng2BPumpOffConfirmationNode.read() ||
-        (this.engine2Running.get() && eng2BPumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine2Running.get() &&
+          eng2BPumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.greenRsvOverheat.get()),
     );
 
     this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
@@ -1904,7 +1972,10 @@ export class FwsCore implements Instrument {
     const eng3APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3APumpFault.set(
       this.eng3APumpOffConfirmationNode.read() ||
-        (this.engine3Running.get() && eng3APumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine3Running.get() &&
+          eng3APumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.yellowRsvOverheat.get()),
     );
 
     this.eng3BPumpOffConfirmationNode.write(
@@ -1919,7 +1990,10 @@ export class FwsCore implements Instrument {
     const eng3BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3BPumpFault.set(
       this.eng3BPumpOffConfirmationNode.read() ||
-        (this.engine3Running.get() && eng3BPumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine3Running.get() &&
+          eng3BPumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.yellowRsvOverheat.get()),
     );
 
     this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
@@ -1939,7 +2013,10 @@ export class FwsCore implements Instrument {
 
     this.eng4APumpFault.set(
       this.eng4APumpOffConfirmationNode.read() ||
-        (this.engine4Running && eng4APumpBelow2900 && !this.greenYellowAbnormLoPressure),
+        (this.engine4Running &&
+          eng4APumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure &&
+          !this.yellowRsvOverheat.get()),
     );
 
     this.eng4BPumpOffConfirmationNode.write(
@@ -1954,7 +2031,10 @@ export class FwsCore implements Instrument {
     const eng4BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng4BPumpFault.set(
       this.eng4BPumpOffConfirmationNode.read() ||
-        (this.engine4Running.get() && eng4BPumpBelow2900 && !this.greenYellowAbnormLoPressure.get()),
+        (this.engine4Running.get() &&
+          eng4BPumpBelow2900 &&
+          !this.greenYellowAbnormLoPressure.get() &&
+          !this.yellowRsvOverheat.get()),
     );
 
     this.threeYellowPumpsFailed.set(
@@ -1964,9 +2044,17 @@ export class FwsCore implements Instrument {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
+    const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
+    const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
+    const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
+
     this.ir1Fault.set(this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true));
     this.ir2Fault.set(this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true));
     this.ir3Fault.set(this.ir3Pitch.isFailureWarning() || this.ir3MaintWord.bitValueOr(9, true));
+
+    const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
+    const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
+    const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
 
     this.irExcessMotion.set(
       this.ir1MaintWord.bitValueOr(13, false) ||
@@ -1974,22 +2062,30 @@ export class FwsCore implements Instrument {
         this.ir3MaintWord.bitValueOr(13, false),
     );
 
-    this.adr1Fault.set(this.adr1Cas.get().isFailureWarning() || this.ir1MaintWord.bitValueOr(8, false));
-    this.adr2Fault.set(this.adr2Cas.isFailureWarning() || this.ir2MaintWord.bitValueOr(8, false));
-    this.adr3Fault.set(this.adr3Cas.isFailureWarning() || this.ir3MaintWord.bitValueOr(8, false));
-    // console.log('2', this.adr1Cas.get().isFailureWarning(), this.ir1MaintWord.bitValueOr(8, false));
+    this.adr1Faulty.set(
+      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
+        (adr1Discrete1.isFailureWarning() || adr1Discrete1.bitValueOr(3, false)),
+    );
+    this.adr2Faulty.set(
+      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
+        (adr2Discrete1.isFailureWarning() || adr2Discrete1.bitValueOr(3, false)),
+    );
+    this.adr3Faulty.set(
+      !(!this.acESSBusPowered.get() || [1, 12].includes(this.fwcFlightPhase.get())) &&
+        (adr3Discrete1.isFailureWarning() || adr3Discrete1.bitValueOr(3, false)),
+    );
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
-    const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
-    const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
-    const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
     // TODO use GPS alt if ADRs not available
     const pressureAltitude =
       adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
     this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
     this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
     this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
+    this.adiru1ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'enum'));
+    this.adiru2ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB', 'enum'));
+    this.adiru3ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB', 'enum'));
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
@@ -1999,33 +2095,34 @@ export class FwsCore implements Instrument {
     this.height3Failed.set(this.radioHeight3.isFailureWarning());
     // overspeed
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
-    const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
-    const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
 
     this.trueNorthRef.set(SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'number'));
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
-    this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
-    this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
-    this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
-    // FIX ME ldg lt extended signal should come from SDAC
-    const leftLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_2_POSITION', 'number');
-    const rightLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_3_POSITION', 'number');
-    this.leftLandingLightExtended.set(leftLdgLtPosition >= 30);
-    this.rightlandingLightExtended.set(rightLdgLtPosition >= 30);
+    this.antiSkidSwitchOff.set(!SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
+
+    const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
+
+    this.brakesHot.set(brakesHot && !this.phase815MinConfNode.read());
+
     this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
     this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
     this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
-    this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
+    const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
+    this.parkBrake.set(parkBrakeSet);
+    this.lgParkBrkOn.set(this.parkBrake2sConfNode.write(parkBrakeSet, deltaTime));
+    this.configParkBrakeOn.set(
+      this.confingParkBrakeOnMemoryNode.write(phase3 && parkBrakeSet, !parkBrakeSet || phase6),
+    );
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
     const leftCompressedHardwireLgciu1 =
-      this.dcESSBusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_1_L_GEAR_COMPRESSED', 'bool') > 0;
+      this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_L_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
-      this.dc2BusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_2_L_GEAR_COMPRESSED', 'bool') > 0;
+      this.dc2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_L_GEAR_COMPRESSED', 'bool') > 0;
     this.gearLeverPos.set(SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'));
 
     // General logic
@@ -2111,15 +2208,26 @@ export class FwsCore implements Instrument {
     this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
     // FIXME ECU doesn't have the necessary output words so we go purely on TLA
     const flexThrustLimit = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number') === 3;
-    const toPower =
+    const engOneOrTwoTakeoffPower =
       this.throttle1Position.get() >= 45 ||
       (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
       this.throttle2Position.get() >= 45 ||
       (this.throttle2Position.get() >= 35 && flexThrustLimit);
-    this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
+
+    const engThreeOrFourTakeoffPower =
+      this.throttle3Position.get() >= 45 ||
+      (this.throttle3Position.get() >= 35 && flexThrustLimit) ||
+      this.throttle4Position.get() >= 45 ||
+      (this.throttle4Position.get() >= 35 && flexThrustLimit);
+
+    this.eng1Or2TakeoffPowerConfirm.write(engOneOrTwoTakeoffPower, deltaTime);
+    this.eng3Or4TakeoffPowerConfirm.write(engThreeOrFourTakeoffPower, deltaTime);
     const raAbove1500 =
       this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500 || this.radioHeight3.valueOr(0) > 1500;
-    this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
+    this.eng1Or2TakeoffPower.set(engOneOrTwoTakeoffPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
+    this.eng3Or4TakeoffPower.set(
+      engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
+    );
 
     this.engDualFault.set(
       !this.aircraftOnGround.get() &&
@@ -2140,10 +2248,12 @@ export class FwsCore implements Instrument {
     }
 
     let overspeedWarning = this.adr3OverspeedWarning.write(
-      this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && this.adr3Cas.value > adr3MaxCas.value + 8,
+      this.adr3Cas.get().isNormalOperation() &&
+        adr3MaxCas.isNormalOperation() &&
+        this.adr3Cas.get().value > adr3MaxCas.value + 8,
       this.aircraftOnGround.get() ||
-        !(this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
-        this.adr3Cas.value < adr3MaxCas.value + 4,
+        !(this.adr3Cas.get().isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
+        this.adr3Cas.get().value < adr3MaxCas.value + 4,
     );
     if (
       !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
@@ -2154,13 +2264,18 @@ export class FwsCore implements Instrument {
     }
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
-    this.overspeedVmo.set(!this.isAllGearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(340));
-    this.overspeedVle.set(this.isAllGearDownlocked && this.flapsHandle.get() === 0 && isOverspeed(250));
-    this.overspeedVfeConf1.set(this.flapsHandle.get() === 1 && isOverspeed(263)); // FIXME
-    // this.overspeedVfeConf1F.set(this.flapsHandle.get() === 1 && isOverspeed(222));
-    this.overspeedVfeConf2.set(this.flapsHandle.get() === 2 && isOverspeed(220));
-    this.overspeedVfeConf3.set(this.flapsHandle.get() === 3 && isOverspeed(196));
-    this.overspeedVfeConfFull.set(this.flapsHandle.get() === 4 && isOverspeed(182));
+    const isOverMach = (limit: number) => this.machSelectedFromAdr.get() > limit + 0.006;
+    this.overspeedVmo.set(
+      !this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vmo) || isOverMach(Mmo)),
+    );
+    this.overspeedVle.set(
+      this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vle) || isOverMach(Mle)),
+    );
+    this.overspeedVfeConf1.set(this.flapsIndex.get() === 1 && isOverspeed(VfeF1));
+    this.overspeedVfeConf1F.set(this.flapsIndex.get() === 2 && isOverspeed(VfeF1F));
+    this.overspeedVfeConf2.set(this.flapsIndex.get() === 3 && isOverspeed(VfeF2));
+    this.overspeedVfeConf3.set((this.flapsIndex.get() === 4 || this.flapsIndex.get() === 5) && isOverspeed(VfeF3));
+    this.overspeedVfeConfFull.set(this.flapsIndex.get() === 6 && isOverspeed(VfeFF));
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
@@ -2616,17 +2731,17 @@ export class FwsCore implements Instrument {
 
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
-    this.flapsInferiorToPositionA.set(flapsPos.isNormalOperation() && flapsPos.value < 65);
-    this.flapsSuperiorToPositionD.set(flapsPos.isNormalOperation() && flapsPos.value > 152);
-    this.flapsSuperiorToPositionF.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
-    this.slatsInferiorToPositionD.set(slatsPos.isNormalOperation() && slatsPos.value < 210.46);
-    this.slatsSuperiorToPositionG.set(slatsPos.isNormalOperation() && slatsPos.value > 309.53);
-    this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.set(
-      this.flapsSuperiorToPositionD.get() || (slatsPos.isNormalOperation() && slatsPos.value > 198.1),
+    this.flapsInferiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value < 50);
+    this.flapsSuperiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 120);
+    this.flapsSuperiorTo17Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
+    this.flapsSuperiorTo26Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 203);
+    this.slatsInferiorTo20Deg.set(slatsPos.isNormalOperation() && slatsPos.value < 240);
+    this.flapsInConf3OrFull.set(
+      this.flapsSuperiorTo17Deg.get() || (slatsPos.isNormalOperation() && slatsPos.value > 255),
     );
 
     // flap, slat and speedbrake config warning logic
-    const flapsNotInToPos = this.flapsSuperiorToPositionF.get() || this.flapsInferiorToPositionA.get();
+    const flapsNotInToPos = this.flapsSuperiorTo26Deg.get() || this.flapsInferiorTo8Deg.get();
     this.flapConfigSr.write(
       this.flightPhase345.get() && flapsNotInToPos,
       !flapsNotInToPos || this.fwcFlightPhase.get() === 6 || this.fwcFlightPhase.get() === 7,
@@ -2641,7 +2756,7 @@ export class FwsCore implements Instrument {
       (this.toConfigTestHeldMin1s5Pulse.get() && this.flapsNotTo.get()) || this.slatConfigSr.read(),
     );
 
-    const slatsNotInToPos = this.slatsInferiorToPositionD.get() || this.slatsSuperiorToPositionG.get();
+    const slatsNotInToPos = this.slatsInferiorTo20Deg.get();
     this.slatConfigSr.write(
       this.flightPhase345.get() && slatsNotInToPos,
       !slatsNotInToPos || this.fwcFlightPhase.get() === 6 || this.fwcFlightPhase.get() === 7,
@@ -2833,6 +2948,7 @@ export class FwsCore implements Instrument {
         this.flightPhase89.get() &&
         !this.phase104s5Trigger.read() &&
         !this.eng1Or2TakeoffPower.get() &&
+        !this.eng3Or4TakeoffPower.get() &&
         !allGroundSpoilersInop &&
         !(this.groundSpoiler5sDelayed.read() || this.speedBrake5sDelayed.read()) &&
         (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
@@ -2859,8 +2975,9 @@ export class FwsCore implements Instrument {
       !this.radioHeight3.isNormalOperation();
     const gearNotDownlocked = !mainGearDownlocked && (!this.lgciu1Fault.get() || !this.lgciu2Fault.get());
     const below750Condition =
-      this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.get() &&
+      this.flapsInConf3OrFull.get() &&
       !this.eng1Or2TakeoffPower.get() &&
+      !this.eng3Or4TakeoffPower.get() &&
       below750Ra &&
       gearNotDownlocked;
     const allRaInvalid =
@@ -2872,8 +2989,8 @@ export class FwsCore implements Instrument {
       (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning()) &&
       (this.radioHeight3.isNoComputedData() || this.radioHeight3.isFailureWarning());
     const flapsApprCondition =
-      ((this.flapsSuperiorToPositionD.get() && !this.flapsSuperiorToPositionF.get() && allRaInvalid) ||
-        (this.flapsSuperiorToPositionF.get() && allRaInvalidOrNcd)) &&
+      ((this.flapsSuperiorTo8Deg.get() && !this.flapsSuperiorTo17Deg.get() && allRaInvalid) ||
+        (this.flapsSuperiorTo17Deg.get() && allRaInvalidOrNcd)) &&
       flightPhase8 &&
       gearNotDownlocked;
     const lgNotDownResetPulse =
@@ -2882,10 +2999,25 @@ export class FwsCore implements Instrument {
     this.lgNotDownNoCancel.set((below750Condition || flapsApprCondition) && !lgNotDownResetPulse);
     const n1Eng1 = this.N1Eng1.get();
     const n1Eng2 = this.N1Eng2.get();
-    const apprN1 =
+    const n1Eng3 = this.N1Eng3.get();
+    const n1Eng4 = this.N1Eng4.get();
+    const apprN1Eng1Or2 =
       (n1Eng1 < 75 && n1Eng2 < 75) ||
       (n1Eng1 < 97 && n1Eng2 < 97 && !this.engine1Master.get() && !this.engine2Master.get());
-    this.lgNotDown.set(gearNotDownlocked && !altInhibit && !this.eng1Or2TakeoffPower.get() && apprN1 && below750Ra);
+
+    const apprN1Eng3Or4 =
+      (n1Eng3 < 75 && n1Eng4 < 75) ||
+      (n1Eng3 < 97 && n1Eng4 < 97 && !this.engine3Master.get() && !this.engine4Master.get());
+
+    this.lgNotDown.set(
+      gearNotDownlocked &&
+        !altInhibit &&
+        !this.eng1Or2TakeoffPower.get() &&
+        !this.eng3Or4TakeoffPower.get() &&
+        apprN1Eng1Or2 &&
+        apprN1Eng3Or4 &&
+        below750Ra,
+    );
     // goes to discrete out (RMP02B) and out word 126-11/25
     const redArrow =
       !((flightPhase8 && !allRaInvalid) || flightPhase4567) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
@@ -2908,7 +3040,7 @@ export class FwsCore implements Instrument {
     const isNormalLaw = fcdc1DiscreteWord1.bitValue(11) || fcdc2DiscreteWord1.bitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
-      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.valueOr(0) > 60 || this.adr3Cas.valueOr(0) > 60;
+      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.get().valueOr(0) > 60 || this.adr3Cas.get().valueOr(0) > 60;
     this.stallWarning.set(
       !isNormalLaw &&
         isCasAbove60 &&

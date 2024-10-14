@@ -71,7 +71,7 @@ module.exports = {
 
     'tailwindcss/classnames-order': 'error',
     'tailwindcss/enforces-negative-arbitrary-values': 'error',
-    'tailwindcss/enforces-shorthand': 'error',
+    'tailwindcss/enforces-shorthand': 'off',
     'tailwindcss/migration-from-tailwind-2': 'error',
     'tailwindcss/no-contradicting-classname': 'error',
   },
