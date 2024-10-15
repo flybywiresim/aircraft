@@ -31,6 +31,8 @@ export type EGTProps = {
 
 export type CabinDoorProps = {
   doorNumber: number;
+  interactivePoint: number;
+  slideArmed: boolean;
   side: 'L' | 'R';
   engineRunning: boolean;
   mainOrUpper: 'MAIN' | 'UPPER';
@@ -38,6 +40,7 @@ export type CabinDoorProps = {
 
 export type CargoDoorProps = {
   label: 'AFT' | 'FWD' | 'BULK' | 'AVNCS' | 'FWD CARGO' | 'AFT CARGO';
+  identifier?: string;
   width: number;
   height: number;
   engineRunning: boolean;
