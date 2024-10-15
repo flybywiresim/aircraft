@@ -3,7 +3,7 @@ import { Position, CargoDoorProps } from '@instruments/common/types';
 import React from 'react';
 
 const CargoDoor: React.FC<Position & CargoDoorProps> = ({ x, y, label, identifier, width, height, engineRunning }) => {
-  const doorOpen = identifier ? [!useSimVar(`L:A32NX_${identifier}_DOOR_CARGO_LOCKED`, 'bool', 1000)] : false;
+  const doorOpen = identifier ? !useSimVar(`L:A32NX_${identifier}_DOOR_CARGO_LOCKED`, 'bool', 1000)[0] : false;
   const validSDAC = true;
 
   let cargoDoorMessage = '';

@@ -12,13 +12,13 @@ export const DoorPage = () => {
   const [windowLeft] = useSimVar('L:CPT_SLIDING_WINDOW', 'number');
   const [windowRight] = useSimVar('L:FO_SLIDING_WINDOW', 'number');
   // TODO replace vars once proper slide implementation & fadec simvars
-  const [beaconOn] = useSimVar('LIGHTING_BEACON_0', 'bool', 1000);
+  const [beaconOn] = useSimVar('LIGHT BEACON ON', 'bool', 1000);
   const [engine1State] = useSimVar('L:A32NX_ENGINE_STATE:1', 'enum', 1000);
   const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'enum', 1000);
   const [engine3State] = useSimVar('L:A32NX_ENGINE_STATE:3', 'enum', 1000);
   const [engine4State] = useSimVar('L:A32NX_ENGINE_STATE:4', 'enum', 1000);
   const engineState = [engine1State, engine2State, engine3State, engine4State];
-  const engineRunning = engineState.filter(True).length > 0;
+  const engineRunning = engineState.filter(Boolean).length > 0;
   const sdacActive = true;
   const onGround = true;
 
