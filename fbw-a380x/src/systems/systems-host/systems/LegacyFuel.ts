@@ -8,6 +8,8 @@ import { FuelSystemEvents } from 'systems-host/systems/FuelSystemPublisher';
 
 /* TODO: remove this file after proper FQMS is implemented in Rust */
 export class LegacyFuel implements Instrument {
+  private readonly NUMBER_OF_TRIGGERS = 42;
+
   private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents>();
 
   private keyEventManager?: KeyEventManager;
@@ -23,6 +25,7 @@ export class LegacyFuel implements Instrument {
   private readonly feed4TankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_9'), 0);
   private readonly rightOuterTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_10'), 0);
   private readonly trimTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_11'), 0);
+  private readonly refuelStarted = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('cg_percent'), 0);
 
@@ -33,7 +36,7 @@ export class LegacyFuel implements Instrument {
       this.keyEventManager = manager;
     });
 
-    for (let index = 1; index < 43; index++) {
+    for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_trigger_status_${index}`), false);
       this.triggerStates.set(index, element);
     }
@@ -46,8 +49,13 @@ export class LegacyFuel implements Instrument {
 
   public onUpdate(): void {
     const onGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
-
-    if (!onGround) {
+    if (this.refuelStarted.get()) {
+      for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
+        if (this.triggerStates.get(index).get()) {
+          this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_OFF', true, index);
+        }
+      }
+    } else if (!onGround) {
       if (
         (this.feed1TankQty.get() < 6436 && !this.triggerStates.get(1).get()) ||
         (this.feed1TankQty.get() >= 6437 && this.triggerStates.get(1).get())
@@ -329,15 +337,15 @@ export class LegacyFuel implements Instrument {
       }
 
       if (
-        (this.cgPercent.get() > 0.415 && !this.triggerStates.get(41).get()) ||
-        (this.cgPercent.get() <= 0.414 && this.triggerStates.get(41).get())
+        (this.cgPercent.get() > 41.5 && !this.triggerStates.get(41).get()) ||
+        (this.cgPercent.get() <= 41.4 && this.triggerStates.get(41).get())
       ) {
         this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_TOGGLE', true, 41);
       }
 
       if (
-        (this.cgPercent.get() < 0.405 && !this.triggerStates.get(42).get()) ||
-        (this.cgPercent.get() >= 0.406 && this.triggerStates.get(42).get())
+        (this.cgPercent.get() < 40.5 && !this.triggerStates.get(42).get()) ||
+        (this.cgPercent.get() >= 40.6 && this.triggerStates.get(42).get())
       ) {
         this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_TOGGLE', true, 42);
       }
