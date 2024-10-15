@@ -170,9 +170,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.destEfob.set('--.-');
       }
 
-      console.log(
-        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard,
-      );
       this.destDistanceLabel.set(
         Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---',
       );
