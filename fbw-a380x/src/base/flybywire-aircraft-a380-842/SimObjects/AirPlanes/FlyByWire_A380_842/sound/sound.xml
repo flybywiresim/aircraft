@@ -1089,6 +1089,7 @@
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
             </Requires>
+            <WwiseRTPC LocalVar="A32NX_FWS_AUDIO_VOLUME" Units="number" Index="0" RTPCName="LOCALVAR_FWC_VOLUME" />
         </Sound>
 
         <!-- Altitude deviation warning =====================================================================-->

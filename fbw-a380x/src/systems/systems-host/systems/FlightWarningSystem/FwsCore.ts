@@ -253,6 +253,9 @@ export class FwsCore implements Instrument {
     this.auralCrcOutput,
   );
 
+  /** 0: 0dB; 1: -6dB; 2: -200dB */
+  public readonly fwsAuralVolume = Subject.create(0);
+
   public readonly ecamStsNormal = Subject.create(true);
 
   public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
@@ -1504,6 +1507,11 @@ export class FwsCore implements Instrument {
       SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', this.startupCompleted.get() ? warning : false);
     }, true);
 
+    this.fwsAuralVolume.sub((volume) => {
+      // Inhibit master warning/cautions until FWC startup has been completed
+      SimVar.SetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', 'number', volume);
+    }, true);
+
     this.startupCompleted.sub((completed) => {
       if (completed) {
         // Check if warnings or cautions have to be set
@@ -2366,16 +2374,19 @@ export class FwsCore implements Instrument {
     this.autoPilotOffShowMemo.set(this.autoPilotOffVoluntaryMemory.read() || this.autoPilotOffInvoluntaryMemory.read());
 
     if (this.autoPilotDisengagedDelayedPulse.read()) {
-      // Request CRC one time
+      // Request quiet CRC one time
       this.requestMasterWarningFromApOff = true;
       this.auralCavalryChargeActive.set(true);
+      this.fwsAuralVolume.set(1);
     }
     if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
       this.auralCavalryChargeActive.set(false);
+      this.fwsAuralVolume.set(0);
     }
     if (!this.autoPilotOffVoluntaryMemory.read() && !this.autoPilotOffInvoluntaryMemory.read()) {
       this.requestMasterWarningFromApOff = false;
       this.auralCavalryChargeActive.set(false);
+      this.fwsAuralVolume.set(0);
     }
 
     this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
