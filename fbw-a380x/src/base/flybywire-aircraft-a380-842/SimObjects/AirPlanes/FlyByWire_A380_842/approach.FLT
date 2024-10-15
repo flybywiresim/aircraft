@@ -207,6 +207,7 @@ Pump.21=False
 Junction.7=1
 Junction.8=1
 Junction.9=1
+Junction.10=1
 
 [Systems.0]
 BatterySwitch=True
