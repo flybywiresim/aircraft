@@ -25,7 +25,50 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
   281800002: {
     title: '\x1b<4m\x1b4mFUEL\x1bm ALL FEED TKs LEVEL LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'CROSSFEED 1+2+3+4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'ALL FEED TKs PMPs',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED', // If gravity transfer from the trim tank is in progress
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 2,
+      },
+      {
+        name: 'OUTR TK XFR', // For transfer tanks containing fuel
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'TRIM TK XFR', // If at least one trim tank pump is running
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 2,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+    ],
   },
   281800003: {
     title: '\x1b<4m\x1b4mFUEL\x1bm APU FEED FAULT',

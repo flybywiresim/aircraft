@@ -79,6 +79,28 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
+    '280000001': {
+      // CROSSFEED OPEN
+      flightPhaseInhib: [3, 4, 5, 6, 7],
+      simVarIsActive: this.fws.crossFeedOpenMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['280000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '280000013': {
+      // CROSSFEED OPEN during TO or GA
+      flightPhaseInhib: [1, 2, 8, 9, 10, 11, 12],
+      simVarIsActive: this.fws.crossFeedOpenMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['280000013'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     '300000001': {
       // ENG ANTI ICE
       flightPhaseInhib: [3, 4, 5, 7, 8],

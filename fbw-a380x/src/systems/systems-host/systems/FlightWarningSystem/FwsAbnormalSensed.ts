@@ -1164,6 +1164,33 @@ export class FwsAbnormalSensed {
       inopSysAllPhases: () => [],
     },
     // 29 FUEL
+    281800002: {
+      // ALL FEED TKs LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank1Low,
+        this.fws.feedTank2Low,
+        this.fws.feedTank3Low,
+        this.fws.feedTank4Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        this.fws.allCrossFeedValvesOpen.get(),
+        this.fws.allFeedTankPumpsOn.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => [],
+      limitationsAllPhases: () => ['2'],
+      limitationsPfd: () => ['2'],
+    },
     281800023: {
       // FEED TK 1 LEVEL LO
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
@@ -1172,7 +1199,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, false, false, false, false, false, false, false],
       failure: 2,
       sysPage: 4,
-      notActiveWhenFaults: ['281800102'],
+      notActiveWhenFaults: ['281800102', '281800002'],
       inopSysAllPhases: () => [],
     },
     281800024: {
@@ -1192,7 +1219,7 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: 4,
-      notActiveWhenFaults: ['281800102'],
+      notActiveWhenFaults: ['281800102', '281800002'],
       inopSysAllPhases: () => [],
     },
     281800025: {
@@ -1212,7 +1239,7 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: 4,
-      notActiveWhenFaults: ['281800103'],
+      notActiveWhenFaults: ['281800103', '281800002'],
       inopSysAllPhases: () => [],
     },
     281800026: {
@@ -1232,7 +1259,7 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: 4,
-      notActiveWhenFaults: ['281800103'],
+      notActiveWhenFaults: ['281800103', '281800002'],
       inopSysAllPhases: () => [],
     },
     281800102: {
@@ -1247,7 +1274,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, this.fws.allCrossFeedValvesOpen.get(), false, false, false, false, false],
       failure: 2,
       sysPage: 4,
-      notActiveWhenFaults: [],
+      notActiveWhenFaults: ['281800002'],
       inopSysAllPhases: () => [],
     },
     281800103: {
@@ -1262,7 +1289,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, this.fws.allCrossFeedValvesOpen.get(), false, false, false, false, false],
       failure: 2,
       sysPage: 4,
-      notActiveWhenFaults: [],
+      notActiveWhenFaults: ['281800002'],
       inopSysAllPhases: () => [],
     },
     281800076: {

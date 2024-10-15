@@ -106,6 +106,7 @@ export const EcamMemos: { [n: string]: string } = {
   '230000015': '\x1b<3mVHF VOICE',
   '271000001': '\x1b<3mGND SPLRs ARMED',
   '280000001': '\x1b<3mCROSSFEED OPEN',
+  '280000013': '\x1b<4mCROSSFEED OPEN',
   '280000002': '\x1b<3mCOLDFUEL OUTR TK XFR',
   '280000003': '\x1b<3mDEFUEL IN PROGRESS',
   '280000004': '\x1b<3mFWD XFR IN PROGRESS',
@@ -225,6 +226,8 @@ export const EcamInfos: { [n: string]: string } = {
 
 /** All possible LIMITATIONs, with special formatting characters. */
 export const EcamLimitations: { [n: string]: string } = {
+  1: '\x1b<2mLAND ASAP',
+  2: '\x1b<4mLAND ANSA',
   220400001: '\x1b<5mNO AUTOLAND',
   230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',

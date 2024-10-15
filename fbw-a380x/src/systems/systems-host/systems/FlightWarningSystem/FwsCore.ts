@@ -798,13 +798,21 @@ export class FwsCore implements Instrument {
 
   /* FUEL */
 
+  public readonly engine1ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_1'), false);
+
+  public readonly engine2ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_2'), false);
+
+  public readonly engine3ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_3'), false);
+
+  public readonly engine4ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_4'), false);
+
   public readonly allFuelPumpsOff = Subject.create(false);
 
-  public readonly centerFuelPump1Auto = ConsumerValue.create(null, false);
+  public readonly centerFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_1'), false);
 
   public readonly feedTank1Low = Subject.create(false);
 
-  public readonly centerFuelPump2Auto = ConsumerValue.create(null, false);
+  public readonly centerFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_4'), false);
 
   public readonly feedTank1LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -812,7 +820,7 @@ export class FwsCore implements Instrument {
 
   public readonly feedTank2LowConfirm = new NXLogicConfirmNode(30, true);
 
-  public readonly leftOuterInnerValve = ConsumerSubject.create(null, 0);
+  public readonly leftOuterInnerValve = ConsumerSubject.create(this.sub.on('fuel_valve_open_4'), 0);
 
   public readonly feedTank3Low = Subject.create(false);
 
@@ -820,19 +828,19 @@ export class FwsCore implements Instrument {
 
   public readonly feedTank4Low = Subject.create(false);
 
-  public readonly leftFuelPump1Auto = ConsumerValue.create(null, false);
+  public readonly leftFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_2'), false);
 
-  public readonly leftFuelPump2Auto = ConsumerValue.create(null, false);
+  public readonly leftFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_5'), false);
 
-  public readonly rightOuterInnerValve = ConsumerSubject.create(null, 0);
+  public readonly rightOuterInnerValve = ConsumerSubject.create(this.sub.on('fuel_valve_open_5'), 0);
 
   public readonly rightFuelLow = Subject.create(false);
 
   public readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
 
-  public readonly rightFuelPump1Auto = ConsumerValue.create(null, false);
+  public readonly rightFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_3'), false);
 
-  public readonly rightFuelPump2Auto = ConsumerValue.create(null, false);
+  public readonly rightFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_6'), false);
 
   public readonly feedTank4LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -848,7 +856,23 @@ export class FwsCore implements Instrument {
     this.crossFeed4ValveOpen,
   );
 
-  public readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
+  public readonly allFeedTankPumpsOn = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.engine1ValueSwitch,
+    this.engine2ValueSwitch,
+    this.engine3ValueSwitch,
+    this.engine4ValueSwitch,
+  );
+
+  public readonly crossFeedOpenMemo = MappedSubject.create(
+    ([cf1, cf2, cf3, cf4]) => [cf1, cf2, cf3, cf4].filter((c) => c === true).length >= 2,
+    this.crossFeed1ValveOpen,
+    this.crossFeed2ValveOpen,
+    this.crossFeed3ValveOpen,
+    this.crossFeed4ValveOpen,
+  );
+
+  public readonly fuelCtrTankModeSelMan = ConsumerSubject.create(this.sub.on('fuel_ctr_tk_mode_sel_man'), false);
 
   public readonly fmsZeroFuelWeight = Arinc429Register.empty();
   public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
@@ -1330,14 +1354,6 @@ export class FwsCore implements Instrument {
 
   public readonly allThrottleIdle = Subject.create(false);
 
-  public readonly engine1ValueSwitch = ConsumerValue.create(null, false);
-
-  public readonly engine2ValueSwitch = ConsumerValue.create(null, false);
-
-  public readonly engine3ValueSwitch = ConsumerValue.create(null, false);
-
-  public readonly engine4ValueSwitch = ConsumerValue.create(null, false);
-
   public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
@@ -1544,19 +1560,6 @@ export class FwsCore implements Instrument {
     // FIXME depend on FWC state
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
-    this.fuelCtrTankModeSelMan.setConsumer(this.sub.on('fuel_ctr_tk_mode_sel_man'));
-    this.engine1ValueSwitch.setConsumer(this.sub.on('fuel_valve_switch_1'));
-    this.engine2ValueSwitch.setConsumer(this.sub.on('fuel_valve_switch_2'));
-    this.engine3ValueSwitch.setConsumer(this.sub.on('fuel_valve_switch_3'));
-    this.engine4ValueSwitch.setConsumer(this.sub.on('fuel_valve_switch_4'));
-    this.centerFuelPump1Auto.setConsumer(this.sub.on('fuel_pump_switch_1'));
-    this.centerFuelPump2Auto.setConsumer(this.sub.on('fuel_pump_switch_4'));
-    this.leftOuterInnerValve.setConsumer(this.sub.on('fuel_valve_open_4'));
-    this.leftFuelPump1Auto.setConsumer(this.sub.on('fuel_pump_switch_2'));
-    this.leftFuelPump2Auto.setConsumer(this.sub.on('fuel_pump_switch_5'));
-    this.rightOuterInnerValve.setConsumer(this.sub.on('fuel_valve_open_5'));
-    this.rightFuelPump1Auto.setConsumer(this.sub.on('fuel_pump_switch_3'));
-    this.rightFuelPump2Auto.setConsumer(this.sub.on('fuel_pump_switch_6'));
     this.allEngineSwitchOff.set(
       !(
         this.engine1ValueSwitch.get() ||
