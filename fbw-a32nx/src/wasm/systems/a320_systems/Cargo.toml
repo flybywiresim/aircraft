@@ -5,7 +5,7 @@ authors = ["FlyByWire Simulations"]
 edition = "2021"
 
 [dependencies]
-uom = "0.33.0"
+uom = "0.36.0"
 nalgebra = "0.25.0"
 ntest = "0.7.2"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
