@@ -16,11 +16,10 @@ use crate::{
 use uom::si::{
     angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
-    f32::Acceleration,
     f64::*,
     length::meter,
     ratio::{percent, ratio},
-    velocity::{self, meter_per_second},
+    velocity::meter_per_second,
 };
 
 use nalgebra::Vector3;
@@ -66,10 +65,7 @@ impl TiltingGear {
     // Indicates the tilt angle already used with plane on ground standing still
     const PLANE_PITCH_OFFSET_ON_GROUND_DEGREES: f64 = 0.8;
 
-    const HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER: f64 = 0.0005;
-
-    // Max speed at which tilt can move if gear is instantly in the air
-    const TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND: f64 = 0.5;
+    const HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER: f64 = 0.;
 
     const AIRBORNE_WHEEL_SPEED_REDUCING_RATE_RPM_S: f64 = 15.;
 
@@ -155,11 +151,11 @@ impl TiltingGear {
             self.min_pos = self.max_pos;
         }
 
-        println!(
-            "FWD {:.2}  AFT {:.2}",
-            fwd_current_tire_height.get::<meter>(),
-            aft_current_tire_height.get::<meter>()
-        );
+        // println!(
+        //     "FWD {:.2}  AFT {:.2}",
+        //     fwd_current_tire_height.get::<meter>(),
+        //     aft_current_tire_height.get::<meter>()
+        // );
 
         let fwd_ground_penetration =
             ((self.max_pos - self.tilt_position).min(Ratio::default())).abs();
@@ -173,15 +169,15 @@ impl TiltingGear {
 
         self.integrate_position(context, fwd_penetration_speed, aft_penetration_speed);
 
-        println!(
-            "Height fwd/aft: {:.2}/{:.2}  PenetrationSpeed fwd {:.2} PenetrationSpeed aft{:.2} MinMax -> POS {:.2}/{:.2} -> {:.2}",
-            fwd_ground_penetration.get::<ratio>(),aft_ground_penetration.get::<ratio>(),
-            fwd_penetration_speed,
-            0.,
-            self.min_pos.get::<ratio>(),
-            self.max_pos.get::<ratio>(),
-            self.tilt_position.get::<ratio>(),
-        );
+        // println!(
+        //     "Height fwd/aft: {:.2}/{:.2}  PenetrationSpeed fwd {:.2} PenetrationSpeed aft{:.2} MinMax -> POS {:.2}/{:.2} -> {:.2}",
+        //     fwd_ground_penetration.get::<ratio>(),aft_ground_penetration.get::<ratio>(),
+        //     fwd_penetration_speed,
+        //     0.,
+        //     self.min_pos.get::<ratio>(),
+        //     self.max_pos.get::<ratio>(),
+        //     self.tilt_position.get::<ratio>(),
+        // );
     }
 
     fn integrate_position(
@@ -200,10 +196,10 @@ impl TiltingGear {
         let acceleration =
             ((damping_force + hyd_spring_force) / intertia) - (angular_accel * self.aaccel_coeff);
 
-        println!(
-            "Aacc {:.2} acc {:.2} vel {:.2}  D {:.2} + HF {:.2}  ",
-            angular_accel, acceleration, self.velocity, damping_force, hyd_spring_force
-        );
+        // println!(
+        //     "Aacc {:.2} acc {:.2} vel {:.2}  D {:.2} + HF {:.2}  ",
+        //     angular_accel, acceleration, self.velocity, damping_force, hyd_spring_force
+        // );
 
         self.velocity += acceleration * context.delta_as_secs_f64();
         self.velocity = self.velocity.clamp(-20., 20.);
