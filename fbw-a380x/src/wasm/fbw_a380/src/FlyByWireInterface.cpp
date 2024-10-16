@@ -619,6 +619,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idPrimHealthy[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_HEALTHY");
     idPrimApAuthorised[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_AP_AUTHORISED");
     idPrimFctlLawStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FCTL_LAW_STATUS_WORD");
+    idPrimFeStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FE_STATUS_WORD");
   }
 
   for (int i = 0; i < 3; i++) {
