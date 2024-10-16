@@ -82,6 +82,8 @@ impl A380TiltingGearsFactory {
         let y_offset_meters = -5.04847;
         let z_offset_meters = -0.235999;
 
+        let distance_fwd_to_aft_wheel = 3.5;
+
         if is_left {
             x_offset_meters *= -1.;
         }
@@ -91,6 +93,11 @@ impl A380TiltingGearsFactory {
             Length::new::<meter>(0.280065),
             if is_left { 1 } else { 2 },
             Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset_meters,
+                y_offset_meters + 0.280065,
+                z_offset_meters - distance_fwd_to_aft_wheel,
+            ),
             Angle::new::<degree>(9.89),
             Length::new::<meter>(0.711),
         )
@@ -101,6 +108,8 @@ impl A380TiltingGearsFactory {
         let y_offset_meters = -4.86875;
         let z_offset_meters = 2.6551;
 
+        let distance_fwd_to_aft_wheel = 2.0;
+
         if is_left {
             x_offset_meters *= -1.;
         }
@@ -110,6 +119,11 @@ impl A380TiltingGearsFactory {
             Length::new::<meter>(0.134608),
             if is_left { 3 } else { 4 },
             Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset_meters,
+                y_offset_meters + 0.134608,
+                z_offset_meters - distance_fwd_to_aft_wheel,
+            ),
             Angle::new::<degree>(9.),
             Length::new::<meter>(0.711),
         )

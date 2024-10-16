@@ -16,10 +16,11 @@ use crate::{
 use uom::si::{
     angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
+    f32::Acceleration,
     f64::*,
     length::meter,
     ratio::{percent, ratio},
-    velocity::meter_per_second,
+    velocity::{self, meter_per_second},
 };
 
 use nalgebra::Vector3;
@@ -36,13 +37,30 @@ pub struct TiltingGear {
     wheel_speed_id: VariableIdentifier,
 
     tilt_height_from_low_to_up: Length,
-    contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+    fwd_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+    aft_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
     tilting_max_angle: Angle,
 
     current_compression: Ratio,
     tilt_position: Ratio,
     wheel_speed: AngularVelocity,
     wheel_radius: Length,
+
+    velocity: f64,
+    min_pos: Ratio,
+    max_pos: Ratio,
+
+    damping: f64,
+    hyd_force: f64,
+    inertia: f64,
+    penetration_coef: f64,
+    aaccel_coeff: f64,
+
+    damping_id: VariableIdentifier,
+    hyd_force_id: VariableIdentifier,
+    inertia_id: VariableIdentifier,
+    penetration_id: VariableIdentifier,
+    aaccelid: VariableIdentifier,
 }
 impl TiltingGear {
     // Indicates the tilt angle already used with plane on ground standing still
@@ -59,7 +77,8 @@ impl TiltingGear {
         context: &mut InitContext,
         tilt_height_from_low_to_up: Length,
         contact_point_id: usize,
-        contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+        fwd_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+        aft_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
         tilting_max_angle: Angle,
         wheel_radius: Length,
     ) -> Self {
@@ -71,7 +90,8 @@ impl TiltingGear {
             wheel_speed_id: context.get_identifier(format!("WHEEL_RPM_{}", contact_point_id)),
 
             tilt_height_from_low_to_up,
-            contact_point_offset_from_datum_ref_meters,
+            fwd_contact_point_offset_from_datum_ref_meters,
+            aft_contact_point_offset_from_datum_ref_meters,
             tilting_max_angle,
 
             current_compression: Ratio::default(),
@@ -79,11 +99,130 @@ impl TiltingGear {
 
             wheel_speed: AngularVelocity::default(),
             wheel_radius,
+
+            velocity: 0.,
+            min_pos: Ratio::default(),
+            max_pos: Ratio::new::<ratio>(1.),
+
+            damping: -0.08,
+            hyd_force: 5.,
+            inertia: 1.,
+            penetration_coef: 10.,
+            aaccel_coeff: 40.,
+
+            damping_id: context.get_identifier("DEV_TILT_DAMPING".to_owned()),
+            hyd_force_id: context.get_identifier("DEV_TILT_HYDF".to_owned()),
+            inertia_id: context.get_identifier("DEV_TILT_INERTIA".to_owned()),
+            penetration_id: context.get_identifier("DEV_TILT_PENETRATION".to_owned()),
+            aaccelid: context.get_identifier("DEV_TILT_aaccel".to_owned()),
         }
     }
 
-    fn update_tire_speed(&mut self, context: &UpdateContext, fwd_bogey_tire_touches_ground: bool) {
-        self.wheel_speed = if fwd_bogey_tire_touches_ground {
+    fn update_physics(
+        &mut self,
+        context: &UpdateContext,
+        fwd_current_tire_height: Length,
+        aft_current_tire_height: Length,
+    ) {
+        self.max_pos = if fwd_current_tire_height.get::<meter>()
+            <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
+        {
+            let ground_tilt_raw = Ratio::new::<ratio>(
+                (1. - (fwd_current_tire_height.abs() / self.tilt_height_from_low_to_up)
+                    .get::<ratio>())
+                .min(1.)
+                .max(0.),
+            );
+
+            ground_tilt_raw.max(self.max_ground_tilt_from_plane_pitch(context))
+        } else {
+            Ratio::new::<ratio>(1.)
+        };
+
+        self.min_pos = if aft_current_tire_height.get::<meter>()
+            <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
+        {
+            Ratio::new::<ratio>(
+                ((aft_current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
+                    .min(1.)
+                    .max(0.),
+            )
+        } else {
+            Ratio::default()
+        };
+
+        if self.min_pos > self.max_pos {
+            self.min_pos = self.max_pos;
+        }
+
+        println!(
+            "FWD {:.2}  AFT {:.2}",
+            fwd_current_tire_height.get::<meter>(),
+            aft_current_tire_height.get::<meter>()
+        );
+
+        let fwd_ground_penetration =
+            ((self.max_pos - self.tilt_position).min(Ratio::default())).abs();
+        let fwd_penetration_speed =
+            fwd_ground_penetration.get::<ratio>() / context.delta_as_secs_f64();
+
+        let aft_ground_penetration =
+            ((self.tilt_position - self.min_pos).min(Ratio::default())).abs();
+        let aft_penetration_speed =
+            aft_ground_penetration.get::<ratio>() / context.delta_as_secs_f64();
+
+        self.integrate_position(context, fwd_penetration_speed, aft_penetration_speed);
+
+        println!(
+            "Height fwd/aft: {:.2}/{:.2}  PenetrationSpeed fwd {:.2} PenetrationSpeed aft{:.2} MinMax -> POS {:.2}/{:.2} -> {:.2}",
+            fwd_ground_penetration.get::<ratio>(),aft_ground_penetration.get::<ratio>(),
+            fwd_penetration_speed,
+            0.,
+            self.min_pos.get::<ratio>(),
+            self.max_pos.get::<ratio>(),
+            self.tilt_position.get::<ratio>(),
+        );
+    }
+
+    fn integrate_position(
+        &mut self,
+        context: &UpdateContext,
+        fwd_penetration_speed: f64,
+        aft_penetration_speed: f64,
+    ) {
+        let angular_accel = context.rotation_acceleration_rad_s2()[0];
+
+        let hyd_spring_force = self.hyd_force;
+        let intertia = self.inertia;
+
+        let damping_force = self.damping * self.velocity;
+
+        let acceleration =
+            ((damping_force + hyd_spring_force) / intertia) - (angular_accel * self.aaccel_coeff);
+
+        println!(
+            "Aacc {:.2} acc {:.2} vel {:.2}  D {:.2} + HF {:.2}  ",
+            angular_accel, acceleration, self.velocity, damping_force, hyd_spring_force
+        );
+
+        self.velocity += acceleration * context.delta_as_secs_f64();
+        self.velocity = self.velocity.clamp(-20., 20.);
+
+        self.tilt_position += Ratio::new::<ratio>(self.velocity * context.delta_as_secs_f64());
+
+        if self.tilt_position > self.max_pos {
+            self.velocity *= -0.8;
+            self.velocity -= fwd_penetration_speed * self.penetration_coef;
+            self.tilt_position = self.max_pos;
+        } else if self.tilt_position < self.min_pos {
+            self.velocity *= -0.8;
+            self.velocity += aft_penetration_speed * self.penetration_coef;
+            self.tilt_position = self.min_pos;
+        }
+    }
+
+    fn update_tire_speed(&mut self, context: &UpdateContext, bogey_tire_touches_ground: bool) {
+        self.wheel_speed = if bogey_tire_touches_ground {
             AngularVelocity::new::<radian_per_second>(
                 context.ground_speed().get::<meter_per_second>() / self.wheel_radius.get::<meter>(),
             )
@@ -97,40 +236,19 @@ impl TiltingGear {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        let current_tire_height =
-            height_over_ground(context, self.contact_point_offset_from_datum_ref_meters);
+        let fwd_current_tire_height =
+            height_over_ground(context, self.fwd_contact_point_offset_from_datum_ref_meters);
+        let aft_current_tire_height =
+            height_over_ground(context, self.aft_contact_point_offset_from_datum_ref_meters);
 
-        let fwd_bogey_tire_touches_ground =
-            current_tire_height.get::<meter>() <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER;
+        self.update_physics(context, fwd_current_tire_height, aft_current_tire_height);
 
-        self.tilt_position = if fwd_bogey_tire_touches_ground {
-            let ground_tilt_raw = Ratio::new::<ratio>(
-                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
-                    .min(1.)
-                    .max(0.),
-            );
+        let bogey_tire_touches_ground = fwd_current_tire_height.get::<meter>()
+            <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
+            || aft_current_tire_height.get::<meter>()
+                <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER;
 
-            ground_tilt_raw.max(self.max_ground_tilt_from_plane_pitch(context))
-        } else {
-            // Tilt for positive Gs else untilt for negative Gs
-            let delta_tilt = if context.acceleration_plane_reference_filtered_ms2_vector()[1] <= 0.
-            {
-                Ratio::new::<ratio>(
-                    Self::TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND * context.delta_as_secs_f64(),
-                )
-            } else {
-                Ratio::new::<ratio>(
-                    -1. * Self::TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND
-                        * context.delta_as_secs_f64(),
-                )
-            };
-
-            (self.tilt_position + delta_tilt)
-                .min(Ratio::new::<ratio>(1.))
-                .max(Ratio::new::<ratio>(0.))
-        };
-
-        self.update_tire_speed(context, fwd_bogey_tire_touches_ground);
+        self.update_tire_speed(context, bogey_tire_touches_ground);
     }
 
     fn max_ground_tilt_from_plane_pitch(&self, context: &UpdateContext) -> Ratio {
@@ -157,6 +275,16 @@ impl SimulationElement for TiltingGear {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.current_compression = reader.read(&self.compression_id);
+
+        let raw_inertia = reader.read(&self.inertia_id);
+
+        if raw_inertia > 0. {
+            self.inertia = raw_inertia;
+            self.damping = reader.read(&self.damping_id);
+            self.hyd_force = reader.read(&self.hyd_force_id);
+            self.penetration_coef = reader.read(&self.penetration_id);
+            self.aaccel_coeff = reader.read(&self.aaccelid);
+        }
     }
 }
 
@@ -1965,23 +2093,6 @@ mod tests {
     }
 
     #[test]
-    fn tilting_gear_untilts_when_plane_inverted() {
-        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
-            .with_update_before_power_distribution(|el, context, _| {
-                el.update(context);
-            });
-
-        test_bed.write_by_name("PLANE BANK DEGREES", -180.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
-
-        // Give time to tilt mechanism to go down
-        test_bed.run_with_delta(Duration::from_secs(2));
-
-        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() <= 0.01);
-    }
-
-    #[test]
     fn tilting_gear_at_max_tilt_when_not_compressed_and_just_touching_ground() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
             .with_update_before_power_distribution(|el, context, _| {
@@ -2071,6 +2182,7 @@ mod tests {
             Length::new::<meter>(0.28),
             1,
             Vector3::new(-5., -2., -5.),
+            Vector3::new(-5., -1.7, -8.),
             Angle::new::<degree>(9.),
             Length::new::<meter>(0.711),
         )
