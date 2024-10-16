@@ -48,18 +48,6 @@ pub struct TiltingGear {
     velocity: f64,
     min_pos: Ratio,
     max_pos: Ratio,
-
-    damping: f64,
-    hyd_force: f64,
-    inertia: f64,
-    penetration_coef: f64,
-    aaccel_coeff: f64,
-
-    damping_id: VariableIdentifier,
-    hyd_force_id: VariableIdentifier,
-    inertia_id: VariableIdentifier,
-    penetration_id: VariableIdentifier,
-    aaccelid: VariableIdentifier,
 }
 impl TiltingGear {
     // Indicates the tilt angle already used with plane on ground standing still
@@ -68,6 +56,14 @@ impl TiltingGear {
     const HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER: f64 = 0.;
 
     const AIRBORNE_WHEEL_SPEED_REDUCING_RATE_RPM_S: f64 = 15.;
+
+    const HYDRAULIC_TILT_RETURN_FORCE: f64 = 5.;
+    const HYDRAULIC_TILT_DAMPING_FORCE: f64 = -0.35;
+    const BOGEY_INERTIA: f64 = 1.;
+    const GROUND_PENETRATION_COEFFICIENT: f64 = 5.;
+    const ANGULAR_ACCEL_GAIN: f64 = 40.;
+    const ABSOLUTE_MAX_VELOCITY: f64 = 20.;
+    const REBOUND_COEFFICIENT: f64 = -0.8;
 
     pub fn new(
         context: &mut InitContext,
@@ -99,18 +95,6 @@ impl TiltingGear {
             velocity: 0.,
             min_pos: Ratio::default(),
             max_pos: Ratio::new::<ratio>(1.),
-
-            damping: -0.08,
-            hyd_force: 5.,
-            inertia: 1.,
-            penetration_coef: 10.,
-            aaccel_coeff: 40.,
-
-            damping_id: context.get_identifier("DEV_TILT_DAMPING".to_owned()),
-            hyd_force_id: context.get_identifier("DEV_TILT_HYDF".to_owned()),
-            inertia_id: context.get_identifier("DEV_TILT_INERTIA".to_owned()),
-            penetration_id: context.get_identifier("DEV_TILT_PENETRATION".to_owned()),
-            aaccelid: context.get_identifier("DEV_TILT_aaccel".to_owned()),
         }
     }
 
@@ -151,12 +135,6 @@ impl TiltingGear {
             self.min_pos = self.max_pos;
         }
 
-        // println!(
-        //     "FWD {:.2}  AFT {:.2}",
-        //     fwd_current_tire_height.get::<meter>(),
-        //     aft_current_tire_height.get::<meter>()
-        // );
-
         let fwd_ground_penetration =
             ((self.max_pos - self.tilt_position).min(Ratio::default())).abs();
         let fwd_penetration_speed =
@@ -168,16 +146,6 @@ impl TiltingGear {
             aft_ground_penetration.get::<ratio>() / context.delta_as_secs_f64();
 
         self.integrate_position(context, fwd_penetration_speed, aft_penetration_speed);
-
-        // println!(
-        //     "Height fwd/aft: {:.2}/{:.2}  PenetrationSpeed fwd {:.2} PenetrationSpeed aft{:.2} MinMax -> POS {:.2}/{:.2} -> {:.2}",
-        //     fwd_ground_penetration.get::<ratio>(),aft_ground_penetration.get::<ratio>(),
-        //     fwd_penetration_speed,
-        //     0.,
-        //     self.min_pos.get::<ratio>(),
-        //     self.max_pos.get::<ratio>(),
-        //     self.tilt_position.get::<ratio>(),
-        // );
     }
 
     fn integrate_position(
@@ -187,32 +155,26 @@ impl TiltingGear {
         aft_penetration_speed: f64,
     ) {
         let angular_accel = context.rotation_acceleration_rad_s2()[0];
+        let damping_force = Self::HYDRAULIC_TILT_DAMPING_FORCE * self.velocity;
 
-        let hyd_spring_force = self.hyd_force;
-        let intertia = self.inertia;
-
-        let damping_force = self.damping * self.velocity;
-
-        let acceleration =
-            ((damping_force + hyd_spring_force) / intertia) - (angular_accel * self.aaccel_coeff);
-
-        // println!(
-        //     "Aacc {:.2} acc {:.2} vel {:.2}  D {:.2} + HF {:.2}  ",
-        //     angular_accel, acceleration, self.velocity, damping_force, hyd_spring_force
-        // );
+        let acceleration = ((damping_force + Self::HYDRAULIC_TILT_RETURN_FORCE)
+            / Self::BOGEY_INERTIA)
+            - (angular_accel * Self::ANGULAR_ACCEL_GAIN);
 
         self.velocity += acceleration * context.delta_as_secs_f64();
-        self.velocity = self.velocity.clamp(-20., 20.);
+        self.velocity = self
+            .velocity
+            .clamp(-Self::ABSOLUTE_MAX_VELOCITY, Self::ABSOLUTE_MAX_VELOCITY);
 
         self.tilt_position += Ratio::new::<ratio>(self.velocity * context.delta_as_secs_f64());
 
         if self.tilt_position > self.max_pos {
-            self.velocity *= -0.8;
-            self.velocity -= fwd_penetration_speed * self.penetration_coef;
+            self.velocity *= Self::REBOUND_COEFFICIENT;
+            self.velocity -= fwd_penetration_speed * Self::GROUND_PENETRATION_COEFFICIENT;
             self.tilt_position = self.max_pos;
         } else if self.tilt_position < self.min_pos {
-            self.velocity *= -0.8;
-            self.velocity += aft_penetration_speed * self.penetration_coef;
+            self.velocity *= Self::REBOUND_COEFFICIENT;
+            self.velocity += aft_penetration_speed * Self::GROUND_PENETRATION_COEFFICIENT;
             self.tilt_position = self.min_pos;
         }
     }
@@ -271,16 +233,6 @@ impl SimulationElement for TiltingGear {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.current_compression = reader.read(&self.compression_id);
-
-        let raw_inertia = reader.read(&self.inertia_id);
-
-        if raw_inertia > 0. {
-            self.inertia = raw_inertia;
-            self.damping = reader.read(&self.damping_id);
-            self.hyd_force = reader.read(&self.hyd_force_id);
-            self.penetration_coef = reader.read(&self.penetration_id);
-            self.aaccel_coeff = reader.read(&self.aaccelid);
-        }
     }
 }
 
