@@ -17,6 +17,7 @@ import { FuelSystemEvents } from 'systems-host/systems/FuelSystemPublisher';
 /* TODO: remove this file after proper FQMS is implemented in Rust */
 export class LegacyFuel implements Instrument {
   private readonly NUMBER_OF_TRIGGERS = 42;
+  private readonly NUMBER_OF_JUNCTIONS = 13;
 
   private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents>();
 
@@ -39,6 +40,8 @@ export class LegacyFuel implements Instrument {
 
   private readonly triggerStates = new Map<number, ConsumerSubject<boolean>>();
 
+  private readonly junctionSettings = new Map<number, ConsumerSubject<number>>();
+
   private refuelInProgress = false;
 
   constructor(private readonly bus: EventBus) {
@@ -49,6 +52,11 @@ export class LegacyFuel implements Instrument {
     for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_trigger_status_${index}`), false);
       this.triggerStates.set(index, element);
+    }
+
+    for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
+      const element = ConsumerSubject.create(this.sub.on(`fuel_junction_setting_${index}`), 1);
+      this.junctionSettings.set(index, element);
     }
   }
 
@@ -76,6 +84,13 @@ export class LegacyFuel implements Instrument {
     }
 
     if (
+      (this.rightInnerTankQty.get() < 0.1 && this.leftInnerTankQty.get() < 0.1 && !this.triggerStates.get(44).get()) ||
+      ((this.rightInnerTankQty.get() >= 1 || this.leftInnerTankQty.get() >= 1) && this.triggerStates.get(44).get())
+    ) {
+      this.toggleTrigger(44);
+    }
+
+    if (
       (this.leftMidTankQty.get() < 0.1 && !this.triggerStates.get(22).get()) ||
       (this.leftMidTankQty.get() >= 1 && this.triggerStates.get(22).get())
     ) {
@@ -87,6 +102,25 @@ export class LegacyFuel implements Instrument {
       (this.rightMidTankQty.get() >= 1 && this.triggerStates.get(23).get())
     ) {
       this.toggleTrigger(23);
+    }
+
+    if (
+      this.rightInnerTankQty.get() < 0.1 &&
+      this.leftInnerTankQty.get() < 0.1 &&
+      this.rightMidTankQty.get() < 0.1 &&
+      this.leftMidTankQty.get() < 0.1
+    ) {
+      // both mid and inner tanks are empty
+
+      this.setJunctionOption(10, 3);
+    } else if (this.rightInnerTankQty.get() >= 1 || this.leftInnerTankQty.get() >= 1) {
+      // inner tanks arent empty
+
+      this.setJunctionOption(10, 1);
+    } else {
+      // mid tanks arent empty but inner tanks are
+
+      this.setJunctionOption(10, 2);
     }
 
     if (
@@ -375,5 +409,12 @@ export class LegacyFuel implements Instrument {
   private toggleTrigger(index: number): void {
     console.log(`toggling trigger ${index}`);
     this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_TOGGLE', true, index);
+  }
+
+  private setJunctionOption(index: number, option: number): void {
+    if (this.junctionSettings.get(index).get() !== option) {
+      console.log(`setting junction ${index} to option ${option}`);
+      this.keyEventManager.triggerKey('FUELSYSTEM_JUNCTION_SET', true, index, option);
+    }
   }
 }
