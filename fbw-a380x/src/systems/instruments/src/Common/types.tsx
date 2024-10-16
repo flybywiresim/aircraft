@@ -40,7 +40,7 @@ export type CabinDoorProps = {
 
 export type CargoDoorProps = {
   label: 'AFT' | 'FWD' | 'BULK' | 'AVNCS' | 'FWD CARGO' | 'AFT CARGO';
-  identifier?: string;
+  closed: boolean;
   width: number;
   height: number;
   engineRunning: boolean;

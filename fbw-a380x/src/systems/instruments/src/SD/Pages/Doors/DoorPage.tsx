@@ -20,6 +20,8 @@ export const DoorPage = () => {
   const engineRunning = engine1State === 1 || engine2State === 1 || engine3State === 1 || engine4State === 1;
   const sdacActive = true;
   const onGround = true;
+  const [fwdCargoClosed] = useSimVar('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool', 1000);
+  const [aftCargoClosed] = useSimVar('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool', 1000);
 
   return (
     <>
@@ -207,7 +209,7 @@ export const DoorPage = () => {
       />
 
       {/* Cargo Doors */}
-      <CargoDoor x={222} y={165} label="AVNCS" width={27} height={20} engineRunning={engineRunning} />
+      <CargoDoor x={222} y={165} label="AVNCS" width={27} height={20} engineRunning={engineRunning} closed={true} />
       <CargoDoor
         x={359}
         y={250}
@@ -215,7 +217,7 @@ export const DoorPage = () => {
         width={26}
         height={46}
         engineRunning={engineRunning}
-        identifier="FWD"
+        closed={fwdCargoClosed}
       />
       <CargoDoor
         x={359}
@@ -224,9 +226,9 @@ export const DoorPage = () => {
         width={26}
         height={42}
         engineRunning={engineRunning}
-        identifier="AFT"
+        closed={aftCargoClosed}
       />
-      <CargoDoor x={359} y={590} label="BULK" width={26} height={26} engineRunning={engineRunning} />
+      <CargoDoor x={359} y={590} label="BULK" width={26} height={26} engineRunning={engineRunning} closed={true} />
     </>
   );
 };
