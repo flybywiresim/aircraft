@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
@@ -10,7 +10,7 @@ import { Coordinates } from 'msfs-geo';
 import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';
 import getDistance from 'geolib/es/getPreciseDistance';
 import { GeolibInputCoordinates } from 'geolib/es/types';
-import { BingMap, t, TooltipWrapper, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
+import { AircraftContext, BingMap, t, TooltipWrapper, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import {
   setActualMapLatLon,
   setAircraftIconPosition,
@@ -56,7 +56,7 @@ const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) 
 export const PushbackMap = () => {
   const dispatch = useAppDispatch();
   const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
-  const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
+  const aircraftContext = useContext(AircraftContext);
   const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
   const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
   const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
@@ -71,7 +71,7 @@ export const PushbackMap = () => {
     'number',
     250,
   );
-  const turnIndicatorTuningDefault = flypadInfo.pushback.turnIndicatorTuningDefault;
+  const turnIndicatorTuningDefault = aircraftContext.pushbackPage.turnIndicatorTuningDefault;
 
   // Reducer state for pushback
   const { mapRange, centerPlaneMode, actualMapLatLon, aircraftIconPosition } = useAppSelector(
