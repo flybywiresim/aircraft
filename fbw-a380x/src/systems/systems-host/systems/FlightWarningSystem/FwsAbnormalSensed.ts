@@ -954,8 +954,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.mlgFireDetected,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        // Fixme: this should probably check the 3 adrs data
-        this.fws.adr1Cas.get().valueOr(0) > 250 || this.fws.adr1Mach.get().valueOr(0) > 0.55,
+        this.fws.computedAirSpeedToNearest2.get() > 250 || this.fws.machSelectedFromAdr.get() > 0.55,
         true,
         true,
         true,
@@ -1144,7 +1143,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.greenAPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300001'],
     },
@@ -1155,7 +1154,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.greenBPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300002'],
     },
@@ -1166,7 +1165,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.yellowAPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300003'],
     },
@@ -1177,7 +1176,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.yellowBPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300004'],
     },
@@ -1188,7 +1187,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng1APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800006: {
@@ -1198,7 +1197,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng1BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800007: {
@@ -1208,7 +1207,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng2APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800008: {
@@ -1218,7 +1217,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng2BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800009: {
@@ -1228,7 +1227,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng3APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800010: {
@@ -1238,7 +1237,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng3BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800011: {
@@ -1248,7 +1247,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng4APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800012: {
@@ -1258,7 +1257,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng4BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800019: {
@@ -1278,7 +1277,7 @@ export class FwsAbnormalSensed {
         !this.fws.greenAPumpAuto.get() && !this.fws.greenBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800020: {
@@ -1298,7 +1297,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800021: {
@@ -1320,7 +1319,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800022: {
@@ -1342,7 +1341,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800031: {
@@ -1364,7 +1363,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800032: {
@@ -1386,7 +1385,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800035: {
@@ -1410,7 +1409,7 @@ export class FwsAbnormalSensed {
       limitationsApprLdg: () => ['320400001', '290400001', '290400002', '320400002', '320400003', '800400002'],
       info: () => ['800200001', '800200002', '220200005'],
       notActiveWhenFaults: ['290800039'],
-      sysPage: -1,
+      sysPage: 5,
     },
     290800036: {
       // Y SYS LO PRESS
@@ -1429,7 +1428,7 @@ export class FwsAbnormalSensed {
       limitationsApprLdg: () => ['800400002'],
       info: () => ['800400003', '800200004', '800200004', '220200005'],
       notActiveWhenFaults: ['290800039'],
-      sysPage: -1,
+      sysPage: 5,
     },
     290800039: {
       // G + Y SYS LO PRESS
@@ -1483,7 +1482,7 @@ export class FwsAbnormalSensed {
       ],
       info: () => ['340200002', '800200001', '320200001', '800200004', '800200005'],
       notActiveWhenFaults: [],
-      sysPage: -1,
+      sysPage: 5,
     },
     290800040: {
       // Y ELEC PMP A+B OFF
@@ -1491,15 +1490,99 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.yellowElecAandBPumpOff,
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      notActiveWhenFaults: [], // TODO
+      notActiveWhenFaults: [],
+      failure: -1,
+      sysPage: -1,
+    },
+    // 32 Landing Gear & Brakes
+    320800008: {
+      // BRAKES A_SKID OFF
+      flightPhaseInhib: [4, 5, 6, 7],
+      simVarIsActive: this.fws.antiSkidSwitchOff, // TODO check for power source & fault signal
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, false],
+      notActiveWhenFaults: [],
+      failure: 2,
+      sysPage: 11,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => ['320300001', '320300002', '220300008'],
+      info: () => [
+        '320200002',
+        '320200003',
+        this.fws.oneEngineRunning.get() ? '800200003' : '',
+        '800200005',
+        '220200005',
+      ],
+    },
+    320800018: {
+      // BRAKES HOT
+      flightPhaseInhib: [4, 5, 9, 10, 11, 12],
+      simVarIsActive: this.fws.brakesHot,
+      whichItemsToShow: () => [
+        this.fws.phase112.get(),
+        this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false],
+      limitationsPfd: () => [this.fws.aircraftOnGround.get() ? '' : '260400002'],
+      limitationsAllPhases: () => [this.fws.aircraftOnGround.get() ? '' : '260400002'],
+      notActiveWhenFaults: [],
+      failure: 2,
+      sysPage: 11,
+    },
+    320800022: {
+      // BRAKES PARK BRK ON
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.lgParkBrkOn,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.parkBrake.get()],
+      notActiveWhenFaults: [],
       failure: 2,
       sysPage: -1,
+    },
+    320800030: {
+      // CONFIG PARK BRK ON
+      flightPhaseInhib: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      simVarIsActive: this.fws.configParkBrakeOn,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: -1,
+    },
+    320800037: {
+      // L/G NOT DOWN NO CANCEL
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.lgNotDownNoCancel,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: 11,
+      cancel: false,
+    },
+    320800038: {
+      // L/G NOT DOWN CANCEL
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(
+        ([lgNotDown, lgNotDownCancel]) => lgNotDown && !lgNotDownCancel,
+        this.fws.lgNotDown,
+        this.fws.lgNotDownNoCancel,
+      ),
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: 11,
+      cancel: true,
     },
     // 34 NAVIGATION
     340800001: {
       // ADR 1 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: this.fws.adr1Fault,
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.fws.adr1Faulty,
       notActiveWhenFaults: ['340800004', '340800008', '340800005'],
       whichItemsToShow: () => [true, true, true, true],
       whichItemsChecked: () => [
@@ -1520,8 +1603,8 @@ export class FwsAbnormalSensed {
     },
     340800002: {
       // ADR 2 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: this.fws.adr2Fault,
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.fws.adr2Faulty,
       notActiveWhenFaults: ['340800004', '340800008', '340800006'],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [
@@ -1540,8 +1623,8 @@ export class FwsAbnormalSensed {
     },
     340800003: {
       // ADR 3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: this.fws.adr3Fault,
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.fws.adr3Faulty,
       notActiveWhenFaults: ['340800005', '340800006', '340800008'],
       whichItemsToShow: () => [true, true, true, true],
       whichItemsChecked: () => [
@@ -1558,8 +1641,8 @@ export class FwsAbnormalSensed {
     },
     340800004: {
       // ADR 1+2 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr2Fault),
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Faulty, this.fws.adr2Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -1590,8 +1673,8 @@ export class FwsAbnormalSensed {
     },
     340800005: {
       // ADR 1+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr3Fault),
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Faulty, this.fws.adr3Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -1622,8 +1705,8 @@ export class FwsAbnormalSensed {
     },
     340800006: {
       // ADR 2+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Fault, this.fws.adr3Fault),
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Faulty, this.fws.adr3Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -1654,12 +1737,12 @@ export class FwsAbnormalSensed {
     },
     340800008: {
       // ADR 1+2+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.adr1Fault,
-        this.fws.adr2Fault,
-        this.fws.adr3Fault,
+        this.fws.adr1Faulty,
+        this.fws.adr2Faulty,
+        this.fws.adr3Faulty,
       ),
       notActiveWhenFaults: ['340800010', '340800071'],
       whichItemsToShow: () => [true, true, true],
