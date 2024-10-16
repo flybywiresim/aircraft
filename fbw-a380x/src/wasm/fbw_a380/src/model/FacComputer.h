@@ -47,10 +47,9 @@ class FacComputer final
     real_T pY;
     real_T pU;
     real_T takeoff_config;
+    real_T takeoff_config_c;
     real_T takeoff_config_g;
     real_T sAlphaFloor;
-    uint8_T is_active_c8_FacComputer;
-    uint8_T is_c8_FacComputer;
     uint8_T is_active_c15_FacComputer;
     uint8_T is_c15_FacComputer;
     boolean_T Memory_PreviousInput;
@@ -197,9 +196,8 @@ class FacComputer final
     real_T uDLookupTable_tableData[2];
     real_T uDLookupTable_bp01Data[2];
     real_T Vfe_35_Value;
-    real_T Constant3_Value;
     real_T Constant2_Value;
-    real_T Constant3_Value_p;
+    real_T Constant3_Value;
     real_T Constant1_Value_m;
     real_T Gain2_Gain;
     real_T Constant2_Value_m;

@@ -277,8 +277,6 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;
-  std::unique_ptr<LocalVariable> idAirConditioningPack_3;
-  std::unique_ptr<LocalVariable> idAirConditioningPack_4;
 
   std::unique_ptr<LocalVariable> thrustLeverAngle_1;
   std::unique_ptr<LocalVariable> thrustLeverAngle_2;
@@ -482,6 +480,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idPrimHealthy[3];
   std::unique_ptr<LocalVariable> idPrimApAuthorised[3];
   std::unique_ptr<LocalVariable> idPrimFctlLawStatusWord[3];
+  std::unique_ptr<LocalVariable> idPrimFeStatusWord[3];
 
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];

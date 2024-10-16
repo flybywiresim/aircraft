@@ -226,7 +226,6 @@ base_prim_discrete_outputs rtP_prim_discrete_output_MATLABStruct{
   false,
   false,
   false,
-  false,
   false
 } ;
 
@@ -1817,10 +1816,20 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -2683,7 +2692,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       false,
       false,
       false,
-      false,
       false
     },
 
@@ -2961,12 +2969,22 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       {
         0U,
         0.0F
+      },
+
+      {
+        0U,
+        0.0F
       }
     }
   },
 
 
   {
+    {
+      0U,
+      0.0F
+    },
+
     {
       0U,
       0.0F
@@ -3497,6 +3515,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   false,
 
   true,
+
+  false,
 
   false,
 

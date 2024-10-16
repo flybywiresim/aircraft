@@ -96,8 +96,6 @@ Autothrust::Parameters_Autothrust_T Autothrust::Autothrust_P{
       false,
       false,
       false,
-      false,
-      false,
       0.0
     },
 
@@ -165,7 +163,7 @@ Autothrust::Parameters_Autothrust_T Autothrust::Autothrust_P{
 
   1.0,
 
-  8.0,
+  1.0,
 
   1.0,
 
@@ -415,6 +413,8 @@ Autothrust::Parameters_Autothrust_T Autothrust::Autothrust_P{
   1.9440124416796269,
 
   -1.0,
+
+  8.0,
 
   0.017453292519943295,
 

@@ -753,8 +753,8 @@ void Autothrust::step()
     (rtb_Switch_d, Autothrust_P.ScheduledGain1_BreakpointsForDimension1, Autothrust_P.ScheduledGain1_Table, 4U) +
     rtb_Switch_d;
   rtb_Gain_m = Autothrust_P.DiscreteDerivativeVariableTs_Gain * rtb_Switch_ej;
-  Autothrust_LagFilter((rtb_Gain_m - Autothrust_DWork.Delay_DSTATE) / Autothrust_U.in.time.dt, Autothrust_P.LagFilter_C1,
-                       Autothrust_U.in.time.dt, &rtb_Switch_d, &Autothrust_DWork.sf_LagFilter);
+  Autothrust_LagFilter(Autothrust_P.Gain5_Gain * ((rtb_Gain_m - Autothrust_DWork.Delay_DSTATE) / Autothrust_U.in.time.dt),
+                       Autothrust_P.LagFilter_C1, Autothrust_U.in.time.dt, &rtb_Switch_d, &Autothrust_DWork.sf_LagFilter);
   Autothrust_LagFilter(Autothrust_U.in.data.nz_g, Autothrust_P.LagFilter1_C1, Autothrust_U.in.time.dt, &rtb_y_p,
                        &Autothrust_DWork.sf_LagFilter_a);
   rtb_Gain2 = rtb_y_p - std::cos(Autothrust_P.Gain1_Gain_p1 * rtb_Gain2) / std::cos(Autothrust_P.Gain1_Gain_di *

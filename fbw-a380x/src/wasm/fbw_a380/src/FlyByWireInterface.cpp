@@ -427,8 +427,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAirConditioningPack_1 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_1_PB_IS_ON");
   idAirConditioningPack_2 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_2_PB_IS_ON");
-  idAirConditioningPack_3 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_3_PB_IS_ON");
-  idAirConditioningPack_4 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_4_PB_IS_ON");
 
   idAutothrustThrustLimitType = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
   idAutothrustThrustLimit = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");
@@ -1507,8 +1505,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   }
 
   idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
-  idPrimApAuthorised[primIndex]->set(primsDiscreteOutputs[primIndex].ap_authorised);
+  idPrimApAuthorised[primIndex]->set(
+      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[primIndex].fe_status_word)->bitFromValueOr(11, true));
   idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl_law_status_word));
+  idPrimFeStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe_status_word));
 
   return true;
 }
@@ -2061,7 +2061,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     // Select PRIM master, check for AP authorised signal
     for (int i = 0; i < 3; i++) {
       if (primsDiscreteOutputs[i].prim_healthy) {
-        doDisconnect = !primsDiscreteOutputs[i].ap_authorised;
+        doDisconnect =
+            !reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[i].fe_status_word)->bitFromValueOr(11, true);  // AP authorised
         break;
       }
     }
@@ -2794,8 +2795,6 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1;
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
-    autoThrustInput.in.input.is_air_conditioning_3_active = idAirConditioningPack_3->get();
-    autoThrustInput.in.input.is_air_conditioning_4_active = idAirConditioningPack_4->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
     autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;

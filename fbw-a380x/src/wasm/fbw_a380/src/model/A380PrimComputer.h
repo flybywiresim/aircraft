@@ -82,9 +82,10 @@ class A380PrimComputer final
     boolean_T configFullEventTime_not_empty;
     boolean_T ra1CoherenceRejected;
     boolean_T ra2CoherenceRejected;
+    boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive;
+    boolean_T sProtActive_l;
     boolean_T eventTime_not_empty_m;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
@@ -573,6 +574,7 @@ class A380PrimComputer final
     boolean_T Constant19_Value;
     boolean_T Constant21_Value;
     boolean_T Constant22_Value;
+    boolean_T Constant36_Value;
   };
 
   A380PrimComputer(A380PrimComputer const&) = delete;

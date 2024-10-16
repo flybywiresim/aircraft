@@ -243,6 +243,7 @@ class Autothrust final
     real_T ktstomps_Gain_h;
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
+    real_T Gain5_Gain;
     real_T Gain1_Gain_p1;
     real_T Gain1_Gain_di;
     real_T Gain2_Gain_c;

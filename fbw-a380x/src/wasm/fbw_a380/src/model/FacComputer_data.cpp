@@ -1779,7 +1779,6 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   { 3.0, 4.0 },
   191.0,
-  3000.0,
   250.0,
   340.0,
   0.0,

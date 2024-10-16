@@ -182,8 +182,6 @@ struct athr_input
   boolean_T is_anti_ice_engine_4_active;
   boolean_T is_air_conditioning_1_active;
   boolean_T is_air_conditioning_2_active;
-  boolean_T is_air_conditioning_3_active;
-  boolean_T is_air_conditioning_4_active;
   boolean_T FD_active;
   boolean_T ATHR_reset_disable;
   boolean_T is_TCAS_active;
