@@ -84,13 +84,6 @@ export class LegacyFuel implements Instrument {
     }
 
     if (
-      (this.rightInnerTankQty.get() < 0.1 && this.leftInnerTankQty.get() < 0.1 && !this.triggerStates.get(44).get()) ||
-      ((this.rightInnerTankQty.get() >= 1 || this.leftInnerTankQty.get() >= 1) && this.triggerStates.get(44).get())
-    ) {
-      this.toggleTrigger(44);
-    }
-
-    if (
       (this.leftMidTankQty.get() < 0.1 && !this.triggerStates.get(22).get()) ||
       (this.leftMidTankQty.get() >= 1 && this.triggerStates.get(22).get())
     ) {
