@@ -7,7 +7,14 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, LocalSimVar } from '@flybywiresim/fbw-sdk';
+import {
+  MathUtils,
+  Arinc429Word,
+  GenericDataListenerSync,
+  NXDataStore,
+  LocalSimVar,
+  Arinc429Register,
+} from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
   TCAS_CONST as TCAS,
@@ -220,7 +227,7 @@ export class LegacyTcasComputer implements Instrument {
 
   private verticalSpeed: number | null; // Vertical Speed
 
-  private trueHeading: number; // True heading
+  private irTrueheading: Arinc429Register = Arinc429Register.empty(); // True heading
 
   private sensitivity: LocalSimVar<number>;
 
@@ -307,8 +314,8 @@ export class LegacyTcasComputer implements Instrument {
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
     this.tcasPower =
-      SimVar.GetSimVarValue('L:ELEC_AC_ESS_BUS_IS_POWERED', 'boolean') ||
-      SimVar.GetSimVarValue('L:ELEC_AC_2_BUS_IS_POWERED', 'boolean');
+      SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'boolean') ||
+      SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'boolean');
     this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_SYSTEM', 'number');
     this.xpdrStatus = SimVar.GetSimVarValue(`TRANSPONDER STATE:${this.activeXpdr + 1}`, 'number');
     // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
@@ -321,11 +328,14 @@ export class LegacyTcasComputer implements Instrument {
       !(!radioAlt1.isNoComputedData() && radioAlt2.isFailureWarning())
         ? radioAlt2
         : radioAlt1;
+
     this.baroCorrectedAltitude1 = Arinc429Word.fromSimVarValue(
       `L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_BARO_CORRECTED_ALTITUDE_1`,
     );
+    const irSwitchingKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
+    const irToUse = irSwitchingKnob === 1 ? this.activeXpdr + 1 : 3;
     this.adr3BaroCorrectedAltitude1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_BARO_CORRECTED_ALTITUDE_1');
-    this.trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+    this.irTrueheading.setFromSimVar(`L:A32NX_ADIRS_IR_${irToUse}_TRUE_HEADING`);
     this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
     this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
     this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'boolean');
@@ -334,7 +344,9 @@ export class LegacyTcasComputer implements Instrument {
     this.trafficRightEfisFilter = SimVar.GetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean');
 
     this.tcasMode.setVar(
-      this.xpdrStatus === XpdrMode.STBY || this.tcasPower ? TcasMode.STBY : this.tcasAlertLevel.get(),
+      this.xpdrStatus === XpdrMode.STBY || !this.tcasPower || this.tcasFault.getVar()
+        ? TcasMode.STBY
+        : this.tcasAlertLevel.get(),
     ); // 34-43-00:A32
   }
 
@@ -374,6 +386,26 @@ export class LegacyTcasComputer implements Instrument {
    * Set TCAS status
    */
   private updateStatusFaults(): void {
+    // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
+    if (
+      !this.irTrueheading ||
+      !this.irTrueheading.isNormalOperation() ||
+      this.irTrueheading.isNoComputedData() ||
+      !this.baroCorrectedAltitude1 ||
+      !this.adr3BaroCorrectedAltitude1 ||
+      !this.baroCorrectedAltitude1.isNormalOperation() ||
+      !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
+      this.radioAlt.isFailureWarning() ||
+      this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
+      !this.tcasPower
+    ) {
+      this.resetDisplay();
+      this.tcasFault.setVar(true);
+      return;
+    } else {
+      this.tcasFault.setVar(false);
+    }
+
     // If in STBY, inhibit all, set sens to 1, clear all existing RAs
     if (this.tcasMode.getVar() === TcasMode.STBY) {
       this.taOnly.setVar(false);
@@ -397,22 +429,6 @@ export class LegacyTcasComputer implements Instrument {
       this.taOnly.setVar(true);
     } else {
       this.taOnly.setVar(false);
-    }
-
-    // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
-    if (
-      !this.baroCorrectedAltitude1 ||
-      !this.adr3BaroCorrectedAltitude1 ||
-      !this.baroCorrectedAltitude1.isNormalOperation() ||
-      !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
-      this.radioAlt.isFailureWarning() ||
-      this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
-      this.tcasPower
-    ) {
-      this.resetDisplay();
-      this.tcasFault.setVar(true);
-    } else {
-      this.tcasFault.setVar(false);
     }
 
     // Update sensitivity
@@ -585,7 +601,7 @@ export class LegacyTcasComputer implements Instrument {
       if (isDisplayed) {
         const bearing =
           MathUtils.computeGreatCircleHeading(this.ppos.lat, this.ppos.long, traffic.lat, traffic.lon) -
-          this.trueHeading +
+          this.irTrueheading.value +
           90;
         const x = traffic.hrzDistance * Math.cos((bearing * Math.PI) / 180);
         const y = traffic.hrzDistance * Math.sin((bearing * Math.PI) / 180);
