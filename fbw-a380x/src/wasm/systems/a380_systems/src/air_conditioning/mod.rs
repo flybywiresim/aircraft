@@ -704,6 +704,14 @@ impl A380AirConditioningSystem {
     fn hot_air_valve_disagrees(&self, hot_air_id: usize) -> bool {
         self.tadd.taprv_disagree_status_monitor(hot_air_id)
     }
+
+    fn fwd_isol_valve_has_fault(&self) -> bool {
+        self.vcm[0].fwd_isolation_valve_has_failed()
+    }
+
+    fn bulk_isol_valve_has_fault(&self) -> bool {
+        self.vcm[1].bulk_isolation_valve_has_failed()
+    }
 }
 
 impl PackFlowControllers for A380AirConditioningSystem {
