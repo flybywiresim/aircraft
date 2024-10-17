@@ -54,7 +54,7 @@ export class LegacyFuel implements Instrument {
       this.triggerStates.set(index, element);
     }
 
-    for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
+    for (let index = 1; index <= this.NUMBER_OF_JUNCTIONS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_junction_setting_${index}`), 1);
       this.junctionSettings.set(index, element);
     }
