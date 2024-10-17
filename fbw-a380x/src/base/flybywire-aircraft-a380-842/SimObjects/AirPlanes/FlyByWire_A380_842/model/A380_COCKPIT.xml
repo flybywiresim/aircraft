@@ -1989,7 +1989,8 @@
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON</TOGGLE_SIMVAR>
                     <DOWN_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</DOWN_CODE>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                    <!--- TODO: 309PP is a placeholder, check refs-->
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ES_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_309PP_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ1_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</SEQ2_CODE>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2005,7 +2006,8 @@
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
                     <EXTRA_CONDITION>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</EXTRA_CONDITION>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                    <!--- TODO: 309PP is a placeholder, check refs-->
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_309PP_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -2071,23 +2073,90 @@
                 </UseTemplate>
 
                 <Update Once="True">
-                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) (A:CABIN SEATBELTS ALERT SWITCH, bool) != if{
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 0 == (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == and if{
+                      (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                    }
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 2 == (A:CABIN SEATBELTS ALERT SWITCH, bool) 1 == and if{
                       (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
                     }
                 </Update>
-                <UseTemplate Name="FBW_GT_Switch">
+
+                <Update Frequency="500">
+                <!-- In the auto position, the seatbelt signs come on when engines are running and either slats are extended or main gear is downlocked -->
+                <!-- TODO: Move logic to responsible system -->
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 1 == if{
+                        (L:A32NX_ENGINE_N1:1) 10 &gt;
+                        (L:A32NX_ENGINE_N1:2) 10 &gt; or
+                        (L:A32NX_ENGINE_N1:3) 10 &gt; or
+                        (L:A32NX_ENGINE_N1:4) 10 &gt; or
+
+                        (L:A32NX_LEFT_SLATS_POSITION_PERCENT, percent) 0 &gt;
+                        (L:A32NX_RIGHT_SLATS_POSITION_PERCENT, percent) 0 &gt; or
+
+                        (L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED, bool) 1 ==
+                        (L:A32NX_LGCIU_2_LEFT_GEAR_DOWNLOCKED, bool) 1 == or
+                        (L:A32NX_LGCIU_1_RIGHT_GEAR_DOWNLOCKED, bool) 1 == or
+                        (L:A32NX_LGCIU_2_RIGHT_GEAR_DOWNLOCKED, bool) 1 == or or and if{
+                            (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == if{
+                                (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                            }
+                        } els{
+                            (A:CABIN SEATBELTS ALERT SWITCH, bool) 1 == if{
+                                (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                            }
+                        }
+                    }
+                </Update>
+
+                <UseTemplate Name="A32NX_GT_Switch_Dummy">
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
                     <PART_ID>Seatbelt_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
-                    <ANIM_SIMVAR>CABIN SEATBELTS ALERT SWITCH</ANIM_SIMVAR>
-                    <LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
-                    <EVENTID>CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE</EVENTID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_OFF</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_ON</ANIMTIP_1>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                    <NUM_STATES>3</NUM_STATES>
+                    <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                    <INVERT_ANIM>True</INVERT_ANIM>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position</SWITCH_POSITION_VAR>
+                    <LIGHT_TYPE>SEATBELTS</LIGHT_TYPE>
+                    <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO</ANIMTIP_1>
+                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
+                    <CODE_POS_0>
+                        (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == if{
+                            (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                        }
+                    </CODE_POS_0>
+                    <CODE_POS_1>
+                    <!-- In the auto position, the seatbelt signs come on when engines are running and either slats are extended or main gear is downlocked -->
+                    <!-- TODO: Move logic to responsible system -->
+                        (L:A32NX_ENGINE_N1:1) 10 &gt;
+                        (L:A32NX_ENGINE_N1:2) 10 &gt; or
+                        (L:A32NX_ENGINE_N1:3) 10 &gt; or
+                        (L:A32NX_ENGINE_N1:4) 10 &gt; or
+
+                        (L:A32NX_LEFT_SLATS_POSITION_PERCENT, percent) 0 &gt;
+                        (L:A32NX_RIGHT_SLATS_POSITION_PERCENT, percent) 0 &gt; or
+
+                        (L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED, bool) 1 ==
+                        (L:A32NX_LGCIU_2_LEFT_GEAR_DOWNLOCKED, bool) 1 == or
+                        (L:A32NX_LGCIU_1_RIGHT_GEAR_DOWNLOCKED, bool) 1 == or
+                        (L:A32NX_LGCIU_2_RIGHT_GEAR_DOWNLOCKED, bool) 1 == or or and if{
+                            (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == if{
+                                (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                            }
+                        } els{
+                            (A:CABIN SEATBELTS ALERT SWITCH, bool) 1 == if{
+                                (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                            }
+                        }
+                    </CODE_POS_1>
+                    <CODE_POS_2>
+                        (A:CABIN SEATBELTS ALERT SWITCH, bool) 1 == if{
+                            (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                        }
+                    </CODE_POS_2>
                 </UseTemplate>
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
@@ -2222,10 +2291,11 @@
                     <Part_ID>LANDING_Light_L</Part_ID>
                     <SIMVAR_INDEX>2</SIMVAR_INDEX>
                     <ID>1</ID>
+                    <INVERT_ANIM>True</INVERT_ANIM>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_ON</ANIMTIP_1>
-                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_RETRACT</ANIMTIP_2>
-                    <TYPE>Retractable</TYPE>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
                 <!-- WING -->
