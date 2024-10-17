@@ -105,7 +105,7 @@ class Autothrust final
   };
 
   struct Parameters_Autothrust_T {
-    struct_QMVdjQ6NWn0vSjcEHgvQjC athr_out_MATLABStruct;
+    athr_out athr_out_MATLABStruct;
     real_T ScheduledGain1_BreakpointsForDimension1[5];
     real_T ScheduledGain2_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
@@ -243,6 +243,7 @@ class Autothrust final
     real_T ktstomps_Gain_h;
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
+    real_T Gain5_Gain;
     real_T Gain1_Gain_p1;
     real_T Gain1_Gain_di;
     real_T Gain2_Gain_c;
