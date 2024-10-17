@@ -113,6 +113,7 @@ clang++ \
   "${DIR}/src/model/AutopilotStateMachine.cpp" \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
+  "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/A380PrimComputer_data.cpp" \
   "${DIR}/src/model/A380PrimComputer.cpp" \
@@ -125,11 +126,14 @@ clang++ \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
   "${DIR}/src/model/FacComputer_data.cpp" \
   "${DIR}/src/model/FacComputer.cpp" \
+  "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_pbinlxpw.cpp" \
+  "${DIR}/src/model/maximum_Abpa9SzA.cpp" \
   "${DIR}/src/model/mod_OlzklkXq.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
+  "${DIR}/src/model/plook_binx.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
