@@ -196,7 +196,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       if (this.currentValue != _value) {
         SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number', _value);
       }
-      this.currentValue = _machActive ? _value * 100 : _value;
+      this.currentValue = _value;
       this.isMachActive = _machActive;
       this.setTextElementActive(this.textSPD, !_machActive);
       this.setTextElementActive(this.textMACH, !!_machActive);
@@ -217,7 +217,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       let valueText: string;
       if (!_isManaged && this.currentValue > 0) {
         if (_machActive) {
-          valueText = `${value.toFixed(1)}`;
+          valueText = SpeedManager.formatMach(value);
         } else {
           valueText = Math.round(value).toString().padStart(3, '0');
         }
@@ -225,7 +225,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       } else if (_isManaged || this.currentValue < 0) {
         if (_showSelectedSpeed) {
           if (_machActive) {
-            valueText = value.toFixed(1);
+            valueText = SpeedManager.formatMach(value);
           } else {
             valueText = Math.round(value).toString().padStart(3, '0');
           }
@@ -235,6 +235,10 @@ export class SpeedManager extends TemporaryHax implements Instrument {
         }
       }
     }
+  }
+
+  private static formatMach(mach: number): string {
+    return mach.toFixed(2);
   }
 
   private clampSpeed(value: number): number {
