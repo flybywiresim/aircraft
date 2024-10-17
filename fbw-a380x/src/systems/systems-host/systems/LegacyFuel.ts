@@ -1,3 +1,4 @@
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
   EventBus,
@@ -37,6 +38,7 @@ export class LegacyFuel implements Instrument {
   private readonly refuelStarted = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('cg_percent'), 0);
+  private readonly aircraftWeightInLBS = ConsumerSubject.create(this.sub.on('total_weight'), 0);
 
   private readonly triggerStates = new Map<number, ConsumerSubject<boolean>>();
 
@@ -383,17 +385,19 @@ export class LegacyFuel implements Instrument {
       ) {
         this.toggleTrigger(40);
       }
+      const cgTargetStart = this.calculateCGTarget(this.aircraftWeightInLBS.get() / 1000);
+      const cgTargetStop = cgTargetStart - 1;
 
       if (
-        (this.cgPercent.get() > 41.5 && !this.triggerStates.get(41).get()) ||
-        (this.cgPercent.get() <= 41.4 && this.triggerStates.get(41).get())
+        (this.cgPercent.get() > cgTargetStart && !this.triggerStates.get(41).get()) ||
+        (this.cgPercent.get() <= cgTargetStart - 0.1 && this.triggerStates.get(41).get())
       ) {
         this.toggleTrigger(41);
       }
 
       if (
-        (this.cgPercent.get() < 40.5 && !this.triggerStates.get(42).get()) ||
-        (this.cgPercent.get() >= 40.6 && this.triggerStates.get(42).get())
+        (this.cgPercent.get() < cgTargetStop && !this.triggerStates.get(42).get()) ||
+        (this.cgPercent.get() >= cgTargetStop + 0.1 && this.triggerStates.get(42).get())
       ) {
         this.toggleTrigger(42);
       }
@@ -407,5 +411,21 @@ export class LegacyFuel implements Instrument {
     if (this.junctionSettings.get(index).get() !== option) {
       this.keyEventManager.triggerKey('FUELSYSTEM_JUNCTION_SET', true, index, option);
     }
+  }
+  /**
+   * Calculates the CG Target based on aircraft total weight in kLBS
+   * @param weight aircraft weight in kLBS
+   * @returns target CG in % rounded to 2 decimals
+   */
+  private calculateCGTarget(weight: number): number {
+    //coefficients determined using regression on FCOM diagram
+    const target =
+      1.52792360195336e-14 * Math.pow(weight, 5) -
+      7.7447769532209e-11 * Math.pow(weight, 4) +
+      1.57545973208929e-7 * Math.pow(weight, 3) -
+      0.000162820304673144 * Math.pow(weight, 2) +
+      0.0884071656630996 * weight +
+      20.6522282591408;
+    return MathUtils.round(target, 0.01);
   }
 }
