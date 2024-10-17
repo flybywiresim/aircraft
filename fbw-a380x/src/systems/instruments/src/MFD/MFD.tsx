@@ -20,8 +20,6 @@ import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
 import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
@@ -200,9 +198,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
   public async onAfterRender(node: VNode): Promise<void> {
     super.onAfterRender(node);
-
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
-    NavigationDatabaseService.activeDatabase = db;
 
     const isCaptainSide = this.props.captOrFo === 'CAPT';
 

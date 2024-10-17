@@ -6,6 +6,7 @@ import {
   AircraftConfig,
   EngineModelParameters,
   FlightModelParameters,
+  FMSymbolsConfig,
   LnavConfig,
   VnavConfig,
   VnavDescentMode,
@@ -46,7 +47,11 @@ const flightModelParams: FlightModelParameters = {
 const engineModelParams: EngineModelParameters = {
   maxThrust: 80_213,
   numberOfEngines: 4,
-  fuelBurnFactor: 2.73,
+  fuelBurnFactor: 1.33,
+};
+
+const fmsSymbolConfig: FMSymbolsConfig = {
+  publishDepartureIdent: true,
 };
 
 export const A380AircraftConfig: AircraftConfig = {
@@ -54,4 +59,5 @@ export const A380AircraftConfig: AircraftConfig = {
   vnavConfig,
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
+  fmSymbolConfig: fmsSymbolConfig,
 };

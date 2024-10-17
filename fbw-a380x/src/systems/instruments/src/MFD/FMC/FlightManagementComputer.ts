@@ -11,6 +11,9 @@ import {
   FlightPhaseManager,
   FlightPlanIndex,
   Navigation,
+  NavigationDatabase,
+  NavigationDatabaseBackend,
+  NavigationDatabaseService,
 } from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { ArraySubject, EventBus, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
@@ -177,6 +180,9 @@ export class FlightManagementComputer implements FmcInterface {
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
+
+    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    NavigationDatabaseService.activeDatabase = db;
 
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
     if (this.instance === FmcIndex.FmcA) {
