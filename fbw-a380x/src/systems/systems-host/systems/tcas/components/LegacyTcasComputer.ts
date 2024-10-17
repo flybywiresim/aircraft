@@ -34,7 +34,7 @@ import {
   TCAS_CONST,
 } from '../lib/TcasConstants';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
-import { ClockEvents, ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
+import { ClockEvents, ConsumerSubject, EventBus, GameStateProvider, Instrument, Wait } from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export class NDTcasTraffic {
@@ -301,6 +301,12 @@ export class LegacyTcasComputer implements Instrument {
     this.activeRa = new ResAdvisory(null, false, 0, false);
     this.trafficLeftEfisFilter = false;
     this.trafficRightEfisFilter = false;
+
+    Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame).then(() => {
+      if (!SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool')) {
+        this.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alert_level', TcasMode.TARA, true);
+      }
+    });
   }
 
   /**
