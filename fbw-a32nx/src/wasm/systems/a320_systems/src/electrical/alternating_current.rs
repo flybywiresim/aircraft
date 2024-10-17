@@ -16,7 +16,7 @@ use systems::{
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
-use uom::si::{f64::*, power::kilowatt, velocity::knot};
+use uom::si::{f64::*, power::kilowatt};
 
 pub(super) struct A320AlternatingCurrentElectrical {
     main_power_sources: A320MainPowerSources,
@@ -184,18 +184,18 @@ impl A320AlternatingCurrentElectrical {
 
     pub fn update_after_direct_current(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         emergency_generator: &EmergencyGenerator,
         dc_state: &impl A320DirectCurrentElectricalSystem,
+        spd_cond: bool,
     ) {
         electricity.flow(dc_state.static_inverter(), &self.ac_stat_inv_bus);
 
         self.static_inv_to_ac_ess_bus_contactor
             .close_when(self.should_close_15xe2_contactor(
-                context,
                 electricity,
                 emergency_generator,
+                spd_cond,
             ));
         electricity.flow(
             dc_state.static_inverter(),
@@ -253,13 +253,13 @@ impl A320AlternatingCurrentElectrical {
     /// the static inverter to the AC ESS BUS.
     fn should_close_15xe2_contactor(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_generator: &EmergencyGenerator,
+        spd_cond: bool,
     ) -> bool {
         !self.any_non_essential_bus_powered(electricity)
             && !electricity.is_powered(emergency_generator)
-            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
+            && spd_cond
     }
 
     pub fn debug_assert_invariants(&self) {
