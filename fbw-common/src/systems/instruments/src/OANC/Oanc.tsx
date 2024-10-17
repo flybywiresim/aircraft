@@ -30,6 +30,8 @@ import {
   EfisNdMode,
   MapParameters,
   EfisSide,
+  FmsOansData,
+  FcuSimVars,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -50,8 +52,6 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 
 import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FcuSimVars } from './FcuBusPublisher';
-import { FmsOansData } from './FmsOansPublisher';
 import { FmsDataStore } from './OancControlPanelUtils';
 import { BrakeToVacateUtils } from './BrakeToVacateUtils';
 import { STYLE_DATA } from './style-data';

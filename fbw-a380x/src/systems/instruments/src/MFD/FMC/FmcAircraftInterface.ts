@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';

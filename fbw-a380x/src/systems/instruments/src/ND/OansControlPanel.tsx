@@ -23,12 +23,10 @@ import {
 } from '@microsoft/msfs-sdk';
 import {
   BrakeToVacateUtils,
-  BtvData,
   ControlPanelAirportSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
   FmsDataStore,
-  FmsOansDataArinc429,
   NavigraphAmdbClient,
   OansControlEvents,
   globalToAirportCoordinates,
@@ -37,9 +35,11 @@ import {
   AmdbAirportSearchResult,
   Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
+  BtvData,
   EfisSide,
   FeatureType,
   FeatureTypeString,
+  FmsOansData,
   MathUtils,
   NXDataStore,
   Runway,
@@ -80,9 +80,7 @@ const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', '
 export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<
-    ClockEvents & FmsOansDataArinc429 & AdirsSimVars & NDSimvars & BtvData
-  >();
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData>();
 
   private readonly navigraphAvailable = Subject.create(false);
 
@@ -142,7 +140,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly runwayLda = Subject.create<string | null>(null);
 
-  private readonly reqStoppingDistance = Subject.create<number | null>(null);
+  private readonly oansRequestedStoppingDistance = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('oansRequestedStoppingDistance'),
+  );
+
+  private readonly reqStoppingDistance = this.oansRequestedStoppingDistance.map((it) =>
+    it.isNormalOperation() ? it.value : 0,
+  );
 
   private readonly fmsLandingRunwayVisibility = this.fmsDataStore.landingRunway.map((rwy) =>
     rwy ? 'inherit' : 'hidden',
@@ -164,15 +168,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
-  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('radioAltitude_1').whenChanged(),
-  );
-  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('radioAltitude_2').whenChanged(),
-  );
-  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('radioAltitude_3').whenChanged(),
-  );
+  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
+  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
+  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase').whenChanged(), 0);
 
@@ -330,11 +328,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           this.btvUtils.updateRemainingDistances(this.localPpos);
         }
       });
-
-    this.sub
-      .on('oansRequestedStoppingDistance')
-      .whenChanged()
-      .handle((it) => this.reqStoppingDistance.set(it.isNormalOperation() ? it.value : 0));
 
     this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
 

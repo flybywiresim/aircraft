@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { AmdbProperties, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData } from '@flybywiresim/fbw-sdk';
 import {
   Feature,
   FeatureCollection,
@@ -18,8 +18,7 @@ import {
 } from '@turf/turf';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from './';
-import { BtvData } from './BtvPublisher';
-import { FmsOansData } from './FmsOansPublisher';
+import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
 import {
   fractionalPointAlongLine,
@@ -154,17 +153,11 @@ export class BrakeToVacateUtils<T extends number> {
 
   private readonly rwyAheadArinc = Arinc429Register.empty();
 
-  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('radioAltitude_1').whenChanged(),
-  );
-  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('radioAltitude_2').whenChanged(),
-  );
-  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('radioAltitude_3').whenChanged(),
-  );
+  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
+  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
+  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
-  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase').whenChanged(), 0);
+  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   selectRunwayFromOans(
     runway: string,
