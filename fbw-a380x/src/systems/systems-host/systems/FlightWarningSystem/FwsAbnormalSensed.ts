@@ -227,7 +227,7 @@ export class FwsAbnormalSensed {
    * The majority of ECAM fault logic is still inside FwsCore (due to dependencies to MEMOs, and general flow)
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
    */
-  onUpdate() {
+  update() {
     if (this.fws.activeAbnormalSensedList.get().size > 0) {
       this.showAbnormalSensed.set(true);
       this.fws.normalChecklists.showChecklist.set(false);
