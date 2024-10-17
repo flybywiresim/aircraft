@@ -144,6 +144,11 @@ export class Arinc429Register implements Arinc429WordData {
     this.set(SimVar.GetSimVarValue(name, 'number'));
   }
 
+  writeToSimVar(name: string): void {
+    this.f32View[0] = this.value;
+    SimVar.SetSimVarValue(name, 'number', this.u32View[0] + Math.trunc(this.ssm) * 2 ** 32);
+  }
+
   isFailureWarning() {
     return this.ssm === Arinc429SignStatusMatrix.FailureWarning;
   }
