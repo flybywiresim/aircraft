@@ -323,7 +323,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_ON, "AUTOPILOT_ON", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_SET, "AUTOPILOT_DISENGAGE_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_SET, "AUTOPILOT_DISENGAGE_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_TOGGLE, "AUTOPILOT_DISENGAGE_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
@@ -1908,6 +1908,9 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       if (static_cast<long>(data0) == 1) {
         simInputAutopilot.AP_disconnect = 1;
         std::cout << "WASM: event triggered: AUTOPILOT_DISENGAGE_SET" << std::endl;
+
+        // Re emitting masked event for autopilot disconnection
+        execute_calculator_code("(>K:A32NX.AUTOPILOT_DISENGAGE)", nullptr, nullptr, nullptr);
       }
       break;
     }

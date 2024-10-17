@@ -143,7 +143,6 @@ class SystemsHost extends BaseInstrument {
     ]).then(([keyEventManager]) => {
       this.keyEventManager = keyEventManager;
       this.initLighting();
-      this.registerKeyEvents();
     });
   }
 
@@ -238,14 +237,6 @@ class SystemsHost extends BaseInstrument {
 
   private setPotentiometer(potentiometer: number, brightness: number) {
     this.keyEventManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
-  }
-
-  private registerKeyEvents() {
-    this.keyEventManager.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
-    this.keyEventManager.interceptKey('A32NX.FCU_AP_DISCONNECT_PUSH', true);
-    this.keyEventManager.interceptKey('AUTOPILOT_DISENGAGE_SET', true);
-    this.keyEventManager.interceptKey('AUTOPILOT_OFF', true);
-    this.keyEventManager.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 }
 
