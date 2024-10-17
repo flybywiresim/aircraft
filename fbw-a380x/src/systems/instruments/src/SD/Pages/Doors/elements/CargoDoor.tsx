@@ -1,8 +1,8 @@
 import { Position, CargoDoorProps } from '@instruments/common/types';
 import React from 'react';
 
-const CargoDoor: React.FC<Position & CargoDoorProps> = ({ x, y, label, width, height, engineRunning }) => {
-  const doorOpen = false;
+const CargoDoor: React.FC<Position & CargoDoorProps> = ({ x, y, label, closed, width, height, engineRunning }) => {
+  const doorOpen = !closed;
   const validSDAC = true;
 
   let cargoDoorMessage = '';
