@@ -59,6 +59,7 @@ import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseServic
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
+import { Position } from '@turf/turf';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -148,6 +149,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   );
 
   private arpCoordinates: Coordinates | undefined;
+
+  private localPpos: Position = [];
 
   private landingRunwayNavdata: Runway | undefined;
 
@@ -323,8 +326,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
 
         if (this.arpCoordinates && ppos.lat && this.navigraphAvailable.get() === false) {
-          const localPpos = globalToAirportCoordinates(this.arpCoordinates, ppos);
-          this.btvUtils.updateRemainingDistances(localPpos);
+          globalToAirportCoordinates(this.localPpos, this.arpCoordinates, ppos);
+          this.btvUtils.updateRemainingDistances(this.localPpos);
         }
       });
 
@@ -496,8 +499,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.landingRunwayNavdata.bearing,
         this.landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
       );
-      const localThr = globalToAirportCoordinates(this.arpCoordinates, this.landingRunwayNavdata.thresholdLocation);
-      const localOppThr = globalToAirportCoordinates(this.arpCoordinates, oppositeThreshold);
+      const localThr: Position = [0, 0];
+      const localOppThr: Position = [0, 0];
+      globalToAirportCoordinates(localThr, this.arpCoordinates, this.landingRunwayNavdata.thresholdLocation);
+      globalToAirportCoordinates(localOppThr, this.arpCoordinates, oppositeThreshold);
 
       this.btvUtils.selectRunwayFromNavdata(
         rwyIdent,
@@ -674,7 +679,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                   this.landingRunwayNavdata.bearing,
                                   val / MathUtils.METRES_TO_NAUTICAL_MILES,
                                 );
-                                const localExitPos = globalToAirportCoordinates(this.arpCoordinates, exitLocation);
+                                const localExitPos: Position = [0, 9];
+                                globalToAirportCoordinates(localExitPos, this.arpCoordinates, exitLocation);
 
                                 this.btvUtils.selectExitFromManualEntry(val, localExitPos);
                               }

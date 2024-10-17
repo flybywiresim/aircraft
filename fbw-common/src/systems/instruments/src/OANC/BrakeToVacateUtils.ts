@@ -144,6 +144,14 @@ export class BrakeToVacateUtils<T extends number> {
   /** Timestamp at which "runway ahead" advisory was triggered */
   private rwyAheadTriggeredTime: number = 0;
 
+  private rwyAheadPredictionVolumePoints: Position[] = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ];
+
   private readonly rwyAheadArinc = Arinc429Register.empty();
 
   private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(
@@ -723,37 +731,35 @@ export class BrakeToVacateUtils<T extends number> {
     ]);
     const leftLine = lineOffset(line, 30, { units: 'meters' });
     const rightLine = lineOffset(line, -30, { units: 'meters' });
-    const volumeCoords = [
-      globalToAirportCoordinates(airportRefPos, {
-        lat: leftLine.geometry.coordinates[0][0],
-        long: leftLine.geometry.coordinates[0][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
-        lat: leftLine.geometry.coordinates[1][0],
-        long: leftLine.geometry.coordinates[1][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
-        lat: rightLine.geometry.coordinates[1][0],
-        long: rightLine.geometry.coordinates[1][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
-        lat: rightLine.geometry.coordinates[0][0],
-        long: rightLine.geometry.coordinates[0][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
-        lat: leftLine.geometry.coordinates[0][0],
-        long: leftLine.geometry.coordinates[0][1],
-      }) as Position,
-    ];
+    globalToAirportCoordinates(this.rwyAheadPredictionVolumePoints[0], airportRefPos, {
+      lat: leftLine.geometry.coordinates[0][0],
+      long: leftLine.geometry.coordinates[0][1],
+    });
+    globalToAirportCoordinates(this.rwyAheadPredictionVolumePoints[1], airportRefPos, {
+      lat: leftLine.geometry.coordinates[1][0],
+      long: leftLine.geometry.coordinates[1][1],
+    });
+    globalToAirportCoordinates(this.rwyAheadPredictionVolumePoints[2], airportRefPos, {
+      lat: rightLine.geometry.coordinates[1][0],
+      long: rightLine.geometry.coordinates[1][1],
+    });
+    globalToAirportCoordinates(this.rwyAheadPredictionVolumePoints[3], airportRefPos, {
+      lat: rightLine.geometry.coordinates[0][0],
+      long: rightLine.geometry.coordinates[0][1],
+    });
+    globalToAirportCoordinates(this.rwyAheadPredictionVolumePoints[4], airportRefPos, {
+      lat: leftLine.geometry.coordinates[0][0],
+      long: leftLine.geometry.coordinates[0][1],
+    });
 
     // From here on comparing local to local coords
-    const predictionVolume = polygon([volumeCoords]);
-    const acLocalCoords = globalToAirportCoordinates(airportRefPos, globalPos);
+    const predictionVolume = polygon([this.rwyAheadPredictionVolumePoints]);
+    // const acLocalCoords = globalToAirportCoordinates(airportRefPos, globalPos);
 
     const insideRunways = [];
     runwayFeatures.features.forEach((feat) => {
       if (feat.properties.idrwy) {
-        const inside = booleanContains(feat.geometry as Polygon, point(acLocalCoords));
+        const inside = booleanContains(feat.geometry as Polygon, point(this.aircraftPpos));
         if (inside) {
           insideRunways.push(feat.properties.idrwy.replace('.', ' - '));
         }
