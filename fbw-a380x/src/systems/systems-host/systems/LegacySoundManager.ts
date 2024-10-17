@@ -1,3 +1,5 @@
+import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
+
 class PeriodicSound {
   timeSinceLastPlayed: number;
 
@@ -12,6 +14,8 @@ class PeriodicSound {
 }
 
 export class LegacySoundManager {
+  private updateThrottler = new UpdateThrottler(50);
+
   periodicList: PeriodicSound[];
 
   soundQueue: LegacySound[];
@@ -86,11 +90,17 @@ export class LegacySoundManager {
   }
 
   update(deltaTime: number) {
+    const throttledT = this.updateThrottler.canUpdate(deltaTime);
+
+    if (throttledT === 1) {
+      return;
+    }
+
     if (this.playingSoundRemaining <= 0) {
       this.playingSound = null;
       this.playingSoundRemaining = NaN;
     } else if (this.playingSoundRemaining > 0) {
-      this.playingSoundRemaining -= deltaTime / 1000;
+      this.playingSoundRemaining -= throttledT / 1000;
     }
 
     this.periodicList.forEach((element) => {
@@ -99,7 +109,7 @@ export class LegacySoundManager {
           element.timeSinceLastPlayed = 0;
         }
       } else {
-        element.timeSinceLastPlayed += deltaTime / 1000;
+        element.timeSinceLastPlayed += throttledT / 1000;
       }
     });
   }

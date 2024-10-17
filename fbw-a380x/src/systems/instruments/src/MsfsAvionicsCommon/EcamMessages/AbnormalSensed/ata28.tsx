@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -25,7 +25,50 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
   281800002: {
     title: '\x1b<4m\x1b4mFUEL\x1bm ALL FEED TKs LEVEL LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'CROSSFEED 1+2+3+4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'ALL FEED TKs PMPs',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED', // If gravity transfer from the trim tank is in progress
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 2,
+      },
+      {
+        name: 'OUTR TK XFR', // For transfer tanks containing fuel
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'TRIM TK XFR', // If at least one trim tank pump is running
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 2,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+    ],
   },
   281800003: {
     title: '\x1b<4m\x1b4mFUEL\x1bm APU FEED FAULT',
@@ -130,22 +173,214 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
   281800023: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TK 1 LEVEL LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'IF NO FUEL LEAK',
+        sensed: true,
+        style: ChecklistLineStyle.SubHeadline,
+      },
+      {
+        name: 'CROSSFEED 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'CROSSFEED 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED', // If gravity transfer from the trim tank is in progress
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 2,
+      },
+      {
+        name: 'OUTR TK XFR', // For transfer tanks containing fuel:
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'TRIM TK XFR', // If at least one trim tank pump is running
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 2,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+    ],
   },
   281800024: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TK 2 LEVEL LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'IF NO FUEL LEAK',
+        sensed: true,
+        style: ChecklistLineStyle.SubHeadline,
+      },
+      {
+        name: 'CROSSFEED 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'CROSSFEED 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED',
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 2,
+      },
+      {
+        name: 'OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'TRIM TK XFR',
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 2,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+    ],
   },
   281800025: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TK 3 LEVEL LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'IF NO FUEL LEAK',
+        sensed: true,
+        style: ChecklistLineStyle.SubHeadline,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED',
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 2,
+      },
+      {
+        name: 'OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'TRIM TK XFR',
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 2,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+    ],
   },
   281800026: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TK 4 LEVEL LO',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'IF NO FUEL LEAK',
+        sensed: true,
+        style: ChecklistLineStyle.SubHeadline,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'TRIM TK FEED',
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+        level: 2,
+      },
+      {
+        name: 'OUTR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'TRIM TK XFR',
+        sensed: true,
+        labelNotCompleted: 'FWD',
+        level: 2,
+      },
+      {
+        name: 'INR TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+      {
+        name: 'MID TK XFR',
+        sensed: true,
+        labelNotCompleted: 'MAN',
+        level: 2,
+      },
+    ],
   },
   281800027: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TK 1 MAIN + STBY PMPs FAULT',
@@ -393,9 +628,16 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   281800076: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm NO ZFW OR ZFCG DATA',
+    title: '\x1b<4m\x1b4mFUEL\x1bm NO ZFW OR ZFWCG DATA',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FMS ZFW OR ZFWCG VALUES',
+        sensed: false,
+        labelNotCompleted: 'INITIALIZE',
+        labelCompleted: 'INITIALIZED',
+      },
+    ],
   },
   281800077: {
     title: '\x1b<4m\x1b4mFUEL\x1bm NORM + ALTN XFR FAULT',
@@ -528,7 +770,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK:',
-        sensed: false,
+        sensed: true,
       },
       {
         name: 'ALL CROSSFEEDs',
@@ -574,7 +816,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK:',
-        sensed: false,
+        sensed: true,
       },
       {
         name: 'ALL CROSSFEEDs',

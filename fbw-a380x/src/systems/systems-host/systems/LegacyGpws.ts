@@ -1,4 +1,4 @@
-import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
@@ -16,6 +16,8 @@ type ModesType = {
  * be ported to the A380X, then the FWS callout parts of this class can be removed.
  */
 export class LegacyGpws {
+  private updateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
+
   autoCallOutPins: number;
 
   minimumsState = 0;
@@ -207,8 +209,12 @@ export class LegacyGpws {
     );
   }
 
-  update(deltaTime) {
-    this.gpws(deltaTime);
+  update(deltaTime: number) {
+    const throttledT = this.updateThrottler.canUpdate(deltaTime);
+
+    if (throttledT !== 1) {
+      this.gpws(throttledT);
+    }
   }
 
   gpws(deltaTime) {
