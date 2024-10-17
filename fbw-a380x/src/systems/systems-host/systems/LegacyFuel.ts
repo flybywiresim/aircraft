@@ -17,8 +17,8 @@ import { FuelSystemEvents } from 'systems-host/systems/FuelSystemPublisher';
 
 /* TODO: remove this file after proper FQMS is implemented in Rust */
 export class LegacyFuel implements Instrument {
-  private readonly NUMBER_OF_TRIGGERS = 42;
-  private readonly NUMBER_OF_JUNCTIONS = 13;
+  private static NUMBER_OF_TRIGGERS = 42;
+  private static NUMBER_OF_JUNCTIONS = 13;
 
   private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents>();
 
@@ -51,12 +51,12 @@ export class LegacyFuel implements Instrument {
       this.keyEventManager = manager;
     });
 
-    for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
+    for (let index = 1; index <= LegacyFuel.NUMBER_OF_TRIGGERS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_trigger_status_${index}`), false);
       this.triggerStates.set(index, element);
     }
 
-    for (let index = 1; index <= this.NUMBER_OF_JUNCTIONS; index++) {
+    for (let index = 1; index <= LegacyFuel.NUMBER_OF_JUNCTIONS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_junction_setting_${index}`), 1);
       this.junctionSettings.set(index, element);
     }
@@ -130,7 +130,7 @@ export class LegacyFuel implements Instrument {
     const onGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
     if (this.refuelStarted.get()) {
       this.refuelInProgress = true;
-      for (let index = 1; index <= this.NUMBER_OF_TRIGGERS; index++) {
+      for (let index = 1; index <= LegacyFuel.NUMBER_OF_TRIGGERS; index++) {
         if (this.triggerStates.get(index).get()) {
           this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_OFF', true, index);
         }
