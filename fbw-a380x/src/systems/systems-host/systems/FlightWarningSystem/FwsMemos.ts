@@ -152,22 +152,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000190': {
-      // LDG LT
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([leftLandingLightExtended, rightLandingLightExtended]) =>
-          leftLandingLightExtended || rightLandingLightExtended,
-        this.fws.leftLandingLightExtended,
-        this.fws.rightlandingLightExtended,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000019001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000290': {
       // SWITCHING PNL
       flightPhaseInhib: [],
@@ -521,16 +505,15 @@ export class FwsMemos {
       // IR IN ALIGN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+        ([adirsRemainingAlignTime, ir1Align, ir2Align, ir3Align]) => {
           const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
-
-          return remainingTimeAbove240 && allInState1;
+          const allInAlign = ir1Align && ir2Align && ir3Align;
+          return remainingTimeAbove240 && allInAlign;
         },
         this.fws.adirsRemainingAlignTime,
-        this.fws.adiru1State,
-        this.fws.adiru2State,
-        this.fws.adiru3State,
+        this.fws.ir1Align,
+        this.fws.ir2Align,
+        this.fws.ir3Align,
       ),
       whichCodeToReturn: () => [
         this.fws.adirsMessage1(
@@ -560,17 +543,16 @@ export class FwsMemos {
       // IR IN ALIGN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+        ([adirsRemainingAlignTime, ir1Align, ir2Align, ir3Align]) => {
           const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
           const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
-
-          return remainingTimeAbove0 && remainingTimeBelow240 && allInState1;
+          const allInAlign = ir1Align && ir2Align && ir3Align;
+          return remainingTimeAbove0 && remainingTimeBelow240 && allInAlign;
         },
         this.fws.adirsRemainingAlignTime,
-        this.fws.adiru1State,
-        this.fws.adiru2State,
-        this.fws.adiru3State,
+        this.fws.ir1Align,
+        this.fws.ir2Align,
+        this.fws.ir3Align,
       ),
       whichCodeToReturn: () => [
         this.fws.adirsMessage2(
@@ -649,7 +631,7 @@ export class FwsMemos {
     '343000001': {
       // TCAS STBY
       flightPhaseInhib: [1, 12],
-      simVarIsActive: MappedSubject.create(([tcasSensitivity]) => tcasSensitivity === 1, this.fws.tcasSensitivity),
+      simVarIsActive: this.fws.tcasStandbyMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['343000001'],
       memoInhibit: () => false,
