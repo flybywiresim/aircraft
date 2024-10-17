@@ -17,15 +17,17 @@ import {
   A380EfisNdRangeValue,
   a380EfisRangeSettings,
   ArincEventBus,
+  BtvSimvarPublisher,
   EfisNdMode,
   EfisSide,
+  FcuBusPublisher,
+  FcuSimVars,
   FmsOansSimvarPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 import {
   a380EfisZoomRangeSettings,
   A380EfisZoomRangeValue,
-  BtvSimvarPublisher,
   Oanc,
   OANC_RENDER_HEIGHT,
   OANC_RENDER_WIDTH,
@@ -48,10 +50,6 @@ import { CdsDisplayUnit, DisplayUnitID, getDisplayIndex } from '../MsfsAvionicsC
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
-import {
-  FcuBusPublisher,
-  FcuSimVars,
-} from '../../../../../../fbw-common/src/systems/shared/src/publishers/FcuBusPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
