@@ -122,7 +122,7 @@
 1. [ECAM] Fixed ALL ECAM Button cycling through STS page and being inconsisten on press - @Maximilian-Reuter (\_chaoz_)
 1. [CDU] Fix for EFOB calculation not pulling from block fuel prior to engine start - @PatM (Patrick Macken)
 1. [FMS] Run vertical predictions without V-speeds - @BlueberryKing (BlueberryKing)
-1. [GSX] updated GSX conig file - @Watsi01
+1. [GSX] updated GSX config file - @Watsi01
 
 ## 0.11.0
 
