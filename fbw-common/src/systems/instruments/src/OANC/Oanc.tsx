@@ -296,6 +296,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public readonly arpReferencedMapParams = new MapParameters();
 
+  private readonly oansVisible = ConsumerSubject.create<boolean>(null, false);
+
   private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
   private readonly efisOansRangeSub = ConsumerSubject.create<number>(null, 4);
@@ -366,6 +368,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
     const sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
+
+    this.oansVisible.setConsumer(sub.on('ndShowOans'));
 
     this.efisNDModeSub.setConsumer(sub.on('ndMode'));
 
@@ -956,6 +960,23 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.positionVisible.set(false);
     }
 
+    [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
+
+    if (this.props.side === 'L') {
+      this.btvUtils.updateRemainingDistances(this.projectedPpos);
+      this.btvUtils.updateRwyAheadAdvisory(
+        this.ppos,
+        this.arpCoordinates,
+        this.planeTrueHeading.get(),
+        this.layerFeatures[2],
+      );
+    }
+
+    // If OANS is not visible on this side (i.e. range selector is not on ZOOM), don't continue here to save runtime
+    if (!this.oansVisible.get()) {
+      return;
+    }
+
     const mapTargetHeading = this.modeAnimationMapNorthUp.get() ? 0 : this.planeTrueHeading.get();
     this.mapHeading.set(mapTargetHeading);
 
@@ -990,18 +1011,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       [offsetX, offsetY] = [shiftBy, shiftBy];
     } else {
       [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.referencePos);
-    }
-
-    [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
-
-    if (this.props.side === 'L') {
-      this.btvUtils.updateRemainingDistances(this.projectedPpos);
-      this.btvUtils.updateRwyAheadAdvisory(
-        this.ppos,
-        this.arpCoordinates,
-        this.planeTrueHeading.get(),
-        this.layerFeatures[2],
-      );
     }
 
     // TODO figure out how to not need this

@@ -63,11 +63,17 @@ add_executable(flybywire-a380x-fbw
     #        src/model/LateralDirectLaw.cpp
     src/model/FacComputer_data.cpp
     src/model/FacComputer.cpp
+    src/model/binsearch_u32d.cpp
+    src/model/intrp3d_l_pw.cpp
     src/model/look1_binlxpw.cpp
     src/model/look2_binlcpw.cpp
     src/model/look2_binlxpw.cpp
+    src/model/look2_pbinlxpw.cpp
+    src/model/maximum_Abpa9SzA.cpp
+    src/model/mod_2RcCQkwc.cpp
     src/model/mod_mvZvttxs.cpp
     src/model/MultiWordIor.cpp
+    src/model/plook_binx.cpp
     src/model/rt_modd.cpp
     src/model/rt_remd.cpp
     src/model/uMultiWord2Double.cpp
