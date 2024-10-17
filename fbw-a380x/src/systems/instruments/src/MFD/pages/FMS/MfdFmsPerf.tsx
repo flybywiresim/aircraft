@@ -27,7 +27,6 @@ import {
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
-import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -39,6 +38,7 @@ import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -63,15 +63,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private costIndex = Subject.create<number | null>(null);
 
   /** in feet */
-  private transAlt = Subject.create(5000);
+  private transAlt = Subject.create<number | null>(null);
 
   private transAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private thrRedAlt = Subject.create<number>(AirlineModifiableInformation.EK.thrRedAlt);
+  private thrRedAlt = Subject.create<number | null>(null);
 
   private thrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private accelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+  private accelAlt = Subject.create<number | null>(null);
 
   private accelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -198,7 +198,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private toSelectedAntiIceIndex = Subject.create<number | null>(0);
 
-  private eoAccelAlt = Subject.create(AirlineModifiableInformation.EK.eoAccAlt);
+  private eoAccelAlt = Subject.create<number | null>(null);
 
   private eoAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -403,6 +403,18 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
+  private missedThrRedAlt = Subject.create<number | null>(null);
+
+  private missedThrRedAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private missedAccelAlt = Subject.create<number | null>(null);
+
+  private missedAccelRedAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private missedEngineOutAccelAlt = Subject.create<number | null>(null);
+
+  private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
+
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
 
@@ -541,6 +553,30 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     if (fm.approachFlapConfig) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
+    }
+
+    if (pd.missedThrustReductionAltitudeIsPilotEntered) {
+      this.missedThrRedAltIsPilotEntered.set(pd.missedThrustReductionAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedAccelerationAltitudeIsPilotEntered) {
+      this.missedAccelRedAltIsPilotEntered.set(pd.missedAccelerationAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedEngineOutAccelerationAltitudeIsPilotEntered) {
+      this.missedEngineOutAccelAltIsPilotEntered.set(pd.missedEngineOutAccelerationAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedEngineOutAccelerationAltitude) {
+      this.missedEngineOutAccelAlt.set(pd.missedEngineOutAccelerationAltitude);
+    }
+
+    if (pd.missedThrustReductionAltitude) {
+      this.missedThrRedAlt.set(pd.missedThrustReductionAltitude);
+    }
+
+    if (pd.missedAccelerationAltitude) {
+      this.missedAccelAlt.set(pd.missedAccelerationAltitude);
     }
 
     if (pd.transitionLevelIsFromDatabase) {
@@ -2206,7 +2242,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={
                         new AltitudeOrFlightLevelFormat(
-                          this.transFl.map((it) => (it ?? 180) * 100),
+                          this.transFl.map((it) => (it !== null ? it * 100 : null)),
                           Subject.create(0),
                           Subject.create(maxCertifiedAlt),
                         )
@@ -2538,14 +2574,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <RadioButtonGroup
                         values={['CONF 3', 'FULL']}
                         selectedIndex={this.apprSelectedFlapsIndex}
-                        onModified={(v) => {
-                          this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(v + 3);
-                          if (v === 0) {
-                            SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', true);
-                          } else {
-                            SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', false);
-                          }
-                        }}
+                        onModified={(v) =>
+                          this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(
+                            v === 0 ? FlapConf.CONF_3 : FlapConf.CONF_FULL,
+                          )
+                        }
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_apprFlapsSettingsRadio`}
                         additionalVerticalSpacing={15}
                       />
@@ -2637,11 +2670,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotThrustReductionAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedThrustReductionAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.thrRedAltIsPilotEntered}
-                        value={this.thrRedAlt}
+                        enteredByPilot={this.missedThrRedAltIsPilotEntered}
+                        value={this.missedThrRedAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2658,11 +2691,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotAccelerationAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedAccelerationAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.accelRedAltIsPilotEntered}
-                        value={this.accelAlt}
+                        enteredByPilot={this.missedAccelRedAltIsPilotEntered}
+                        value={this.missedAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2677,11 +2710,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotEngineOutAccelerationAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.eoAccelAltIsPilotEntered}
-                        value={this.eoAccelAlt}
+                        enteredByPilot={this.missedEngineOutAccelAltIsPilotEntered}
+                        value={this.missedEngineOutAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}

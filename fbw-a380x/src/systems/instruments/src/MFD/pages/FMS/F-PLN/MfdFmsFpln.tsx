@@ -32,6 +32,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ConditionalComponent } from '../../common/ConditionalComponent';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -285,7 +286,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           overfly: false,
           annotation: pwp.mcduHeader ?? '',
           etaOrSecondsFromPresent: predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-          transitionAltitude: leg instanceof FlightPlanLeg ? leg.definition.transitionAltitude ?? 18000 : 18000,
+          transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
           altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
           hasAltitudeConstraint: false, // TODO
           altitudeConstraint: null, // TODO
@@ -309,10 +310,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       }
 
       if (leg instanceof FlightPlanLeg) {
-        const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude ?? 18_000;
-        const transLevelAsAlt = Number.isFinite(this.loadedFlightPlan.performanceData.transitionLevel)
-          ? (this.loadedFlightPlan.performanceData.transitionLevel ?? 18_000) * 100
-          : 18_000;
+        const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
+        const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
+        const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
         const useTransLevel =
           i >=
           this.loadedFlightPlan.originSegment.legCount +
@@ -920,12 +920,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             </div>
           </div>
           <div class="mfd-fms-fpln-footer">
-            <Button
-              label="INIT"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+            <ConditionalComponent
+              condition={this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight)}
+              width={125}
+              componentIfTrue={
+                <Button
+                  label="INIT"
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+                  }
+                  buttonStyle="width: 125px;"
+                />
               }
-              buttonStyle="width: 125px;"
+              componentIfFalse={<></>}
             />
             <Button
               disabled={Subject.create(true)}
@@ -1049,7 +1056,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   overfly: boolean;
   annotation: string;
   etaOrSecondsFromPresent: number; // timestamp, will be printed to HH:mm
-  transitionAltitude: number;
+  transitionAltitude: number | null;
   altitudePrediction: number | null;
   hasAltitudeConstraint: boolean;
   altitudeConstraint: AltitudeConstraint | null;
@@ -1389,7 +1396,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     let altStr: VNode = <span>-----</span>;
     const previousRow = this.props.previousRow.get();
     if (data.altitudePrediction) {
-      const isBelowTransAlt = data.altitudePrediction < (data.transitionAltitude ?? 18_000);
+      const isBelowTransAlt =
+        data.transitionAltitude !== null ? data.altitudePrediction < data.transitionAltitude : true;
       if (
         previousRow &&
         isWaypoint(previousRow) &&
@@ -1425,7 +1433,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       );
     }
     if (data.hasAltitudeConstraint && data.altitudeConstraint?.altitude1 && !data.altitudePrediction) {
-      const isBelowTransAlt = data.altitudeConstraint.altitude1 < (data.transitionAltitude ?? 18_000);
+      const isBelowTransAlt =
+        data.transitionAltitude !== null ? data.altitudeConstraint.altitude1 < data.transitionAltitude : true;
       const altCstr = isBelowTransAlt
         ? data.altitudeConstraint.altitude1.toFixed(0)
         : `FL${Math.round(data.altitudeConstraint.altitude1 / 100).toString()}`;

@@ -11,7 +11,6 @@ import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/provid
 
 import './style.scss';
 import { RopRowOansPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
-import { PfdSpeedsDropInSimvarPublisher } from 'instruments/src/PFD/shared/PfdSpeedsDropInPublisher';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 
 class A380X_PFD extends BaseInstrument {
@@ -26,9 +25,6 @@ class A380X_PFD extends BaseInstrument {
   private readonly simVarPublisher = new PFDSimvarPublisher(this.bus);
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
-
-  // FIXME when PRIM FE is implemented
-  private readonly pfdSpeedsProvider = new PfdSpeedsDropInSimvarPublisher(this.bus);
 
   private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
@@ -55,7 +51,6 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('PfdSimVars', this.simVarPublisher);
     this.backplane.addInstrument('ArincProvider', this.arincProvider);
-    this.backplane.addPublisher('PfdSpeeds', this.pfdSpeedsProvider);
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
     this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
