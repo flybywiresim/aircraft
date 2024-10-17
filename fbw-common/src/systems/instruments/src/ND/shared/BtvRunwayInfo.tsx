@@ -14,14 +14,12 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly runwayIdent = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
 
   private readonly runwayLength = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('oansSelectedLandingRunwayLength').withArinc429Precision(1),
+    this.sub.on('oansSelectedLandingRunwayLength'),
   );
 
   private readonly exitIdent = ConsumerSubject.create(this.sub.on('oansSelectedExit'), null);
 
-  private readonly exitDistance = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('oansRequestedStoppingDistance').withArinc429Precision(1),
-  );
+  private readonly exitDistance = Arinc429LocalVarConsumerSubject.create(this.sub.on('oansRequestedStoppingDistance'));
 
   private readonly runwayInfoString = MappedSubject.create(
     ([ident, length]) =>
@@ -33,7 +31,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   );
 
   private readonly runwayBearing = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('oansSelectedLandingRunwayBearing').withArinc429Precision(1),
+    this.sub.on('oansSelectedLandingRunwayBearing'),
   );
 
   private readonly btvFmsDisagree = MappedSubject.create(
@@ -58,13 +56,9 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     rot.isNormalOperation() ? rot.value.toFixed(0).padStart(4, '\xa0') : '',
   );
 
-  private readonly turnaroundMaxRev = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('btvTurnAroundMaxReverse').withArinc429Precision(1),
-  );
+  private readonly turnaroundMaxRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundMaxReverse'));
 
-  private readonly turnaroundIdleRev = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('btvTurnAroundIdleReverse').withArinc429Precision(1),
-  );
+  private readonly turnaroundIdleRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundIdleReverse'));
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
