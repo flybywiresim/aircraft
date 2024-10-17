@@ -1989,7 +1989,8 @@
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON</TOGGLE_SIMVAR>
                     <DOWN_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</DOWN_CODE>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                    <!--- TODO: 309PP is a placeholder, check refs-->
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ES_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_309PP_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ1_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</SEQ2_CODE>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2005,7 +2006,8 @@
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
                     <EXTRA_CONDITION>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</EXTRA_CONDITION>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                    <!--- TODO: 309PP is a placeholder, check refs-->
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_309PP_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
