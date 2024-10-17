@@ -55,6 +55,13 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private readonly tcasFailed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
+  private readonly tcasRadioGroupDisabled = MappedSubject.create(
+    ([tcasFailed, xpdrState]) =>
+      Array(3).fill(tcasFailed || xpdrState === TransponderState.Off || xpdrState === TransponderState.Standby),
+    this.tcasFailed,
+    this.xpdrState,
+  );
+
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(2);
 
   private readonly tcasNormAbvBlwSelectedIndex = Subject.create<number | null>(0);
@@ -259,6 +266,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   selectedIndex={this.tcasTaraSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
                   additionalVerticalSpacing={10}
+                  valuesDisabled={this.tcasRadioGroupDisabled}
                   color={Subject.create('green')}
                 />
               </div>
@@ -269,6 +277,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   onModified={(val) =>
                     this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alt_select', val, true)
                   }
+                  valuesDisabled={this.tcasRadioGroupDisabled}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
                   color={Subject.create('green')}

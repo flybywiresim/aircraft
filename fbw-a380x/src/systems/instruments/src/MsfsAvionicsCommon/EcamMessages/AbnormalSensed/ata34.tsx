@@ -769,6 +769,38 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     items: [], // not implemented
   },
   // SURVEILLANCE
+  341800016: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TCAS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'XPDR & TCAS',
+        labelNotCompleted: 'SYS 2',
+        sensed: true,
+      },
+    ],
+  },
+  341800017: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TCAS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'XPDR & TCAS',
+        labelNotCompleted: 'SYS 1',
+        sensed: true,
+      },
+    ],
+  },
+  341800018: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TCAS 1+2 FAULT',
+    sensed: true,
+    items: [],
+  },
+  341800019: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TCAS STBY',
+    sensed: true,
+    items: [],
+  },
   341800037: {
     title: '\x1b<4m\x1b4mSURV\x1bm XPDR STBY',
     sensed: true,

@@ -16,6 +16,8 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
 
   private readonly gpwsSinkRateActive = this.gpwsWord1.map((w) => w.bitValueOr(11, false));
 
+  private readonly gpwsTerrainActive = this.gpwsWord1.map((w) => w.bitValueOr(13, false));
+
   private readonly gpwsDontSinkActive = this.gpwsWord1.map((w) => w.bitValueOr(14, false));
 
   private readonly gpwsTooLowGearActive = this.gpwsWord1.map((w) => w.bitValueOr(15, false));
@@ -39,6 +41,18 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
       });
   }
 
+  /** The following precedence of messages is implemented right now (first line is most important message):
+   * PULL UP
+   * TOO LOW TERRAIN
+   * TOO LOW GEAR
+   * TOO LOW FLAPS
+   * TERRAIN
+   * GLIDESLOPE
+   * DONT SINK
+   * SINK RATE
+   * No references for this precedence, educated guess.
+   */
+
   render(): VNode {
     return (
       <g id="WarningGroupA380" ref={this.warningGroupRef} style="display: block;">
@@ -60,8 +74,14 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
-              ([sinkRate, pullUp]) => sinkRate && !pullUp,
+              ([sr, ds, gs, t, tlf, tlg, tlt, pu]) => sr && !ds && !gs && !t && !tlf && !tlg && !tlt && !pu,
               this.gpwsSinkRateActive,
+              this.gpwsDontSinkActive,
+              this.gpwsGlideSlopeActive,
+              this.gpwsTerrainActive,
+              this.gpwsTooLowFlapsActive,
+              this.gpwsTooLowGearActive,
+              this.gpwsTooLowTerrainActive,
               this.gpwsPullUpActive,
             ).map((it) => (it ? 'block' : 'none')),
           }}
@@ -74,8 +94,13 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
-              ([dontSink, pullUp]) => dontSink && !pullUp,
+              ([ds, gs, t, tlf, tlg, tlt, pu]) => ds && !gs && !t && !tlf && !tlg && !tlt && !pu,
               this.gpwsDontSinkActive,
+              this.gpwsGlideSlopeActive,
+              this.gpwsTerrainActive,
+              this.gpwsTooLowFlapsActive,
+              this.gpwsTooLowGearActive,
+              this.gpwsTooLowTerrainActive,
               this.gpwsPullUpActive,
             ).map((it) => (it ? 'block' : 'none')),
           }}
@@ -88,8 +113,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
-              ([tooLowGear, pullUp]) => tooLowGear && !pullUp,
+              ([tlg, tlt, pu]) => tlg && !tlt && !pu,
               this.gpwsTooLowGearActive,
+              this.gpwsTooLowTerrainActive,
               this.gpwsPullUpActive,
             ).map((it) => (it ? 'block' : 'none')),
           }}
@@ -102,7 +128,7 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
-              ([tooLowTerrain, pullUp]) => tooLowTerrain && !pullUp,
+              ([tlt, pu]) => tlt && !pu,
               this.gpwsTooLowTerrainActive,
               this.gpwsPullUpActive,
             ).map((it) => (it ? 'block' : 'none')),
@@ -116,8 +142,10 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
-              ([tooLowFlaps, pullUp]) => tooLowFlaps && !pullUp,
+              ([tlf, tlg, tlt, pu]) => tlf && !tlg && !tlt && !pu,
               this.gpwsTooLowFlapsActive,
+              this.gpwsTooLowGearActive,
+              this.gpwsTooLowTerrainActive,
               this.gpwsPullUpActive,
             ).map((it) => (it ? 'block' : 'none')),
           }}
@@ -130,13 +158,34 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
-              ([glideSlope, pullUp]) => glideSlope && !pullUp,
+              ([gs, t, tlf, tlg, tlt, pu]) => gs && !t && !tlf && !tlg && !tlt && !pu,
               this.gpwsGlideSlopeActive,
+              this.gpwsTerrainActive,
+              this.gpwsTooLowFlapsActive,
+              this.gpwsTooLowGearActive,
+              this.gpwsTooLowTerrainActive,
               this.gpwsPullUpActive,
             ).map((it) => (it ? 'block' : 'none')),
           }}
         >
           GLIDE SLOPE
+        </text>
+        <text
+          x="69"
+          y="100"
+          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          style={{
+            display: MappedSubject.create(
+              ([t, tlf, tlg, tlt, pu]) => t && !tlf && !tlg && !tlt && !pu,
+              this.gpwsTerrainActive,
+              this.gpwsTooLowFlapsActive,
+              this.gpwsTooLowGearActive,
+              this.gpwsTooLowTerrainActive,
+              this.gpwsPullUpActive,
+            ).map((it) => (it ? 'block' : 'none')),
+          }}
+        >
+          TERRAIN
         </text>
       </g>
     );

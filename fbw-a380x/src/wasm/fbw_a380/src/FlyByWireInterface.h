@@ -388,6 +388,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idWingAntiIce;
 
+  std::unique_ptr<LocalVariable> idFmGrossWeight;
+
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
 
@@ -471,11 +473,14 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
 
-  // ELAC discrete input Lvars
+  // PRIM discrete input Lvars
   std::unique_ptr<LocalVariable> idPrimPushbuttonPressed[3];
 
-  // ELAC discrete output Lvars
+  // PRIM discrete output Lvars
   std::unique_ptr<LocalVariable> idPrimHealthy[3];
+  std::unique_ptr<LocalVariable> idPrimApAuthorised[3];
+  std::unique_ptr<LocalVariable> idPrimFctlLawStatusWord[3];
+  std::unique_ptr<LocalVariable> idPrimFeStatusWord[3];
 
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];

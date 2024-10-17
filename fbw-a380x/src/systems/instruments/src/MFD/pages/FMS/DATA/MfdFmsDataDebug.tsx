@@ -9,10 +9,15 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsDataDebugProps extends AbstractMfdPageProps {}
 export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
   private selectedPageIndex = Subject.create<number>(0);
+
+  private readonly facVls = Arinc429Register.empty();
+  private readonly facV_a_prot = Arinc429Register.empty();
+  private readonly facV_a_max = Arinc429Register.empty();
 
   private tab1lineLabels = [
     Subject.create<string>(''),
@@ -54,38 +59,40 @@ export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
   ];
 
   protected onNewData() {
-    this.tab1lineLabels[1].set('VLS (AOA)');
+    this.tab1lineLabels[1].set('VLS (FMC)');
     this.tab1lineValues[1].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number') as number).toFixed(2) ?? '');
 
-    this.tab1lineLabels[2].set('V_A_PROT (AOA)');
+    this.tab1lineLabels[2].set('V_A_PROT (FMC)');
     this.tab1lineValues[2].set(
       (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number') as number).toFixed(2) ?? '',
     );
 
-    this.tab1lineLabels[3].set('V_A_MAX (AOA)');
+    this.tab1lineLabels[3].set('V_A_MAX (FMC)');
     this.tab1lineValues[3].set(
       (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number') as number).toFixed(2) ?? '',
     );
 
-    this.tab1lineLabels[5].set('VLS (FCOM)');
-    this.tab1lineValues[5].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS_FCOM', 'number') as number).toFixed(2) ?? '');
+    this.facVls.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_LS', 'number'));
+    this.tab1lineLabels[5].set('VLS (PSEUDO FAC)');
+    this.tab1lineValues[5].set(this.facVls.value.toFixed(1));
 
-    this.tab1lineLabels[6].set('V_A_PROT (FCOM)');
-    this.tab1lineValues[6].set(
-      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC_FCOM', 'number') as number).toFixed(2) ?? '',
-    );
+    this.facV_a_prot.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_ALPHA_PROT', 'number'));
+    this.tab1lineLabels[6].set('V_A_PROT (PSEUDO FAC)');
+    this.tab1lineValues[6].set(this.facV_a_prot.value.toFixed(1));
 
-    this.tab1lineLabels[7].set('V_A_MAX (FCOM)');
-    this.tab1lineValues[7].set(
-      (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC_FCOM', 'number') as number).toFixed(2) ?? '',
-    );
+    this.facV_a_max.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_ALPHA_LIM', 'number'));
+    this.tab1lineLabels[7].set('V_A_MAX (PSEUDO FAC)');
+    this.tab1lineValues[7].set(this.facV_a_max.value.toFixed(1));
 
-    this.tab1lineLabels[9].set('GD SPEED (FCOM)');
-    this.tab1lineValues[9].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number') as number).toFixed(2) ?? '');
-    this.tab1lineLabels[10].set('F SPEED (FCOM)');
-    this.tab1lineValues[10].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number') as number).toFixed(2) ?? '');
-    this.tab1lineLabels[11].set('S SPEED (FCOM)');
-    this.tab1lineValues[11].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number') as number).toFixed(2) ?? '');
+    this.tab1lineLabels[8].set('FAC SSM');
+    this.tab1lineValues[8].set(this.facVls.ssm.toFixed(0));
+
+    this.tab1lineLabels[10].set('GD SPEED (FCOM LOOKUP)');
+    this.tab1lineValues[10].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number') as number).toFixed(2) ?? '');
+    this.tab1lineLabels[11].set('F SPEED (FCOM LOOKUP)');
+    this.tab1lineValues[11].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number') as number).toFixed(2) ?? '');
+    this.tab1lineLabels[12].set('S SPEED (FCOM LOOKUP)');
+    this.tab1lineValues[12].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number') as number).toFixed(2) ?? '');
   }
 
   public onAfterRender(node: VNode): void {
