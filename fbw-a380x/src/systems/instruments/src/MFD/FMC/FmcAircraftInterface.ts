@@ -849,7 +849,7 @@ export class FmcAircraftInterface {
       if (this.managedSpeedTarget) {
         if (ismanaged) {
           const shortTermActiveInmanaged =
-            !takeoffGoAround && phase != FmgcFlightPhase.Cruise && this.fmaVerticalMode.get() != VerticalMode.DES; // DES
+            !takeoffGoAround && phase != FmgcFlightPhase.Cruise && this.fmaVerticalMode.get() != VerticalMode.DES;
           if (shortTermActiveInmanaged && this.isSpeedDifferenceGreaterThan2Kt(vPfd, Vtap)) {
             shortTermManagedSpeed = Vtap;
           }
