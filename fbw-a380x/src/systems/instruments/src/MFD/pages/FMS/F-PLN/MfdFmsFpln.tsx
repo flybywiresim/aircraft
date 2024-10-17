@@ -156,16 +156,20 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
     if (destPred && this.props.fmcService.master) {
-      const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-      const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
+      const date = new Date(this.predictionTimestamp(destPred.secondsFromPresent));
       this.destTimeLabel.set(
-        `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`,
+        `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
       );
-      this.destEfob.set(
-        this.props.fmcService.master.fmgc.getDestEFOB(true) > 0
-          ? this.props.fmcService.master.fmgc.getDestEFOB(true).toFixed(1)
-          : '--.-',
-      );
+
+      const destEfob =
+        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard;
+
+      if (destEfob) {
+        this.destEfob.set(Math.max(0, Units.poundToKilogram(destEfob) / 1_000).toFixed(1));
+      } else {
+        this.destEfob.set('--.-');
+      }
+
       this.destDistanceLabel.set(
         Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---',
       );
@@ -248,23 +252,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
 
     lastDistanceFromStart = 0;
-    const fmgcFlightPhase = this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight;
-
-    const predictionTimestamp = (seconds: number) => {
-      if (seconds === undefined) {
-        return 0;
-      }
-
-      if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
-        const eta = (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + seconds) * 1000;
-        return eta;
-      }
-      if (this.props.fmcService.master?.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
-        const eta = ((this.props.fmcService.master.fmgc.data.estimatedTakeoffTime.get() ?? 0) + seconds) * 1000;
-        return eta;
-      }
-      return seconds * 1000;
-    };
 
     for (let i = 0; i < jointFlightPlan.length; i++) {
       const leg = jointFlightPlan[i];
@@ -285,7 +272,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           ident: pwp.mcduIdent ?? pwp.ident,
           overfly: false,
           annotation: pwp.mcduHeader ?? '',
-          etaOrSecondsFromPresent: predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
+          etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
           transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
           altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
           hasAltitudeConstraint: false, // TODO
@@ -295,11 +282,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
           speedConstraint: null, // TODO
           speedConstraintIsRespected: true,
-          efobPrediction:
-            Units.poundToKilogram(
-              this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-                ?.estimatedFuelOnBoard ?? 0,
-            ) / 1000.0,
+          efobPrediction: Units.poundToKilogram(
+            this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+              ?.estimatedFuelOnBoard ?? 0,
+          ),
           windPrediction: this.derivedFplnLegData[i].windPrediction,
           trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
           distFromLastWpt: reduceDistanceBy,
@@ -354,7 +340,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           ident: leg.ident,
           overfly: leg.definition.overfly,
           annotation,
-          etaOrSecondsFromPresent: predictionTimestamp(pred?.secondsFromPresent ?? 0),
+          etaOrSecondsFromPresent: this.predictionTimestamp(pred?.secondsFromPresent ?? 0),
           transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
           altitudePrediction: pred?.altitude ?? null,
           hasAltitudeConstraint: leg.altitudeConstraint !== undefined,
@@ -364,7 +350,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           hasSpeedConstraint: leg.speedConstraint !== undefined,
           speedConstraint: leg.speedConstraint ?? null,
           speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
-          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) / 1000.0 : 0,
+          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
           windPrediction: this.derivedFplnLegData[i].windPrediction,
           trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
           distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
@@ -535,6 +521,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       }
     }
   }
+
+  private predictionTimestamp = (seconds: number) => {
+    if (seconds === undefined) {
+      return 0;
+    }
+
+    const fmgcFlightPhase = this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight;
+    if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
+      const eta = (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + seconds) * 1000;
+      return eta;
+    }
+    if (this.props.fmcService.master?.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
+      const eta = ((this.props.fmcService.master.fmgc.data.estimatedTakeoffTime.get() ?? 0) + seconds) * 1000;
+      return eta;
+    }
+    return seconds * 1000;
+  };
 
   private openRevisionsMenu(legIndex: number, altnFlightPlan: boolean) {
     if (!this.revisionsMenuOpened.get()) {

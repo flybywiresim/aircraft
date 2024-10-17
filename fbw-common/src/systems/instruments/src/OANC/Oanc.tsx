@@ -30,6 +30,8 @@ import {
   EfisNdMode,
   MapParameters,
   EfisSide,
+  FmsOansData,
+  FcuSimVars,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -50,8 +52,6 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 
 import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FcuSimVars } from './FcuBusPublisher';
-import { FmsOansData } from './FmsOansPublisher';
 import { FmsDataStore } from './OancControlPanelUtils';
 import { BrakeToVacateUtils } from './BrakeToVacateUtils';
 import { STYLE_DATA } from './style-data';
@@ -911,8 +911,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private lastTime = 0;
 
-  private projectCoordinates(coordinates: Coordinates): [number, number] {
-    return globalToAirportCoordinates(this.arpCoordinates, coordinates);
+  /**
+   *
+   * @param projectedCoordinates Output argument: Write projected coordinates here
+   * @param coordinates coordinates to be transformed
+   */
+  private projectCoordinates(projectedCoordinates: Position, coordinates: Coordinates) {
+    globalToAirportCoordinates(projectedCoordinates, this.arpCoordinates, coordinates);
   }
 
   public Update() {
@@ -960,7 +965,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.positionVisible.set(false);
     }
 
-    [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
+    this.projectCoordinates(this.projectedPpos, this.ppos);
 
     if (this.props.side === 'L') {
       this.btvUtils.updateRemainingDistances(this.projectedPpos);
@@ -1099,7 +1104,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
 
     if (this.arpCoordinates) {
-      [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
+      this.projectCoordinates(this.projectedPpos, this.ppos);
     }
   }
 
