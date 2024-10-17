@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
@@ -78,9 +78,6 @@ export class FmcAircraftInterface {
     this.arincEisWord2,
   ];
 
-  private readonly speedAlphaProt = Subject.create(0);
-  private readonly speedAlphaMax = Subject.create(0);
-  private readonly speedAlphaStall = Subject.create(0);
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
   private readonly speedVmax = Subject.create(0);
@@ -102,9 +99,6 @@ export class FmcAircraftInterface {
     this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true);
     this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true);
 
-    this.speedAlphaProt.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', v), true);
-    this.speedAlphaMax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', v), true);
-    this.speedAlphaStall.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_STALL_WARN', 'number', v), true);
     this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true);
     this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true);
     this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true);
@@ -1060,54 +1054,13 @@ export class FmcAircraftInterface {
       }
     }
 
-    // Retrieve AOA, CAS and altitude from ADRs
-    const aoa1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ANGLE_OF_ATTACK');
-    const aoa2 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ANGLE_OF_ATTACK');
-    const aoa3 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ANGLE_OF_ATTACK');
-    const cas1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED');
-    const cas2 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
-    const cas3 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
-    const alt1 = Arinc429Register.empty().setFromSimVar('L:A32NX_ADIRS_ADR_1_ALTITUDE');
-    const alt2 = Arinc429Register.empty().setFromSimVar('L:A32NX_ADIRS_ADR_2_ALTITUDE');
-    const alt3 = Arinc429Register.empty().setFromSimVar('L:A32NX_ADIRS_ADR_3_ALTITUDE');
-    const adrOp = [aoa1.isNormalOperation(), aoa2.isNormalOperation(), aoa3.isNormalOperation()];
-    const casOp = [cas1.isNormalOperation(), cas2.isNormalOperation(), cas3.isNormalOperation()];
-    const altOp = [alt1.isNormalOperation(), alt2.isNormalOperation(), alt3.isNormalOperation()];
+    // Retrieve CAS and altitude from ADRs
+    const cas = this.fmc.navigation.getComputedAirspeed();
+    const alt = this.fmc.navigation.getPressureAltitude();
 
-    let aoa = 0;
-    let cas = 0;
-    let alt = 0;
-    if (adrOp.filter(Boolean).length === 3) {
-      const aoaSorted = [aoa1.value, aoa2.value, aoa3.value].sort((a, b) => a - b);
-      const casSorted = [cas1.value, cas2.value, cas3.value].sort((a, b) => a - b);
-      const altSorted = [alt1.value, alt2.value, alt3.value].sort((a, b) => a - b);
-      aoa = aoaSorted[1];
-      cas = casSorted[1];
-      alt = altSorted[1];
-    } else if (adrOp.filter(Boolean).length === 2) {
-      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i]);
-      aoa = (aoas[0].value + aoas[1].value) / 2;
-
-      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i]);
-      cas = (cass[0].value + cass[1].value) / 2;
-
-      const alts = [alt1, alt2, alt3].filter((v, i) => altOp[i]);
-      alt = (alts[0].value + alts[1].value) / 2;
-    } else if (adrOp.filter(Boolean).length === 1) {
-      const aoas = [aoa1, aoa2, aoa3].filter((v, i) => adrOp[i]);
-      aoa = aoas[0].value;
-
-      const cass = [cas1, cas2, cas3].filter((v, i) => casOp[i]);
-      cas = cass[0].value;
-
-      const alts = [alt1, alt2, alt3].filter((v, i) => altOp[i]);
-      alt = alts[0].value;
-    }
-
-    if (this.filteredAoA === 0) {
-      this.filteredAoA = aoa;
-    } else {
-      this.filteredAoA = this.filteredAoA + 0.1 * (aoa - this.filteredAoA);
+    if (cas === null || alt === null) {
+      // Don't update speeds if ADR data invalid
+      return;
     }
 
     const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
@@ -1117,14 +1070,10 @@ export class FmcAircraftInterface {
       flaps,
       this.fmgc.getFlightPhase(),
       this.fmgc.getV2Speed(),
-      this.filteredAoA,
       alt,
       towerHeadwind,
     );
 
-    this.speedAlphaProt.set(Math.round(speeds.alphaProt));
-    this.speedAlphaMax.set(Math.round(speeds.alphaMax));
-    this.speedAlphaStall.set(Math.round(speeds.alphaStallWarn));
     this.speedVs1g.set(Math.round(speeds.vs1g));
     this.speedVls.set(Math.round(speeds.vls));
 
@@ -1153,7 +1102,6 @@ export class FmcAircraftInterface {
       this.fmgc.data.approachFlapConfig.get(),
       FmgcFlightPhase.Approach,
       this.fmgc.getV2Speed(),
-      this.filteredAoA,
       this.fmgc.getDestinationElevation(),
       towerHeadwind,
     );
