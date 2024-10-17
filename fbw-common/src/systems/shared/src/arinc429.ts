@@ -140,8 +140,8 @@ export class Arinc429Register implements Arinc429WordData {
     this.ssm = ssm;
   }
 
-  setFromSimVar(name: string): void {
-    this.set(SimVar.GetSimVarValue(name, 'number'));
+  setFromSimVar(name: string): Arinc429Register {
+    return this.set(SimVar.GetSimVarValue(name, 'number'));
   }
 
   isFailureWarning() {
