@@ -2090,6 +2090,42 @@ export class FwsAbnormalSensed {
       info: () => ['220200007', '220200008', '220200009'],
     },
     // SURVEILLANCE
+    341800016: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tcas1Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [false], // TODO replace with SURV SYS logic once implemented
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800017: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tcas2Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [false],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800018: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tcas1And2Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800019: {
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.tcasStandby,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
     341800037: {
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 10, 12],
       simVarIsActive: this.fws.xpdrStby,
