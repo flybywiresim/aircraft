@@ -2,7 +2,10 @@ use bytemuck::AnyBitPattern;
 use clap::Parser;
 use csv::WriterBuilder;
 use flate2::bufread::GzDecoder;
-use headers::{ap_raw_output, ap_sm_output, athr_out, AdditionalData, EngineData};
+use headers::{
+    ap_raw_output, base_fmgc_ap_fd_logic_outputs, base_fmgc_athr_outputs, base_fmgc_bus_outputs,
+    base_fmgc_discrete_outputs, base_fmgc_logic_outputs, AdditionalData, EngineData,
+};
 use serde::Serialize;
 use std::{
     fs::{File, OpenOptions},
@@ -37,7 +40,7 @@ struct Args {
     get_input_file_version: bool,
 }
 
-const INTERFACE_VERSION: u64 = 25;
+const INTERFACE_VERSION: u64 = 26;
 
 // Read number of bytes specified by the size of T from the binary file
 fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
@@ -58,21 +61,39 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
 // A single FDR record
 #[derive(Serialize, Default)]
 struct FdrData {
-    ap_sm: ap_sm_output,
-    ap_law: ap_raw_output,
-    athr: athr_out,
     engine: EngineData,
     data: AdditionalData,
+    fmgc1_data: FmgcData,
+    fmgc2_data: FmgcData,
 }
 
-// These are helper functions to read in a whole FDR record.
+#[derive(Serialize, Default)]
+struct FmgcData {
+    logic: base_fmgc_logic_outputs,
+    ap_fd_logic: base_fmgc_ap_fd_logic_outputs,
+    ap_fd_outer_loops: ap_raw_output,
+    athr: base_fmgc_athr_outputs,
+    discrete_outputs: base_fmgc_discrete_outputs,
+    bus_outputs: base_fmgc_bus_outputs,
+}
+
 fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
-        ap_sm: read_bytes::<ap_sm_output>(reader)?,
-        ap_law: read_bytes::<ap_raw_output>(reader)?,
-        athr: read_bytes::<athr_out>(reader)?,
         engine: read_bytes::<EngineData>(reader)?,
         data: read_bytes::<AdditionalData>(reader)?,
+        fmgc1_data: read_fmgc(reader)?,
+        fmgc2_data: read_fmgc(reader)?,
+    })
+}
+
+fn read_fmgc(reader: &mut impl Read) -> Result<FmgcData, Error> {
+    Ok(FmgcData {
+        logic: read_bytes::<base_fmgc_logic_outputs>(reader)?,
+        ap_fd_logic: read_bytes::<base_fmgc_ap_fd_logic_outputs>(reader)?,
+        ap_fd_outer_loops: read_bytes::<ap_raw_output>(reader)?,
+        athr: read_bytes::<base_fmgc_athr_outputs>(reader)?,
+        discrete_outputs: read_bytes::<base_fmgc_discrete_outputs>(reader)?,
+        bus_outputs: read_bytes::<base_fmgc_bus_outputs>(reader)?,
     })
 }
 

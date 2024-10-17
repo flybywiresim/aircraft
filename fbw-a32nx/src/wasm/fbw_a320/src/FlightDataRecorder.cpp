@@ -37,11 +37,10 @@ void FlightDataRecorder::initialize() {
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
-void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
-                                AutopilotLawsModelClass* autopilotLaws,
-                                Autothrust* autoThrust,
-                                const EngineData& engineData,
-                                const AdditionalData& additionalData) {
+void FlightDataRecorder::update(const EngineData& engineData,
+                                const AdditionalData& additionalData,
+                                const fmgc_outputs& fmgc1,
+                                const fmgc_outputs& fmgc2) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -51,11 +50,19 @@ void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
   manageFlightDataRecorderFiles();
 
   // write data to file
-  fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
-  fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
-  fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
   fileStream->write((char*)(&engineData), sizeof(engineData));
   fileStream->write((char*)(&additionalData), sizeof(additionalData));
+  writeFmgc(fmgc1);
+  writeFmgc(fmgc2);
+}
+
+void FlightDataRecorder::writeFmgc(const fmgc_outputs& fmgc) {
+  fileStream->write((char*)(&fmgc.logic), sizeof(fmgc.logic));
+  fileStream->write((char*)(&fmgc.ap_fd_logic), sizeof(fmgc.ap_fd_logic));
+  fileStream->write((char*)(&fmgc.ap_fd_outer_loops), sizeof(fmgc.ap_fd_outer_loops));
+  fileStream->write((char*)(&fmgc.athr), sizeof(fmgc.athr));
+  fileStream->write((char*)(&fmgc.discrete_outputs), sizeof(fmgc.discrete_outputs));
+  fileStream->write((char*)(&fmgc.bus_outputs), sizeof(fmgc.bus_outputs));
 }
 
 void FlightDataRecorder::terminate() {
