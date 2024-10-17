@@ -1542,7 +1542,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
     if (this.props.displayEfobAndWind.get()) {
       return data.efobPrediction && this.props.globalLineColor.get() === FplnLineColor.Active ? (
-        <span>{(data.efobPrediction / 1000).toFixed(1)}</span>
+        <span>{data.efobPrediction.toFixed(1)}</span>
       ) : (
         <span>--.-</span>
       );

@@ -356,6 +356,7 @@ export class A380OperatingSpeeds {
     fmgcFlightPhase: FmgcFlightPhase,
     v2Speed: number,
     aoa: number,
+    altitude: Feet,
     wind: Knots = 0,
   ) {
     // Convert mass from tons to klb (1000*lb)
@@ -366,7 +367,7 @@ export class A380OperatingSpeeds {
     this.vapp = this.vls + addWindComponent(wind);
     this.vref = vls[4][cm](klb);
 
-    this.gd = greenDotSpeed(klb);
+    this.gd = greenDotSpeed(klb, altitude);
     this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
     this.vfeN = fPos === 4 ? 0 : vfeFS[getVfeNIdx(fPos)];
 
