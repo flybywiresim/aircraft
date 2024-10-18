@@ -21,6 +21,15 @@ jobs:
       AIRCRAFT_PROJECT_PREFIX: a32nx
       AIRCRAFT_VARIANT: a320-251n
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
       - name: Checkout source
         uses: actions/checkout@v4
         with:
@@ -43,8 +52,6 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-      - name: Remove git objects
-        run: rm -rf ./.git/objects && rm -rf ./.git/modules/aircraft-large-files/objects
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
@@ -110,8 +117,6 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-      - name: Remove git objects
-        run: rm -rf ./.git/objects && rm -rf ./.git/modules/aircraft-large-files/objects
       - name: Build A380X
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
