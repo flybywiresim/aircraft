@@ -14,7 +14,7 @@ export const EngPage = () => {
   const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'enum', 500); // TODO: Update with correct SimVars
   const [engine3State] = useSimVar('L:A32NX_ENGINE_STATE:3', 'enum', 500); // TODO: Update with correct SimVars
   const [engine4State] = useSimVar('L:A32NX_ENGINE_STATE:4', 'enum', 500); // TODO: Update with correct SimVars
-  const engineState = [engine1State, engine2State, engine3State, engine3State, engine4State];
+  const engineState = [engine1State, engine2State, engine3State, engine4State];
   const engineRunning = engineState.some((value) => value > 0); // TODO Implement FADEC SimVars once available
 
   return (
