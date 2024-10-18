@@ -208,6 +208,12 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return legType === LegType.PI || legType === LegType.CI || legType === LegType.VI;
   }
 
+  isXA() {
+    const legType = this.definition.type;
+
+    return legType === LegType.CA || legType === LegType.FA || legType === LegType.HA || legType === LegType.VA;
+  }
+
   isVectors() {
     const legType = this.definition.type;
 

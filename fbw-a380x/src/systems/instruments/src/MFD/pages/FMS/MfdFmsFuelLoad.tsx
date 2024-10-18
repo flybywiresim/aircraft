@@ -72,16 +72,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private extraFuelTime = Subject.create<number | null>(null);
 
-  private enginesWereStarted = Subject.create<boolean>(false);
-
   private blockLineRef = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
     }
-
-    console.time('FUEL_LOAD:onNewData');
 
     if (this.loadedFlightPlan.performanceData.costIndex) {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
@@ -102,8 +98,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(650);
 
     this.updateDestAndAltnPredictions();
-
-    console.timeEnd('FUEL_LOAD:onNewData');
   }
 
   updateDestAndAltnPredictions() {
@@ -163,11 +157,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.grossWeight.set(null);
             this.centerOfGravity.set(null);
             this.fuelOnBoard.set(null);
-            this.blockLineRef.instance.style.visibility = 'visible';
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
-            this.grossWeight.set(gw);
+            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg());
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
             const cg: number = SimVar.GetSimVarValue('CG PERCENT', 'Percent over 100') * 100;
@@ -178,8 +170,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
               SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
             this.fuelOnBoard.set(fob);
-
-            this.blockLineRef.instance.style.visibility = 'hidden';
           }
 
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
@@ -191,7 +181,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             );
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
             this.extraFuelWeight.set(
-              (this.enginesWereStarted.get() ? fob : block) -
+              (this.props.fmcService.master.enginesWereStarted.get() ? fob : block) -
                 (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0) -
                 (this.tripFuelWeight.get() ?? 0) -
                 (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
@@ -210,13 +200,15 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         }),
     );
 
-    this.subs.push(
-      this.enginesWereStarted.sub((val) => {
-        if (val && this.blockLineRef.getOrDefault()) {
-          this.blockLineRef.instance.style.visibility = 'hidden';
-        }
-      }, true),
-    );
+    if (this.props.fmcService.master) {
+      this.subs.push(
+        this.props.fmcService.master.enginesWereStarted.sub((val) => {
+          if (this.blockLineRef.getOrDefault()) {
+            this.blockLineRef.instance.style.visibility = val ? 'hidden' : 'visible';
+          }
+        }, true),
+      );
+    }
   }
 
   render(): VNode {
@@ -249,7 +241,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
                 mandatory={Subject.create(true)}
-                inactive={this.enginesWereStarted}
                 canBeCleared={Subject.create(false)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
@@ -262,7 +253,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 dataEntryFormat={new PercentageFormat(Subject.create(minZfwCg), Subject.create(maxZfwCg))}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeightCenterOfGravity}
                 mandatory={Subject.create(true)}
-                inactive={this.enginesWereStarted}
                 canBeCleared={Subject.create(false)}
                 alignText="center"
                 containerStyle="width: 125px;"

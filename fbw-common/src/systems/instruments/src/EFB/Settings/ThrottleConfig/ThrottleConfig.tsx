@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
-import { useAppSelector } from '@flybywiresim/flypad';
-import { t } from '../../Localization/translation';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-
+import {
+  AircraftContext,
+  PromptModal,
+  SelectGroup,
+  SelectItem,
+  t,
+  Toggle,
+  useModals,
+  VerticalSelectGroup,
+} from '@flybywiresim/flypad';
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
@@ -36,10 +40,10 @@ interface ThrottleConfigProps {
  * @constructor
  */
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-  const flypadInfo = useAppSelector((state) => state.config.flypadInfo);
+  const aircraftContext = useContext(AircraftContext);
 
   // the number of throttles that are used in the aircraft (2 or 4)
-  const numberOfThrottles = flypadInfo.throttle.numberOfAxis;
+  const numberOfThrottles = aircraftContext.settingsPages.throttle.numberOfAircraftThrottles;
 
   const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', numberOfThrottles);
   // this makes sure that the axis number is set to 2 when the A320 is selected when previously the A380 with 4 axis was used
@@ -51,11 +55,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
   const [validConfig, setValidConfig] = useState(true);
   const [validationError, setValidationError] = useState<string>();
 
-  const [reverserOnAxis1, setReverserOnAxis1] = useSimVar(
-    'L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1',
-    'number',
-    1000,
-  );
+  // prettier-ignore
+  const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000,);
   const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
   const [, setReverserOnAxis3] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:3', 'number', 1000);
   const [, setReverserOnAxis4] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:4', 'number', 1000);
@@ -150,8 +151,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
   // when a throttle config changes this checks if there are any overlaps in the throttle mappings
   // and sets the validation error and valid config
   useEffect(() => {
-    const errors: string[] = [...getOverlapErrors(1, throttleOneSimvars), ...getOverlapErrors(2, throttleTwoSimvars)];
-    // to avoid false errors on the A320 when only 2 axis are used
+    const errors: string[] = [];
+    errors.push(...getOverlapErrors(1, throttleOneSimvars));
+    errors.push(...getOverlapErrors(2, throttleTwoSimvars));
+    // to avoid false errors only 2 axis are used
     if (numberOfThrottles === 4) {
       errors.push(...getOverlapErrors(3, throttleThreeSimvars));
       errors.push(...getOverlapErrors(4, throttleFourSimvars));
@@ -236,7 +239,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
   const axisSelectGroup = (
     <SelectGroup>
-      {flypadInfo.throttle.axisOptions.map((option) => (
+      {aircraftContext.settingsPages.throttle.axisOptions.map((option) => (
         <SelectItem selected={axisNum === option} onSelect={() => setAxisNum(option)}>
           {option}
         </SelectItem>
@@ -244,11 +247,25 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     </SelectGroup>
   );
 
+  // The calibration UI displays a number of axes usually corresponding to the number of levers/axes a user has for their throttle.
+  // The UI will display 1, 2 or 4 axis depending on the user's setting (usually based on the aircraft and the user's hardware).
+  // So we must configure this UI to display the correct number of axes with the correct throttle MSFS mappings (input) and
+  // behavior.
+  // E.g.:
+  // - A320 with 2 hardware axis and 2 throttles will use hardware axis 1 for throttle 1, and hardware axis 2 for throttle 2
+  // - A380 with 2 hardware axis and 4 throttles will use hardware axis 1 for throttle 1 + 2 and 2 for throttle 3 + 4
+  // We call the current user hardware axis to be displayed the "userAxis".
+  // We call the throttle mappings the "inputThrottle". (e.g. A380X userAxis 2 will use inputThrottle 3 as per MSFSconfig).
+  // We call the number of user hardware axes the "numberOfUserAxes".
+  // We call the number of throttles of the aircraft the "numberOfThrottles".
+
+  // A320 uses axis 1 for throttle 1 and axis 2 for throttle 2
   const oneAxis = (
     <div className="flex flex-row justify-center rounded-xl">
       <BaseThrottleConfig
-        axisNumber={1}
-        numberOfAxis={1}
+        userAxis={1}
+        inputThrottle={1}
+        numberOfUserAxes={1}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleOneSimvars}
         throttleSimvarsSet2={throttleTwoSimvars}
@@ -264,16 +281,18 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
   const twoAxisA320 = (
     <div className="mx-32 flex flex-row">
       <BaseThrottleConfig
-        axisNumber={1}
-        numberOfAxis={2}
+        userAxis={1}
+        inputThrottle={1}
+        numberOfUserAxes={2}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleOneSimvars}
         activeDetent={selectedDetent}
       />
       <div className="m-auto text-center">{navigationBar}</div>
       <BaseThrottleConfig
-        axisNumber={2}
-        numberOfAxis={2}
+        userAxis={2}
+        inputThrottle={2}
+        numberOfUserAxes={2}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleTwoSimvars}
         activeDetent={selectedDetent}
@@ -285,8 +304,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
   const twoAxisA380 = (
     <div className="mx-32 flex flex-row">
       <BaseThrottleConfig
-        axisNumber={1}
-        numberOfAxis={2}
+        userAxis={1}
+        inputThrottle={1}
+        numberOfUserAxes={2}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleOneSimvars}
         throttleSimvarsSet2={throttleTwoSimvars}
@@ -294,8 +314,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
       />
       <div className="m-auto text-center">{navigationBar}</div>
       <BaseThrottleConfig
-        axisNumber={2}
-        numberOfAxis={2}
+        userAxis={2}
+        inputThrottle={3} // A380X uses input of throttle 3 for the second user hardware axis as per MSFS mapping
+        numberOfUserAxes={2}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleThreeSimvars}
         throttleSimvarsSet2={throttleFourSimvars}
@@ -307,31 +328,35 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
   const fourAxis = (
     <div className="mx-16 flex flex-row">
       <BaseThrottleConfig
-        axisNumber={1}
-        numberOfAxis={4}
+        userAxis={1}
+        inputThrottle={1}
+        numberOfUserAxes={4}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleOneSimvars}
         activeDetent={selectedDetent}
         reverseDisabled
       />
       <BaseThrottleConfig
-        axisNumber={2}
-        numberOfAxis={4}
+        userAxis={2}
+        inputThrottle={2}
+        numberOfUserAxes={4}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleTwoSimvars}
         activeDetent={selectedDetent}
       />
       <div className="m-auto text-center">{navigationBar}</div>
       <BaseThrottleConfig
-        axisNumber={3}
-        numberOfAxis={4}
+        userAxis={3}
+        inputThrottle={3}
+        numberOfUserAxes={4}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleThreeSimvars}
         activeDetent={selectedDetent}
       />
       <BaseThrottleConfig
-        axisNumber={4}
-        numberOfAxis={4}
+        userAxis={4}
+        inputThrottle={4}
+        numberOfUserAxes={4}
         numberOfThrottles={numberOfThrottles}
         throttleSimvarsSet1={throttleFourSimvars}
         activeDetent={selectedDetent}
@@ -343,13 +368,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
   const getAxis = () => {
     switch (axisNum) {
       case 4:
-        if (flypadInfo.throttle.axisOptions.includes(axisNum)) {
+        if (aircraftContext.settingsPages.throttle.numberOfAircraftThrottles === 4) {
           return fourAxis;
         }
         console.warn('A320 does not have 4 axis - defaulting to 2 axis');
         return twoAxisA320;
       case 2:
-        if (flypadInfo.throttle.axisOptions.includes(4)) {
+        if (aircraftContext.settingsPages.throttle.numberOfAircraftThrottles === 4) {
           return twoAxisA380;
         }
         return twoAxisA320;

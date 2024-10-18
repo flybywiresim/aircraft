@@ -18,7 +18,7 @@ import {
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 
 const DisplayRange = 35;
@@ -218,7 +218,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           <path d="m23.906 80.823h90h0" class="NormalOutline" />
           <path d="m23.906 80.823h90h0" class="NormalStroke White" />
 
-          <g class="FontSmall White Fill EndAlign">
+          <g class="FontMediumSmaller White Fill EndAlign">
             <text x="55.729935" y="64.812828">
               10
             </text>
@@ -315,6 +315,11 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     speed: 0,
     tla1: 0,
     tla2: 0,
+    tla3: 0,
+    tla4: 0,
+    leftGearCompressed: true,
+    rightGearCompressed: true,
+    approachPhase: false,
   };
 
   onAfterRender(node: VNode): void {
@@ -326,6 +331,30 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       this.tailStrikeConditions.altitude = ra;
       this.needsUpdate = true;
     });
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((lg) => {
+        this.tailStrikeConditions.leftGearCompressed = lg;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((rg) => {
+        this.tailStrikeConditions.rightGearCompressed = rg;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.tailStrikeConditions.approachPhase = fp === 5;
+        this.needsUpdate = true;
+      });
 
     sub
       .on('tla1')
@@ -343,6 +372,21 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       });
 
     sub
+      .on('tla3')
+      .whenChanged()
+      .handle((tla) => {
+        this.tailStrikeConditions.tla3 = tla;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('tla4')
+      .whenChanged()
+      .handle((tla) => {
+        this.tailStrikeConditions.tla4 = tla;
+        this.needsUpdate = true;
+      });
+
+    sub
       .on('speedAr')
       .whenChanged()
       .handle((speed) => {
@@ -356,15 +400,22 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
   private hideShow(_time: number) {
     if (this.needsUpdate) {
       this.needsUpdate = false;
+
+      // FIX ME indicatior should disappear 3 seconds after takeoff and 4 seconds after go aroud initaition. Use better logic without FM flight phase?
       if (
-        this.tailStrikeConditions.altitude.value > 400 ||
-        this.tailStrikeConditions.speed < 50 ||
-        this.tailStrikeConditions.tla1 >= 35 ||
-        this.tailStrikeConditions.tla2 >= 35
+        ((this.tailStrikeConditions.tla1 >= 35 ||
+          this.tailStrikeConditions.tla2 >= 35 ||
+          this.tailStrikeConditions.tla3 >= 35 ||
+          this.tailStrikeConditions.tla4 >= 35) &&
+          this.tailStrikeConditions.leftGearCompressed &&
+          this.tailStrikeConditions.rightGearCompressed) ||
+        (this.tailStrikeConditions.approachPhase &&
+          this.tailStrikeConditions.altitude.value < 400 &&
+          this.tailStrikeConditions.speed > 50)
       ) {
-        this.tailStrike.instance.style.display = 'none';
-      } else {
         this.tailStrike.instance.style.display = 'inline';
+      } else {
+        this.tailStrike.instance.style.display = 'none';
       }
     }
   }

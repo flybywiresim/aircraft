@@ -36,7 +36,7 @@ export class N1 extends DisplayComponent<N1Props> {
   );
 
   private readonly throttle_position = ConsumerSubject.create(
-    this.sub.on(`throttle_position_${this.props.engine}`).withPrecision(2).whenChanged(),
+    this.sub.on(`throttle_position_n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -254,88 +254,3 @@ export class N1 extends DisplayComponent<N1Props> {
     );
   }
 }
-
-/*
-interface N1CommandAndTrendProps {
-  bus: EventBus;
-  x: number;
-  y: number;
-  radius: number;
-  n1Actual: Subscribable<number>;
-  startAngle: number;
-  endAngle: number;
-  min: number;
-  max: number;
-  engine: 1 | 2 | 3 | 4;
-}
-
-export class N1CommandAndTrend extends DisplayComponent<N1CommandAndTrendProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
-
-  private readonly n1_commanded = ConsumerSubject.create(this.sub.on('n1_commanded').withPrecision(1).whenChanged(), 0);
-
-  private readonly throttle_position = ConsumerSubject.create(
-    this.sub.on('throttle_position').withPrecision(2).whenChanged(),
-    0,
-  );
-
-  private readonly n1Idle = ConsumerSubject.create(this.sub.on('n1Idle').withPrecision(1).whenChanged(), 0);
-
-  private n1PercentSplit = this.n1Idle.map((n1) => splitDecimals(n1));
-
-  private radius = 64;
-  private startAngle = 230;
-  private endAngle = 90;
-  private min = 2;
-  private max = 11.1;
-
-  private xDegraded = this.props.x + 2;
-
-  public onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-  }
-
-  render() {
-    return (
-      <>
-        <g>
-          <GaugeMarkerComponent
-            value={n1_commanded / 10}
-            x={x}
-            y={y}
-            min={min}
-            max={max}
-            radius={radius}
-            startAngle={startAngle}
-            endAngle={endAngle}
-            multiplierOuter={0.8}
-            className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - n1_commanded / 10) > 0.3 ? 'Show' : 'Hide'}`}
-            indicator
-          />
-          <GaugeMarkerComponent
-            value={n1_commanded / 10}
-            x={x}
-            y={y}
-            min={min}
-            max={max}
-            radius={radius}
-            startAngle={N1Actual > n1_commanded / 10 ? n1CommandXY.angle - 20 : n1CommandXY.angle}
-            endAngle={N1Actual > n1_commanded / 10 ? n1CommandXY.angle : n1CommandXY.angle + 20}
-            multiplierOuter={0.51}
-            className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - n1_commanded / 10) > 0.3 ? 'Show' : 'Hide'}`}
-            indicator
-          />
-          <line
-            x2={n1ActualArrowXY.x}
-            y2={n1ActualArrowXY.y}
-            x1={n1CommandArrowXY.x}
-            y1={n1CommandArrowXY.y}
-            className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - n1_commanded / 10) > 0.3 ? 'Show' : 'Hide'}`}
-          />
-          {N1CommandArray}
-        </g>
-      </>
-    );
-  }
-}
-*/

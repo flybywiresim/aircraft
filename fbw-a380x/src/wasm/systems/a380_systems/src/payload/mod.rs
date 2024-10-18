@@ -86,6 +86,7 @@ pub struct A380Payload {
 impl A380Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
     pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
+    // TODO: Move into a toml cfg
     const A380_PAX: [PaxInfo<'static>; 14] = [
         PaxInfo {
             max_pax: 28,
@@ -179,6 +180,7 @@ impl A380Payload {
         },
         // PAX UPPER AFT: 18
     ];
+    // TODO: Move into a toml cfg
     const A380_CARGO: [CargoInfo<'static>; 3] = [
         CargoInfo {
             max_cargo_kg: 28577.,
@@ -228,6 +230,7 @@ impl A380Payload {
                 Mass::new::<kilogram>(c.max_cargo_kg),
             )
         });
+        // TODO: Move into a toml cfg
         let boarding_agents = [
             BoardingAgent::new(
                 context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned()),

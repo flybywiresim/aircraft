@@ -22,6 +22,8 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
+import { AtsuStatusCodes } from '@datalink/common';
+import { FmsRouterMessages } from '@datalink/router';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -68,9 +70,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private fromIcao = Subject.create<string | null>(null);
 
-  private fromIcaoDisabled = Subject.create<boolean>(false);
-
   private toIcao = Subject.create<string | null>(null);
+
+  private cityPairDisabled = MappedSubject.create(
+    ([fp, tmpy]) => fp > FmgcFlightPhase.Preflight || tmpy,
+    this.activeFlightPhase,
+    this.tmpyActive,
+  );
 
   private altnIcao = Subject.create<string | null>(null);
 
@@ -104,21 +110,41 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   );
 
   private departureButtonDisabled = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, phase]) => !toIcao || !fromIcao || phase !== FmgcFlightPhase.Preflight,
     this.fromIcao,
     this.toIcao,
+    this.activeFlightPhase,
   );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.props.bus
+      .getSubscriber<FmsRouterMessages>()
+      .on('routerManagementResponse')
+      .handle((data) => {
+        this.routerResponseCallbacks.every((callback, index) => {
+          if (callback(data.status, data.requestId)) {
+            this.routerResponseCallbacks.splice(index, 1);
+            return false;
+          }
+          return true;
+        });
+      });
+
+    this.props.fmcService.master?.fmgc.data.atcCallsign.sub((c) => {
+      if (c) {
+        this.connectToNetworks(c);
+      } else {
+        this.disconnectFromNetworks();
+      }
+    });
   }
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
     }
-
-    console.time('INIT:onNewData');
 
     this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(
       this.props.fmcService.master.flightPlanService.hasUplink &&
@@ -161,8 +187,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.altnRte.set('NONE');
       }
     }
-
-    console.timeEnd('INIT:onNewData');
   }
 
   private async cpnyFplnRequest() {
@@ -186,6 +210,22 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.simBriefOfp,
       { doUplinkProcedures: false },
     );
+  }
+
+  private async cityPairModified() {
+    const fromIcao = this.fromIcao.get();
+    const toIcao = this.toIcao.get();
+    const cityPairIsDifferent =
+      fromIcao !== this.props.fmcService.master?.flightPlanService.active.originAirport?.ident ||
+      toIcao !== this.props.fmcService.master.flightPlanService.active.destinationAirport?.ident;
+    if (fromIcao && toIcao && cityPairIsDifferent) {
+      await this.props.fmcService.master?.flightPlanService.newCityPair(
+        fromIcao,
+        toIcao,
+        this.altnIcao.get() ?? undefined,
+      );
+      this.props.fmcService.master?.acInterface.updateOansAirports();
+    }
   }
 
   private async insertCpnyFpln() {
@@ -217,6 +257,41 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(false);
+  }
+
+  private requestId = 0;
+
+  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+
+  private async connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
+    const publisher = this.props.bus.getPublisher<FmsRouterMessages>();
+    return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+      const disconnectRequestId = this.requestId++;
+      publisher.pub('routerDisconnect', disconnectRequestId, true, false);
+      this.routerResponseCallbacks.push((_code: AtsuStatusCodes, id: number) => {
+        if (id === disconnectRequestId) {
+          const connectRequestId = this.requestId++;
+          publisher.pub('routerConnect', { callsign, requestId: connectRequestId }, true, false);
+          this.routerResponseCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            if (id === connectRequestId) resolve(code);
+            return id === connectRequestId;
+          });
+        }
+        return id === disconnectRequestId;
+      });
+    });
+  }
+
+  private async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
+    const publisher = this.props.bus.getPublisher<FmsRouterMessages>();
+    return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+      const disconnectRequestId = this.requestId++;
+      publisher.pub('routerDisconnect', disconnectRequestId, true, false);
+      this.routerResponseCallbacks.push((code: AtsuStatusCodes, id: number) => {
+        if (id === disconnectRequestId) resolve(code);
+        return id === disconnectRequestId;
+      });
+    });
   }
 
   render(): VNode {
@@ -262,21 +337,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
                   this.fromIcao.set(v);
-                  const toIcao = this.toIcao.get();
-                  if (v && toIcao) {
-                    await this.props.fmcService.master?.flightPlanService.newCityPair(
-                      v,
-                      toIcao,
-                      this.altnIcao.get() ?? undefined,
-                    );
-                    this.props.fmcService.master?.acInterface.updateOansAirports();
-                  }
+                  this.cityPairModified();
                 }}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
                 value={this.fromIcao}
                 alignText="center"
-                disabled={this.fromIcaoDisabled}
+                disabled={this.cityPairDisabled}
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -286,22 +353,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
                   this.toIcao.set(v);
-                  if (this.fromIcao.get() !== undefined && v) {
-                    const fromIcao = this.fromIcao.get();
-                    if (v && fromIcao) {
-                      await this.props.fmcService.master?.flightPlanService.newCityPair(
-                        fromIcao,
-                        v,
-                        this.altnIcao.get() ?? undefined,
-                      );
-                      this.props.fmcService.master?.acInterface.updateOansAirports();
-                    }
-                  }
+                  this.cityPairModified();
                 }}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
                 value={this.toIcao}
                 alignText="center"
+                disabled={this.cityPairDisabled}
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}

@@ -288,8 +288,6 @@ declare global {
 
         private _pendingCallUId;
 
-        private _facilityLoader;
-
         private _mainLoopFuncInstance;
 
         constructor();
@@ -302,7 +300,6 @@ declare global {
         get deltaTime(): number;
         get frameCount(): number;
         get flightPlanManager(): FlightPlanManager;
-        get facilityLoader(): FacilityLoader;
         connectedCallback(): void;
         disconnectedCallback(): void;
         protected Init(): void;

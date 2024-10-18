@@ -227,6 +227,10 @@ impl HydraulicGearSystem {
         );
     }
 
+    pub fn gear_hydraulic_manifold_pressure(&self) -> Pressure {
+        self.hydraulic_supply.gear_system_manifold_pressure()
+    }
+
     pub fn all_actuators(&mut self) -> [&mut impl Actuator; 6] {
         [
             self.nose_door_assembly.actuator(),
@@ -252,6 +256,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_gear_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGLEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
@@ -260,6 +266,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_gear_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::WINGLEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
@@ -268,6 +276,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_door_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGLEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
@@ -276,6 +286,8 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::NOSE => self.nose_door_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::WINGLEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::WINGRIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
         }
     }
 }
