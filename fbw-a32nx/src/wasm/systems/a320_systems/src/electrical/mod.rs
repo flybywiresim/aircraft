@@ -108,7 +108,7 @@ impl A320Electrical {
 
         // Relay 7XB
         // TODO: should also be true (closed) when emer gen test P/B is pressed
-        let spd_cond = adirs.low_speed_warning_2_54kts(1);
+        let spd_cond = adirs.low_speed_warning_2(1);
 
         // Elec using LGCIU1 L&R compressed (14A output  ASM 32_62_00)
         self.direct_current.update(
@@ -2406,21 +2406,21 @@ mod a320_electrical_circuit_tests {
         }
     }
     impl AdirsDiscreteOutputs for TestAdirs {
-        fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool {
+        fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
             assert_eq!(adiru_number, 1);
             self.airspeed.get::<knot>() > 100.
         }
 
-        fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool {
+        fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
             assert_eq!(adiru_number, 1);
             self.airspeed.get::<knot>() > 50.
         }
 
-        fn low_speed_warning_3_159kts(&self, _adiru_number: usize) -> bool {
+        fn low_speed_warning_3(&self, _adiru_number: usize) -> bool {
             false
         }
 
-        fn low_speed_warning_4_260kts(&self, _adiru_number: usize) -> bool {
+        fn low_speed_warning_4(&self, _adiru_number: usize) -> bool {
             false
         }
     }

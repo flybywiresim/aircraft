@@ -475,7 +475,7 @@ impl Closed {
         &self,
         adirs: &impl AdirsDiscreteOutputs,
     ) -> bool {
-        (adirs.low_speed_warning_1_104kts(1) || self.had_apu_start)
+        (adirs.low_speed_warning_1(1) || self.had_apu_start)
             && self.below_4_ampere_charging_duration
                 >= Duration::from_secs(
                     Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
@@ -530,7 +530,7 @@ fn on_ground_at_low_speed_with_unpowered_ac_buses(
 ) -> bool {
     !ac_electrical_system.any_non_essential_bus_powered(electricity)
         && lgciu1.left_and_right_gear_compressed(false)
-        && !adirs.low_speed_warning_1_104kts(1)
+        && !adirs.low_speed_warning_1(1)
 }
 
 struct ArrowBetweenBatteryAndBatBus {
@@ -980,22 +980,22 @@ mod tests {
             }
         }
         impl AdirsDiscreteOutputs for TestAdirs {
-            fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool {
+            fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
                 assert_eq!(adiru_number, 1);
                 self.indicated_airspeed.get::<knot>() >= 100.
             }
 
-            fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool {
+            fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
                 assert_eq!(adiru_number, 1);
                 todo!()
             }
 
-            fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool {
+            fn low_speed_warning_3(&self, adiru_number: usize) -> bool {
                 assert_eq!(adiru_number, 1);
                 todo!()
             }
 
-            fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool {
+            fn low_speed_warning_4(&self, adiru_number: usize) -> bool {
                 assert_eq!(adiru_number, 1);
                 todo!()
             }
