@@ -49,10 +49,11 @@ import { ArincEventBus } from '../../../shared/src/ArincEventBus';
 import { EfisNdMode, EfisSide } from '../NavigationDisplay';
 import { Arinc429RegisterSubject } from '../../../shared/src/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSubject';
+import { FmsOansData } from '../../../shared/src/publishers/OansBtv/FmsOansPublisher';
 import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
-import { FmsOansData, OansControlEvents } from '../OANC';
+import { OansControlEvents } from '../OANC';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;

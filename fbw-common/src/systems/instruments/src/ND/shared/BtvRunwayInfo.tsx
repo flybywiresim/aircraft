@@ -3,28 +3,23 @@
 
 import { FSComponent, DisplayComponent, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
-import { BtvDataArinc429, FmsOansData, FmsOansDataArinc429 } from '@flybywiresim/oanc';
-import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, ArincEventBus, BtvData, FmsOansData } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<FmsOansDataArinc429 & FmsOansData & BtvDataArinc429>();
+  private readonly sub = this.props.bus.getArincSubscriber<FmsOansData & BtvData>();
 
   private readonly fmsRwyIdent = ConsumerSubject.create(this.sub.on('fmsLandingRunway'), null);
 
   private readonly runwayIdent = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
 
-  private readonly runwayLength = ConsumerSubject.create(
-    this.sub.on('oansSelectedLandingRunwayLength').withArinc429Precision(1),
-    Arinc429Word.empty(),
+  private readonly runwayLength = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('oansSelectedLandingRunwayLength'),
   );
 
   private readonly exitIdent = ConsumerSubject.create(this.sub.on('oansSelectedExit'), null);
 
-  private readonly exitDistance = ConsumerSubject.create(
-    this.sub.on('oansRequestedStoppingDistance').withArinc429Precision(1),
-    Arinc429Word.empty(),
-  );
+  private readonly exitDistance = Arinc429LocalVarConsumerSubject.create(this.sub.on('oansRequestedStoppingDistance'));
 
   private readonly runwayInfoString = MappedSubject.create(
     ([ident, length]) =>
@@ -35,9 +30,8 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     this.runwayLength,
   );
 
-  private readonly runwayBearing = ConsumerSubject.create(
-    this.sub.on('oansSelectedLandingRunwayBearing').withArinc429Precision(1),
-    Arinc429Word.empty(),
+  private readonly runwayBearing = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('oansSelectedLandingRunwayBearing'),
   );
 
   private readonly btvFmsDisagree = MappedSubject.create(
@@ -56,24 +50,15 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     this.exitDistance,
   );
 
-  private readonly btvRot = ConsumerSubject.create(
-    this.sub.on('btvRot').withArinc429Precision(1),
-    Arinc429Word.empty(),
-  );
+  private btvRot = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvRot'));
 
   private readonly rot = this.btvRot.map((rot) =>
     rot.isNormalOperation() ? rot.value.toFixed(0).padStart(4, '\xa0') : '',
   );
 
-  private readonly turnaroundMaxRev = ConsumerSubject.create(
-    this.sub.on('btvTurnAroundMaxReverse').withArinc429Precision(1),
-    Arinc429Word.empty(),
-  );
+  private readonly turnaroundMaxRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundMaxReverse'));
 
-  private readonly turnaroundIdleRev = ConsumerSubject.create(
-    this.sub.on('btvTurnAroundIdleReverse').withArinc429Precision(1),
-    Arinc429Word.empty(),
-  );
+  private readonly turnaroundIdleRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundIdleReverse'));
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
