@@ -340,7 +340,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['slatsFlapsStatusRaw', { name: PFDVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
     ['slatsPositionRaw', { name: PFDVars.slatsPositionRaw, type: SimVarValueType.Number }],
     ['flapsPositionRaw', { name: PFDVars.flapsPositionRaw, type: SimVarValueType.Number }],
-    ['coldDark', { name: PFDVars.coldDark, type: SimVarValueType.Number }],
     ['elec', { name: PFDVars.elec, type: SimVarValueType.Bool }],
     ['elecFo', { name: PFDVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: PFDVars.potentiometerCaptain, type: SimVarValueType.Number }],

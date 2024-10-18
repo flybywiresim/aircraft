@@ -51,7 +51,7 @@ class SystemsHost extends BaseInstrument {
 
   private soundManager: LegacySoundManager;
 
-  private keyInterceptManager: KeyEventManager;
+  private keyEventManager: KeyEventManager;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
@@ -86,7 +86,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
-  private readonly fwsCore = new FwsCore(1, this.bus, this);
+  private readonly fwsCore = new FwsCore(1, this.bus);
 
   /**
    * "mainmenu" = 0
@@ -108,7 +108,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
-    this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
@@ -119,15 +118,15 @@ class SystemsHost extends BaseInstrument {
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
+    this.fwsCore.init();
 
     this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
     let lastUpdateTime: number;
-    // TODO this is really fast for the FWC...
     this.bus
       .getSubscriber<ClockEvents>()
-      .on('realTime')
-      .atFrequency(13.3)
+      .on('simTimeHiFreq')
+      .atFrequency(50)
       .handle((now) => {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
@@ -135,13 +134,14 @@ class SystemsHost extends BaseInstrument {
         this.fwc.update(dt);
         this.soundManager.update(dt);
         this.gpws.update(dt);
+        this.fwsCore.update(dt);
       });
 
     Promise.all([
       KeyEventManager.getManager(this.bus),
       Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
     ]).then(([keyEventManager]) => {
-      this.keyInterceptManager = keyEventManager;
+      this.keyEventManager = keyEventManager;
       this.initLighting();
     });
   }
@@ -236,7 +236,7 @@ class SystemsHost extends BaseInstrument {
   }
 
   private setPotentiometer(potentiometer: number, brightness: number) {
-    this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
+    this.keyEventManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
   }
 }
 
