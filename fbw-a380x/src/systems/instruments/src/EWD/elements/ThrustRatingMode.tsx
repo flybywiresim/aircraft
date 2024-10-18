@@ -15,6 +15,7 @@ export class N1Limit extends DisplayComponent<{
   x: number;
   y: number;
   active: Subscribable<boolean>;
+  hidden: Subscribable<boolean>;
   bus: ArincEventBus;
 }> {
   private readonly N1LimitType = ConsumerSubject.create(null, 0);
@@ -46,7 +47,7 @@ export class N1Limit extends DisplayComponent<{
 
   render(): VNode {
     return (
-      <g id="Thrust-Rating-Mode">
+      <g id="Thrust-Rating-Mode" style={{ display: this.props.hidden.map((v) => (v ? 'none' : '')) }}>
         <text
           class="F26 Center Amber"
           x={this.props.x - 18}
