@@ -32,7 +32,9 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
+use systems::air_conditioning::{Channel, FdacId, OcsmId, VcmId};
 use systems::failures::FailureType;
+use systems::integrated_modular_avionics::core_processing_input_output_module::CpiomId;
 use systems::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
@@ -73,6 +75,62 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
     .with_failures(vec![
+        (21_000, FailureType::RapidDecompression),
+        (21_001, FailureType::CabinFan(1)),
+        (21_002, FailureType::CabinFan(2)),
+        (21_003, FailureType::CabinFan(3)),
+        (21_004, FailureType::CabinFan(4)),
+        (21_005, FailureType::HotAir(1)),
+        (21_006, FailureType::HotAir(2)),
+        (21_007, FailureType::FwdIsolValve),
+        (21_008, FailureType::FwdExtractFan),
+        (21_009, FailureType::BulkIsolValve),
+        (21_010, FailureType::BulkExtractFan),
+        (21_011, FailureType::CargoHeater),
+        (21_012, FailureType::Fdac(FdacId::One, Channel::ChannelOne)),
+        (21_013, FailureType::Fdac(FdacId::One, Channel::ChannelTwo)),
+        (21_014, FailureType::Fdac(FdacId::Two, Channel::ChannelOne)),
+        (21_015, FailureType::Fdac(FdacId::Two, Channel::ChannelTwo)),
+        (21_016, FailureType::Tadd(Channel::ChannelOne)),
+        (21_017, FailureType::Tadd(Channel::ChannelTwo)),
+        (21_018, FailureType::Vcm(VcmId::Fwd, Channel::ChannelOne)),
+        (21_019, FailureType::Vcm(VcmId::Fwd, Channel::ChannelTwo)),
+        (21_020, FailureType::Vcm(VcmId::Aft, Channel::ChannelOne)),
+        (21_021, FailureType::Vcm(VcmId::Aft, Channel::ChannelTwo)),
+        (21_022, FailureType::OcsmAutoPartition(OcsmId::One)),
+        (21_023, FailureType::OcsmAutoPartition(OcsmId::Two)),
+        (21_024, FailureType::OcsmAutoPartition(OcsmId::Three)),
+        (21_025, FailureType::OcsmAutoPartition(OcsmId::Four)),
+        (21_026, FailureType::Ocsm(OcsmId::One, Channel::ChannelOne)),
+        (21_027, FailureType::Ocsm(OcsmId::One, Channel::ChannelTwo)),
+        (21_028, FailureType::Ocsm(OcsmId::Two, Channel::ChannelOne)),
+        (21_029, FailureType::Ocsm(OcsmId::Two, Channel::ChannelTwo)),
+        (
+            21_030,
+            FailureType::Ocsm(OcsmId::Three, Channel::ChannelOne),
+        ),
+        (
+            21_031,
+            FailureType::Ocsm(OcsmId::Three, Channel::ChannelTwo),
+        ),
+        (21_032, FailureType::Ocsm(OcsmId::Four, Channel::ChannelOne)),
+        (21_033, FailureType::Ocsm(OcsmId::Four, Channel::ChannelTwo)),
+        (21_034, FailureType::AgsApp(CpiomId::B1)),
+        (21_035, FailureType::AgsApp(CpiomId::B2)),
+        (21_036, FailureType::AgsApp(CpiomId::B3)),
+        (21_037, FailureType::AgsApp(CpiomId::B4)),
+        (21_038, FailureType::TcsApp(CpiomId::B1)),
+        (21_039, FailureType::TcsApp(CpiomId::B2)),
+        (21_040, FailureType::TcsApp(CpiomId::B3)),
+        (21_041, FailureType::TcsApp(CpiomId::B4)),
+        (21_042, FailureType::VcsApp(CpiomId::B1)),
+        (21_043, FailureType::VcsApp(CpiomId::B2)),
+        (21_044, FailureType::VcsApp(CpiomId::B3)),
+        (21_045, FailureType::VcsApp(CpiomId::B4)),
+        (21_046, FailureType::CpcsApp(CpiomId::B1)),
+        (21_047, FailureType::CpcsApp(CpiomId::B2)),
+        (21_048, FailureType::CpcsApp(CpiomId::B3)),
+        (21_049, FailureType::CpcsApp(CpiomId::B4)),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
@@ -431,6 +489,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("SURFACE TYPE", "Enum", 0)?
     .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
+    .provides_aircraft_variable("TOTAL WEIGHT YAW MOI", "Slugs feet squared", 0)?
+    .provides_aircraft_variable("TOTAL WEIGHT PITCH MOI", "Slugs feet squared", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?
