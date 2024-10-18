@@ -317,7 +317,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
 
         if (this.arpCoordinates && ppos.lat && this.navigraphAvailable.get() === false) {
-          globalToAirportCoordinates(this.localPpos, this.arpCoordinates, ppos);
+          globalToAirportCoordinates(this.arpCoordinates, ppos, this.localPpos);
           this.btvUtils.updateRemainingDistances(this.localPpos);
         }
       });
@@ -645,7 +645,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                                   val / MathUtils.METRES_TO_NAUTICAL_MILES,
                                 );
                                 const localExitPos: Position = [0, 9];
-                                globalToAirportCoordinates(localExitPos, this.arpCoordinates, exitLocation);
+                                globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
 
                                 this.btvUtils.selectExitFromManualEntry(val, localExitPos);
                               }

@@ -381,8 +381,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       );
       const localThr: Position = [0, 0];
       const localOppThr: Position = [0, 0];
-      globalToAirportCoordinates(localThr, arpCoordinates, landingRunwayNavdata.thresholdLocation);
-      globalToAirportCoordinates(localOppThr, arpCoordinates, oppositeThreshold);
+      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
 
       btvUtils.selectRunwayFromNavdata(
         rwyIdent,
@@ -956,11 +956,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   /**
    *
-   * @param projectedCoordinates Output argument: Write projected coordinates here
    * @param coordinates coordinates to be transformed
+   * @param out Output argument: Write projected coordinates here
    */
-  private projectCoordinates(projectedCoordinates: Position, coordinates: Coordinates) {
-    globalToAirportCoordinates(projectedCoordinates, this.arpCoordinates, coordinates);
+  private projectCoordinates(coordinates: Coordinates, out: Position): Position {
+    globalToAirportCoordinates(this.arpCoordinates, coordinates, out);
+    return out;
   }
 
   public Update() {
@@ -1008,7 +1009,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.positionVisible.set(false);
     }
 
-    this.projectCoordinates(this.projectedPpos, this.ppos);
+    this.projectCoordinates(this.ppos, this.projectedPpos);
 
     if (this.props.side === 'L') {
       this.btvUtils.updateRemainingDistances(this.projectedPpos);
@@ -1147,7 +1148,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
 
     if (this.arpCoordinates) {
-      this.projectCoordinates(this.projectedPpos, this.ppos);
+      this.projectCoordinates(this.ppos, this.projectedPpos);
     }
   }
 
