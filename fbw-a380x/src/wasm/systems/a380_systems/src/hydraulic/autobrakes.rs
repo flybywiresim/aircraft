@@ -169,7 +169,6 @@ pub struct A380AutobrakeController {
     rto_mode_armed_id: VariableIdentifier,
 
     external_disarm_event_id: VariableIdentifier,
-    external_deactivation_event_id: VariableIdentifier,
 
     deceleration_governor: AutobrakeDecelerationGovernor,
     decelerating_light: bool,
@@ -193,7 +192,6 @@ pub struct A380AutobrakeController {
     selection_knob_should_return_disarm: DelayedTrueLogicGate,
 
     external_disarm_event: bool,
-    external_deactivation_event: bool,
 
     placeholder_ground_spoilers_out: bool,
 
@@ -232,8 +230,6 @@ impl A380AutobrakeController {
             rto_mode_armed_id: context.get_identifier("AUTOBRAKES_RTO_ARMED".to_owned()),
 
             external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
-            external_deactivation_event_id: context
-                .get_identifier("A32NX.AUTO_THROTTLE_DISCONNECT".to_owned()),
 
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
             decelerating_light: false,
@@ -267,7 +263,6 @@ impl A380AutobrakeController {
             ),
 
             external_disarm_event: false,
-            external_deactivation_event: false,
 
             placeholder_ground_spoilers_out: false,
 
@@ -390,7 +385,7 @@ impl A380AutobrakeController {
             && self.target.get::<meter_per_second_squared>() < 0.
     }
 
-    fn should_deactivate_due_to_pedal_input(&self) -> bool {
+    fn should_disarm_due_to_pedal_input(&self) -> bool {
         // Thresholds from A320, TBC for A380
         match self.mode {
             A380AutobrakeMode::DISARM => false,
@@ -416,8 +411,7 @@ impl A380AutobrakeController {
     fn should_disarm(&self, context: &UpdateContext) -> bool {
         // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
         // an unintended disarm is not happening
-        (self.deceleration_governor.is_engaged()
-            && (self.should_deactivate_due_to_pedal_input() || self.external_deactivation_event))
+        (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
             || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
@@ -596,7 +590,6 @@ impl SimulationElement for A380AutobrakeController {
         self.ground_spoilers_are_deployed = self.placeholder_ground_spoilers_out;
 
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
-        self.external_deactivation_event = reader.read(&self.external_deactivation_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         let readed_mode = reader.read_f64(&self.armed_mode_id);

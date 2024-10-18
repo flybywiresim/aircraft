@@ -33,15 +33,9 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         option_button_press,
     )?;
     builder.event_to_variable(
-        "AUTOBRAKE_DISARM",
-        EventToVariableMapping::Value(1.),
-        Variable::named("AUTOBRAKE_DISARM"),
-        option_button_press,
-    )?;
-    builder.event_to_variable(
         "A32NX.AUTO_THROTTLE_DISCONNECT",
         EventToVariableMapping::Value(1.),
-        Variable::named("A32NX.AUTO_THROTTLE_DISCONNECT"),
+        Variable::named("AUTOBRAKE_DISARM"),
         option_button_press,
     )?;
 
