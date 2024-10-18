@@ -28,9 +28,9 @@ use systems::{
         OnOffFaultPushButton,
     },
     shared::{
-        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
-        EngineFirePushButtons, LgciuWeightOnWheels,
+        AdirsDiscreteOutputs, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
+        EmergencyGeneratorPower, EngineFirePushButtons, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -80,6 +80,7 @@ impl A320Electrical {
         engines: [&impl Engine; 2],
         gcu: &impl EmergencyGeneratorControlUnit,
         lgciu1: &impl LgciuWeightOnWheels,
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
@@ -105,6 +106,10 @@ impl A320Electrical {
             &self.emergency_gen,
         );
 
+        // Relay 7XB
+        // TODO: should also be true (closed) when emer gen test P/B is pressed
+        let spd_cond = adirs.low_speed_warning_2(1);
+
         // Elec using LGCIU1 L&R compressed (14A output  ASM 32_62_00)
         self.direct_current.update(
             context,
@@ -116,13 +121,15 @@ impl A320Electrical {
             apu,
             apu_overhead,
             lgciu1,
+            adirs,
+            spd_cond,
         );
 
         self.alternating_current.update_after_direct_current(
-            context,
             electricity,
             &self.emergency_gen,
             &self.direct_current,
+            spd_cond,
         );
 
         self.main_galley
@@ -1088,7 +1095,7 @@ mod a320_electrical_circuit_tests {
     fn distribution_table_on_ground_bat_only_rat_stall_or_speed_between_50_to_100_knots() {
         let test_bed = test_bed_with()
             .running_emergency_generator()
-            .airspeed(Velocity::new::<knot>(50.0))
+            .airspeed(Velocity::new::<knot>(51.0))
             .and()
             .on_the_ground()
             .run();
@@ -2348,43 +2355,73 @@ mod a320_electrical_circuit_tests {
         }
     }
 
-    struct TestLandingGear {}
+    struct TestLandingGear {
+        is_down: bool,
+    }
     impl TestLandingGear {
-        fn new() -> Self {
-            Self {}
+        fn new(is_down: bool) -> Self {
+            Self { is_down }
         }
     }
     impl LgciuWeightOnWheels for TestLandingGear {
         fn right_gear_compressed(&self, _: bool) -> bool {
-            false
+            self.is_down
         }
 
         fn right_gear_extended(&self, _: bool) -> bool {
-            true
+            !self.is_down
         }
 
         fn left_gear_compressed(&self, _: bool) -> bool {
-            false
+            self.is_down
         }
 
         fn left_gear_extended(&self, _: bool) -> bool {
-            true
+            !self.is_down
         }
 
         fn left_and_right_gear_compressed(&self, _: bool) -> bool {
-            false
+            self.is_down
         }
 
         fn left_and_right_gear_extended(&self, _: bool) -> bool {
-            true
+            !self.is_down
         }
 
         fn nose_gear_compressed(&self, _: bool) -> bool {
-            false
+            self.is_down
         }
 
         fn nose_gear_extended(&self, _: bool) -> bool {
-            true
+            !self.is_down
+        }
+    }
+
+    struct TestAdirs {
+        airspeed: Velocity,
+    }
+    impl TestAdirs {
+        fn new(airspeed: Velocity) -> Self {
+            Self { airspeed }
+        }
+    }
+    impl AdirsDiscreteOutputs for TestAdirs {
+        fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
+            assert_eq!(adiru_number, 1);
+            self.airspeed.get::<knot>() > 100.
+        }
+
+        fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
+            assert_eq!(adiru_number, 1);
+            self.airspeed.get::<knot>() > 50.
+        }
+
+        fn low_speed_warning_3(&self, _adiru_number: usize) -> bool {
+            false
+        }
+
+        fn low_speed_warning_4(&self, _adiru_number: usize) -> bool {
+            false
         }
     }
 
@@ -2508,7 +2545,8 @@ mod a320_electrical_circuit_tests {
                 &self.engine_fire_push_buttons,
                 [&self.engines[0], &self.engines[1]],
                 &self.hydraulics,
-                &TestLandingGear::new(),
+                &TestLandingGear::new(context.is_on_ground()),
+                &TestAdirs::new(context.indicated_airspeed()),
             );
             self.overhead
                 .update_after_electrical(&self.elec, electricity);

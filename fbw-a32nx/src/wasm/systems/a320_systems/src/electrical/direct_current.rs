@@ -2,6 +2,7 @@ use super::{
     A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
     A320ElectricalOverheadPanel,
 };
+use systems::shared::AdirsDiscreteOutputs;
 use systems::simulation::InitContext;
 use systems::{
     electrical::{
@@ -14,7 +15,6 @@ use systems::{
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
-use uom::si::{f64::*, velocity::knot};
 
 pub(crate) const APU_START_MOTOR_BUS_TYPE: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
 
@@ -99,6 +99,8 @@ impl A320DirectCurrentElectrical {
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         lgciu1: &impl LgciuWeightOnWheels,
+        adirs: &impl AdirsDiscreteOutputs,
+        spd_cond: bool,
     ) {
         self.tr_1_contactor
             .close_when(electricity.is_powered(ac_state.tr_1()));
@@ -172,6 +174,7 @@ impl A320DirectCurrentElectrical {
             apu,
             apu_overhead,
             ac_state,
+            adirs,
         );
         self.battery_1_contactor
             .close_when(self.battery_1_charge_limiter.should_close_contactor());
@@ -192,6 +195,7 @@ impl A320DirectCurrentElectrical {
             apu,
             apu_overhead,
             ac_state,
+            adirs,
         );
         self.battery_2_contactor
             .close_when(self.battery_2_charge_limiter.should_close_contactor());
@@ -208,7 +212,7 @@ impl A320DirectCurrentElectrical {
         electricity.flow(&self.apu_start_contactors, &self.apu_start_motor_bus);
 
         let should_close_2xb_contactor =
-            self.should_close_2xb_contactors(context, electricity, emergency_generator, ac_state);
+            self.should_close_2xb_contactors(electricity, emergency_generator, ac_state, spd_cond);
         self.hot_bus_1_to_static_inv_contactor
             .close_when(should_close_2xb_contactor);
         electricity.flow(&self.hot_bus_1, &self.hot_bus_1_to_static_inv_contactor);
@@ -241,16 +245,14 @@ impl A320DirectCurrentElectrical {
     /// which connect BAT2 to DC ESS BUS; and BAT 1 to the static inverter.
     fn should_close_2xb_contactors(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_generator: &EmergencyGenerator,
         ac_state: &impl A320AlternatingCurrentElectricalSystem,
+        spd_cond: bool,
     ) -> bool {
         !ac_state.any_non_essential_bus_powered(electricity)
             && !electricity.is_powered(emergency_generator)
-            && ((context.indicated_airspeed() < Velocity::new::<knot>(50.)
-                && self.batteries_connected_to_bat_bus())
-                || context.indicated_airspeed() >= Velocity::new::<knot>(50.))
+            && (spd_cond || self.batteries_connected_to_bat_bus())
     }
 
     fn batteries_connected_to_bat_bus(&self) -> bool {
