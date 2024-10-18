@@ -61,6 +61,9 @@ jobs:
         run: |
           rm -rf ./fbw-a380x/
           rm -rf ./large-files/fbw-a380x/
+      - name: Show disk usage
+        run: |
+          du -h -x / | sort -hr
       - name: Build ZIP files
         run: |
           df -h
@@ -131,6 +134,10 @@ jobs:
         run: |
           rm -rf ./fbw-a32nx/
           rm -rf ./large-files/fbw-a32nx/
+
+      - name: Show disk usage
+        run: |
+          du -h -x / | sort -hr
       - name: Build ZIP files
         run: |
           df -h
