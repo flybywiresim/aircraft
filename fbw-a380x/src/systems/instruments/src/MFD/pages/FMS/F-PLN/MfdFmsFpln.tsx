@@ -1068,6 +1068,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   hasSpeedConstraint: boolean;
   speedConstraint: SpeedConstraint | null;
   speedConstraintIsRespected: boolean;
+  /** in kilograms */
   efobPrediction: number;
   windPrediction: WindVector | null;
   trackFromLastWpt?: number | null;
