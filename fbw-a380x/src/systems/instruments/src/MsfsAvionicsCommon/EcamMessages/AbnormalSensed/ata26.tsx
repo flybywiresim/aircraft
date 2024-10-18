@@ -100,6 +100,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
         name: 'IF STILL FIRE AFTER 30 S :',
         sensed: false,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -145,6 +146,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
         name: 'IF STILL FIRE AFTER 30 S :',
         sensed: false,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -190,6 +192,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
         name: 'IF STILL FIRE AFTER 30 S :',
         sensed: false,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -235,6 +238,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
         name: 'IF STILL FIRE AFTER 30 S :',
         sensed: false,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -257,7 +261,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN ACFT STOPPED :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -310,7 +315,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -333,7 +339,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC NOT RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -355,7 +362,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN ACFT STOPPED :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -408,7 +416,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -431,7 +440,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC NOT RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -453,7 +463,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN ACFT STOPPED :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -506,7 +517,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -529,7 +541,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC NOT RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -551,7 +564,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN ACFT STOPPED :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -604,7 +618,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -627,7 +642,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'IF EVAC NOT RQRD :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
