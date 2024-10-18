@@ -78,38 +78,64 @@ const AC_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentNamed
 struct A380TiltingGearsFactory {}
 impl A380TiltingGearsFactory {
     fn new_a380_body_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
-        let mut x_offset_meters = 2.85569;
-        let y_offset_meters = -5.04847;
-        let z_offset_meters = -0.235999;
+        let mut x_offset = Length::new::<meter>(2.85569);
+        let y_offset = Length::new::<meter>(-5.04847);
+        let z_offset = Length::new::<meter>(-0.235999);
+        let distance_offset_fwd_to_aft_wheel = Length::new::<meter>(3.5);
+        let low_to_up_height = Length::new::<meter>(0.280065);
 
         if is_left {
-            x_offset_meters *= -1.;
+            x_offset *= -1.;
         }
 
         TiltingGear::new(
             context,
-            Length::new::<meter>(0.280065),
+            low_to_up_height,
             if is_left { 1 } else { 2 },
-            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset.get::<meter>(),
+                y_offset.get::<meter>(),
+                z_offset.get::<meter>(),
+            ),
+            // Aft wheel as an offset aft, and height when aft wheel is down is same as fwd wheel down + down to up length
+            // Note this only works if bogey tilt axis is in the middle
+            Vector3::new(
+                x_offset.get::<meter>(),
+                (y_offset + low_to_up_height).get::<meter>(),
+                (z_offset - distance_offset_fwd_to_aft_wheel).get::<meter>(),
+            ),
             Angle::new::<degree>(9.89),
             Length::new::<meter>(0.711),
         )
     }
 
     fn new_a380_wing_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
-        let mut x_offset_meters = 6.18848;
-        let y_offset_meters = -4.86875;
-        let z_offset_meters = 2.6551;
+        let mut x_offset = Length::new::<meter>(6.18848);
+        let y_offset = Length::new::<meter>(-4.86875);
+        let z_offset = Length::new::<meter>(2.6551);
+        let distance_offset_fwd_to_aft_wheel = Length::new::<meter>(2.0);
+        let low_to_up_height = Length::new::<meter>(0.134608);
 
         if is_left {
-            x_offset_meters *= -1.;
+            x_offset *= -1.;
         }
 
         TiltingGear::new(
             context,
-            Length::new::<meter>(0.134608),
+            low_to_up_height,
             if is_left { 3 } else { 4 },
-            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset.get::<meter>(),
+                y_offset.get::<meter>(),
+                z_offset.get::<meter>(),
+            ),
+            // Aft wheel as an offset aft, and height when aft wheel is down is same as fwd wheel down + down to up length
+            // Note this only works if bogey tilt axis is in the middle
+            Vector3::new(
+                x_offset.get::<meter>(),
+                (y_offset + low_to_up_height).get::<meter>(),
+                (z_offset - distance_offset_fwd_to_aft_wheel).get::<meter>(),
+            ),
             Angle::new::<degree>(9.),
             Length::new::<meter>(0.711),
         )
