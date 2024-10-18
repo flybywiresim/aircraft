@@ -10,8 +10,20 @@ const execute = async () => {
       outDir: './fbw-a380x/out/build-modules',
       modules: [
         {
+          name: 'effects',
+          sourceDir: './effects',
+        },
+        {
           name: 'html_ui',
           sourceDir: './html_ui',
+        },
+        {
+          name: 'Textures',
+          sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/texture',
+        },
+        {
+          name: 'Sound',
+          sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/sound',
         },
         {
           name: 'Model',
@@ -20,10 +32,6 @@ const execute = async () => {
         {
           name: 'Panels',
           sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/panel',
-        },
-        {
-          name: 'Sound',
-          sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/sound',
         },
       ],
     });

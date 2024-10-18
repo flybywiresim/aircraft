@@ -11,4 +11,6 @@ for arg in "$@"; do
   fi
 done
 
+git submodule init
+git submodule update
 pnpm i

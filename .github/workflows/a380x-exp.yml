@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - a380x-experimental
+      - a380x-experimental-testing
 
 jobs:
   build_a32nx:
@@ -39,6 +40,8 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: Remove git objects
+        run: rm -rf ./.git/objects && rm -rf ./.git/modules/aircraft-large-files/objects
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
@@ -73,6 +76,15 @@ jobs:
       AIRCRAFT_PROJECT_PREFIX: a380x
       AIRCRAFT_VARIANT: a380-842
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Set BUILT_DATE_TIME
@@ -92,6 +104,8 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: Remove git objects
+        run: rm -rf ./.git/objects && rm -rf ./.git/modules/aircraft-large-files/objects
       - name: Build A380X
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
@@ -111,6 +125,6 @@ jobs:
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/a380x-experimental
+          CDN_BUCKET_DESTINATION: addons/a380x/${{ secrets.A380X_EXP_DIRECTORY }}
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
