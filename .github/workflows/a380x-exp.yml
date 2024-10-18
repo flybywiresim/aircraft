@@ -67,6 +67,7 @@ jobs:
           cd ./fbw-a32nx/out/
           7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
+          df -h
 
       - name: Upload to CloudFlare CDN
         env:
@@ -132,6 +133,7 @@ jobs:
           cd ./fbw-a380x/out/
           7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
+          df -h
 
       - name: Upload to CloudFlare CDN
         env:
