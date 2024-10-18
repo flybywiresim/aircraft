@@ -345,6 +345,10 @@
         - B3
         - B4
 
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
 - A32NX_PRESS_OCSM_{id1}_CHANNEL_{id2}_FAILURE
     - Bool
     - True if the channel is failed
