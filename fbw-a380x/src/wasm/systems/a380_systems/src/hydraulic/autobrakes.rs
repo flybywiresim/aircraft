@@ -229,7 +229,8 @@ impl A380AutobrakeController {
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             rto_mode_armed_id: context.get_identifier("AUTOBRAKES_RTO_ARMED".to_owned()),
 
-            external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
+            external_disarm_event_id: context
+                .get_identifier("AUTOBRAKE_INSTINCTIVE_DISCONNECT".to_owned()),
 
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
             decelerating_light: false,
@@ -412,10 +413,11 @@ impl A380AutobrakeController {
         // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
         // an unintended disarm is not happening
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
+            || (self.deceleration_governor.is_engaged()
+                && (self.external_disarm_event && self.mode != A380AutobrakeMode::RTO))
             || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
-            || (self.external_disarm_event && self.mode != A380AutobrakeMode::RTO)
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
             || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed())
