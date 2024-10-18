@@ -211,6 +211,66 @@ export interface FlightPlanPerformanceData {
    */
   get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
+  /**
+   * The maximum speed imposed by the climb speed limit of the main flight plan or null if not set.
+   */
+  climbSpeedLimitSpeed: number | null;
+
+  /**
+   * The altitude below which the climb speed limit of the main flight plan applies or null if not set.
+   */
+  climbSpeedLimitAltitude: number | null;
+
+  /**
+   * Whether the climb speed limit is pilot entered.
+   */
+  isClimbSpeedLimitPilotEntered: boolean;
+
+  /**
+   * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
+   */
+  descentSpeedLimitSpeed: number | null;
+
+  /**
+   * The altitude below which the descent speed limit of the main flight plan applies or null if not set.
+   */
+  descentSpeedLimitAltitude: number | null;
+
+  /**
+   * Whether the descent speed limit of the main flight plan is pilot entered.
+   */
+  isDescentSpeedLimitPilotEntered: boolean;
+
+  /**
+   * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
+   */
+  alternateClimbSpeedLimitSpeed: number | null;
+
+  /**
+   * The altitude below which the climb speed limit of the alternate flight plan applies or null if not set.
+   */
+  alternateClimbSpeedLimitAltitude: number | null;
+
+  /**
+   * Whether the climb speed limit of the alternate flight plan is pilot entered.
+   */
+  isAlternateClimbSpeedLimitPilotEntered: boolean;
+
+  /**
+   * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
+   */
+  alternateDescentSpeedLimitSpeed: number | null;
+
+  /**
+   * The altitude below which the descent speed limit of the alternate flight plan applies or null if not set.
+   */
+  alternateDescentSpeedLimitAltitude: number | null;
+
+  /**
+   * Whether the descent speed limit of the alternate flight plan is pilot entered.
+   */
+  isAlternateDescentSpeedLimitPilotEntered: boolean;
+
   clone(): this;
 }
 
@@ -254,6 +314,22 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.costIndex = this.costIndex;
     cloned.pilotTropopause = this.pilotTropopause;
     cloned.defaultTropopause = this.defaultTropopause;
+
+    cloned.climbSpeedLimitSpeed = this.climbSpeedLimitSpeed;
+    cloned.climbSpeedLimitAltitude = this.climbSpeedLimitAltitude;
+    cloned.isClimbSpeedLimitPilotEntered = this.isClimbSpeedLimitPilotEntered;
+
+    cloned.descentSpeedLimitSpeed = this.descentSpeedLimitSpeed;
+    cloned.descentSpeedLimitAltitude = this.descentSpeedLimitAltitude;
+    cloned.isDescentSpeedLimitPilotEntered = this.isDescentSpeedLimitPilotEntered;
+
+    cloned.alternateClimbSpeedLimitSpeed = this.alternateClimbSpeedLimitSpeed;
+    cloned.alternateClimbSpeedLimitAltitude = this.alternateClimbSpeedLimitAltitude;
+    cloned.isAlternateClimbSpeedLimitPilotEntered = this.isAlternateClimbSpeedLimitPilotEntered;
+
+    cloned.alternateDescentSpeedLimitSpeed = this.alternateDescentSpeedLimitSpeed;
+    cloned.alternateDescentSpeedLimitAltitude = this.alternateDescentSpeedLimitAltitude;
+    cloned.isAlternateDescentSpeedLimitPilotEntered = this.isAlternateDescentSpeedLimitPilotEntered;
 
     return cloned as this;
   }
@@ -514,6 +590,66 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     return this.pilotTransitionLevel === null;
   }
 
+  /**
+   * The maximum speed imposed by the climb speed limit of the main flight plan or null if not set.
+   */
+  climbSpeedLimitSpeed: number | null = DefaultPerformanceData.ClimbSpeedLimitSpeed;
+
+  /**
+   * The altitude below which the climb speed limit of the main flight plan applies or null if not set.
+   */
+  climbSpeedLimitAltitude: number | null = DefaultPerformanceData.ClimbSpeedLimitAltitude;
+
+  /**
+   * Whether the climb speed limit is pilot entered.
+   */
+  isClimbSpeedLimitPilotEntered: boolean = false;
+
+  /**
+   * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
+   */
+  descentSpeedLimitSpeed: number | null = DefaultPerformanceData.DescentSpeedLimitSpeed;
+
+  /**
+   * The altitude below which the descent speed limit of the main flight plan applies or null if not set.
+   */
+  descentSpeedLimitAltitude: number | null = DefaultPerformanceData.DescentSpeedLimitAltitude;
+
+  /**
+   * Whether the descent speed limit of the main flight plan is pilot entered.
+   */
+  isDescentSpeedLimitPilotEntered: boolean = false;
+
+  /**
+   * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
+   */
+  alternateClimbSpeedLimitSpeed: number | null = DefaultPerformanceData.ClimbSpeedLimitSpeed;
+
+  /**
+   * The altitude below which the climb speed limit of the alternate flight plan applies or null if not set.
+   */
+  alternateClimbSpeedLimitAltitude: number | null = DefaultPerformanceData.ClimbSpeedLimitAltitude;
+
+  /**
+   * Whether the climb speed limit of the alternate flight plan is pilot entered.
+   */
+  isAlternateClimbSpeedLimitPilotEntered: boolean = false;
+
+  /**
+   * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
+   */
+  alternateDescentSpeedLimitSpeed: number | null = DefaultPerformanceData.DescentSpeedLimitSpeed;
+
+  /**
+   * The altitude below which the descent speed limit of the alternate flight plan applies or null if not set.
+   */
+  alternateDescentSpeedLimitAltitude: number | null = DefaultPerformanceData.DescentSpeedLimitAltitude;
+
+  /**
+   * Whether the descent speed limit of the alternate flight plan is pilot entered.
+   */
+  isAlternateDescentSpeedLimitPilotEntered: boolean = false;
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel,
@@ -539,6 +675,18 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       pilotTransitionAltitude: this.pilotTransitionAltitude,
       databaseTransitionLevel: this.databaseTransitionLevel,
       pilotTransitionLevel: this.pilotTransitionLevel,
+      climbSpeedLimitSpeed: this.climbSpeedLimitSpeed,
+      climbSpeedLimitAltitude: this.climbSpeedLimitAltitude,
+      isClimbSpeedLimitPilotEntered: this.isClimbSpeedLimitPilotEntered,
+      descentSpeedLimitSpeed: this.descentSpeedLimitSpeed,
+      descentSpeedLimitAltitude: this.descentSpeedLimitAltitude,
+      isDescentSpeedLimitPilotEntered: this.isDescentSpeedLimitPilotEntered,
+      alternateClimbSpeedLimitSpeed: this.alternateClimbSpeedLimitSpeed,
+      alternateClimbSpeedLimitAltitude: this.alternateClimbSpeedLimitAltitude,
+      isAlternateClimbSpeedLimitPilotEntered: this.isAlternateClimbSpeedLimitPilotEntered,
+      alternateDescentSpeedLimitSpeed: this.alternateDescentSpeedLimitSpeed,
+      alternateDescentSpeedLimitAltitude: this.alternateDescentSpeedLimitAltitude,
+      isAlternateDescentSpeedLimitPilotEntered: this.isAlternateDescentSpeedLimitPilotEntered,
     };
   }
 }
@@ -578,4 +726,30 @@ export interface SerializedFlightPlanPerformanceData {
 
   databaseTransitionLevel: number | null;
   pilotTransitionLevel: number | null;
+
+  climbSpeedLimitSpeed: number | null;
+  climbSpeedLimitAltitude: number | null;
+  isClimbSpeedLimitPilotEntered: boolean;
+
+  descentSpeedLimitSpeed: number | null;
+  descentSpeedLimitAltitude: number | null;
+  isDescentSpeedLimitPilotEntered: boolean;
+
+  alternateClimbSpeedLimitSpeed: number | null;
+  alternateClimbSpeedLimitAltitude: number | null;
+  isAlternateClimbSpeedLimitPilotEntered: boolean;
+
+  alternateDescentSpeedLimitSpeed: number | null;
+  alternateDescentSpeedLimitAltitude: number | null;
+  isAlternateDescentSpeedLimitPilotEntered: boolean;
+}
+
+export class DefaultPerformanceData {
+  static readonly ClimbSpeedLimitSpeed = 250;
+
+  static readonly ClimbSpeedLimitAltitude = 10_000;
+
+  static readonly DescentSpeedLimitSpeed = 250;
+
+  static readonly DescentSpeedLimitAltitude = 10_000;
 }
