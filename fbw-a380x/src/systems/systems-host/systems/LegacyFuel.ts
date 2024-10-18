@@ -108,7 +108,7 @@ export class LegacyFuel implements Instrument {
       // both mid and inner tanks are empty
 
       this.setJunctionOption(10, 3);
-    } else if (this.rightInnerTankQty.get() >= 1 || this.leftInnerTankQty.get() >= 1) {
+    } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
       // inner tanks arent empty
 
       this.setJunctionOption(10, 1);
