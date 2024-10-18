@@ -663,13 +663,6 @@ mod tests {
     }
 
     #[test]
-    fn testinmi() {
-        for _ in 1..5000 {
-            reverser_deploys_if_unlocked_and_lock_powered();
-        }
-    }
-
-    #[test]
     fn reverser_deploys_if_unlocked_and_lock_powered() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
