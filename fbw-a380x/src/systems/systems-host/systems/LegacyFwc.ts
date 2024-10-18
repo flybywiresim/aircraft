@@ -168,7 +168,7 @@ export class LegacyFwc {
   update(_deltaTime: number) {
     const throttledT = this.updateThrottler.canUpdate(_deltaTime);
 
-    if (throttledT !== 1) {
+    if (throttledT > 0) {
       this._updateFlightPhase(throttledT);
       this._updateTakeoffMemo(throttledT);
       this._updateLandingMemo(throttledT);

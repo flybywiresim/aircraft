@@ -92,7 +92,7 @@ export class LegacySoundManager {
   update(deltaTime: number) {
     const throttledT = this.updateThrottler.canUpdate(deltaTime);
 
-    if (throttledT === 1) {
+    if (throttledT <= 0) {
       return;
     }
 

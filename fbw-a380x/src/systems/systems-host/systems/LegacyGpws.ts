@@ -212,7 +212,7 @@ export class LegacyGpws {
   update(deltaTime: number) {
     const throttledT = this.updateThrottler.canUpdate(deltaTime);
 
-    if (throttledT !== 1) {
+    if (throttledT > 0) {
       this.gpws(throttledT);
     }
   }
