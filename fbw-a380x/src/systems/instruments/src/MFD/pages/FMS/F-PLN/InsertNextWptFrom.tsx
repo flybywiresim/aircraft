@@ -182,6 +182,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
               label="CANCEL"
               onClick={() => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
+                this.props.fmcService.master?.resetRevisedWaypoint();
                 this.props.visible.set(false);
               }}
             />
