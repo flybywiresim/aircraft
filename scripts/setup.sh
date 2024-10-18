@@ -20,8 +20,11 @@ for arg in "$@"; do
   fi
 done
 
-git submodule init
-git submodule update
+if [ "${GITHUB_ACTIONS}" == "true" ]; then :;
+  else
+  git submodule init
+  git submodule update
+fi
 pnpm i
 
 # restore ownership (when run as github action)

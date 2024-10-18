@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -61,7 +64,7 @@ jobs:
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/a380x-experimental
+          CDN_BUCKET_DESTINATION: addons/a32nx/a380x-experimental-testing
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
 
@@ -87,6 +90,9 @@ jobs:
           remove-cached-tools: 'true'
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
