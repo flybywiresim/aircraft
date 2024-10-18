@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmsOansData } from '@flybywiresim/oanc';
+import { Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
 import { RopRowOansSimVars } from '../../MsfsAvionicsCommon/providers';
 
 export interface RwyAheadAdvisoryProps {
