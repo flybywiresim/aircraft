@@ -11,7 +11,6 @@ import { MathUtils, Units } from '@flybywiresim/fbw-sdk';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { Common } from '@fmgc/guidance/vnav/common';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { SimVarValueType } from '@microsoft/msfs-sdk';
 
 // Maybe we need bilinear interpolation
 const vls = [
@@ -333,12 +332,6 @@ export class A380OperatingSpeeds {
 
   public vfeN: number;
 
-  public alphaStallWarn: number; // TODO
-
-  public alphaProt: number;
-
-  public alphaMax: number;
-
   /**
    * Computes Vs, Vls, Vapp, F, S and GD
    * @param m mass: gross weight in t
@@ -355,7 +348,7 @@ export class A380OperatingSpeeds {
     fPos: number,
     fmgcFlightPhase: FmgcFlightPhase,
     v2Speed: number,
-    aoa: number,
+    altitude: Feet,
     wind: Knots = 0,
   ) {
     // Convert mass from tons to klb (1000*lb)
@@ -366,7 +359,7 @@ export class A380OperatingSpeeds {
     this.vapp = this.vls + addWindComponent(wind);
     this.vref = vls[4][cm](klb);
 
-    this.gd = greenDotSpeed(klb);
+    this.gd = greenDotSpeed(klb, altitude);
     this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
     this.vfeN = fPos === 4 ? 0 : vfeFS[getVfeNIdx(fPos)];
 
@@ -402,28 +395,6 @@ export class A380OperatingSpeeds {
     this.f2 = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? Math.max(1.18 * vs1gConf1F, Vmcl + 5) : f2[cm](klb);
     this.f3 = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? Math.max(1.18 * vs1gConf1F, Vmcl + 5) : f3[cm](klb);
     this.s = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : s[cm](klb);
-
-    // AOA based speeds
-    // Calculate alpha speeds according to https://safetyfirst.airbus.com/control-your-speed-in-cruise/
-    const simStallAlpha = SimVar.GetSimVarValue('STALL ALPHA', SimVarValueType.Degree);
-    const simZeroLiftAlpha = SimVar.GetSimVarValue('ZERO LIFT ALPHA', SimVarValueType.Degree);
-    const alpha0 = simZeroLiftAlpha; // AOA for lift coefficient of zero
-    const alphaProt = simZeroLiftAlpha + 0.85 * (simStallAlpha - simZeroLiftAlpha); // AOA where alpha prot. becomes active
-    const alphaMax = simZeroLiftAlpha + 0.95 * (simStallAlpha - simZeroLiftAlpha); // Max. AOA which can be flown in normal law
-
-    const stallSpeedFudgeFactor = 1; // Flight model not yet tuned
-    this.alphaMax = Math.max(
-      Vmcl,
-      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (alphaMax - alpha0)),
-    );
-    this.alphaProt = Math.max(
-      Vmcl,
-      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (alphaProt - alpha0)),
-    );
-    this.alphaStallWarn = Math.max(
-      Vmcl,
-      stallSpeedFudgeFactor * calibratedAirSpeed * Math.sqrt((aoa - alpha0) / (simStallAlpha - alpha0)),
-    );
   }
 }
 
