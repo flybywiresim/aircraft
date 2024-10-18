@@ -64,7 +64,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'PACK 1 CTL 1+2 FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
@@ -80,7 +80,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'PACK 2 CTL 1+2 FAULT',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
@@ -210,7 +210,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'MAX FL : 100/MEA',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Cyan,
       },
       //Otherwise
       {
@@ -226,7 +227,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       // If there is pack overheat
       {
         name: 'IF PACK OVHT OUT',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 1,
       },
       {
@@ -250,12 +252,14 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'MAX FL : 100/MEA-MORA',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
         name: 'WHEN DIFF PRESS < 2 PSI & FL < 100/MEA-MORA :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
         level: 2,
       },
       {
@@ -273,7 +277,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       // In flight, if below FL 100
       {
         name: 'MAX FL : 100/MEA-MORA',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
@@ -767,27 +772,38 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   },
   // ATA 21: PRESS
   213800001: {
-    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS CAB ALT',
+    title: '\x1b<2m\x1b4mCAB PRESS\x1bm EXCESS CAB ALT',
     sensed: true,
     items: [
       {
         name: 'CREW OXY MASKS',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'USE',
       },
       {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'ADVICE',
+      },
+      {
         name: 'DESCENT',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'INITIATE',
       },
       {
         name: 'EMER DESCENT:',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
       },
       {
-        name: 'SIGNS',
-        sensed: true,
-        labelNotCompleted: 'ON',
+        name: 'EMER DESCENT (PA)',
+        sensed: false,
+        labelNotCompleted: 'ANNOUNCE',
+      },
+      {
+        name: 'DESCENT',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
       },
       {
         name: 'ALL THR LEVERS',
@@ -804,16 +820,31 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         name: 'SPEED',
         sensed: false,
         labelNotCompleted: 'MAX/APPROPRIATE',
-        level: 1,
       },
       {
         name: 'ATC',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'NOTIFY',
       },
       {
-        name: 'MAX FL: 100/MEA',
+        name: 'ATC SQUAWK 7700',
         sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+      {
+        name: 'ATC COM EMER MSG',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+      {
+        name: 'MAX FL: 100/MEA',
+        sensed: true,
+        style: ChecklistLineStyle.Cyan,
+      },
+      {
+        name: 'IF CAB ALT ABOVE 14000 FT:',
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
       },
       {
         name: 'PAX OXY MASK MAN ON',
@@ -821,15 +852,55 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PRESS',
       },
       {
-        name: 'CREW OXY MASKS DILUTION',
+        name: 'WHEN DESCENT ESTABLISHED:',
         sensed: true,
+        level: 1,
+        style: ChecklistLineStyle.Headline,
+      },
+      {
+        name: 'CREW OXY MASKS DILUTION',
+        sensed: false,
         labelNotCompleted: 'N',
+        level: 1,
+      },
+      {
+        name: 'WHEN DIFF PR < 2 PSI & FL < 100/MEA-MORA:',
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
+      },
+      {
+        name: 'RAM AIR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'IF DIFF PRESS > 1 PSI',
+        sensed: true,
+        level: 1,
+        style: ChecklistLineStyle.Headline,
+      },
+      {
+        name: 'CABIN AIR EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+        level: 1,
+      },
+      {
+        name: 'WHEN ALL OUTFLW VLVs OPEN',
+        sensed: true,
+        level: 1,
+        style: ChecklistLineStyle.Headline,
+      },
+      {
+        name: 'CABIN AIR EXTRACT (OVRD)',
+        sensed: true,
+        labelNotCompleted: 'DESELECT',
         level: 1,
       },
     ],
   },
   213800002: {
-    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS DIFF PRESS',
+    title: '\x1b<2m\x1b4mCAB PRESS\x1bm EXCESS DIFF PRESS',
     sensed: true,
     items: [
       {
@@ -850,11 +921,14 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'MAX FL: 100/MEA',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'WHEN DIFF PRESS < 1 PSI & FL < 100/MEA :',
-        sensed: false,
+        sensed: true,
+        style: ChecklistLineStyle.Headline,
+        level: 1,
       },
       {
         name: 'RAM AIR',

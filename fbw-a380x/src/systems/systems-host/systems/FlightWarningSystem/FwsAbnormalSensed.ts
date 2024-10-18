@@ -441,12 +441,12 @@ export class FwsAbnormalSensed {
         false,
         false,
         false,
-        true,
-        true,
-        true,
+        false,
+        false,
+        false,
         this.fws.ramAirOn.get(),
         this.fws.cabinAirExtractOn.get(),
-        true,
+        false,
         this.fws.ramAirOn.get(),
         this.fws.cabinAirExtractOn.get(),
       ],
@@ -845,6 +845,87 @@ export class FwsAbnormalSensed {
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['212300013'],
+    },
+    213800001: {
+      // EXCESS CAB ALT
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.excessCabinAltitude,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightLevel.get() > 100,
+        this.fws.flightLevel.get() > 100 && this.fws.flightLevel.get() < 160,
+        this.fws.flightLevel.get() > 100 && this.fws.flightLevel.get() < 160,
+        this.fws.flightLevel.get() > 160, // Emer descent
+        this.fws.flightLevel.get() > 160, // Emer descent announce
+        this.fws.flightLevel.get() > 160, // Emer descent initiate
+        this.fws.flightLevel.get() > 160, // All trust levers idle
+        this.fws.flightLevel.get() > 160, // Speed brake lever
+        this.fws.flightLevel.get() > 160, // Speed max
+        this.fws.flightLevel.get() > 160, // Atc notify
+        this.fws.flightLevel.get() > 160, // Atc squawk
+        this.fws.flightLevel.get() > 160, // Atc emergency msg
+        true, // Max 100MEA
+        true, // If cab alt above 14000
+        true, // Pax oxy mask on
+        this.fws.flightLevel.get() > 100, // When descent stablished
+        this.fws.flightLevel.get() > 100, // Crew oxy mask dilution
+        true, // When diff Pr <2 psi
+        true, // Ram air on
+        true, // If diff press > 1 PSI
+        true, // Cabin air extract on
+        true, // When all outflow valves open
+        true, // Cabin air extract deselect
+      ],
+      whichItemsChecked: () => [
+        false, // Crew oxy masks
+        false, // Crew advice
+        false, // Descent initiate
+        false, // Emer descent
+        false, // Emer descent announce
+        false, // Descent initiate
+        this.fws.allThrottleIdle.get(), // All trust levers idle
+        // Fixme. The speed break should probably use the lever position instead of the command signal from the FCDC.
+        this.fws.speedBrakeCommand.get(), // Speed brake lever
+        false, // Speed max
+        false, // Atc notify
+        false, // Atc squawk
+        false, // Atc emergency msg
+        false, // Max 100MEA
+        false, // If cab alt above 14000
+        this.fws.paxOxyMasksDeployed.get(), // Pax oxy mask on
+        false, // When descent stablished
+        false, // Crew oxy mask dilution
+        false, // When diff Pr <2 psi
+        this.fws.ramAirOn.get(), // Ram air on
+        false, // If diff press > 1 PSI
+        this.fws.cabinAirExtractOn.get() || (!this.fws.cabinAirExtractOn.get() && this.fws.allOutflowValvesOpen.get()), // Cabin air extract on
+        false, // When all outflow valves open
+        !this.fws.cabinAirExtractOn.get() && this.fws.allOutflowValvesOpen.get(), // Cabin air extract deselect
+      ],
+      failure: 3,
+      sysPage: 2,
+      limitationsAllPhases: () => ['210400002'],
+      limitationsPfd: () => ['210400002'],
+    },
+    213800002: {
+      // EXCESS DIFF PRESS
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.excessDiffPressure,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, this.fws.flightLevel.get() > 100, true, true, true, true],
+      whichItemsChecked: () => [
+        !this.fws.pack1On.get(),
+        !this.fws.pack2On.get(),
+        false,
+        false,
+        false,
+        this.fws.ramAirOn.get(),
+        this.fws.cabinAirExtractOn.get(),
+      ],
+      failure: 3,
+      sysPage: 2,
+      limitationsAllPhases: () => ['210400002', '210400001'],
+      limitationsPfd: () => ['210400002', '210400001'],
     },
     // 22 - FLIGHT GUIDANCE
     220800001: {
