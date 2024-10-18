@@ -45,6 +45,7 @@ render(
           paxSign: true,
           rmpVhfSpacing: true,
           satcom: true,
+          cabinLighting: false,
         },
         realism: {
           mcduKeyboard: true,

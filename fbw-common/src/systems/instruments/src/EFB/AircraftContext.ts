@@ -36,6 +36,7 @@ interface PinProgramOptions {
   paxSign: boolean;
   rmpVhfSpacing: boolean;
   satcom: boolean;
+  cabinLighting: boolean;
 }
 
 interface RealismOptions {
@@ -85,6 +86,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       paxSign: false,
       rmpVhfSpacing: false,
       satcom: false,
+      cabinLighting: false,
     },
     realism: {
       mcduKeyboard: false,

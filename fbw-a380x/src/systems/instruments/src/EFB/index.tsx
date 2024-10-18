@@ -42,6 +42,7 @@ render(
           satcom: false,
           latLonExtend: false,
           rmpVhfSpacing: false,
+          cabinLighting: true,
         },
         realism: {
           mcduKeyboard: false,
