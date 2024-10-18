@@ -210,6 +210,12 @@ export class FmgcData {
 
   public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
+  public readonly flapRetractionSpeed = Subject.create<Knots | null>(141);
+
+  public readonly slatRetractionSpeed = Subject.create<Knots | null>(159);
+
+  public readonly greenDotSpeed = Subject.create<Knots | null>(190);
+
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
   public readonly approachWind = Subject.create<FmcWindVector | null>(null);
@@ -218,11 +224,11 @@ export class FmgcData {
 
   public readonly approachTemperature = Subject.create<number | null>(null);
 
-  public readonly flapRetractionSpeed = Subject.create<Knots | null>(141);
+  public readonly approachGreenDotSpeed = Subject.create<Knots | null>(null);
 
-  public readonly slatRetractionSpeed = Subject.create<Knots | null>(159);
+  public readonly approachSlatRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly greenDotSpeed = Subject.create<Knots | null>(190);
+  public readonly approachFlapRetractionSpeed = Subject.create<Knots | null>(null);
 
   /** in meters. null if not set. */
   public readonly takeoffShift = Subject.create<number | null>(null);
@@ -504,19 +510,19 @@ export class FmgcDataService implements Fmgc {
     return this.data.approachSpeed.get() ?? 0;
   }
 
-  /** in knots */
+  /** F speed in knots based on estimated landing weight, or 0 if it cannot be computed */
   getFlapRetractionSpeed(): number {
-    return this.data.flapRetractionSpeed.get() ?? 0;
+    return this.data.approachFlapRetractionSpeed.get() ?? 0;
   }
 
-  /** in knots */
+  /** S speed in knots based on estimated landing weight, or 0 if it cannot be computed */
   getSlatRetractionSpeed(): number {
-    return this.data.slatRetractionSpeed.get() ?? 0;
+    return this.data.approachSlatRetractionSpeed.get() ?? 0;
   }
 
-  /** in knots */
+  /** Green dot speed in knots based on estimated landing weight, or 0 if it cannot be computed */
   getCleanSpeed(): number {
-    return this.data.greenDotSpeed.get() ?? 0;
+    return this.data.approachGreenDotSpeed.get() ?? 0;
   }
 
   /** in knots */
@@ -575,9 +581,11 @@ export class FmgcDataService implements Fmgc {
 
   /** in feet */
   getDestinationElevation(): number {
-    return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt
-      : 0;
+    return (
+      this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt ??
+      this.flightPlanService?.active?.destinationAirport?.location?.alt ??
+      0
+    );
   }
 
   getDestinationRunway(): Runway | null {
