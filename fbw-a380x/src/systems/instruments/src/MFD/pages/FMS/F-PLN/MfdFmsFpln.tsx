@@ -295,11 +295,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
           speedConstraint: null, // TODO
           speedConstraintIsRespected: true,
-          efobPrediction:
-            Units.poundToKilogram(
-              this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-                ?.estimatedFuelOnBoard ?? 0,
-            ) / 1000.0,
+          efobPrediction: Units.poundToKilogram(
+            this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+              ?.estimatedFuelOnBoard ?? 0,
+          ),
           windPrediction: this.derivedFplnLegData[i].windPrediction,
           trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
           distFromLastWpt: reduceDistanceBy,
@@ -364,7 +363,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           hasSpeedConstraint: leg.speedConstraint !== undefined,
           speedConstraint: leg.speedConstraint ?? null,
           speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
-          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) / 1000.0 : 0,
+          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
           windPrediction: this.derivedFplnLegData[i].windPrediction,
           trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
           distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
@@ -1065,6 +1064,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   hasSpeedConstraint: boolean;
   speedConstraint: SpeedConstraint | null;
   speedConstraintIsRespected: boolean;
+  /** in kilograms */
   efobPrediction: number;
   windPrediction: WindVector | null;
   trackFromLastWpt?: number | null;
