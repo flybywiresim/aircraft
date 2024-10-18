@@ -103,6 +103,21 @@ jobs:
           remove-codeql: 'true'
           remove-large-packages: 'true'
           remove-cached-tools: 'true'
+      - name: Force even more disk space
+        run: |
+          sudo rm -rf /usr/local/julia1.11.0
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /opt/microsoft/msedge
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /opt/pipx
+          sudo rm -rf /usr/lib/heroku
+          sudo rm -rf /usr/share/kotlinc
+          sudo rm -rf /usr/local/aws-cli
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /usr/local/sqlpackage
+          df -h
       - name: Checkout source
         uses: actions/checkout@v4
         with:
@@ -134,7 +149,6 @@ jobs:
         run: |
           rm -rf ./fbw-a32nx/
           rm -rf ./large-files/fbw-a32nx/
-
       - name: Show disk usage
         run: |
           du -h -x / | sort -hr
