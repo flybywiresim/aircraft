@@ -10,6 +10,7 @@
         often be slightly larger than you expect) -->
         <!-- default minSize is 0 -->
         <LOD minSize="80" ModelFile="a380_cockpit.gltf" />
+        <LOD minSize="60" ModelFile="a380_cockpit_LOD01.gltf"/>
     </LODS>
 
     <Behaviors>
