@@ -28,6 +28,7 @@ import {
   ControlPanelUtils,
   FmsDataStore,
   NavigraphAmdbClient,
+  Oanc,
   OansControlEvents,
   globalToAirportCoordinates,
 } from '@flybywiresim/oanc';
@@ -82,6 +83,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData>();
 
+  /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
 
   private amdbClient = new NavigraphAmdbClient();
@@ -172,16 +174,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
   private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
-  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase').whenChanged(), 0);
-
-  private readonly below300ftRaAndLanding = MappedSubject.create(
-    ([ra1, ra2, ra3, fp]) =>
-      fp > 8 && fp < 11 && (ra1.valueOr(2500) <= 300 || ra2.valueOr(2500) <= 300 || ra3.valueOr(2500) <= 300),
-    this.radioAltitude1,
-    this.radioAltitude2,
-    this.radioAltitude3,
-    this.fwsFlightPhase,
-  );
+  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
@@ -272,8 +265,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.pposLonWord.setWord(value);
       });
 
-    this.below300ftRaAndLanding.sub((v) => {
-      if (v && !this.btvUtils.runwayIsSet()) {
+    this.btvUtils.below300ftRaAndLanding.sub((v) => {
+      if (this.navigraphAvailable.get() === false && v && !this.btvUtils.runwayIsSet()) {
         this.setBtvRunwayFromFmsRunway();
       }
     });
@@ -475,35 +468,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   }
 
   private async setBtvRunwayFromFmsRunway() {
-    const destination = this.fmsDataStore.destination.get();
-    const rwyIdent = this.fmsDataStore.landingRunway.get();
-    if (destination && rwyIdent) {
-      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+    [this.landingRunwayNavdata, this.arpCoordinates] = await Oanc.setBtvRunwayFromFmsRunway(
+      this.fmsDataStore,
+      this.btvUtils,
+    );
 
-      const arps = await db.getAirports([destination]);
-      this.arpCoordinates = arps[0].location;
-
-      const runways = await db.getRunways(destination);
-      this.landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+    if (this.landingRunwayNavdata) {
       this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
       this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
-      const oppositeThreshold = placeBearingDistance(
-        this.landingRunwayNavdata.thresholdLocation,
-        this.landingRunwayNavdata.bearing,
-        this.landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
-      );
-      const localThr: Position = [0, 0];
-      const localOppThr: Position = [0, 0];
-      globalToAirportCoordinates(localThr, this.arpCoordinates, this.landingRunwayNavdata.thresholdLocation);
-      globalToAirportCoordinates(localOppThr, this.arpCoordinates, oppositeThreshold);
-
-      this.btvUtils.selectRunwayFromNavdata(
-        rwyIdent,
-        this.landingRunwayNavdata.length,
-        this.landingRunwayNavdata.bearing,
-        localThr,
-        localOppThr,
-      );
     }
   }
 

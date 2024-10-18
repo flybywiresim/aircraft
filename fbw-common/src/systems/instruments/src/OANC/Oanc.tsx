@@ -32,6 +32,7 @@ import {
   EfisSide,
   FmsOansData,
   FcuSimVars,
+  Runway,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -61,6 +62,7 @@ import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
+import { NavigationDatabaseService } from '@fmgc/index';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -146,6 +148,8 @@ export interface OancProps<T extends number> extends ComponentProps {
 }
 
 export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
+  private readonly sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
+
   private readonly animationContainerRef = [
     FSComponent.createRef<HTMLDivElement>(),
     FSComponent.createRef<HTMLDivElement>(),
@@ -354,6 +358,44 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly zoomLevelScales: number[] = this.props.zoomValues.map((it) => 1 / ((it * 2) / DEFAULT_SCALE_NM));
 
+  private readonly oansNotAvailable = ConsumerSubject.create(this.sub.on('oansNotAvail'), true);
+
+  public static async setBtvRunwayFromFmsRunway(
+    fmsDataStore: FmsDataStore,
+    btvUtils: BrakeToVacateUtils<number>,
+  ): Promise<[Runway, Coordinates]> {
+    const destination = fmsDataStore.destination.get();
+    const rwyIdent = fmsDataStore.landingRunway.get();
+    if (destination && rwyIdent) {
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+      const arps = await db.getAirports([destination]);
+      const arpCoordinates = arps[0].location;
+
+      const runways = await db.getRunways(destination);
+      const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+      const oppositeThreshold = placeBearingDistance(
+        landingRunwayNavdata.thresholdLocation,
+        landingRunwayNavdata.bearing,
+        landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+      );
+      const localThr: Position = [0, 0];
+      const localOppThr: Position = [0, 0];
+      globalToAirportCoordinates(localThr, arpCoordinates, landingRunwayNavdata.thresholdLocation);
+      globalToAirportCoordinates(localOppThr, arpCoordinates, oppositeThreshold);
+
+      btvUtils.selectRunwayFromNavdata(
+        rwyIdent,
+        landingRunwayNavdata.length,
+        landingRunwayNavdata.bearing,
+        localThr,
+        localOppThr,
+      );
+
+      return [landingRunwayNavdata, arpCoordinates];
+    }
+  }
+
   public getZoomLevelInverseScale() {
     const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
@@ -367,44 +409,45 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelContainerRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
     this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-    const sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
+    this.oansVisible.setConsumer(this.sub.on('ndShowOans'));
 
-    this.oansVisible.setConsumer(sub.on('ndShowOans'));
-
-    this.efisNDModeSub.setConsumer(sub.on('ndMode'));
+    this.efisNDModeSub.setConsumer(this.sub.on('ndMode'));
 
     this.efisNDModeSub.sub((mode) => {
       this.handleNDModeChange(mode);
       this.handleLabelFilter();
     }, true);
 
-    this.efisOansRangeSub.setConsumer(sub.on('oansRange'));
+    this.efisOansRangeSub.setConsumer(this.sub.on('oansRange'));
 
     this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range), true);
 
-    sub
+    this.sub
       .on('oansDisplayAirport')
       .whenChanged()
       .handle((airport) => {
         this.loadAirportMap(airport);
       });
 
-    sub
-      .on('oansNotAvail')
-      .whenChanged()
-      .handle((na) => {
-        if (this.props.messageScreenRef.getOrDefault()) {
-          if (na) {
-            this.props.messageScreenRef.instance.style.visibility = 'visible';
-            this.props.messageScreenRef.instance.innerText = 'NOT AVAIL';
-            this.props.messageScreenRef.instance.classList.add('amber');
-          } else if (this.props.messageScreenRef.instance.innerText === 'NOT AVAIL') {
-            this.props.messageScreenRef.instance.style.visibility = 'hidden';
-            this.props.messageScreenRef.instance.innerText = '';
-            this.props.messageScreenRef.instance.classList.remove('amber');
-          }
+    this.oansNotAvailable.sub((na) => {
+      if (this.props.messageScreenRef.getOrDefault()) {
+        if (na) {
+          this.props.messageScreenRef.instance.style.visibility = 'visible';
+          this.props.messageScreenRef.instance.innerText = 'NOT AVAIL';
+          this.props.messageScreenRef.instance.classList.add('amber');
+        } else if (this.props.messageScreenRef.instance.innerText === 'NOT AVAIL') {
+          this.props.messageScreenRef.instance.style.visibility = 'hidden';
+          this.props.messageScreenRef.instance.innerText = '';
+          this.props.messageScreenRef.instance.classList.remove('amber');
         }
-      });
+      }
+    }, true);
+
+    this.btvUtils.below300ftRaAndLanding.sub(async (v) => {
+      if (this.oansNotAvailable.get() === false && v && !this.btvUtils.runwayIsSet()) {
+        [, this.arpCoordinates] = await Oanc.setBtvRunwayFromFmsRunway(this.fmsDataStore, this.btvUtils);
+      }
+    });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());

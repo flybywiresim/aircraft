@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData } from '@flybywiresim/fbw-sdk';
 import {
   Feature,
@@ -158,6 +158,15 @@ export class BrakeToVacateUtils<T extends number> {
   private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  public readonly below300ftRaAndLanding = MappedSubject.create(
+    ([ra1, ra2, ra3, fp]) =>
+      fp > 8 && fp < 11 && (ra1.valueOr(2500) <= 300 || ra2.valueOr(2500) <= 300 || ra3.valueOr(2500) <= 300),
+    this.radioAltitude1,
+    this.radioAltitude2,
+    this.radioAltitude3,
+    this.fwsFlightPhase,
+  );
 
   selectRunwayFromOans(
     runway: string,
