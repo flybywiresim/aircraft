@@ -1582,7 +1582,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   220800001: {
     title: '\x1b<2m\x1b4mAUTO FLT\x1bm AP OFF',
     sensed: true,
-    items: [], // TODO
+    items: [],
   },
   220800002: {
     title: '\x1b<2mAUTOLAND',

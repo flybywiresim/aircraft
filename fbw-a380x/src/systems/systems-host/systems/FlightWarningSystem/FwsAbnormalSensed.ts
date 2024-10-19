@@ -227,7 +227,7 @@ export class FwsAbnormalSensed {
    * The majority of ECAM fault logic is still inside FwsCore (due to dependencies to MEMOs, and general flow)
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
    */
-  onUpdate() {
+  update() {
     if (this.fws.activeAbnormalSensedList.get().size > 0) {
       this.showAbnormalSensed.set(true);
       this.fws.normalChecklists.showChecklist.set(false);
@@ -242,21 +242,21 @@ export class FwsAbnormalSensed {
       this.showAbnormalSensed.set(false);
     }
 
-    /* if (this.fws.clDownTriggerRisingEdge) {
+    /*if (this.fws.clDownPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveDown();
     }
 
-    if (this.fws.clUpTriggerRisingEdge) {
+    if (this.fws.clUpPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveUp();
-    } */
+    }*/
 
-    if (this.fws.clCheckTriggerRisingEdge) {
+    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
@@ -452,8 +452,8 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: 1,
-      limitationsAllPhases: () => ['210400001', '210400002'],
-      limitationsPfd: () => ['210400001', '210400002'],
+      limitationsAllPhases: () => ['2', '210400001'],
+      limitationsPfd: () => ['2', '210400001'],
       inopSysAllPhases: () => ['210300011'],
     },
     211800023: {
@@ -845,6 +845,34 @@ export class FwsAbnormalSensed {
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['212300013'],
+    },
+    // 22 - FLIGHT GUIDANCE
+    220800001: {
+      // AP OFF involuntary
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoPilotOffInvoluntary,
+      auralWarning: this.fws.autoPilotOffInvoluntary.map((a) =>
+        a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      cancel: true,
+      sysPage: -1,
+
+      info: () => [],
+    },
+    220800004: {
+      // A/THR OFF involuntary
+      flightPhaseInhib: [3, 4, 5, 10],
+      simVarIsActive: this.fws.autoThrustOffInvoluntary,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
+      failure: 2,
+      sysPage: -1,
+      info: () => [],
     },
     // 22 - AUTOFLIGHT
     221800001: {
@@ -1709,6 +1737,146 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, false, false, false, false, false, false],
       failure: 3,
       sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
+    // 29 FUEL
+    281800002: {
+      // ALL FEED TKs LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank1Low,
+        this.fws.feedTank2Low,
+        this.fws.feedTank3Low,
+        this.fws.feedTank4Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        this.fws.allCrossFeedValvesOpen.get(),
+        this.fws.allFeedTankPumpsOn.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => [],
+      limitationsAllPhases: () => ['2'],
+      limitationsPfd: () => ['2'],
+    },
+    281800023: {
+      // FEED TK 1 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank1Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800102', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800024: {
+      // FEED TK 2 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank2Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        this.fws.crossFeed1ValveOpen.get(),
+        this.fws.crossFeed2ValveOpen.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800102', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800025: {
+      // FEED TK 3 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank3Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        this.fws.crossFeed3ValveOpen.get(),
+        this.fws.crossFeed4ValveOpen.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800103', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800026: {
+      // FEED TK 4 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank4Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        this.fws.crossFeed3ValveOpen.get(),
+        this.fws.crossFeed4ValveOpen.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800103', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800102: {
+      // FEED TKs 1+2 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank1Low,
+        this.fws.feedTank2Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, this.fws.allCrossFeedValvesOpen.get(), false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800103: {
+      // FEED TKs 3+4 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank3Low,
+        this.fws.feedTank4Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, this.fws.allCrossFeedValvesOpen.get(), false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800076: {
+      // NO ZFW OR ZFWCG DATA
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.fmsZfwOrZfwCgNotSet,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
       inopSysAllPhases: () => [],
     },
     // 29 Hydraulic
