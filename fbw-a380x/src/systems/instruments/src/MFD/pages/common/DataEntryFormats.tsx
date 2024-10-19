@@ -782,14 +782,14 @@ export class AirportFormat implements DataEntryFormat<string> {
   public maxDigits = 4;
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -803,14 +803,14 @@ export class NavaidIdentFormat implements DataEntryFormat<string> {
   constructor(public placeholder = '----') {}
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -824,14 +824,14 @@ export class AirwayFormat implements DataEntryFormat<string> {
   public maxDigits = 5;
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -857,7 +857,7 @@ export class DropdownFieldFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -878,7 +878,7 @@ export class WaypointFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -899,7 +899,7 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
