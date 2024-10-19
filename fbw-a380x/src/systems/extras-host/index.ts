@@ -42,9 +42,9 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly bus = new EventBus();
 
-  private readonly clock = new Clock(this.bus);
-
   private readonly backplane = new InstrumentBackplane();
+
+  private readonly clock = new Clock(this.bus);
 
   private readonly notificationManager: NotificationManager;
 
