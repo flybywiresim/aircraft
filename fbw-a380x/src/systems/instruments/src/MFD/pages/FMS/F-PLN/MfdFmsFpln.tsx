@@ -198,7 +198,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     // Construct leg data for all legs
     const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
 
-    if (!jointFlightPlan) {
+    if (!jointFlightPlan.length) {
       return;
     }
 
@@ -400,12 +400,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     // Delete all lines only if re-render is neccessary.
     if (!shouldOnlyUpdatePredictions && this.linesDivRef.getOrDefault()) {
-      this.renderedFplnLines.forEach((line) => {
-        line.instance.destroy();
-      });
       while (this.linesDivRef.instance.firstChild) {
         this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
       }
+      this.renderedFplnLines.forEach((line) => {
+        line.instance.destroy();
+      });
+
       this.renderedFplnLines = [];
     }
 
@@ -746,7 +747,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    this.update(this.loadedFlightPlan.activeLegIndex, false);
     this.checkScrollButtons();
     if (this.lineData) {
       const whichLineIndex = this.lineData.findIndex(
@@ -761,7 +761,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    this.update(this.loadedFlightPlan.activeLegIndex, false);
     this.checkScrollButtons();
     if (this.lineData) {
       const whichLineIndex =
@@ -1030,6 +1029,7 @@ enum FplnLineFlags {
 }
 
 enum FplnLineType {
+  None,
   Waypoint,
   Special,
   Hold,
@@ -1139,7 +1139,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
   private lineRef = FSComponent.createRef<HTMLDivElement>();
 
-  private currentlyRenderedType: FplnLineType = FplnLineType.Waypoint;
+  private currentlyRenderedType: FplnLineType = FplnLineType.None;
+
+  private currentlyRenderedLine: VNode | null = null;
 
   private annotationRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -1215,7 +1217,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     );
 
     this.identRef.getOrDefault()?.addEventListener('click', () => {
-      if (this.props.data.get()?.originalLegIndex !== null) {
+      if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
         this.props.openRevisionsMenuCallback();
         this.selectedForRevision.set(true);
       }
@@ -1236,7 +1238,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
         }
-        FSComponent.render(this.renderWaypointLine(), this.topRef.instance);
+        if (this.currentlyRenderedLine && this.currentlyRenderedLine.instance instanceof DisplayComponent) {
+          this.currentlyRenderedLine.instance.destroy();
+        }
+        this.currentlyRenderedLine = this.renderWaypointLine();
+        FSComponent.render(this.currentlyRenderedLine, this.topRef.instance);
         this.currentlyRenderedType = FplnLineType.Waypoint;
       }
 
@@ -1293,7 +1299,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
         }
-        FSComponent.render(this.renderSpecialLine(data), this.topRef.instance);
+        if (this.currentlyRenderedLine && this.currentlyRenderedLine.instance instanceof DisplayComponent) {
+          this.currentlyRenderedLine.instance.destroy();
+        }
+        this.currentlyRenderedLine = this.renderSpecialLine(data);
+        FSComponent.render(this.currentlyRenderedLine, this.topRef.instance);
         this.currentlyRenderedType = FplnLineType.Special;
       }
 
@@ -1304,7 +1314,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
         }
-        FSComponent.render(this.renderWaypointLine(), this.topRef.instance);
+        if (this.currentlyRenderedLine && this.currentlyRenderedLine.instance instanceof DisplayComponent) {
+          this.currentlyRenderedLine.instance.destroy();
+        }
+        this.currentlyRenderedLine = this.renderWaypointLine();
+        FSComponent.render(this.currentlyRenderedLine, this.topRef.instance);
         this.currentlyRenderedType = FplnLineType.Waypoint;
       }
 
@@ -1646,13 +1660,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     );
   }
 
-  renderSpecialLine(data: FplnLineSpecialDisplayData) {
+  renderSpecialLine(data: FplnLineSpecialDisplayData): VNode {
     const delimiter = data.label.length > 13 ? '- - - - -' : '- - - - - - ';
     return (
       <div
         ref={this.identRef}
         class="mfd-fms-fpln-line mfd-fms-fpln-line-special"
-        style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
+        style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'}`}
       >
         {delimiter}
         <span style="margin: 0px 15px 0px 15px;">{data.label}</span>
@@ -1665,17 +1679,22 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     const data = this.props.data.get();
     if (data && isWaypoint(data)) {
       this.currentlyRenderedType = FplnLineType.Waypoint;
-      return <div ref={this.topRef}>{this.renderWaypointLine()}</div>;
+      this.currentlyRenderedLine = this.renderWaypointLine();
     }
     if (data && isSpecial(data)) {
       this.currentlyRenderedType = FplnLineType.Special;
-      return <div ref={this.topRef}>{this.renderSpecialLine(data)}</div>;
+      this.currentlyRenderedLine = this.renderSpecialLine(data);
     }
     if (data && isHold(data)) {
       this.currentlyRenderedType = FplnLineType.Hold;
-      return <div ref={this.topRef}>{this.renderWaypointLine()}</div>;
+      this.currentlyRenderedLine = this.renderWaypointLine();
     }
-    return <></>;
+
+    if (this.currentlyRenderedLine) {
+      return <div ref={this.topRef}>{this.currentlyRenderedLine}</div>;
+    } else {
+      return <></>;
+    }
   }
 }
 
