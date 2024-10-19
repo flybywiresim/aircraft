@@ -345,6 +345,10 @@
         - B3
         - B4
 
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
 - A32NX_PRESS_OCSM_{id1}_CHANNEL_{id2}_FAILURE
     - Bool
     - True if the channel is failed
@@ -434,6 +438,10 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+- A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
+    - Number
+    - The short term managed speed displayed on the PFD
 
 ## Flight Management System ATA 22
 
@@ -785,6 +793,18 @@
       | 28  | Slat System Jam                          |
       | 29  | Flap System Jam                          |
 
+- A32NX_FLAPS_CONF_INDEX
+  - Number
+  - Indicates the desired flap configuration index according to the table
+  - Value | Meaning
+            --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf2S
+      5 | Conf3
+      6 | Conf4
 
 ## Indicating-Recording ATA 31
 

@@ -82,8 +82,6 @@ export const EcamMemos: { [n: string]: string } = {
   '242000002': '\x1b<3mRAT OUT',
   '243000001': '\x1b<3mREMOTE C/B CTL ON',
   '000023001': '\x1b<3mMAN LDG ELEV',
-  '000025001': '\x1b<3mFUEL X FEED',
-  '000025002': '\x1b<4mFUEL X FEED',
   '000029001': '\x1b<3mSWITCHG PNL',
   '000035001': '\x1b<2mLAND ASAP',
   '000036001': '\x1b<4mLAND ASAP',
@@ -108,6 +106,7 @@ export const EcamMemos: { [n: string]: string } = {
   '230000015': '\x1b<3mVHF VOICE',
   '271000001': '\x1b<3mGND SPLRs ARMED',
   '280000001': '\x1b<3mCROSSFEED OPEN',
+  '280000013': '\x1b<4mCROSSFEED OPEN',
   '280000002': '\x1b<3mCOLDFUEL OUTR TK XFR',
   '280000003': '\x1b<3mDEFUEL IN PROGRESS',
   '280000004': '\x1b<3mFWD XFR IN PROGRESS',
@@ -209,6 +208,8 @@ export const EcamInfos: { [n: string]: string } = {
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
+  320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
+  320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
   340200002: '\x1b<3mALTN LAW : PROT LOST',
   340200003: '\x1b<3mFLS LIMITED TO F-APP + RAW',
   340200004: '\x1b<3mDIRECT LAW : PROT LOST',
@@ -218,13 +219,15 @@ export const EcamInfos: { [n: string]: string } = {
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
   800200001: '\x1b<3mFMS PRED UNRELIABLE',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
-  800200003: '\x1b<5mTAXI WITH CARE',
+  800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
-  800200005: '\x1b<5mNO BRAKED PIVOT TURN',
+  800200005: '\x1b<3mNO BRAKED PIVOT TURN',
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
 export const EcamLimitations: { [n: string]: string } = {
+  1: '\x1b<2mLAND ASAP',
+  2: '\x1b<4mLAND ANSA',
   220400001: '\x1b<5mNO AUTOLAND',
   230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',
