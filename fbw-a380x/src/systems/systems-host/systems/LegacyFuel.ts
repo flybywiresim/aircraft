@@ -60,9 +60,6 @@ export class LegacyFuel implements Instrument {
 
     for (let index = 1; index <= LegacyFuel.NUMBER_OF_TRIGGERS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_trigger_status_${index}`), false);
-      element.sub((v) => {
-        console.log(`trigger ${index} from ${!v} to ${v} `);
-      });
       this.triggerStates.set(index, element);
     }
 
