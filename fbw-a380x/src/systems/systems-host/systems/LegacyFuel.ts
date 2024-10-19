@@ -1,4 +1,4 @@
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
   EventBus,
@@ -44,15 +44,25 @@ export class LegacyFuel implements Instrument {
 
   private readonly junctionSettings = new Map<number, ConsumerSubject<number>>();
 
+  private readonly throttler = new UpdateThrottler(1000);
+
   private refuelInProgress = false;
 
-  constructor(private readonly bus: EventBus) {
+  private hasInit = false;
+
+  constructor(
+    private readonly bus: EventBus,
+    private readonly sysHost: BaseInstrument,
+  ) {
     KeyEventManager.getManager(bus).then((manager) => {
       this.keyEventManager = manager;
     });
 
     for (let index = 1; index <= LegacyFuel.NUMBER_OF_TRIGGERS; index++) {
       const element = ConsumerSubject.create(this.sub.on(`fuel_trigger_status_${index}`), false);
+      element.sub((v) => {
+        console.log(`trigger ${index} from ${!v} to ${v} `);
+      });
       this.triggerStates.set(index, element);
     }
 
@@ -67,6 +77,7 @@ export class LegacyFuel implements Instrument {
     SimVar.SetSimVarValue('L:A32NX_FUEL_DESIRED', 'kilograms', fuelWeight);
     Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true).then(() => {
       this.checkEmptyTriggers();
+      this.hasInit = true;
     });
   }
 
@@ -127,6 +138,11 @@ export class LegacyFuel implements Instrument {
   }
 
   public onUpdate(): void {
+    const dt = this.sysHost.deltaTime;
+    if (!this.hasInit || !this.throttler.canUpdate(dt)) {
+      return;
+    }
+
     const onGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
     if (this.refuelStarted.get()) {
       this.refuelInProgress = true;

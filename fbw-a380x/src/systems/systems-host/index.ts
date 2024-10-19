@@ -94,7 +94,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fwsCore = new FwsCore(1, this.bus, this);
 
-  private readonly legacyFuel = new LegacyFuel(this.bus);
+  private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
   /**
    * "mainmenu" = 0
