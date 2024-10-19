@@ -74,8 +74,8 @@ impl<const N: usize> BrakeAssembly<N> {
         };
 
         let brake_fan_are_running = if let Some(brake_fans) = &mut self.brake_fans {
-            let brake_fan_on = [false; N];
-            for (brake_fan, ref mut brake_fan_on) in brake_fans.iter_mut().zip(brake_fan_on) {
+            let mut brake_fan_on = [false; N];
+            for (brake_fan, brake_fan_on) in brake_fans.iter_mut().zip(&mut brake_fan_on) {
                 brake_fan.update(brake_fan_should_be_on);
                 *brake_fan_on = brake_fan.is_running();
             }
@@ -171,7 +171,7 @@ impl Brake {
 
     const BRAKE_ACTUATOR_AREA: f64 = 0.0056; // m^2
     const HEAT_DISIPATION: f64 = 20.; // W/K
-    const BRAKE_FAN_COOLDOWN_FACTOR: f64 = 2.5;
+    const BRAKE_FAN_COOLDOWN_FACTOR: f64 = 4.;
     const GEAR_COOLDOWN_FACTOR: f64 = 0.0055;
     const BRAKE_EMISSIVITY: f64 = 0.71;
     const BOLTZMANN_CONSTANT: f64 = 5.670374419e-8; // W*m^−2*K^-4
@@ -207,9 +207,12 @@ impl Brake {
 
         // Cool down process
         let radiated_energy =
-            Self::calculate_radiated_energy(context.delta(), brake_properties, self.temperature);
-        let delta_ambient = self.temperature.get::<degree_celsius>()
-            - context.ambient_temperature().get::<degree_celsius>();
+            Self::calculate_radiated_energy(context.delta(), brake_properties, self.temperature)
+                - Self::calculate_radiated_energy(
+                    context.delta(),
+                    brake_properties,
+                    context.ambient_temperature(),
+                );
         let brake_fan_factor = if brake_fan_on {
             Self::BRAKE_FAN_COOLDOWN_FACTOR
         } else {
@@ -220,6 +223,8 @@ impl Brake {
         } else {
             1.
         };
+        let delta_ambient = self.temperature.get::<degree_celsius>()
+            - context.ambient_temperature().get::<degree_celsius>();
         let energy = radiated_energy
             + Energy::new::<joule>(
                 Self::HEAT_DISIPATION
@@ -344,13 +349,14 @@ impl BrakeProbe {
             self.initialised = true;
         }
 
+        // TODO: implement a more physical based simulation
         let target_temperature_diff = TemperatureInterval::new::<kelvin>(if brake_fan_is_on {
-            (context.ambient_temperature().get::<degree_celsius>() * 2.
+            (context.ambient_temperature().get::<degree_celsius>()
                 + brake.temperature.get::<degree_celsius>())
-                / 3.
-                - self.temperature.get::<degree_celsius>()
+                / 2.
         } else {
-            brake.temperature.get::<degree_celsius>() - self.temperature.get::<degree_celsius>()
+            brake.temperature.get::<degree_celsius>()
+                - context.ambient_temperature().get::<degree_celsius>()
         });
 
         self.temperature += target_temperature_diff * Self::THERMAL_INERTIA;
