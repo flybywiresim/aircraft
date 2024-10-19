@@ -47,7 +47,7 @@ const flightModelParams: FlightModelParameters = {
 const engineModelParams: EngineModelParameters = {
   maxThrust: 80_213,
   numberOfEngines: 4,
-  fuelBurnFactor: 2.73,
+  fuelBurnFactor: 1.33,
 };
 
 const fmsSymbolConfig: FMSymbolsConfig = {

@@ -83,19 +83,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
     }
 
-    if (!this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered.get()) {
-      // Calculate Rte Rsv fuel for 5.0% reserve
-      this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(null);
-      this.props.fmcService.master.fmgc.data.routeReserveFuelPercentagePilotEntry.set(null);
-    }
-
     if (!this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get()) {
-      // Calculate Rte Rsv fuel for 00:30 time
-      this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(6_000); // TODO
+      // Calculate final res fuel for 00:30 time
+      this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(4_650); // FIXME
     }
 
-    // TODO calculate altn fuel
-    this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(650);
+    // FIXME calculate altn fuel
+    this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(6_500); // FIXME
 
     this.updateDestAndAltnPredictions();
   }
@@ -166,19 +160,25 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.centerOfGravity.set(cg);
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
-            const fob =
-              SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
-              SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
-            this.fuelOnBoard.set(fob);
+            this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB());
           }
 
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
             const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
             // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
-            const fob = this.fuelOnBoard.get() ?? 0;
-            this.tripFuelWeight.set(
-              fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob),
+            const fob = this.props.fmcService.master.fmgc.getFOB() * 1_000;
+            const tripFuel =
+              fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob);
+            this.tripFuelWeight.set(tripFuel);
+
+            // Calculate Rte Rsv fuel for 5.0% reserve
+            this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
+              tripFuel ? tripFuel * 0.05 : null,
             );
+            this.props.fmcService.master.fmgc.data.routeReserveFuelWeightPilotEntry.set(
+              tripFuel ? tripFuel * 0.05 : null,
+            );
+
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
             this.extraFuelWeight.set(
               (this.props.fmcService.master.enginesWereStarted.get() ? fob : block) -
