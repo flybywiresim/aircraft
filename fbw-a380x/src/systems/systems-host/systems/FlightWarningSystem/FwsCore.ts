@@ -612,6 +612,8 @@ export class FwsCore {
 
   public readonly allFireButtons = Subject.create(false);
 
+  public readonly fireTestPb = Subject.create(false);
+
   /* 27 - FLIGHT CONTROLS */
 
   public readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
@@ -3470,6 +3472,8 @@ export class FwsCore {
 
     this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
     this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool'));
+
+    this.fireTestPb.set(SimVar.GetSimVarValue('L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED', 'bool'));
 
     /* ANTI ICE */
 
