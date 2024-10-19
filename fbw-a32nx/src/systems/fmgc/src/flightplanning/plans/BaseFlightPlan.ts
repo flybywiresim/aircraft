@@ -230,6 +230,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return -1;
   }
 
+  get isDepartureProcedureActive(): boolean {
+    return (
+      this.departureSegment.procedure !== undefined &&
+      ((this.departureRunwayTransitionSegment.legCount > 0 && this.activeLegIndex < this.findLastDepartureLeg()[2]) ||
+        this.isProcedureBeingFlownInSegment(this.departureSegment.procedure.ident, this.enrouteSegment)) // legs of departure are moved to enroute after direct
+    );
+  }
+
   get isApproachActive(): boolean {
     // `this.approach` can be undefined for runway-by-itself approaches
     return (
@@ -2226,6 +2234,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
       this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this.enrouteSegment);
     }
+  }
+
+  private isProcedureBeingFlownInSegment(ident: string, segment: FlightPlanSegment): boolean {
+    return (
+      segment.allLegs.filter(
+        (el, idx) => idx >= this.activeLegIndex && el.isDiscontinuity === false && el.annotation === ident,
+      ).length > 0
+    );
   }
 
   private findLastDepartureLeg(): [FlightPlanSegment, number, number] {
