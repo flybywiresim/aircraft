@@ -345,6 +345,10 @@
         - B3
         - B4
 
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
 - A32NX_PRESS_OCSM_{id1}_CHANNEL_{id2}_FAILURE
     - Bool
     - True if the channel is failed
@@ -434,6 +438,10 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+- A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
+    - Number
+    - The short term managed speed displayed on the PFD
 
 ## Flight Management System ATA 22
 

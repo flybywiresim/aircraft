@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 interface EwdMemoItem {
@@ -74,6 +74,28 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [this.fws.amberSpeedBrake.get() ? 1 : 0],
       codesToReturn: ['000006001', '000006002'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '280000001': {
+      // CROSSFEED OPEN
+      flightPhaseInhib: [3, 4, 5, 6, 7],
+      simVarIsActive: this.fws.crossFeedOpenMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['280000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    '280000013': {
+      // CROSSFEED OPEN during TO or GA
+      flightPhaseInhib: [1, 2, 8, 9, 10, 11, 12],
+      simVarIsActive: this.fws.crossFeedOpenMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['280000013'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -174,17 +196,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-    '0000250': {
-      // FUEL X FEED
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.fuelXFeedPBOn,
-      whichCodeToReturn: () => [[3, 4, 5].includes(this.fws.fwcFlightPhase.get()) ? 1 : 0],
-      codesToReturn: ['000025001', '000025002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '230000001': {
       // CAPT ON RMP 3
       flightPhaseInhib: [],
@@ -196,6 +207,29 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['230000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    // 22 - Flight guidance
+    220000001: {
+      // A/THR OFF
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoPilotOffShowMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['220000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    220000002: {
+      // A/THR OFF
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoThrustOffVoluntary,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['220000002'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
@@ -413,7 +447,7 @@ export class FwsMemos {
     320000001: {
       // AUTO BRK OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
-      simVarIsActive: Subject.create(false),
+      simVarIsActive: this.fws.autoBrakeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
       memoInhibit: () => false,
@@ -505,16 +539,15 @@ export class FwsMemos {
       // IR IN ALIGN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+        ([adirsRemainingAlignTime, ir1Align, ir2Align, ir3Align]) => {
           const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
-
-          return remainingTimeAbove240 && allInState1;
+          const allInAlign = ir1Align && ir2Align && ir3Align;
+          return remainingTimeAbove240 && allInAlign;
         },
         this.fws.adirsRemainingAlignTime,
-        this.fws.adiru1State,
-        this.fws.adiru2State,
-        this.fws.adiru3State,
+        this.fws.ir1Align,
+        this.fws.ir2Align,
+        this.fws.ir3Align,
       ),
       whichCodeToReturn: () => [
         this.fws.adirsMessage1(
@@ -544,17 +577,16 @@ export class FwsMemos {
       // IR IN ALIGN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+        ([adirsRemainingAlignTime, ir1Align, ir2Align, ir3Align]) => {
           const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
           const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
-
-          return remainingTimeAbove0 && remainingTimeBelow240 && allInState1;
+          const allInAlign = ir1Align && ir2Align && ir3Align;
+          return remainingTimeAbove0 && remainingTimeBelow240 && allInAlign;
         },
         this.fws.adirsRemainingAlignTime,
-        this.fws.adiru1State,
-        this.fws.adiru2State,
-        this.fws.adiru3State,
+        this.fws.ir1Align,
+        this.fws.ir2Align,
+        this.fws.ir3Align,
       ),
       whichCodeToReturn: () => [
         this.fws.adirsMessage2(
@@ -633,7 +665,7 @@ export class FwsMemos {
     '343000001': {
       // TCAS STBY
       flightPhaseInhib: [1, 12],
-      simVarIsActive: MappedSubject.create(([tcasSensitivity]) => tcasSensitivity === 1, this.fws.tcasSensitivity),
+      simVarIsActive: this.fws.tcasStandbyMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['343000001'],
       memoInhibit: () => false,
