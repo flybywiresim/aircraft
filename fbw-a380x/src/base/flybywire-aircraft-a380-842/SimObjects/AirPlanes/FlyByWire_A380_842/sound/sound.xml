@@ -1150,7 +1150,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="aboff" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_AUTOBRAKE_OFF" Continuous="false">
+        <Sound WwiseEvent="autobrake_off" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_AUTOBRAKE_OFF" Continuous="false">
             <Range LowerBound="1"/>
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
