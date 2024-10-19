@@ -27,7 +27,7 @@ import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
-import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { AircraftConfig, FMSymbolsConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
@@ -82,6 +82,8 @@ export class GuidanceController {
   pseudoWaypoints: PseudoWaypoints;
 
   efisVectors: EfisVectors;
+
+  symbolConfig: FMSymbolsConfig;
 
   get activeGeometry(): Geometry | null {
     return this.getGeometryForFlightPlan(FlightPlanIndex.Active);
@@ -209,16 +211,23 @@ export class GuidanceController {
 
   private updateEfisApproachMessage() {
     let apprMsg = '';
-    const runway = this.flightPlanService.active.destinationRunway;
 
-    if (runway) {
-      const phase = this.flightPhase.get();
-      const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
+    const phase = this.flightPhase.get();
 
-      if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
-        const appr = this.flightPlanService.active.approach;
-        // Nothing is shown on the ND for runway-by-itself approaches
-        apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr) : '';
+    if (this.symbolConfig.publishDepartureIdent && phase < FmgcFlightPhase.Cruise) {
+      if (this.flightPlanService.active.isDepartureProcedureActive) {
+        apprMsg = this.flightPlanService.active.originDeparture.ident;
+      }
+    } else {
+      const runway = this.flightPlanService.active.isApproachActive;
+      if (runway) {
+        const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
+
+        if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
+          const appr = this.flightPlanService.active.approach;
+          // Nothing is shown on the ND for runway-by-itself approaches
+          apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr) : '';
+        }
       }
     }
 
@@ -295,6 +304,7 @@ export class GuidanceController {
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
+    this.symbolConfig = acConfig.fmSymbolConfig;
   }
 
   init() {
