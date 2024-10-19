@@ -13,6 +13,7 @@ import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
+import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -20,6 +21,8 @@ class MfdInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly simVarPublisher: MfdSimvarPublisher;
+
+  private readonly fgDataPublisher: FGDataPublisher;
 
   private readonly clockPublisher = new ClockPublisher(this.bus);
 
@@ -36,10 +39,12 @@ class MfdInstrument implements FsInstrument {
   constructor(public readonly instrument: BaseInstrument) {
     this.simVarPublisher = new MfdSimvarPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
+    this.fgDataPublisher = new FGDataPublisher(this.bus);
 
     this.backplane.addPublisher('mfd', this.simVarPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
+    this.backplane.addPublisher('fg', this.fgDataPublisher);
 
     this.fmcService = new FmcService(this.bus, this.mfdCaptRef.getOrDefault(), this.failuresConsumer);
 

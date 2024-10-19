@@ -71,7 +71,6 @@ export enum MfdVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
   private static simvars = new Map<keyof MfdSimvars, SimVarDefinition>([
-    ['coldDark', { name: MfdVars.coldDark, type: SimVarValueType.Number }],
     ['elec', { name: MfdVars.elec, type: SimVarValueType.Bool }],
     ['elecFo', { name: MfdVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: MfdVars.potentiometerCaptain, type: SimVarValueType.Number }],
