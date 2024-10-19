@@ -166,6 +166,7 @@ impl Aircraft for A320 {
             [&self.engine_1, &self.engine_2],
             &self.hydraulic,
             self.lgcius.lgciu1(),
+            &self.adirs,
         );
 
         self.electrical_overhead
