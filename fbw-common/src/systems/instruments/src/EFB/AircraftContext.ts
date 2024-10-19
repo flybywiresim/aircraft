@@ -36,7 +36,6 @@ interface PinProgramOptions {
   paxSign: boolean;
   rmpVhfSpacing: boolean;
   satcom: boolean;
-  cabinLighting: boolean;
 }
 
 interface RealismOptions {
@@ -50,6 +49,7 @@ interface SimOptions {
   registrationDecal: boolean;
   wheelChocks: boolean;
   pilotSeat: boolean;
+  cabinLighting: boolean;
 }
 
 interface ThrottleOptions {
@@ -86,7 +86,6 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       paxSign: false,
       rmpVhfSpacing: false,
       satcom: false,
-      cabinLighting: false,
     },
     realism: {
       mcduKeyboard: false,
@@ -98,6 +97,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       pilotSeat: false,
       registrationDecal: false,
       wheelChocks: false,
+      cabinLighting: false,
     },
     throttle: {
       numberOfAircraftThrottles: 0,

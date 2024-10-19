@@ -403,7 +403,7 @@ export const QuickControlsPane = ({
           </TooltipWrapper>
         </div>
         {/* Cabin Lighting */}
-        {aircraftContext.settingsPages.pinProgram.cabinLighting && (
+        {aircraftContext.settingsPages.sim.cabinLighting && (
           <div className="mb-5 flex flex-row items-center justify-between">
             <div className={`flex flex-row items-center ${usingCabinAutobrightness && 'opacity-30'}`}>
               <TooltipWrapper text={t('QuickControls.TT.CabinLighting')}>
@@ -418,7 +418,7 @@ export const QuickControlsPane = ({
                     disabled={usingCabinAutobrightness === 1}
                     ref={cabinBrightnessSliderRef}
                     value={usingCabinAutobrightness ? cabinAutoBrightness : cabinManualBrightness}
-                    min={1}
+                    min={0}
                     max={100}
                     onChange={setCabinManualBrightness}
                     onAfterChange={() => cabinBrightnessSliderRef.current && cabinBrightnessSliderRef.current.blur()}

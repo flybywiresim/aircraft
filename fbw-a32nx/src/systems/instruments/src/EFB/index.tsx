@@ -45,7 +45,6 @@ render(
           paxSign: true,
           rmpVhfSpacing: true,
           satcom: true,
-          cabinLighting: false,
         },
         realism: {
           mcduKeyboard: true,
@@ -57,6 +56,7 @@ render(
           pilotSeat: false,
           registrationDecal: true,
           wheelChocks: true,
+          cabinLighting: false,
         },
         throttle: {
           numberOfAircraftThrottles: 2,
