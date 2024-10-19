@@ -267,14 +267,10 @@
                 <MOMENTARY_REPEAT_FREQUENCY>800</MOMENTARY_REPEAT_FREQUENCY>
                 <CODE_POS_0>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_CPT_MOVE_FWD_AFT) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_FWD_AFT)
-                } els{
-                    (L:SEAT_CPT_MOVE_FWD_AFT)
                 }
                 </CODE_POS_0>
                 <CODE_POS_2>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_CPT_MOVE_FWD_AFT) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_FWD_AFT)
-                } els{
-                    (L:SEAT_CPT_MOVE_FWD_AFT)
                 }
                 </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
@@ -300,14 +296,10 @@
                 <MOMENTARY_REPEAT_FREQUENCY>800</MOMENTARY_REPEAT_FREQUENCY>
                 <CODE_POS_0>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_CPT_MOVE_UP_DOWN) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_UP_DOWN)
-                } els{
-                    (L:SEAT_CPT_MOVE_UP_DOWN)
                 }
               	</CODE_POS_0>
                 <CODE_POS_2>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_CPT_MOVE_UP_DOWN) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_UP_DOWN)
-                } els{
-                    (L:SEAT_CPT_MOVE_UP_DOWN)
                 }
                 </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
@@ -390,14 +382,10 @@
                 <MOMENTARY_REPEAT_FREQUENCY>400</MOMENTARY_REPEAT_FREQUENCY>
                 <CODE_POS_0>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_FO_MOVE_FWD_AFT) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_FWD_AFT)
-                } els{
-                    (L:SEAT_FO_MOVE_FWD_AFT)
                 }
                 </CODE_POS_0>
                 <CODE_POS_2>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_FO_MOVE_FWD_AFT) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_FWD_AFT)
-                } els{
-                    (L:SEAT_FO_MOVE_FWD_AFT)
                 }
                 </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
@@ -424,14 +412,10 @@
                 <MOMENTARY_REPEAT_FREQUENCY>400</MOMENTARY_REPEAT_FREQUENCY>
                 <CODE_POS_0>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_FO_MOVE_UP_DOWN) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_UP_DOWN)
-                } els{
-                    (L:SEAT_FO_MOVE_UP_DOWN)
                 }
                 </CODE_POS_0>
                 <CODE_POS_2>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) if{
                     (L:SEAT_FO_MOVE_UP_DOWN) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_UP_DOWN)
-                } els{
-                    (L:SEAT_FO_MOVE_UP_DOWN)
                 }
                 </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
