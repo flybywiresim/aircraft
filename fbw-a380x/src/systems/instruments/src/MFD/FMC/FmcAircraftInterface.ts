@@ -1143,51 +1143,10 @@ export class FmcAircraftInterface {
       }
     }
 
-    // Retrieve CAS and altitude from ADRs
-    const cas = this.fmc.navigation.getComputedAirspeed();
-    const alt = this.fmc.navigation.getPressureAltitude();
-
-    if (cas === null || alt === null) {
-      // Don't update speeds if ADR data invalid
-      return;
-    }
-
-    const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
-    const speeds = new A380OperatingSpeeds(
-      grossWeight / 1000,
-      cas,
-      flaps,
-      this.flightPhase.get(),
-      this.fmgc.getV2Speed(),
-      alt,
-      towerHeadwind,
-    );
-
-    this.speedVs1g.set(Math.round(speeds.vs1g));
-    this.speedVls.set(Math.round(speeds.vls));
-
-    if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
-      const f = Math.max(speeds.f2, Vmcl + 5);
-      this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
-    } else {
-      if (flaps === 2) {
-        const f = Math.max(speeds.f2, Vmcl + 15);
-        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
-      } else if (flaps === 3) {
-        const f = Math.max(speeds.f3, Vmcl + 10);
-        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
-      }
-    }
-
-    this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
-    this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.gd));
-
-    this.speedVmax.set(Math.round(speeds.vmax));
-    this.speedVfeNext.set(Math.round(speeds.vfeN));
-
+    // Calculate approach speeds. Independent from ADR data
     const approachSpeeds = new A380OperatingSpeeds(
       ldgWeight / 1000,
-      cas,
+      0,
       this.fmgc.data.approachFlapConfig.get(),
       FmgcFlightPhase.Approach,
       this.fmgc.getV2Speed(),
@@ -1201,6 +1160,47 @@ export class FmcAircraftInterface {
     this.fmgc.data.approachSlatRetractionSpeed.set(Math.ceil(approachSpeeds.s));
     this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
     this.speedVapp.set(Math.round(approachSpeeds.vapp));
+
+    // Retrieve CAS and altitude from ADRs
+    const cas = this.fmc.navigation.getComputedAirspeed();
+    const alt = this.fmc.navigation.getPressureAltitude();
+
+    if (cas !== null && alt !== null) {
+      // Only update speeds if ADR data valid
+
+      const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
+      const speeds = new A380OperatingSpeeds(
+        grossWeight / 1000,
+        cas,
+        flaps,
+        this.flightPhase.get(),
+        this.fmgc.getV2Speed(),
+        alt,
+        towerHeadwind,
+      );
+
+      this.speedVs1g.set(Math.round(speeds.vs1g));
+      this.speedVls.set(Math.round(speeds.vls));
+
+      if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
+        const f = Math.max(speeds.f2, Vmcl + 5);
+        this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
+      } else {
+        if (flaps === 2) {
+          const f = Math.max(speeds.f2, Vmcl + 15);
+          this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
+        } else if (flaps === 3) {
+          const f = Math.max(speeds.f3, Vmcl + 10);
+          this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
+        }
+      }
+
+      this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
+      this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.gd));
+
+      this.speedVmax.set(Math.round(speeds.vmax));
+      this.speedVfeNext.set(Math.round(speeds.vfeN));
+    }
   }
 
   /** Write gross weight to SimVar */
