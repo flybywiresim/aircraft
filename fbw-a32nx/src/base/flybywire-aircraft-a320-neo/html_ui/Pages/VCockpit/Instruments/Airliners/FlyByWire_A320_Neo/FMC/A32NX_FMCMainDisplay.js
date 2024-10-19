@@ -5178,9 +5178,9 @@ const FlightPlans = Object.freeze({
 
 const DefaultPerformanceData = Object.freeze({
     ClimbSpeedLimitSpeed: 250,
-    ClimbSpeedLimitAltitude: 10_000,
+    ClimbSpeedLimitAltitude: 10000,
     DescentSpeedLimitSpeed: 250,
-    DescentSpeedLimitAltitude: 10_000,
+    DescentSpeedLimitAltitude: 10000,
 });
 
 class FmArinc429OutputWord extends Arinc429Word {
