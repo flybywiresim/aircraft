@@ -1,0 +1,2645 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SimBase.Document Type="CheckpointLibrary" version="1,0">
+    <Checklist.CheckpointLibrary>
+        <Checkpoint Id="A32NX.BATTERY:AUTO">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)" />
+                    <Instrument Id="BATTERY_MASTER_SWITCH_1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)" />
+                    <Instrument Id="BATTERY_MASTER_SWITCH_2" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BATTERY:OFF">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)" />
+                    <Instrument Id="BATTERY_MASTER_SWITCH_1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)" />
+                    <Instrument Id="BATTERY_MASTER_SWITCH_2" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BATTERY_VOLTAGE:GT_25_5">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BATTERY_1_AND_2_VOLTAGES" ExpectationTT="TT:A32NX.CHECKLIST.GT_25_5V" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="AND">
+                        <Operator OpType="GREATER">
+                            <Val Code="(L:A32NX_ELEC_BAT_1_POTENTIAL)" />
+                            <Val Value="25.5" />
+                        </Operator>
+                        <Operator OpType="GREATER">
+                            <Val Code="(L:A32NX_ELEC_BAT_2_POTENTIAL)" />
+                            <Val Value="25.5" />
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="False" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ELECTRICAL_EXTERNAL_POWER:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_EXTERNAL_POWER" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED"/>
+            <Instrument Id="OVHD_PUSH_ELECTRICS_EXT_PWR_02"/>
+            <Instrument Id="ELECTRICAL_Switch_ExternalPower"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EXTERNAL_POWER:ON">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_EXTERNAL_POWER" ExpectationTT="TT:GAME.CHECKLIST_ON"/>
+            <Test>
+                <TestValue>
+                    <Val SimVarName="EXTERNAL POWER ON" Units="Boolean"/>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="TOGGLE_EXTERNAL_POWER"/>
+                <Instrument Id="OVHD_PUSH_ELECTRICS_EXT_PWR_02"/>
+                <Instrument Id="ELECTRICAL_Switch_ExternalPower"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.WAIT_20_MINUTES:COMPLETED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.WAIT_FOR_20_MINUTES" ExpectationTT="TT:GAME.CHECKLIST_COMPLETED"/>
+            <Test>
+                <TestValue>
+                    <Val Value="1" />
+                </TestValue>
+                <Duration Value="1200" />
+                <!-- 60 (seconds) × 20 (minutes) = 1200 -->
+                <Action Copilot="False" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ELECTRICAL_WIPERS:OFF">
+            <ForceCamera name="OverheadLower" />
+            <CheckpointDesc SubjectTT="TT:COCKPIT.TOOLTIPSV2.SAFETY_KNOB_WIPERS_TITLE" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="CIRCUIT SWITCH ON:77" Units="boolean" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="77 (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)" />
+                    <Instrument Id="HANDLING_Switch_Wipers_left" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="CIRCUIT SWITCH ON:80" Units="boolean" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="80 (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)" />
+                    <Instrument Id="HANDLING_Switch_Wipers_right" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COCKPIT_LIGHTS:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_COCKPIT_LIGHTING" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Clue name="TT:A32NX.CLUE.COCKPIT_LIGHTING_RECOMMENDATION"/>
+            <Instrument Id="Lighting_Knob_Glareshield_Pilot_0" />
+            <Instrument Id="Lighting_Knob_Glareshield_Copilot_0"/>
+            <Instrument Id="Lighting_Knob_Glareshield_1" />
+            <Instrument Id="Lighting_Knob_Glareshield_2" />
+            <Instrument Id="LIGHTING_Knob_Glareshield_3" />
+            <Instrument Id="SWITCH_OVHD_INTLT_DOME" />
+            <Instrument Id="KNOB_OVHD_INTLT_BRT" />
+            <Instrument Id="SWITCH_EFIS_FO_CONSOLE" />
+            <Instrument Id="SWITCH_EFIS_CS_CONSOLE" />
+            <Instrument Id="LIGHTING_Knob_Pedestal" />
+            <Instrument Id="LIGHTING_Knob_Panel" />
+            <Instrument Id="KNOB_ECAM_UPPER" />
+            <Instrument Id="KNOB_ECAM_LOWER" />
+            <Instrument Id="SWITCH_OVHD_INTLT_ANNLT" />
+            <Instrument Id="SWITCH_MPL_DIM" />
+            <Instrument Id="SWITCH_MPR_DIM" />
+            <Instrument Id="PUSH_MCDUL_BRT" />
+            <Instrument Id="PUSH_MCDUR_BRT" />
+            <Instrument Id="KNOB_OVHD_READINGLTL" />
+            <Instrument Id="KNOB_OVHD_READINGLTR" />
+            <Instrument Id="SWITCH_OVHD_INTLT_STBYCOMPAS" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.SWITCH_RADAR_SYS:OFF">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_WX_RADAR" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:XMLVAR_A320_WeatherRadar_Sys)" />
+                        <Val Value="1"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:XMLVAR_A320_WeatherRadar_Sys)" />
+                <Instrument Id="SWITCH_RADAR_SYS" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PWS_Switch:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.WINDSHEER__PWS_SWITCH" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_SWITCH_RADAR_PWS_Position)" />
+                        <Val Value="0"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_SWITCH_RADAR_PWS_Position)" />
+                <Instrument Id="PWS_Switch" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.WXR_GAIN:AUTO_CAL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.WXR_GAIN_KNOB" ExpectationTT="TT:AUTO/CAL" />
+            <Test>
+                <TestValue>
+                    <!-- Instrument not implemented, so we'll auto-skip this. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.WXR_MODE:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.WXR_MODE_SELECTOR" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Test>
+                <TestValue>
+                    <!-- Instrument not implemented, so we'll auto-skip this. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EFB:START">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ELECTRONIC_FLIGHT_BAG" ExpectationTT="TT:GAME.CHECKLIST_START"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ACARS:INITIALIZE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ACARS" ExpectationTT="TT:GAME.CHECKLIST_INITIALIZE"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_AND_AIRCRAFT_TYPE:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENGINE_AND_AIRCRAFT_TYPE" ExpectationTT="TT:GAME.CHECKLIST_CHECK"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FM_DATABASE_VALIDITY:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FM_DATABASE_VALIDITY" ExpectationTT="TT:GAME.CHECKLIST_CHECK"/>
+            <Clue name="TT:A32NX.CLUE.FM_DATABASE_VERIFICATION"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FLIGHT_NUMBER:CHECKED__SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FLIGHT_NUMBER" ExpectationTT="TT:GAME.CHECKLIST_CHECKED__SET"/>
+            <Clue name="TT:A32NX.CLUE.FLIGHT_NUMBER_INSERT_RECOMMENDATION"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FROM_TO:CHECKED__SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FROM__TO" ExpectationTT="TT:GAME.CHECKLIST_CHECKED__SET"/>
+            <Clue name="TT:A32NX.CLUE.FROM__TO_INSERT_RECOMMENDATION"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_RCL:PRESS_FOR_3_SECONDS">
+            <CheckpointDesc SubjectTT="TT:COCKPIT.TOOLTIPSV2.ECAM_PUSH_RCL_TITLE" ExpectationTT="TT:A32NX.CHECKLIST.PRESS_FOR_3_SECONDS" />
+            <Clue name="TT:A32NX.CLUE.RECALLS_ALL_CLEAR_OR_CANCELLED_WARNINGS_FROM_LAST_FLIGHT"/>
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_BTN_RCL, Number)" />
+                        <Val Value="1"/>
+                    </Operator>
+                </TestValue>
+                <Instrument Id="ECAM_RCL" />
+                <Duration Value="3" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_BTN_RCL, Number)" />
+                <Action Copilot="True" Condition="End" Code="0 (&gt;L:A32NX_BTN_RCL, Number)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_DOOR_OXYGEN_PRESSURE:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.OXYGEN_PRESSURE" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Test>
+                <TestValue>
+                    <!-- This panel does not exist in the overhead, so having this check allows the copilot to auto-pass the test in evaluation. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.MIN_FLT_CREW_OXY_CHART_PRESSURE:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.MIN_FLT_CREW_OXY_CHART" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Test>
+                <TestValue>
+                    <!-- This panel does not exist in the overhead, so having this check allows the copilot to auto-pass the test in evaluation. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RESERVOIR_FLUID_LEVEL:WITHIN_NORMAL_RANGE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RESERVOIR_FLUID_LEVEL" ExpectationTT="TT:A32NX.CHECKLIST.WITHIN_NORMAL_RANGE" />
+            <Clue name="TT:A32NX.CLUE.RESERVOIR_FLUID_LEVEL_NORMAL_RANGE_VERIFICATION"/>
+            <Test>
+                <TestValue>
+                    <Operator OpType="AND">
+                        <Operator OpType="AND">
+                            <Val Code="(L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW) 0 == (L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW) 0 == and (L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW) 0 == and"/>
+                            <Val Code="(L:A32NX_HYD_GREEN_RESERVOIR_AIR_PRESSURE_IS_LOW) 0 == (L:A32NX_HYD_BLUE_RESERVOIR_AIR_PRESSURE_IS_LOW) 0 == and (L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW) 0 == and"/>
+                        </Operator>
+                        <Val Code="(L:A32NX_HYD_GREEN_RESERVOIR_LEVEL) 3.1 &gt; (L:A32NX_HYD_BLUE_RESERVOIR_LEVEL) 1.25 &gt; and (L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL) 2.5 &gt; and"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_OIL_QUANTITY:WITHIN_NORMAL_RANGE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENGINE_OIL_QUANTITY" ExpectationTT="TT:A32NX.CHECKLIST.WITHIN_NORMAL_RANGE" />
+            <Clue name="TT:A32NX.CLUE.ENGINE_OIL_QUANTITY_NORMAL_RANGE_VERIFICATION"/>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FLAPS_LEVER:CHECK_POSITION">
+            <CheckpointDesc SubjectTT="TT:COCKPIT.TOOLTIPSV2.HANDLING_LEVER_FLAPS_TITLE" ExpectationTT="TT:A32NX.CHECKLIST.CHECK_POSITION" />
+            <Clue name="TT:A32NX.CLUE.FLAPS_LEVER:CHECK_POSITION"/>
+            <Test>
+                <Instrument Id="HANDLING_Lever_Flaps" />
+                <TestValue>
+                    <!-- This test doesn't work correctly, the issue is probably due to `A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD` being intepreted as a 64-bit float and overflowing as an integer. -->
+                    <Operator OpType="OR">
+                        <Operator OpType="AND">
+                            <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==" />
+                            <Val Code="(L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD) 17 >> 1 &amp; 1 ==" />
+                        </Operator>
+                        <Operator OpType="OR">
+                            <Operator OpType="OR">
+                                <Operator OpType="AND">
+                                    <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX) 1 ==" />
+                                    <Val Code="(L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD) 18 >> 1 &amp; 1 ==" />
+                                </Operator>
+                                <Operator OpType="AND">
+                                    <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX) 2 ==" />
+                                    <Val Code="(L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD) 19 >> 1 &amp; 1 ==" />
+                                </Operator>
+                            </Operator>
+                            <Operator OpType="OR">
+                                <Operator OpType="AND">
+                                    <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX) 3 ==" />
+                                    <Val Code="(L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD) 20 >> 1 &amp; 1 ==" />
+                                </Operator>
+                                <Operator OpType="AND">
+                                    <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX) 4 ==" />
+                                    <Val Code="(L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD) 21 >> 1 &amp; 1 ==" />
+                                </Operator>
+                            </Operator>
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.SPEEDBRAKE_LEVER:RETRACTED_AND_DISARMED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.SPEEDBRAKE_LEVER" ExpectationTT="TT:A32NX.CHECKLIST.DISARMED_AND_RETRACTED" />
+            <Instrument Id="HANDLING_Lever_Spoilers" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_SPOILERS_HANDLE_POSITION, Number)" />
+                            <Val Value="0"/>
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;K:SPOILERS_SET)" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_SPOILERS_ARMED, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="(&gt;K:SPOILERS_ARM_OFF)"/>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ACCU_PRESS:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ACCU_PRESS" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.ACCU_PRESS:CHECK" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="GREATER_OR_EQUAL">
+                        <!-- TODO: 3000 is as close to green as it seems to get? I think the indicator is slightly bugged. -->
+                        <Val Code="(L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS)" />
+                        <Val Value="2800" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)" />
+                <Instrument Id="Accu_Press" />
+                <Instrument Id="PUSH_OVHD_HYD_ELECPUMPY" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PARKING_BRAKE:ON">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_PARKING_BRAKE" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Test>
+                <Instrument Id="LANDING_GEAR_SWITCH_PARKINGBRAKE" />
+                <TestValue>
+                    <Val Code="(L:A32NX_PARK_BRAKE_LEVER_POS, Bool)"/>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_PARK_BRAKE_LEVER_POS)"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PARKING_BRAKE:OFF">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_PARKING_BRAKE" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <Instrument Id="LANDING_GEAR_SWITCH_PARKINGBRAKE" />
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val Code="(L:A32NX_PARK_BRAKE_LEVER_POS, Bool)"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_PARK_BRAKE_LEVER_POS)"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BRAKE_PEDALS:PRESS_MAXIMUM_PRESSURE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BRAKE_PEDALS" ExpectationTT="TT:A32NX.CHECKLIST.PRESS_MAXIMUM_PRESSURE" />
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <Action Copilot="TRUE" Condition="TestValueFalse" Once="True" Code="16384 (&gt;K:AXIS_LEFT_BRAKE_SET)" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_LEFT_BRAKE_PEDAL_INPUT)" />
+                            <Val Value="100" />
+                        </Operator>
+                    </TestValue>
+                </Test>
+                <Test>
+                    <Action Copilot="TRUE" Condition="TestValueFalse" Once="True" Code="16384 (&gt;K:AXIS_RIGHT_BRAKE_SET)" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT)" />
+                            <Val Value="100" />
+                        </Operator>
+                    </TestValue>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BRAKE_PEDALS:RELEASE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BRAKE_PEDALS" ExpectationTT="TT:GAME.CHECKLIST_RELEASE" />
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_LEFT_BRAKE_PEDAL_INPUT)" />
+                            <Val Value="0" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="TRUE" Condition="TestValueFalse" Once="True" Code="-16384 (&gt;K:AXIS_LEFT_BRAKE_SET)" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT)" />
+                            <Val Value="0" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="TRUE" Condition="TestValueFalse" Once="True" Code="-16384 (&gt;K:AXIS_RIGHT_BRAKE_SET)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LANDING_GEAR:CHECK_DOWN">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_LANDING_GEAR_LEVER" ExpectationTT="TT:GAME.CHECKLIST_CHECK_DOWN" />
+            <Test>
+                <Instrument Id="LEVER_LANDINGGEAR" />
+                <TestValue>
+                    <Val Code="(L:A32NX_GEAR_HANDLE_POSITION)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitForUserToDoIt"/>
+                <!--<Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="GEAR_TOGGLE"/>-->
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_MASTER_SWITCHES:ALL_OFF">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_MASTER_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_ALL_OFF" />
+            <Instrument Id="SWITCH_ENGINES_ENG1" />
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
+                    <Instrument Id="ENGINE_Switch_Master1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="GENERAL ENG STARTER:1" Units="boolean" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="TOGGLE_STARTER1" />
+                    <Instrument Id="ENGINE_Switch_Master1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="2" />
+                    <Instrument Id="ENGINE_Switch_Master2" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="GENERAL ENG STARTER:2" Units="boolean" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="TOGGLE_STARTER2" />
+                    <Instrument Id="ENGINE_Switch_Master2" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_FIRE_BUTTON:IN_AND_LOCKED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.APU_FIRE_PUSH_BUTTON" ExpectationTT="TT:A32NX.CHECKLIST.IN_AND_GUARDED" />
+            <Sequence SeqType="Ordered">
+                <Test>
+                    <Instrument Id="PUSH_OVHD_FIRE_APU" />
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_FIRE_BUTTON_APU, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_BUTTON_APU)" />
+                </Test>
+                <Test>
+                    <Instrument Id="LOCK_OVHD_APU" />
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_FIRE_GUARD_APU, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_GUARD_APU)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_FIRE_AGENT_LIGHTS:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.APU_FIRE_AGENT_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+            <Test>
+                <TestValue>
+                    <!-- TODO: This is a basic check until we can properly detect the status of these. We might need variables to detect if the lights are lit without providing information on if the actual values are set correctly. -->
+                    <Operator OpType="NOT">
+                        <Operator OpType="AND">
+                            <Operator OpType="OR">
+                                <Operator OpType="OR">
+                                    <!-- Check for if the "SQUIB" light on the APU fire agent button should be lit. -->
+                                    <Val Code="(L:A32NX_FIRE_TEST_APU, Bool) (L:A32NX_FIRE_BUTTON_APU, Bool) or" />
+                                    <!-- Check for if the "DISCH" light on the APU fire agent button should be lit. -->
+                                    <Val Code="(L:A32NX_FIRE_TEST_APU, Bool) (L:A32NX_FIRE_APU_AGENT1_Discharge, Bool) or" />
+                                </Operator>
+                                <!-- Check if the "ANN LT" switch is in test mode which turns on all lights. -->
+                                <Val Code="(L:A32NX_OVHD_INTLT_ANN) 0 ==" />
+                            </Operator>
+                            <!-- Check if the APU fire button lights are powered. -->
+                            <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or" />
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Instrument Id="OVHD_FIRE_AGENT" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_FIRE_TEST:PERFORM">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.APU_FIRE_TEST" ExpectationTT="TT:GAME.CHECKLIST_PERFORM" />
+            <Clue name="TT:A32NX.CLUE.APU_FIRE_TEST:PERFORM" />
+            <Sequence SeqType="Ordered">
+                <Instrument Id="APU_FIRE_TEST_BUTTON" />
+                <Test>
+                    <!-- Fire Test On Phase-->
+                    <TestValue>
+                        <Operator OpType="AND">
+                            <Val Code="(L:A32NX_MASTER_WARNING, Bool)" />
+                            <Val Code="(L:A32NX_FIRE_TEST_APU, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Duration Value="1.5" />
+                    <Once>True</Once>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_FIRE_TEST_APU)" />
+                </Test>
+                <Test>
+                    <!-- Fire Test Off Phase-->
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_FIRE_TEST_APU, Bool)" />
+                        </Operator>
+                    </TestValue>
+                    <Duration Value="0.5" />
+                    <Once>True</Once>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_TEST_APU)"/>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_MASTER_BUTTON:ON">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_APU_MASTER_SWITCH" ExpectationTT="TT:GAME.CHECKLIST_ON"/>
+            <Test>
+                <Instrument Id="ELECTRICAL_Switch_APU_Master" />
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_AVAIL:LIT">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_APU" ExpectationTT="TT:GAME.CHECKLIST_AVAIL_LIT" />
+            <Clue name="TT:CLUE.APU_GEN_AVAIL_LIT" />
+            <Test>
+                <Instrument Id="ELECTRICAL_Switch_APU_Starter" />
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_START_BUTTON:ON">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_APU_START" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Clue name="TT:A32NX.CLUE.APU_START_BUTTON:ON" />
+            <Test>
+                <Instrument Id="ELECTRICAL_Switch_APU_Starter" />
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_APU_START_PB_IS_ON, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_APU_START_PB_IS_ON, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.APU_BLEED_BUTTON:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.APU_BLEED_SWITCH" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Clue name="TT:A32NX.CLUE.APU_BLEED_BUTTON:ON" />
+            <Test>
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)" />
+                <Instrument Id="ELECTRICAL_Switch_APU_Bleed" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CARGO_HEAT:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CARGO_HEAT_SELECTOR" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Test>
+                <TestValue>
+                    <!-- Instrument not implemented, so we'll auto-skip this. -->
+                    <Val Value="1"/>
+                </TestValue>
+            </Test>
+            <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_MODE_SELECTOR:NORM">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_MODE_SELECTOR" ExpectationTT="TT:GAME.CHECKLIST_NORM" />
+            <Clue name="TT:COCKPIT.TOOLTIPS.ENGINE_MODE_SELECTOR_SET_NORM" />
+            <Instrument Id="ENGINE_Switch_Engine_Mode" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val SimVarName="TURB ENG IGNITION SWITCH EX1:1" Units="Enum"/>
+                        <Val Value="1"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;K:TURBINE_IGNITION_SWITCH_SET)"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BRAKE_PESSURE_ALT:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BRAKE_PRESSURE" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.BRAKE_PESSURE_ALT:CHECK" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="AND">
+                        <Operator OpType="BETWEEN">
+                            <Val Code="(L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS)" />
+                            <Val Value="2000" />
+                            <Val Value="2700" />
+                        </Operator>
+                        <Operator OpType="BETWEEN">
+                            <Val Code="(L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS)" />
+                            <Val Value="2000" />
+                            <Val Value="2700" />
+                        </Operator>
+                    </Operator>
+                    <Instrument Id="Press_Arc_L" />
+                    <Instrument Id="Press_Arc_R" />
+                    <!-- Something is preventing us from setting the brakes programmatically, so the copilot can't set the precondition for this test. -->
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="ForceValidate"/>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                </TestValue>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BRAKE_PRESS:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BRAKE_PRESS_INDICATOR" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="AND">
+                        <Operator OpType="BETWEEN">
+                            <Val Code="(L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS)" />
+                            <Val Value="2000" />
+                            <Val Value="2700" />
+                        </Operator>
+                        <Operator OpType="BETWEEN">
+                            <Val Code="(L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS)" />
+                            <Val Value="2000" />
+                            <Val Value="2700" />
+                        </Operator>
+                    </Operator>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                    <Instrument Id="Press_Arc_L" />
+                    <Instrument Id="Press_Arc_R" />
+                </TestValue>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LOGBOOK:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LOGBOOK" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <!-- TODO: No logbook is available. -->
+        </Checkpoint>
+        <Checkpoint Id="A32NX.MEL_CDL_ITEMS:CHECK_DISPATCH_CONDITION">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.MELCDL__ITEMS" ExpectationTT="TT:A32NX.CHECKLIST.CHECK_DISPATCH_CONDITION" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.AIRCRAFT_ACCEPTANCE:PERFORM">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.AIRCRAFT_ACCEPTANCE" ExpectationTT="TT:GAME.CHECKLIST_PERFORM" />
+            <!-- TODO: Company-specific policy? -->
+        </Checkpoint>
+        <Checkpoint Id="A32NX.AIRFIELD_DATA:OBTAIN">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.AIRFIELD_DATA" ExpectationTT="TT:GAME.CHECKLIST_OBTAIN" />
+            <Clue name="TT:A32NX.CLUE.AIRFIELD_DATA:OBTAIN" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PRELIMINARY_LOADING:COMPUTE_AND_CROSSCHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PRELIMINARY_LOADING" ExpectationTT="TT:A32NX.CHECKLIST.COMPUTE_AND_CROSSCHECK" />
+            <Clue name="TT:A32NX.CLUE.PRELIMINARY_LOADING:COMPUTE_AND_CROSSCHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.MEL_CDL_ITEMS:CHECK_ACTIVATED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.MELCDL__ITEMS" ExpectationTT="TT:A32NX.CHECKLIST.CHECK_ACTIVATED" />
+            <Clue name="TT:A32NX.CLUE.MEL_CDL_ITEMS:CHECK_ACTIVATED" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PRELIMINARY_TAKEOFF_DATA:COMPUTE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PRELIMINARY_TAKEOFF_DATA" ExpectationTT="TT:A32NX.CHECKLIST.COMPUTE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PRELIMINARY_TAKEOFF_DATA:CROSSCHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PRELIMINARY_TAKEOFF_DATA" ExpectationTT="TT:A32NX.CHECKLIST.CROSSCHECK" />
+            <Clue name="TT:A32NX.CLUE.PRELIMINARY_TAKEOFF_DATA:CROSSCHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.OPERATION_ENGINEERING_BULLETINS:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.OPERATION_ENGINEERING_BULLETINS" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.Y_ELECTRIC_PUMP:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.Y_ELECTRIC_PUMP" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO)" />
+                <Instrument Id="PUSH_OVHD_HYD_ELECPUMPY" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CHOCKS:IN_PLACE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CHOCKS" ExpectationTT="TT:A32NX.CHECKLIST.IN_PLACE" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="OR">
+                        <Operator OpType="NOT">
+                            <Val Code="(L:A32NX_MODEL_WHEELCHOCKS_ENABLED, bool)" />
+                        </Operator>
+                        <Val Code="(L:A32NX_GND_EQP_IS_VISIBLE, bool)" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EMERGENCY_EQUIPMENT:ONBOARD">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.EMERGENCY_EQUIPMENT" ExpectationTT="TT:A32NX.CHECKLIST.ONBOARD" />
+            <Clue name="TT:A32NX.CLUE.EMERGENCY_EQUIPMENT:ONBOARD" />
+            <Test>
+                <TestValue>
+                    <!-- This panel does not exist in the overhead, so having this check allows the copilot to auto-pass the test in evaluation. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LANDING_GEAR_PINS_AND_COVERS:ONBOARD_AND_STOWED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LANDING_GEAR_PINS_AND_COVERS" ExpectationTT="TT:A32NX.CHECKLIST.ONBOARD_AND_STOWED" />
+            <Test>
+                <TestValue>
+                    <!-- This panel does not exist in the overhead, so having this check allows the copilot to auto-pass the test in evaluation. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RAIN_REPLNT_INDICATORS:CHECK_PRESSURE_AND_QUANTITY">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RAIN_RPLNT_INDICATORS" ExpectationTT="TT:A32NX.CHECKLIST.CHECK_PRESSURE_AND_QUANTITY" />
+            <Clue name="TT:A32NX.CLUE.RAIN_REPLNT_INDICATORS:CHECK_PRESSURE_AND_QUANTITY"/>
+            <Test>
+                <TestValue>
+                    <!-- This panel does not exist in the overhead, so having this check allows the copilot to auto-pass the test in evaluation. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.REAR_AND_OVERHEAD_CIRCUIT_BREAKER_PANELS:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.REAR_AND_OVERHEAD_CIRCUIT_BREAKER_PANELS" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.REAR_AND_OVERHEAD_CIRCUIT_BREAKER_PANELS:CHECK"/>
+            <Test>
+                <TestValue>
+                    <!-- This panel does not exist in the overhead, so having this check allows the copilot to auto-pass the test in evaluation. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+
+        <!-- ECAM Pages -->
+        <Checkpoint Id="A32NX.ECAM_ENG:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_ENG" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="0" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_ENG" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_BLEED:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_BLEED" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="1" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_BLEED" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_PRESS:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_PRESS" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="2" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="2 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_PRESS" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_ELEC:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_ELEC" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="3" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="3 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_ELEC" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_HYD:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_HYD" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="4" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="4 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_HYD" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_FUEL:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_FUEL" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="5" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="5 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_FUEL" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_APU:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_APU" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="6" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="6 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_APU" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_COND:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_COND" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="7" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="7 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_COND" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_DOOR:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_DOOR" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="8" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="8 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_DOOR" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_WHEEL:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_WHEEL" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="9" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="9 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_WHEEL" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_FCTL:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_FCTL" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="10" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="10 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="ECAM_FCTL" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ECAM_STS:CALL">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ECAM_PAGE_STS" ExpectationTT="TT:A32NX.CHECKLIST.CALL" />
+            <ForceCamera name="ECAM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)" />
+                        <Val Value="11" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="11 (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (&gt;H:A32NX_SD_PAGE_CHANGED)" />
+            </Test>
+            <Instrument Id="STS" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RECORDER_GROUND_CONTROL:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RECORDER_GROUND_CONTROL" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Test>
+                <TestValue>
+                    <Val Code="(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)" />
+                </TestValue>
+                <Instrument Id="PUSH_OVHD_RCDR_GNDCTL" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LOUDSPEAKER_VOLUME_KNOB:BOTH_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LOUDSPEAKER_VOLUME_KNOB" ExpectationTT="TT:A32NX.CHECKLIST.BOTH_OFF" />
+            <Test>
+                <TestValue>
+                    <!-- Not implemented. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CVR_TEST:PRESS_AND_MAINTAIN">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CVR_TEST" ExpectationTT="TT:A32NX.CHECKLIST.PRESS_AND_MAINTAIN" />
+            <Clue name="TT:A32NX.CLUE.CVR_TEST:PRESS_AND_MAINTAIN" />
+            <Instrument Id="PUSH_OVHD_RCDR_TEST" />
+            <Sequence SeqType="Ordered">
+                <Sequence SeqType="PARALLEL">
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_RCDR_TEST)" />
+                    <Test>
+                        <TestValue>
+                            <Val Code="(L:A32NX_RCDR_TEST, Bool)" />
+                        </TestValue>
+                        <Duration Value="1.5" />
+                        <Once>True</Once>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                    </Test>
+                    <Action Copilot="True" Condition="TestValueTrue" Once="True" Code="0 (&gt;L:A32NX_RCDR_TEST)" />
+                </Sequence>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_RCDR_TEST, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.INTERPHONE_VOLUME_RECEPTION_KNOB:RELEASE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.INTERPHONE_VOLUME_RECEPTION_KNOB" ExpectationTT="TT:GAME.CHECKLIST_RELEASE" />
+            <Test>
+                <TestValue>
+                    <!-- Not implemented. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ACP_INT__RAD_SWITCH:INT">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ACP_INT__RAD_SWITCH" ExpectationTT="TT:A32NX.CHECKLIST.INT" />
+            <Test>
+                <TestValue>
+                    <!-- Not implemented. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX:HYDRAULIC_CONTROL_PANEL_WHITE_LIGHTS:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.HYDRAULIC_CONTROL_PANEL_WHITE_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="PUSH_OVHD_HYD_ENG1PUMP" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_HYD_ENG2PUMP" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_HYD_ELECPUMP" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_HYD_ELECPUMPY" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_HYD_PTU" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO, Bool)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_FIRE_PUSH_BUTTONS:IN_AND_LOCKED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENGINE_FIRE_PUSH_BUTTONS" ExpectationTT="TT:A32NX.CHECKLIST.IN_AND_GUARDED" />
+            <Sequence SeqType="Unordered">
+                <Sequence SeqType="Ordered">
+                    <Test>
+                        <Instrument Id="PUSH_OVHD_FIRE_ENG1" />
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_FIRE_BUTTON_ENG1, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_BUTTON_ENG1)" />
+                    </Test>
+                    <Test>
+                        <Instrument Id="LOCK_OVHD_ENG1" />
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_FIRE_GUARD_ENG1, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_GUARD_ENG1)" />
+                    </Test>
+                </Sequence>
+                <Sequence SeqType="Ordered">
+                    <Test>
+                        <Instrument Id="PUSH_OVHD_FIRE_ENG2" />
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_FIRE_BUTTON_ENG2, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_BUTTON_ENG2)" />
+                    </Test>
+                    <Test>
+                        <Instrument Id="LOCK_OVHD_ENG2" />
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_FIRE_GUARD_ENG2, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_GUARD_ENG2)" />
+                    </Test>
+                </Sequence>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_FIRE_AGENT_LIGHTS:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENGINE_FIRE_AGENT_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <!-- TODO: This is a basic check until we can properly detect the status of these. We might need variables to detect if the lights are lit without providing information on if the actual values are set correctly. -->
+                        <Operator OpType="NOT">
+                            <Operator OpType="AND">
+                                <Operator OpType="OR">
+                                    <Operator OpType="OR">
+                                        <!-- Check for if the "SQUIB" light should be lit. -->
+                                        <Val Code="(L:A32NX_FIRE_TEST_ENG1, Bool) (L:A32NX_FIRE_BUTTON_ENG1, Bool) or" />
+                                        <Operator OpType="OR">
+                                            <!-- Check for if the "AGENT 1" "DISCH" light should be lit. -->
+                                            <Val Code="(L:A32NX_FIRE_TEST_ENG1, Bool) (L:A32NX_FIRE_ENG1_AGENT1_Discharge, Bool) or" />
+                                            <!-- Check for if the "AGENT 2" "DISCH" light should be lit. -->
+                                            <Val Code="(L:A32NX_FIRE_TEST_ENG1, Bool) (L:A32NX_FIRE_ENG1_AGENT2_Discharge, Bool) or" />
+                                        </Operator>
+                                    </Operator>
+                                    <!-- Check if the "ANN LT" switch is in test mode which turns on all lights. -->
+                                    <Val Code="(L:A32NX_OVHD_INTLT_ANN) 0 ==" />
+                                </Operator>
+                                <!-- Check if the ENG fire button lights are powered. -->
+                                <!-- TODO: Double check the these are powered by the same bus as the APU Fire Agent lights. -->
+                                <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or" />
+                            </Operator>
+                        </Operator>
+                    </TestValue>
+                    <Instrument Id="FIRE_ENG1_AGENT1" />
+                    <Instrument Id="FIRE_ENG1_AGENT2" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                </Test>
+                <Test>
+                    <TestValue>
+                        <!-- TODO: This is a basic check until we can properly detect the status of these. We might need variables to detect if the lights are lit without providing information on if the actual values are set correctly. -->
+                        <Operator OpType="NOT">
+                            <Operator OpType="AND">
+                                <Operator OpType="OR">
+                                    <Operator OpType="OR">
+                                        <!-- Check for if the "SQUIB" light should be lit. -->
+                                        <Val Code="(L:A32NX_FIRE_TEST_ENG2, Bool) (L:A32NX_FIRE_BUTTON_ENG2, Bool) or" />
+                                        <Operator OpType="OR">
+                                            <!-- Check for if the "AGENT 1" "DISCH" light should be lit. -->
+                                            <Val Code="(L:A32NX_FIRE_TEST_ENG2, Bool) (L:A32NX_FIRE_ENG2_AGENT1_Discharge, Bool) or" />
+                                            <!-- Check for if the "AGENT 2" "DISCH" light should be lit. -->
+                                            <Val Code="(L:A32NX_FIRE_TEST_ENG2, Bool) (L:A32NX_FIRE_ENG2_AGENT2_Discharge, Bool) or" />
+                                        </Operator>
+                                    </Operator>
+                                    <!-- Check if the "ANN LT" switch is in test mode which turns on all lights. -->
+                                    <Val Code="(L:A32NX_OVHD_INTLT_ANN) 0 ==" />
+                                </Operator>
+                                <!-- Check if the ENG fire button lights are powered. -->
+                                <!-- TODO: Double check the these are powered by the same bus as the APU Fire Agent lights. -->
+                                <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or" />
+                            </Operator>
+                        </Operator>
+                    </TestValue>
+                    <Instrument Id="FIRE_ENG2_AGENT1" />
+                    <Instrument Id="FIRE_ENG2_AGENT2" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENGINE_FIRE_TEST:PERFORM">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENGINE_FIRE_TEST" ExpectationTT="TT:GAME.CHECKLIST_PERFORM" />
+            <Clue name="TT:A32NX.CLUE.ENGINE_FIRE_TESTS:PERFORM" />
+            <Sequence SeqType="Unordered">
+                <Sequence SeqType="Ordered">
+                    <Instrument Id="Fire_test_eng1" />
+                    <Test>
+                        <!-- Fire Test On Phase-->
+                        <TestValue>
+                            <Operator OpType="AND">
+                                <Val Code="(L:A32NX_MASTER_WARNING, Bool)" />
+                                <Val Code="(L:A32NX_FIRE_TEST_ENG1, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Duration Value="1.5" />
+                        <Once>True</Once>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_FIRE_TEST_ENG1)" />
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_FIRE_TEST_ENG1, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Duration Value="0.5" />
+                        <Once>True</Once>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_TEST_ENG1)"/>
+                    </Test>
+                </Sequence>
+                <Sequence SeqType="Ordered">
+                    <!-- Fire Test On Phase-->
+                    <Instrument Id="Fire_test_eng2" />
+                    <Test>
+                        <!-- Fire Test On Phase-->
+                        <TestValue>
+                            <Operator OpType="AND">
+                                <Val Code="(L:A32NX_MASTER_WARNING, Bool)" />
+                                <Val Code="(L:A32NX_FIRE_TEST_ENG2, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Duration Value="1.5" />
+                        <Once>True</Once>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_FIRE_TEST_ENG2)" />
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_FIRE_TEST_ENG2, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Duration Value="0.5" />
+                        <Once>True</Once>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_FIRE_TEST_ENG2)"/>
+                    </Test>
+                </Sequence>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CAPT_AND_PURS_CAPT:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CAPT_AND_PURS_CAPT" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Clue name="TT:A32NX.CLUE.DEPENDS_ON_COMPANY_POLICY" />
+            <Instrument Id="SWITCH_OVHD_EVAC_CAPT" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ALL_IR_MODE_SELECTORS:NAV">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ALL_IR_MODE_SELECTORS" ExpectationTT="TT:GAME.CHECKLIST_NAV" />
+            <Clue name="TT:A32NX.CLUE.ALL_IR_MODE_SELECTORS:NAV" />
+            <!-- ADIRS ADIR-->
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB, Bool)" />
+                    <Instrument Id="ADIRS_KNOB1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB, Bool)" />
+                    <Instrument Id="ADIRS_KNOB2" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB, Bool)" />
+                    <Instrument Id="ADIRS_KNOB3" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.STROBE_LIGHTS:AUTO">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_STROBES" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:LIGHTING_STROBE_0)" />
+                        <Val Value="1" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="(A:LIGHT STROBE, Bool) ! if { 0 (&gt;K:STROBES_ON) } 1 (&gt;L:STROBE_0_AUTO) 1 (&gt;L:LIGHTING_STROBE_0)" />
+                <Instrument Id="EXTLT_STROBE" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BEACON_LIGHTS:OFF">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BEACON" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val SimVarName="LIGHT BEACON" Units="Bool" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;A:LIGHT BEACON,Bool)" />
+                <Instrument Id="Beacon_Light_Switch" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.NAV_AND_LOGO:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.NAV_AND_LOGO_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Instrument Id="SWITCH_OVHD_EXTLT_NAVLOGO" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.REMAINING_EXTERIOR_LIGHTS:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.REMAINING_EXTERIOR_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Instrument Id="EXTLT_WING" />
+            <Instrument Id="LIGHTING_Switch_Light_Double" />
+            <Instrument Id="EXTLT_RWY" />
+            <Instrument Id="LANDING_Light_L" />
+            <Instrument Id="LANDING_Light_R" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.SEAT_BELT_SIGN:ON_AUTO">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_SEAT_BELT_SIGNS" ExpectationTT="TT:A32NX.CHECKLIST.ON__AUTO" />
+            <Clue name="TT:A32NX.CLUE.SEAT_BELT_SIGN:ON_AUTO" />
+            <Test>
+                <TestValue>
+                    <Val SimVarName="CABIN SEATBELTS ALERT SWITCH:1" Units="Bool" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)" />
+                <Instrument Id="SEATBELT_SWITCH" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.NO_SMOKING_SIGN:AUTO">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_NO_SMOKING_SIGNS" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Clue name="TT:A32NX.CLUE.NO_SMOKING_SIGN:AUTO" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position)" />
+                        <Val Value="1" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position)" />
+                <Instrument Id="Smoking_Switch" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EMERGENCY_EXIT_LIGHTS:ARM">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_EMERGENCY_EXIT_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_ARM" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)" />
+                        <Val Value="1" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)" />
+                <Instrument Id="Emergency_Exit_Switch" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PROBE__WINDOW_HEAT:AUTO">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PROBE__WINDOW_HEAT" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Test>
+                <Instrument Id="PUSH_OVHD_PROBESWINDOW" />
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val Code="(L:A32NX_MAN_PITOT_HEAT)" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_MAN_PITOT_HEAT)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CABIN_PRESS_MODE:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.MODE_SEL" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Test>
+                <Instrument Id="PUSH_OVHD_CABINPRESS_MODESEL" />
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LDG_ELEV_KNOB:AUTO">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LDG_ELEV_KNOB" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Test>
+                <TestValue>
+                    <Val Code="(L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV) 0 ==" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV)" />
+                <Instrument Id="KNOB_OVHD_CABINPRESS_LDGELEV" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CABIN_PRESS_DITCHING:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.DITCHING" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON, Bool) !" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON)" />
+                <Instrument Id="PUSH_OVHD_CABINPRESS_DITCHING" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PACK_FLOW:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PACK_FLOW" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Clue name="TT:A32NX.CLUE.PACK_FLOW:AS_REQUIRED" />
+            <Instrument Id="KNOB_OVHD_AIRCOND_PACKFLOW" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BATTERY:OFF_THEN_ON">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:A32NX.CHECKLIST.OFF_THEN_ON" />
+            <Clue name="TT:A32NX.CLUE.AFTER_10_SECONDS_BAT_CHARGE_BELOW_60A_AND_DESCREASING" />
+            <Sequence SeqType="Ordered">
+                <Sequence SeqType="Parallel">
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)" />
+                        <Instrument Id="BATTERY_MASTER_SWITCH_1" />
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="NOT">
+                                <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)" />
+                        <Instrument Id="BATTERY_MASTER_SWITCH_2" />
+                    </Test>
+                    <Once>True</Once>
+                    <Duration Value="10" />
+                </Sequence>
+                <Sequence SeqType="Parallel">
+                    <Test>
+                        <TestValue>
+                            <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)" />
+                        <Instrument Id="BATTERY_MASTER_SWITCH_1" />
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)" />
+                        <Instrument Id="BATTERY_MASTER_SWITCH_2" />
+                    </Test>
+                </Sequence>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FUEL_MODE:MAN">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FUEL_MODE" ExpectationTT="TT:GAME.CHECKLIST_MAN" />
+            <Test>
+                <Instrument Id="OVHD_FUEL_MODESEL" />
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_OVHD_FUEL_MODESEL_MANUAL, Bool)" />
+                        <Val Value="1"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_FUEL_MODESEL_MANUAL)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:XMLVAR_Momentary_PUSH_OVHD_FUEL_MODESEL_Pressed)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FUEL_MODE:AUTO">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FUEL_MODE" ExpectationTT="TT:GAME.CHECKLIST_AUTO" />
+            <Test>
+                <Instrument Id="OVHD_FUEL_MODESEL" />
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_OVHD_FUEL_MODESEL_MANUAL, Bool)" />
+                        <Val Value="0"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_FUEL_MODESEL_MANUAL)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:XMLVAR_Momentary_PUSH_OVHD_FUEL_MODESEL_Pressed)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.X_FEED:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.X_FEED" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val SimVarName="FUELSYSTEM VALVE SWITCH:3" Units="Bool"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="3 (&gt;K:FUELSYSTEM_VALVE_TOGGLE)" />
+                <Instrument Id="PUSH_OVHD_FUEL_XFEED" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LEFT_FUEL_TANK_PUMPS:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LEFT_FUEL_TANK_PUMPS" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Val SimVarName="FUELSYSTEM PUMP SWITCH:2" Units="Bool"/>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="2 (&gt;K:FUELSYSTEM_PUMP_TOGGLE)" />
+                    <Instrument Id="OVHD_FUEL_LTKPUMPS1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val SimVarName="FUELSYSTEM PUMP SWITCH:5" Units="Bool"/>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="5 (&gt;K:FUELSYSTEM_PUMP_TOGGLE)" />
+                    <Instrument Id="OVHD_FUEL_LTKPUMPS2" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CENTER_FUEL_TANK_PUMPS:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CENTER_FUEL_TANK_PUMPS" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="FUELSYSTEM PUMP SWITCH:1" Units="Bool"/>
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;K:FUELSYSTEM_PUMP_TOGGLE)" />
+                    <Instrument Id="OVHD_FUEL_PUMP1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Operator OpType="NOT">
+                            <Val SimVarName="FUELSYSTEM PUMP SWITCH:4" Units="Bool"/>
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="4 (&gt;K:FUELSYSTEM_PUMP_TOGGLE)" />
+                    <Instrument Id="OVHD_FUEL_PUMP2" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RIGHT_FUEL_TANK_PUMPS:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RIGHT_FUEL_TANK_PUMPS" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Val SimVarName="FUELSYSTEM PUMP SWITCH:3" Units="Bool"/>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="3 (&gt;K:FUELSYSTEM_PUMP_TOGGLE)" />
+                    <Instrument Id="OVHD_FUEL_RTKPUMPS1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val SimVarName="FUELSYSTEM PUMP SWITCH:6" Units="Bool"/>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="6 (&gt;K:FUELSYSTEM_PUMP_TOGGLE)" />
+                    <Instrument Id="OVHD_FUEL_RTKPUMPS2" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EMERGENCY_ELECTRICAL_POWER_PANEL_WHITE_LIGHTS:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.EMERGENCY_ELECTRICAL_POWER_PANEL_WHITE_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <Instrument Id="PUSH_OVHD_EMERELECPWR_GEN1" />
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EVAC_COMMAND:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.EVAC_COMMAND" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Test>
+                <Instrument Id="PUSH_OVHD_EVAC_COMMAND" />
+                <TestValue>
+                    <Val Code="(L:A32NX_EVAC_COMMAND_TOGGLE, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_EVAC_COMMAND_TOGGLE, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COCKPIT_DOOR_VIDEO:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.COCKPIT_DOOR_VIDEO" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Test>
+                <Instrument Id="PUSH_OVHD_COCKPITDOORVIDEO" />
+                <TestValue>
+                    <Val Code="(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ALL_IR_PUSHBUTTONS:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ALL_IR_PUSHBUTTONS" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON, Bool)" />
+                    <Instrument Id="OVHD_ADIRS_IR1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON, Bool)" />
+                    <Instrument Id="OVHD_ADIRS_IR2" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON, Bool)" />
+                    <Instrument Id="OVHD_ADIRS_IR3" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX:EMERGENCY_CALL:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.EMERGENCY_CALL" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="PUSH_OVHD_CALLS_EMER" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_CALLS_EMER_ON, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_CALLS_EMER_ON, Bool)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ALL_ADIR_PUSHBUTTONS:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ALL_ADIR_PUSHBUTTONS" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="OVHD_ADIRS_1" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_ADIRS_2" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_ADIRS_3" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON, Bool)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.GROUND_PROXIMITY_WARNING_SYSTEM_WHITE_LIGHTS:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.GROUND_PROXIMITY_WARNING_SYSTEM_WHITE_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <!-- GPWS TERR -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_GPWS_TERR_OFF, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_GPWS_TERR_OFF, Bool)" />
+                    <Instrument Id="PUSH_OVHD_GPWS_TERR" />
+                </Test>
+                <!-- GPWS SYS -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_GPWS_SYS_OFF, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_GPWS_SYS_OFF, Bool)" />
+                    <Instrument Id="PUSH_OVHD_GPWS_SYS" />
+                </Test>
+                <!-- GPWS G/S MODE -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_GPWS_GS_OFF, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_GPWS_GS_OFF, Bool)" />
+                    <Instrument Id="PUSH_OVHD_GPWS_GSMODE" />
+                </Test>
+                <!-- GPWS FLAP MODE -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_GPWS_FLAP_OFF, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_GPWS_FLAP_OFF, Bool)"/>
+                    <Instrument Id="GPWS_Flap" />
+                </Test>
+                <!-- GPWS FLAP MODE -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_GPWS_FLAPS3, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_GPWS_FLAPS3, Bool)" />
+                    <Instrument Id="GPWS_Flap3" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.AIR_CONDITIONING_WHITE_LIGHTS:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.AIR_CONDITIONING_WHITE_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="AIRCOND_PACK1" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_COND_PACK_1_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_COND_PACK_1_PB_IS_ON)" />
+                </Test>
+                <Test>
+                    <Instrument Id="AIRCOND_PACK2" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_COND_PACK_2_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_COND_PACK_2_PB_IS_ON)" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO)" />
+                    <Instrument Id="PUSH_OVHD_AIRCOND_ENG1BLEED" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO)" />
+                    <Instrument Id="PUSH_OVHD_AIRCOND_ENG2BLEED" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_AIRCOND_RAMAIR_TOGGLE)" />
+                    <Instrument Id="PUSH_OVHD_AIRCOND_RAMAIR" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_AIRCOND_HOTAIR" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ELECTRICAL_PANEL_WHITE_LIGHTS:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ELECTRICAL_PANEL_WHITE_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Val Code="(A:GENERAL ENG MASTER ALTERNATOR:1, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="(&gt;K:TOGGLE_ALTERNATOR1)" />
+                    <Instrument Id="PUSH_OVHD_ELEC_GEN1" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(A:APU GENERATOR SWITCH:1, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;K:APU_GENERATOR_SWITCH_TOGGLE)" />
+                    <Instrument Id="PUSH_OVHD_ELEC_APUGEN" />
+                </Test>
+                <Test>
+                    <TestValue>
+                        <Val Code="(A:GENERAL ENG MASTER ALTERNATOR:2, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="(&gt;K:TOGGLE_ALTERNATOR2)" />
+                    <Instrument Id="PUSH_OVHD_ELEC_GEN2" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_ELEC_BUSTIE" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_ELEC_GALYCAB" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_ELEC_COMMERCIAL" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_OVHD_ELEC_ACESSFEED" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL, Bool)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.AUDIO_SWITCHING:NORM">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.AUDIO_SWITCHING" ExpectationTT="TT:GAME.CHECKLIST_NORM" />
+            <!-- This knob was broken at some point after initial development.-->
+            <!--<Test>
+                <Instrument Id="KNOB_OVHD_AUDIOSWITCH" />
+                <TestValue>
+                    <Val Code="(L:KNOB_OVHD_AUDIOSWITCH_Position)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:KNOB_OVHD_AUDIOSWITCH_Position)" />
+            </Test>-->
+            <Test>
+                <Instrument Id="KNOB_OVHD_AUDIOSWITCH" />
+                <TestValue>
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.VENTILATION_LIGHTS:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.VENTILATION_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+            <Sequence SeqType="Unordered">
+                <Sequence SeqType="Parallel">
+                    <Instrument Id="PUSH_OVHD_VENTILATION_BLOWER" />
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="OR">
+                                <!-- Not Powered -->
+                                <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or !" />
+                                <!-- No Fault-->
+                                <Val Code="(L:A32NX_VENTILATION_BLOWER_FAULT, Bool) !" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="False" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="OR">
+                                <!-- Not Powered -->
+                                <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or !" />
+                                <!-- No Fault-->
+                                <Val Code="(L:A32NX_VENTILATION_BLOWER_TOGGLE, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_VENTILATION_BLOWER_TOGGLE, Bool)"/>
+                    </Test>
+                </Sequence>
+                <Sequence SeqType="Parallel">
+                    <Instrument Id="PUSH_OVHD_VENTILATION_EXTRACT" />
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="OR">
+                                <!-- Not Powered -->
+                                <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or !" />
+                                <!-- No Fault-->
+                                <Val Code="(L:A32NX_VENTILATION_EXTRACT_FAULT, Bool) !" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="False" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="OR">
+                                <!-- Not Powered -->
+                                <Val Code="(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or !" />
+                                <!-- No Fault-->
+                                <Val Code="(L:A32NX_VENTILATION_EXTRACT_TOGGLE, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_VENTILATION_EXTRACT_TOGGLE, Bool)"/>
+                    </Test>
+                </Sequence>
+                <Sequence SeqType="Parallel">
+                    <Instrument Id="PUSH_OVHD_VENTILATION_CABFANS" />
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="OR">
+                                <!-- Not Powered -->
+                                <Val Code="(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) or !" />
+                                <!-- No Fault-->
+                                <Val Code="(L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool)" />
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool)"/>
+                    </Test>
+                </Sequence>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ACT_XFR_ROTARY_SELECTOR:OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ACT_XFR_ROTARY_SELECTOR" ExpectationTT="TT:GAME.CHECKLIST_OFF" />
+            <!-- TODO: Where is this? -->
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LEFT_FLIGHT_CONTROL_PANEL:ALL_ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LEFT_FLIGHT_CONTROL_PANEL" ExpectationTT="TT:A32NX.CHECKLIST.ALL_ON" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_ELAC1" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_ELAC_1_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_ELAC_1_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_SEC1" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_SEC_1_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_SEC_1_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_FAC1" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_FAC_1_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_FAC_1_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RIGHT_FLIGHT_CONTROL_PANEL:ALL_ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RIGHT_FLIGHT_CONTROL_PANEL" ExpectationTT="TT:A32NX.CHECKLIST.ALL_ON" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_ELAC2" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_ELAC_2_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_ELAC_2_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_SEC2" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_SEC_2_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_SEC_2_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_SEC3" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_SEC_3_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_SEC_3_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+                <Test>
+                    <Instrument Id="OVHD_FLTCTL_FAC2" />
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_FAC_2_PUSHBUTTON_PRESSED, Bool)" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_FAC_2_PUSHBUTTON_PRESSED, Bool)" />
+                    </TestValue>
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PA_KNOB:RECEPT">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PA_KNOB" ExpectationTT="TT:A32NX.CHECKLIST.RECEPT" />
+            <Clue name="TT:A32NX.CLUE.PA_KNOB:RECEPT" />
+            <Test>
+                <TestValue>
+                    <!-- Instrument not implemented, so we'll auto-skip this. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.MAINTENANCE_LIGHTS:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.MAINTENANCE_LIGHTS" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+            <Sequence SeqType="Unordered">
+                <!-- APU AUTO EXTING TEST -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_APU_AUTOEXITING_TEST_ON, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_APU_AUTOEXITING_TEST_ON, Bool)" />
+                    <Instrument Id="PUSH_OVHD_APU_AUTOEXITING_TEST" />
+                </Test>
+                <!-- ENG FADEC GND PWR 1 -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_FADEC_1, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_FADEC_1, Bool)" />
+                    <Instrument Id="PUSH_OVHD_ENG_FADEC1" />
+                </Test>
+                <!-- ENG FADEC GND PWR 2 -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_FADEC_2, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_FADEC_2, Bool)" />
+                    <Instrument Id="PUSH_OVHD_ENG_FADEC2" />
+                </Test>
+                <!-- OVHD_HYD_BLUEPUMP -->
+                <Sequence SeqType="Ordered">
+                    <!-- We need the sequence of this button as we need to update the pressed state of the momentary button in different "frames". Otherwise, the engine doesn't have time to detect the change to the button state to turn on/off the underlying system.-->
+                    <Instrument Id="OVHD_HYD_BLUEPUMP" />
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="OR">
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON)" />
+                                    <Val Value="0" />
+                                </Operator>
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)" />
+                                    <Val Value="0" />
+                                </Operator>
+                            </Operator>
+                        </TestValue>
+                        <Once>True</Once>
+                        <!-- We need to release the button if it is currently pressed, otherwise we won't be able to press it. However, we don't need to do this if the pump is already off as releasing the button doesn't turn it on. -->
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)" />
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="EQUAL">
+                                <Val Code="(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON)" />
+                                <Val Value="0" />
+                            </Operator>
+                        </TestValue>
+                        <Once>True</Once>
+                        <!-- The button should not be pressed here, so if the pump is on we need to now press it. -->
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)" />
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <!-- We want this test to always pass as it should never block evaluate-only mode.-->
+                            <Val Value="1" />
+                        </TestValue>
+                        <Once>True</Once>
+                        <!-- Finally, we must release the button. -->
+                        <Action Copilot="True" Condition="Any" Once="True" Code="0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)" />
+                    </Test>
+                </Sequence>
+                <!-- HYD LEAK MEASUREMENT VALVES G -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO, Bool)" />
+                    <Instrument Id="PUSH_OVHD_HYD_G" />
+                </Test>
+                <!-- HYD LEAK MEASUREMENT VALVES B -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO, Bool)" />
+                    <Instrument Id="PUSH_OVHD_HYD_B" />
+                </Test>
+                <!-- HYD LEAK MEASUREMENT VALVES Y -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO, Bool)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO, Bool)" />
+                    <Instrument Id="PUSH_OVHD_HYD_Y" />
+                </Test>
+                <!-- OXYGEN TMR RESET -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_OXYGEN_TMR_RESET, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OXYGEN_TMR_RESET, Bool)" />
+                    <Instrument Id="PUSH_OXYGEN_TWRRESET" />
+                </Test>
+                <!-- SVGE INT OVRD -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_SVGEINT_OVRD_ON, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_SVGEINT_OVRD_ON, Bool)" />
+                    <Instrument Id="PUSH_OVHD_SVGEINT" />
+                </Test>
+                <!-- AVIONICS COMP LT -->
+                <Test>
+                    <TestValue>
+                        <Val Code="(L:A32NX_AVIONICS_COMPLT_ON, Bool) !" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_AVIONICS_COMPLT_ON, Bool)" />
+                    <Instrument Id="PUSH_OVHD_AVIONICS_COMPLT" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ISIS:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ISIS" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.ISIS:CHECK" />
+            <Instrument Id="PUSH_BARO_PLUS" />
+            <Instrument Id="PUSH_BARO_MINUS" />
+            <Instrument Id="AUTOPILOT_KNOB_BARO2" />
+            <Instrument Id="PUSH_BARO_RST" />
+            <Instrument Id="DYN_SCREEN" />
+            <!-- TODO: Might be able to do the altitude one at least. -->
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CLOCK:SET_CHECK">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_CLOCK" ExpectationTT="TT:GAME.CHECKLIST_SET_CHECK" />
+            <Clue name="TT:A32NX.CLUE.CLOCK:SET_CHECK" />
+            <Instrument Id="PUSH_CHRONO_SET" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ANTI_SKID_AND_NOSE_WHEEL_STEERING:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ANTI_SKID_AND_NOSE_WHEEL_STEERING" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Test>
+                <Instrument Id="Antiskid_Switch" />
+                <TestValue>
+                    <Val SimVarName="ANTISKID BRAKES ACTIVE" Units="Boolean" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" EventID="ANTISKID_BRAKES_TOGGLE" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.INT_KNOB:PRESS_OUT__CHECK_VOLUME">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.INT_KNOB" ExpectationTT="TT:A32NX.CHECKLIST.PRESS_OUT__CHECK_VOLUME" />
+            <Instrument Id="PUSH_AUDIOL_INT_EMIS" />
+            <Instrument Id="PUSH_AUDIOR_INT_EMIS" />
+            <Test>
+                <TestValue>
+                    <!-- Instrument not implemented, so we'll auto-skip this. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.VHF:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.VHF" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Instrument Id="KNOB_AUDIOL_VHF1" />
+            <Instrument Id="KNOB_AUDIOL_VHF2" />
+            <Instrument Id="KNOB_AUDIOL_VHF3" />
+            <Instrument Id="KNOB_AUDIOR_VHF1" />
+            <Instrument Id="KNOB_AUDIOR_VHF2" />
+            <Instrument Id="KNOB_AUDIOR_VHF3" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.HF:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.HF" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.HF:CHECK" />
+            <Test>
+                <TestValue>
+                    <!-- Instrument not implemented, so we'll auto-skip this. -->
+                    <Val Value="1"/>
+                </TestValue>
+                <Action Copilot="False" Condition="Any" Once="True" SpecialAction="ForceValidate" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COCKPIT_DOOR_ANN_LT:TEST">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.DOOR_ANN_LT" ExpectationTT="TT:GAME.CHECKLIST_TEST" />
+            <Clue name="TT:A32NX.CLUE.COCKPIT_DOOR_ANN_LT:TEST" />
+            <Test>
+                <Instrument Id="SWITCH_OVHD_INTLT_ANNLT" />
+                <Instrument Id="PUSH_DOORPANEL_OPEN" />
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_OVHD_INTLT_ANN)"/>
+                        <Val Value="0"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_OVHD_INTLT_ANN)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COCKPIT_DOOR_ANN_LT:BRT">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.DOOR_ANN_LT" ExpectationTT="TT:A32NX.CHECKLIST.BRT" />
+            <Clue name="TT:A32NX.CLUE.COCKPIT_DOOR_ANN_LT:BRT" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="SWITCH_OVHD_INTLT_ANNLT" />
+                    <Instrument Id="PUSH_DOORPANEL_OPEN" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_OVHD_INTLT_ANN)"/>
+                            <Val Value="1"/>
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_OVHD_INTLT_ANN)" />
+                </Test>
+                <Test>
+                    <Instrument Id="SWITCH_DOORPANEL_LOCK" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_COCKPIT_DOOR_LOCKED, Boolean)"/>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COCKPIT_DOOR:CHECK_CORRECT_OPERATION">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.COCKPIT_DOOR" ExpectationTT="TT:A32NX.CHECKLIST.CHECK_CORRECT_OPERATION" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COCKPIT_DOOR_MECHANICAL_OVERRIDE:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.COCKPIT_DOOR_MECHANICAL_OVERRIDE" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ALL_SWITCHING_PANEL_SELECTORS:NORM">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ALL_SELECTORS" ExpectationTT="TT:GAME.CHECKLIST_NORM" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="KNOB_SWITCHING_1" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_ATT_HDG_SWITCHING_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_ATT_HDG_SWITCHING_KNOB)" />
+                </Test>
+                <Test>
+                    <Instrument Id="KNOB_SWITCHING_2" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_AIR_DATA_SWITCHING_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_AIR_DATA_SWITCHING_KNOB)" />
+                </Test>
+                <Test>
+                    <Instrument Id="KNOB_SWITCHING_3" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_EIS_DMC_SWITCHING_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_EIS_DMC_SWITCHING_KNOB)" />
+                </Test>
+                <Test>
+                    <Instrument Id="KNOB_SWITCHING_4" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.THRUST_LEVERS:IDLE">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_THRUST_LEVERS" ExpectationTT="TT:GAME.CHECKLIST_IDLE" />
+            <Sequence SeqType="Parallel">
+                <Test>
+                    <Instrument Id="ENGINE_Lever_Throttle1" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_AUTOTHRUST_TLA:1, Number)" />
+                            <Val Value="0"/>
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_AUTOTHRUST_TLA:1, Number)" />
+                </Test>
+                <Test>
+                    <Instrument Id="ENGINE_Lever_Throttle2" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_AUTOTHRUST_TLA:2, Number)" />
+                            <Val Value="0"/>
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_AUTOTHRUST_TLA:2, Number)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.GRAVITY_GEAR_EXTN:STOWED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.GRAVITY_GEAR_EXTENSION" ExpectationTT="TT:GAME.CHECKLIST_Stowed" />
+            <ForceCamera Name="PedestalAft" />
+            <Sequence SeqType="Ordered">
+                <Instrument Id="LEVER_GRAVITYGEAR" />
+                <Sequence SeqType="Ordered">
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="AND">
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:A32NX_GRAVITYGEAR_ROTATE_PCT, Number)" />
+                                    <Val Value="0"/>
+                                </Operator>
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:A32NX_GRAVITYGEAR_ROTATIONS, Number)" />
+                                    <Val Value="0"/>
+                                </Operator>
+                            </Operator>
+                        </TestValue>
+                <!-- TODO: Need to check if there's any procedure that we can do here, but I think if it's not stowed then that probably would probably require maintenance to check it. -->
+                        <Action Copilot="False" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+                    </Test>
+                    <Test>
+                        <TestValue>
+                            <Operator OpType="AND">
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:A32NX_GRAVITYGEAR_TURN_PCT, Number)" />
+                                    <Val Value="0"/>
+                                </Operator>
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:A32NX_GRAVITYGEAR_TURNED, Number)" />
+                                    <Val Value="0"/>
+                                </Operator>
+                            </Operator>
+                        </TestValue>
+                        <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_GRAVITYGEAR_TURNED, Number)" />
+                    </Test>
+                </Sequence>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ATC:STBY">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ATC" ExpectationTT="TT:GAME.CHECKLIST_STBY" />
+            <Test>
+                <Instrument Id="Knob_ATC_STBY" />
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_TRANSPONDER_MODE)" />
+                        <Val Value="0"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_TRANSPONDER_MODE)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ALT_RPTG:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ALT_RPTG" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Test>
+                <Instrument Id="Knob_ATC_ALT" />
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_SWITCH_ATC_ALT)" />
+                        <Val Value="1"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_SWITCH_ATC_ALT)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ATC_SYS_1:SELECT">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ATC_SYS_1" ExpectationTT="TT:A32NX.CHECKLIST.SELECT" />
+            <Clue name="TT:A32NX.CLUE.ATC_SYS_1:SELECT" />
+            <Test>
+                <Instrument Id="Knob_ATC_1" />
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_TRANSPONDER_SYSTEM)" />
+                        <Val Value="0"/>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_TRANSPONDER_SYSTEM)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RMP:CHECK_ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RMP" ExpectationTT="TT:GAME.CHECKLIST_CHECK_ON" />
+            <ForceCamera Name="PedestalFwd" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="RMP_TOGGLE_SWITCH_L" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_RMP_L_TOGGLE_SWITCH)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_RMP_L_TOGGLE_SWITCH)" />
+                </Test>
+                <Test>
+                    <Instrument Id="RMP_TOGGLE_SWITCH_R" />
+                    <TestValue>
+                        <Val Code="(L:A32NX_RMP_R_TOGGLE_SWITCH)" />
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_RMP_R_TOGGLE_SWITCH)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.GREEN_NAV_LIGHT:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.GREEN_NAV_LIGHT" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="PUSH_RADIOL_NAV" />
+                    <Instrument Id="PUSH_RADIOL_NAV_SEQ2" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_RMP_L_NAV_BUTTON_SELECTED)" />
+                            <Val Value="0" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:A32NX_RMP_L_NAV_BUTTON_SELECTED, Bool)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_RADIOR_NAV" />
+                    <Instrument Id="PUSH_RADIOR_NAV_SEQ2" />
+                    <TestValue>
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_RMP_R_NAV_BUTTON_SELECTED)" />
+                            <Val Value="0" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True"  Code="0 (&gt;L:A32NX_RMP_R_NAV_BUTTON_SELECTED, Bool)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.SEL_LIGHT:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.SEL_LIGHT" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <Instrument Id="PUSH_RADIOL_SEL_SEQ1" />
+                    <Instrument Id="PUSH_RADIOL_VHF1" />
+                    <TestValue>
+                        <!-- The left RMP panel isn't set to VHF 1 -->
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_RMP_L_SELECTED_MODE)" />
+                            <Val Value="1" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:A32NX_RMP_L_SELECTED_MODE)" />
+                </Test>
+                <Test>
+                    <Instrument Id="PUSH_RADIOR_SEL_SEQ1" />
+                    <Instrument Id="PUSH_RADIOR_VHF2" />
+                    <TestValue>
+                        <!-- The right RMP panel isn't set to VHF 2 -->
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_RMP_R_SELECTED_MODE)" />
+                            <Val Value="2" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True"  Code="2 (&gt;L:A32NX_RMP_R_SELECTED_MODE)" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.COM_FREQUENCIES:TUNE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.COM_FREQUENCIES" ExpectationTT="TT:A32NX.CHECKLIST.TUNE" />
+            <Clue name="TT:A32NX.CLUE.COM_FREQUENCIES" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.MSG_RECORD:ERASE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.MSG_RECORD" ExpectationTT="TT:A32NX.CHECKLIST.ERASE" />
+            <Clue name="TT:A32NX.CLUE.MSG_RECORD:ERASE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.ENGINE_AND_AIRCRAFT_TYPE:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENGINE_AND_AIRCRAFT_TYPE" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.FMGS.ENGINE_AND_AIRCRAFT_TYPE:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.FM_DATABASE_VALIDITY:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FM_DATABASE_VALIDITY" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.FMGS.FM_DATABASE_VALIDITY:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.NAVAID_DESELECTION:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.NAVAID_DESELECTION" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.FLIGHT_PLAN_INITIALIZATION:COMPLETE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FLIGHT_PLAN_INITIALIZATION" ExpectationTT="TT:GAME.CHECKLIST_COMPLETE" />
+            <Clue name="TT:A32NX.CLUE.FMGS.FLIGHT_PLAN_INITIALIZATION:COMPLETE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.ADIRS_POSITION_INITIALIZATION:AS_APPROPRIATE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ADIRS_POSITION_INITIALIZATION" ExpectationTT="TT:A32NX.CHECKLIST.AS_APPROPRIATE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.F_PLN_A_PAGE:COMPLETED_AND_CHECKED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.F_PLN_A_PAGE" ExpectationTT="TT:A32NX.CHECKLIST.COMPLETED_AND_CHECKED" />
+            <Clue name="TT:A32NX.CLUE.FMGS.F_PLN_A_PAGE:COMPLETED_AND_CHECKED" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.WINDS:AS_APPROPRIATE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.WINDS" ExpectationTT="TT:A32NX.CHECKLIST.AS_APPROPRIATE" />
+            <Clue name="TT:A32NX.CLUE.FMGS.WINDS:AS_APPROPRIATE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.F_PLN:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.F_PLN" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.FMGS.F_PLN:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.SECONDARY_FLIGHT_PLAN:AS_APPROPRIATE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.SECONDARY_FLIGHT_PLAN" ExpectationTT="TT:A32NX.CHECKLIST.AS_APPROPRIATE" />
+            <Clue name="TT:A32NX.CLUE.FMGS.SECONDARY_FLIGHT_PLAN:AS_APPROPRIATE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMGS.RADIO_NAV:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RADIO_NAV" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.FMGS.RADIO_NAV:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ZFWCG_ZFW:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ZFWCG_ZFW" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:A32NX_FM_GROSS_WEIGHT)" />
+                            <Val Value="0" />
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BLOCK_FUEL:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BLOCK_FUEL" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Clue name="TT:A32NX.CLUE.BLOCK_FUEL:SET" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.TAKE_OFF_SHIFT:SET_AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.TAKE_OFF_SHIFT" ExpectationTT="TT:GAME.CHECKLIST_SET_AS_REQUIRED" />
+            <Clue name="TT:A32NX.CLUE.TAKE_OFF_SHIFT:SET_AS_REQUIRED" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.V1_VR_V2:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.V1_VR_V2" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="AND">
+                        <Operator OpType="AND">
+                            <Operator OpType="NOT">
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:AIRLINER_V1_SPEED)" />
+                                    <Val Value="0" />
+                                </Operator>
+                            </Operator>
+                            <Operator OpType="NOT">
+                                <Operator OpType="EQUAL">
+                                    <Val Code="(L:AIRLINER_V2_SPEED)" />
+                                    <Val Value="0" />
+                                </Operator>
+                            </Operator>
+                        </Operator>
+                        <Operator OpType="NOT">
+                            <Operator OpType="EQUAL">
+                                <Val Code="(L:AIRLINER_VR_SPEED)" />
+                                <Val Value="0" />
+                            </Operator>
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FLX_TO_TEMP:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FLX_TO_TEMP" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Operator OpType="EQUAL">
+                            <Val Code="(L:AIRLINER_TO_FLEX_TEMP)" />
+                            <Val Value="0" />
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.THR_RED__ACC_ALTITUDE:SET_CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.THR_RED__ACC_ALTITUDE" ExpectationTT="TT:GAME.CHECKLIST_SET_CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ENG_OUT_ACC_ALTITUDE:SET_CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ENG_OUT_ACC_ALTITUDE" ExpectationTT="TT:GAME.CHECKLIST_SET_CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FLAPS_THS_REMINDER:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FLAPS_THS_REMINDER" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="AND">
+                        <Val Code="(L:A32NX_TO_CONFIG_THS_ENTERED)" />
+                        <Operator OpType="OR">
+                            <Val Code="(L:A32NX_TO_CONFIG_FLAPS) -1 !=" />
+                            <Val Code="(L:A32NX_TO_CONFIG_FLAPS_ENTERED)" />
+                        </Operator>
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PRESET_SPEEDS:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PRESET_SPEEDS" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FMS_PREPARATION:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FMS_PREPARATION" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.FMS_PREPARATION:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.BAROMETRIC_REFERENCE:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.BAROMETRIC_REFERENCE" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Clue name="TT:A32NX.CLUE.BAROMETRIC_REFERENCE:SET" />
+            <Sequence SeqType="Unordered">
+                <Test>
+                    <TestValue>
+                        <Operator OpType="EQUAL" Tolerance="100">
+                            <Val SimVarName="INDICATED ALTITUDE EX1" Units="Feet" />
+                            <Val SimVarName="INDICATED ALTITUDE:2" Units="Feet" />
+                        </Operator>
+                    </TestValue>
+                    <Action Copilot="True" Condition="TestValueFalse" Once="True" EventId="BAROMETRIC" />
+                </Test>
+            </Sequence>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.FLIGHT_DIRECTOR:ON">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_FLIGHT_DIRECTOR" ExpectationTT="TT:GAME.CHECKLIST_CHECK_ON" />
+            <Test>
+                <Instrument Id="AUTOPILOT_PUSH_FLIGHTDIRECTOR" />
+                <TestValue>
+                    <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE" Units="Bool" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" EventId="TOGGLE_FLIGHT_DIRECTOR" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ILS_LS:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ILS_LS" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Test>
+                <Instrument Id="LS_BUTTON_L" />
+                <Instrument Id="LS_BUTTON_R" />
+                <TestValue>
+                    <Val Code="(L:BTN_LS_1_FILTER_ACTIVE, Bool)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="1 (&gt;L:BTN_LS_1_FILTER_ACTIVE)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="(L:BTN_LS_2_FILTER_ACTIVE) if { 1 (&gt;L:BTN_LS_2_FILTER_ACTIVE) }" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ND_MODE_AND_RANGE:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ND_MODE_AND_RANGE" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Instrument Id="KNOB_AUTOPILOT_ROSE_L" />
+            <Instrument Id="KNOB_AUTOPILOT_ROSE_R" />
+            <Instrument Id="AIRLINER_Knob_Autopilot_ND_Range" />
+            <Instrument Id="AIRLINER_Knob_Autopilot_ND_Range" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ADF_VOR_SWITCH:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ADF_VOR_SWITCH" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Instrument Id="NAVAID_Switch" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.SPD_MACH_WINDOW:DASHED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.SPD_MACH_WINDOW" ExpectationTT="TT:A32NX.CHECKLIST.DASHED" />
+            <Test>
+                <Instrument Id="Speed_knob" />
+                <TestValue>
+                    <Val Code="(L:A32NX_FCU_SPD_MANAGED_DASHES)" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="(&gt;H:A320_Neo_FCU_SPEED_PUSH)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.HDG_VS__TRK_FPA:HDG_VS">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.HDG_VS__TRK_FPA" ExpectationTT="TT:A32NX.CHECKLIST.HDGVS" />
+            <Test>
+                <Instrument Id="AIRBUS_Push_Heading_Track" />
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val Code="(L:A32NX_TRK_FPA_MODE_ACTIVE)" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="'A32NX.FCU_TRK_FPA_TOGGLE_PUSH' (&gt;F:KeyEvent)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ALT_WINDOW:SET_INITIAL_EXPECTED_CLEARANCE_ALTITUDE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ALT_WINDOW" ExpectationTT="TT:A32NX.CHECKLIST.SET_INITIAL_EXPECTED_CLEARANCE_ALTITUDE" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CREW_SUPPLY:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CREW_SUPPLY" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+            <Test>
+                <Instrument Id="Crew_Supply" />
+                <TestValue>
+                    <Val Code="(L:PUSH_OVHD_OXYGEN_CREW, Bool) !" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:PUSH_OVHD_OXYGEN_CREW, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.CREW_SUPPLY:CHECK_ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.CREW_SUPPLY" ExpectationTT="TT:GAME.CHECKLIST_CHECK_ON" />
+            <Test>
+                <Instrument Id="Crew_Supply" />
+                <TestValue>
+                    <Val Code="(L:PUSH_OVHD_OXYGEN_CREW, Bool) !" />
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="True" Code="0 (&gt;L:PUSH_OVHD_OXYGEN_CREW, Bool)" />
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LOUDSPEAKERS:ON">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LOUDSPEAKERS" ExpectationTT="TT:GAME.CHECKLIST_ON" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.INT_RECEPTION_KNOB:PRESS_OUT_ADJUST">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.INT_RECEPTION_KNOB" ExpectationTT="TT:A32NX.CHECKLIST.PRESS_OUT_ADJUST" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.INT_RAD:INT">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.INT_RAD" ExpectationTT="TT:A32NX.CHECKLIST.INT" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RESET_TEST:PRESS_IN_DIRECTION_OF_ARROW">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RESET_TEST" ExpectationTT="TT:A32NX.CHECKLIST.PRESS_IN_DIRECTION_OF_ARROW" />
+            <Clue name="TT:A32NX.CLUE.RESET_TEST:PRESS_IN_DIRECTION_OF_ARROW" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.RESET_TEST:MAINTAIN">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.RESET_TEST" ExpectationTT="TT:GAME.CHECKLIST_MAINTAIN" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.EMERGENCY_PRESSURE:PRESS">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.EMERGENCY_PRESSURE" ExpectationTT="TT:GAME.CHECKLIST_PRESS" />
+            <Clue name="TT:A32NX.CLUE.EMERGENCY_PRESSURE:PRESS" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.REGUL_LO_PR_MESSAGE:CHECK_OFF">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.REGUL_LO_PR_MESSAGE" ExpectationTT="TT:GAME.CHECKLIST_CHECK_OFF" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PRIMARY_FLIGHT_DISPLAY_AND_NAVIGATION_DISPLAY_BRIGHTNESS:AS_REQUIRED">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PRIMARY_FLIGHT_DISPLAY_AND_NAVIGATION_DISPLAY_BRIGHTNESS" ExpectationTT="TT:GAME.CHECKLIST_AS_REQUIRED" />
+            <Instrument Id="PFD_Brightness" />
+            <Instrument Id="ND_Brightness" />
+            <Instrument Id="PFD_Brightness_FO" />
+            <Instrument Id="ND_Brightness_FO" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.LOUDSPEAKER_KNOB:SET">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.LOUDSPEAKER_KNOB" ExpectationTT="TT:GAME.CHECKLIST_SET" />
+            <Clue name="TT:A32NX.CLUE.LOUDSPEAKER_KNOB:SET" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.PRIMARY_FLIGHT_DISPLAY:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.PRIMARY_FLIGHT_DISPLAY" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.PRIMARY_FLIGHT_DISPLAY:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.NAVIGATION_DISPLAY:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.NAVIGATION_DISPLAY" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.NAVIGATION_DISPLAY:CHECK" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.IRS_ALIGN:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.IRS_ALIGN" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.IRS_ALIGN:CHECK" />
+            <Test>
+                <TestValue>
+                    <Operator OpType="EQUAL">
+                        <Val Code="(L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME)" />
+                        <Val Value="0" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="False" Condition="TestValueFalse" Once="True" SpecialAction="WaitUntilTestValueValidated"/>
+            </Test>
+        </Checkpoint>
+        <Checkpoint Id="A32NX.TAKEOFF_BRIEFING:PERFORM">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.TAKEOFF_BRIEFING" ExpectationTT="TT:GAME.CHECKLIST_PERFORM" />
+            <Clue name="TT:A32NX.CLUE.TAKEOFF_BRIEFING:PERFORM" />
+        </Checkpoint>
+    </Checklist.CheckpointLibrary>
+</SimBase.Document>
