@@ -36,6 +36,7 @@
         <Include RelativeFile="behaviour\overhead\fire.xml" />
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
+        <Include RelativeFile="behaviour\door_animations.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
         <Include RelativeFile="behaviour\ecam-cp.xml" />
         <Include RelativeFile="behaviour\fcu.xml" />
@@ -93,6 +94,9 @@
         </Component>
         <Component ID="INTERACTIVE_PARTS">
             <UseTemplate Name="FBW_A380X_Components_InteractiveParts" />
+        </Component>
+        <Component ID="DOOR_ANIMATIONS_COCKPIT">
+            <UseTemplate Name="FBW_A380X_Components_DoorAnimations" />
         </Component>
         <Component ID="MIP">
             <UseTemplate Name="FBW_A380X_Components_MIP" />
