@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmsOansData } from 'instruments/src/MsfsAvionicsCommon/providers/FmsOansPublisher';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -1153,7 +1152,11 @@ export class FmcAircraftInterface {
       return;
     }
 
-    const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
+    const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
+    let flaps = flapLever;
+    if (flapLever === 1 && SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'Enum') === 1) {
+      flaps = 5; // CONF 1
+    }
     const speeds = new A380OperatingSpeeds(
       grossWeight / 1000,
       cas,
