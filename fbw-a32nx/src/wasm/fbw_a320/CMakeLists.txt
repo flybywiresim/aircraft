@@ -49,7 +49,6 @@ add_executable(flybywire-a32nx-fbw
     src/utils/SRFlipFLop.cpp
     src/utils/PulseNode.cpp
     src/utils/HysteresisNode.cpp
-    src/model/Double2MultiWord.cpp
     src/model/ElacComputer_data.cpp
     src/model/ElacComputer.cpp
     src/model/SecComputer_data.cpp
@@ -66,13 +65,10 @@ add_executable(flybywire-a32nx-fbw
     src/model/FcuComputer_data.cpp
     src/model/FcuComputer.cpp
     src/model/look1_binlxpw.cpp
-    src/model/look2_binlcpw.cpp
     src/model/look2_binlxpw.cpp
     src/model/mod_2RcCQkwc.cpp
-    src/model/MultiWordIor.cpp
     src/model/rt_modd.cpp
     src/model/rt_remd.cpp
-    src/model/uMultiWord2Double.cpp
     src/FlyByWireInterface.cpp
     src/FlightDataRecorder.cpp
     src/Arinc429.cpp

@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_look2_pbinlxpw_h_
-#define RTW_HEADER_look2_pbinlxpw_h_
+#ifndef look2_pbinlxpw_h_
+#define look2_pbinlxpw_h_
 #include "rtwtypes.h"
 
 extern real_T look2_pbinlxpw(real_T u0, real_T u1, const real_T bp0[], const real_T bp1[], const real_T table[],

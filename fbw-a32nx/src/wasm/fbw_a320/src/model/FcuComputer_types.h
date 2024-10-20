@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FcuComputer_types_h_
-#define RTW_HEADER_FcuComputer_types_h_
+#ifndef FcuComputer_types_h_
+#define FcuComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_efis_range_selection_
 #define DEFINED_TYPEDEF_FOR_efis_range_selection_
@@ -70,52 +70,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_outputs_
-
-struct base_fcu_efis_panel_outputs
-{
-  boolean_T fd_light_on;
-  boolean_T ls_light_on;
-  boolean_T cstr_light_on;
-  boolean_T wpt_light_on;
-  boolean_T vord_light_on;
-  boolean_T ndb_light_on;
-  boolean_T arpt_light_on;
-  int8_T baro_value_mode;
-  real32_T baro_value;
-  int8_T baro_mode;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_outputs_
-
-struct base_fcu_afs_panel_outputs
-{
-  boolean_T loc_light_on;
-  boolean_T exped_light_on;
-  boolean_T appr_light_on;
-  boolean_T ap_1_light_on;
-  boolean_T ap_2_light_on;
-  boolean_T athr_light_on;
-  boolean_T trk_fpa_mode;
-  boolean_T mach_mode;
-  real_T spd_mach_value;
-  boolean_T spd_mach_dashes;
-  boolean_T spd_mach_managed;
-  real_T hdg_trk_value;
-  boolean_T hdg_trk_dashes;
-  boolean_T hdg_trk_managed;
-  real_T alt_value;
-  boolean_T lvl_ch_managed;
-  real_T vs_fpa_value;
-  boolean_T vs_fpa_dashes;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fcu_knob_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fcu_knob_inputs_
 
@@ -124,21 +78,6 @@ struct base_fcu_knob_inputs
   boolean_T pushed;
   boolean_T pulled;
   int8_T turns;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-
-struct base_fcu_sim_input
-{
-  real32_T left_baro_setting_hpa;
-  real32_T right_baro_setting_hpa;
-  real32_T spd_mach;
-  real32_T hdg_trk;
-  real32_T alt;
-  real32_T vs_fpa;
 };
 
 #endif
@@ -193,6 +132,21 @@ struct base_fmgc_a_bus
   base_arinc_429 n1_command_percent;
   base_arinc_429 vertical_speed_ft_min;
   base_arinc_429 discrete_word_7;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+
+struct base_fcu_sim_input
+{
+  real32_T left_baro_setting_hpa;
+  real32_T right_baro_setting_hpa;
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
 };
 
 #endif
@@ -396,6 +350,52 @@ struct base_fcu_logic_outputs
   base_afs_logic_outputs afs;
   base_fcu_efis_logic_outputs capt_efis;
   base_fcu_efis_logic_outputs fo_efis;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_outputs_
+
+struct base_fcu_efis_panel_outputs
+{
+  boolean_T fd_light_on;
+  boolean_T ls_light_on;
+  boolean_T cstr_light_on;
+  boolean_T wpt_light_on;
+  boolean_T vord_light_on;
+  boolean_T ndb_light_on;
+  boolean_T arpt_light_on;
+  int8_T baro_value_mode;
+  real32_T baro_value;
+  int8_T baro_mode;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_outputs_
+
+struct base_fcu_afs_panel_outputs
+{
+  boolean_T loc_light_on;
+  boolean_T exped_light_on;
+  boolean_T appr_light_on;
+  boolean_T ap_1_light_on;
+  boolean_T ap_2_light_on;
+  boolean_T athr_light_on;
+  boolean_T trk_fpa_mode;
+  boolean_T mach_mode;
+  real_T spd_mach_value;
+  boolean_T spd_mach_dashes;
+  boolean_T spd_mach_managed;
+  real_T hdg_trk_value;
+  boolean_T hdg_trk_dashes;
+  boolean_T hdg_trk_managed;
+  real_T alt_value;
+  boolean_T lvl_ch_managed;
+  real_T vs_fpa_value;
+  boolean_T vs_fpa_dashes;
 };
 
 #endif

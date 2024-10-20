@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FmgcComputer_h_
-#define RTW_HEADER_FmgcComputer_h_
+#ifndef FmgcComputer_h_
+#define FmgcComputer_h_
 #include "rtwtypes.h"
 #include "FmgcComputer_types.h"
 #include "FmgcOuterLoops.h"
@@ -63,13 +63,13 @@ class FmgcComputer final
     real_T vMemoEo;
     real_T vMemoGa;
     real_T pY;
-    real_T pY_d;
+    real_T pY_n;
     real_T pU;
-    real_T pY_f;
-    real_T pU_p;
+    real_T pY_l;
+    real_T pU_i;
     real32_T DelayInput1_DSTATE_b;
-    real32_T pY_p;
-    real32_T pU_c;
+    real32_T pY_e;
+    real32_T pU_e;
     boolean_T Delay_DSTATE_p;
     boolean_T Delay_DSTATE_k;
     boolean_T Delay_DSTATE_o;
@@ -134,11 +134,11 @@ class FmgcComputer final
     boolean_T pLand3FailPass;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T pY_not_empty_n;
-    boolean_T pY_not_empty_c;
-    boolean_T pU_not_empty_h;
+    boolean_T pY_not_empty_e;
+    boolean_T pY_not_empty_m;
+    boolean_T pU_not_empty_l;
     boolean_T pY_not_empty_b;
-    boolean_T pU_not_empty_n;
+    boolean_T pU_not_empty_i;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_bz;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_pl4;

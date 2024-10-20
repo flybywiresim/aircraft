@@ -1,13 +1,15 @@
-#ifndef RTW_HEADER_FadecComputer_types_h_
-#define RTW_HEADER_FadecComputer_types_h_
+#ifndef FadecComputer_types_h_
+#define FadecComputer_types_h_
 #include "rtwtypes.h"
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
-struct base_arinc_429
-{
-  uint32_T SSM;
-  real32_T Data;
+enum class SignStatusMatrix
+  : int32_T {
+  FailureWarning = 0,
+  NoComputedData,
+  FunctionalTest,
+  NormalOperation
 };
 
 #endif
@@ -27,15 +29,13 @@ enum class athr_thrust_limit_type
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
-#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
-enum class SignStatusMatrix
-  : int32_T {
-  FailureWarning = 0,
-  NoComputedData,
-  FunctionalTest,
-  NormalOperation
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
 };
 
 #endif

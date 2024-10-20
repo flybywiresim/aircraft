@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FmgcOuterLoops_h_
-#define RTW_HEADER_FmgcOuterLoops_h_
+#ifndef FmgcOuterLoops_h_
+#define FmgcOuterLoops_h_
 #include "rtwtypes.h"
 #include "FmgcOuterLoops_types.h"
 #include <cstring>
@@ -62,7 +62,7 @@ class FmgcOuterLoops final
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_WashoutFilter_FmgcOuterLoops_d_T {
+  struct rtDW_WashoutFilter_FmgcOuterLoops_o_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
@@ -80,25 +80,25 @@ class FmgcOuterLoops final
     real_T Delay_DSTATE_i;
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_e;
+    real_T prevVerticalLaw;
     real_T prevTarget;
     real_T pY;
     real_T storage;
-    real_T prevTarget_b;
+    real_T prevVerticalLaw_p;
+    real_T prevTarget_n;
     real_T Tau;
     real_T H_bias;
-    real_T pY_p;
+    real_T pY_l;
     real_T pU;
     real_T dH_offset;
     real_T k;
     real_T maxH_dot;
-    real_T pY_c;
-    real_T pY_b;
-    real_T storage_p;
-    real_T storage_n;
+    real_T pY_m;
+    real_T pY_h;
+    real_T storage_b;
+    real_T storage_l;
     real_T limit;
-    real_T pY_d;
-    vertical_law prevVerticalLaw;
-    vertical_law prevVerticalLaw_a;
+    real_T pY_f;
     boolean_T Delay_DSTATE_l4[100];
     boolean_T Delay_DSTATE_n[100];
     boolean_T icLoad;
@@ -108,30 +108,30 @@ class FmgcOuterLoops final
     boolean_T islevelOffActive;
     boolean_T pY_not_empty;
     boolean_T storage_not_empty;
-    boolean_T prevVerticalLaw_not_empty_g;
-    boolean_T prevTarget_not_empty_b;
-    boolean_T islevelOffActive_b;
+    boolean_T prevVerticalLaw_not_empty_f;
+    boolean_T prevTarget_not_empty_d;
+    boolean_T islevelOffActive_h;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
-    boolean_T pY_not_empty_c;
+    boolean_T pY_not_empty_a;
     boolean_T pU_not_empty;
-    boolean_T wasActive_k;
-    boolean_T wasActive_not_empty_g;
-    boolean_T pY_not_empty_k;
-    boolean_T pY_not_empty_j;
-    boolean_T storage_not_empty_c;
+    boolean_T wasActive_m;
+    boolean_T wasActive_not_empty_l;
+    boolean_T pY_not_empty_l;
+    boolean_T pY_not_empty_g;
+    boolean_T storage_not_empty_j;
     boolean_T storage_not_empty_p;
     boolean_T limit_not_empty;
-    boolean_T pY_not_empty_m;
+    boolean_T pY_not_empty_p;
     rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_mv;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_iz;
-    rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_i;
+    rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_i5;
     rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_g;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_av;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_mr;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_ag;
     rtDW_RateLimiter_FmgcOuterLoops_h_T sf_RateLimiter_jx;
-    rtDW_WashoutFilter_FmgcOuterLoops_d_T sf_WashoutFilter_hj;
+    rtDW_WashoutFilter_FmgcOuterLoops_o_T sf_WashoutFilter_hj;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_j;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_ip;
     rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_eq;
@@ -141,24 +141,24 @@ class FmgcOuterLoops final
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_oer;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_c;
     rtDW_RateLimiter_FmgcOuterLoops_h_T sf_RateLimiter_j;
-    rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_b;
+    rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_bd;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_l;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_ft;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_c;
     rtDW_LagFilter_FmgcOuterLoops_j_T sf_LagFilter_f5;
     rtDW_LagFilter_FmgcOuterLoops_j_T sf_LagFilter_fd;
-    rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_kf;
+    rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_k;
     rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_e;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_a;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_mm;
     rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_m;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_oe;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_m;
-    rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_j;
-    rtDW_WashoutFilter_FmgcOuterLoops_d_T sf_WashoutFilter_n;
-    rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_g;
-    rtDW_LagFilter_FmgcOuterLoops_j_T sf_LagFilter_k;
-    rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_o3;
+    rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_l;
+    rtDW_WashoutFilter_FmgcOuterLoops_o_T sf_WashoutFilter_b;
+    rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_i;
+    rtDW_LagFilter_FmgcOuterLoops_j_T sf_LagFilter_or;
+    rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_d;
     rtDW_LagFilter_FmgcOuterLoops_T sf_LagFilter_o;
     rtDW_WashoutFilter_FmgcOuterLoops_T sf_WashoutFilter_k;
     rtDW_LeadLagFilter_FmgcOuterLoops_T sf_LeadLagFilter_o;
@@ -211,10 +211,10 @@ class FmgcOuterLoops final
     real_T HighPassFilter_C1_e;
     real_T LowPassFilter_C1_h;
     real_T LagFilter_C1_d;
-    real_T WashoutFilter_C1_j;
+    real_T WashoutFilter_C1_e;
     real_T LagFilterH_C1;
     real_T LeadLagFilter_C1;
-    real_T LeadLagFilter_C1_n;
+    real_T LeadLagFilter_C1_c;
     real_T WashoutFilter_C1_a;
     real_T HighPassFilter_C1_et;
     real_T LowPassFilter_C1_j;
@@ -234,7 +234,7 @@ class FmgcOuterLoops final
     real_T WashoutFilter_C1_pq;
     real_T HighPassFilter_C1_h;
     real_T LowPassFilter_C1_bh;
-    real_T WashoutFilter_C1_e;
+    real_T WashoutFilter_C1_ea;
     real_T HighPassFilter_C1_ne;
     real_T LowPassFilter_C1_n;
     real_T WashoutFilter_C1_f;
@@ -245,13 +245,13 @@ class FmgcOuterLoops final
     real_T LagFilter_C1_h;
     real_T WashoutFilterBeta_c_C1;
     real_T LagFilter_C1_cp;
-    real_T LagFilter1_C1_e;
+    real_T LagFilter1_C1_n;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
     real_T HighPassFilter_C2_b;
     real_T LowPassFilter_C2_k;
     real_T LeadLagFilter_C2;
-    real_T LeadLagFilter_C2_f;
+    real_T LeadLagFilter_C2_o;
     real_T HighPassFilter_C2_m;
     real_T LowPassFilter_C2_l;
     real_T HighPassFilter_C2_h;
@@ -269,7 +269,7 @@ class FmgcOuterLoops final
     real_T HighPassFilter_C3_o;
     real_T LowPassFilter_C3_f;
     real_T LeadLagFilter_C3;
-    real_T LeadLagFilter_C3_p;
+    real_T LeadLagFilter_C3_l;
     real_T HighPassFilter_C3_e;
     real_T LowPassFilter_C3_a;
     real_T HighPassFilter_C3_a;
@@ -287,7 +287,7 @@ class FmgcOuterLoops final
     real_T HighPassFilter_C4_p;
     real_T LowPassFilter_C4_d;
     real_T LeadLagFilter_C4;
-    real_T LeadLagFilter_C4_p;
+    real_T LeadLagFilter_C4_a;
     real_T HighPassFilter_C4_g;
     real_T LowPassFilter_C4_e;
     real_T HighPassFilter_C4_j;
@@ -307,7 +307,7 @@ class FmgcOuterLoops final
     real_T DiscreteDerivativeVariableTs_Gain_k;
     real_T VS_Gain_c;
     real_T VS_Gain_a;
-    real_T VS_Gain_h;
+    real_T VS_Gain_k;
     real_T VS_Gain_j;
     real_T VS_Gain_n;
     real_T VS_Gain_b;
@@ -459,9 +459,9 @@ class FmgcOuterLoops final
     real_T Gain5_Gain_f;
     real_T Switch_Threshold;
     real_T Gain1_Gain_o;
-    real_T Gain2_Gain_e;
-    real_T Gain1_Gain_h;
-    real_T Gain6_Gain_d;
+    real_T Gain2_Gain_h;
+    real_T Gain1_Gain_g;
+    real_T Gain6_Gain_lb;
     real_T Constant_Value_k;
     real_T Constant1_Value_c;
     real_T Gain1_Gain_j;
@@ -631,25 +631,25 @@ class FmgcOuterLoops final
     real_T Saturation_UpperSat_jq;
     real_T Saturation_LowerSat_km;
     real_T Gain_Gain_gp;
-    real_T Constant2_Value_hv;
-    real_T Gain4_Gain_l;
-    real_T Gain5_Gain_aj;
+    real_T Constant2_Value_m;
+    real_T Gain4_Gain_d;
+    real_T Gain5_Gain_m;
     real_T uDLookupTable_tableData[4];
     real_T uDLookupTable_bp01Data[4];
     real_T kntofpm_Gain;
     real_T maxslope_Gain;
-    real_T Gain1_Gain_cj;
-    real_T ftmintoms_Gain_ps;
-    real_T kntoms_Gain_g;
-    real_T Saturation_UpperSat_nv;
-    real_T Saturation_LowerSat_l;
-    real_T Gain_Gain_f;
     real_T Gain1_Gain_kq;
-    real_T ftmintoms_Gain_n;
-    real_T Saturation_UpperSat_km3;
+    real_T ftmintoms_Gain_b;
+    real_T kntoms_Gain_p3;
+    real_T Saturation_UpperSat_i5;
     real_T Saturation_LowerSat_b;
-    real_T Gain_Gain_eh;
-    real_T Gain2_Gain_fj;
+    real_T Gain_Gain_dn;
+    real_T Gain1_Gain_pm;
+    real_T ftmintoms_Gain_e;
+    real_T Saturation_UpperSat_hw;
+    real_T Saturation_LowerSat_k1;
+    real_T Gain_Gain_ed;
+    real_T Gain2_Gain_m;
     real_T Constant_Value_ah;
     real_T fpmtoms_Gain_h;
     real_T kntoms_Gain_c;
@@ -699,7 +699,7 @@ class FmgcOuterLoops final
     real_T kntoms_Gain_jl;
     real_T Saturation_UpperSat_fj;
     real_T Saturation_LowerSat_mg;
-    real_T Gain_Gain_fz;
+    real_T Gain_Gain_f;
     real_T Gain1_Gain_mr;
     real_T Constant_Value_ab;
     real_T Gain1_Gain_o3;
@@ -720,7 +720,7 @@ class FmgcOuterLoops final
     real_T Gain1_Gain_oj;
     real_T Gain_Gain_ip;
     real_T Switch_Threshold_m;
-    real_T Gain1_Gain_pm;
+    real_T Gain1_Gain_pmd;
     real_T Gain_Gain_lw;
     real_T Gain_Gain_cb;
     real_T Gain_Gain_p1;
@@ -761,7 +761,7 @@ class FmgcOuterLoops final
     real_T Saturation_UpperSat_cd;
     real_T Saturation_LowerSat_in;
     real_T Gain_Gain_lm;
-    real_T Gain1_Gain_g;
+    real_T Gain1_Gain_gw;
     real_T Constant_Value_gw;
     real_T Gain1_Gain_iz;
     real_T Gain1_Gain_c1;
@@ -813,7 +813,7 @@ class FmgcOuterLoops final
     real_T _Gain_p;
     real_T ktstomps_Gain_a;
     real_T ug_Gain_o;
-    real_T Gain1_Gain_hk;
+    real_T Gain1_Gain_h;
     real_T Gain_Gain_as;
     real_T Constant4_Value_h;
     real_T Constant3_Value_hk;
@@ -821,7 +821,7 @@ class FmgcOuterLoops final
     real_T Gain_Gain_fx;
     real_T Switch_Threshold_mc;
     real_T Gain1_Gain_bt;
-    real_T Gain_Gain_fzq;
+    real_T Gain_Gain_fz;
     real_T fpmtoms_Gain_kj;
     real_T kntoms_Gain_hs;
     real_T Saturation_UpperSat_bt;
@@ -868,7 +868,7 @@ class FmgcOuterLoops final
     real_T fpmtoms_Gain_cr;
     real_T kntoms_Gain_drq;
     real_T Saturation_UpperSat_pi;
-    real_T Saturation_LowerSat_l4;
+    real_T Saturation_LowerSat_l;
     real_T Gain_Gain_ij;
     real_T Gain1_Gain_o1;
     real_T Constant_Value_ac;
@@ -902,24 +902,26 @@ class FmgcOuterLoops final
     real_T Gain2_Gain_l;
     real_T Saturation_UpperSat_go;
     real_T Saturation_LowerSat_j5;
-    real_T ftmintoms_Gain_e;
+    real_T ftmintoms_Gain_el;
     real_T kntoms_Gain_ni;
     real_T Saturation_UpperSat_d0;
     real_T Saturation_LowerSat_mo;
     real_T Gain_Gain_gd;
     real_T Constant1_Value_o;
     real_T Gain_Gain_o2;
-    real_T Saturation_UpperSat_dd;
-    real_T Saturation_LowerSat_ok;
-    real_T Gain_Gain_bk;
-    real_T Gain3_Gain_n;
+    real_T Saturation_UpperSat_mf;
+    real_T Saturation_LowerSat_fa;
+    real_T Gain_Gain_cx;
+    real_T Gain3_Gain_e;
     real_T Gain_Gain_jr;
     real_T Gain_Gain_cv;
     real_T Gain1_Gain_ce;
     real_T Saturation_UpperSat_n5;
     real_T Saturation_LowerSat_mt;
     real_T Constant_Value_mv;
-    real_T Gain7_Gain_p;
+    real_T Gain7_Gain_k;
+    real_T kntofpm_Gain_k;
+    real_T maxslope_Gain_k;
     boolean_T Constant1_Value_i;
     boolean_T Delay_InitialCondition;
     boolean_T Delay_InitialCondition_l;
@@ -948,11 +950,11 @@ class FmgcOuterLoops final
             *rtu_in_data_fms_phi_limit_deg, const real_T *rtu_in_data_fms_H_c_profile_ft, const real_T
             *rtu_in_data_fms_H_dot_c_profile_ft_min, const real_T *rtu_in_data_VLS_kn, const real_T *rtu_in_data_VMAX_kn,
             const boolean_T *rtu_in_data_on_ground, const real_T *rtu_in_data_zeta_deg, const real_T
-            *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged, const lateral_law
-            *rtu_in_input_lateral_law, const vertical_law *rtu_in_input_vertical_law, const real_T
-            *rtu_in_input_Psi_c_deg, const real_T *rtu_in_input_Chi_c_deg, const real_T *rtu_in_input_H_c_ft, const
-            real_T *rtu_in_input_H_dot_c_fpm, const real_T *rtu_in_input_FPA_c_deg, const real_T *rtu_in_input_V_c_kn,
-            const boolean_T *rtu_in_input_ALT_soft_mode_active, const boolean_T *rtu_in_input_TCAS_mode_active, const
+            *rtu_in_data_total_weight_kg, const boolean_T *rtu_in_input_ap_engaged, const real_T
+            *rtu_in_input_lateral_law, const real_T *rtu_in_input_vertical_law, const real_T *rtu_in_input_Psi_c_deg,
+            const real_T *rtu_in_input_Chi_c_deg, const real_T *rtu_in_input_H_c_ft, const real_T
+            *rtu_in_input_H_dot_c_fpm, const real_T *rtu_in_input_FPA_c_deg, const real_T *rtu_in_input_V_c_kn, const
+            boolean_T *rtu_in_input_ALT_soft_mode_active, const boolean_T *rtu_in_input_TCAS_mode_active, const
             boolean_T *rtu_in_input_FINAL_DES_mode_active, const boolean_T *rtu_in_input_GS_track_mode, real_T
             *rty_out_Phi_loc_c, real_T *rty_out_Nosewheel_c, real_T *rty_out_flight_director_Theta_c_deg, real_T
             *rty_out_flight_director_Phi_c_deg, real_T *rty_out_flight_director_Beta_c_deg, real_T
@@ -1004,9 +1006,9 @@ class FmgcOuterLoops final
     rtu_VS_AP, real_T rtu_VLS_FD, real_T rtu_VLS_AP, real_T rtu_VMAX_FD, real_T rtu_VMAX_AP, real_T rtu_margin, real_T
     *rty_FD, real_T *rty_AP);
   static void FmgcOuterLoops_VSLimiter(real_T rtu_u, const ap_laws_output *rtu_in, real_T *rty_y);
-  static void FmgcOuterLoops_WashoutFilter_n_Reset(rtDW_WashoutFilter_FmgcOuterLoops_d_T *localDW);
-  static void FmgcOuterLoops_WashoutFilter_n(const real_T *rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
-    rtDW_WashoutFilter_FmgcOuterLoops_d_T *localDW);
+  static void FmgcOuterLoops_WashoutFilter_l_Reset(rtDW_WashoutFilter_FmgcOuterLoops_o_T *localDW);
+  static void FmgcOuterLoops_WashoutFilter_b(const real_T *rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
+    rtDW_WashoutFilter_FmgcOuterLoops_o_T *localDW);
   static void FmgcOuterLoops_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
 };
 

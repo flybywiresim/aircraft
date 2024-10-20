@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FcuComputer_h_
-#define RTW_HEADER_FcuComputer_h_
+#ifndef FcuComputer_h_
+#define FcuComputer_h_
 #include "rtwtypes.h"
 #include "FcuComputer_types.h"
 
@@ -49,22 +49,22 @@ class FcuComputer final
     real_T eventTime;
     real32_T DelayInput1_DSTATE[4];
     real32_T pValue;
-    real32_T pValue_e;
-    real32_T pValue_j;
     real32_T pValue_n;
+    real32_T pValue_b;
+    real32_T pValue_h;
     boolean_T pValue_not_empty;
     boolean_T prevTrkFpaActive;
     boolean_T prevTrkFpaActive_not_empty;
     boolean_T p_metric_alt_active;
     boolean_T p_trk_fpa_active;
     boolean_T eventTime_not_empty;
-    boolean_T pValue_not_empty_l;
+    boolean_T pValue_not_empty_a;
     boolean_T prevMachActive;
     boolean_T prevMachActive_not_empty;
-    boolean_T pValue_not_empty_lk;
-    boolean_T prevTrkFpaActive_a;
-    boolean_T prevTrkFpaActive_not_empty_c;
-    boolean_T pValue_not_empty_m;
+    boolean_T pValue_not_empty_i;
+    boolean_T prevTrkFpaActive_m;
+    boolean_T prevTrkFpaActive_not_empty_j;
+    boolean_T pValue_not_empty_p;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kq;
     rtDW_MATLABFunction_FcuComputer_e_T sf_MATLABFunction_kj;
