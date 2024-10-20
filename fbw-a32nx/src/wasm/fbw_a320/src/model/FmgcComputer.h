@@ -4,7 +4,6 @@
 #include "FmgcComputer_types.h"
 #include "FmgcOuterLoops.h"
 
-extern const real_T FmgcComputer_RGND;
 extern base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct;
 extern ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct;
 extern base_fmgc_athr_outputs rtP_fmgc_athr_output_MATLABStruct;
@@ -996,6 +995,7 @@ class FmgcComputer final
     real_T Bias_Bias_p;
     real_T Gain2_Gain;
     real_T Constant_Value_i;
+    real_T Constant1_Value_io;
     real_T Gain3_Gain;
     real_T Gain1_Gain_a;
     real_T fpmtoms_Gain;
