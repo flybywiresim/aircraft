@@ -136,7 +136,7 @@ export class LegacyFuel implements Instrument {
 
   public onUpdate(): void {
     const dt = this.sysHost.deltaTime;
-    if (!this.hasInit || !this.throttler.canUpdate(dt)) {
+    if (!this.hasInit || this.throttler.canUpdate(dt) <= 0) {
       return;
     }
 
