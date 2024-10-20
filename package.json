@@ -45,6 +45,9 @@
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "====== A380 =============================================================": "========================================================",
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
+    "build-a380x:copy-large-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
+    "build-a380x:link-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && cp -l -r fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/",
+    "build-a380x:link-large-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && cp -l -r large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/",
     "build-a380x:efb-translation": "cd fbw-common/src/systems/instruments/src/EFB/Localization && node build-flypad-translation.js",
     "build-a380x:locPak-translation": "cd fbw-a380x/src/localization && node build-locPak-translation.js",
     "build-a380x:extras-host": "node fbw-a380x/src/systems/extras-host/build.js",
@@ -62,7 +65,9 @@
     "====== COMMON ===========================================================": "========================================================",
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",
-    "test": "jest"
+    "test": "jest",
+    "unchunkLargeFiles": "cd large-files && npm run unchunk",
+    "chunkLargeFiles": "cd large-files && npm run chunk"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
