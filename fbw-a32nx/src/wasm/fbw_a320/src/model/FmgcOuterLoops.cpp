@@ -941,7 +941,7 @@ FmgcOuterLoops::Parameters_FmgcOuterLoops_T FmgcOuterLoops::FmgcOuterLoops_rtP{
   -0.3,
 
 
-  { 1.0, 1.0, 1.15, 1.15 },
+  { 1.0, 1.0, 1.07, 1.07 },
 
 
   { 0.0, 45000.0, 65000.0, 70000.0 },
@@ -962,7 +962,7 @@ FmgcOuterLoops::Parameters_FmgcOuterLoops_T FmgcOuterLoops::FmgcOuterLoops_rtP{
 
   57.295779513082323,
 
-  0.3,
+  0.0,
 
   0.00508,
 
@@ -2223,6 +2223,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   boolean_T rtb_AND_g;
   boolean_T rtb_Compare_ck;
   boolean_T rtb_Compare_ny;
+  boolean_T rtb_Compare_o3;
   boolean_T rtb_Delay_d;
   boolean_T rtb_Delay_l;
   static const int8_T b[5]{ 15, 30, 30, 19, 19 };
@@ -3597,8 +3598,8 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
 
   rtb_Y_f2 = (FmgcOuterLoops_rtP.Gain2_Gain_ne * rtb_MaxH_dot_RA + FmgcOuterLoops_rtP.Gain_Gain_p1 * rtb_Product_or) *
     rtb_Sum1_pc + (FmgcOuterLoops_rtP.Constant_Value_jm - rtb_Sum1_pc) * (rtb_Y_f2 * rtb_Mod1_ds);
-  rtb_Compare_ck = (*rtu_in_data_H_radio_ft > FmgcOuterLoops_rtP.CompareToConstant_const_n);
-  rtb_Compare_ck = (rtb_Compare_ck && (*rtu_in_data_nav_gs_valid));
+  rtb_Compare_o3 = (*rtu_in_data_H_radio_ft > FmgcOuterLoops_rtP.CompareToConstant_const_n);
+  rtb_Compare_o3 = (rtb_Compare_o3 && (*rtu_in_data_nav_gs_valid));
   if ((rtb_ManualSwitch != FmgcOuterLoops_rtP.CompareToConstant6_const) || (!FmgcOuterLoops_DWork.storage_not_empty)) {
     FmgcOuterLoops_DWork.storage = *rtu_in_data_nav_gs_deg;
     FmgcOuterLoops_DWork.storage_not_empty = true;
@@ -3627,7 +3628,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     rtb_Y_o = 0.0;
   }
 
-  if (rtb_Compare_ck) {
+  if (rtb_Compare_o3) {
     rtb_MaxH_dot_RA = FmgcOuterLoops_rtP.Gain3_Gain_f * rtb_Y_f2;
   } else {
     rtb_MaxH_dot_RA = 0.0;
@@ -3700,11 +3701,11 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
 
   rtb_Product_or = *rtu_in_data_V_ias_kn - v[high_i];
   rtb_Product_or *= FmgcOuterLoops_rtP.Gain1_Gain_ox;
-  rtb_Compare_ck = ((r > FmgcOuterLoops_rtP.CompareToConstant6_const_n) && (rtb_Y_f2 <
+  rtb_Compare_o3 = ((r > FmgcOuterLoops_rtP.CompareToConstant6_const_n) && (rtb_Y_f2 <
     FmgcOuterLoops_rtP.CompareToConstant5_const_ko) && (rtb_Product_or < FmgcOuterLoops_rtP.CompareToConstant2_const_f) &&
                     (rtb_ManualSwitch == FmgcOuterLoops_rtP.CompareToConstant2_const_c));
   rtb_Gain1_c4 = rtb_MaxH_dot_RA + rtb_Mod1_ds;
-  if (rtb_Compare_ck) {
+  if (rtb_Compare_o3) {
     rtb_Mod1_ds = FmgcOuterLoops_rtP.Constant_Value_k;
   } else {
     if (r > FmgcOuterLoops_rtP.CompareToConstant_const_j) {
@@ -4214,7 +4215,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     break;
 
    case 3:
-    if (rtb_Compare_ck) {
+    if (rtb_Compare_o3) {
       rtb_k1 = rtb_Product_or;
     } else if (r > FmgcOuterLoops_rtP.Switch_Threshold) {
       rtb_k1 = std::fmax(rtb_Product_or, rtb_Gain1_c4);
@@ -4484,7 +4485,7 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
     FmgcOuterLoops_rtP.Constant_Value_j4;
   rtb_BusConversion_InsertedFor_VSLimiter_at_inport_1_BusCreator1_f.output.flare_law.delta_Theta_beta_c_deg =
     FmgcOuterLoops_rtP.Constant_Value_j4;
-  if (!rtb_Compare_ck) {
+  if (!rtb_Compare_o3) {
     if (r > FmgcOuterLoops_rtP.Switch_Threshold_b) {
       rtb_Product_or = std::fmax(rtb_Product_or, FmgcOuterLoops_rtP.VS_Gain_j * rtb_Gain1_c4);
     } else {
@@ -4505,8 +4506,8 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   FmgcOuterLoops_Voter1(rtb_fpmtoms_j, FmgcOuterLoops_rtP.Gain_Gain_cv * rtb_ktstomps_bs, FmgcOuterLoops_rtP.VS_Gain_b *
                         rtb_Gain1_b4, &rtb_Mod1_ds);
   rtb_k1 = rtb_uDLookupTable_a * 0.5 * 57.295779513082323;
-  rtb_Compare_ck = *rtu_in_input_FINAL_DES_mode_active;
-  if (rtb_Compare_ck) {
+  rtb_Compare_o3 = *rtu_in_input_FINAL_DES_mode_active;
+  if (rtb_Compare_o3) {
     rtb_MaxH_dot_RA = 0.15;
   } else {
     rtb_MaxH_dot_RA = 0.1;
@@ -4591,9 +4592,9 @@ void FmgcOuterLoops::step(const real_T *rtu_in_time_dt, const real_T *rtu_in_tim
   rtb_Sum1_pc = FmgcOuterLoops_rtP.kntofpm_Gain_k * *rtu_in_data_V_gnd_kn;
   rtb_Mod1_ds = FmgcOuterLoops_rtP.maxslope_Gain_k * rtb_Sum1_pc;
   rtb_Sum1_pc = *rtu_in_data_H_radio_ft;
-  *rty_out_flare_law_condition_Flare = ((rtb_Sum1_pc < 80.0) && ((rtb_Sum1_pc * 12.8 <= std::abs(std::fmin(std::fmax
-    (external_limit - rtb_Mod1_ds, FmgcOuterLoops_rtP.Gain7_Gain_k * rtb_Y_f2), rtb_Mod1_ds + external_limit))) ||
-    (rtb_Sum1_pc <= 43.0)));
+  *rty_out_flare_law_condition_Flare = (rtb_Compare_ck || ((rtb_Sum1_pc < 80.0) && ((rtb_Sum1_pc * 14.0 <= std::abs(std::
+    fmin(std::fmax(external_limit - rtb_Mod1_ds, FmgcOuterLoops_rtP.Gain7_Gain_k * rtb_Y_f2), rtb_Mod1_ds +
+         external_limit))) || (rtb_Sum1_pc <= 42.0))));
   for (high_i = 0; high_i < 99; high_i++) {
     FmgcOuterLoops_DWork.Delay_DSTATE_l4[high_i] = FmgcOuterLoops_DWork.Delay_DSTATE_l4[high_i + 1];
     FmgcOuterLoops_DWork.Delay_DSTATE_n[high_i] = FmgcOuterLoops_DWork.Delay_DSTATE_n[high_i + 1];

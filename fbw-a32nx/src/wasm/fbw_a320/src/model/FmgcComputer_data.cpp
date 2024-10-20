@@ -4147,6 +4147,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   -1.0,
   9.81,
   0.0,
+  0.0,
   0.45351473922902491,
   0.017453292519943295,
   0.00508,

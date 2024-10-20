@@ -6,8 +6,6 @@
 #include "look1_binlxpw.h"
 #include "FmgcOuterLoops.h"
 
-const real_T FmgcComputer_RGND{ 0.0 };
-
 void FmgcComputer::FmgcComputer_MATLABFunction(const base_arinc_429 *rtu_u, real32_T rtu_default, real32_T *rty_y)
 {
   if (rtu_u->SSM == static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) {
@@ -3451,8 +3449,8 @@ void FmgcComputer::step()
                     &FmgcComputer_U.in.fms_inputs.xtk_nmi, &FmgcComputer_U.in.fms_inputs.tke_deg,
                     &FmgcComputer_U.in.fms_inputs.phi_c_deg, &FmgcComputer_U.in.fms_inputs.phi_limit_deg,
                     &FmgcComputer_U.in.fms_inputs.alt_profile_tgt_ft, &FmgcComputer_U.in.fms_inputs.vs_target_ft_min,
-                    &rtb_DataTypeConversion32, &rtb_DataTypeConversion26, &rtb_y_e, (const_cast<real_T*>
-      (&FmgcComputer_RGND)), &rtb_Gain3, &(&rtb_Logic_a2[0])[0], &rtb_DataTypeConversion21, &rtb_DataTypeConversion22,
+                    &rtb_DataTypeConversion32, &rtb_DataTypeConversion26, &rtb_y_e, &FmgcComputer_P.Constant1_Value_io,
+                    &rtb_Gain3, &(&rtb_Logic_a2[0])[0], &rtb_DataTypeConversion21, &rtb_DataTypeConversion22,
                     &rtb_DataTypeConversion39, &rtb_DataTypeConversion10, &rtb_altCstrOrFcu, &rtb_Switch1, &rtb_Switch3,
                     &(&rtb_Switch_e[0])[0], &(&rtb_Logic_hq[0])[0], &(&rtb_Logic_ac[0])[0], &(&rtb_Logic_b[0])[0],
                     &rtb_y_fd, &rtb_Phi_loc_c, &rtb_Nosewheel_c, &rtb_Theta_c_deg, &rtb_Phi_c_deg, &rtb_Beta_c_deg,

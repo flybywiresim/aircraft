@@ -2226,7 +2226,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
 
   idFcuShimVsValue->set(discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
   idFcuShimFpaValue->set(!discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
-  idFcuShimVsManaged->set(!discreteOutputs.afs_outputs.vs_fpa_dashes);
+  idFcuShimVsManaged->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
 
   // Shim Hevents
   if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 13, false)) {
