@@ -248,26 +248,50 @@ export class LegacyFuel implements Instrument {
         this.toggleTrigger(17);
       }
       if (
-        (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 && !this.triggerStates.get(18).get()) ||
-        (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerStates.get(18).get())
+        (this.feed1TankQty.get() < 6765 &&
+          this.feed3TankQty.get() < 6765 &&
+          Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 &&
+          !this.triggerStates.get(18).get()) ||
+        ((this.feed1TankQty.get() >= 6766 ||
+          this.feed3TankQty.get() >= 6766 ||
+          Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) >= 3) &&
+          this.triggerStates.get(18).get())
       ) {
         this.toggleTrigger(18);
       }
       if (
-        (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 && !this.triggerStates.get(19).get()) ||
-        (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) >= 3 && this.triggerStates.get(19).get())
+        (this.feed1TankQty.get() < 6765 &&
+          this.feed2TankQty.get() < 6765 &&
+          Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
+          !this.triggerStates.get(19).get()) ||
+        ((this.feed1TankQty.get() >= 6766 ||
+          this.feed2TankQty.get() >= 6766 ||
+          Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) >= 3) &&
+          this.triggerStates.get(19).get())
       ) {
         this.toggleTrigger(19);
       }
       if (
-        (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 && !this.triggerStates.get(20).get()) ||
-        (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(20).get())
+        (this.feed2TankQty.get() < 6765 &&
+          this.feed4TankQty.get() < 6765 &&
+          Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 &&
+          !this.triggerStates.get(20).get()) ||
+        ((this.feed2TankQty.get() >= 6766 ||
+          this.feed4TankQty.get() >= 6766 ||
+          Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) >= 3) &&
+          this.triggerStates.get(20).get())
       ) {
         this.toggleTrigger(20);
       }
       if (
-        (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 && !this.triggerStates.get(21).get()) ||
-        (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(21).get())
+        (this.feed3TankQty.get() < 6765 &&
+          this.feed4TankQty.get() < 6765 &&
+          Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
+          !this.triggerStates.get(21).get()) ||
+        ((this.feed3TankQty.get() >= 6766 ||
+          this.feed4TankQty.get() >= 6766 ||
+          Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) >= 3) &&
+          this.triggerStates.get(21).get())
       ) {
         this.toggleTrigger(21);
       }
