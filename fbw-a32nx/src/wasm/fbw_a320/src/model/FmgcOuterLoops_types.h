@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FmgcOuterLoops_types_h_
-#define RTW_HEADER_FmgcOuterLoops_types_h_
+#ifndef FmgcOuterLoops_types_h_
+#define FmgcOuterLoops_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
 #define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
@@ -103,49 +103,14 @@ struct ap_raw_data
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
-#define DEFINED_TYPEDEF_FOR_lateral_law_
-
-enum class lateral_law
-  : int32_T {
-  NONE = 0,
-  HDG,
-  TRACK,
-  HPATH,
-  LOC_CPT,
-  LOC_TRACK,
-  ROLL_OUT
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_vertical_law_
-#define DEFINED_TYPEDEF_FOR_vertical_law_
-
-enum class vertical_law
-  : int32_T {
-  NONE = 0,
-  ALT_HOLD,
-  ALT_ACQ,
-  SPD_MACH,
-  VS,
-  FPA,
-  GS,
-  FLARE,
-  SRS,
-  VPATH
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
 #define DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
 
 struct ap_raw_laws_input
 {
   boolean_T ap_engaged;
-  lateral_law lateral_law;
-  vertical_law vertical_law;
+  real_T lateral_law;
+  real_T vertical_law;
   real_T Psi_c_deg;
   real_T Chi_c_deg;
   real_T H_c_ft;
@@ -169,6 +134,22 @@ struct ap_laws_output
   ap_raw_data data;
   ap_raw_laws_input input;
   ap_raw_output output;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_lateral_law_
+#define DEFINED_TYPEDEF_FOR_lateral_law_
+
+enum class lateral_law
+  : int32_T {
+  NONE = 0,
+  HDG,
+  TRACK,
+  HPATH,
+  LOC_CPT,
+  LOC_TRACK,
+  ROLL_OUT
 };
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FacComputer_h_
-#define RTW_HEADER_FacComputer_h_
+#ifndef FacComputer_h_
+#define FacComputer_h_
 #include "rtwtypes.h"
 #include "FacComputer_types.h"
 

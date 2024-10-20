@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_FadecComputer_h_
-#define RTW_HEADER_FadecComputer_h_
+#ifndef FadecComputer_h_
+#define FadecComputer_h_
 #include "rtwtypes.h"
 #include "FadecComputer_types.h"
 

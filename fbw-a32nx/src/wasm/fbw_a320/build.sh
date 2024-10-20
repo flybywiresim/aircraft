@@ -119,7 +119,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/ElacComputer_data.cpp" \
   "${DIR}/src/model/ElacComputer.cpp" \
   "${DIR}/src/model/SecComputer_data.cpp" \
@@ -140,14 +139,9 @@ clang++ \
   "${DIR}/src/model/FadecComputer.cpp" \
   "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
-  "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_pbinlxpw.cpp" \
-  "${DIR}/src/model/mod_2RcCQkwc.cpp" \
-  "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
-  "${DIR}/src/model/rt_remd.cpp" \
-  "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${FBW_COMMON_DIR}/src/zlib" \
   "${FBW_COMMON_DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \

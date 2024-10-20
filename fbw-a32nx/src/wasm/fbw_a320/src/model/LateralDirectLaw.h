@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_LateralDirectLaw_h_
-#define RTW_HEADER_LateralDirectLaw_h_
+#ifndef LateralDirectLaw_h_
+#define LateralDirectLaw_h_
 #include "rtwtypes.h"
 #include "LateralDirectLaw_types.h"
 #include <cstring>
