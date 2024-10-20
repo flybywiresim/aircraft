@@ -24,7 +24,6 @@ export class LegacyFuel implements Instrument {
 
   private keyEventManager?: KeyEventManager;
 
-  private readonly leftOuterTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_1'), 0);
   private readonly feed1TankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_2'), 0);
   private readonly leftMidTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_3'), 0);
   private readonly leftInnerTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_4'), 0);
@@ -33,7 +32,6 @@ export class LegacyFuel implements Instrument {
   private readonly rightInnerTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_7'), 0);
   private readonly rightMidTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_8'), 0);
   private readonly feed4TankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_9'), 0);
-  private readonly rightOuterTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_10'), 0);
   private readonly trimTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_11'), 0);
   private readonly refuelStarted = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
