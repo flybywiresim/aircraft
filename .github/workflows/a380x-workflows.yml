@@ -1,11 +1,11 @@
 # Build-script for the aircraft a380x-experimental branch
 # Builds the A32NX and the A380X and uploads them to the CloudFlare CDN
 
-name: a380x-experimental
+name: a380x-workflows
 on:
   push:
     branches:
-      - a380x-experimental
+      - a380x-workflows
 
 jobs:
   build_a32nx:
@@ -20,8 +20,20 @@ jobs:
       AIRCRAFT_PROJECT_PREFIX: a32nx
       AIRCRAFT_VARIANT: a320-251n
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -44,6 +56,13 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
           docker system prune -af
+      - name: Remove A380X source files
+        run: |
+          rm -rf ./fbw-a380x/
+          rm -rf ./large-files/fbw-a380x/
+      - name: Show disk usage
+        run: |
+          du -h -x / | sort -hr
       - name: Build ZIP files
         run: |
           df -h
@@ -54,11 +73,12 @@ jobs:
           cd ./fbw-a32nx/out/
           7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
+          df -h
 
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/a380x-experimental
+          CDN_BUCKET_DESTINATION: addons/a32nx/a380x-workflows
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
 
@@ -71,17 +91,51 @@ jobs:
       FBW_PRODUCTION_BUILD: 1
       BUILD_DIR_NAME: a380x-experimental-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
+      STANDALONE_ZIP_NAME: A380X-exp.7z
       AIRCRAFT_VARIANT: a380-842
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+      - name: Force even more disk space
+        run: |
+          sudo rm -rf /usr/local/julia1.11.0
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /opt/microsoft/msedge
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /opt/pipx
+          sudo rm -rf /usr/lib/heroku
+          sudo rm -rf /usr/share/kotlinc
+          sudo rm -rf /usr/local/aws-cli
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /usr/local/sqlpackage
+          sudo rm -rf /usr/share/gradle-8.10.2
+          sudo rm -rf /usr/lib/python3
+          sudo rm -rf /usr/lib/python3.10
+          sudo rm -rf /usr/lib/mono
+          sudo npm uninstall -g netlify-cli --save
+          sudo npm uninstall -g parcel --save
+          df -h
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
-          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a380x/.env
-          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
@@ -97,20 +151,28 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
           rm -rf fbw-a380x/src
           docker system prune -af
-      - name: Build ZIP files
+      - name: Remove A32NX source files
+        run: |
+          rm -rf ./fbw-a32nx/
+          rm -rf ./large-files/fbw-a32nx/
+      - name: Build Fragmenter modules
         run: |
           df -h
           node ./scripts/fragment_a380x.js
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          cd ./fbw-a380x/out/
-          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a380-842/
-          cd ../../
-
-      - name: Upload to CloudFlare CDN
+          df -h
+      - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/a380x-experimental
+          CDN_BUCKET_DESTINATION: addons/a380x/${{ secrets.A380X_EXP_DIRECTORY }}/a380x-workflows
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
+      - name: Build Standalone Download files
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cd ./fbw-a380x/out/
+          rm -rf build-modules
+          7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          cd ../../
+          df -h
