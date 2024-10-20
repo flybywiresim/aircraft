@@ -19,6 +19,7 @@
 !.prettierrc
 
 !igniter.config.mjs
+!ci.igniter.config.mjs
 !jsconfig.json
 
 !Cargo.lock
