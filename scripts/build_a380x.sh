@@ -27,8 +27,14 @@ for arg in "$@"; do
   fi
 done
 
-# run build
-time npx igniter -r "${AIRCRAFT_PROJECT_PREFIX}" "${args[@]}"
+
+if [ "${GITHUB_ACTIONS}" == "true" ]; then
+  # run build
+  time npx igniter -c "ci.igniter.config.mjs" -r "${AIRCRAFT_PROJECT_PREFIX}" "${args[@]}"
+else
+  # run build
+  time npx igniter -r "${AIRCRAFT_PROJECT_PREFIX}" "${args[@]}"
+fi
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
