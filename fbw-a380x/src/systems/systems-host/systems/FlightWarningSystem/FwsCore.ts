@@ -416,6 +416,32 @@ export class FwsCore {
 
   public readonly allOutflowValvesOpen = Subject.create(false);
 
+  public readonly ocsm1AutoFailure = Subject.create(false);
+
+  public readonly ocsm2AutoFailure = Subject.create(false);
+
+  public readonly ocsm3AutoFailure = Subject.create(false);
+
+  public readonly ocsm4AutoFailure = Subject.create(false);
+
+  public readonly ocsmAutoCtlFault = Subject.create(false);
+
+  public readonly ocsm1Failure = Subject.create(false);
+
+  public readonly ocsm2Failure = Subject.create(false);
+
+  public readonly ocsm3Failure = Subject.create(false);
+
+  public readonly ocsm4Failure = Subject.create(false);
+
+  public readonly pressRedundLost = Subject.create(false);
+
+  public readonly pressSysFault = Subject.create(false);
+
+  public readonly flowSelectorKnob = Subject.create(0);
+
+  public readonly manCabinAltMode = Subject.create(false);
+
   /* 22 - AUTOFLIGHT */
 
   public readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
@@ -2881,6 +2907,54 @@ export class FwsCore {
         outflowValve3OpenAmount.value > 99 &&
         outflowValve4OpenAmount.value > 99,
     );
+
+    this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm2AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm3AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
+
+    this.ocsmAutoCtlFault.set(
+      (cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
+        (this.ocsm1AutoFailure.get() &&
+          this.ocsm2AutoFailure.get() &&
+          this.ocsm3AutoFailure.get() &&
+          this.ocsm4AutoFailure.get()),
+    );
+
+    const ocsm1Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_1_FAILURE', 'bool');
+    const ocsm1Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_2_FAILURE', 'bool');
+    const ocsm2Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_1_FAILURE', 'bool');
+    const ocsm2Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_2_FAILURE', 'bool');
+    const ocsm3Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_1_FAILURE', 'bool');
+    const ocsm3Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_2_FAILURE', 'bool');
+    const ocsm4Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_1_FAILURE', 'bool');
+    const ocsm4Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_2_FAILURE', 'bool');
+
+    this.ocsm1Failure.set(ocsm1Channel1Failure && ocsm1Channel2Failure);
+    this.ocsm2Failure.set(ocsm2Channel1Failure && ocsm2Channel2Failure);
+    this.ocsm3Failure.set(ocsm3Channel1Failure && ocsm3Channel2Failure);
+    this.ocsm4Failure.set(ocsm4Channel1Failure && ocsm4Channel2Failure);
+
+    const numberOfCpcsFaults = [
+      cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
+    ].filter((cpcs) => cpcs === true).length;
+
+    this.pressRedundLost.set(numberOfCpcsFaults > 1);
+
+    this.pressSysFault.set(
+      this.ocsm1Failure.get() && this.ocsm2Failure.get() && this.ocsm3Failure.get() && this.ocsm4Failure.get(),
+    );
+
+    // 0: Man, 1: Low, 2: Norm, 3: High
+    this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
+
+    this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
     /* 23 - COMMUNICATION */
     this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal

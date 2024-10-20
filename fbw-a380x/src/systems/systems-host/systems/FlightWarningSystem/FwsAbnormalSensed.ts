@@ -884,7 +884,7 @@ export class FwsAbnormalSensed {
         false, // Emer descent announce
         false, // Descent initiate
         this.fws.allThrottleIdle.get(), // All trust levers idle
-        // Fixme. The speed break should probably use the lever position instead of the command signal from the FCDC.
+        // Fixme. The speed break should use the lever position instead of the command signal from the FCDC.
         this.fws.speedBrakeCommand.get(), // Speed brake lever
         false, // Speed max
         false, // Atc notify
@@ -926,6 +926,513 @@ export class FwsAbnormalSensed {
       sysPage: 2,
       limitationsAllPhases: () => ['210400002', '210400001'],
       limitationsPfd: () => ['210400002', '210400001'],
+    },
+    213800005: {
+      // PRESS AUTO CTL FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.ocsmAutoCtlFault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        true,
+        // TODO: Sensor failure is not simulated, so the manual system is not available
+        true,
+        true,
+        true,
+        true,
+        true,
+        // TODO: Ambient pressure not available
+        false,
+        false,
+        false,
+        false,
+        // TODO: Manual pressure available (only when sensor failure)
+        false,
+        false,
+      ],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        this.fws.manCabinAltMode.get(),
+        false,
+      ],
+      failure: 2,
+      sysPage: 2,
+      limitationsAllPhases: () => ['210400003'],
+      limitationsPfd: () => ['210400004'],
+    },
+    213800006: {
+      // PRESS CTL REDUNDANCY LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.pressRedundLost,
+      notActiveWhenFaults: ['213800005'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => [],
+    },
+    213800011: {
+      // PRESS OUTFLW VLV CTL 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm1Failure,
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800023', '213800024', '213800025'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300001'],
+    },
+    213800012: {
+      // PRESS OUTFLW VLV CTL 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm2Failure,
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800022', '213800023', '213800026', '213800027'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300002'],
+    },
+    213800013: {
+      // PRESS OUTFLW VLV CTL 3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm3Failure,
+      notActiveWhenFaults: ['213800017', '213800019', '213800021', '213800022', '213800024', '213800026', '213800028'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300003'],
+    },
+    213800014: {
+      // PRESS OUTFLW VLV CTL 4 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm4Failure,
+      notActiveWhenFaults: ['213800017', '213800020', '213800021', '213800022', '213800025', '213800027', '213800028'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300004'],
+    },
+    213800017: {
+      // PRESS SYS FAULT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.pressSysFault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        this.fws.aircraftOnGround.get(),
+        this.fws.aircraftOnGround.get(),
+        this.fws.aircraftOnGround.get(),
+        this.fws.aircraftOnGround.get(),
+        this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [
+        this.fws.flowSelectorKnob.get() == 3,
+        false,
+        false,
+        !this.fws.pack1On.get(),
+        !this.fws.pack2On.get(),
+        false,
+        false,
+        false,
+        this.fws.ramAirOn.get(),
+        this.fws.cabinAirExtractOn.get(),
+        this.fws.ramAirOn.get(),
+        this.fws.cabinAirExtractOn.get(),
+        false,
+        !this.fws.pack1On.get(),
+        !this.fws.pack2On.get(),
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['210400001', '2'],
+      limitationsAllPhases: () => ['210400001', '2'],
+      limitationsPfd: () => ['210400004'],
+    },
+    213800019: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 1+2+3
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm2, ocsm3]) => ocsm1 && ocsm2 && ocsm3,
+        this.fws.ocsm1Failure,
+        this.fws.ocsm2Failure,
+        this.fws.ocsm3Failure,
+      ),
+      notActiveWhenFaults: ['213800017'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300011'],
+    },
+    213800020: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 1+2+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm2, ocsm4]) => ocsm1 && ocsm2 && ocsm4,
+        this.fws.ocsm1Failure,
+        this.fws.ocsm2Failure,
+        this.fws.ocsm4Failure,
+      ),
+      notActiveWhenFaults: ['213800017'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300012'],
+    },
+    213800021: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 1+3+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm3, ocsm4]) => ocsm1 && ocsm3 && ocsm4,
+        this.fws.ocsm1Failure,
+        this.fws.ocsm3Failure,
+        this.fws.ocsm4Failure,
+      ),
+      notActiveWhenFaults: ['213800017'],
+      whichItemsToShow: () => [
+        true,
+        // TODO: Only when manual press is available
+        true,
+        true,
+        // TODO: Only when ambient pressure is not available
+        false,
+        false,
+        false,
+        false,
+      ],
+      whichItemsChecked: () => [false, this.fws.manCabinAltMode.get(), false, false, false, false, false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300013'],
+    },
+    213800022: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 2+3+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm2, ocsm3, ocsm4]) => ocsm2 && ocsm3 && ocsm4,
+        this.fws.ocsm2Failure,
+        this.fws.ocsm3Failure,
+        this.fws.ocsm4Failure,
+      ),
+      notActiveWhenFaults: ['213800017'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300014'],
+    },
+    213800023: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 1+2
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm2]) => ocsm1 && ocsm2,
+        this.fws.ocsm1Failure,
+        this.fws.ocsm2Failure,
+      ),
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800022'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300006'],
+    },
+    213800024: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 1+3
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm3]) => ocsm1 && ocsm3,
+        this.fws.ocsm1Failure,
+        this.fws.ocsm3Failure,
+      ),
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800022'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300007'],
+    },
+    213800025: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 1+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm4]) => ocsm1 && ocsm4,
+        this.fws.ocsm1Failure,
+        this.fws.ocsm4Failure,
+      ),
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800022'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300008'],
+    },
+    213800026: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 2+3
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm2, ocsm3]) => ocsm2 && ocsm3,
+        this.fws.ocsm2Failure,
+        this.fws.ocsm3Failure,
+      ),
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800022'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300009'],
+    },
+    213800027: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 2+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm2, ocsm4]) => ocsm2 && ocsm4,
+        this.fws.ocsm2Failure,
+        this.fws.ocsm4Failure,
+      ),
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800022'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300010'],
+    },
+    213800028: {
+      // PRESS OUTFLW VLV CTL FAULT OUTFLW VLV 3+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm3, ocsm4]) => ocsm3 && ocsm4,
+        this.fws.ocsm3Failure,
+        this.fws.ocsm4Failure,
+      ),
+      notActiveWhenFaults: ['213800017', '213800019', '213800020', '213800021', '213800022'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300015'],
+    },
+    213800029: {
+      // PRESS AUTO CTL FAULT SYS 1
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm1AutoFailure,
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800033', '213800034', '213800035'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016'],
+    },
+    213800030: {
+      // PRESS AUTO CTL FAULT SYS 2
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm2AutoFailure,
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800042', '213800033', '213800036', '213800037'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300017'],
+    },
+    213800031: {
+      // PRESS AUTO CTL FAULT SYS 3
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm3AutoFailure,
+      notActiveWhenFaults: ['213800005', '213800039', '213800041', '213800042', '213800034', '213800036', '213800038'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300018'],
+    },
+    213800032: {
+      // PRESS AUTO CTL FAULT SYS 4
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.ocsm4AutoFailure,
+      notActiveWhenFaults: ['213800005', '213800040', '213800041', '213800042', '213800035', '213800037', '213800038'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300019'],
+    },
+    213800033: {
+      // PRESS AUTO CTL FAULT SYS 1+2
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm2]) => ocsm1 && ocsm2,
+        this.fws.ocsm1AutoFailure,
+        this.fws.ocsm2AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800042'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016', '213300017'],
+    },
+    213800034: {
+      // PRESS AUTO CTL FAULT SYS 1+3
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm3]) => ocsm1 && ocsm3,
+        this.fws.ocsm1AutoFailure,
+        this.fws.ocsm3AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800042'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016', '213300018'],
+    },
+    213800035: {
+      // PRESS AUTO CTL FAULT SYS 1+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm4]) => ocsm1 && ocsm4,
+        this.fws.ocsm1AutoFailure,
+        this.fws.ocsm4AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800042'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016', '213300019'],
+    },
+    213800036: {
+      // PRESS AUTO CTL FAULT SYS 2+3
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm2, ocsm3]) => ocsm2 && ocsm3,
+        this.fws.ocsm2AutoFailure,
+        this.fws.ocsm3AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800042'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300017', '213300018'],
+    },
+    213800037: {
+      // PRESS AUTO CTL FAULT SYS 2+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm2, ocsm4]) => ocsm2 && ocsm4,
+        this.fws.ocsm2AutoFailure,
+        this.fws.ocsm4AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800042'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300017', '213300019'],
+    },
+    213800038: {
+      // PRESS AUTO CTL FAULT SYS 3+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm3, ocsm4]) => ocsm3 && ocsm4,
+        this.fws.ocsm3AutoFailure,
+        this.fws.ocsm4AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005', '213800039', '213800040', '213800041', '213800042'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300018', '213300019'],
+    },
+    213800039: {
+      // PRESS AUTO CTL FAULT SYS 1+2+3
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm2, ocsm3]) => ocsm1 && ocsm2 && ocsm3,
+        this.fws.ocsm1AutoFailure,
+        this.fws.ocsm2AutoFailure,
+        this.fws.ocsm3AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016', '213300017', '213300018'],
+    },
+    213800040: {
+      // PRESS AUTO CTL FAULT SYS 1+2+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm2, ocsm4]) => ocsm1 && ocsm2 && ocsm4,
+        this.fws.ocsm1AutoFailure,
+        this.fws.ocsm2AutoFailure,
+        this.fws.ocsm4AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016', '213300017', '213300019'],
+    },
+    213800041: {
+      // PRESS AUTO CTL FAULT SYS 1+3+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm1, ocsm3, ocsm4]) => ocsm1 && ocsm3 && ocsm4,
+        this.fws.ocsm1AutoFailure,
+        this.fws.ocsm3AutoFailure,
+        this.fws.ocsm4AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300016', '213300018', '213300019'],
+    },
+    213800042: {
+      // PRESS AUTO CTL FAULT SYS 2+3+4
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([ocsm2, ocsm3, ocsm4]) => ocsm2 && ocsm3 && ocsm4,
+        this.fws.ocsm2AutoFailure,
+        this.fws.ocsm3AutoFailure,
+        this.fws.ocsm4AutoFailure,
+      ),
+      notActiveWhenFaults: ['213800005'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: 2,
+      inopSysAllPhases: () => ['213300017', '213300018', '213300019'],
     },
     // 22 - FLIGHT GUIDANCE
     220800001: {
