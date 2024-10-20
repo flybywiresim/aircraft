@@ -223,11 +223,6 @@
                 <ANIM_CODE>(L:A32NX_AFT_DOOR_CARGO_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
-            <!-- PAX DOORS -->
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>0</ID>
-                <ANIM_NAME>door_passenger</ANIM_NAME>
-            </UseTemplate>
         </Component>
 
         <Template Name="FBW_Control_Surface_Template">
