@@ -1621,6 +1621,10 @@ impl CpiomBInterfaceUnit {
             .set_bit(21, air_conditioning_system.cabin_fan_has_failed(4));
         self.discrete_word_vcs
             .set_bit(22, air_conditioning_system.cargo_heater_has_failed());
+        self.discrete_word_vcs
+            .set_bit(23, air_conditioning_system.fwd_isol_valve_has_fault());
+        self.discrete_word_vcs
+            .set_bit(24, air_conditioning_system.bulk_isol_valve_has_fault());
 
         if cpiom.cpcs_has_fault() {
             self.discrete_word_cpcs = Arinc429Word::new(0, SignStatus::FailureWarning);
