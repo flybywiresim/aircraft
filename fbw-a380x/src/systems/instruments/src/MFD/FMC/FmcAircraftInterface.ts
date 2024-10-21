@@ -1168,7 +1168,11 @@ export class FmcAircraftInterface {
     if (cas !== null && alt !== null) {
       // Only update speeds if ADR data valid
 
-      const flaps = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
+      const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
+      let flaps = flapLever;
+      if (flapLever === 1 && SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'Enum') === 1) {
+        flaps = 5; // CONF 1
+      }
       const speeds = new A380OperatingSpeeds(
         grossWeight / 1000,
         cas,
