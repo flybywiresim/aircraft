@@ -42,7 +42,7 @@ export class LegacyFuel implements Instrument {
 
   private readonly junctionSettings = new Map<number, ConsumerSubject<number>>();
 
-  private readonly throttler = new UpdateThrottler(1000);
+  private readonly throttler = new UpdateThrottler(250);
 
   private refuelInProgress = false;
 
@@ -134,7 +134,9 @@ export class LegacyFuel implements Instrument {
 
   public onUpdate(): void {
     const dt = this.sysHost.deltaTime;
-    if (!this.hasInit || this.throttler.canUpdate(dt) <= 0) {
+    const totalDtSinceLastUpdate = this.throttler.canUpdate(dt);
+
+    if (!this.hasInit || totalDtSinceLastUpdate <= 0) {
       return;
     }
 
