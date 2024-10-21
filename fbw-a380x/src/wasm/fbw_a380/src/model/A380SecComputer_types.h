@@ -232,6 +232,7 @@ struct base_prim_out_bus
   base_arinc_429 rudder_2_position_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
+  base_arinc_429 fe_status_word;
 };
 
 #endif

@@ -351,8 +351,8 @@ void A380LateralNormalLaw::reset(void)
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_k);
   A380LateralNormalLaw_DWork.pY_not_empty = false;
   A380LateralNormalLaw_DWork.pU_not_empty = false;
-  A380LateralNormalLaw_DWork.pY_not_empty_g = false;
-  A380LateralNormalLaw_DWork.pY_not_empty_m = false;
+  A380LateralNormalLaw_DWork.pY_not_empty_j = false;
+  A380LateralNormalLaw_DWork.pY_not_empty_a = false;
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_go);
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_g);
   A380LateralNormalLaw_TransportDelay_Reset(&A380LateralNormalLaw_DWork.sf_TransportDelay_p);
@@ -598,20 +598,20 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_DWork.Delay_DSTATE = A380LateralNormalLaw_rtP.Saturation_LowerSat_l;
   }
 
-  if (!A380LateralNormalLaw_DWork.pY_not_empty_g) {
-    A380LateralNormalLaw_DWork.pY_f = A380LateralNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition;
-    A380LateralNormalLaw_DWork.pY_not_empty_g = true;
+  if (!A380LateralNormalLaw_DWork.pY_not_empty_j) {
+    A380LateralNormalLaw_DWork.pY_m = A380LateralNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition;
+    A380LateralNormalLaw_DWork.pY_not_empty_j = true;
   }
 
-  A380LateralNormalLaw_DWork.pY_f += std::fmax(std::fmin(static_cast<real_T>(*rtu_In_on_ground) -
-    A380LateralNormalLaw_DWork.pY_f, std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs2_up) * *rtu_In_time_dt),
+  A380LateralNormalLaw_DWork.pY_m += std::fmax(std::fmin(static_cast<real_T>(*rtu_In_on_ground) -
+    A380LateralNormalLaw_DWork.pY_m, std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs2_up) * *rtu_In_time_dt),
     -std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs2_lo) * *rtu_In_time_dt);
-  if (A380LateralNormalLaw_DWork.pY_f > A380LateralNormalLaw_rtP.Saturation_UpperSat_l) {
+  if (A380LateralNormalLaw_DWork.pY_m > A380LateralNormalLaw_rtP.Saturation_UpperSat_l) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Saturation_UpperSat_l;
-  } else if (A380LateralNormalLaw_DWork.pY_f < A380LateralNormalLaw_rtP.Saturation_LowerSat_j) {
+  } else if (A380LateralNormalLaw_DWork.pY_m < A380LateralNormalLaw_rtP.Saturation_LowerSat_j) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Saturation_LowerSat_j;
   } else {
-    rtb_Limiterxi = A380LateralNormalLaw_DWork.pY_f;
+    rtb_Limiterxi = A380LateralNormalLaw_DWork.pY_m;
   }
 
   denom = (A380LateralNormalLaw_rtP.Constant_Value_o - rtb_Limiterxi) * A380LateralNormalLaw_DWork.Delay_DSTATE;
@@ -637,20 +637,20 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_DWork.Delay_DSTATE = A380LateralNormalLaw_rtP.Saturation1_LowerSat;
   }
 
-  if (!A380LateralNormalLaw_DWork.pY_not_empty_m) {
-    A380LateralNormalLaw_DWork.pY_f5 = A380LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_m;
-    A380LateralNormalLaw_DWork.pY_not_empty_m = true;
+  if (!A380LateralNormalLaw_DWork.pY_not_empty_a) {
+    A380LateralNormalLaw_DWork.pY_a = A380LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_m;
+    A380LateralNormalLaw_DWork.pY_not_empty_a = true;
   }
 
-  A380LateralNormalLaw_DWork.pY_f5 += std::fmax(std::fmin(static_cast<real_T>(rtb_NOT_h_tmp) -
-    A380LateralNormalLaw_DWork.pY_f5, std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_j) * *rtu_In_time_dt),
+  A380LateralNormalLaw_DWork.pY_a += std::fmax(std::fmin(static_cast<real_T>(rtb_NOT_h_tmp) -
+    A380LateralNormalLaw_DWork.pY_a, std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_j) * *rtu_In_time_dt),
     -std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_n) * *rtu_In_time_dt);
-  if (A380LateralNormalLaw_DWork.pY_f5 > A380LateralNormalLaw_rtP.Saturation_UpperSat_n) {
+  if (A380LateralNormalLaw_DWork.pY_a > A380LateralNormalLaw_rtP.Saturation_UpperSat_n) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Saturation_UpperSat_n;
-  } else if (A380LateralNormalLaw_DWork.pY_f5 < A380LateralNormalLaw_rtP.Saturation_LowerSat_b) {
+  } else if (A380LateralNormalLaw_DWork.pY_a < A380LateralNormalLaw_rtP.Saturation_LowerSat_b) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Saturation_LowerSat_b;
   } else {
-    rtb_Limiterxi = A380LateralNormalLaw_DWork.pY_f5;
+    rtb_Limiterxi = A380LateralNormalLaw_DWork.pY_a;
   }
 
   Vtas = A380LateralNormalLaw_DWork.Delay_DSTATE * rtb_Limiterxi;
