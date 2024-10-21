@@ -33,6 +33,7 @@ use uom::si::{
 };
 
 pub mod aerodynamic_model;
+pub mod brake;
 pub mod brake_circuit;
 pub mod bypass_pin;
 pub mod cargo_doors;

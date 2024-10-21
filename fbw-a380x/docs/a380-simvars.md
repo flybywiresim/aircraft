@@ -116,6 +116,15 @@
     - Degrees
     - Angular position of right nose wheel (in wheel axis not steering)
 
+- A32NX_BRAKE_TEMPERATURE_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    - celsius
+    - represents the brake temperature of the main wheels
+
+- A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    - celsius
+    - represents the reported brake temperature of the main wheels by the sensor.
+    - Since no CPIOM G is implemented yet these are the values directly reported by the sensor.
+
 
 - A32NX_LIGHTING_PRESET_LOAD
     - Number
