@@ -1339,8 +1339,6 @@ export class FwsCore {
 
   public readonly N1IdleEng = Subject.create(0);
 
-  public readonly allThrottleLeversIdle = Subject.create(false);
-
   // FIXME ECU should provide this in a discrete word
   public readonly engine1AboveIdle = MappedSubject.create(
     ([n1, idleN1]) => n1 > idleN1 + 2,
@@ -1918,15 +1916,6 @@ export class FwsCore {
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
     this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
-
-    const eng1ThrottlePosition = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'percent');
-    const eng2ThrottlePosition = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'percent');
-    const eng3ThrottlePosition = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'percent');
-    const eng4ThrottlePosition = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'percent');
-
-    this.allThrottleIdle.set(
-      eng1ThrottlePosition == 0 && eng2ThrottlePosition == 0 && eng3ThrottlePosition == 0 && eng4ThrottlePosition == 0,
-    );
 
     // Flaps
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
