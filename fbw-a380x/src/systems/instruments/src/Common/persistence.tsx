@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 /**
  * This hook allows to read and set a persistent storage property.
