@@ -256,7 +256,7 @@ export class FwsAbnormalSensed {
       this.moveUp();
     }*/
 
-    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
+    if (this.fws.clCheckPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }

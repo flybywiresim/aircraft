@@ -239,7 +239,7 @@ export class FwsNormalChecklists {
       this.moveUp();
     }
 
-    if (this.fws.clCheckLeftPulseNode.read() || this.fws.clCheckRightPulseNode.read()) {
+    if (this.fws.clCheckPulseNode.read()) {
       if (!this.showChecklist.get()) {
         return;
       }
