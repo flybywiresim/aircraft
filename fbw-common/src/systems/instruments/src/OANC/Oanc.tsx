@@ -443,11 +443,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       }
     }, true);
 
-    this.btvUtils.below300ftRaAndLanding.sub(async (v) => {
+    // This lead to BTV being disarmed at 300ft. We'll have to investigate and then fix FIXME
+    /* this.btvUtils.below300ftRaAndLanding.sub(async (v) => {
       if (this.oansNotAvailable.get() === false && v && !this.btvUtils.runwayIsSet()) {
         [, this.arpCoordinates] = await Oanc.setBtvRunwayFromFmsRunway(this.fmsDataStore, this.btvUtils);
       }
-    });
+    });*/
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
