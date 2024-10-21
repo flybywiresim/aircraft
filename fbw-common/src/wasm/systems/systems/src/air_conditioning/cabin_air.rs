@@ -44,8 +44,6 @@ pub struct CabinAirSimulation<C, const ZONES: usize> {
 }
 
 impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES> {
-    const HULL_BREACH_AREA: f64 = 0.02; // m2
-
     pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         Self {
             is_initialised: false,
@@ -319,7 +317,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
         let leakage_area = C::CABIN_LEAKAGE_AREA
             + C::SAFETY_VALVE_SIZE * safety_valve_open_amount.get::<ratio>()
             + number_of_open_doors as f64 * C::DOOR_OPENING_AREA
-            + Self::HULL_BREACH_AREA * self.hull_breach.is_active() as u32 as f64; // sq m
+            + C::HULL_BREACH_AREA * self.hull_breach.is_active() as u32 as f64; // sq m
 
         let pressure_ratio =
             (self.filtered_exterior_pressure / self.internal_air.pressure()).get::<ratio>();
@@ -791,6 +789,7 @@ mod cabin_air_tests {
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
         const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
         const DOOR_OPENING_AREA: f64 = 1.5; // m2
+        const HULL_BREACH_AREA: f64 = 0.02; // m2
 
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
