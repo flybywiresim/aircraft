@@ -36,18 +36,26 @@ while [ $# -gt 0 ]; do
 shift
 done
 
-A32NX_WASM_OUT_DIR="../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel"
-if [ ! -d "$A32NX_WASM_OUT_DIR" ]; then
-  echo "$A32NX_WASM_OUT_DIR directory does not exist."
-  mkdir -p $A32NX_WASM_OUT_DIR
-  echo "$A32NX_WASM_OUT_DIR directory created."
-fi
-A380X_WASM_OUT_DIR="../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel"
-if [ ! -d "$A380X_WASM_OUT_DIR" ]; then
-  echo "$A380X_WASM_OUT_DIR directory does not exist."
-  mkdir -p $A380X_WASM_OUT_DIR
-  echo "$A380X_WASM_OUT_DIR directory created."
-fi
+# Define a list of directory paths to check if they exist, create if not, and print messages
+declare -A directories=(
+  ["A32NX_WASM_OUT_DIR"]="../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel"
+  ["A380X_WASM_OUT_DIR"]="../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel"
+  ["FBW_ARINC429_LVAR_BRIDGE_WASM_OUT_DIR"]="../fbw-arinc429-lvar-bridge/out/flybywire-arinc429-lvar-bridge/modules"
+)
+
+# Loop over the directory paths to check if they exist, create if not, and print messages
+for dir_var in "${!directories[@]}"; do
+  dir_path="${directories[$dir_var]}"
+
+  if [ ! -d "$dir_path" ]; then
+    echo "$dir_path directory does not exist."
+    mkdir -p "$dir_path"
+    echo "$dir_path directory created."
+  else
+    echo "$dir_path directory already exists."
+  fi
+done
+
 
 echo "Toolchain versions:"
 cmake --version
@@ -55,7 +63,7 @@ clang++ --version
 wasm-ld --version
 echo ""
 
-echo "Building extra-backend with CMAKE..."
+echo "Building with CMAKE..."
 cmake -DCMAKE_TOOLCHAIN_FILE=scripts/cmake/DockerToolchain.cmake -B${OUTPUT_DIR} -DCMAKE_BUILD_TYPE=${CONFIG} ../ || (echo "CMake config failed"; exit 1)
 cmake --build ${OUTPUT_DIR} --config ${CONFIG} ${CLEAN} -j ${PARALLEL} || (echo "CMake build failed"; exit 1)
 echo ""
