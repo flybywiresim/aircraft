@@ -40,11 +40,11 @@ export class NXDataStore {
    */
   static set(key: string, val: string): void {
     SetStoredData(`${this.aircraftProjectPrefix}_${key}`, val);
-    this.listener.triggerToAllSubscribers(`${this.aircraftProjectPrefix}_NXDATASTORE_UPDATE`, key, val);
+    this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, val);
   }
 
   static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {
-    return Coherent.on(`${this.aircraftProjectPrefix}_NXDATASTORE_UPDATE`, (updatedKey: string, value: string) => {
+    return Coherent.on('FBW_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
       if (key === '*' || key === updatedKey) {
         callback(updatedKey, value);
       }
