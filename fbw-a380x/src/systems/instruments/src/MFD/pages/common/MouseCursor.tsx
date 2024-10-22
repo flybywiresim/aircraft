@@ -29,13 +29,9 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
       this.divRef.instance.style.display = 'block';
     }
 
-    if (this.props.side.get() === 'CAPT') {
-      this.divRef.instance.style.left = `${x - 40}px`;
-      this.divRef.instance.style.top = `${y - 40}px`;
-    } else if (this.props.side.get() === 'FO' && this.props.isDoubleScreenMfd) {
-      this.divRef.instance.style.left = `${x - 40 - 878}px`; // Workaround for double screen, remove when rpc sync implemented
-      this.divRef.instance.style.top = `${y - 40}px`;
-    }
+    const xOffset = this.props.side.get() === 'FO' && this.props.isDoubleScreenMfd ? x - 40 - 878 : x - 40;
+    this.divRef.instance.style.left = `${xOffset}px`;
+    this.divRef.instance.style.top = `${y - 40}px`;
 
     if (this.hideTimer) {
       clearTimeout(this.hideTimer);
