@@ -404,17 +404,13 @@ export class LegacyFuel implements Instrument {
     }
   }
   private toggleTrigger(index: number): void {
-    console.log(
-      `toggling trigger ${index} from ${this.triggerStates.get(index).get()} to ${!this.triggerStates.get(index).get()} `,
-    );
-    this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_TOGGLE', true, index);
+    if (this.keyEventManager) {
+      this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_TOGGLE', true, index);
+    }
   }
 
   private setJunctionOption(index: number, option: number): void {
-    if (this.junctionSettings.get(index).get() !== option) {
-      console.log(
-        `setting junction ${index} from option ${this.junctionSettings.get(index).get()} to option ${option}`,
-      );
+    if (this.junctionSettings.get(index).get() !== option && this.keyEventManager) {
       this.keyEventManager.triggerKey('FUELSYSTEM_JUNCTION_SET', true, index, option);
     }
   }
