@@ -1110,8 +1110,6 @@ export class FmcAircraftInterface {
     return Number.isFinite(landingWeight) ? landingWeight : NaN;
   }
 
-  private filteredAoA: number = 0;
-
   /**
    * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
    */
