@@ -5,7 +5,7 @@
 - [A380 Local SimVars](#a380-local-simvars)
   - [Contents](#contents)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA  21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
   - [Flight Management System ATA 22](#flight-management-system-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
@@ -17,6 +17,7 @@
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
+  - [Engines ATA 70](#engines-ata-70)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
   - [Autobrakes](#autobrakes)
@@ -214,6 +215,8 @@
       | 20  | Primary Fan 3 Fault                                  |
       | 21  | Primary Fan 4 Fault                                  |
       | 22  | Bulk Heater Fault                                    |
+      | 23  | FWD isolation valve Fault                            |
+      | 24  | Bulk isolation valve Fault                           |
 
 - A32NX_COND_CPIOM_B{id}_CPCS_DISCRETE_WORD
     - Arinc429<Discrete>
@@ -345,6 +348,10 @@
         - B3
         - B4
 
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
 - A32NX_PRESS_OCSM_{id1}_CHANNEL_{id2}_FAILURE
     - Bool
     - True if the channel is failed
@@ -434,6 +441,10 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+- A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
+    - Number
+    - The short term managed speed displayed on the PFD
 
 ## Flight Management System ATA 22
 

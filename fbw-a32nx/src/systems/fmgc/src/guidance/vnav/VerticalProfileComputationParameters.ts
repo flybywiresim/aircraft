@@ -124,8 +124,17 @@ export class VerticalProfileComputationParametersObserver {
       approachQnh: this.fmgc.getApproachQnh(),
       approachTemperature: this.fmgc.getApproachTemperature(),
       approachSpeed: this.fmgc.getApproachSpeed(),
+      /**
+       * F speed in knots based on estimated landing weight, or 0 if not available
+       */
       flapRetractionSpeed: this.fmgc.getFlapRetractionSpeed(),
+      /**
+       * S speed in knots based on estimated landing weight, or 0 if not available
+       */
       slatRetractionSpeed: this.fmgc.getSlatRetractionSpeed(),
+      /**
+       * Green dot speed in knots based on esimated landing weight, or 0 if not available
+       */
       cleanSpeed: this.fmgc.getCleanSpeed(),
     };
 
