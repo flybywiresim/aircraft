@@ -351,6 +351,45 @@ impl SimulationElement for AdirsSimulatorData {
     }
 }
 
+#[derive(Clone)]
+pub struct LowSpeedWarningThreshold {
+    lower: Velocity,
+    upper: Velocity,
+}
+impl LowSpeedWarningThreshold {
+    pub fn new(lower: Velocity, upper: Velocity) -> Self {
+        Self { lower, upper }
+    }
+
+    fn speed_is_below(&self, speed: Velocity) -> bool {
+        speed < self.lower
+    }
+
+    fn speed_is_above(&self, speed: Velocity) -> bool {
+        speed > self.upper
+    }
+}
+
+#[derive(Clone)]
+pub struct AirDataInertialReferenceUnitProgramming {
+    vmo: Velocity,
+    mmo: MachNumber,
+    low_speed_warning_thresholds: [LowSpeedWarningThreshold; 4],
+}
+impl AirDataInertialReferenceUnitProgramming {
+    pub fn new(
+        vmo: Velocity,
+        mmo: MachNumber,
+        low_speed_warning_thresholds: [LowSpeedWarningThreshold; 4],
+    ) -> Self {
+        Self {
+            vmo,
+            mmo,
+            low_speed_warning_thresholds,
+        }
+    }
+}
+
 pub struct AirDataInertialReferenceSystem {
     remaining_alignment_time_id: VariableIdentifier,
     configured_align_time_id: VariableIdentifier,
@@ -371,7 +410,10 @@ impl AirDataInertialReferenceSystem {
     // TODO this is an FMS thing, nothing to do with ADIRUs
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
-    pub fn new(context: &mut InitContext, vmo: Velocity, mmo: MachNumber) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        programming: AirDataInertialReferenceUnitProgramming,
+    ) -> Self {
         Self {
             remaining_alignment_time_id: context
                 .get_identifier(Self::REMAINING_ALIGNMENT_TIME_KEY.to_owned()),
@@ -382,11 +424,8 @@ impl AirDataInertialReferenceSystem {
             uses_gps_as_primary_id: context
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
-            adirus: [
-                AirDataInertialReferenceUnit::new(context, 1, vmo, mmo),
-                AirDataInertialReferenceUnit::new(context, 2, vmo, mmo),
-                AirDataInertialReferenceUnit::new(context, 3, vmo, mmo),
-            ],
+            adirus: [1, 2, 3]
+                .map(|n| AirDataInertialReferenceUnit::new(context, n, programming.clone())),
             configured_align_time: AlignTime::Realistic,
             aircraft_preset_quick_mode: false,
             simulator_data: AdirsSimulatorData::new(context),
@@ -478,20 +517,20 @@ impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
     }
 }
 impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
-    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool {
-        self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
+    fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_1()
     }
 
-    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool {
-        self.adirus[adiru_number - 1].low_speed_warning_2_54kts()
+    fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_2()
     }
 
-    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool {
-        self.adirus[adiru_number - 1].low_speed_warning_3_159kts()
+    fn low_speed_warning_3(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_3()
     }
 
-    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool {
-        self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
+    fn low_speed_warning_4(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_4()
     }
 }
 impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
@@ -535,22 +574,22 @@ struct AirDataInertialReferenceUnit {
     ir: InertialReference,
 
     // Discrete outputs
-    low_speed_warning_1_104kts: bool,
-    low_speed_warning_2_54kts: bool,
-    low_speed_warning_3_159kts: bool,
-    low_speed_warning_4_260kts: bool,
+    low_speed_warning_thresholds: [LowSpeedWarningThreshold; 4],
+    low_speed_warnings: [bool; 4],
 }
 impl AirDataInertialReferenceUnit {
-    fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
+    fn new(
+        context: &mut InitContext,
+        number: usize,
+        programming: AirDataInertialReferenceUnitProgramming,
+    ) -> Self {
         Self {
             state_id: context.get_identifier(Self::state_id(number)),
-            adr: AirDataReference::new(context, number, vmo, mmo),
+            adr: AirDataReference::new(context, number, programming.vmo, programming.mmo),
             ir: InertialReference::new(context, number),
 
-            low_speed_warning_1_104kts: false,
-            low_speed_warning_2_54kts: false,
-            low_speed_warning_3_159kts: false,
-            low_speed_warning_4_260kts: false,
+            low_speed_warning_thresholds: programming.low_speed_warning_thresholds,
+            low_speed_warnings: [false; 4],
         }
     }
 
@@ -616,56 +655,48 @@ impl AirDataInertialReferenceUnit {
     // When CAS is invalid but the ADR is otherwise powered (currently only possible when ADR p/b is off),
     // 1-3 remain in their previous state, and 4 goes OC.
     fn update_discrete_outputs(&mut self) {
-        let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
+        let speed = self.adr.computed_airspeed_raw();
 
         if self.adr.is_on {
-            if speed_knot < 100. {
-                self.low_speed_warning_1_104kts = false;
-            } else if speed_knot > 104. {
-                self.low_speed_warning_1_104kts = true;
-            }
-
-            if speed_knot < 50. {
-                self.low_speed_warning_2_54kts = false;
-            } else if speed_knot > 54. {
-                self.low_speed_warning_2_54kts = true;
-            }
-
-            if speed_knot < 155. {
-                self.low_speed_warning_3_159kts = false;
-            } else if speed_knot > 159. {
-                self.low_speed_warning_3_159kts = true;
+            for (low_speed_warning, threshold) in self
+                .low_speed_warnings
+                .iter_mut()
+                .zip(&self.low_speed_warning_thresholds)
+                .take(3)
+            {
+                if threshold.speed_is_below(speed) {
+                    *low_speed_warning = false;
+                } else if threshold.speed_is_above(speed) {
+                    *low_speed_warning = true;
+                }
             }
         }
 
-        if speed_knot < 260. && self.adr.is_on {
-            self.low_speed_warning_4_260kts = true;
-        } else if speed_knot > 264. || !self.adr.is_on {
-            self.low_speed_warning_4_260kts = false;
+        if self.low_speed_warning_thresholds[3].speed_is_below(speed) && self.adr.is_on {
+            self.low_speed_warnings[3] = true;
+        } else if self.low_speed_warning_thresholds[3].speed_is_above(speed) || !self.adr.is_on {
+            self.low_speed_warnings[3] = false;
         }
 
         if !self.adr.is_initialised() {
-            self.low_speed_warning_1_104kts = false;
-            self.low_speed_warning_2_54kts = false;
-            self.low_speed_warning_3_159kts = false;
-            self.low_speed_warning_4_260kts = false;
+            self.low_speed_warnings = [false; 4];
         }
     }
 
-    fn low_speed_warning_1_104kts(&self) -> bool {
-        self.low_speed_warning_1_104kts
+    fn low_speed_warning_1(&self) -> bool {
+        self.low_speed_warnings[0]
     }
 
-    fn low_speed_warning_2_54kts(&self) -> bool {
-        self.low_speed_warning_2_54kts
+    fn low_speed_warning_2(&self) -> bool {
+        self.low_speed_warnings[1]
     }
 
-    fn low_speed_warning_3_159kts(&self) -> bool {
-        self.low_speed_warning_3_159kts
+    fn low_speed_warning_3(&self) -> bool {
+        self.low_speed_warnings[2]
     }
 
-    fn low_speed_warning_4_260kts(&self) -> bool {
-        self.low_speed_warning_4_260kts
+    fn low_speed_warning_4(&self) -> bool {
+        self.low_speed_warnings[3]
     }
 
     fn latitude(&self) -> Arinc429Word<Angle> {
@@ -2045,12 +2076,30 @@ mod tests {
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
+            let adirs_programming = AirDataInertialReferenceUnitProgramming::new(
+                Velocity::new::<knot>(340.),
+                MachNumber(0.82),
+                [
+                    LowSpeedWarningThreshold::new(
+                        Velocity::new::<knot>(100.),
+                        Velocity::new::<knot>(104.),
+                    ),
+                    LowSpeedWarningThreshold::new(
+                        Velocity::new::<knot>(50.),
+                        Velocity::new::<knot>(54.),
+                    ),
+                    LowSpeedWarningThreshold::new(
+                        Velocity::new::<knot>(155.),
+                        Velocity::new::<knot>(159.),
+                    ),
+                    LowSpeedWarningThreshold::new(
+                        Velocity::new::<knot>(260.),
+                        Velocity::new::<knot>(264.),
+                    ),
+                ],
+            );
             Self {
-                adirs: AirDataInertialReferenceSystem::new(
-                    context,
-                    Velocity::new::<knot>(340.),
-                    MachNumber(0.82),
-                ),
+                adirs: AirDataInertialReferenceSystem::new(context, adirs_programming),
                 overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             }
         }
@@ -4550,15 +4599,11 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(95.));
             test_bed.run();
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1()));
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(105.));
             test_bed.run();
-            assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
-            );
+            assert!(test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1()));
         }
 
         #[rstest]
@@ -4570,15 +4615,11 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(45.));
             test_bed.run();
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2()));
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(55.));
             test_bed.run();
-            assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
-            );
+            assert!(test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2()));
         }
 
         #[rstest]
@@ -4590,15 +4631,11 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(150.));
             test_bed.run();
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3()));
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(160.));
             test_bed.run();
-            assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
-            );
+            assert!(test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3()));
         }
 
         #[rstest]
@@ -4610,15 +4647,11 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(255.));
             test_bed.run();
 
-            assert!(
-                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
-            );
+            assert!(test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4()));
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
             test_bed.run();
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4()));
         }
 
         #[rstest]
@@ -4630,21 +4663,13 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(5.));
             test_bed.run();
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1()));
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2()));
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3()));
 
-            assert!(
-                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
-            );
+            assert!(!test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4()));
         }
     }
 }

@@ -11,6 +11,9 @@ import {
   FlightPhaseManager,
   FlightPlanIndex,
   Navigation,
+  NavigationDatabase,
+  NavigationDatabaseBackend,
+  NavigationDatabaseService,
 } from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { ArraySubject, EventBus, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
@@ -44,7 +47,6 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { A380Failure } from '@failures';
-import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 export interface FmsErrorMessage {
@@ -177,6 +179,9 @@ export class FlightManagementComputer implements FmcInterface {
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
+
+    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    NavigationDatabaseService.activeDatabase = db;
 
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
     if (this.instance === FmcIndex.FmcA) {
@@ -739,7 +744,8 @@ export class FlightManagementComputer implements FmcInterface {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           activePlan.setPerformanceData(
             'pilotMissedAccelerationAltitude',
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + AirlineModifiableInformation['EK'].eoAccAlt,
+            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
+              parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
@@ -747,7 +753,8 @@ export class FlightManagementComputer implements FmcInterface {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           activePlan.setPerformanceData(
             'pilotMissedEngineOutAccelerationAltitude',
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + AirlineModifiableInformation['EK'].eoAccAlt,
+            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
+              parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
           );
           this.acInterface.updateThrustReductionAcceleration();
         }

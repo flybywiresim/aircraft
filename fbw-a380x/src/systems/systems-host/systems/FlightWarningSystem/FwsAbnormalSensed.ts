@@ -227,7 +227,7 @@ export class FwsAbnormalSensed {
    * The majority of ECAM fault logic is still inside FwsCore (due to dependencies to MEMOs, and general flow)
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
    */
-  onUpdate() {
+  update() {
     if (this.fws.activeAbnormalSensedList.get().size > 0) {
       this.showAbnormalSensed.set(true);
       this.fws.normalChecklists.showChecklist.set(false);
@@ -242,21 +242,21 @@ export class FwsAbnormalSensed {
       this.showAbnormalSensed.set(false);
     }
 
-    /* if (this.fws.clDownTriggerRisingEdge) {
+    /*if (this.fws.clDownPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveDown();
     }
 
-    if (this.fws.clUpTriggerRisingEdge) {
+    if (this.fws.clUpPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
       this.moveUp();
-    } */
+    }*/
 
-    if (this.fws.clCheckTriggerRisingEdge) {
+    if (this.fws.clCheckPulseNode.read()) {
       if (!this.showAbnormalSensed.get()) {
         return;
       }
@@ -270,6 +270,610 @@ export class FwsAbnormalSensed {
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
+    // 21 - AIR CONDITIONING AND PRESSURIZATION
+    211800001: {
+      // PACK 1 CTL 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac1Channel1Failure,
+      notActiveWhenFaults: ['211800009', '211800021'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      redundLoss: () => ['210300001'],
+    },
+    211800002: {
+      // PACK 1 CTL 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac1Channel2Failure,
+      notActiveWhenFaults: ['211800009', '211800021'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      redundLoss: () => ['210300002'],
+    },
+    211800003: {
+      // PACK 2 CTL 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac2Channel1Failure,
+      notActiveWhenFaults: ['211800010', '211800021'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      redundLoss: () => ['210300003'],
+    },
+    211800004: {
+      // PACK 2 CTL 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fdac2Channel2Failure,
+      notActiveWhenFaults: ['211800010', '211800021'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      redundLoss: () => ['210300004'],
+    },
+    211800005: {
+      // PACK 1 CTL DEGRADED
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.pack1Degraded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300005'],
+    },
+    211800006: {
+      // PACK 2 CTL DEGRADED
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.pack2Degraded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300006'],
+    },
+    211800007: {
+      // PACK 1 CTL REDUNDANCY LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.pack1RedundLost,
+      notActiveWhenFaults: ['211800005'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      redundLoss: () => ['210300007'],
+    },
+    211800008: {
+      // PACK 2 CTL REDUNDANCY LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.pack2RedundLost,
+      notActiveWhenFaults: ['211800006'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 1,
+      redundLoss: () => ['210300008'],
+    },
+    211800009: {
+      // PACK 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
+        this.fws.fdac1Channel1Failure,
+        this.fws.fdac1Channel2Failure,
+      ),
+      notActiveWhenFaults: ['211800021'],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, !this.fws.pack1On.get()],
+      failure: 2,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300009'],
+    },
+    211800010: {
+      // PACK 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
+        this.fws.fdac2Channel1Failure,
+        this.fws.fdac2Channel2Failure,
+      ),
+      notActiveWhenFaults: ['211800021'],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, !this.fws.pack2On.get()],
+      failure: 2,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300010'],
+    },
+    211800011: {
+      // PACK 1 OFF
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.pack1Off,
+      notActiveWhenFaults: ['211800009', '211800021'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300009'],
+    },
+    211800012: {
+      // PACK 2 OFF
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.pack2Off,
+      notActiveWhenFaults: ['211800010', '211800021'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 1,
+      inopSysAllPhases: () => ['210300010'],
+    },
+    211800021: {
+      // PACK 1+2 FAULT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.pack1And2Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() > 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() <= 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() <= 100,
+        !this.fws.aircraftOnGround.get() && this.fws.flightLevel.get() <= 100,
+      ], // TODO: Add logic for doors on ground and pack overheat
+      whichItemsChecked: () => [
+        false,
+        false,
+        !this.fws.pack1On.get(),
+        !this.fws.pack2On.get(),
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        this.fws.ramAirOn.get(),
+        this.fws.cabinAirExtractOn.get(),
+        true,
+        this.fws.ramAirOn.get(),
+        this.fws.cabinAirExtractOn.get(),
+      ],
+      failure: 2,
+      sysPage: 1,
+      limitationsAllPhases: () => ['2', '210400001'],
+      limitationsPfd: () => ['2', '210400001'],
+      inopSysAllPhases: () => ['210300011'],
+    },
+    211800023: {
+      // ALL PRIMARY CABIN FANS FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.allCabinFansFault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300012'],
+    },
+    211800025: {
+      // BULK CARGO HEATER FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.bulkCargoHeaterFault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => ['210300013'],
+    },
+    211800026: {
+      // BULK CARGO ISOL FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([bulkIsolOpen, bulkIsolFault]) => bulkIsolOpen && bulkIsolFault,
+        this.fws.bulkIsolValveOpen,
+        this.fws.bulkIsolValveFault,
+      ),
+      notActiveWhenFaults: ['211800027'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.bulkIsolValvePbOn.get()],
+      failure: 2,
+      sysPage: 8,
+      inopSysAllPhases: () => ['210300014'],
+    },
+    211800027: {
+      // BULK CARGO VENT FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([bulkIsolOpen, bulkIsolFault]) => !bulkIsolOpen && bulkIsolFault,
+        this.fws.bulkIsolValveOpen,
+        this.fws.bulkIsolValveFault,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => ['210300013', '210300015'],
+    },
+    211800029: {
+      // FWD CARGO ISOL FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([fwdIsolOpen, fwdIsolFault]) => fwdIsolOpen && fwdIsolFault,
+        this.fws.fwdIsolValveOpen,
+        this.fws.fwdIsolValveFault,
+      ),
+      notActiveWhenFaults: ['211800031'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.fwdIsolValvePbOn.get()],
+      failure: 2,
+      sysPage: 8,
+      inopSysAllPhases: () => ['210300016'],
+    },
+    211800031: {
+      // FWD CARGO VENT FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([fwdIsolOpen, fwdIsolFault]) => !fwdIsolOpen && fwdIsolFault,
+        this.fws.fwdIsolValveOpen,
+        this.fws.fwdIsolValveFault,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      info: () => ['210200002', '210200003'],
+      inopSysAllPhases: () => ['210300017', '210300018'],
+    },
+    211800032: {
+      // HOT AIR 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([hotAirDisagrees, hotAirOpen]) => hotAirDisagrees && !hotAirOpen,
+        this.fws.hotAir1Disagrees,
+        this.fws.hotAir1Open,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300019', '210300020'],
+    },
+    211800033: {
+      // HOT AIR 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([hotAirDisagrees, hotAirOpen]) => hotAirDisagrees && !hotAirOpen,
+        this.fws.hotAir2Disagrees,
+        this.fws.hotAir2Open,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300019', '210300020'],
+    },
+    211800046: {
+      // HOT AIR 1 OFF
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(([hotAirPbOn]) => !hotAirPbOn, this.fws.hotAir1PbOn),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300019', '210300020'],
+    },
+    211800047: {
+      // HOT AIR 2 OFF
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(([hotAirPbOn]) => !hotAirPbOn, this.fws.hotAir2PbOn),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300019', '210300020'],
+    },
+    211800048: {
+      // HOT AIR 1 VLV OPEN
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([hotAirDisagrees, hotAirOpen]) => hotAirDisagrees && hotAirOpen,
+        this.fws.hotAir1Disagrees,
+        this.fws.hotAir1Open,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => [],
+    },
+    211800049: {
+      // HOT AIR 2 VLV OPEN
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([hotAirDisagrees, hotAirOpen]) => hotAirDisagrees && hotAirOpen,
+        this.fws.hotAir2Disagrees,
+        this.fws.hotAir2Open,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => [],
+    },
+    211800035: {
+      // ONE PRIMARY CABIN FAN FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([numberOfFanFailures]) => numberOfFanFailures === 1,
+        this.fws.numberOfCabinFanFaults,
+      ),
+      notActiveWhenFaults: ['211800023', '211800043', '211800044'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['210300025'],
+    },
+    211800039: {
+      // TEMP CTL 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.taddChannel1Failure,
+      notActiveWhenFaults: ['211800041'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['210300021'],
+    },
+    211800040: {
+      // TEMP CTL 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.taddChannel2Failure,
+      notActiveWhenFaults: ['211800041'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['210300022'],
+    },
+    211800050: {
+      // TEMP CTL DEGRADED
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tempCtrDegraded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => ['210300028'],
+    },
+    211800041: {
+      // TEMP CTL FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.tempCtlFault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      info: () => ['210200003'],
+      inopSysAllPhases: () => ['210300023'],
+    },
+    211800042: {
+      // TEMP CTL REDUNDANCY LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.oneTcsAppFailed,
+      notActiveWhenFaults: ['211800050'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['210300024'],
+    },
+    211800043: {
+      // THREE PRIMARY CABIN FANS FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([numberOfFanFailures]) => numberOfFanFailures === 3,
+        this.fws.numberOfCabinFanFaults,
+      ),
+      notActiveWhenFaults: ['211800023'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300027'],
+    },
+    211800044: {
+      // TWO PRIMARY CABIN FANS FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([numberOfFanFailures]) => numberOfFanFailures === 2,
+        this.fws.numberOfCabinFanFaults,
+      ),
+      notActiveWhenFaults: ['211800023', '211800043'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['210300026'],
+    },
+    212800001: {
+      // AFT VENT CTL 1 FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.vcmAftChannel1Failure,
+      notActiveWhenFaults: ['212800004'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['212300001'],
+    },
+    212800002: {
+      // AFT VENT CTL 2 FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.vcmAftChannel2Failure,
+      notActiveWhenFaults: ['212800004'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['212300002'],
+    },
+    212800003: {
+      // AFT VENT CTL DEGRADED
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.aftVentCtrDegraded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => ['212300003'],
+    },
+    212800004: {
+      // AFT VENT CTL FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: MappedSubject.create(
+        ([channel1, channel2]) => channel1 && channel2,
+        this.fws.vcmAftChannel1Failure,
+        this.fws.vcmAftChannel2Failure,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['212300004', '212300005'],
+    },
+    212800005: {
+      // AFT VENT CTL REDUNDANCY LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.aftVentRedundLost,
+      notActiveWhenFaults: ['212800003'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['212300006'],
+    },
+    212800007: {
+      // FWD VENT CTL 1 FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.vcmFwdChannel1Failure,
+      notActiveWhenFaults: ['212800010'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['212300007'],
+    },
+    212800008: {
+      // FWD VENT CTL 2 FAULT
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.vcmFwdChannel2Failure,
+      notActiveWhenFaults: ['212800010'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      redundLoss: () => ['212300008'],
+    },
+    212800009: {
+      // FWD VENT CTL DEGRADED
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.fwdVentCtrDegraded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: 8,
+      inopSysAllPhases: () => ['212300009'],
+    },
+    212800010: {
+      // FWD VENT CTL FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        ([channel1, channel2]) => channel1 && channel2,
+        this.fws.vcmFwdChannel1Failure,
+        this.fws.vcmFwdChannel2Failure,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [true], // TODO IFEC overhead PB
+      failure: 2,
+      sysPage: 8,
+      info: () => ['210200001'],
+      inopSysAllPhases: () => ['212300010', '212300011', '212300012'],
+    },
+    212800011: {
+      // FWD VENT CTL REDUNDANCY LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.fwdVentRedundLost,
+      notActiveWhenFaults: ['212800009'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      redundLoss: () => ['212300013'],
+    },
+    // 22 - FLIGHT GUIDANCE
+    220800001: {
+      // AP OFF involuntary
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoPilotOffInvoluntary,
+      auralWarning: this.fws.autoPilotOffInvoluntary.map((a) =>
+        a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      cancel: true,
+      sysPage: -1,
+
+      info: () => [],
+    },
+    220800004: {
+      // A/THR OFF involuntary
+      flightPhaseInhib: [3, 4, 5, 10],
+      simVarIsActive: this.fws.autoThrustOffInvoluntary,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
+      failure: 2,
+      sysPage: -1,
+      info: () => [],
+    },
     // 22 - AUTOFLIGHT
     221800001: {
       // FMC-A FAULT
@@ -463,7 +1067,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.apuFireDetected,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true, true],
+      whichItemsToShow: () => [!this.fws.fireTestPb.get(), !this.fws.fireTestPb.get(), !this.fws.fireTestPb.get()],
       whichItemsChecked: () => [
         this.fws.fireButtonAPU.get(),
         this.fws.apuAgentDischarged.get(),
@@ -614,22 +1218,22 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
       ],
       whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
@@ -663,22 +1267,22 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
       ],
       whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
@@ -712,22 +1316,22 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
       ],
       whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
@@ -761,22 +1365,22 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
+        !this.fws.fireTestPb.get(),
       ],
       whichItemsChecked: () => [
         this.fws.allThrottleIdle.get(),
@@ -954,25 +1558,25 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.mlgFireDetected,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
-        // Fixme: this should probably check the 3 adrs data
-        this.fws.adr1Cas.get().valueOr(0) > 250 || this.fws.adr1Mach.get().valueOr(0) > 0.55,
-        true,
-        true,
-        true,
-        true,
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
-        this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() &&
+          (this.fws.computedAirSpeedToNearest2.get() > 250 || this.fws.machSelectedFromAdr.get() > 0.55),
+        !this.fws.fireTestPb.get() && true,
+        !this.fws.fireTestPb.get() && true,
+        !this.fws.fireTestPb.get() && true,
+        !this.fws.fireTestPb.get() && true,
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
+        !this.fws.fireTestPb.get() && this.fws.aircraftOnGround.get(),
       ],
       whichItemsChecked: () => [
         false,
@@ -1136,6 +1740,146 @@ export class FwsAbnormalSensed {
       sysPage: -1,
       inopSysAllPhases: () => [],
     },
+    // 29 FUEL
+    281800002: {
+      // ALL FEED TKs LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank1Low,
+        this.fws.feedTank2Low,
+        this.fws.feedTank3Low,
+        this.fws.feedTank4Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        this.fws.allCrossFeedValvesOpen.get(),
+        this.fws.allFeedTankPumpsOn.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => [],
+      limitationsAllPhases: () => ['2'],
+      limitationsPfd: () => ['2'],
+    },
+    281800023: {
+      // FEED TK 1 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank1Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800102', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800024: {
+      // FEED TK 2 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank2Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        this.fws.crossFeed1ValveOpen.get(),
+        this.fws.crossFeed2ValveOpen.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800102', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800025: {
+      // FEED TK 3 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank3Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        this.fws.crossFeed3ValveOpen.get(),
+        this.fws.crossFeed4ValveOpen.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800103', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800026: {
+      // FEED TK 4 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.feedTank4Low,
+      whichItemsToShow: () => [true, true, true, false, false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        this.fws.crossFeed3ValveOpen.get(),
+        this.fws.crossFeed4ValveOpen.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800103', '281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800102: {
+      // FEED TKs 1+2 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank1Low,
+        this.fws.feedTank2Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, this.fws.allCrossFeedValvesOpen.get(), false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800103: {
+      // FEED TKs 3+4 LEVEL LO
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.feedTank3Low,
+        this.fws.feedTank4Low,
+      ),
+      whichItemsToShow: () => [true, true, false, false, false, false, false],
+      whichItemsChecked: () => [false, this.fws.allCrossFeedValvesOpen.get(), false, false, false, false, false],
+      failure: 2,
+      sysPage: 4,
+      notActiveWhenFaults: ['281800002'],
+      inopSysAllPhases: () => [],
+    },
+    281800076: {
+      // NO ZFW OR ZFWCG DATA
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.fmsZfwOrZfwCgNotSet,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+      notActiveWhenFaults: [],
+      inopSysAllPhases: () => [],
+    },
     // 29 Hydraulic
     290800001: {
       // G ELEC PMP A FAULT
@@ -1144,7 +1888,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.greenAPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300001'],
     },
@@ -1155,7 +1899,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.greenBPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300002'],
     },
@@ -1166,7 +1910,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.yellowAPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300003'],
     },
@@ -1177,7 +1921,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.yellowBPumpAuto.get()],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
       inopSysAllPhases: () => ['290300004'],
     },
@@ -1188,7 +1932,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng1APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800006: {
@@ -1198,7 +1942,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng1BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800007: {
@@ -1208,7 +1952,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng2APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800008: {
@@ -1218,7 +1962,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng2BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800009: {
@@ -1228,7 +1972,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng3APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800010: {
@@ -1238,7 +1982,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng3BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800011: {
@@ -1248,7 +1992,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng4APumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800012: {
@@ -1258,7 +2002,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, this.fws.aircraftOnGround.get() && this.fws.threeYellowPumpsFailed.get()],
       whichItemsChecked: () => [!this.fws.eng4BPumpAuto.get(), false],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800019: {
@@ -1278,7 +2022,7 @@ export class FwsAbnormalSensed {
         !this.fws.greenAPumpAuto.get() && !this.fws.greenBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800020: {
@@ -1298,7 +2042,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800021: {
@@ -1320,7 +2064,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800022: {
@@ -1342,7 +2086,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800031: {
@@ -1364,7 +2108,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800032: {
@@ -1386,7 +2130,7 @@ export class FwsAbnormalSensed {
         !this.fws.yellowAPumpAuto.get() && !this.fws.yellowBPumpAuto.get(),
       ],
       failure: 2,
-      sysPage: -1,
+      sysPage: 5,
       notActiveWhenFaults: [],
     },
     290800035: {
@@ -1410,7 +2154,7 @@ export class FwsAbnormalSensed {
       limitationsApprLdg: () => ['320400001', '290400001', '290400002', '320400002', '320400003', '800400002'],
       info: () => ['800200001', '800200002', '220200005'],
       notActiveWhenFaults: ['290800039'],
-      sysPage: -1,
+      sysPage: 5,
     },
     290800036: {
       // Y SYS LO PRESS
@@ -1429,7 +2173,7 @@ export class FwsAbnormalSensed {
       limitationsApprLdg: () => ['800400002'],
       info: () => ['800400003', '800200004', '800200004', '220200005'],
       notActiveWhenFaults: ['290800039'],
-      sysPage: -1,
+      sysPage: 5,
     },
     290800039: {
       // G + Y SYS LO PRESS
@@ -1483,7 +2227,7 @@ export class FwsAbnormalSensed {
       ],
       info: () => ['340200002', '800200001', '320200001', '800200004', '800200005'],
       notActiveWhenFaults: [],
-      sysPage: -1,
+      sysPage: 5,
     },
     290800040: {
       // Y ELEC PMP A+B OFF
@@ -1491,15 +2235,99 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.yellowElecAandBPumpOff,
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      notActiveWhenFaults: [], // TODO
+      notActiveWhenFaults: [],
+      failure: -1,
+      sysPage: -1,
+    },
+    // 32 Landing Gear & Brakes
+    320800008: {
+      // BRAKES A_SKID OFF
+      flightPhaseInhib: [4, 5, 6, 7],
+      simVarIsActive: this.fws.antiSkidSwitchOff, // TODO check for power source & fault signal
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, false],
+      notActiveWhenFaults: [],
+      failure: 2,
+      sysPage: 11,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => ['320300001', '320300002', '220300008'],
+      info: () => [
+        '320200002',
+        '320200003',
+        this.fws.oneEngineRunning.get() ? '800200003' : '',
+        '800200005',
+        '220200005',
+      ],
+    },
+    320800018: {
+      // BRAKES HOT
+      flightPhaseInhib: [4, 5, 9, 10, 11, 12],
+      simVarIsActive: this.fws.brakesHot,
+      whichItemsToShow: () => [
+        this.fws.phase112.get(),
+        this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false],
+      limitationsPfd: () => [this.fws.aircraftOnGround.get() ? '' : '260400002'],
+      limitationsAllPhases: () => [this.fws.aircraftOnGround.get() ? '' : '260400002'],
+      notActiveWhenFaults: [],
+      failure: 2,
+      sysPage: 11,
+    },
+    320800022: {
+      // BRAKES PARK BRK ON
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.lgParkBrkOn,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.parkBrake.get()],
+      notActiveWhenFaults: [],
       failure: 2,
       sysPage: -1,
+    },
+    320800030: {
+      // CONFIG PARK BRK ON
+      flightPhaseInhib: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      simVarIsActive: this.fws.configParkBrakeOn,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: -1,
+    },
+    320800037: {
+      // L/G NOT DOWN NO CANCEL
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.lgNotDownNoCancel,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: 11,
+      cancel: false,
+    },
+    320800038: {
+      // L/G NOT DOWN CANCEL
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: MappedSubject.create(
+        ([lgNotDown, lgNotDownCancel]) => lgNotDown && !lgNotDownCancel,
+        this.fws.lgNotDown,
+        this.fws.lgNotDownNoCancel,
+      ),
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: [],
+      failure: 3,
+      sysPage: 11,
+      cancel: true,
     },
     // 34 NAVIGATION
     340800001: {
       // ADR 1 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: this.fws.adr1Fault,
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.fws.adr1Faulty,
       notActiveWhenFaults: ['340800004', '340800008', '340800005'],
       whichItemsToShow: () => [true, true, true, true],
       whichItemsChecked: () => [
@@ -1520,8 +2348,8 @@ export class FwsAbnormalSensed {
     },
     340800002: {
       // ADR 2 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: this.fws.adr2Fault,
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.fws.adr2Faulty,
       notActiveWhenFaults: ['340800004', '340800008', '340800006'],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [
@@ -1540,8 +2368,8 @@ export class FwsAbnormalSensed {
     },
     340800003: {
       // ADR 3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: this.fws.adr3Fault,
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: this.fws.adr3Faulty,
       notActiveWhenFaults: ['340800005', '340800006', '340800008'],
       whichItemsToShow: () => [true, true, true, true],
       whichItemsChecked: () => [
@@ -1558,8 +2386,8 @@ export class FwsAbnormalSensed {
     },
     340800004: {
       // ADR 1+2 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr2Fault),
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Faulty, this.fws.adr2Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -1590,8 +2418,8 @@ export class FwsAbnormalSensed {
     },
     340800005: {
       // ADR 1+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Fault, this.fws.adr3Fault),
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr1Faulty, this.fws.adr3Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -1622,8 +2450,8 @@ export class FwsAbnormalSensed {
     },
     340800006: {
       // ADR 2+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Fault, this.fws.adr3Fault),
+      flightPhaseInhib: [4, 5, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.adr2Faulty, this.fws.adr3Faulty),
       notActiveWhenFaults: ['340800008'],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -1654,12 +2482,12 @@ export class FwsAbnormalSensed {
     },
     340800008: {
       // ADR 1+2+3 FAULT
-      flightPhaseInhib: [1, 4, 5, 10],
+      flightPhaseInhib: [4, 5, 10],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.adr1Fault,
-        this.fws.adr2Fault,
-        this.fws.adr3Fault,
+        this.fws.adr1Faulty,
+        this.fws.adr2Faulty,
+        this.fws.adr3Faulty,
       ),
       notActiveWhenFaults: ['340800010', '340800071'],
       whichItemsToShow: () => [true, true, true],
@@ -2007,6 +2835,42 @@ export class FwsAbnormalSensed {
       info: () => ['220200007', '220200008', '220200009'],
     },
     // SURVEILLANCE
+    341800016: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tcas1Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [false], // TODO replace with SURV SYS logic once implemented
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800017: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tcas2Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [false],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800018: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.tcas1And2Fault,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800019: {
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.tcasStandby,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
     341800037: {
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 10, 12],
       simVarIsActive: this.fws.xpdrStby,

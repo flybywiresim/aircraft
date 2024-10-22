@@ -29,6 +29,13 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     ConsumerSubject.create(null, 0),
   ];
 
+  private readonly reverserSubs: ConsumerSubject<boolean>[] = [
+    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(null, false),
+  ];
+
+  private readonly reverserSelected = MappedSubject.create(SubscribableMapFunctions.or(), ...this.reverserSubs);
+
   private readonly engSelectorPosition = ConsumerSubject.create(null, 0);
 
   private readonly engineRunningOrIgnitionOn = MappedSubject.create(
@@ -70,6 +77,9 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engineStateSubs[2].setConsumer(sub.on('engine_state_3').whenChanged());
     this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
 
+    this.reverserSubs[0].setConsumer(sub.on('thrust_reverse_2').whenChanged());
+    this.reverserSubs[1].setConsumer(sub.on('thrust_reverse_3').whenChanged());
+
     this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
 
     this.normalChecklistsVisible.setConsumer(sub.on('fws_show_normal_checklists').whenChanged());
@@ -92,8 +102,14 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
               <text x={20} y={30} class="Amber F26" visibility="hidden">
                 A FLOOR
               </text>
-              <N1Limit x={330} y={30} active={this.engineRunningOrIgnitionOn} bus={this.props.bus} />
-              <BleedSupply bus={this.props.bus} x={750} y={30} />
+              <N1Limit
+                x={330}
+                y={30}
+                active={this.engineRunningOrIgnitionOn}
+                hidden={this.reverserSelected}
+                bus={this.props.bus}
+              />
+              <BleedSupply bus={this.props.bus} x={750} y={30} hidden={this.reverserSelected} />
 
               <EngineGauge
                 bus={this.props.bus}

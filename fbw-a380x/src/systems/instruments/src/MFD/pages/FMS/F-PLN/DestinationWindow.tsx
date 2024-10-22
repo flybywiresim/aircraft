@@ -20,7 +20,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
   private identRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private newDest = Subject.create<string>('');
+  private newDest = Subject.create<string | null>(null);
 
   private onModified(newDest: string | null): void {
     if (newDest) {
@@ -84,10 +84,10 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
             <div style="align-self: center; margin-top: 50px;">
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
+                dataHandlerDuringValidation={async (icao) => this.onModified(icao)}
                 mandatory={Subject.create(false)}
                 canBeCleared={Subject.create(true)}
                 inactive={Subject.create(false)}
-                onModified={(val) => this.onModified(val)}
                 value={this.newDest}
                 alignText="center"
                 errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
