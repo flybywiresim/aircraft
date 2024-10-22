@@ -19,11 +19,11 @@ class NXDataStore {
 
     static set(key, val) {
         SetStoredData(`A32NX_${key}`, val);
-        this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
+        this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, val);
     }
 
     static subscribe(key, callback) {
-        return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey, value) => {
+        return Coherent.on('FBW_NXDATASTORE_UPDATE', (updatedKey, value) => {
             if (key === '*' || key === updatedKey) {
                 callback(updatedKey, value);
             }
