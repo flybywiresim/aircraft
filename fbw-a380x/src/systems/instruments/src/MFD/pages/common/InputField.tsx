@@ -187,17 +187,20 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   private onKeyPress(ev: KeyboardEvent) {
     // Un-select the text
     this.textInputRef.instance.classList.remove('valueSelected');
+
     // ev.key is undefined, so we have to use the deprecated keyCode here
     const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
     if (ev.keyCode === KeyCode.KEY_ENTER) {
       this.handleEnter();
-    } else if (key === ',') {
-      // Most non-English-speaking countries use comma as their decimal separator. Remap comma to dot to make it easier
-      // to enter decimals in those keyboard layouts - it is not a valid KCCU key anyway.
-      this.handleKeyInput('.');
-    } else {
+    }
+
+    if (key.match(/^[A-Z0-9/.+\- ]$/)) {
       this.handleKeyInput(key);
+    }
+
+    if (key === ',') {
+      this.handleKeyInput('.');
     }
   }
 
