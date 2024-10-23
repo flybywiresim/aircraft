@@ -37,11 +37,15 @@ void FlightDataRecorder::initialize() {
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
-void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
+void FlightDataRecorder::update(const BaseData& baseData,
+                                const AircraftSpecificData& aircraftSpecificData,
+                                Elac elacs[2],
+                                Sec secs[3],
+                                Fac facs[2],
+                                AutopilotStateMachine* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
                                 Autothrust* autoThrust,
-                                const EngineData& engineData,
-                                const AdditionalData& additionalData) {
+                                const EngineData& engineData) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -50,12 +54,61 @@ void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
   // do file management
   manageFlightDataRecorderFiles();
 
-  // write data to file
+  // write base data
+  fileStream->write((char*)(&baseData), sizeof(baseData));
+
+  // write aircraft specific data
+  fileStream->write((char*)(&aircraftSpecificData), sizeof(aircraftSpecificData));
+
+  // write ELAC data
+  for (int i = 0; i < NUMBER_OF_ELAC_TO_WRITE; ++i) {
+    writeElac(elacs[i]);
+  }
+
+  // write SEC data
+  for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
+    writeSec(secs[i]);
+  }
+
+  // write FAC data
+  for (int i = 0; i < NUMBER_OF_FAC_TO_WRITE; ++i) {
+    writeFac(facs[i]);
+  }
+
+  // Other
   fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
   fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
   fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
+
+  // write engine data
   fileStream->write((char*)(&engineData), sizeof(engineData));
-  fileStream->write((char*)(&additionalData), sizeof(additionalData));
+}
+
+void FlightDataRecorder::writeElac(Elac& elac) {
+  auto bus_outputs = elac.getBusOutputs();
+  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+  auto discrete_outputs = elac.getDiscreteOutputs();
+  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+  auto analog_outputs = elac.getAnalogOutputs();
+  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+}
+
+void FlightDataRecorder::writeSec(Sec& sec) {
+  auto bus_outputs = sec.getBusOutputs();
+  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+  auto discrete_outputs = sec.getDiscreteOutputs();
+  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+  auto analog_outputs = sec.getAnalogOutputs();
+  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+}
+
+void FlightDataRecorder::writeFac(Fac& fac) {
+  auto bus_outputs = fac.getBusOutputs();
+  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+  auto discrete_outputs = fac.getDiscreteOutputs();
+  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+  auto analog_outputs = fac.getAnalogOutputs();
+  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
 }
 
 void FlightDataRecorder::terminate() {

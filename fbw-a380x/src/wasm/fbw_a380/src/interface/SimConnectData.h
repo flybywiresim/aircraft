@@ -64,8 +64,12 @@ struct SimData {
   double longitude_deg;
   double throttle_lever_1_pos;
   double throttle_lever_2_pos;
+  double throttle_lever_3_pos;
+  double throttle_lever_4_pos;
   double engine_1_thrust_lbf;
   double engine_2_thrust_lbf;
+  double engine_3_thrust_lbf;
+  double engine_4_thrust_lbf;
   unsigned long long nav_valid;
   double nav_loc_deg;
   double nav_gs_deg;

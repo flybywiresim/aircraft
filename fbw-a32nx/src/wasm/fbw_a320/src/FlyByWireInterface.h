@@ -3,14 +3,13 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
-#include "AdditionalData.h"
 #include "Arinc429.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
-#include "EngineData.h"
-#include "FlightDataRecorder.h"
+#include "recording/FlightDataRecorder.h"
+#include "recording/RecordingDataTypes.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
@@ -170,6 +169,7 @@ class FlyByWireInterface {
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_H_dot_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bz_deg;
@@ -305,7 +305,9 @@ class FlyByWireInterface {
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  AdditionalData additionalData = {};
+  BaseData baseData = {};
+  AircraftSpecificData aircraftSpecificData = {};
+
   std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
@@ -590,8 +592,9 @@ class FlyByWireInterface {
 
   bool updateRadioReceiver(double sampleTime);
 
+  bool updateBaseData(double sampleTime);
+  bool updateAircraftSpecificData(double sampleTime);
   bool updateEngineData(double sampleTime);
-  bool updateAdditionalData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);

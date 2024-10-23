@@ -1,8 +1,14 @@
 use bytemuck::AnyBitPattern;
 use clap::Parser;
 use csv::WriterBuilder;
+use fdr2csv_common::csv_header_serializer;
 use flate2::bufread::GzDecoder;
-use headers::{ap_raw_output, ap_sm_output, athr_out, AdditionalData, EngineData};
+use headers::{
+    ap_raw_output, ap_sm_output, athr_out, base_fac_analog_outputs, base_fac_bus,
+    base_fac_discrete_outputs, base_prim_analog_outputs, base_prim_discrete_outputs,
+    base_prim_out_bus, base_sec_analog_outputs, base_sec_discrete_outputs, base_sec_out_bus,
+    AircraftSpecificData, BaseData, EngineData,
+};
 use serde::Serialize;
 use std::{
     fs::{File, OpenOptions},
@@ -10,8 +16,6 @@ use std::{
     mem,
 };
 
-mod csv_header_serializer;
-mod error;
 mod headers;
 
 #[derive(Parser, Debug)]
@@ -37,7 +41,7 @@ struct Args {
     get_input_file_version: bool,
 }
 
-const INTERFACE_VERSION: u64 = 25;
+const INTERFACE_VERSION: u64 = 3800001;
 
 // Read number of bytes specified by the size of T from the binary file
 fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
@@ -58,21 +62,74 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
 // A single FDR record
 #[derive(Serialize, Default)]
 struct FdrData {
+    base_data: BaseData,
+    specific_data: AircraftSpecificData,
+    prim_1_data: PrimData,
+    sec_1_data: SecData,
+    fac_1_data: FacData,
     ap_sm: ap_sm_output,
     ap_law: ap_raw_output,
     athr: athr_out,
     engine: EngineData,
-    data: AdditionalData,
+}
+
+#[derive(Serialize, Default)]
+struct PrimData {
+    bus_outputs: base_prim_out_bus,
+    discrete_outputs: base_prim_discrete_outputs,
+    analog_outputs: base_prim_analog_outputs,
+}
+
+#[derive(Serialize, Default)]
+struct SecData {
+    bus_outputs: base_sec_out_bus,
+    discrete_outputs: base_sec_discrete_outputs,
+    analog_outputs: base_sec_analog_outputs,
+}
+
+#[derive(Serialize, Default)]
+struct FacData {
+    bus_outputs: base_fac_bus,
+    discrete_outputs: base_fac_discrete_outputs,
+    analog_outputs: base_fac_analog_outputs,
 }
 
 // These are helper functions to read in a whole FDR record.
 fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
+        base_data: read_bytes::<BaseData>(reader)?,
+        specific_data: read_bytes::<AircraftSpecificData>(reader)?,
+        prim_1_data: read_prim(reader)?,
+        sec_1_data: read_sec(reader)?,
+        fac_1_data: read_fac(reader)?,
         ap_sm: read_bytes::<ap_sm_output>(reader)?,
         ap_law: read_bytes::<ap_raw_output>(reader)?,
         athr: read_bytes::<athr_out>(reader)?,
         engine: read_bytes::<EngineData>(reader)?,
-        data: read_bytes::<AdditionalData>(reader)?,
+    })
+}
+
+fn read_prim(reader: &mut impl Read) -> Result<PrimData, Error> {
+    Ok(PrimData {
+        bus_outputs: read_bytes::<base_prim_out_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_prim_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_prim_analog_outputs>(reader)?,
+    })
+}
+
+fn read_sec(reader: &mut impl Read) -> Result<SecData, Error> {
+    Ok(SecData {
+        bus_outputs: read_bytes::<base_sec_out_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_sec_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_sec_analog_outputs>(reader)?,
+    })
+}
+
+fn read_fac(reader: &mut impl Read) -> Result<FacData, Error> {
+    Ok(FacData {
+        bus_outputs: read_bytes::<base_fac_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_fac_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_fac_analog_outputs>(reader)?,
     })
 }
 
