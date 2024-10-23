@@ -846,8 +846,6 @@ export class FwsCore {
 
   public readonly feedTank2LowConfirm = new NXLogicConfirmNode(30, true);
 
-  public readonly leftOuterInnerValve = ConsumerSubject.create(this.sub.on('fuel_valve_open_4'), 0);
-
   public readonly feedTank3Low = Subject.create(false);
 
   public readonly feedTank3LowConfirm = new NXLogicConfirmNode(30, true);
@@ -857,8 +855,6 @@ export class FwsCore {
   public readonly leftFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_2'), false);
 
   public readonly leftFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_5'), false);
-
-  public readonly rightOuterInnerValve = ConsumerSubject.create(this.sub.on('fuel_valve_open_5'), 0);
 
   public readonly rightFuelLow = Subject.create(false);
 
@@ -1633,10 +1629,8 @@ export class FwsCore {
         !this.engine4ValueSwitch.get() &&
         !this.centerFuelPump1Auto.get() &&
         !this.centerFuelPump2Auto.get() &&
-        !this.leftOuterInnerValve.get() &&
         !this.leftFuelPump1Auto.get() &&
         !this.leftFuelPump2Auto.get() &&
-        !this.rightOuterInnerValve.get() &&
         !this.rightFuelPump1Auto.get() &&
         !this.rightFuelPump2Auto.get() &&
         this.allEngineSwitchOff.get(),
