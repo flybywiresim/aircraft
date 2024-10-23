@@ -16,7 +16,7 @@ export class Speed extends DisplayComponent<SpeedProps> {
           <text id="SPD" class="Common Active" x="47%" y="20%">
             SPD
           </text>
-          <text id="Value" class="Common Value" x="6%" y="86%">
+          <text id="Value" class="Common Value" x="5%" y="86%">
             ---
           </text>
           <text id="KNOTS" class="Common Inactive" x="79%" y="97%">
