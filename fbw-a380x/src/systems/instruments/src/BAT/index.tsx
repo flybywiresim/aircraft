@@ -19,13 +19,8 @@ const BatRoot = () => {
   const batteryMap = [4, 3, 0, 1, 2]; // ESS, APU, OFF, BAT1, BAT2
 
   return (
-    <svg className="bat-svg" viewBox="0 0 200 100">
-      {selectedBattery !== 2 ? ( // OVHD BAT selector is not OFF
-        <BatDisplay batteryNumber={batteryMap[selectedBattery]} x="196" y="48" />
-      ) : (
-        // A380 Display is empty.
-        <text x="196" y="48"></text>
-      )}
+    <svg className={`bat-svg${selectedBattery == 2 ? ' off' : ''}`} viewBox="0 0 200 100">
+      <BatDisplay batteryNumber={batteryMap[selectedBattery]} blankWhenOff={true} x="196" y="48" />
     </svg>
   );
 };
