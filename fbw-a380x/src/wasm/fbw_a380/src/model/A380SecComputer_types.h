@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380SecComputer_types_h_
-#define RTW_HEADER_A380SecComputer_types_h_
+#ifndef A380SecComputer_types_h_
+#define A380SecComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
@@ -232,6 +232,7 @@ struct base_prim_out_bus
   base_arinc_429 rudder_2_position_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
+  base_arinc_429 fe_status_word;
 };
 
 #endif

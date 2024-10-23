@@ -34,7 +34,11 @@ class CDUVerticalRevisionPage {
 
         let waypointIdent = "---";
         if (waypoint) {
-            waypointIdent = waypoint.ident;
+            if (isDestination && targetPlan.destinationRunway) {
+                waypointIdent = targetPlan.destinationRunway.ident;
+            } else {
+                waypointIdent = waypoint.ident;
+            }
         }
 
         let coordinates = "---";
@@ -70,9 +74,10 @@ class CDUVerticalRevisionPage {
         const speedConstraint = waypoint.speedConstraint ? Math.round(waypoint.speedConstraint.speed).toFixed(0) : undefined;
         const transAltLevel = constraintType === WaypointConstraintType.DES ? performanceData.transitionLevel * 100 : performanceData.transitionAltitude;
         const altitudeConstraint = this.formatAltConstraint(waypoint.altitudeConstraint, transAltLevel);
+        const canHaveAltConstraint = !isDestination && !waypoint.isXA();
 
-        let r3Title = "ALT CSTR\xa0";
-        let r3Cell = "{cyan}[\xa0\xa0\xa0\xa0]*{end}";
+        let r3Title = canHaveAltConstraint ? "ALT CSTR\xa0" : "";
+        let r3Cell = canHaveAltConstraint ? "{cyan}[\xa0\xa0\xa0\xa0]*{end}" : "";
         let l3Title = "\xa0SPD CSTR";
         let l3Cell = "{cyan}*[\xa0\xa0\xa0]{end}";
         let l4Title = "MACH/START WPT[color]inop";
@@ -119,7 +124,7 @@ class CDUVerticalRevisionPage {
             l3Cell = "";
             r5Cell = "";
         } else {
-            if (altitudeConstraint) {
+            if (canHaveAltConstraint && altitudeConstraint) {
                 r3Cell = `{magenta}${altitudeConstraint}{end}`;
             }
             if (speedConstraint) {
@@ -245,50 +250,52 @@ class CDUVerticalRevisionPage {
 
             this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
         }; // SPD CSTR
-        mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
-            if (value === FMCMainDisplay.clrValue) {
-                await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, undefined, forPlan, inAlternate);
+        if (canHaveAltConstraint) {
+            mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
+                if (value === FMCMainDisplay.clrValue) {
+                    await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, undefined, forPlan, inAlternate);
+
+                    mcdu.updateConstraints();
+                    mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+
+                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+
+                    return;
+                }
+
+                const matchResult = value.match(/^([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5}))$/);
+
+                if (matchResult === null) {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                    scratchpadCallback();
+                    return;
+                }
+
+                const altitude = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
+                const code = matchResult[1] === undefined ? '@' : (matchResult[1] === '-' ? '-' : '+');
+
+                if (altitude > 45000) {
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    scratchpadCallback();
+                    return;
+                }
+
+                if (constraintType === WaypointConstraintType.Unknown) {
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, altitude, code, forPlan, inAlternate,);
+                    return;
+                }
+
+                await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, {
+                    altitudeDescriptor: code,
+                    altitude1: altitude,
+                }, forPlan, inAlternate);
 
                 mcdu.updateConstraints();
                 mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
                 this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
-
-                return;
-            }
-
-            const matchResult = value.match(/^([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5}))$/);
-
-            if (matchResult === null) {
-                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                scratchpadCallback();
-                return;
-            }
-
-            const altitude = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
-            const code = matchResult[1] === undefined ? '@' : (matchResult[1] === '-' ? '-' : '+');
-
-            if (altitude > 45000) {
-                mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                scratchpadCallback();
-                return;
-            }
-
-            if (constraintType === WaypointConstraintType.Unknown) {
-                CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, altitude, code, forPlan, inAlternate,);
-                return;
-            }
-
-            await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, {
-                altitudeDescriptor: code,
-                altitude1: altitude,
-            }, forPlan, inAlternate);
-
-            mcdu.updateConstraints();
-            mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
-
-            this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
-        }; // ALT CSTR
+            }; // ALT CSTR
+        }
         mcdu.onLeftInput[4] = () => {
             //TODO: show appropriate wind page based on waypoint
             CDUWindPage.Return = () => {

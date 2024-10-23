@@ -72,8 +72,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private extraFuelTime = Subject.create<number | null>(null);
 
-  private enginesWereStarted = Subject.create<boolean>(false);
-
   private blockLineRef = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData() {
@@ -81,29 +79,19 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       return;
     }
 
-    console.time('FUEL_LOAD:onNewData');
-
     if (this.loadedFlightPlan.performanceData.costIndex) {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
     }
 
-    if (!this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered.get()) {
-      // Calculate Rte Rsv fuel for 5.0% reserve
-      this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(null);
-      this.props.fmcService.master.fmgc.data.routeReserveFuelPercentagePilotEntry.set(null);
-    }
-
     if (!this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get()) {
-      // Calculate Rte Rsv fuel for 00:30 time
-      this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(6_000); // TODO
+      // Calculate final res fuel for 00:30 time
+      this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(4_650); // FIXME
     }
 
-    // TODO calculate altn fuel
-    this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(650);
+    // FIXME calculate altn fuel
+    this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(6_500); // FIXME
 
     this.updateDestAndAltnPredictions();
-
-    console.timeEnd('FUEL_LOAD:onNewData');
   }
 
   updateDestAndAltnPredictions() {
@@ -163,35 +151,37 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.grossWeight.set(null);
             this.centerOfGravity.set(null);
             this.fuelOnBoard.set(null);
-            this.blockLineRef.instance.style.visibility = 'visible';
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
-            this.grossWeight.set(gw);
+            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg());
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
             const cg: number = SimVar.GetSimVarValue('CG PERCENT', 'Percent over 100') * 100;
             this.centerOfGravity.set(cg);
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
-            const fob =
-              SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
-              SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
-            this.fuelOnBoard.set(fob);
-
-            this.blockLineRef.instance.style.visibility = 'hidden';
+            this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB());
           }
 
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
             const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
             // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
-            const fob = this.fuelOnBoard.get() ?? 0;
-            this.tripFuelWeight.set(
-              fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob),
+            const fob = this.props.fmcService.master.fmgc.getFOB() * 1_000;
+            const tripFuel =
+              fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob);
+            this.tripFuelWeight.set(tripFuel);
+
+            // Calculate Rte Rsv fuel for 5.0% reserve
+            this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
+              tripFuel ? tripFuel * 0.05 : null,
             );
+            this.props.fmcService.master.fmgc.data.routeReserveFuelWeightPilotEntry.set(
+              tripFuel ? tripFuel * 0.05 : null,
+            );
+
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
             this.extraFuelWeight.set(
-              (this.enginesWereStarted.get() ? fob : block) -
+              (this.props.fmcService.master.enginesWereStarted.get() ? fob : block) -
                 (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0) -
                 (this.tripFuelWeight.get() ?? 0) -
                 (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
@@ -210,13 +200,15 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         }),
     );
 
-    this.subs.push(
-      this.enginesWereStarted.sub((val) => {
-        if (val && this.blockLineRef.getOrDefault()) {
-          this.blockLineRef.instance.style.visibility = 'hidden';
-        }
-      }, true),
-    );
+    if (this.props.fmcService.master) {
+      this.subs.push(
+        this.props.fmcService.master.enginesWereStarted.sub((val) => {
+          if (this.blockLineRef.getOrDefault()) {
+            this.blockLineRef.instance.style.visibility = val ? 'hidden' : 'visible';
+          }
+        }, true),
+      );
+    }
   }
 
   render(): VNode {
@@ -249,7 +241,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
                 mandatory={Subject.create(true)}
-                inactive={this.enginesWereStarted}
                 canBeCleared={Subject.create(false)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
@@ -262,7 +253,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 dataEntryFormat={new PercentageFormat(Subject.create(minZfwCg), Subject.create(maxZfwCg))}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeightCenterOfGravity}
                 mandatory={Subject.create(true)}
-                inactive={this.enginesWereStarted}
                 canBeCleared={Subject.create(false)}
                 alignText="center"
                 containerStyle="width: 125px;"

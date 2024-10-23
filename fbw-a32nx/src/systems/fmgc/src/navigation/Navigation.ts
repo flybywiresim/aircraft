@@ -4,7 +4,7 @@
 
 import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
 
-import { FlightPlanService } from '@fmgc/index';
+import { EventBus, FlightPlanService } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
@@ -75,6 +75,13 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_ALTITUDE`,
   );
 
+  private computedAirspeed: number | null = null;
+
+  private static readonly computedAirspeedVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_COMPUTED_AIRSPEED`,
+  );
+
   private readonly navaidSelectionManager: NavaidSelectionManager;
 
   private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
@@ -89,11 +96,14 @@ export class Navigation implements NavigationProvider {
     facility: null,
   }));
 
-  constructor(private flightPlanService: FlightPlanService) {
-    this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
+  constructor(
+    private readonly bus: EventBus,
+    private flightPlanService: FlightPlanService,
+  ) {
+    this.requiredPerformance = new RequiredPerformance(this.bus, this.flightPlanService);
     this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);
-    this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this);
-    this.navaidTuner = new NavaidTuner(this, this.navaidSelectionManager, this.landingSystemSelectionManager);
+    this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.bus, this.flightPlanService, this);
+    this.navaidTuner = new NavaidTuner(this.bus, this, this.navaidSelectionManager, this.landingSystemSelectionManager);
   }
 
   init(): void {
@@ -101,7 +111,6 @@ export class Navigation implements NavigationProvider {
   }
 
   update(deltaTime: number): void {
-    // TODO... why different to master...
     this.requiredPerformance.update(deltaTime);
 
     this.updateCurrentPerformance();
@@ -110,6 +119,7 @@ export class Navigation implements NavigationProvider {
     this.updateRadioHeight();
     this.updateBaroAltitude();
     this.updatePressureAltitude();
+    this.updateComputedAirspeed();
 
     NearbyFacilities.getInstance().update(deltaTime);
 
@@ -175,6 +185,10 @@ export class Navigation implements NavigationProvider {
     this.pressureAltitude = this.getAdiruValue(Navigation.pressureAltitudeVars);
   }
 
+  private updateComputedAirspeed(): void {
+    this.computedAirspeed = this.getAdiruValue(Navigation.computedAirspeedVars);
+  }
+
   private updatePosition(): void {
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -199,6 +213,10 @@ export class Navigation implements NavigationProvider {
 
   public getPressureAltitude(): number | null {
     return this.pressureAltitude;
+  }
+
+  public getComputedAirspeed(): number | null {
+    return this.computedAirspeed;
   }
 
   public getRadioHeight(): number | null {

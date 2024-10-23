@@ -15,9 +15,11 @@ use crate::{
 };
 use uom::si::{
     angle::degree,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     length::meter,
     ratio::{percent, ratio},
+    velocity::meter_per_second,
 };
 
 use nalgebra::Vector3;
@@ -31,76 +33,180 @@ pub trait GearSystemSensors {
 pub struct TiltingGear {
     tilt_animation_id: VariableIdentifier,
     compression_id: VariableIdentifier,
+    wheel_speed_id: VariableIdentifier,
 
     tilt_height_from_low_to_up: Length,
-    contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+    fwd_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+    aft_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
     tilting_max_angle: Angle,
 
     current_compression: Ratio,
     tilt_position: Ratio,
+    wheel_speed: AngularVelocity,
+    wheel_radius: Length,
+
+    velocity: f64,
+    min_pos: Ratio,
+    max_pos: Ratio,
 }
 impl TiltingGear {
     // Indicates the tilt angle already used with plane on ground standing still
     const PLANE_PITCH_OFFSET_ON_GROUND_DEGREES: f64 = 0.8;
 
-    const HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER: f64 = 0.0005;
+    const HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER: f64 = 0.;
 
-    // Max speed at which tilt can move if gear is instantly in the air
-    const TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND: f64 = 0.5;
+    const AIRBORNE_WHEEL_SPEED_REDUCING_RATE_RPM_S: f64 = 15.;
+
+    const HYDRAULIC_TILT_RETURN_FORCE: f64 = 5.;
+    const HYDRAULIC_TILT_DAMPING_FORCE: f64 = -0.35;
+    const BOGEY_INERTIA: f64 = 1.;
+    const GROUND_PENETRATION_COEFFICIENT: f64 = 5.;
+    const ANGULAR_ACCEL_GAIN: f64 = 40.;
+    const ABSOLUTE_MAX_VELOCITY: f64 = 20.;
+    const REBOUND_COEFFICIENT: f64 = -0.8;
 
     pub fn new(
         context: &mut InitContext,
         tilt_height_from_low_to_up: Length,
         contact_point_id: usize,
-        contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+        fwd_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+        aft_contact_point_offset_from_datum_ref_meters: Vector3<f64>,
         tilting_max_angle: Angle,
+        wheel_radius: Length,
     ) -> Self {
         Self {
             tilt_animation_id: context
                 .get_identifier(format!("GEAR_{}_TILT_POSITION", contact_point_id)),
             compression_id: context
                 .get_identifier(format!("GEAR ANIMATION POSITION:{}", contact_point_id)),
+            wheel_speed_id: context.get_identifier(format!("WHEEL_RPM_{}", contact_point_id)),
+
             tilt_height_from_low_to_up,
-            contact_point_offset_from_datum_ref_meters,
+            fwd_contact_point_offset_from_datum_ref_meters,
+            aft_contact_point_offset_from_datum_ref_meters,
             tilting_max_angle,
 
             current_compression: Ratio::default(),
             tilt_position: Ratio::default(),
+
+            wheel_speed: AngularVelocity::default(),
+            wheel_radius,
+
+            velocity: 0.,
+            min_pos: Ratio::default(),
+            max_pos: Ratio::new::<ratio>(1.),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        let current_tire_height =
-            height_over_ground(context, self.contact_point_offset_from_datum_ref_meters);
-
-        self.tilt_position = if current_tire_height.get::<meter>()
+    fn update_physics(
+        &mut self,
+        context: &UpdateContext,
+        fwd_current_tire_height: Length,
+        aft_current_tire_height: Length,
+    ) {
+        self.max_pos = if fwd_current_tire_height.get::<meter>()
             <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
         {
             let ground_tilt_raw = Ratio::new::<ratio>(
-                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
-                    .min(1.)
-                    .max(0.),
+                (1. - (fwd_current_tire_height.abs() / self.tilt_height_from_low_to_up)
+                    .get::<ratio>())
+                .min(1.)
+                .max(0.),
             );
 
             ground_tilt_raw.max(self.max_ground_tilt_from_plane_pitch(context))
         } else {
-            // Tilt for positive Gs else untilt for negative Gs
-            let delta_tilt = if context.acceleration_plane_reference_filtered_ms2_vector()[1] <= 0.
-            {
-                Ratio::new::<ratio>(
-                    Self::TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND * context.delta_as_secs_f64(),
-                )
-            } else {
-                Ratio::new::<ratio>(
-                    -1. * Self::TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND
-                        * context.delta_as_secs_f64(),
-                )
-            };
-
-            (self.tilt_position + delta_tilt)
-                .min(Ratio::new::<ratio>(1.))
-                .max(Ratio::new::<ratio>(0.))
+            Ratio::new::<ratio>(1.)
         };
+
+        self.min_pos = if aft_current_tire_height.get::<meter>()
+            <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
+        {
+            Ratio::new::<ratio>(
+                ((aft_current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
+                    .min(1.)
+                    .max(0.),
+            )
+        } else {
+            Ratio::default()
+        };
+
+        if self.min_pos > self.max_pos {
+            self.min_pos = self.max_pos;
+        }
+
+        let fwd_ground_penetration =
+            ((self.max_pos - self.tilt_position).min(Ratio::default())).abs();
+        let fwd_penetration_speed =
+            fwd_ground_penetration.get::<ratio>() / context.delta_as_secs_f64();
+
+        let aft_ground_penetration =
+            ((self.tilt_position - self.min_pos).min(Ratio::default())).abs();
+        let aft_penetration_speed =
+            aft_ground_penetration.get::<ratio>() / context.delta_as_secs_f64();
+
+        self.integrate_position(context, fwd_penetration_speed, aft_penetration_speed);
+    }
+
+    fn integrate_position(
+        &mut self,
+        context: &UpdateContext,
+        fwd_penetration_speed: f64,
+        aft_penetration_speed: f64,
+    ) {
+        let angular_accel = context.rotation_acceleration_rad_s2()[0];
+        let damping_force = Self::HYDRAULIC_TILT_DAMPING_FORCE * self.velocity;
+
+        let acceleration = ((damping_force + Self::HYDRAULIC_TILT_RETURN_FORCE)
+            / Self::BOGEY_INERTIA)
+            - (angular_accel * Self::ANGULAR_ACCEL_GAIN);
+
+        self.velocity += acceleration * context.delta_as_secs_f64();
+        self.velocity = self
+            .velocity
+            .clamp(-Self::ABSOLUTE_MAX_VELOCITY, Self::ABSOLUTE_MAX_VELOCITY);
+
+        self.tilt_position += Ratio::new::<ratio>(self.velocity * context.delta_as_secs_f64());
+
+        if self.tilt_position > self.max_pos {
+            self.velocity *= Self::REBOUND_COEFFICIENT;
+            self.velocity -= fwd_penetration_speed * Self::GROUND_PENETRATION_COEFFICIENT;
+            self.tilt_position = self.max_pos;
+        } else if self.tilt_position < self.min_pos {
+            self.velocity *= Self::REBOUND_COEFFICIENT;
+            self.velocity += aft_penetration_speed * Self::GROUND_PENETRATION_COEFFICIENT;
+            self.tilt_position = self.min_pos;
+        }
+    }
+
+    fn update_tire_speed(&mut self, context: &UpdateContext, bogey_tire_touches_ground: bool) {
+        self.wheel_speed = if bogey_tire_touches_ground {
+            AngularVelocity::new::<radian_per_second>(
+                context.ground_speed().get::<meter_per_second>() / self.wheel_radius.get::<meter>(),
+            )
+        } else {
+            AngularVelocity::new::<radian_per_second>(
+                self.wheel_speed.get::<radian_per_second>()
+                    - context.delta_as_secs_f64() * Self::AIRBORNE_WHEEL_SPEED_REDUCING_RATE_RPM_S,
+            )
+            .max(AngularVelocity::default())
+        };
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        let fwd_current_tire_height =
+            height_over_ground(context, self.fwd_contact_point_offset_from_datum_ref_meters);
+        let aft_current_tire_height =
+            height_over_ground(context, self.aft_contact_point_offset_from_datum_ref_meters);
+
+        self.update_physics(context, fwd_current_tire_height, aft_current_tire_height);
+
+        let bogey_tire_touches_ground = fwd_current_tire_height.get::<meter>()
+            <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
+            || aft_current_tire_height.get::<meter>()
+                <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER;
+
+        self.update_tire_speed(context, bogey_tire_touches_ground);
     }
 
     fn max_ground_tilt_from_plane_pitch(&self, context: &UpdateContext) -> Ratio {
@@ -119,6 +225,10 @@ impl TiltingGear {
 impl SimulationElement for TiltingGear {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.tilt_animation_id, self.tilt_position.get::<ratio>());
+        writer.write(
+            &self.wheel_speed_id,
+            self.wheel_speed.get::<revolution_per_minute>(),
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -136,27 +246,45 @@ pub struct LandingGear {
     left_compression_id: VariableIdentifier,
     right_compression_id: VariableIdentifier,
 
+    left_auxiliary_compression_id: VariableIdentifier,
+    right_auxiliary_compression_id: VariableIdentifier,
+
     center_compression: Ratio,
     left_compression: Ratio,
     right_compression: Ratio,
+
+    has_auxiliary_wheels: bool,
+    left_aux_compression: Ratio,
+    right_aux_compression: Ratio,
 }
 impl LandingGear {
-    pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
-    pub const GEAR_LEFT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
-    pub const GEAR_RIGHT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
+    pub const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
+    pub const GEAR_LEFT_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
+    pub const GEAR_RIGHT_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
+    pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
+    pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
-    // Is extended at 0.5, we set a super small margin of 0.02 from fully extended so 0.52
-    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.52;
+    // Compression is [0 .. 1], this var sets the threshold above which we are "compressed"
+    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.01;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, has_auxiliary_wheels: bool) -> Self {
         Self {
             center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
             left_compression_id: context.get_identifier(Self::GEAR_LEFT_COMPRESSION.to_owned()),
             right_compression_id: context.get_identifier(Self::GEAR_RIGHT_COMPRESSION.to_owned()),
 
+            left_auxiliary_compression_id: context
+                .get_identifier(Self::GEAR_LEFT_WING_COMPRESSION.to_owned()),
+            right_auxiliary_compression_id: context
+                .get_identifier(Self::GEAR_RIGHT_WING_COMPRESSION.to_owned()),
+
             center_compression: Ratio::default(),
             left_compression: Ratio::default(),
             right_compression: Ratio::default(),
+
+            has_auxiliary_wheels,
+            left_aux_compression: Ratio::default(),
+            right_aux_compression: Ratio::default(),
         }
     }
 
@@ -170,6 +298,8 @@ impl LandingGear {
             GearWheel::NOSE => self.center_compression,
             GearWheel::LEFT => self.left_compression,
             GearWheel::RIGHT => self.right_compression,
+            GearWheel::WINGLEFT => self.left_aux_compression,
+            GearWheel::WINGRIGHT => self.right_aux_compression,
         }
     }
 }
@@ -178,6 +308,15 @@ impl SimulationElement for LandingGear {
         self.center_compression = reader.read(&self.center_compression_id);
         self.left_compression = reader.read(&self.left_compression_id);
         self.right_compression = reader.read(&self.right_compression_id);
+
+        // If no auxiliary gears, auxiliary are just a copy of main gears
+        if !self.has_auxiliary_wheels {
+            self.left_aux_compression = self.left_compression;
+            self.right_aux_compression = self.right_compression;
+        } else {
+            self.left_aux_compression = reader.read(&self.left_auxiliary_compression_id);
+            self.right_aux_compression = reader.read(&self.right_auxiliary_compression_id);
+        }
     }
 }
 
@@ -269,8 +408,10 @@ impl LgciuSensorInputs {
         self.is_powered = is_powered;
 
         self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::NOSE);
-        self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT);
-        self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
+        self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT)
+            || landing_gear.is_wheel_id_compressed(GearWheel::WINGLEFT);
+        self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT)
+            || landing_gear.is_wheel_id_compressed(GearWheel::WINGRIGHT);
 
         self.right_gear_up_and_locked =
             gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.lgciu_id);
@@ -305,11 +446,17 @@ impl LgciuSensorInputs {
             GearWheel::LEFT => self.left_gear_up_and_locked,
             GearWheel::NOSE => self.nose_gear_up_and_locked,
             GearWheel::RIGHT => self.right_gear_up_and_locked,
+            // TODO gear not implemented, wing bogey is copied from body gear state
+            GearWheel::WINGLEFT => self.left_gear_up_and_locked,
+            GearWheel::WINGRIGHT => self.right_gear_up_and_locked,
         };
         let gear_downlocked = match wheel_id {
             GearWheel::LEFT => self.left_gear_down_and_locked,
             GearWheel::NOSE => self.nose_gear_down_and_locked,
             GearWheel::RIGHT => self.right_gear_down_and_locked,
+            // TODO gear not implemented, wing bogey is copied from body gear state
+            GearWheel::WINGLEFT => self.left_gear_down_and_locked,
+            GearWheel::WINGRIGHT => self.right_gear_down_and_locked,
         };
 
         let in_transition = !(gear_downlocked ^ gear_uplocked);
@@ -324,6 +471,9 @@ impl LgciuSensorInputs {
             GearWheel::LEFT => self.left_gear_down_and_locked,
             GearWheel::NOSE => self.nose_gear_down_and_locked,
             GearWheel::RIGHT => self.right_gear_down_and_locked,
+            // TODO gear not implemented, wing bogey is copied from body gear state
+            GearWheel::WINGLEFT => self.left_gear_down_and_locked,
+            GearWheel::WINGRIGHT => self.right_gear_down_and_locked,
         }
     }
 }
@@ -1447,7 +1597,7 @@ mod tests {
     impl TestGearAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                landing_gear: LandingGear::new(context),
+                landing_gear: LandingGear::new(context, false),
                 lgcius: LandingGearControlInterfaceUnitSet::new(
                     context,
                     ElectricalBusType::DirectCurrentEssential,
@@ -1612,9 +1762,9 @@ mod tests {
     #[test]
     fn no_weight_on_wheels_when_all_extended() {
         let test_bed = run_test_bed_on_with_compression(
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
+            Ratio::new::<ratio>(0.0),
+            Ratio::new::<ratio>(0.0),
+            Ratio::new::<ratio>(0.0),
         );
 
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
@@ -1626,8 +1776,8 @@ mod tests {
     fn left_weight_on_wheels_only_when_only_left_compressed() {
         let test_bed = run_test_bed_on_with_compression(
             Ratio::new::<ratio>(0.8),
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
+            Ratio::new::<ratio>(0.),
+            Ratio::new::<ratio>(0.),
         );
 
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
@@ -1891,23 +2041,6 @@ mod tests {
     }
 
     #[test]
-    fn tilting_gear_untilts_when_plane_inverted() {
-        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
-            .with_update_before_power_distribution(|el, context, _| {
-                el.update(context);
-            });
-
-        test_bed.write_by_name("PLANE BANK DEGREES", -180.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
-
-        // Give time to tilt mechanism to go down
-        test_bed.run_with_delta(Duration::from_secs(2));
-
-        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() <= 0.01);
-    }
-
-    #[test]
     fn tilting_gear_at_max_tilt_when_not_compressed_and_just_touching_ground() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
             .with_update_before_power_distribution(|el, context, _| {
@@ -1939,13 +2072,67 @@ mod tests {
         assert!(tilt_position.get::<ratio>() < 1. && tilt_position.get::<ratio>() > 0.);
     }
 
+    #[test]
+    fn tilting_gear_wheel_spins_when_touching_ground() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1.9));
+        test_bed.write_by_name("GPS GROUND SPEED", 10.);
+
+        test_bed.run();
+
+        let wheel_speed =
+            AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
+
+        //10 knots around 70rpm for A380 wheel radius of 0.7m
+        assert!(wheel_speed.get::<revolution_per_minute>() > 60.);
+        assert!(wheel_speed.get::<revolution_per_minute>() < 100.);
+    }
+
+    #[test]
+    fn tilting_gear_wheel_stops_when_airborne() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1.9));
+        test_bed.write_by_name("GPS GROUND SPEED", 50);
+
+        test_bed.run();
+
+        let mut wheel_speed =
+            AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
+
+        assert!(wheel_speed.get::<revolution_per_minute>() > 200.);
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1000.));
+        test_bed.write_by_name("GPS GROUND SPEED", 150);
+
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        wheel_speed =
+            AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
+
+        assert!(wheel_speed.get::<revolution_per_minute>() >= 0.);
+        assert!(wheel_speed.get::<revolution_per_minute>() < 50.);
+    }
+
     fn test_tilting_gear_left(context: &mut InitContext) -> TiltingGear {
         TiltingGear::new(
             context,
             Length::new::<meter>(0.28),
             1,
             Vector3::new(-5., -2., -5.),
+            Vector3::new(-5., -1.7, -8.),
             Angle::new::<degree>(9.),
+            Length::new::<meter>(0.711),
         )
     }
 
@@ -1954,7 +2141,8 @@ mod tests {
         center: Ratio,
         right: Ratio,
     ) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::from(ElementCtorFn(LandingGear::new));
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| LandingGear::new(context, false)));
         test_bed.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, left);
         test_bed.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, center);
         test_bed.write_by_name(LandingGear::GEAR_RIGHT_COMPRESSION, right);

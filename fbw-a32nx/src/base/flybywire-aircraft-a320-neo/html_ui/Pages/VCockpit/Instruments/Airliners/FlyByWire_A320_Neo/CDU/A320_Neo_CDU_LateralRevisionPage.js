@@ -33,7 +33,11 @@ class CDULateralRevisionPage {
         let waypointIdent = isPpos ? "PPOS" : '---';
 
         if (leg) {
-            waypointIdent = leg.ident;
+            if (isDestination && targetPlan.destinationRunway) {
+                waypointIdent = targetPlan.destinationRunway.ident;
+            } else {
+                waypointIdent = leg.ident;
+            }
         }
 
         let departureCell = "";

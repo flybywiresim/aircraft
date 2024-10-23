@@ -26,8 +26,7 @@ import {
   WindDirectionFormat,
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Mmo, Vmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
-import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
+import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -36,14 +35,21 @@ import { ConditionalComponent } from 'instruments/src/MFD/pages/common/Condition
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
-import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { getApproachName } from '../../shared/utils';
+import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
+
   private activateApprButton = FSComponent.createRef<HTMLDivElement>();
 
   private managedSpeedActive = Subject.create<boolean>(false);
+
+  private previousFmsFlightPhase: FmgcFlightPhase | null = null;
 
   // Subjects
   private crzFl = Subject.create<number | null>(null);
@@ -57,15 +63,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private costIndex = Subject.create<number | null>(null);
 
   /** in feet */
-  private transAlt = Subject.create(5000);
+  private transAlt = Subject.create<number | null>(null);
 
   private transAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private thrRedAlt = Subject.create<number>(AirlineModifiableInformation.EK.thrRedAlt);
+  private thrRedAlt = Subject.create<number | null>(null);
 
   private thrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private accelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
+  private accelAlt = Subject.create<number | null>(null);
 
   private accelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -192,7 +198,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private toSelectedAntiIceIndex = Subject.create<number | null>(0);
 
-  private eoAccelAlt = Subject.create(AirlineModifiableInformation.EK.eoAccAlt);
+  private eoAccelAlt = Subject.create<number | null>(null);
 
   private eoAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -209,16 +215,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     if (newIndex === TakeoffPowerSetting.FLEX) {
       // FLEX
       SimVar.SetSimVarValue(
-        'L:AIRLINER_TO_FLEX_TEMP',
+        'L:A32NX_AIRLINER_TO_FLEX_TEMP',
         'Number',
         this.props.fmcService.master?.fmgc.data.takeoffFlexTemp.get() ?? 0.1,
       );
     } else if (newIndex === TakeoffPowerSetting.DERATED) {
       // DERATED
-      SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
     } else {
       // TOGA
-      SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
     }
   }
 
@@ -380,6 +386,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private transFlIsPilotEntered = Subject.create<boolean>(true);
 
   // APPR page subjects, refs and methods
+
+  private precisionApproachSelected = Subject.create<boolean>(false);
+
   private apprIdent = Subject.create<string>('');
 
   private apprHeadwind = Subject.create<string>('');
@@ -391,6 +400,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprLandingWeight = Subject.create<number | null>(null);
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
+
+  private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
+
+  private missedThrRedAlt = Subject.create<number | null>(null);
+
+  private missedThrRedAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private missedAccelAlt = Subject.create<number | null>(null);
+
+  private missedAccelRedAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private missedEngineOutAccelAlt = Subject.create<number | null>(null);
+
+  private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -518,12 +541,42 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport.ident);
     }
 
+    let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
-      this.apprIdent.set(this.loadedFlightPlan.approach.ident);
+      this.apprIdent.set(getApproachName(this.loadedFlightPlan.approach, false));
+      precisionApproach =
+        this.loadedFlightPlan.approach.type === ApproachType.Ils ||
+        this.loadedFlightPlan.approach.type === ApproachType.Gls;
     }
+
+    this.precisionApproachSelected.set(precisionApproach);
 
     if (fm.approachFlapConfig) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
+    }
+
+    if (pd.missedThrustReductionAltitudeIsPilotEntered) {
+      this.missedThrRedAltIsPilotEntered.set(pd.missedThrustReductionAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedAccelerationAltitudeIsPilotEntered) {
+      this.missedAccelRedAltIsPilotEntered.set(pd.missedAccelerationAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedEngineOutAccelerationAltitudeIsPilotEntered) {
+      this.missedEngineOutAccelAltIsPilotEntered.set(pd.missedEngineOutAccelerationAltitudeIsPilotEntered);
+    }
+
+    if (pd.missedEngineOutAccelerationAltitude) {
+      this.missedEngineOutAccelAlt.set(pd.missedEngineOutAccelerationAltitude);
+    }
+
+    if (pd.missedThrustReductionAltitude) {
+      this.missedThrRedAlt.set(pd.missedThrustReductionAltitude);
+    }
+
+    if (pd.missedAccelerationAltitude) {
+      this.missedAccelAlt.set(pd.missedAccelerationAltitude);
     }
 
     if (pd.transitionLevelIsFromDatabase) {
@@ -594,6 +647,24 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.activateApprButton.instance.style.visibility = 'hidden';
           }
         }
+
+        if (this.previousFmsFlightPhase) {
+          const isSamePhase = this.flightPhasesSelectedPageIndex.get() + 1 === this.previousFmsFlightPhase;
+          if (isSamePhase) {
+            switch (val) {
+              case FmgcFlightPhase.Takeoff:
+              case FmgcFlightPhase.Climb:
+              case FmgcFlightPhase.Cruise:
+              case FmgcFlightPhase.Descent:
+              case FmgcFlightPhase.Approach:
+              case FmgcFlightPhase.GoAround: {
+                this.flightPhasesSelectedPageIndex.set(val - 1);
+                break;
+              }
+            }
+          }
+        }
+        this.previousFmsFlightPhase = val;
       }, true),
     );
 
@@ -1098,7 +1169,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <span style="width: 175px; display: inline; margin-left: 15px;">
                       <RadioButtonGroup
                         values={['TOGA', 'FLEX', 'DERATED']}
-                        valuesDisabled={this.activeFlightPhase.map(() => Array(3).fill(true))} // was it >= FmgcFlightPhase.Takeoff
+                        valuesDisabled={this.activeFlightPhase.map((it) => [
+                          ...Array(2).fill(it >= FmgcFlightPhase.Takeoff),
+                          true,
+                        ])}
                         onModified={(val) => this.toThrustSettingChanged(val)}
                         selectedIndex={this.toSelectedThrustSettingIndex}
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_toThrustSettingRadio`}
@@ -1112,7 +1186,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
                         dataHandlerDuringValidation={async (v) => {
                           // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
-                          await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
+                          await SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
                           this.props.fmcService.master?.fmgc.data.takeoffFlexTemp.set(v);
                         }}
                         mandatory={Subject.create(false)}
@@ -2168,7 +2242,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={
                         new AltitudeOrFlightLevelFormat(
-                          this.transFl.map((it) => (it ?? 180) * 100),
+                          this.transFl.map((it) => (it !== null ? it * 100 : null)),
                           Subject.create(0),
                           Subject.create(maxCertifiedAlt),
                         )
@@ -2439,25 +2513,31 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         />
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
-                        <span class="mfd-label mfd-spacing-right perf-appr-weather">RADIO</span>
-                        <InputField<number>
-                          dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
-                          dataHandlerDuringValidation={async (v) => {
-                            if (v === undefined) {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                            } else if (v === null) {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
-                            } else {
-                              SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
-                            }
-                          }}
-                          mandatory={Subject.create(false)}
-                          value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
-                          containerStyle="width: 150px;"
-                          alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                          hEventConsumer={this.props.mfd.hEventConsumer}
-                          interactionMode={this.props.mfd.interactionMode}
+                        <span class="mfd-label mfd-spacing-right perf-appr-weather">{this.apprRadioText}</span>
+                        <ConditionalComponent
+                          condition={this.precisionApproachSelected}
+                          componentIfTrue={
+                            <InputField<number>
+                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                              dataHandlerDuringValidation={async (v) => {
+                                if (v === undefined) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
+                                } else if (v === null) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                } else {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                }
+                              }}
+                              mandatory={Subject.create(false)}
+                              value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
+                              containerStyle="width: 150px;"
+                              alignText="flex-end"
+                              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                              hEventConsumer={this.props.mfd.hEventConsumer}
+                              interactionMode={this.props.mfd.interactionMode}
+                            />
+                          }
+                          componentIfFalse={<></>}
                         />
                       </div>
                     </div>
@@ -2471,17 +2551,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" />
                           </svg>
                         </span>
-                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
+                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachGreenDotSpeed}</span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
-                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
+                        <span class="mfd-value">
+                          {this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
-                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
+                        <span class="mfd-value">
+                          {this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container" style="padding-top: 15px;">
@@ -2494,14 +2578,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <RadioButtonGroup
                         values={['CONF 3', 'FULL']}
                         selectedIndex={this.apprSelectedFlapsIndex}
-                        onModified={(v) => {
-                          this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(v + 3);
-                          if (v === 0) {
-                            SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', true);
-                          } else {
-                            SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', false);
-                          }
-                        }}
+                        onModified={(v) =>
+                          this.props.fmcService.master?.fmgc.data.approachFlapConfig.set(
+                            v === 0 ? FlapConf.CONF_3 : FlapConf.CONF_FULL,
+                          )
+                        }
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_apprFlapsSettingsRadio`}
                         additionalVerticalSpacing={15}
                       />
@@ -2566,12 +2647,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="margin: 60px 0px 100px 200px; display: flex; flex-direction: column;">
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">F</span>
-                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
+                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">S</span>
-                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
+                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
@@ -2580,7 +2661,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" />
                       </svg>
                     </span>
-                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
+                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachGreenDotSpeed}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                 </div>
@@ -2593,11 +2674,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotThrustReductionAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedThrustReductionAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.thrRedAltIsPilotEntered}
-                        value={this.thrRedAlt}
+                        enteredByPilot={this.missedThrRedAltIsPilotEntered}
+                        value={this.missedThrRedAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2614,11 +2695,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotAccelerationAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedAccelerationAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.accelRedAltIsPilotEntered}
-                        value={this.accelAlt}
+                        enteredByPilot={this.missedAccelRedAltIsPilotEntered}
+                        value={this.missedAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2633,11 +2714,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.loadedFlightPlan?.setPerformanceData('pilotEngineOutAccelerationAltitude', v);
+                          this.loadedFlightPlan?.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', v);
                         }}
                         mandatory={Subject.create(false)}
-                        enteredByPilot={this.eoAccelAltIsPilotEntered}
-                        value={this.eoAccelAlt}
+                        enteredByPilot={this.missedEngineOutAccelAltIsPilotEntered}
+                        value={this.missedEngineOutAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2665,6 +2746,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   onClick={() => this.props.mfd.uiService.navigateTo('back')}
                   buttonStyle="margin-right: 5px;"
                 />
+                <ConfirmationDialog
+                  visible={this.approachPhaseConfirmationDialogVisible}
+                  cancelAction={() => {
+                    this.approachPhaseConfirmationDialogVisible.set(false);
+                  }}
+                  confirmAction={() => {
+                    this.approachPhaseConfirmationDialogVisible.set(false);
+                    this.props.fmcService.master?.tryGoInApproachPhase();
+                  }}
+                  contentContainerStyle="width: 280px; height: 165px; bottom: -6px; left: -5px;"
+                  amberLabel={true}
+                >
+                  {'ACTIVATE APPR ?'}
+                </ConfirmationDialog>
               </div>
               <div ref={this.activateApprButton} style="margin-right: 5px;">
                 <Button
@@ -2678,7 +2773,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>,
                   )}
-                  onClick={() => this.props.fmcService.master?.tryGoInApproachPhase()}
+                  onClick={() => this.approachPhaseConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
               </div>

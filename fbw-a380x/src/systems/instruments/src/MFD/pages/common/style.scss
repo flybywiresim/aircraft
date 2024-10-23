@@ -3,7 +3,7 @@
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -11,7 +11,7 @@
 @font-face {
   font-family: "FBW-Display-EIS-A380-SlashedZero";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -451,6 +451,7 @@
 }
 
 .mfd-context-menu {
+  font-family: "Ecam", monospace;
   background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
@@ -773,4 +774,12 @@
   font-family: "Ecam", monospace;
   text-align: center;
   margin-bottom: 2px;
+}
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
 }

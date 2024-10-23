@@ -1,0 +1,224 @@
+﻿// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+$display-mfd-darker-grey: #3c3c3c;
+
+.oans-info-box {
+  background-color: $display-mfd-darker-grey;
+  font-family: "Ecam", monospace !important;
+  border: 2px outset $display-light-grey;
+  padding: 9px 12px 5px 12px;
+}
+
+.oans-cp-map-data-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.oans-cp-map-data-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+}
+
+.oans-cp-map-data-entitytype {
+  border-right: 2px solid lightgrey;
+  height: 100%;
+}
+
+.oans-cp-map-data-ldg-shift {
+  display: none;
+  flex: 3;
+  flex-direction: column;
+  margin: 5px 20px 5px 20px;
+}
+
+.oans-cp-map-data-ldg-shift-rwy {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid lightgrey;
+}
+
+.oans-cp-map-data-ldg-shift-1 {
+  flex: 5;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 10px;
+}
+
+.oans-cp-map-data-ldg-shift-2 {
+  display: flex;
+  flex-direction: column;
+}
+
+.oans-cp-map-data-ldg-shift-3 {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 50px 50px;
+  align-items: center;
+}
+
+.oans-cp-map-data-ldg-shift-return-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.oans-cp-map-data-main {
+  display: flex;
+  flex: 3;
+  flex-direction: column;
+  margin: 0px 20px 0px 20px;
+}
+
+.oans-cp-map-data-main-2 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.oans-cp-map-data-main-center {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.oans-cp-map-data-btv-fallback {
+  display: flex;
+  flex: 3;
+  flex-direction: column;
+  margin: 0px 20px 0px 20px;
+}
+
+.oans-cp-map-data-btv-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  margin-bottom: 40px;
+}
+
+.oans-cp-map-data-btv-rwy-length {
+display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+
+.oans-cp-arpt-sel {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+.oans-cp-arpt-sel-2 {
+  width: 30%;
+  display: flex; flex-direction: column;
+  justify-content: stretch;
+}
+
+.oans-cp-arpt-sel-radio {
+  padding-top: 20px;
+  margin-top: 2px;
+  height: 100%;
+}
+
+.oans-cp-arpt-sel-middle {
+  display: flex;
+  flex: 2;
+  flex-direction: column;
+  margin: 5px 20px 5px 20px;
+}
+
+.oans-cp-arpt-sel-middle-1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+}
+
+.oans-cp-arpt-sel-display-arpt {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 10px;
+}
+
+.oans-cp-arpt-sel-fms {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 2px solid lightgrey;
+}
+
+.oans-cp-status {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 2px solid lightgray;
+  padding-bottom: 25px;
+  margin-left: 30px;
+  margin-right: 30px;
+}
+
+.oans-cp-status-active {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.oans-cp-status-2 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.oans-cp-status-second {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.oans-cp-status-db {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid lightgray;
+  margin: 0px 15px 0px 15px;
+  padding: 25px 10px 25px 10px;
+}
+
+.oans-cp-status-1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  justify-content: center;
+  margin-top: 20px;
+  height: 20px;
+}

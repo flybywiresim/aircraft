@@ -12,8 +12,6 @@ class BaseAirliners extends NavSystem {
         this.addEventAlias("FMS_Lower_INC", "NavigationLargeInc");
         this.addEventAlias("FMS_Lower_DEC", "NavigationLargeDec");
         this.addEventAlias("FMS_Upper_PUSH", "NavigationPush");
-        this.radioNav = new RadioNav();
-        this.radioNav.init(NavMode.FOUR_SLOTS);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);

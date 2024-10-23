@@ -35,8 +35,6 @@ class A32NX_GPWS {
 
         this.minimumsState = 0;
 
-        this.radnav = new RadioNav();
-
         this.Mode3MaxBaroAlt = NaN;
 
         this.Mode4MaxRAAlt = 0;
@@ -168,8 +166,6 @@ class A32NX_GPWS {
     init() {
         console.log('A32NX_GPWS init');
 
-        this.radnav.init(NavMode.FOUR_SLOTS);
-
         this.setGlideSlopeWarning(false);
         this.setGpwsWarning(false);
 
@@ -199,8 +195,8 @@ class A32NX_GPWS {
         const isLdgFlap3On = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") === 1;
 
         const sfccPositionWord = Arinc429Word.fromSimVarValue("L:A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
-        const isFlapsFull = sfccPositionWord.getBitValueOr(22, false);
-        const isFlaps3 = sfccPositionWord.getBitValueOr(21, false) && !isFlapsFull;
+        const isFlapsFull = sfccPositionWord.bitValueOr(22, false);
+        const isFlaps3 = sfccPositionWord.bitValueOr(21, false) && !isFlapsFull;
 
         const areFlapsInLandingConfig = !sfccPositionWord.isNormalOperation() || isFlapModeOff || (isLdgFlap3On ? isFlaps3 : isFlapsFull);
         const isGearDownLocked = SimVar.GetSimVarValue("L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED", "Bool") === 1;
@@ -525,8 +521,9 @@ class A32NX_GPWS {
             mode.current = 0;
             return;
         }
-        const localizer = this.radnav.getBestILSBeacon();
-        if (localizer.id <= 0 || !SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number')) {
+
+        // FIXME add backcourse inhibit
+        if (!SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number')) {
             mode.current = 0;
             return;
         }

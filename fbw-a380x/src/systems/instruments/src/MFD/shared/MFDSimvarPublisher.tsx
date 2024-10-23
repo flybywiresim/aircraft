@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type MfdSimvars = {
   coldDark: number;
@@ -19,6 +19,7 @@ export type MfdSimvars = {
   xpdrAvail: boolean;
   xpdrCode: number;
   xpdrState: number;
+  tcasFail: boolean;
   gpwsTerrOff: boolean;
   gpwsSysOff: boolean;
   gpwsGsInhibit: boolean;
@@ -43,7 +44,7 @@ export enum MfdVars {
   potentiometerFo = 'LIGHT POTENTIOMETER:90',
   fmsDataKnob = 'L:A32NX_FMS_SWITCHING_KNOB',
   flightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
-  flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+  flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   adirs1MaintWord = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
   adirs2MaintWord = 'L:A32NX_ADIRS_IR_2_MAINT_WORD',
   adirs3MaintWord = 'L:A32NX_ADIRS_IR_3_MAINT_WORD',
@@ -54,6 +55,7 @@ export enum MfdVars {
   xpdrAvail = 'TRANSPONDER AVAILABLE',
   xpdrCode = 'TRANSPONDER CODE:1',
   xpdrState = 'TRANSPONDER STATE:1',
+  tcasFail = 'L:A32NX_TCAS_FAULT',
   gpwsTerrOff = 'L:A32NX_GPWS_TERR_OFF',
   gpwsSysOff = 'L:A32NX_GPWS_SYS_OFF',
   gpwsGsInhibit = 'L:A32NX_GPWS_GS_OFF',
@@ -69,7 +71,6 @@ export enum MfdVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
   private static simvars = new Map<keyof MfdSimvars, SimVarDefinition>([
-    ['coldDark', { name: MfdVars.coldDark, type: SimVarValueType.Number }],
     ['elec', { name: MfdVars.elec, type: SimVarValueType.Bool }],
     ['elecFo', { name: MfdVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: MfdVars.potentiometerCaptain, type: SimVarValueType.Number }],
@@ -87,6 +88,7 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['xpdrAvail', { name: MfdVars.xpdrAvail, type: SimVarValueType.Bool }],
     ['xpdrCode', { name: MfdVars.xpdrCode, type: SimVarValueType.Number }],
     ['xpdrState', { name: MfdVars.xpdrState, type: SimVarValueType.Enum }],
+    ['tcasFail', { name: MfdVars.tcasFail, type: SimVarValueType.Bool }],
     ['gpwsTerrOff', { name: MfdVars.gpwsTerrOff, type: SimVarValueType.Bool }],
     ['gpwsSysOff', { name: MfdVars.gpwsSysOff, type: SimVarValueType.Bool }],
     ['gpwsGsInhibit', { name: MfdVars.gpwsGsInhibit, type: SimVarValueType.Bool }],

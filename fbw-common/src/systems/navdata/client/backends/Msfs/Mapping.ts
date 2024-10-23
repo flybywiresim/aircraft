@@ -55,6 +55,7 @@ import {
   JS_FacilityIntersection,
   JS_FacilityNDB,
   JS_FacilityVOR,
+  JS_ILSFrequency,
   JS_Leg,
   JS_Procedure,
   JS_Runway,
@@ -87,7 +88,9 @@ type FacilityType<T> = T extends JS_FacilityIntersection
       : never;
 
 export class MsfsMapping {
-  private static letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  private static readonly letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  private static readonly ILS_CAT_REGEX = /CAT\W?(1|2|3|I{1,3})/;
 
   // eslint-disable-next-line no-useless-constructor
   constructor(
@@ -198,9 +201,10 @@ export class MsfsMapping {
             this.approachHasLandingSystem(appr),
         );
         const lsIdent = lsAppr ? FacilityCache.ident(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao) : '';
+        // FIXME need to return an IlsNavaid for ILS
         const lsFrequencyChannel = lsAppr
-          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz ?? 0
-          : 0;
+          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz
+          : undefined;
 
         runways.push({
           sectionCode: SectionCode.Airport,
@@ -403,6 +407,21 @@ export class MsfsMapping {
       .map(([appr, _]) => appr);
   }
 
+  private mapIlsCatString(cat: string): LsCategory {
+    switch (cat) {
+      case '1':
+      case 'I':
+        return LsCategory.Category1;
+      case '2':
+      case 'II':
+        return LsCategory.Category2;
+      case '3':
+      case 'III':
+        return LsCategory.Category3;
+    }
+    return LsCategory.None;
+  }
+
   private async mapLandingSystem(
     ls: JS_FacilityVOR,
     airport: JS_FacilityAirport,
@@ -414,7 +433,27 @@ export class MsfsMapping {
     let locBearing = -1;
     let runwayIdent = '';
     let gsSlope = undefined;
-    if (approach) {
+    let category = LsCategory.None;
+
+    let jsFrequency: JS_ILSFrequency | null = null;
+    for (const r of airport.runways) {
+      if (r.primaryILSFrequency.icao === ls.icao) {
+        jsFrequency = r.primaryILSFrequency;
+        runwayIdent = `${airportIdent}${r.designation.split('-')[0].padStart(2, '0')}${this.mapRunwayDesignator(r.designatorCharPrimary)}`;
+      } else if (r.secondaryILSFrequency.icao === ls.icao) {
+        jsFrequency = r.secondaryILSFrequency;
+        runwayIdent = `${airportIdent}${r.designation.split('-')[1].padStart(2, '0')}${this.mapRunwayDesignator(r.designatorCharSecondary)}`;
+      }
+    }
+
+    if (jsFrequency !== null) {
+      const nameMatch = jsFrequency.name.match(MsfsMapping.ILS_CAT_REGEX);
+      if (nameMatch !== null) {
+        category = this.mapIlsCatString(nameMatch[1]);
+      }
+      locBearing = jsFrequency.localizerCourse;
+      gsSlope = jsFrequency.hasGlideslope ? jsFrequency.glideslopeAngle : undefined;
+    } else if (approach) {
       runwayIdent = `${airportIdent}${approach.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
       gsSlope = this.approachHasGlideslope(approach)
         ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360
@@ -423,6 +462,13 @@ export class MsfsMapping {
       const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(airport, approach);
       if (bearing !== undefined) {
         locBearing = bearingIsTrue ? this.trueToMagnetic(bearing, -ls.magneticVariation) : bearing;
+      }
+
+      if (ls.name.length > 0) {
+        const nameMatch = ls.name.match(MsfsMapping.ILS_CAT_REGEX);
+        if (nameMatch !== null) {
+          category = this.mapIlsCatString(nameMatch[1]);
+        }
       }
     }
 
@@ -433,12 +479,11 @@ export class MsfsMapping {
       icaoCode,
       ident: FacilityCache.ident(ls.icao),
       frequency: ls.freqMHz,
-      // TODO try guess cat from runway frequencies
-      category: LsCategory.None,
+      category,
       runwayIdent,
       locLocation: { lat: ls.lat, long: ls.lon },
       locBearing,
-      stationDeclination: ls.magneticVariation,
+      stationDeclination: MathUtils.normalise180(360 - ls.magneticVariation),
       gsSlope,
     };
   }
@@ -571,9 +616,10 @@ export class MsfsMapping {
         .filter((approach) => approach.runwayNumber !== 0)
         .map((approach) => {
           const approachName = this.mapApproachName(approach);
+          const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
           // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-          const authorisationRequired = approach.rnavTypeFlags === 0;
+          const authorisationRequired = approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
           const rnp = authorisationRequired ? 0.3 : undefined;
 
           const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
@@ -588,6 +634,7 @@ export class MsfsMapping {
             databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
             icaoCode,
             ident: approachName,
+            suffix,
             runwayIdent,
             multipleIndicator: approach.approachSuffix,
             type: this.mapApproachType(approach.approachType),

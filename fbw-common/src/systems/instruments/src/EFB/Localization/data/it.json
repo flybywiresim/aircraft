@@ -81,10 +81,12 @@
       "CostIndex": "Cost Index",
       "CruiseAlt": "Alt. Crociera",
       "ImportSimBriefData": "Importa Dati SimBrief",
+      "NoImportDueToBoardingOrRefuel": "Impossibile importare a causa di imbarco o di rifornimento in corso",
       "Route": "Rotta",
       "SimBriefDataNotYetLoaded": "Dati SimBrief non ancora caricati.",
       "Title": "Il Tuo Volo",
       "ToastFuelPayloadImported": "Fuel & Payload imported!",
+      "ToastWrongAircraftType": "SimBrief - Invalid aircraft type detected. Check that aircraft type in SimBrief OFP is correct.",
       "ZFW": "ZFW"
     }
   },
@@ -132,7 +134,7 @@
       "Defueling": "Svuotando",
       "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "Sincronizzazione GSX Carburante Abilitata",
+      "GSXFuelSyncEnabled": "Chiama GSX Refuel",
       "LeftInnerTank": "Serbatoio Interno Sinistro",
       "LeftOuterTank": "Serbatoio Esterno Sinistro",
       "ReadyToStart": "Pronto per Iniziare",
@@ -164,6 +166,11 @@
       "LoadingTime": "Loading Time",
       "Passengers": "Passeggeri",
       "Planned": "Pianificato",
+      "SelectItem": {
+        "CargoDeck": "Cargo",
+        "MainDeck": "Main",
+        "UpperDeck": "Upper"
+      },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "L'Aeromobile Deve Essere A Terra e Avere i Motori Spenti Per Cambiare la Durata dell'Imbarco",
         "FillPayloadFromSimbrief": "Completa Informazioni Payload da SimBrief",
@@ -229,7 +236,7 @@
       "AirportDoesNotExist": "Aeroporto Inesistente",
       "AuthenticateWithNavigraph": "Autenticati con Navigraph",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
+        "Button": "Opzioni di terze parti",
         "Title": "Vai a Opzioni di terze parti per collegare l'account Navigraph"
       },
       "InsufficientEnv": "File .env Insufficiente",
@@ -377,6 +384,7 @@
       "ColdDark": "Cold & Dark",
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Stato Processo in Corso",
+      "ExpediteLoading": "Caricamento rapido (non realistico):",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
       "Powered": "Alimentato",
       "ReadyPushback": "Pronto per Pushback",
@@ -464,20 +472,27 @@
     "AlignAdirs": "Allinea ADIRS",
     "FinishBoarding": "Termina Imbarco",
     "OnScreenKeyboard": "Tastiera su Schermo",
+    "PauseAtTod": "Pause at Top of Descent",
+    "PauseAtTodArmed": "Armed",
+    "PauseAtTodInactive": "Inactive",
+    "PauseAtTodStandby": "Standby",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Connesso",
     "SimBridgeConnecting": "Connessione...",
     "SimBridgeOff": "Spento",
     "SimBridgeOffline": "Non Disponibile",
+    "Simrate": "Simrate",
     "TT": {
       "AlignAdirs": "Allinea ADIRS istantaneamente",
       "AutoBrightness": "Attiva/disattiva la Luminosità Automatica",
       "Brightness": "Imposta la luminosità del flyPad",
       "FinishBoarding": "Completa l'imbarco istantaneamente",
       "OnScreenKeyboard": "Attiva/disattiva la tastiera su schermo",
+      "PauseAtTod": "Arm or Disarm Pause at Top of Descent",
       "PowerButton": "Spegni",
       "Settings": "Vai alla pagina delle Impostazioni flyPad",
       "SimBridge": "Controlla la connessione SimBridge",
+      "Simrate": "Increase or Decrease Simulation Rate",
       "Sleep": "Pausa"
     },
     "Title": "Controlli Rapidi"
@@ -581,6 +596,10 @@
       "Side": "Di Lato",
       "SimBridgeIp": "Indirizzo Host SimBridge Esterno",
       "SimBridgePort": "Porta Esterna Server SimBridge",
+      "SimbridgeEmptyAddress": "SimBridge Remote IP Address cannot be empty!",
+      "SimbridgeLocal": "This PC",
+      "SimbridgeMachine": "Simbridge Host Machine",
+      "SimbridgeRemote": "Remote PC",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
       "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Sim",
@@ -592,14 +611,14 @@
       "GsxFuelEnabled": "Sincronizzazione Rifornimento GSX",
       "GsxPayloadEnabled": "Sincronizzazione Carico Utile GSX",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
+        "Connected": "Connesso",
         "Link": "Collega account",
         "LoginPage": {
           "Title": "Accesso all'account Navigraph"
         },
         "SettingTitle": "Link all'account Navigraph",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "Nessuna",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph illimitato"
         },

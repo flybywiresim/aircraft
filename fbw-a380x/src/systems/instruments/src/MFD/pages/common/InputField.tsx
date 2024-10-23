@@ -14,10 +14,6 @@ import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryForma
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
 
-// eslint-disable-next-line max-len
-export const emptyMandatoryCharacter = (selected: boolean) =>
-  `<svg width="16" height="23" viewBox="1 1 13 23"><polyline points="2,2 2,22 13,22 13,2 2,2" fill="none" stroke=${selected ? 'black' : '#e68000'} stroke-width="2" /></svg>`;
-
 interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;
   /** Renders empty values with orange rectangles */
@@ -289,8 +285,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.trailingUnit.set(unitTrailing ?? '');
 
     if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
-      this.textInputRef.instance.innerHTML =
-        formatted?.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get())) ?? '';
+      this.textInputRef.instance.innerHTML = formatted?.replace(/-/gi, '\u25AF') ?? '';
     } else {
       this.textInputRef.instance.innerText = formatted ?? '';
     }

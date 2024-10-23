@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380SecComputer_h_
-#define RTW_HEADER_A380SecComputer_h_
+#ifndef A380SecComputer_h_
+#define A380SecComputer_h_
 #include "rtwtypes.h"
 #include "A380SecComputer_types.h"
 #include "A380LateralDirectLaw.h"
@@ -353,6 +353,9 @@ class A380SecComputer final
     uint32_T SSM_hm;
     uint32_T SSM_dm;
     uint32_T SSM_fk;
+    uint32_T SSM_lm1;
+    uint32_T SSM_nc;
+    uint32_T SSM_e4;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -647,6 +650,9 @@ class A380SecComputer final
     real32_T Data_p0;
     real32_T Data_dn;
     real32_T Data_iyw;
+    real32_T Data_p5d;
+    real32_T Data_oo;
+    real32_T Data_ho;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
     boolean_T is_unit_3;

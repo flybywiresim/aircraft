@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_Autothrust_h_
-#define RTW_HEADER_Autothrust_h_
+#ifndef Autothrust_h_
+#define Autothrust_h_
 #include "rtwtypes.h"
 #include "Autothrust_types.h"
 
@@ -49,12 +49,12 @@ class Autothrust final
     real_T Delay_DSTATE_p;
     real_T eventTime;
     real_T eventTime_j;
-    real_T eventTime_j1;
-    real_T eventTime_o;
-    real_T eventTime_m;
+    real_T eventTime_c;
+    real_T eventTime_p;
+    real_T eventTime_f;
     real_T pY;
-    real_T eventTime_oa;
-    real_T eventTime_jx;
+    real_T eventTime_b;
+    real_T eventTime_l;
     athr_mode pMode;
     athr_status pStatus;
     boolean_T Delay_DSTATE_as;
@@ -64,28 +64,28 @@ class Autothrust final
     boolean_T Memory_PreviousInput_m;
     boolean_T icLoad;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_j;
+    boolean_T eventTime_not_empty_g;
     boolean_T ATHR_ENGAGED;
     boolean_T prev_condition_AlphaFloor;
     boolean_T prev_condition_TCAS;
     boolean_T prev_SRS_TO_GA_mode_active;
     boolean_T condition_TOGA_latch;
-    boolean_T eventTime_not_empty_a;
-    boolean_T eventTime_not_empty_b;
+    boolean_T eventTime_not_empty_l;
+    boolean_T eventTime_not_empty_f;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
     boolean_T inhibitAboveThrustReductionAltitude;
     boolean_T condition_THR_LK;
-    boolean_T eventTime_not_empty_ac;
+    boolean_T eventTime_not_empty_a;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
     boolean_T pY_not_empty;
     boolean_T latch;
     boolean_T sInhibit;
     boolean_T prev_TCAS_active;
-    boolean_T eventTime_not_empty_p;
-    boolean_T eventTime_not_empty_c;
+    boolean_T eventTime_not_empty_o;
+    boolean_T eventTime_not_empty_d;
     rtDW_WashoutFilter_Autothrust_T sf_WashoutFilter_h;
     rtDW_LagFilter_Autothrust_T sf_LagFilter_a;
     rtDW_LagFilter_Autothrust_T sf_LagFilter;
@@ -105,7 +105,7 @@ class Autothrust final
   };
 
   struct Parameters_Autothrust_T {
-    struct_QMVdjQ6NWn0vSjcEHgvQjC athr_out_MATLABStruct;
+    athr_out athr_out_MATLABStruct;
     real_T ScheduledGain1_BreakpointsForDimension1[5];
     real_T ScheduledGain2_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
@@ -243,6 +243,7 @@ class Autothrust final
     real_T ktstomps_Gain_h;
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
+    real_T Gain5_Gain;
     real_T Gain1_Gain_p1;
     real_T Gain1_Gain_di;
     real_T Gain2_Gain_c;
