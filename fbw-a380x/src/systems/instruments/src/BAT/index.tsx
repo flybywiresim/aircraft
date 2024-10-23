@@ -18,24 +18,16 @@ const BatRoot = () => {
   // mapping of knob (lvar) values to battery numbers to allow easy lvar and model values
   const batteryMap = [4, 3, 0, 1, 2]; // ESS, APU, OFF, BAT1, BAT2
 
-
-  // OVHD BAT selector is OFF
-  // A380 Display is empty.
-  if (selectedBattery === 2) {
-      return (
-          <svg className="bat-svg" viewBox="0 0 200 100">
-              <text x="196" y="48"></text>
-          </svg>
-      );
-  }
-  else {
-      return (
-          <svg className="bat-svg" viewBox="0 0 200 100">
-              <BatDisplay batteryNumber={batteryMap[selectedBattery]} x="196" y="48"/>
-          </svg>
-      );
-  }
-
+  return (
+    <svg className="bat-svg" viewBox="0 0 200 100">
+      {selectedBattery !== 2 ? ( // OVHD BAT selector is not OFF
+        <BatDisplay batteryNumber={batteryMap[selectedBattery]} x="196" y="48" />
+      ) : (
+        // A380 Display is empty.
+        <text x="196" y="48"></text>
+      )}
+    </svg>
+  );
 };
 
 render(<BatRoot />);
