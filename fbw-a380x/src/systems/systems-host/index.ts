@@ -5,9 +5,6 @@
 import {
   EventBus,
   HEventPublisher,
-  KeyEventManager,
-  Wait,
-  GameStateProvider,
   InstrumentBackplane,
   Clock,
   ClockEvents,
@@ -52,8 +49,6 @@ class SystemsHost extends BaseInstrument {
   private gpws: LegacyGpws;
 
   private soundManager: LegacySoundManager;
-
-  private keyEventManager: KeyEventManager;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
@@ -147,14 +142,6 @@ class SystemsHost extends BaseInstrument {
         this.gpws.update(dt);
         this.fwsCore.update(dt);
       });
-
-    Promise.all([
-      KeyEventManager.getManager(this.bus),
-      Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
-    ]).then(([keyEventManager]) => {
-      this.keyEventManager = keyEventManager;
-      this.initLighting();
-    });
   }
 
   get templateID(): string {
@@ -198,56 +185,6 @@ class SystemsHost extends BaseInstrument {
     }
 
     this.backplane.onUpdate();
-  }
-
-  // TODO this should be in extras host, it's not an aircraft system, but a sim thing
-  private initLighting() {
-    console.log('[systems-host] initializing lighting to defaults');
-
-    /** automatic brightness based on ambient light, [0, 1] scale */
-    const autoBrightness = Math.max(
-      15,
-      Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')),
-    );
-
-    // OVHD Reading Lights
-    this.setPotentiometer(96, 0); // Capt
-    this.setPotentiometer(97, 0); // F/O
-
-    // Glareshield
-    this.setPotentiometer(84, autoBrightness < 50 ? 1.5 * autoBrightness : 0); // Int Lt
-    this.setPotentiometer(87, autoBrightness); // Lcd Brt
-    this.setPotentiometer(10, 0); // table Cpt
-    this.setPotentiometer(11, 0); // table F/O
-
-    // Instruments Cpt
-    this.setPotentiometer(88, autoBrightness); // PFD
-    this.setPotentiometer(89, autoBrightness); // ND
-    this.setPotentiometer(94, autoBrightness / 2); // wxRadar
-    this.setPotentiometer(98, autoBrightness); // MFD
-    this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
-
-    // Instruments F/O
-    this.setPotentiometer(90, autoBrightness); // PFD
-    this.setPotentiometer(91, autoBrightness); // ND
-    this.setPotentiometer(95, autoBrightness / 2); // wxRadar
-    this.setPotentiometer(99, autoBrightness); // MFD
-    this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
-
-    // Pedestal
-    this.setPotentiometer(80, autoBrightness); // rmpCptLightLevel
-    this.setPotentiometer(81, autoBrightness); // rmpFoLightLevel
-    this.setPotentiometer(82, autoBrightness); // rmpOvhdLightLevel
-    this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
-    this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
-    this.setPotentiometer(76, autoBrightness); // pedFloodLightLevel
-    this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
-    this.setPotentiometer(85, autoBrightness); // integralLightLevel
-    this.setPotentiometer(7, autoBrightness); // ambientLightLevel
-  }
-
-  private setPotentiometer(potentiometer: number, brightness: number) {
-    this.keyEventManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
   }
 }
 
