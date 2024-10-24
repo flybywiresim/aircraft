@@ -2,11 +2,11 @@
 
 #include <fstream>
 
+#include "../elac/Elac.h"
+#include "../fac/Fac.h"
+#include "../sec/Sec.h"
 #include "FmgcComputer_types.h"
 #include "RecordingDataTypes.h"
-#include "elac/Elac.h"
-#include "fac/Fac.h"
-#include "sec/Sec.h"
 #include "zfstream.h"
 
 class FlightDataRecorder {
