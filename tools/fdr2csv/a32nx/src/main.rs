@@ -1,10 +1,15 @@
 use bytemuck::AnyBitPattern;
 use clap::Parser;
 use csv::WriterBuilder;
+use fdr2csv_common::csv_header_serializer;
 use flate2::bufread::GzDecoder;
 use headers::{
-    ap_raw_output, base_fmgc_ap_fd_logic_outputs, base_fmgc_athr_outputs, base_fmgc_bus_outputs,
-    base_fmgc_discrete_outputs, base_fmgc_logic_outputs, AdditionalData, EngineData,
+    ap_raw_output, base_elac_analog_outputs, base_elac_discrete_outputs, base_elac_out_bus,
+    base_fac_analog_outputs, base_fac_bus, base_fac_discrete_outputs,
+    base_fmgc_ap_fd_logic_outputs, base_fmgc_athr_outputs, base_fmgc_bus_inputs,
+    base_fmgc_bus_outputs, base_fmgc_discrete_inputs, base_fmgc_discrete_outputs,
+    base_fmgc_logic_outputs, base_fms_inputs, base_sec_analog_outputs, base_sec_discrete_outputs,
+    base_sec_out_bus, AircraftSpecificData, BaseData, EngineData,
 };
 use serde::Serialize;
 use std::{
@@ -13,8 +18,6 @@ use std::{
     mem,
 };
 
-mod csv_header_serializer;
-mod error;
 mod headers;
 
 #[derive(Parser, Debug)]
@@ -40,7 +43,7 @@ struct Args {
     get_input_file_version: bool,
 }
 
-const INTERFACE_VERSION: u64 = 26;
+const INTERFACE_VERSION: u64 = 3200001;
 
 // Read number of bytes specified by the size of T from the binary file
 fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
@@ -61,10 +64,34 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
 // A single FDR record
 #[derive(Serialize, Default)]
 struct FdrData {
-    engine: EngineData,
-    data: AdditionalData,
-    fmgc1_data: FmgcData,
-    fmgc2_data: FmgcData,
+    base_data: BaseData,
+    aircraft_specific_data: AircraftSpecificData,
+    elac_1_data: ElacData,
+    sec_1_data: SecData,
+    fac_1_data: FacData,
+    fmgc_1_data: FmgcData,
+    engine_data: EngineData,
+}
+
+#[derive(Serialize, Default)]
+struct ElacData {
+    bus_outputs: base_elac_out_bus,
+    discrete_outputs: base_elac_discrete_outputs,
+    analog_outputs: base_elac_analog_outputs,
+}
+
+#[derive(Serialize, Default)]
+struct SecData {
+    bus_outputs: base_sec_out_bus,
+    discrete_outputs: base_sec_discrete_outputs,
+    analog_outputs: base_sec_analog_outputs,
+}
+
+#[derive(Serialize, Default)]
+struct FacData {
+    bus_outputs: base_fac_bus,
+    discrete_outputs: base_fac_discrete_outputs,
+    analog_outputs: base_fac_analog_outputs,
 }
 
 #[derive(Serialize, Default)]
@@ -75,14 +102,45 @@ struct FmgcData {
     athr: base_fmgc_athr_outputs,
     discrete_outputs: base_fmgc_discrete_outputs,
     bus_outputs: base_fmgc_bus_outputs,
+    bus_inputs: base_fmgc_bus_inputs,
+    discrete_inputs: base_fmgc_discrete_inputs,
+    fms_inputs: base_fms_inputs,
 }
 
+// These are helper functions to read in a whole FDR record.
 fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
-        engine: read_bytes::<EngineData>(reader)?,
-        data: read_bytes::<AdditionalData>(reader)?,
-        fmgc1_data: read_fmgc(reader)?,
-        fmgc2_data: read_fmgc(reader)?,
+        base_data: read_bytes::<BaseData>(reader)?,
+        aircraft_specific_data: read_bytes::<AircraftSpecificData>(reader)?,
+        elac_1_data: read_elac(reader)?,
+        sec_1_data: read_sec(reader)?,
+        fac_1_data: read_fac(reader)?,
+        fmgc_1_data: read_fmgc(reader)?,
+        engine_data: read_bytes::<EngineData>(reader)?,
+    })
+}
+
+fn read_elac(reader: &mut impl Read) -> Result<ElacData, Error> {
+    Ok(ElacData {
+        bus_outputs: read_bytes::<base_elac_out_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_elac_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_elac_analog_outputs>(reader)?,
+    })
+}
+
+fn read_sec(reader: &mut impl Read) -> Result<SecData, Error> {
+    Ok(SecData {
+        bus_outputs: read_bytes::<base_sec_out_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_sec_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_sec_analog_outputs>(reader)?,
+    })
+}
+
+fn read_fac(reader: &mut impl Read) -> Result<FacData, Error> {
+    Ok(FacData {
+        bus_outputs: read_bytes::<base_fac_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_fac_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_fac_analog_outputs>(reader)?,
     })
 }
 
@@ -94,6 +152,9 @@ fn read_fmgc(reader: &mut impl Read) -> Result<FmgcData, Error> {
         athr: read_bytes::<base_fmgc_athr_outputs>(reader)?,
         discrete_outputs: read_bytes::<base_fmgc_discrete_outputs>(reader)?,
         bus_outputs: read_bytes::<base_fmgc_bus_outputs>(reader)?,
+        bus_inputs: read_bytes::<base_fmgc_bus_inputs>(reader)?,
+        discrete_inputs: read_bytes::<base_fmgc_discrete_inputs>(reader)?,
+        fms_inputs: read_bytes::<base_fms_inputs>(reader)?,
     })
 }
 

@@ -37,10 +37,14 @@ void FlightDataRecorder::initialize() {
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
-void FlightDataRecorder::update(const EngineData& engineData,
-                                const AdditionalData& additionalData,
+void FlightDataRecorder::update(const BaseData& baseData,
+                                const AircraftSpecificData& aircraftSpecificData,
+                                Elac elacs[2],
+                                Sec secs[3],
+                                Fac facs[2],
                                 const fmgc_outputs& fmgc1,
-                                const fmgc_outputs& fmgc2) {
+                                const fmgc_outputs& fmgc2,
+                                const EngineData& engineData) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -50,10 +54,47 @@ void FlightDataRecorder::update(const EngineData& engineData,
   manageFlightDataRecorderFiles();
 
   // write data to file
-  fileStream->write((char*)(&engineData), sizeof(engineData));
-  fileStream->write((char*)(&additionalData), sizeof(additionalData));
+  fileStream->write((char*)(&baseData), sizeof(baseData));
+  fileStream->write((char*)(&aircraftSpecificData), sizeof(aircraftSpecificData));
+  for (int i = 0; i < NUMBER_OF_ELAC_TO_WRITE; ++i) {
+    writeElac(elacs[i]);
+  }
+  for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
+    writeSec(secs[i]);
+  }
+  for (int i = 0; i < NUMBER_OF_FAC_TO_WRITE; ++i) {
+    writeFac(facs[i]);
+  }
   writeFmgc(fmgc1);
-  writeFmgc(fmgc2);
+  // writeFmgc(fmgc2);
+  fileStream->write((char*)(&engineData), sizeof(engineData));
+}
+
+void FlightDataRecorder::writeElac(Elac& elac) {
+  auto bus_outputs = elac.getBusOutputs();
+  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+  auto discrete_outputs = elac.getDiscreteOutputs();
+  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+  auto analog_outputs = elac.getAnalogOutputs();
+  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+}
+
+void FlightDataRecorder::writeSec(Sec& sec) {
+  auto bus_outputs = sec.getBusOutputs();
+  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+  auto discrete_outputs = sec.getDiscreteOutputs();
+  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+  auto analog_outputs = sec.getAnalogOutputs();
+  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+}
+
+void FlightDataRecorder::writeFac(Fac& fac) {
+  auto bus_outputs = fac.getBusOutputs();
+  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+  auto discrete_outputs = fac.getDiscreteOutputs();
+  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+  auto analog_outputs = fac.getAnalogOutputs();
+  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
 }
 
 void FlightDataRecorder::writeFmgc(const fmgc_outputs& fmgc) {
@@ -63,6 +104,9 @@ void FlightDataRecorder::writeFmgc(const fmgc_outputs& fmgc) {
   fileStream->write((char*)(&fmgc.athr), sizeof(fmgc.athr));
   fileStream->write((char*)(&fmgc.discrete_outputs), sizeof(fmgc.discrete_outputs));
   fileStream->write((char*)(&fmgc.bus_outputs), sizeof(fmgc.bus_outputs));
+  fileStream->write((char*)(&fmgc.data.bus_inputs), sizeof(fmgc.data.bus_inputs));
+  fileStream->write((char*)(&fmgc.data.discrete_inputs), sizeof(fmgc.data.discrete_inputs));
+  fileStream->write((char*)(&fmgc.data.fms_inputs), sizeof(fmgc.data.fms_inputs));
 }
 
 void FlightDataRecorder::terminate() {

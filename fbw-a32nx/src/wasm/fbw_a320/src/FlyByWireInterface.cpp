@@ -151,10 +151,9 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   result &= updateServoSolenoidStatus();
 
-  // update additional recording data
-  result &= updateAdditionalData(calculatedSampleTime);
-
-  // update engine data
+  // update recording data
+  result &= updateBaseData(calculatedSampleTime);
+  result &= updateAircraftSpecificData(calculatedSampleTime);
   result &= updateEngineData(calculatedSampleTime);
 
   // update spoilers
@@ -163,7 +162,8 @@ bool FlyByWireInterface::update(double sampleTime) {
   // do not further process when active pause is on
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
-    flightDataRecorder.update(engineData, additionalData, fmgcs[0].getDebugOutputs(), fmgcs[1].getDebugOutputs());
+    flightDataRecorder.update(baseData, aircraftSpecificData, elacs, secs, facs, fmgcs[0].getDebugOutputs(), fmgcs[1].getDebugOutputs(),
+                              engineData);
   }
 
   // if default AP is on -> disconnect it
@@ -290,6 +290,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
   // register L variables for Autoland
   idDevelopmentAutoland_condition_Flare = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
+  idDevelopmentAutoland_H_dot_fpm = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT");
   idDevelopmentAutoland_H_dot_c_fpm = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
   idDevelopmentAutoland_delta_Theta_H_dot_deg = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_H_DOT");
   idDevelopmentAutoland_delta_Theta_bz_deg = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BZ");
@@ -1039,75 +1040,97 @@ bool FlyByWireInterface::updateRadioReceiver(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
+bool FlyByWireInterface::updateBaseData(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
-  additionalData.master_warning_active = idMasterWarning->get();
-  additionalData.master_caution_active = idMasterCaution->get();
-  additionalData.park_brake_lever_pos = idParkBrakeLeverPos->get();
-  additionalData.brake_pedal_left_pos = idBrakePedalLeftPos->get();
-  additionalData.brake_pedal_right_pos = idBrakePedalRightPos->get();
-  additionalData.brake_left_sim_pos = simData.brakeLeftPosition;
-  additionalData.brake_right_sim_pos = simData.brakeRightPosition;
-  additionalData.autobrake_armed_mode = idAutobrakeArmedMode->get();
-  additionalData.autobrake_decel_light = idAutobrakeDecelLight->get();
-  additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
-  additionalData.spoilers_armed = idSpoilersArmed->get();
-  additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
-  additionalData.ground_spoilers_active =
-      idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
-  additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
-  additionalData.flaps_handle_index = idFlapsHandleIndex->get();
-  additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
-  additionalData.flaps_handle_sim_index = simData.flapsHandleIndex;
-  additionalData.gear_handle_pos = simData.gearHandlePosition;
-  additionalData.hydraulic_green_pressure = idHydraulicGreenPressure->get();
-  additionalData.hydraulic_blue_pressure = idHydraulicBluePressure->get();
-  additionalData.hydraulic_yellow_pressure = idHydraulicYellowPressure->get();
-  additionalData.throttle_lever_1_pos = simData.throttle_lever_1_pos;
-  additionalData.throttle_lever_2_pos = simData.throttle_lever_2_pos;
-  additionalData.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
-  additionalData.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
-  additionalData.assistanceTakeoffEnabled = simData.assistanceTakeoffEnabled;
-  additionalData.assistanceLandingEnabled = simData.assistanceLandingEnabled;
-  additionalData.aiAutoTrimActive = simData.aiAutoTrimActive;
-  additionalData.aiControlsActive = simData.aiControlsActive;
-  additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
-  additionalData.tillerHandlePosition = idTillerHandlePosition->get();
-  additionalData.noseWheelPosition = idNoseWheelPosition->get();
-  additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get();
-  additionalData.ls1Active = idLs1Active->get();
-  additionalData.ls2Active = idLs2Active->get();
-  additionalData.IsisLsActive = idIsisLsActive->get();
-
-  additionalData.wingAntiIce = idWingAntiIce->get();
-
-  // Fix missing data for FDR Analysis
   auto simInputs = simConnectInterface.getSimInput();
 
-  // controller input data
-  additionalData.inputElevator = simInputs.inputs[0];
-  additionalData.inputAileron = simInputs.inputs[1];
-  additionalData.inputRudder = simInputs.inputs[2];
-  // additional
-  additionalData.simulation_rate = simData.simulation_rate;
-  additionalData.wasPaused = wasPaused;
-  additionalData.slew_on = wasInSlew;
-  // ambient data
-  additionalData.ice_structure_percent = simData.ice_structure_percent;
-  additionalData.ambient_pressure_mbar = simData.ambient_pressure_mbar;
-  additionalData.ambient_wind_velocity_kn = simData.ambient_wind_velocity_kn;
-  additionalData.ambient_wind_direction_deg = simData.ambient_wind_direction_deg;
-  additionalData.total_air_temperature_celsius = simData.total_air_temperature_celsius;
-  // failure
-  additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
-  // aoa
-  additionalData.alpha_floor_condition =
+  baseData.simulation_time_s = simData.simulationTime;
+  baseData.simulation_delta_time_s = calculatedSampleTime;
+  baseData.simulation_rate = simData.simulation_rate;
+  baseData.simulation_slew_on = simData.slew_on;
+  baseData.simulation_was_pause_on = wasPaused;
+  baseData.aircraft_position_latitude_deg = simData.latitude_deg;
+  baseData.aircraft_position_longitude_deg = simData.longitude_deg;
+  baseData.aircraft_Theta_deg = -1 * simData.Theta_deg;
+  baseData.aircraft_Phi_deg = -1 * simData.Phi_deg;
+  baseData.aircraft_Psi_magnetic_deg = simData.Psi_magnetic_deg;
+  baseData.aircraft_Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
+  baseData.aircraft_Psi_true_deg = simData.Psi_true_deg;
+  baseData.aircraft_q_deg_s = 0;
+  baseData.aircraft_p_deg_s = 0;
+  baseData.aircraft_r_deg_s = 0;
+  baseData.aircraft_V_indicated_kn = simData.V_ias_kn;
+  baseData.aircraft_V_true_kn = simData.V_tas_kn;
+  baseData.aircraft_V_ground_kn = simData.V_gnd_kn;
+  baseData.aircraft_Ma_mach = simData.V_mach;
+  baseData.aircraft_alpha_deg = simData.alpha_deg;
+  baseData.aircraft_beta_deg = simData.beta_deg;
+  baseData.aircraft_H_pressure_ft = simData.H_ft;
+  baseData.aircraft_H_indicated_ft = simData.H_ind_ft;
+  baseData.aircraft_H_radio_ft = simData.H_radio_ft;
+  baseData.aircraft_nz_g = simData.nz_g;
+  baseData.aircraft_ax_m_s2 = 0;
+  baseData.aircraft_ay_m_s2 = 0;
+  baseData.aircraft_az_m_s2 = 0;
+  baseData.aircraft_bx_m_s2 = simData.bx_m_s2;
+  baseData.aircraft_by_m_s2 = simData.by_m_s2;
+  baseData.aircraft_bz_m_s2 = simData.bz_m_s2;
+  baseData.aircraft_eta_pos = simData.eta_pos;
+  baseData.aircraft_eta_trim_deg = simData.eta_trim_deg;
+  baseData.aircraft_xi_pos = simData.xi_pos;
+  baseData.aircraft_zeta_pos = simData.zeta_pos;
+  baseData.aircraft_zeta_trim_pos = simData.zeta_trim_pos;
+  baseData.aircraft_total_air_temperature_deg_celsius = simData.ambient_temperature_celsius;
+  baseData.aircraft_ice_structure_percent = simData.ice_structure_percent;
+  baseData.atmosphere_ambient_pressure_mbar = simData.ambient_pressure_mbar;
+  baseData.atmosphere_ambient_wind_velocity_kn = simData.ambient_wind_velocity_kn;
+  baseData.atmosphere_ambient_wind_direction_deg = simData.ambient_wind_direction_deg;
+  baseData.simulation_input_sidestick_pitch_position = simInputs.inputs[0];
+  baseData.simulation_input_sidestick_roll_position = simInputs.inputs[1];
+  baseData.simulation_input_rudder_position = simInputs.inputs[2];
+  baseData.simulation_input_brake_pedal_left_position = simData.brakeLeftPosition;
+  baseData.simulation_input_brake_pedal_right_position = simData.brakeRightPosition;
+  baseData.simulation_input_flaps_handle_position = idFlapsHandlePercent->get();
+  baseData.simulation_input_flaps_handle_index = simData.flapsHandleIndex;
+  baseData.simulation_input_spoilers_handle_position = idSpoilersHandlePosition->get();
+  baseData.simulation_input_spoilers_are_armed = idSpoilersArmed->get();
+  baseData.simulation_input_gear_handle_position = simData.gearHandlePosition;
+  baseData.simulation_input_tiller_handle_position = idTillerHandlePosition->get();
+  baseData.simulation_input_parking_brake_switch_position = idParkBrakeLeverPos->get();
+  baseData.simulation_assistant_is_assisted_takeoff_enabled = simData.assistanceTakeoffEnabled;
+  baseData.simulation_assistant_is_assisted_landing_enabled = simData.assistanceLandingEnabled;
+  baseData.simulation_assistant_is_ai_automatic_trim_active = simData.aiAutoTrimActive;
+  baseData.simulation_assistant_is_ai_controls_active = simData.aiControlsActive;
+
+  return true;
+}
+
+bool FlyByWireInterface::updateAircraftSpecificData(double sampleTime) {
+  auto simData = simConnectInterface.getSimData();
+
+  aircraftSpecificData.simulation_input_throttle_lever_1_position = simData.throttle_lever_1_pos;
+  aircraftSpecificData.simulation_input_throttle_lever_2_position = simData.throttle_lever_1_pos;
+  aircraftSpecificData.simulation_input_throttle_lever_1_angle = thrustLeverAngle_1->get();
+  aircraftSpecificData.simulation_input_throttle_lever_2_angle = thrustLeverAngle_2->get();
+  aircraftSpecificData.aircraft_engine_1_N1_percent = simData.corrected_engine_N1_1_percent;
+  aircraftSpecificData.aircraft_engine_2_N1_percent = simData.corrected_engine_N1_2_percent;
+  aircraftSpecificData.aircraft_hydraulic_system_green_pressure_psi = idHydraulicGreenPressure->get();
+  aircraftSpecificData.aircraft_hydraulic_system_blue_pressure_psi = idHydraulicBluePressure->get();
+  aircraftSpecificData.aircraft_hydraulic_system_yellow_pressure_psi = idHydraulicYellowPressure->get();
+  aircraftSpecificData.aircraft_autobrake_system_armed_mode = idAutobrakeArmedMode->get();
+  aircraftSpecificData.aircraft_autobrake_system_is_decel_light_on = idAutobrakeDecelLight->get();
+  aircraftSpecificData.aircraft_nosewheel_position = idNoseWheelPosition->get();
+  aircraftSpecificData.aircraft_is_master_warning_active = idMasterWarning->get();
+  aircraftSpecificData.aircraft_is_master_caution_active = idMasterCaution->get();
+  aircraftSpecificData.aircraft_is_wing_anti_ice_active = idWingAntiIce->get();
+  aircraftSpecificData.aircraft_is_alpha_floor_condition_active =
       reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
       reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
-  // these are not correct yet
-  additionalData.high_aoa_protection =
+  aircraftSpecificData.aircraft_is_high_aoa_protection_active =
       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
+  aircraftSpecificData.aircraft_settings_is_realistic_tiller_enabled = idRealisticTillerEnabled->get() == 1;
+  aircraftSpecificData.aircraft_settings_any_failures_active = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
 
   return true;
 }
@@ -2068,6 +2091,15 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   idAutothrustShimStatus->set(athrStatus);
   idAutothrustShimMode->set(athrMode);
   idAutothrustShimModeMessage->set(athrModeMessage);
+
+  // debug variables for flare law
+  idDevelopmentAutoland_H_dot_fpm->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.H_dot_radio_fpm);
+  idDevelopmentAutoland_H_dot_c_fpm->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.H_dot_c_fpm);
+  idDevelopmentAutoland_condition_Flare->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.condition_Flare);
+  idDevelopmentAutoland_delta_Theta_H_dot_deg->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.delta_Theta_H_dot_deg);
+  idDevelopmentAutoland_delta_Theta_bz_deg->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.delta_Theta_bz_deg);
+  idDevelopmentAutoland_delta_Theta_bx_deg->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.delta_Theta_bx_deg);
+  idDevelopmentAutoland_delta_Theta_beta_c_deg->set(fmgcs[0].getDebugOutputs().ap_fd_outer_loops.flare_law.delta_Theta_beta_c_deg);
 
   return true;
 }

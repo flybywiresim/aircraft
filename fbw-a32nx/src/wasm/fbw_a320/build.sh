@@ -145,7 +145,7 @@ clang++ \
   -I "${FBW_COMMON_DIR}/src/zlib" \
   "${FBW_COMMON_DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
-  "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/recording/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
   "${FBW_COMMON_DIR}/src/LocalVariable.cpp" \
