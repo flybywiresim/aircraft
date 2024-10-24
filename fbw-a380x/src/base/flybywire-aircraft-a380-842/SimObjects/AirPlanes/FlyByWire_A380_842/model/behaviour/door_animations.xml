@@ -11,7 +11,9 @@
 			</UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    #TOGGLE_ID# (&gt;K:TOGGLE_AIRCRAFT_EXIT)
+                    (L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE, psi) 0.8 &lt; (A:INTERACTIVE POINT OPEN:#ID#, Percent) 0 &gt; || if{
+                        #TOGGLE_ID# (&gt;K:TOGGLE_AIRCRAFT_EXIT)
+                    }
                 </LEFT_SINGLE_CODE>
                 <TOOLTIPID>A380X.TOOLTIPS.DOORS_OPEN_CLOSE</TOOLTIPID>
             </UseTemplate>
