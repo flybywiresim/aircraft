@@ -2982,15 +2982,17 @@
                     <!-- NSS DATA TO AVNCS-->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_NSSAVNCS</NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE</TOGGLE_SIMVAR>
+                        <INOP></INOP>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                        <SEQ2_CODE>(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool) !</SEQ2_CODE>
+						<SEQ1_CODE>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE, Bool)</SEQ1_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE, Bool) !</SEQ2_CODE>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door
-                            video%{else}Turn ON door video%{end}</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE, Bool))%{if}Turn OFF NSS
+                            Data%{else}Turn ON NSS Data%{end}</TOOLTIPID>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Push_Toggle">
@@ -4856,6 +4858,53 @@
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_RESET</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_APU_AUTOEXITING_RESET</HOLD_SIMVAR>
                         <TOOLTIPID>Reset APU autoexiting (Inop.)</TOOLTIPID>
+                    </UseTemplate>
+                    
+					<!-- INOP PBs ON UPPER OVERHEAD -->
+					<!-- FUEL -->
+					<UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_REFUEL</NODE_ID>
+						<INOP></INOP>
+                    </UseTemplate>
+					<UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_AUTO_GND_XFR</NODE_ID>
+						<INOP></INOP>
+                    </UseTemplate>
+					
+					<!-- MISC -->
+					<UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <NODE_ID>PUSH_GND_HF_DATA_LINK</NODE_ID>
+						<DUMMY_BUTTON>True</DUMMY_BUTTON>
+						<DISABLE_SEQ1></DISABLE_SEQ1>
+						<DISABLE_SEQ2></DISABLE_SEQ2>
+                    </UseTemplate>
+					
+					<!-- MAINT -->
+					<UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_MAINT_GND_CONNECTION</NODE_ID>
+						<DUMMY_BUTTON>True</DUMMY_BUTTON>
+						<DISABLE_SEQ1></DISABLE_SEQ1>
+						<DISABLE_SEQ2></DISABLE_SEQ2>
+                    </UseTemplate>
+					
+					<!-- NSS -->
+					<UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_GATELINK</NODE_ID>
+						<INOP></INOP>
+                    </UseTemplate>
+					<UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_CAB_DATA_TO_NSS</NODE_ID>
+						<INOP></INOP>
+                    </UseTemplate>
+					
+					<!-- AIR / VENT -->
+					<UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_OVHT_COND_FANS</NODE_ID>
+						<INOP></INOP>
+                    </UseTemplate>
+					<UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_AVNCS_GND_COOLG</NODE_ID>
+						<INOP></INOP>
                     </UseTemplate>
                 </Component>
 
