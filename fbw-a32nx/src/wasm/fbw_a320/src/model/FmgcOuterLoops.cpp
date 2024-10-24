@@ -275,7 +275,7 @@ FmgcOuterLoops::Parameters_FmgcOuterLoops_T FmgcOuterLoops::FmgcOuterLoops_rtP{
 
   0.7,
 
-  0.75,
+  0.8,
 
   1.0,
 
