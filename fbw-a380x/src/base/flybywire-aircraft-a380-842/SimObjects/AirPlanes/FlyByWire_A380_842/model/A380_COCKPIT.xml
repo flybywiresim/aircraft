@@ -5127,15 +5127,9 @@
 
         <Component ID="DOOR_PANEL">
             <UseTemplate Name="A32NX_SWITCH_DOORPANEL_LOCK">
-                <NODE_ID>LOCK_DOOR_LCKG_SYS</NODE_ID>
-                <ANIM_NAME>LOCK_DOOR_LCKG_SYS</ANIM_NAME>
+                <NODE_ID>SWITCH_DOOR_LOCK</NODE_ID>
+                <ANIM_NAME>SWITCH_DOOR_LOCK</ANIM_NAME>
                 <INVERT_ANIM>1</INVERT_ANIM>
-            </UseTemplate>
-            <UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
-                <NODE_ID>PUSH_DOOR_LCKG_SYS</NODE_ID>
-                <ANIM_NAME>PUSH_DOOR_LCKG_SYS</ANIM_NAME>
-                <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
         </Component>
 
