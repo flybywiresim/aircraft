@@ -393,6 +393,7 @@
 
     <Template Name="FBW_MCDU_BRIGHTNESS_KEYS_Template">
         <DefaultTemplateParameters>
+            <PART_ID>PUSH_MCDU#SIDE#_BRT</PART_ID>
             <NORMALIZED_TIME_1>0.3</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
