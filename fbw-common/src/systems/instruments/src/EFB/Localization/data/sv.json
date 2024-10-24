@@ -193,7 +193,7 @@
       "Title": "Pushback"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "Luftstarterenhet",
       "BaggageTruck": "Bagagelastbil",
       "CateringTruck": "Cateringlastbil",
       "Cones": "Koner",
@@ -654,7 +654,7 @@
       "SaveAndApply": "Spara och tillämpa",
       "SetFromThrottle": "Spara från gasreglage",
       "ThrottleConfigurationReset": "Återställning av gasreglagets kalibrering",
-      "TogaOnAxis": "TOGA On Axis"
+      "TogaOnAxis": "TOGA på axeln"
     },
     "Title": "Inställningar",
     "Unrealistic": "Orealistiskt",
