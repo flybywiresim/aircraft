@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_LateralNormalLaw_h_
-#define RTW_HEADER_LateralNormalLaw_h_
+#ifndef LateralNormalLaw_h_
+#define LateralNormalLaw_h_
 #include "rtwtypes.h"
 #include "LateralNormalLaw_types.h"
 #include <cstring>
@@ -17,12 +17,12 @@ class LateralNormalLaw final
     real_T Delay_DSTATE_o;
     real_T Delay_DSTATE_d;
     real_T pY;
-    real_T pY_e;
+    real_T pY_b;
     uint8_T is_active_c5_LateralNormalLaw;
     uint8_T is_c5_LateralNormalLaw;
     boolean_T icLoad;
     boolean_T pY_not_empty;
-    boolean_T pY_not_empty_n;
+    boolean_T pY_not_empty_j;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_j;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_d;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter;

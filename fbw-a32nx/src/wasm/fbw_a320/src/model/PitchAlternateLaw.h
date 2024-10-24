@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_PitchAlternateLaw_h_
-#define RTW_HEADER_PitchAlternateLaw_h_
+#ifndef PitchAlternateLaw_h_
+#define PitchAlternateLaw_h_
 #include "rtwtypes.h"
 #include "PitchAlternateLaw_types.h"
 #include <cstring>
