@@ -22,13 +22,11 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <ANIM_NAME>ANIM_DOOR_#DOOR_ID#_ARMED</ANIM_NAME>
                 <ANIM_LAG>100</ANIM_LAG>
-			    <ANIM_CODE>(A:INTERACTIVE POINT OPEN:#ID#, Percent)</ANIM_CODE>
+			    <ANIM_CODE>(L:ANIM_DOOR_#DOOR_ID#_DISARMED) 100 *</ANIM_CODE>
 			</UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE, psi) 0.8 &lt; (A:INTERACTIVE POINT OPEN:#ID#, Percent) 0 &gt; || if{
-                        #TOGGLE_ID# (&gt;K:TOGGLE_AIRCRAFT_EXIT)
-                    }
+                    (L:ANIM_DOOR_#DOOR_ID#_DISARMED) ! (&gt;L:ANIM_DOOR_#DOOR_ID#_DISARMED)
                 </LEFT_SINGLE_CODE>
                 <TOOLTIPID>A380X.TOOLTIPS.DOORS_ARM_DISARM</TOOLTIPID>
             </UseTemplate>
