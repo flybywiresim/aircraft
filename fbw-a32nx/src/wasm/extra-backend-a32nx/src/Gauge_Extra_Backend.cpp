@@ -64,3 +64,4 @@ MSFS_CALLBACK bool Gauge_Extra_Backend_gauge_callback([[maybe_unused]] FsContext
   return false;
 }
 }
+
