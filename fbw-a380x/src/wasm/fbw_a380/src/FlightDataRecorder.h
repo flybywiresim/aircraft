@@ -4,19 +4,25 @@
 
 #include "AdditionalData.h"
 #include "EngineData.h"
+#include "fac/Fac.h"
 #include "model/AutopilotLaws.h"
 #include "model/AutopilotStateMachine.h"
 #include "model/Autothrust.h"
+#include "prim/Prim.h"
+#include "sec/Sec.h"
 #include "zlib/zfstream.h"
 
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 24;
+  const uint64_t INTERFACE_VERSION = 3800001;
 
   void initialize();
 
-  void update(AutopilotStateMachine* autopilotStateMachine,
+  void update(Prim prims[3],
+              Sec secs[3],
+              Fac facs[2],
+              AutopilotStateMachine* autopilotStateMachine,
               AutopilotLawsModelClass* autopilotLaws,
               Autothrust* autoThrust,
               const EngineData& engineData,

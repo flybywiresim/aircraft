@@ -1,8 +1,14 @@
 use bytemuck::AnyBitPattern;
 use clap::Parser;
 use csv::WriterBuilder;
+use fdr2csv_common::csv_header_serializer;
 use flate2::bufread::GzDecoder;
-use headers::{ap_raw_output, ap_sm_output, athr_out, AdditionalData, EngineData};
+use headers::{
+    ap_raw_output, ap_sm_output, athr_out, base_elac_analog_outputs, base_elac_discrete_outputs,
+    base_elac_out_bus, base_fac_analog_outputs, base_fac_bus, base_fac_discrete_outputs,
+    base_sec_analog_outputs, base_sec_discrete_outputs, base_sec_out_bus, AdditionalData,
+    EngineData,
+};
 use serde::Serialize;
 use std::{
     fs::{File, OpenOptions},
@@ -10,8 +16,6 @@ use std::{
     mem,
 };
 
-mod csv_header_serializer;
-mod error;
 mod headers;
 
 #[derive(Parser, Debug)]
@@ -37,7 +41,7 @@ struct Args {
     get_input_file_version: bool,
 }
 
-const INTERFACE_VERSION: u64 = 25;
+const INTERFACE_VERSION: u64 = 3200001;
 
 // Read number of bytes specified by the size of T from the binary file
 fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
@@ -58,6 +62,27 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
 // A single FDR record
 #[derive(Serialize, Default)]
 struct FdrData {
+    elac_1_bus: base_elac_out_bus,
+    elac_1_discrete: base_elac_discrete_outputs,
+    elac_1_analog: base_elac_analog_outputs,
+    elac_2_bus: base_elac_out_bus,
+    elac_2_discrete: base_elac_discrete_outputs,
+    elac_2_analog: base_elac_analog_outputs,
+    sec_1_bus: base_sec_out_bus,
+    sec_1_discrete: base_sec_discrete_outputs,
+    sec_1_analog: base_sec_analog_outputs,
+    sec_2_bus: base_sec_out_bus,
+    sec_2_discrete: base_sec_discrete_outputs,
+    sec_2_analog: base_sec_analog_outputs,
+    sec_3_bus: base_sec_out_bus,
+    sec_3_discrete: base_sec_discrete_outputs,
+    sec_3_analog: base_sec_analog_outputs,
+    fac_1_bus: base_fac_bus,
+    fac_1_discrete: base_fac_discrete_outputs,
+    fac_1_analog: base_fac_analog_outputs,
+    fac_2_bus: base_fac_bus,
+    fac_2_discrete: base_fac_discrete_outputs,
+    fac_2_analog: base_fac_analog_outputs,
     ap_sm: ap_sm_output,
     ap_law: ap_raw_output,
     athr: athr_out,
@@ -68,6 +93,27 @@ struct FdrData {
 // These are helper functions to read in a whole FDR record.
 fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
+        elac_1_bus: read_bytes::<base_elac_out_bus>(reader)?,
+        elac_1_discrete: read_bytes::<base_elac_discrete_outputs>(reader)?,
+        elac_1_analog: read_bytes::<base_elac_analog_outputs>(reader)?,
+        elac_2_bus: read_bytes::<base_elac_out_bus>(reader)?,
+        elac_2_discrete: read_bytes::<base_elac_discrete_outputs>(reader)?,
+        elac_2_analog: read_bytes::<base_elac_analog_outputs>(reader)?,
+        sec_1_bus: read_bytes::<base_sec_out_bus>(reader)?,
+        sec_1_discrete: read_bytes::<base_sec_discrete_outputs>(reader)?,
+        sec_1_analog: read_bytes::<base_sec_analog_outputs>(reader)?,
+        sec_2_bus: read_bytes::<base_sec_out_bus>(reader)?,
+        sec_2_discrete: read_bytes::<base_sec_discrete_outputs>(reader)?,
+        sec_2_analog: read_bytes::<base_sec_analog_outputs>(reader)?,
+        sec_3_bus: read_bytes::<base_sec_out_bus>(reader)?,
+        sec_3_discrete: read_bytes::<base_sec_discrete_outputs>(reader)?,
+        sec_3_analog: read_bytes::<base_sec_analog_outputs>(reader)?,
+        fac_1_bus: read_bytes::<base_fac_bus>(reader)?,
+        fac_1_discrete: read_bytes::<base_fac_discrete_outputs>(reader)?,
+        fac_1_analog: read_bytes::<base_fac_analog_outputs>(reader)?,
+        fac_2_bus: read_bytes::<base_fac_bus>(reader)?,
+        fac_2_discrete: read_bytes::<base_fac_discrete_outputs>(reader)?,
+        fac_2_analog: read_bytes::<base_fac_analog_outputs>(reader)?,
         ap_sm: read_bytes::<ap_sm_output>(reader)?,
         ap_law: read_bytes::<ap_raw_output>(reader)?,
         athr: read_bytes::<athr_out>(reader)?,

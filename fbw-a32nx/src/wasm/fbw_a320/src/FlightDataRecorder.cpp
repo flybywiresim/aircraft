@@ -37,7 +37,10 @@ void FlightDataRecorder::initialize() {
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
-void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
+void FlightDataRecorder::update(Elac elacs[2],
+                                Sec secs[3],
+                                Fac facs[2],
+                                AutopilotStateMachine* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
                                 Autothrust* autoThrust,
                                 const EngineData& engineData,
@@ -51,6 +54,38 @@ void FlightDataRecorder::update(AutopilotStateMachine* autopilotStateMachine,
   manageFlightDataRecorderFiles();
 
   // write data to file
+
+  // ELACs
+  for (int i = 0; i < 2; ++i) {
+    auto bus_outputs = elacs[i].getBusOutputs();
+    fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+    auto discrete_outputs = elacs[i].getDiscreteOutputs();
+    fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+    auto analog_outputs = elacs[i].getAnalogOutputs();
+    fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+  }
+
+  // SECs
+  for (int i = 0; i < 3; ++i) {
+    auto bus_outputs = secs[i].getBusOutputs();
+    fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+    auto discrete_outputs = secs[i].getDiscreteOutputs();
+    fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+    auto analog_outputs = secs[i].getAnalogOutputs();
+    fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+  }
+
+  // FACs
+  for (int i = 0; i < 2; ++i) {
+    auto bus_outputs = facs[i].getBusOutputs();
+    fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
+    auto discrete_outputs = facs[i].getDiscreteOutputs();
+    fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
+    auto analog_outputs = facs[i].getAnalogOutputs();
+    fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+  }
+
+  // Other
   fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
   fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
   fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));

@@ -160,7 +160,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   // do not further process when active pause is on
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
-    flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
+    flightDataRecorder.update(prims, secs, facs, &autopilotStateMachine, &autopilotLaws, &autoThrust, engineData, additionalData);
   }
 
   // if default AP is on -> disconnect it
