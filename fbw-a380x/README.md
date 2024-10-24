@@ -54,6 +54,7 @@ These systems are currently not operational / these features are missing and sha
 ### ATA 27 Flight Controls
 
 - Complete SLAT/FLAP CTL implementation (adapted A32NX computers atm)
+- Automatic pitch trim setting
 
 ### ATA 28 Fuel
 - Refuel Driver/Refuel Application placeholder pseudo-FQMS implementation (pre-cursor for realistic FQMS implementation while supporting instant load)
