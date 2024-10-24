@@ -196,11 +196,11 @@ impl FlapsHandleIndex {
         } else if flap_mean_position < 12. && slat_mean_position > 15. {
             // Almost no flaps but some slats -> CONF 1
             1.
-        } else if flap_mean_position > 80. {
+        } else if flap_mean_position > 90. {
             5.
-        } else if flap_mean_position > 49. {
+        } else if flap_mean_position > 75. {
             4.
-        } else if flap_mean_position > 30. {
+        } else if flap_mean_position > 45. {
             3.
         } else if flap_mean_position > 12. {
             2.
