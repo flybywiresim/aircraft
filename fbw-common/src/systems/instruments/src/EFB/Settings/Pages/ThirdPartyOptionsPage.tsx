@@ -14,7 +14,7 @@ import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 // @ts-ignore
 import NavigraphIcon from '../../Assets/navigraph-logo-alone.svg';
-import { navigraphAuth } from '../../../navigraph';
+import { navigraphAuth } from '@flybywiresim/fbw-sdk';
 
 export const ThirdPartyOptionsPage = () => {
   const history = useHistory();

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString } from '@flybywiresim/fbw-sdk';
-import { navigraphAuth } from '../../../instruments/src/navigraph';
+import { navigraphAuth } from '@flybywiresim/fbw-sdk';
 import { navigraphRequest } from 'navigraph/auth';
 
 export async function searchAmdbAirports(queryString: string): Promise<AmdbAirportSearchResponse> {
