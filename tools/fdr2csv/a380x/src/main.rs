@@ -7,7 +7,7 @@ use headers::{
     ap_raw_output, ap_sm_output, athr_out, base_fac_analog_outputs, base_fac_bus,
     base_fac_discrete_outputs, base_prim_analog_outputs, base_prim_discrete_outputs,
     base_prim_out_bus, base_sec_analog_outputs, base_sec_discrete_outputs, base_sec_out_bus,
-    AdditionalData, EngineData,
+    AircraftSpecificData, BaseData, EngineData,
 };
 use serde::Serialize;
 use std::{
@@ -62,69 +62,74 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
 // A single FDR record
 #[derive(Serialize, Default)]
 struct FdrData {
-    prim_1_bus: base_prim_out_bus,
-    prim_1_discrete: base_prim_discrete_outputs,
-    prim_1_analog: base_prim_analog_outputs,
-    prim_2_bus: base_prim_out_bus,
-    prim_2_discrete: base_prim_discrete_outputs,
-    prim_2_analog: base_prim_analog_outputs,
-    prim_3_bus: base_prim_out_bus,
-    prim_3_discrete: base_prim_discrete_outputs,
-    prim_3_analog: base_prim_analog_outputs,
-    sec_1_bus: base_sec_out_bus,
-    sec_1_discrete: base_sec_discrete_outputs,
-    sec_1_analog: base_sec_analog_outputs,
-    sec_2_bus: base_sec_out_bus,
-    sec_2_discrete: base_sec_discrete_outputs,
-    sec_2_analog: base_sec_analog_outputs,
-    sec_3_bus: base_sec_out_bus,
-    sec_3_discrete: base_sec_discrete_outputs,
-    sec_3_analog: base_sec_analog_outputs,
-    fac_1_bus: base_fac_bus,
-    fac_1_discrete: base_fac_discrete_outputs,
-    fac_1_analog: base_fac_analog_outputs,
-    fac_2_bus: base_fac_bus,
-    fac_2_discrete: base_fac_discrete_outputs,
-    fac_2_analog: base_fac_analog_outputs,
+    base_data: BaseData,
+    specific_data: AircraftSpecificData,
+    prim_1_data: PrimData,
+    sec_1_data: SecData,
+    fac_1_data: FacData,
     ap_sm: ap_sm_output,
     ap_law: ap_raw_output,
     athr: athr_out,
     engine: EngineData,
-    data: AdditionalData,
+}
+
+#[derive(Serialize, Default)]
+struct PrimData {
+    bus_outputs: base_prim_out_bus,
+    discrete_outputs: base_prim_discrete_outputs,
+    analog_outputs: base_prim_analog_outputs,
+}
+
+#[derive(Serialize, Default)]
+struct SecData {
+    bus_outputs: base_sec_out_bus,
+    discrete_outputs: base_sec_discrete_outputs,
+    analog_outputs: base_sec_analog_outputs,
+}
+
+#[derive(Serialize, Default)]
+struct FacData {
+    bus_outputs: base_fac_bus,
+    discrete_outputs: base_fac_discrete_outputs,
+    analog_outputs: base_fac_analog_outputs,
 }
 
 // These are helper functions to read in a whole FDR record.
 fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
-        prim_1_bus: read_bytes::<base_prim_out_bus>(reader)?,
-        prim_1_discrete: read_bytes::<base_prim_discrete_outputs>(reader)?,
-        prim_1_analog: read_bytes::<base_prim_analog_outputs>(reader)?,
-        prim_2_bus: read_bytes::<base_prim_out_bus>(reader)?,
-        prim_2_discrete: read_bytes::<base_prim_discrete_outputs>(reader)?,
-        prim_2_analog: read_bytes::<base_prim_analog_outputs>(reader)?,
-        prim_3_bus: read_bytes::<base_prim_out_bus>(reader)?,
-        prim_3_discrete: read_bytes::<base_prim_discrete_outputs>(reader)?,
-        prim_3_analog: read_bytes::<base_prim_analog_outputs>(reader)?,
-        sec_1_bus: read_bytes::<base_sec_out_bus>(reader)?,
-        sec_1_discrete: read_bytes::<base_sec_discrete_outputs>(reader)?,
-        sec_1_analog: read_bytes::<base_sec_analog_outputs>(reader)?,
-        sec_2_bus: read_bytes::<base_sec_out_bus>(reader)?,
-        sec_2_discrete: read_bytes::<base_sec_discrete_outputs>(reader)?,
-        sec_2_analog: read_bytes::<base_sec_analog_outputs>(reader)?,
-        sec_3_bus: read_bytes::<base_sec_out_bus>(reader)?,
-        sec_3_discrete: read_bytes::<base_sec_discrete_outputs>(reader)?,
-        sec_3_analog: read_bytes::<base_sec_analog_outputs>(reader)?,
-        fac_1_bus: read_bytes::<base_fac_bus>(reader)?,
-        fac_1_discrete: read_bytes::<base_fac_discrete_outputs>(reader)?,
-        fac_1_analog: read_bytes::<base_fac_analog_outputs>(reader)?,
-        fac_2_bus: read_bytes::<base_fac_bus>(reader)?,
-        fac_2_discrete: read_bytes::<base_fac_discrete_outputs>(reader)?,
-        fac_2_analog: read_bytes::<base_fac_analog_outputs>(reader)?,
+        base_data: read_bytes::<BaseData>(reader)?,
+        specific_data: read_bytes::<AircraftSpecificData>(reader)?,
+        prim_1_data: read_prim(reader)?,
+        sec_1_data: read_sec(reader)?,
+        fac_1_data: read_fac(reader)?,
         ap_sm: read_bytes::<ap_sm_output>(reader)?,
         ap_law: read_bytes::<ap_raw_output>(reader)?,
         athr: read_bytes::<athr_out>(reader)?,
         engine: read_bytes::<EngineData>(reader)?,
-        data: read_bytes::<AdditionalData>(reader)?,
+    })
+}
+
+fn read_prim(reader: &mut impl Read) -> Result<PrimData, Error> {
+    Ok(PrimData {
+        bus_outputs: read_bytes::<base_prim_out_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_prim_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_prim_analog_outputs>(reader)?,
+    })
+}
+
+fn read_sec(reader: &mut impl Read) -> Result<SecData, Error> {
+    Ok(SecData {
+        bus_outputs: read_bytes::<base_sec_out_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_sec_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_sec_analog_outputs>(reader)?,
+    })
+}
+
+fn read_fac(reader: &mut impl Read) -> Result<FacData, Error> {
+    Ok(FacData {
+        bus_outputs: read_bytes::<base_fac_bus>(reader)?,
+        discrete_outputs: read_bytes::<base_fac_discrete_outputs>(reader)?,
+        analog_outputs: read_bytes::<base_fac_analog_outputs>(reader)?,
     })
 }
 

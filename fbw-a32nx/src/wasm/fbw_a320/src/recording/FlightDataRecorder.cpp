@@ -44,6 +44,7 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 Fac facs[2],
                                 const fmgc_outputs& fmgc1,
                                 const fmgc_outputs& fmgc2,
+                                FadecComputer fadecs[2],
                                 const EngineData& engineData) {
   // check if enabled
   if (!isEnabled) {
@@ -53,20 +54,37 @@ void FlightDataRecorder::update(const BaseData& baseData,
   // do file management
   manageFlightDataRecorderFiles();
 
-  // write data to file
+  // write base data
   fileStream->write((char*)(&baseData), sizeof(baseData));
+
+  // write aircraft specific data
   fileStream->write((char*)(&aircraftSpecificData), sizeof(aircraftSpecificData));
+
+  // write ELAC data
   for (int i = 0; i < NUMBER_OF_ELAC_TO_WRITE; ++i) {
     writeElac(elacs[i]);
   }
+
+  // write SEC data
   for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
     writeSec(secs[i]);
   }
+
+  // write FAC data
   for (int i = 0; i < NUMBER_OF_FAC_TO_WRITE; ++i) {
     writeFac(facs[i]);
   }
+
+  // write FMGC data
   writeFmgc(fmgc1);
   // writeFmgc(fmgc2);
+
+  // write FADEC data
+  for (int i = 0; i < NUMBER_OF_FADEC_TO_WRITE; ++i) {
+    writeFadec(fadecs[i]);
+  }
+
+  // write engine data
   fileStream->write((char*)(&engineData), sizeof(engineData));
 }
 
@@ -107,6 +125,12 @@ void FlightDataRecorder::writeFmgc(const fmgc_outputs& fmgc) {
   fileStream->write((char*)(&fmgc.data.bus_inputs), sizeof(fmgc.data.bus_inputs));
   fileStream->write((char*)(&fmgc.data.discrete_inputs), sizeof(fmgc.data.discrete_inputs));
   fileStream->write((char*)(&fmgc.data.fms_inputs), sizeof(fmgc.data.fms_inputs));
+}
+
+void FlightDataRecorder::writeFadec(FadecComputer& fadec) {
+  auto outputs = fadec.getExternalOutputs().out;
+  fileStream->write((char*)(&outputs.fadec_bus_output), sizeof(outputs.fadec_bus_output));
+  fileStream->write((char*)(&outputs.output), sizeof(outputs.output));
 }
 
 void FlightDataRecorder::terminate() {

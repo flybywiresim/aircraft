@@ -163,7 +163,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
     flightDataRecorder.update(baseData, aircraftSpecificData, elacs, secs, facs, fmgcs[0].getDebugOutputs(), fmgcs[1].getDebugOutputs(),
-                              engineData);
+                              fadecs, engineData);
   }
 
   // if default AP is on -> disconnect it
@@ -1085,18 +1085,18 @@ bool FlyByWireInterface::updateBaseData(double sampleTime) {
   baseData.atmosphere_ambient_pressure_mbar = simData.ambient_pressure_mbar;
   baseData.atmosphere_ambient_wind_velocity_kn = simData.ambient_wind_velocity_kn;
   baseData.atmosphere_ambient_wind_direction_deg = simData.ambient_wind_direction_deg;
-  baseData.simulation_input_sidestick_pitch_position = simInputs.inputs[0];
-  baseData.simulation_input_sidestick_roll_position = simInputs.inputs[1];
-  baseData.simulation_input_rudder_position = simInputs.inputs[2];
-  baseData.simulation_input_brake_pedal_left_position = simData.brakeLeftPosition;
-  baseData.simulation_input_brake_pedal_right_position = simData.brakeRightPosition;
-  baseData.simulation_input_flaps_handle_position = idFlapsHandlePercent->get();
+  baseData.simulation_input_sidestick_pitch_pos = simInputs.inputs[0];
+  baseData.simulation_input_sidestick_roll_pos = simInputs.inputs[1];
+  baseData.simulation_input_rudder_pos = simInputs.inputs[2];
+  baseData.simulation_input_brake_pedal_left_pos = simData.brakeLeftPosition;
+  baseData.simulation_input_brake_pedal_right_pos = simData.brakeRightPosition;
+  baseData.simulation_input_flaps_handle_pos = idFlapsHandlePercent->get();
   baseData.simulation_input_flaps_handle_index = simData.flapsHandleIndex;
-  baseData.simulation_input_spoilers_handle_position = idSpoilersHandlePosition->get();
+  baseData.simulation_input_spoilers_handle_pos = idSpoilersHandlePosition->get();
   baseData.simulation_input_spoilers_are_armed = idSpoilersArmed->get();
-  baseData.simulation_input_gear_handle_position = simData.gearHandlePosition;
-  baseData.simulation_input_tiller_handle_position = idTillerHandlePosition->get();
-  baseData.simulation_input_parking_brake_switch_position = idParkBrakeLeverPos->get();
+  baseData.simulation_input_gear_handle_pos = simData.gearHandlePosition;
+  baseData.simulation_input_tiller_handle_pos = idTillerHandlePosition->get();
+  baseData.simulation_input_parking_brake_switch_pos = idParkBrakeLeverPos->get();
   baseData.simulation_assistant_is_assisted_takeoff_enabled = simData.assistanceTakeoffEnabled;
   baseData.simulation_assistant_is_assisted_landing_enabled = simData.assistanceLandingEnabled;
   baseData.simulation_assistant_is_ai_automatic_trim_active = simData.aiAutoTrimActive;
@@ -1108,8 +1108,8 @@ bool FlyByWireInterface::updateBaseData(double sampleTime) {
 bool FlyByWireInterface::updateAircraftSpecificData(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
 
-  aircraftSpecificData.simulation_input_throttle_lever_1_position = simData.throttle_lever_1_pos;
-  aircraftSpecificData.simulation_input_throttle_lever_2_position = simData.throttle_lever_1_pos;
+  aircraftSpecificData.simulation_input_throttle_lever_1_pos = simData.throttle_lever_1_pos;
+  aircraftSpecificData.simulation_input_throttle_lever_2_pos = simData.throttle_lever_1_pos;
   aircraftSpecificData.simulation_input_throttle_lever_1_angle = thrustLeverAngle_1->get();
   aircraftSpecificData.simulation_input_throttle_lever_2_angle = thrustLeverAngle_2->get();
   aircraftSpecificData.aircraft_engine_1_N1_percent = simData.corrected_engine_N1_1_percent;
@@ -1119,7 +1119,10 @@ bool FlyByWireInterface::updateAircraftSpecificData(double sampleTime) {
   aircraftSpecificData.aircraft_hydraulic_system_yellow_pressure_psi = idHydraulicYellowPressure->get();
   aircraftSpecificData.aircraft_autobrake_system_armed_mode = idAutobrakeArmedMode->get();
   aircraftSpecificData.aircraft_autobrake_system_is_decel_light_on = idAutobrakeDecelLight->get();
-  aircraftSpecificData.aircraft_nosewheel_position = idNoseWheelPosition->get();
+  aircraftSpecificData.aircraft_gear_nosewheel_pos = idNoseWheelPosition->get();
+  aircraftSpecificData.aircraft_gear_nosewheel_compression_percent = 2 * simData.gear_animation_pos_0 - 1;
+  aircraftSpecificData.aircraft_gear_main_left_compression_percent = 2 * simData.gear_animation_pos_1 - 1;
+  aircraftSpecificData.aircraft_gear_main_right_compression_percent = 2 * simData.gear_animation_pos_2 - 1;
   aircraftSpecificData.aircraft_is_master_warning_active = idMasterWarning->get();
   aircraftSpecificData.aircraft_is_master_caution_active = idMasterCaution->get();
   aircraftSpecificData.aircraft_is_wing_anti_ice_active = idWingAntiIce->get();

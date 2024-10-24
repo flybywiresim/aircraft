@@ -3,11 +3,8 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
-#include "AdditionalData.h"
 #include "Arinc429.h"
 #include "CalculatedRadioReceiver.h"
-#include "EngineData.h"
-#include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
@@ -19,6 +16,8 @@
 #include "model/AutopilotLaws.h"
 #include "model/AutopilotStateMachine.h"
 #include "model/Autothrust.h"
+#include "recording/FlightDataRecorder.h"
+#include "recording/RecordingDataTypes.h"
 // #include "fcdc/Fcdc.h"
 #include "prim/Prim.h"
 #include "sec/Sec.h"
@@ -317,7 +316,9 @@ class FlyByWireInterface {
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  AdditionalData additionalData = {};
+  BaseData baseData = {};
+  AircraftSpecificData aircraftSpecificData = {};
+
   std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
@@ -599,8 +600,9 @@ class FlyByWireInterface {
 
   bool updateRadioReceiver(double sampleTime);
 
+  bool updateBaseData(double sampleTime);
+  bool updateAircraftSpecificData(double sampleTime);
   bool updateEngineData(double sampleTime);
-  bool updateAdditionalData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);

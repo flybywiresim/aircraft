@@ -2,34 +2,34 @@
 
 #include <fstream>
 
-#include "../elac/Elac.h"
 #include "../fac/Fac.h"
-#include "../model/FadecComputer.h"
-#include "../model/FmgcComputer_types.h"
+#include "../model/AutopilotLaws.h"
+#include "../model/AutopilotStateMachine.h"
+#include "../model/Autothrust.h"
+#include "../prim/Prim.h"
 #include "../sec/Sec.h"
 #include "RecordingDataTypes.h"
-#include "zfstream.h"
+#include "zlib/zfstream.h"
 
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 3200001;
+  const uint64_t INTERFACE_VERSION = 3800001;
 
-  const uint32_t NUMBER_OF_ELAC_TO_WRITE = 1;
+  const uint32_t NUMBER_OF_PRIM_TO_WRITE = 1;
   const uint32_t NUMBER_OF_SEC_TO_WRITE = 1;
   const uint32_t NUMBER_OF_FAC_TO_WRITE = 1;
-  const uint32_t NUMBER_OF_FADEC_TO_WRITE = 1;
 
   void initialize();
 
   void update(const BaseData& baseData,
               const AircraftSpecificData& aircraftSpecificData,
-              Elac elacs[2],
+              Prim prims[3],
               Sec secs[3],
               Fac facs[2],
-              const fmgc_outputs& fmgc1,
-              const fmgc_outputs& fmgc2,
-              FadecComputer fadecs[2],
+              AutopilotStateMachine* autopilotStateMachine,
+              AutopilotLawsModelClass* autopilotLaws,
+              Autothrust* autoThrust,
               const EngineData& engineData);
 
   void terminate();
@@ -49,13 +49,9 @@ class FlightDataRecorder {
 
   void cleanUpFlightDataRecorderFiles();
 
-  void writeElac(Elac& elac);
+  void writePrim(Prim& prim);
 
   void writeSec(Sec& sec);
 
   void writeFac(Fac& fac);
-
-  void writeFmgc(const fmgc_outputs& fmgc);
-
-  void writeFadec(FadecComputer& fadec);
 };
