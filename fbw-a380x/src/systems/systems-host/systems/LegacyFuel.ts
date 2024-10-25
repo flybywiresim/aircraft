@@ -152,6 +152,7 @@ export class LegacyFuel implements Instrument {
     const onGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
     if (!this.refuelInProgress && this.refuelStarted.get()) {
       this.refuelInProgress = true;
+      console.log('refuel start detected');
 
       for (let index = 1; index <= LegacyFuel.NUMBER_OF_TRIGGERS; index++) {
         if (this.triggerStates.get(index).get()) {
@@ -161,10 +162,12 @@ export class LegacyFuel implements Instrument {
       // starts at 5 since 1-4 are the engine valves controlled by the engine masters
       for (let index = 5; index <= LegacyFuel.NUMBER_OF_VALVES; index++) {
         if (!LegacyFuel.VALVES_TO_SKIP.includes(index)) {
+          console.log(`closed valve ${index}`);
           this.setValve(index, ValveState.Closed);
         }
       }
     } else if (this.refuelInProgress && !this.refuelStarted.get()) {
+      console.log('refuel end detected');
       this.refuelInProgress = false;
       this.checkEmptyTriggers();
     } else if (!onGround && totalDtSinceLastUpdate > 0) {
