@@ -3,11 +3,11 @@
 This directory contains common user interface elements for building the A380's MFD.
 
 ## Status and description of components
+
 Status legend:
 ✅ MVP complete
 🟨 In progress
 🟥 Not yet started
-
 
 | Status      | Component class name | Description |
 | ------------- | ------------- | ------------- |
@@ -34,4 +34,5 @@ Status legend:
 ## Known issues / improvements
 
 ### IconButton
+
 Not all icons added yet (will evolve over time, until all pages are complete)
