@@ -183,11 +183,12 @@ export class FlightManagementComputer implements FmcInterface {
     const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
+    this.flightPlanService.createFlightPlans();
+
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
     if (this.instance === FmcIndex.FmcA) {
       this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
 
-      this.flightPlanService.createFlightPlans();
       this.#guidanceController = new GuidanceController(
         this.bus,
         this.fmgc,
