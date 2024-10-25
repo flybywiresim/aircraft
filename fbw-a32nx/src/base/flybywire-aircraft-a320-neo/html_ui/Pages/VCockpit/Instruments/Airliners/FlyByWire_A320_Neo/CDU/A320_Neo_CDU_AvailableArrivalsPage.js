@@ -180,7 +180,6 @@ class CDUAvailableArrivalsPage {
                         runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
                         const finalLeg = approach.legs[approach.legs.length - 1];
-                        console.log("trying to use ilss");
                         const matchingIls = approach.type === Fmgc.ApproachType.Ils ? ilss.find(
                             (ils) => finalLeg && finalLeg.recommendedNavaid && ils.databaseId === finalLeg.recommendedNavaid.databaseId
                         ) : undefined;
