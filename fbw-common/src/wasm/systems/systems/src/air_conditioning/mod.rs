@@ -452,6 +452,7 @@ pub trait PressurizationConstants {
     const OUTFLOW_VALVE_SIZE: f64;
     const SAFETY_VALVE_SIZE: f64;
     const DOOR_OPENING_AREA: f64;
+    const HULL_BREACH_AREA: f64;
 
     const MAX_CLIMB_RATE: f64;
     const MAX_CLIMB_RATE_IN_DESCENT: f64;
