@@ -29,7 +29,7 @@
     - Enum
     - Represents the state of the ANN LT switch
     - | State | Value |
-                  |-------|-------|
+                                                      |-------|-------|
       | TEST  | 0     |
       | BRT   | 1     |
       | DIM   | 2     |
@@ -136,7 +136,7 @@
     - Will be reset to 0 after loading is done
     - When set to 0 during loading will stop and cancel the loading process
     - | Value | Meaning            |
-                        |-------|--------------------|
+                                                            |-------|--------------------|
       | 1     | Cold & Dark        |
       | 2     | Powered            |
       | 3     | Ready for Pushback |
@@ -177,7 +177,7 @@
     - Discrete Data word of the AGS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-                  |:---:|:----------------------------------------------------:|
+                                                      |:---:|:----------------------------------------------------:|
       | 11  | AGS Application INOP                                 |
       | 12  | Unused                                               |
       | 13  | Pack 1 operating                                     |
@@ -188,7 +188,7 @@
     - Discrete Data word of the TCS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-                  |:---:|:----------------------------------------------------:|
+                                                      |:---:|:----------------------------------------------------:|
       | 11  | TCS Application INOP                                 |
       | 12  | Unused                                               |
       | 13  | Hot Air 1 position disagrees                         |
@@ -201,7 +201,7 @@
     - Discrete Data word of the VCS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-                  |:---:|:----------------------------------------------------:|
+                                                      |:---:|:----------------------------------------------------:|
       | 11  | VCS Application INOP                                 |
       | 12  | Unused                                               |
       | 13  | FWD Extraction fan is on                             |
@@ -222,7 +222,7 @@
     - Discrete Data word of the CPCS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-                  |:---:|:----------------------------------------------------:|
+                                                      |:---:|:----------------------------------------------------:|
       | 11  | CPCS Application INOP                                |
       | 12  | Unused                                               |
       | 13  | Excessive cabin altitude - warn                      |
@@ -665,7 +665,7 @@
     - Arinc429<Discrete>
     - Discrete Data word of the Fire Detection Unit (assumed)
     - | Bit |                      Description                     |
-                  |:---:|:----------------------------------------------------:|
+                                                      |:---:|:----------------------------------------------------:|
       | 11  | Fire detected ENG 1                                  |
       | 12  | Fire detected ENG 2                                  |
       | 13  | Fire detected ENG 3                                  |
@@ -773,7 +773,7 @@
     - Arinc429<Discrete>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |      Description A380X, if different     |
-                  |:---:|:----------------------------------------:|
+                                                      |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |
       | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
       | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
@@ -798,7 +798,7 @@
     - Number
     - Indicates the desired flap configuration index according to the table
     - Value | Meaning
-                        --- | ---
+                                                            --- | ---
         0 | Conf0
         1 | Conf1
         2 | Conf1F
@@ -863,11 +863,30 @@
 
 ## ECAM Control Panel ATA 31
 
+- A32NX_BTN_{button_name}
+    - Number
+    - Button state of the ECAM CP buttons
+        - 0: Not pressed, 1: Pressed
+    - {button_name}
+        - ALL
+        - ABNPROC
+        - CHECK_LH
+        - CHECK_RH
+        - CL
+        - CLR
+        - CLR2
+        - DOWN
+        - EMERCANC
+        - MORE
+        - RCL
+        - TOCONFIG
+        - UP
+
 - A380X_ECAM_CP_SELECTED_PAGE
     - Enum
-    - Currently requested page on the ECAM CP
+- Currently requested page on the ECAM CP
     - | State | Value |
-            |-------|-------|
+                  |-------|-------|
       | ENG   | 0     |
       | APU   | 1     |
       | BLEED | 2     |
@@ -881,7 +900,9 @@
       | HYD   | 10    |
       | F/CTL | 11    |
       | C/B   | 12    |
-      | VIDEO | 13    |
+      | CRZ   | 13    |    
+      | STS   | 14    |
+      | VIDEO | 15    |
 
 ## EFIS Control Panel ATA 31
 
@@ -905,7 +926,7 @@
     - Indicates which waypoint filter is selected
     - {side} = L or R
     - | State | Value |
-                  |-------|-------|
+                                                      |-------|-------|
       | WPT   | 1     |
       | VORD  | 2     |
       | NDB   | 3     |
@@ -915,7 +936,7 @@
     - Indicates which waypoint filter is selected
     - {side} = L or R
     - | State | Value |
-                  |-------|-------|
+                                                      |-------|-------|
       | WX    | 0     |
       | TERR  | 1     |
 
@@ -1016,7 +1037,7 @@
     - Number
     - Indicates position of the autobrake selection knob
     -   | State  | Number |
-                        |--------|--------|
+                                                                        |--------|--------|
         | DISARM | 0      |
         | BTV    | 1      |
         | LOW    | 2      |
@@ -1028,7 +1049,7 @@
     - Number
     - Indicates actual armed mode of autobrake system
     -   | State  | Number |
-                        |--------|--------|
+                                                                        |--------|--------|
         | DISARM | 0      |
         | BTV    | 1      |
         | LOW    | 2      |
@@ -1051,6 +1072,6 @@
     - Enum
     - Which seat the user/pilot occupies in the flight deck.
     - | Value | Description |
-                |-------|-------------|
+                                                    |-------|-------------|
       | 0     | Left Seat   |
       | 1     | Right Seat  |
