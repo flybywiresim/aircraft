@@ -24,7 +24,10 @@ enum ValveState {
 export class LegacyFuel implements Instrument {
   private static NUMBER_OF_TRIGGERS = 42;
   private static NUMBER_OF_JUNCTIONS = 13;
-  private static NUMBER_OF_VALVES: 60;
+  private static NUMBER_OF_VALVES = 60;
+
+  //these Valves are set to true in the FLT files so we dont want to set them to false
+  private static VALVES_TO_SKIP = [37, 40, 50, 51];
 
   private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents>();
 
@@ -156,9 +159,8 @@ export class LegacyFuel implements Instrument {
         }
       }
       // starts at 5 since 1-4 are the engine valves controlled by the engine masters
-      // valve 37, 40, 50, 51 should remain unchanged
       for (let index = 5; index <= LegacyFuel.NUMBER_OF_VALVES; index++) {
-        if (![37, 40, 50, 51].includes(index)) {
+        if (!LegacyFuel.VALVES_TO_SKIP.includes(index)) {
           this.setValve(index, ValveState.Closed);
         }
       }
