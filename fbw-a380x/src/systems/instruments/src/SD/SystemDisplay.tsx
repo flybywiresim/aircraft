@@ -68,7 +68,7 @@ export const SystemDisplay = () => {
 
   const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
 
-  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 100);
+  const [ecamAllButtonPushed] = useSimVar('L:A32NX_BTN_ALL', 'Bool', 100);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
   const [crzCondTimer, setCrzCondTimer] = useState(CRZ_CONDITION_TIMER_DURATION);
   const [ecamFCTLTimer, setEcamFCTLTimer] = useState(FCTL_CONDITION_TIMER_DURATION);

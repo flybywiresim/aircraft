@@ -445,6 +445,16 @@
             <SIMVAR>A32NX_BTN_MORE</SIMVAR>
         </UseTemplate>
 
+        <!-- ECAM ALL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>ALL</BASE_NAME>
+            <PART_ID>ECAM_ALL</PART_ID>
+            <TOOLTIPID>Cycle through ECAM pages</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_ALL</SIMVAR>
+        </UseTemplate>
+
         <!-- EWD POTENTIOMETER -->
         <UseTemplate Name="FBW_Stepless_Potentiometer">
             <NODE_ID>KNOB_EFIS_EWD</NODE_ID> <!-- TODO TYPO REPSOL -->
