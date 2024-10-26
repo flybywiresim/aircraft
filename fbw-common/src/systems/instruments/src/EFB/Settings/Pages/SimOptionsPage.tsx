@@ -3,7 +3,14 @@
 
 /* eslint-disable max-len */
 import React, { useContext, useState } from 'react';
+
+import { toast } from 'react-toastify';
+import { AircraftContext, SelectGroup, SelectItem, SimpleInput, t, Toggle, useAppSelector } from '@flybywiresim/flypad';
+import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+
+import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
 import {
+  AirframeType,
   DefaultPilotSeatConfig,
   PilotSeatConfig,
   usePersistentNumberProperty,
@@ -11,20 +18,10 @@ import {
   useSimVar,
 } from '@flybywiresim/fbw-sdk';
 
-import { toast } from 'react-toastify';
-import { t } from '../../Localization/translation';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-
-import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-
-import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
-import { AircraftContext } from '@flybywiresim/flypad';
-
 export const SimOptionsPage = () => {
   const aircraftContext = useContext(AircraftContext);
   const [showThrottleSettings, setShowThrottleSettings] = useState(false);
+  const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
   const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
@@ -57,6 +54,8 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Right'), setting: PilotSeatConfig.Right },
   ];
 
+  const isA380X = airframeInfo.variant === AirframeType.A380_842;
+
   return (
     <>
       {!showThrottleSettings && (
@@ -75,19 +74,22 @@ export const SimOptionsPage = () => {
             </SelectGroup>
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
-            <SelectGroup>
-              {fpSyncButtons.map((button) => (
-                <SelectItem
-                  key={button.setting}
-                  onSelect={() => setFpSync(button.setting)}
-                  selected={fpSync === button.setting}
-                >
-                  {button.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SettingItem>
+          {/* TODO: reactivate this when feature is available - deactivated in the A380X until feature is available */}
+          {!isA380X && (
+            <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
+              <SelectGroup>
+                {fpSyncButtons.map((button) => (
+                  <SelectItem
+                    key={button.setting}
+                    onSelect={() => setFpSync(button.setting)}
+                    selected={fpSync === button.setting}
+                  >
+                    {button.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
             <SelectGroup>
