@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
+/* eslint-disable max-len */
 import React, { useContext, useState } from 'react';
-
-import { toast } from 'react-toastify';
-import { AircraftContext, SelectGroup, SelectItem, SimpleInput, t, Toggle, useAppSelector } from '@flybywiresim/flypad';
-import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-
-import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
 import {
   AirframeType,
   DefaultPilotSeatConfig,
@@ -17,6 +12,17 @@ import {
   usePersistentProperty,
   useSimVar,
 } from '@flybywiresim/fbw-sdk';
+
+import { toast } from 'react-toastify';
+import { t } from '../../Localization/translation';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+
+import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+
+import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
+import { AircraftContext } from '@flybywiresim/flypad';
 
 export const SimOptionsPage = () => {
   const aircraftContext = useContext(AircraftContext);
