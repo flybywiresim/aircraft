@@ -14,28 +14,9 @@ import {
   SubscribableMapEventType,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
+import { SdPages } from '@shared/EcamSystemPages';
 import { FwsEwdAbnormalSensedEntry, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-
-enum SdPages {
-  None = -1,
-  Eng = 0,
-  Apu = 1,
-  Bleed = 2,
-  Cond = 3,
-  Press = 4,
-  Door = 5,
-  ElecAc = 6,
-  ElecDc = 7,
-  Fuel = 8,
-  Wheel = 9,
-  Hyd = 10,
-  Fctl = 11,
-  Cb = 12,
-  Crz = 13,
-  Status = 14,
-  Video = 15,
-}
 
 export interface EwdAbnormalItem {
   flightPhaseInhib: number[];

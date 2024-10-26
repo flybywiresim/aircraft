@@ -7,6 +7,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { DisplayUnitID, LegacyCdsDisplayUnit } from '@instruments/common/LegacyCdsDisplayUnit';
 
 // import { getSimVar } from '../util';
+import { SdPages } from '@shared/EcamSystemPages';
 import { EngPage } from './Pages/Engine/EngPage';
 import { BleedPage } from './Pages/Bleed/BleedPage';
 import { HydPage } from './Pages/Hyd/HydPage';
@@ -29,34 +30,6 @@ import { Mailbox } from './Mailbox';
 
 import '../index.scss';
 import { useArinc429Var, useUpdate } from '@flybywiresim/fbw-sdk';
-
-// Changing the order of the enum will break anything that relies on the numbers being the same
-// This includes:
-// - the external API: e.g. L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX
-// - the flight warning system code here: fbw-a380x/src/systems/systems-host/systems/FlightWarningSystem/FwsAbnormalSensed.ts
-// - the PAGES object below
-//
-// this could maybe be moved to a shared file
-
-enum SdPages {
-  None = -1,
-  Eng = 0,
-  Apu = 1,
-  Bleed = 2,
-  Cond = 3,
-  Press = 4,
-  Door = 5,
-  ElecAc = 6,
-  ElecDc = 7,
-  Fuel = 8,
-  Wheel = 9,
-  Hyd = 10,
-  Fctl = 11,
-  Cb = 12,
-  Crz = 13,
-  Status = 14,
-  Video = 15,
-}
 
 const CRZ_CONDITION_TIMER_DURATION = 60;
 const ENG_CONDITION_TIMER_DURATION = 10;
@@ -292,6 +265,7 @@ export const SystemDisplay = () => {
 
   useUpdate(updateCallback);
 
+  // make sure this is in line with the enum in EcamSystemPages.ts
   const PAGES = {
     0: <EngPage />,
     1: <ApuPage />,
