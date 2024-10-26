@@ -1,9 +1,20 @@
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { Position, CabinDoorProps } from '@instruments/common/types';
 import React from 'react';
 
-const CabinDoor: React.FC<Position & CabinDoorProps> = ({ x, y, doorNumber, side, mainOrUpper, engineRunning }) => {
-  const doorOpen = false;
-  const armed = true;
+const CabinDoor: React.FC<Position & CabinDoorProps> = ({
+  x,
+  y,
+  doorNumber,
+  interactivePoint,
+  side,
+  mainOrUpper,
+  engineRunning,
+  slideArmed,
+}) => {
+  const [openPercentage] = useSimVar(`INTERACTIVE POINT OPEN:${interactivePoint}`, 'percent', 1000);
+  const doorOpen = openPercentage > 20;
+  const armed = !doorOpen && slideArmed;
   const validSDAC = true;
 
   let slide = '';
@@ -54,7 +65,7 @@ const CabinDoor: React.FC<Position & CabinDoorProps> = ({ x, y, doorNumber, side
       <text x={3} y={21} className={`${doorNumberCss} F22`}>
         {!validSDAC ? 'X' : doorNumber}
       </text>
-      <text x={xpos} y={-5} className={`${!validSDAC ? 'White' : 'AmberFill'} F22`}>
+      <text x={xpos} y={12} className={`${!validSDAC ? 'White' : 'AmberFill'} F22`}>
         {cabinDoorMessage}
       </text>
       <text x={side === 'L' ? -6 : 23} y={38} className={`${slideCss} F30`}>
