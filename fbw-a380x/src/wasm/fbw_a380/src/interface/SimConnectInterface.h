@@ -258,6 +258,8 @@ class SimConnectInterface {
 
   SimData getSimData();
 
+  FuelSystemData getFuelSystemData();
+
   SimInput getSimInput();
 
   SimInputAutopilot getSimInputAutopilot();
@@ -395,6 +397,7 @@ class SimConnectInterface {
   bool loggingThrottlesEnabled = false;
 
   SimData simData = {};
+  FuelSystemData fuelSystemData = {};
   // change to non-static when aileron events can be processed via SimConnect
   static SimInput simInput;
   SimInputPitchTrim simInputPitchTrim = {};
