@@ -32,56 +32,56 @@
 #define LOG_CRITICAL(msg) logger->critical(msg)
 #define LOG_CRITICAL_BLOCK(block) block
 #else
-#define LOG_CRITICAL(msg) void(0)
-#define LOG_CRITICAL_BLOCK(block) void(0);
+#define LOG_CRITICAL(msg)
+#define LOG_CRITICAL_BLOCK(block) ;
 #endif
 
 #if LOG_LEVEL > CRITICAL_LVL
 #define LOG_ERROR(msg) logger->error(msg)
 #define LOG_ERROR_BLOCK(block) block
 #else
-#define LOG_ERROR(msg) void(0)
-#define LOG_ERROR_BLOCK(block) void(0);
+#define LOG_ERROR(msg)
+#define LOG_ERROR_BLOCK(block) ;
 #endif
 
 #if LOG_LEVEL > ERROR_LVL
 #define LOG_WARN(msg) logger->warn(msg)
 #define LOG_WARN_BLOCK(block) block
 #else
-#define LOG_WARN(msg) void(0)
-#define LOG_WARN_BLOCK(block) void(0);
+#define LOG_WARN(msg)
+#define LOG_WARN_BLOCK(block) ;
 #endif
 
 #if LOG_LEVEL > WARN_LVL
 #define LOG_INFO(msg) logger->info(msg)
 #define LOG_INFO_BLOCK(block) block
 #else
-#define LOG_INFO(msg) void(0)
-#define LOG_INFO_BLOCK(block) void(0);
+#define LOG_INFO(msg)
+#define LOG_INFO_BLOCK(block) ;
 #endif
 
 #if LOG_LEVEL > INFO_LVL
 #define LOG_DEBUG(msg) logger->debug(msg)
 #define LOG_DEBUG_BLOCK(block) block
 #else
-#define LOG_DEBUG(msg) void(0)
-#define LOG_DEBUG_BLOCK(block) void(0);
+#define LOG_DEBUG(msg)
+#define LOG_DEBUG_BLOCK(block) ;
 #endif
 
 #if LOG_LEVEL > DEBUG_LVL
 #define LOG_VERBOSE(msg) logger->verbose(msg)
 #define LOG_VERBOSE_BLOCK(block) block
 #else
-#define LOG_VERBOSE(msg) void(0)
-#define LOG_VERBOSE_BLOCK(block) void(0);
+#define LOG_VERBOSE(msg)
+#define LOG_VERBOSE_BLOCK(block) ;
 #endif
 
 #if LOG_LEVEL > VERBOSE_LVL
 #define LOG_TRACE(msg) logger->trace(msg)
 #define LOG_TRACE_BLOCK(block) block
 #else
-#define LOG_TRACE(msg) void(0)
-#define LOG_TRACE_BLOCK(block) void(0);
+#define LOG_TRACE(msg)
+#define LOG_TRACE_BLOCK(block) ;
 #endif
 
 /**
