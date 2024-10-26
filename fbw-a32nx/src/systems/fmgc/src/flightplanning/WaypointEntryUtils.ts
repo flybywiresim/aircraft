@@ -155,7 +155,7 @@ export class WaypointEntryUtils {
    * @param fms the FMS
    * @param {string} str place-bearing/place-bearing
    *
-   * @returns place and true bearing * 2
+   * @returns place and magnetic bearing
    */
   static async parsePbx(fms: DisplayInterface & DataInterface, str: string): Promise<[Fix, number, Fix, number]> {
     const pbx = str.match(/^([^\-/]+)-([0-9]{1,3})\/([^\-/]+)-([0-9]{1,3})$/);
@@ -172,11 +172,9 @@ export class WaypointEntryUtils {
     }
 
     const place1 = await WaypointEntryUtils.parsePlace(fms, pbx[1]);
-    const magVar1 = A32NX_Util.getRadialMagVar(place1);
     const place2 = await WaypointEntryUtils.parsePlace(fms, pbx[3]);
-    const magVar2 = A32NX_Util.getRadialMagVar(place2);
 
-    return [place1, A32NX_Util.magneticToTrue(brg1, magVar1), place2, A32NX_Util.magneticToTrue(brg2, magVar2)];
+    return [place1, brg1, place2, brg2];
   }
 
   /**
@@ -196,9 +194,8 @@ export class WaypointEntryUtils {
 
     if (WaypointEntryUtils.isPlaceFormat(place)) {
       const wp = await WaypointEntryUtils.parsePlace(fms, place);
-      const magVar = A32NX_Util.getRadialMagVar(wp);
 
-      return [wp, A32NX_Util.magneticToTrue(brg, magVar), dist];
+      return [wp, brg, dist];
     }
 
     throw new FmsError(FmsErrorType.FormatError);
