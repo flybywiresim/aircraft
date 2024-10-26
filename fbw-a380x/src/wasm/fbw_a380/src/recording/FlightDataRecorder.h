@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "../fac/Fac.h"
+#include "../interface/FuelSystemData.h"
 #include "../model/AutopilotLaws.h"
 #include "../model/AutopilotStateMachine.h"
 #include "../model/Autothrust.h"
@@ -29,7 +30,8 @@ class FlightDataRecorder {
               Fac facs[2],
               AutopilotStateMachine* autopilotStateMachine,
               AutopilotLawsModelClass* autopilotLaws,
-              Autothrust* autoThrust);
+              Autothrust* autoThrust,
+              FuelSystemData fuelSystemData);
 
   void terminate();
 

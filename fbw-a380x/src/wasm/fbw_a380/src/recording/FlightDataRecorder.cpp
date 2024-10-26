@@ -44,7 +44,8 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 Fac facs[2],
                                 AutopilotStateMachine* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
-                                Autothrust* autoThrust) {
+                                Autothrust* autoThrust,
+                                FuelSystemData fuelSystemData) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -82,6 +83,9 @@ void FlightDataRecorder::update(const BaseData& baseData,
 
   // write ATHR data
   fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
+
+  // write fuel system data
+  fileStream->write((char*)(&fuelSystemData), sizeof(fuelSystemData));
 }
 
 void FlightDataRecorder::writePrim(Prim& prim) {
