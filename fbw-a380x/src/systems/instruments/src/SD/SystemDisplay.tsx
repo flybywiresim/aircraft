@@ -147,19 +147,14 @@ export const SystemDisplay = () => {
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
       // button press
       setCurrentPage((prev) => {
-        console.log('Initial prev', prev);
         prev = page === SdPages.None ? SdPages.Eng : prev + 1;
-        console.log('After initial prev', prev);
         setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
         return prev % SdPages.Crz; // CRZ page should not be shown when pressing ALL button - return 0
       });
       setEcamCycleInterval(
         setInterval(() => {
           setCurrentPage((prev) => {
-            console.log('Before prev', prev);
             prev = Math.min(prev + 1, SdPages.Cb); // CRZ page should be last page so index should not exceed SdPages.Cb
-            console.log('After prev', prev);
-            console.log('');
             setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
             return prev;
           });
