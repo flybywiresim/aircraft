@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+// This file is used to define the enum for the SD pages to be shared between the different systems.
 // Changing the order of the enum will break anything that relies on the numbers being the same
 // This includes:
 // - the external API: e.g. L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX
