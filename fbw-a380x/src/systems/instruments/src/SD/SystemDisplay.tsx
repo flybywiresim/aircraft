@@ -30,6 +30,14 @@ import { Mailbox } from './Mailbox';
 import '../index.scss';
 import { useArinc429Var, useUpdate } from '@flybywiresim/fbw-sdk';
 
+// Changing the order of the enum will break anything that relies on the numbers being the same
+// This includes:
+// - the external API: e.g. L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX
+// - the flight warning system code here: fbw-a380x/src/systems/systems-host/systems/FlightWarningSystem/FwsAbnormalSensed.ts
+// - the PAGES object below
+//
+// this could maybe be moved to a shared file
+
 enum SdPages {
   None = -1,
   Eng = 0,
