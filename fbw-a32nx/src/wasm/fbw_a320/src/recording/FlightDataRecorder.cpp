@@ -44,8 +44,7 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 Fac facs[2],
                                 AutopilotStateMachine* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
-                                Autothrust* autoThrust,
-                                const EngineData& engineData) {
+                                Autothrust* autoThrust) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -79,9 +78,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
   fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
   fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
   fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
-
-  // write engine data
-  fileStream->write((char*)(&engineData), sizeof(engineData));
 }
 
 void FlightDataRecorder::writeElac(Elac& elac) {

@@ -151,7 +151,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update recording data
   result &= updateBaseData(calculatedSampleTime);
   result &= updateAircraftSpecificData(calculatedSampleTime);
-  result &= updateEngineData(calculatedSampleTime);
 
   // update spoilers
   result &= updateSpoilers(calculatedSampleTime);
@@ -162,8 +161,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   // do not further process when active pause is on
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
-    flightDataRecorder.update(baseData, aircraftSpecificData, elacs, secs, facs, &autopilotStateMachine, &autopilotLaws, &autoThrust,
-                              engineData);
+    flightDataRecorder.update(baseData, aircraftSpecificData, elacs, secs, facs, &autopilotStateMachine, &autopilotLaws, &autoThrust);
   }
 
   // if default AP is on -> disconnect it
@@ -449,42 +447,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idHydraulicGreenPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
   idHydraulicBluePressure = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
   idHydraulicYellowPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
-
-  engineEngine1N2 = std::make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
-  engineEngine2N2 = std::make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
-  engineEngine1N1 = std::make_unique<LocalVariable>("A32NX_ENGINE_N1:1");
-  engineEngine2N1 = std::make_unique<LocalVariable>("A32NX_ENGINE_N1:2");
-  engineEngineIdleN1 = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N1");
-  engineEngineIdleN2 = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N2");
-  engineEngineIdleFF = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_FF");
-  engineEngineIdleEGT = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_EGT");
-  engineEngine1EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
-  engineEngine2EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
-  engineEngine1Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_QTY:1");
-  engineEngine2Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_QTY:2");
-  engineEngine1OilTotal = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_TOTAL:1");
-  engineEngine2OilTotal = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_TOTAL:2");
-  engineEngine1VibN1 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N1:1");
-  engineEngine2VibN1 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N1:2");
-  engineEngine1VibN2 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N2:1");
-  engineEngine2VibN2 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N2:2");
-  engineEngine1FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
-  engineEngine2FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:2");
-  engineEngine1PreFF = std::make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:1");
-  engineEngine2PreFF = std::make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:2");
-  engineEngineImbalance = std::make_unique<LocalVariable>("A32NX_ENGINE_IMBALANCE");
-  engineFuelUsedLeft = std::make_unique<LocalVariable>("A32NX_FUEL_USED:1");
-  engineFuelUsedRight = std::make_unique<LocalVariable>("A32NX_FUEL_USED:2");
-  engineFuelLeftPre = std::make_unique<LocalVariable>("A32NX_FUEL_LEFT_PRE");
-  engineFuelRightPre = std::make_unique<LocalVariable>("A32NX_FUEL_RIGHT_PRE");
-  engineFuelAuxLeftPre = std::make_unique<LocalVariable>("A32NX_FUEL_AUX_LEFT_PRE");
-  engineFuelAuxRightPre = std::make_unique<LocalVariable>("A32NX_FUEL_AUX_RIGHT_PRE");
-  engineFuelCenterPre = std::make_unique<LocalVariable>("A32NX_FUEL_CENTER_PRE");
-  engineEngineCycleTime = std::make_unique<LocalVariable>("A32NX_ENGINE_CYCLE_TIME");
-  engineEngine1State = std::make_unique<LocalVariable>("A32NX_ENGINE_STATE:1");
-  engineEngine2State = std::make_unique<LocalVariable>("A32NX_ENGINE_STATE:2");
-  engineEngine1Timer = std::make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
-  engineEngine2Timer = std::make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
 
   flapsHandleIndexFlapConf = std::make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
   flapsPosition = std::make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
@@ -1140,68 +1102,6 @@ bool FlyByWireInterface::updateAircraftSpecificData(double sampleTime) {
       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
   aircraftSpecificData.aircraft_settings_is_realistic_tiller_enabled = idRealisticTillerEnabled->get() == 1;
   aircraftSpecificData.aircraft_settings_any_failures_active = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
-
-  return true;
-}
-
-bool FlyByWireInterface::updateEngineData(double sampleTime) {
-  auto simData = simConnectInterface.getSimData();
-  engineData.generalEngineElapsedTime_1 = simData.generalEngineElapsedTime_1;
-  engineData.generalEngineElapsedTime_2 = simData.generalEngineElapsedTime_2;
-  engineData.standardAtmTemperature = simData.standardAtmTemperature;
-  engineData.turbineEngineCorrectedFuelFlow_1 = simData.turbineEngineCorrectedFuelFlow_1;
-  engineData.turbineEngineCorrectedFuelFlow_2 = simData.turbineEngineCorrectedFuelFlow_2;
-  engineData.fuelTankCapacityAuxLeft = simData.fuelTankCapacityAuxLeft;
-  engineData.fuelTankCapacityAuxRight = simData.fuelTankCapacityAuxRight;
-  engineData.fuelTankCapacityMainLeft = simData.fuelTankCapacityMainLeft;
-  engineData.fuelTankCapacityMainRight = simData.fuelTankCapacityMainRight;
-  engineData.fuelTankCapacityCenter = simData.fuelTankCapacityCenter;
-  engineData.fuelTankQuantityAuxLeft = simData.fuelTankQuantityAuxLeft;
-  engineData.fuelTankQuantityAuxRight = simData.fuelTankQuantityAuxRight;
-  engineData.fuelTankQuantityMainLeft = simData.fuelTankQuantityMainLeft;
-  engineData.fuelTankQuantityMainRight = simData.fuelTankQuantityMainRight;
-  engineData.fuelTankQuantityCenter = simData.fuelTankQuantityCenter;
-  engineData.fuelTankQuantityTotal = simData.fuelTankQuantityTotal;
-  engineData.fuelWeightPerGallon = simData.fuelWeightPerGallon;
-  engineData.engineEngine1N2 = engineEngine1N2->get();
-  engineData.engineEngine2N2 = engineEngine2N2->get();
-  engineData.engineEngine1N1 = engineEngine1N1->get();
-  engineData.engineEngine2N1 = engineEngine2N1->get();
-  engineData.engineEngineIdleN1 = engineEngineIdleN1->get();
-  engineData.engineEngineIdleN2 = engineEngineIdleN2->get();
-  engineData.engineEngineIdleFF = engineEngineIdleFF->get();
-  engineData.engineEngineIdleEGT = engineEngineIdleEGT->get();
-  engineData.engineEngine1EGT = engineEngine1EGT->get();
-  engineData.engineEngine2EGT = engineEngine2EGT->get();
-  engineData.engineEngine1Oil = engineEngine1Oil->get();
-  engineData.engineEngine2Oil = engineEngine2Oil->get();
-  engineData.engineEngine1OilTotal = engineEngine1OilTotal->get();
-  engineData.engineEngine2OilTotal = engineEngine2OilTotal->get();
-  engineData.engineEngine1VibN1 = engineEngine1VibN1->get();
-  engineData.engineEngine2VibN1 = engineEngine2VibN1->get();
-  engineData.engineEngine1VibN2 = engineEngine1VibN2->get();
-  engineData.engineEngine2VibN2 = engineEngine2VibN2->get();
-  engineData.engineEngineOilTemperature_1 = simData.engineEngineOilTemperature_1;
-  engineData.engineEngineOilTemperature_2 = simData.engineEngineOilTemperature_2;
-  engineData.engineEngineOilPressure_1 = simData.engineEngineOilPressure_1;
-  engineData.engineEngineOilPressure_2 = simData.engineEngineOilPressure_2;
-  engineData.engineEngine1FF = engineEngine1FF->get();
-  engineData.engineEngine2FF = engineEngine2FF->get();
-  engineData.engineEngine1PreFF = engineEngine1PreFF->get();
-  engineData.engineEngine2PreFF = engineEngine2PreFF->get();
-  engineData.engineEngineImbalance = engineEngineImbalance->get();
-  engineData.engineFuelUsedLeft = engineFuelUsedLeft->get();
-  engineData.engineFuelUsedRight = engineFuelUsedRight->get();
-  engineData.engineFuelLeftPre = engineFuelLeftPre->get();
-  engineData.engineFuelRightPre = engineFuelRightPre->get();
-  engineData.engineFuelAuxLeftPre = engineFuelAuxLeftPre->get();
-  engineData.engineFuelAuxRightPre = engineFuelAuxRightPre->get();
-  engineData.engineFuelCenterPre = engineFuelCenterPre->get();
-  engineData.engineEngineCycleTime = engineEngineCycleTime->get();
-  engineData.engineEngine1State = engineEngine1State->get();
-  engineData.engineEngine2State = engineEngine2State->get();
-  engineData.engineEngine1Timer = engineEngine1Timer->get();
-  engineData.engineEngine2Timer = engineEngine2Timer->get();
 
   return true;
 }

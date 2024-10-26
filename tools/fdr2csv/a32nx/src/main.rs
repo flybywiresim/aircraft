@@ -7,7 +7,7 @@ use headers::{
     ap_raw_output, ap_sm_output, athr_out, base_elac_analog_outputs, base_elac_discrete_outputs,
     base_elac_out_bus, base_fac_analog_outputs, base_fac_bus, base_fac_discrete_outputs,
     base_sec_analog_outputs, base_sec_discrete_outputs, base_sec_out_bus, AircraftSpecificData,
-    BaseData, EngineData,
+    BaseData,
 };
 use serde::Serialize;
 use std::{
@@ -70,7 +70,6 @@ struct FdrData {
     ap_sm: ap_sm_output,
     ap_law: ap_raw_output,
     athr: athr_out,
-    engine_data: EngineData,
 }
 
 #[derive(Serialize, Default)]
@@ -105,7 +104,6 @@ fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
         ap_sm: read_bytes::<ap_sm_output>(reader)?,
         ap_law: read_bytes::<ap_raw_output>(reader)?,
         athr: read_bytes::<athr_out>(reader)?,
-        engine_data: read_bytes::<EngineData>(reader)?,
     })
 }
 

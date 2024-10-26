@@ -30,8 +30,7 @@ class FlightDataRecorder {
               Fac facs[2],
               AutopilotStateMachine* autopilotStateMachine,
               AutopilotLawsModelClass* autopilotLaws,
-              Autothrust* autoThrust,
-              const EngineData& engineData);
+              Autothrust* autoThrust);
 
   void terminate();
 
