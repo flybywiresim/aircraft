@@ -440,7 +440,7 @@ export const QuickControlsPane = ({
                                                     hover:border-4 hover:border-theme-highlight ${usingCabinAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
                 style={{ width: '80px', height: '50px' }}
               >
-                <BrightnessHigh size={24} />
+                <LightbulbFill size={24} />
               </button>
             </TooltipWrapper>
           </div>

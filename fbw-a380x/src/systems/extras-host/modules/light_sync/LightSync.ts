@@ -105,45 +105,44 @@ export class LightSync implements Instrument {
       const fmgcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
       const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
-      // TODO: Change the potentiometer to be correct for the cabin lighting
       if (timeOfDay !== TimeOfDayState.Day) {
         switch (fmgcFlightPhase) {
           case FmgcFlightPhase.Preflight:
-            this.setPotentiometer(7, fwcFlightPhase >= FwcFlightPhase.FirstEngineStarted ? 0 : 85);
+            this.setPotentiometer(8, fwcFlightPhase >= FwcFlightPhase.FirstEngineStarted ? 1 : 85);
             SimVar.SetSimVarValue(
               'L:A32NX_CABIN_AUTOBRIGHTNESS',
               'number',
-              fwcFlightPhase >= FwcFlightPhase.FirstEngineStarted ? 0 : 85,
+              fwcFlightPhase >= FwcFlightPhase.FirstEngineStarted ? 1 : 85,
             );
             break;
           case FmgcFlightPhase.Takeoff:
           case FmgcFlightPhase.Approach:
           case FmgcFlightPhase.GoAround:
-            this.setPotentiometer(7, 0);
-            SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 0);
+            this.setPotentiometer(8, 0);
+            SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 1);
             break;
 
           case FmgcFlightPhase.Climb:
           case FmgcFlightPhase.Descent:
-            this.setPotentiometer(7, 35);
-            SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 35);
+            this.setPotentiometer(8, 35);
+            SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 5);
             break;
           case FmgcFlightPhase.Cruise:
-            this.setPotentiometer(7, 10);
-            SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 10);
+            this.setPotentiometer(8, 10);
+            SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 2);
             break;
           case FmgcFlightPhase.Done:
-            this.setPotentiometer(7, 85);
+            this.setPotentiometer(8, 85);
             SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 85);
             break;
         }
       } else {
-        this.setPotentiometer(7, autoBrightness);
+        this.setPotentiometer(8, autoBrightness);
         SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', autoBrightness);
       }
     } else {
       const manualBrightness = SimVar.GetSimVarValue('L:A32NX_CABIN_MANUAL_BRIGHTNESS', 'number');
-      this.setPotentiometer(7, manualBrightness);
+      this.setPotentiometer(8, manualBrightness);
     }
   }
 
