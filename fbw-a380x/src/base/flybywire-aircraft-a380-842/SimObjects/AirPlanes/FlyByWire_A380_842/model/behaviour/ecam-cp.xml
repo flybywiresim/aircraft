@@ -40,9 +40,9 @@
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <LEFT_SINGLE_CODE>
                 (#STATE_SIMVAR#) #STATE_ID# != if{
-                #STATE_ID# (&gt;#STATE_SIMVAR#)
+                    #STATE_ID# (&gt;#STATE_SIMVAR#)
                 } els{
-                -1 (&gt;#STATE_SIMVAR#)
+                    -1 (&gt;#STATE_SIMVAR#)
                 }
                 (&gt;H:A32NX_SD_PAGE_CHANGED)
             </LEFT_SINGLE_CODE>
