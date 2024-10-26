@@ -39,8 +39,8 @@ jobs:
       - name: Create .env file
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
-          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a32nx/.env
-          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a32nx/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a32nx/.env
