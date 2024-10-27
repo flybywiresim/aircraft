@@ -21,6 +21,7 @@ It's recommended to set gitbash as your default shell in vscode
 ```shell
 git clone https://github.com/flybywiresim/aircraft.git
 cd aircraft
+git submodule update --init
 .\scripts\dev-env\run.cmd ./scripts/setup.sh
 ```
 

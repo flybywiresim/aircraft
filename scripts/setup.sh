@@ -19,12 +19,6 @@ for arg in "$@"; do
     rm -rf node_modules/
   fi
 done
-
-if [ "${GITHUB_ACTIONS}" == "true" ]; then :;
-  else
-  git submodule init
-  git submodule update
-fi
 pnpm i
 
 # restore ownership (when run as github action)
