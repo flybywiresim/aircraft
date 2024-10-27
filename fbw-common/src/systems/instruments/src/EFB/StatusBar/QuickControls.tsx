@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import React, { FC, forwardRef, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
   BrightnessHigh,
   BrightnessHighFill,
@@ -33,6 +33,7 @@ import { t } from '../Localization/translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
 import { PiAirplaneLandingFill } from 'react-icons/pi';
+import { AircraftContext } from '@flybywiresim/flypad';
 
 interface QuickSettingsButtonProps {
   onClick: () => void;
@@ -45,8 +46,8 @@ const QuickSettingsButton: FC<QuickSettingsButtonProps> = forwardRef<HTMLButtonE
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`size-12 flex items-center justify-center rounded-full bg-theme-body
-                    text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
+      className={`flex h-12 w-12 items-center justify-center rounded-full
+                    bg-theme-body text-theme-text transition duration-100 hover:border-4 hover:border-theme-highlight
                     ${className ?? ''}`}
       {...rest}
     >
@@ -168,6 +169,7 @@ export const QuickControlsPane = ({
 }: {
   setShowQuickControlsPane: (value: boolean) => void;
 }) => {
+  const aircraftContext = useContext(AircraftContext);
   const history = useHistory();
   const power = usePower();
 
@@ -421,16 +423,18 @@ export const QuickControlsPane = ({
         </div>
         {/* Second Row */}
         <div className="flex flex-row items-center justify-between">
-          <TooltipWrapper text={t('QuickControls.TT.PauseAtTod')}>
-            <LargeQuickSettingsToggle
-              onClick={handleTogglePauseAtTod}
-              icon={<PiAirplaneLandingFill size={42} />}
-              className={pauseAtTodStyle}
-            >
-              {t('QuickControls.PauseAtTod')} <br />
-              {pauseAtTodString}
-            </LargeQuickSettingsToggle>
-          </TooltipWrapper>
+          {aircraftContext.settingsPages.realism.pauseOnTod && (
+            <TooltipWrapper text={t('QuickControls.TT.PauseAtTod')}>
+              <LargeQuickSettingsToggle
+                onClick={handleTogglePauseAtTod}
+                icon={<PiAirplaneLandingFill size={42} />}
+                className={pauseAtTodStyle}
+              >
+                {t('QuickControls.PauseAtTod')} <br />
+                {pauseAtTodString}
+              </LargeQuickSettingsToggle>
+            </TooltipWrapper>
+          )}
           <TooltipWrapper text={t('QuickControls.TT.Simrate')}>
             <LargeQuickSettingsIncrementer
               onDownClick={decreaseSimrate}

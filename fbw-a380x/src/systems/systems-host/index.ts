@@ -14,11 +14,13 @@ import {
   ConsumerSubject,
   MappedSubject,
   SubscribableMapFunctions,
+  WeightBalanceSimvarPublisher,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
-import { LegacyFuelInit } from 'systems-host/systems/LegacyFuelInit';
+import { LegacyFuel } from 'systems-host/systems/LegacyFuel';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import { FailuresConsumer, PilotSeatPublisher, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
@@ -28,6 +30,7 @@ import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/pow
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -50,7 +53,7 @@ class SystemsHost extends BaseInstrument {
 
   private soundManager: LegacySoundManager;
 
-  private keyInterceptManager: KeyEventManager;
+  private keyEventManager: KeyEventManager;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
@@ -85,7 +88,14 @@ class SystemsHost extends BaseInstrument {
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
-  private readonly fwsCore = new FwsCore(this.bus, this);
+  private readonly weightAndBalancePublisher = new WeightBalanceSimvarPublisher(this.bus);
+
+  private readonly fuelssystemPublisher = new FuelSystemPublisher(this.bus);
+
+  private readonly fwsCore = new FwsCore(1, this.bus);
+
+  //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
+  private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
   /**
    * "mainmenu" = 0
@@ -107,24 +117,27 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
-    this.backplane.addInstrument('Fws', this.fwsCore);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
-    this.backplane.addInstrument('LegacyFuel', new LegacyFuelInit());
+    this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
+    this.backplane.addPublisher('FuelPublisher', this.fuelssystemPublisher);
+    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.fwc = new LegacyFwc();
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.soundManager);
     this.gpws.init();
+    this.fwsCore.init();
+
+    this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
     let lastUpdateTime: number;
-    // TODO this is really fast for the FWC...
     this.bus
       .getSubscriber<ClockEvents>()
-      .on('realTime')
-      .atFrequency(13.3)
+      .on('simTimeHiFreq')
+      .atFrequency(50)
       .handle((now) => {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
@@ -132,13 +145,14 @@ class SystemsHost extends BaseInstrument {
         this.fwc.update(dt);
         this.soundManager.update(dt);
         this.gpws.update(dt);
+        this.fwsCore.update(dt);
       });
 
     Promise.all([
       KeyEventManager.getManager(this.bus),
       Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
     ]).then(([keyEventManager]) => {
-      this.keyInterceptManager = keyEventManager;
+      this.keyEventManager = keyEventManager;
       this.initLighting();
     });
   }
@@ -233,7 +247,7 @@ class SystemsHost extends BaseInstrument {
   }
 
   private setPotentiometer(potentiometer: number, brightness: number) {
-    this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
+    this.keyEventManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
   }
 }
 

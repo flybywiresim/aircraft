@@ -1,0 +1,150 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_A380X_Components_Door">
+        <Component ID="ANIM_DOOR_#DOOR_ID#" Node="ANIM_DOOR_#DOOR_ID#_CLICK">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>ANIM_DOOR_#DOOR_ID#</ANIM_NAME>
+                <ANIM_LAG>20</ANIM_LAG>
+			    <ANIM_CODE>(A:INTERACTIVE POINT OPEN:#ID#, Percent)</ANIM_CODE>
+			</UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE, psi) 0.8 &lt; (A:INTERACTIVE POINT OPEN:#ID#, Percent) 0 &gt; || if{
+                        #TOGGLE_ID# (&gt;K:TOGGLE_AIRCRAFT_EXIT)
+                    }
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>A380X.TOOLTIPS.DOORS_OPEN_CLOSE</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+        <Component ID="ANIM_DOOR_#DOOR_ID#_ARMED" Node="PAX_DOOR_#DOOR_ID#_UNLOCK">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>ANIM_DOOR_#DOOR_ID#_ARMED</ANIM_NAME>
+                <ANIM_LAG>100</ANIM_LAG>
+			    <ANIM_CODE>(L:ANIM_DOOR_#DOOR_ID#_DISARMED) 100 *</ANIM_CODE>
+			</UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:ANIM_DOOR_#DOOR_ID#_DISARMED) ! (&gt;L:ANIM_DOOR_#DOOR_ID#_DISARMED)
+                </LEFT_SINGLE_CODE>
+                <TOOLTIPID>A380X.TOOLTIPS.DOORS_ARM_DISARM</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A380X_Components_DoorAnimations">
+        <!-- PAX DOOR M1L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M1L</DOOR_ID>
+            <ID>0</ID>
+            <TOGGLE_ID>1</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M2L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M2L</DOOR_ID>
+            <ID>2</ID>
+            <TOGGLE_ID>3</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M3L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M3L</DOOR_ID>
+            <ID>4</ID>
+            <TOGGLE_ID>5</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M4L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M4L</DOOR_ID>
+            <ID>6</ID>
+            <TOGGLE_ID>7</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M5L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M5L</DOOR_ID>
+            <ID>8</ID>
+            <TOGGLE_ID>9</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M1R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M1R</DOOR_ID>
+            <ID>1</ID>
+            <TOGGLE_ID>2</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M2R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M2R</DOOR_ID>
+            <ID>3</ID>
+            <TOGGLE_ID>4</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M3R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M3R</DOOR_ID>
+            <ID>5</ID>
+            <TOGGLE_ID>6</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M4R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M4R</DOOR_ID>
+            <ID>7</ID>
+            <TOGGLE_ID>8</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR M5R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>M5R</DOOR_ID>
+            <ID>9</ID>
+            <TOGGLE_ID>10</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- UPPER DOORS -->
+        <!-- PAX DOOR U1L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>U1L</DOOR_ID>
+            <ID>10</ID>
+            <TOGGLE_ID>11</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR U2L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>U2L</DOOR_ID>
+            <ID>12</ID>
+            <TOGGLE_ID>13</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR U3L -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>U3L</DOOR_ID>
+            <ID>14</ID>
+            <TOGGLE_ID>15</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR U1R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>U1R</DOOR_ID>
+            <ID>11</ID>
+            <TOGGLE_ID>12</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR U2R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>U2R</DOOR_ID>
+            <ID>13</ID>
+            <TOGGLE_ID>14</TOGGLE_ID>
+        </UseTemplate>
+
+        <!-- PAX DOOR U3R -->
+        <UseTemplate Name="FBW_A380X_Components_Door">
+            <DOOR_ID>U3R</DOOR_ID>
+            <ID>15</ID>
+            <TOGGLE_ID>16</TOGGLE_ID>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

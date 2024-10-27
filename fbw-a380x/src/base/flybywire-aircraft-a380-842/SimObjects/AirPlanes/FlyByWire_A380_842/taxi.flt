@@ -179,6 +179,7 @@ Valve.56=False
 Valve.57=False
 Valve.58=False
 Valve.59=False
+Valve.60=False
 Pump.1=True
 Pump.2=True
 Pump.3=True
@@ -203,6 +204,7 @@ Pump.21=False
 Junction.7=1
 Junction.8=1
 Junction.9=1
+Junction.10=1
 
 [Systems.0]
 BatterySwitch=True
@@ -449,7 +451,7 @@ XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV=10.5
 XMLVAR_SWITCH_OVHD_CABINPRESS_MANVSCTL=37.5
 XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position=1
 XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position=1
-XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position=1
+XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position=0
 A32NX_AUTOBRAKES_ARMED_MODE=0
 
 [Gauges.0]

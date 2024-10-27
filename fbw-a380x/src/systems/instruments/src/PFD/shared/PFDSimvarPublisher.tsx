@@ -63,6 +63,7 @@ export interface PFDSimvars {
   markerBeacon: number;
   isAltManaged: boolean;
   targetSpeedManaged: number;
+  shortTermManagedSpeed: number;
   mach: number;
   flapHandleIndex: number;
   groundTrack: number;
@@ -229,6 +230,7 @@ export enum PFDVars {
   markerBeacon = 'MARKER BEACON STATE',
   isAltManaged = 'L:A32NX_FCU_ALT_MANAGED',
   targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
+  shortTermManagedSpeed = 'L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD',
   mach = 'L:A32NX_ADIRS_ADR_1_MACH',
   flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
   groundTrack = 'L:A32NX_ADIRS_IR_1_TRACK',
@@ -338,7 +340,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['slatsFlapsStatusRaw', { name: PFDVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
     ['slatsPositionRaw', { name: PFDVars.slatsPositionRaw, type: SimVarValueType.Number }],
     ['flapsPositionRaw', { name: PFDVars.flapsPositionRaw, type: SimVarValueType.Number }],
-    ['coldDark', { name: PFDVars.coldDark, type: SimVarValueType.Number }],
     ['elec', { name: PFDVars.elec, type: SimVarValueType.Bool }],
     ['elecFo', { name: PFDVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: PFDVars.potentiometerCaptain, type: SimVarValueType.Number }],
@@ -396,6 +397,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
     ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
     ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
+    ['shortTermManagedSpeed', { name: PFDVars.shortTermManagedSpeed, type: SimVarValueType.Number }],
     ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
     ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
     ['groundTrack', { name: PFDVars.groundTrack, type: SimVarValueType.Number }],

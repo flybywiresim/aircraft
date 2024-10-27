@@ -1,0 +1,218 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "./definitions.scss";
+
+:root {
+  --bodyHeightScale: 1;
+}
+
+@keyframes TemporaryShow {
+  0%,
+  100% {
+    visibility: visible;
+  }
+}
+
+@keyframes TemporaryHide {
+  0%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
+
+#Electricity {
+  width: 100%;
+  height: 100%;
+  transform: scale(0.5) translate(-50%, -50%);
+}
+
+#Electricity[state="off"] {
+  display: none;
+}
+
+:root text.Common {
+  width: 100%;
+  height: 100%;
+}
+
+.Invisible {
+  visibility: hidden;
+}
+
+text.Label {
+  font-family: "Poppins-SemiBold";
+  font-size: 230px;
+  fill: $display-colour-inactive;
+}
+
+.Baro text.Label {
+  font-size: 210px;
+}
+
+text.Label.Visible {
+  fill: $display-colour;
+}
+
+// deprecated
+:root text.Active {
+  font-family: "Poppins-SemiBold";
+  font-size: 230px;
+  fill: $display-colour;
+}
+:root text.Active.BaroValue {
+  font-size: 210px;
+}
+
+// deprecated
+:root text.Inactive {
+  font-family: "Poppins-SemiBold";
+  font-size: 230px;
+  fill: $display-colour-inactive;
+}
+:root text.Inactive.BaroValue {
+  font-size: 210px;
+}
+
+:root text.Value {
+  font-family: Digital;
+  font-size:440px;
+  text-anchor: start;
+  fill: $display-colour;
+  letter-spacing: 0px;
+}
+
+:root .Baro text.Value {
+  font-size: 400px;
+}
+
+:root #PreSelBaroValue {
+  font-family: Digital;
+  text-anchor: end;
+  letter-spacing: 0px;
+}
+
+:root line {
+  stroke: $display-colour;
+  stroke-width: 5;
+}
+
+:root circle {
+  fill: $display-colour;
+}
+
+#FCU_CONTENT {
+  width: 100%;
+  height: 100%;
+  background-color: $display-colour-background;
+  font-family: "Poppins-SemiBold";
+  position: relative;
+  overflow: hidden;
+}
+
+#FCU_CONTENT #Mainframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: relative;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen {
+  width: 100%;
+  height: 16%;
+  display: block;
+  position: absolute;
+  background-color: $display-colour-background;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen #Speed {
+  width: 30%;
+  height: 100%;
+  left: 5%;
+  /*top: 100%;*/
+  position: absolute;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen #Heading {
+  width: 30%;
+  height: 100%;
+  left: 50%;
+  position: absolute;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen #Mode {
+  width: 20%;
+  height: 100%;
+  left: 80%;
+  position: absolute;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen #AltVS {
+  width: 40%;
+  height: 100%;
+  left: 120%;
+  position: absolute;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen #AltVS #Altitude {
+  width: 100%;
+  height: 100%;
+  left: 0%;
+  position: absolute;
+}
+
+#FCU_CONTENT #Mainframe #LargeScreen #AltVS #VerticalSpeed {
+  width: 100%;
+  height: 100%;
+  left: 95%;
+  position: absolute;
+}
+
+#FCU_CONTENT #Mainframe #SmallScreen {
+  width: 27%;
+  height: 17%;
+  display: block;
+  position: absolute;
+  top: 16%;
+  background-color: $display-colour-background;
+}
+
+#FCU_CONTENT #Mainframe #SmallScreen #Selected,
+#FCU_CONTENT #Mainframe #SmallScreen #Standard {
+  width: 100%;
+  height: 100%;
+  top: 0;
+}
+
+.NdData {
+  position: absolute;
+}
+
+.NdData.LeftSide {
+  top: 1750px;
+  left: 240px;
+}
+
+.NdData.RightSide {
+  top: 2900px;
+  left: 300px;
+}
+
+.NdData .TopRow {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.NdData .BottomRow {
+  position: absolute;
+  top: 550px;
+  left: 0;
+}

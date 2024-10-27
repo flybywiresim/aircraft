@@ -667,7 +667,7 @@ export const TakeoffWidget = () => {
   return (
     <div className="flex h-content-section-reduced flex-row justify-between space-x-10 overflow-hidden">
       <div className="w-full">
-        <div className="size-full flex flex-col justify-between">
+        <div className="flex h-full w-full flex-col justify-between">
           <div className="mb-4">
             <div className="mb-8 mt-4">
               <div className="mt-4 flex flex-row justify-end">
