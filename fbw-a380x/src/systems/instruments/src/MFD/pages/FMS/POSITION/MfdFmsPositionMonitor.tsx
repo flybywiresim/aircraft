@@ -63,7 +63,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
     const navigation = this.props.fmcService.master.navigation;
     const rnp = navigation.getRnp();
-    this.fmsEpu.set(navigation.getEpe() != Infinity ? navigation.getEpe().toFixed(1) : '--.-');
+    this.fmsEpu.set(navigation.getEpe() != Infinity ? navigation.getEpe().toFixed(2) : '--.-');
     this.fmsRnp.set(rnp);
     this.rnpEnteredByPilot.set(navigation.isRnpManual());
     this.fmPosition.set(
