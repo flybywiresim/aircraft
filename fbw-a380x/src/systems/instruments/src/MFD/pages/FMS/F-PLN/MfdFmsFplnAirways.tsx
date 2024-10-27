@@ -204,20 +204,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return true;
               }
 
-              const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(this.props.fromFix.ident);
-              if (fixes.length === 0) {
-                this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
-                return false;
-              }
-              let chosenFix = fixes[0];
-              if (fixes.length > 1) {
-                const dedup = await this.props.fmc.deduplicateFacilities(fixes);
-                if (dedup !== undefined) {
-                  chosenFix = dedup;
-                }
-              }
-
-              const airways = await NavigationDatabaseService.activeDatabase.searchAirway(v, chosenFix);
+              const airways = await NavigationDatabaseService.activeDatabase.searchAirway(v, this.props.fromFix);
               if (airways.length === 0) {
                 this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                 return false;
