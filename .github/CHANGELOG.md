@@ -7,6 +7,8 @@
 
 ## 0.13.0
 
+1. [GENERAL] Move Navigraph Auth to shared systems - @MicahBCode (Mischa Binder)
+
 ## 0.12.0
 
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
