@@ -8,17 +8,28 @@ import {
   Wait,
   WeightBalanceEvents,
 } from '@microsoft/msfs-sdk';
+
 import { FuelSystemEvents } from 'systems-host/systems/FuelSystemPublisher';
+enum ValveState {
+  Closed,
+  Open,
+}
 
 /**
  * This is needed to initialize the desired fuel L:Var on load to sync with the fuel quantity as per the fuel state management per ATC ID
  * This is a temporary solution until all fuel state related ops are contained in the same module.
+ *
+ * It also now deals with managing the MSFS fuelsystem
  */
 
 /* TODO: remove this file after proper FQMS is implemented in Rust */
 export class LegacyFuel implements Instrument {
   private static NUMBER_OF_TRIGGERS = 42;
   private static NUMBER_OF_JUNCTIONS = 13;
+  private static NUMBER_OF_VALVES = 60;
+
+  /** These Valves are set to true in the FLT files so we dont want to set them to false.*/
+  private static VALVES_TO_SKIP = [37, 40, 50, 51];
 
   private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents>();
 
@@ -136,22 +147,32 @@ export class LegacyFuel implements Instrument {
     const dt = this.sysHost.deltaTime;
     const totalDtSinceLastUpdate = this.throttler.canUpdate(dt);
 
-    if (!this.hasInit || totalDtSinceLastUpdate <= 0) {
+    if (!this.hasInit) {
       return;
     }
 
     const onGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
-    if (this.refuelStarted.get()) {
+    if (!this.refuelInProgress && this.refuelStarted.get()) {
       this.refuelInProgress = true;
+      console.log('refuel start detected');
+
       for (let index = 1; index <= LegacyFuel.NUMBER_OF_TRIGGERS; index++) {
         if (this.triggerStates.get(index).get()) {
           this.keyEventManager.triggerKey('FUELSYSTEM_TRIGGER_OFF', true, index);
         }
       }
-    } else if (this.refuelInProgress) {
+      // starts at 5 since 1-4 are the engine valves controlled by the engine masters
+      for (let index = 5; index <= LegacyFuel.NUMBER_OF_VALVES; index++) {
+        if (!LegacyFuel.VALVES_TO_SKIP.includes(index)) {
+          console.log(`closed valve ${index}`);
+          this.setValve(index, ValveState.Closed);
+        }
+      }
+    } else if (this.refuelInProgress && !this.refuelStarted.get()) {
+      console.log('refuel end detected');
       this.refuelInProgress = false;
       this.checkEmptyTriggers();
-    } else if (!onGround) {
+    } else if (!onGround && totalDtSinceLastUpdate > 0) {
       this.checkEmptyTriggers();
 
       const cgTargetStart = this.calculateCGTarget(this.aircraftWeightInLBS.get() / 1000);
@@ -415,6 +436,10 @@ export class LegacyFuel implements Instrument {
     if (this.junctionSettings.get(index).get() !== option && this.keyEventManager) {
       this.keyEventManager.triggerKey('FUELSYSTEM_JUNCTION_SET', true, index, option);
     }
+  }
+
+  private setValve(index: number, state: ValveState): void {
+    this.keyEventManager.triggerKey('FUELSYSTEM_VALVE_SET', true, index, state);
   }
   /**
    * Calculates the CG Target based on aircraft total weight in kLBS
