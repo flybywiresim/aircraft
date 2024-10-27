@@ -1,4 +1,4 @@
-import { NavigraphKeys, NXDataStore } from 'index-no-react';
+import { NavigraphKeys, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { initializeApp, Scope } from 'navigraph/app';
 import { getAuth } from 'navigraph/auth';
 
