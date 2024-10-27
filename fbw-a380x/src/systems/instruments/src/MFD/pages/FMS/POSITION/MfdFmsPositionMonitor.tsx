@@ -1,4 +1,4 @@
-import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
 import { Arinc429Register, coordinateToString } from '@flybywiresim/fbw-sdk';
@@ -43,6 +43,19 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmPosition = Subject.create('');
 
+  public onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+    const sub = this.props.bus.getSubscriber<ClockEvents>();
+    this.subs.push(
+      sub
+        .on('realTime')
+        .atFrequency(1)
+        .handle((_t) => {
+          this.onNewData();
+        }),
+    );
+  }
+
   protected onNewData(): void {
     if (!this.props.fmcService.master) {
       return;
@@ -58,12 +71,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     );
 
     this.ir1LatitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_1_LATITUDE');
-    this.ir1LongitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_1_ONGITUDE');
+    this.ir1LongitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_1_LONGITUDE');
     this.ir1Position.set(
       this.computeIrPositionString(this.ir1LatitudeRegister, this.ir1LongitudeRegister, this.ir1Coordinates),
     );
     this.ir2LatitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_2_LATITUDE');
-    this.ir2LongitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_2_ONGITUDE');
+    this.ir2LongitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_2_LONGITUDE');
     this.ir2Position.set(
       this.computeIrPositionString(this.ir2LatitudeRegister, this.ir2LongitudeRegister, this.ir2Coordinates),
     );
