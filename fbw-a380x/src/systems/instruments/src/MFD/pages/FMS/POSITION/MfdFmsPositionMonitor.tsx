@@ -17,6 +17,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmsEpu = Subject.create('-.--');
 
+  private readonly fmsAccuracy = Subject.create('');
+
   private readonly ir1LatitudeRegister = Arinc429Register.empty();
 
   private readonly ir1LongitudeRegister = Arinc429Register.empty();
@@ -69,7 +71,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     this.fmPosition.set(
       coordinateToString(this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
     );
-
+    this.fmsAccuracy.set(navigation.isAcurracyHigh() ? 'HIGH' : 'LO');
     this.ir1LatitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_1_LATITUDE');
     this.ir1LongitudeRegister.setFromSimVar('L:A32NX_ADIRS_IR_1_LONGITUDE');
     this.ir1Position.set(
@@ -115,10 +117,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="pos-monitor-header">
             <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right">ACCURACY</span>
-              <span class="mfd-value">HIGH</span>
+              <span class="mfd-value">{this.fmsAccuracy}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right" style="width: 110px;">
+              <span class="mfd-label mfd-spacing-right" style="width: 100px;">
                 EPU
               </span>
               <span class="mfd-value">{this.fmsEpu}</span>
@@ -127,8 +129,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           </div>
           <div class="pos-monitor-header">
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">GPS</span>
-              <span class="mfd-value">PRIMARY</span>
+              <span class="mfd-value mfd-spacing-right">GPS PRIMARY</span>
             </div>
             <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right">RNP</span>
