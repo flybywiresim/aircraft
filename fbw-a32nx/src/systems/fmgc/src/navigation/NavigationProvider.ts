@@ -50,4 +50,12 @@ export interface NavigationProvider {
    * @param cdu The CDU to get navaids for, defaults to 1.
    */
   getSelectedNavaids(cdu?: 1 | 2): SelectedNavaid[];
+
+  getRnp(): number;
+
+  isAcurracyHigh(): boolean;
+
+  setRnp(rnp: number | null);
+
+  isRnpManual(): boolean;
 }

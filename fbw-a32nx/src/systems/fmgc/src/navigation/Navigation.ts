@@ -120,6 +120,25 @@ export class Navigation implements NavigationProvider {
     this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.bus, this.flightPlanService, this);
     this.navaidTuner = new NavaidTuner(this.bus, this, this.navaidSelectionManager, this.landingSystemSelectionManager);
   }
+  isRnpManual(): boolean {
+    return this.requiredPerformance.manualRnp;
+  }
+
+  isAcurracyHigh(): boolean {
+    return this.accuracyHigh;
+  }
+
+  getRnp(): number {
+    return this.requiredPerformance.activeRnp;
+  }
+
+  setRnp(rnp: number | null) {
+    if (rnp) {
+      this.requiredPerformance.setPilotRnp(rnp);
+    } else {
+      this.requiredPerformance.clearPilotRnp();
+    }
+  }
 
   init(): void {
     this.navaidTuner.init();

@@ -1,0 +1,11 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.pos-monitor-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-left: 85px;
+    padding-right: 85px;
+}
