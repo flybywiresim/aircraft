@@ -118,7 +118,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value">HIGH</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right" style="'width': 150px">
+              <span class="mfd-label mfd-spacing-right" style="width: 110px;">
                 EPU
               </span>
               <span class="mfd-value">{this.fmsEpu}</span>
