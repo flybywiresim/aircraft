@@ -234,6 +234,8 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AUTOPILOT SPEED SLOT INDEX", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:1", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:2", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:4", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "SIM ON GROUND", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG ELAPSED TIME:1", "SECONDS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG ELAPSED TIME:2", "SECONDS");
@@ -268,10 +270,17 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ASSISTANCE LANDING ENABLED", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI AUTOTRIM ACTIVE", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI CONTROLS", "BOOL");
+  // FIX ME: MSFS DO NOT UPDATE INDEXES 3 AND 4 SPEEDS, for now we just copy speeds from wing bogeys
+  // For now it's replaced by LVARS A32NX_WHEEL_RPM_X
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:1", "RPM");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:2", "RPM");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:3", "RPM");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:4", "RPM");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:1", "RPM");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "WHEEL RPM:2", "RPM");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:1", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:3", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:4", "PERCENT");
 
   return result;
 }
@@ -653,6 +662,24 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOTHRUST_A380", ClientData::AUTOTHRUST_A380);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOTHRUST_A380, sizeof(ClientDataAutothrustA380),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+
+  // add data definitions
+  for (int i = 0; i < 6; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST_A380, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
+
+  // request data to be updated when set
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST_A380, ClientData::AUTOTHRUST_A380, ClientData::AUTOTHRUST_A380,
+                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_DISCRETE_INPUT", ClientData::PRIM_DISCRETE_INPUTS);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, sizeof(base_prim_discrete_inputs),
@@ -682,7 +709,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_OUTPUTS, sizeof(base_prim_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 18; i++) {
+  for (int i = 0; i < 19; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -1309,6 +1336,10 @@ ClientDataAutothrust SimConnectInterface::getClientDataAutothrust() {
   return clientDataAutothrust;
 }
 
+ClientDataAutothrustA380 SimConnectInterface::getClientDataAutothrustA380() {
+  return clientDataAutothrustA380;
+}
+
 ClientDataFlyByWire SimConnectInterface::getClientDataFlyByWire() {
   return clientDataFlyByWire;
 }
@@ -1877,6 +1908,9 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       if (static_cast<long>(data0) == 1) {
         simInputAutopilot.AP_disconnect = 1;
         std::cout << "WASM: event triggered: AUTOPILOT_DISENGAGE_SET" << std::endl;
+
+        // Re emitting masked event for autopilot disconnection
+        execute_calculator_code("(>K:A32NX.AUTOPILOT_DISENGAGE)", nullptr, nullptr, nullptr);
       }
       break;
     }
@@ -3064,6 +3098,11 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::AUTOTHRUST:
       // store aircraft data
       clientDataAutothrust = *((ClientDataAutothrust*)&data->dwData);
+      return;
+
+    case ClientData::AUTOTHRUST_A380:
+      // store aircraft data
+      clientDataAutothrustA380 = *((ClientDataAutothrustA380*)&data->dwData);
       return;
 
     case ClientData::PRIM_DISCRETE_OUTPUTS:

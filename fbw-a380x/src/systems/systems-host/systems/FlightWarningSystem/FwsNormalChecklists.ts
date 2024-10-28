@@ -217,29 +217,29 @@ export class FwsNormalChecklists {
     this.selectFirst();
   }
 
-  onUpdate() {
-    if (this.fws.clTriggerRisingEdge) {
+  update() {
+    if (this.fws.clPulseNode.read()) {
       if (!this.fws.abnormalSensed.showAbnormalSensed.get()) {
         this.navigateToChecklist(0);
         this.showChecklist.set(!this.showChecklist.get());
       }
     }
 
-    if (this.fws.clDownTriggerRisingEdge) {
+    if (this.fws.clDownPulseNode.read()) {
       if (!this.showChecklist.get()) {
         return;
       }
       this.moveDown();
     }
 
-    if (this.fws.clUpTriggerRisingEdge) {
+    if (this.fws.clUpPulseNode.read()) {
       if (!this.showChecklist.get()) {
         return;
       }
       this.moveUp();
     }
 
-    if (this.fws.clCheckTriggerRisingEdge) {
+    if (this.fws.clCheckPulseNode.read()) {
       if (!this.showChecklist.get()) {
         return;
       }

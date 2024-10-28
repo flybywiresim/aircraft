@@ -109,29 +109,31 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
 
   private maxValue = maxCertifiedAlt;
 
-  private transAlt: number = 18_000;
+  private transAlt: number | null = null;
 
   reFormatTrigger = Subject.create(false);
 
   constructor(
-    transAlt: Subscribable<number> = Subject.create(18_000),
+    transAlt: Subscribable<number | null> | null = null,
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
     minValue.sub((val) => (this.minValue = val), true);
     maxValue.sub((val) => (this.maxValue = val), true);
 
-    transAlt.sub((val) => {
-      this.transAlt = val;
-      this.reFormatTrigger.notify();
-    });
+    if (transAlt !== null) {
+      transAlt.sub((val) => {
+        this.transAlt = val;
+        this.reFormatTrigger.notify();
+      });
+    }
   }
 
   public format(value: number) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     }
-    if (value >= this.transAlt) {
+    if (this.transAlt !== null && value >= this.transAlt) {
       return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
@@ -780,14 +782,14 @@ export class AirportFormat implements DataEntryFormat<string> {
   public maxDigits = 4;
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -801,14 +803,14 @@ export class NavaidIdentFormat implements DataEntryFormat<string> {
   constructor(public placeholder = '----') {}
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -822,14 +824,14 @@ export class AirwayFormat implements DataEntryFormat<string> {
   public maxDigits = 5;
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -855,7 +857,7 @@ export class DropdownFieldFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -876,7 +878,7 @@ export class WaypointFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -897,7 +899,7 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 

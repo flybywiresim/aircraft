@@ -58,12 +58,12 @@ pub trait CargoPayload {
 
 #[derive(Debug)]
 pub struct BoardingAgent<const P: usize> {
-    door_id: VariableIdentifier,
+    door_id: Option<VariableIdentifier>,
     door_open_ratio: Ratio,
     order: [usize; P],
 }
 impl<const P: usize> BoardingAgent<P> {
-    pub fn new(door_id: VariableIdentifier, order: [usize; P]) -> Self {
+    pub fn new(door_id: Option<VariableIdentifier>, order: [usize; P]) -> Self {
         BoardingAgent {
             door_id,
             order,
@@ -105,19 +105,28 @@ impl<const P: usize> BoardingAgent<P> {
 }
 impl<const P: usize> SimulationElement for BoardingAgent<P> {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.door_open_ratio = reader.read(&self.door_id);
+        self.door_open_ratio = self
+            .door_id
+            .map(|door_id| reader.read(&door_id))
+            .unwrap_or_default();
     }
 }
 
 #[derive(Debug)]
 pub struct PassengerDeck<const N: usize, const G: usize> {
     pax: [Pax; N],
+    default_boarding_agent: BoardingAgent<N>,
     boarding_agents: [BoardingAgent<N>; G],
 }
 impl<const N: usize, const G: usize> PassengerDeck<N, G> {
-    pub fn new(pax: [Pax; N], boarding_agents: [BoardingAgent<N>; G]) -> Self {
+    pub fn new(
+        pax: [Pax; N],
+        default_boarding_agent: BoardingAgent<N>,
+        boarding_agents: [BoardingAgent<N>; G],
+    ) -> Self {
         PassengerDeck {
             pax,
+            default_boarding_agent,
             boarding_agents,
         }
     }
@@ -191,8 +200,7 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
                 boarding_agent.handle_one_pax(&mut self.pax);
             }
         } else {
-            // assume first agent as default
-            self.boarding_agents[0].force_one_pax(&mut self.pax);
+            self.default_boarding_agent.force_one_pax(&mut self.pax);
         }
     }
 
@@ -219,7 +227,8 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
                     boarding_agent.handle_one_pax(&mut self.pax);
                 }
             } else {
-                self.boarding_agents[0].force_num_pax(pax_diff, &mut self.pax);
+                self.default_boarding_agent
+                    .force_num_pax(pax_diff, &mut self.pax);
             }
         }
     }
@@ -227,7 +236,8 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn deboard_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = self.total_pax_num() - pax_target;
         if pax_diff > 0 {
-            self.boarding_agents[0].force_num_pax(pax_diff, &mut self.pax);
+            self.default_boarding_agent
+                .force_num_pax(pax_diff, &mut self.pax);
         }
     }
 }

@@ -451,6 +451,7 @@
 }
 
 .mfd-context-menu {
+  font-family: "Ecam", monospace;
   background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
@@ -773,4 +774,12 @@
   font-family: "Ecam", monospace;
   text-align: center;
   margin-bottom: 2px;
+}
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
 }

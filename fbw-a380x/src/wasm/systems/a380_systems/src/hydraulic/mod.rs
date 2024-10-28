@@ -78,38 +78,66 @@ const AC_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentNamed
 struct A380TiltingGearsFactory {}
 impl A380TiltingGearsFactory {
     fn new_a380_body_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
-        let mut x_offset_meters = 2.85569;
-        let y_offset_meters = -5.04847;
-        let z_offset_meters = -0.235999;
+        let mut x_offset = Length::new::<meter>(2.85569);
+        let y_offset = Length::new::<meter>(-5.04847);
+        let z_offset = Length::new::<meter>(-0.235999);
+        let distance_offset_fwd_to_aft_wheel = Length::new::<meter>(3.5);
+        let low_to_up_height = Length::new::<meter>(0.280065);
 
         if is_left {
-            x_offset_meters *= -1.;
+            x_offset *= -1.;
         }
 
         TiltingGear::new(
             context,
-            Length::new::<meter>(0.280065),
+            low_to_up_height,
             if is_left { 1 } else { 2 },
-            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset.get::<meter>(),
+                y_offset.get::<meter>(),
+                z_offset.get::<meter>(),
+            ),
+            // Aft wheel as an offset aft, and height when aft wheel is down is same as fwd wheel down + down to up length
+            // Note this only works if bogey tilt axis is in the middle
+            Vector3::new(
+                x_offset.get::<meter>(),
+                (y_offset + low_to_up_height).get::<meter>(),
+                (z_offset - distance_offset_fwd_to_aft_wheel).get::<meter>(),
+            ),
             Angle::new::<degree>(9.89),
+            Length::new::<meter>(0.711),
         )
     }
 
     fn new_a380_wing_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
-        let mut x_offset_meters = 6.18848;
-        let y_offset_meters = -4.86875;
-        let z_offset_meters = 2.6551;
+        let mut x_offset = Length::new::<meter>(6.18848);
+        let y_offset = Length::new::<meter>(-4.86875);
+        let z_offset = Length::new::<meter>(2.6551);
+        let distance_offset_fwd_to_aft_wheel = Length::new::<meter>(2.0);
+        let low_to_up_height = Length::new::<meter>(0.134608);
 
         if is_left {
-            x_offset_meters *= -1.;
+            x_offset *= -1.;
         }
 
         TiltingGear::new(
             context,
-            Length::new::<meter>(0.134608),
+            low_to_up_height,
             if is_left { 3 } else { 4 },
-            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset.get::<meter>(),
+                y_offset.get::<meter>(),
+                z_offset.get::<meter>(),
+            ),
+            // Aft wheel as an offset aft, and height when aft wheel is down is same as fwd wheel down + down to up length
+            // Note this only works if bogey tilt axis is in the middle
+            Vector3::new(
+                x_offset.get::<meter>(),
+                (y_offset + low_to_up_height).get::<meter>(),
+                (z_offset - distance_offset_fwd_to_aft_wheel).get::<meter>(),
+            ),
             Angle::new::<degree>(9.),
+            Length::new::<meter>(0.711),
         )
     }
 
@@ -1228,11 +1256,17 @@ impl A380GearDoorFactory {
             GearWheel::NOSE => Self::a380_nose_gear_door_body(),
             GearWheel::LEFT => Self::a380_left_gear_door_body(),
             GearWheel::RIGHT => Self::a380_right_gear_door_body(),
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+            }
         };
         let gear_door_actuator = match wheel_id {
             GearWheel::NOSE => Self::a380_nose_gear_door_actuator(context, &gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a380_main_gear_door_actuator(context, &gear_door_body)
+            }
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
             }
         };
 
@@ -1452,6 +1486,10 @@ impl A380GearFactory {
             GearWheel::LEFT => Self::a380_left_gear_body(init_downlocked),
 
             GearWheel::RIGHT => Self::a380_right_gear_body(init_downlocked),
+
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+            }
         };
 
         let gear_actuator = match wheel_id {
@@ -1459,6 +1497,10 @@ impl A380GearFactory {
 
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a380_main_gear_actuator(context, &gear_body)
+            }
+
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
             }
         };
 
@@ -3076,8 +3118,7 @@ impl A380GearHydraulicController {
         lgciu1: &(impl LgciuWeightOnWheels + LandingGearHandle),
         lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        let speed_condition =
-            adirs.low_speed_warning_4_260kts(1) || adirs.low_speed_warning_4_260kts(3);
+        let speed_condition = adirs.low_speed_warning_4(1) || adirs.low_speed_warning_4(3);
 
         let on_ground_condition = lgciu1.left_and_right_gear_compressed(true)
             || lgciu2.left_and_right_gear_compressed(true);
@@ -4965,6 +5006,7 @@ impl AileronSystemHydraulicController {
     fn update(&mut self) {
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
+        self.filter_dual_control();
     }
 
     fn update_aileron_controllers_positions(&mut self) {
@@ -5045,6 +5087,36 @@ impl AileronSystemHydraulicController {
                 self.right_inboard_position_requests_from_fbw
                     [AileronActuatorPosition::Inward as usize],
             );
+    }
+
+    // FIXME  We don't allow dual control for now as this causes issues in actuator solver
+    // To remove if actuator solver can handle this case or flight control never request it by design
+    fn filter_dual_control(&mut self) {
+        for controller in &mut self.left_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
+
+        for controller in &mut self.right_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
     }
 
     /// Will drive mode from solenoid state
@@ -6178,6 +6250,17 @@ impl SimulationElement for AileronAssembly {
         writer.write(&self.position_in_id, self.positions[2]);
     }
 }
+impl Debug for AileronAssembly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nAILERON ASSEMBLY => \nAIL OUT {:?}\nAIL MID {:?}\nAIL IN {:?}",
+            self.hydraulic_assemblies[0],
+            self.hydraulic_assemblies[1],
+            self.hydraulic_assemblies[2],
+        )
+    }
+}
 
 struct ElevatorAssembly {
     hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
@@ -6803,19 +6886,19 @@ mod tests {
             }
         }
         impl AdirsDiscreteOutputs for A380TestAdirus {
-            fn low_speed_warning_1_104kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 104.
+            fn low_speed_warning_1(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 50.
             }
 
-            fn low_speed_warning_2_54kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 54.
+            fn low_speed_warning_2(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 260.
             }
 
-            fn low_speed_warning_3_159kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 159.
+            fn low_speed_warning_3(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 100.
             }
 
-            fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
+            fn low_speed_warning_4(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() < 260.
             }
         }
@@ -6965,7 +7048,7 @@ mod tests {
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: A380AutobrakePanel::new(context),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
-                    landing_gear: LandingGear::new(context),
+                    landing_gear: LandingGear::new(context, true),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
                         context,
                         ElectricalBusType::DirectCurrentEssential,
@@ -7830,6 +7913,9 @@ mod tests {
                     GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_RIGHT_POSITION"),
+                    GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                        panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+                    }
                 }
             }
 
@@ -7838,6 +7924,9 @@ mod tests {
                     GearWheel::NOSE => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_DOOR_RIGHT_POSITION"),
+                    GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                        panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+                    }
                 }
             }
 

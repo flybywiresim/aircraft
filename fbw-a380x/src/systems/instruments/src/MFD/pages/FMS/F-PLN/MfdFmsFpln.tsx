@@ -32,6 +32,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ConditionalComponent } from '../../common/ConditionalComponent';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -155,16 +156,20 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
     if (destPred && this.props.fmcService.master) {
-      const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-      const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
+      const date = new Date(this.predictionTimestamp(destPred.secondsFromPresent));
       this.destTimeLabel.set(
-        `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`,
+        `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
       );
-      this.destEfob.set(
-        this.props.fmcService.master.fmgc.getDestEFOB(true) > 0
-          ? this.props.fmcService.master.fmgc.getDestEFOB(true).toFixed(1)
-          : '--.-',
-      );
+
+      const destEfob =
+        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard;
+
+      if (destEfob) {
+        this.destEfob.set(Math.max(0, Units.poundToKilogram(destEfob) / 1_000).toFixed(1));
+      } else {
+        this.destEfob.set('--.-');
+      }
+
       this.destDistanceLabel.set(
         Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---',
       );
@@ -193,7 +198,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     // Construct leg data for all legs
     const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
 
-    if (!jointFlightPlan) {
+    if (!jointFlightPlan.length) {
       return;
     }
 
@@ -247,23 +252,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
 
     lastDistanceFromStart = 0;
-    const fmgcFlightPhase = this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight;
-
-    const predictionTimestamp = (seconds: number) => {
-      if (seconds === undefined) {
-        return 0;
-      }
-
-      if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
-        const eta = (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + seconds) * 1000;
-        return eta;
-      }
-      if (this.props.fmcService.master?.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
-        const eta = ((this.props.fmcService.master.fmgc.data.estimatedTakeoffTime.get() ?? 0) + seconds) * 1000;
-        return eta;
-      }
-      return seconds * 1000;
-    };
 
     for (let i = 0; i < jointFlightPlan.length; i++) {
       const leg = jointFlightPlan[i];
@@ -284,8 +272,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           ident: pwp.mcduIdent ?? pwp.ident,
           overfly: false,
           annotation: pwp.mcduHeader ?? '',
-          etaOrSecondsFromPresent: predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-          transitionAltitude: leg instanceof FlightPlanLeg ? leg.definition.transitionAltitude ?? 18000 : 18000,
+          etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
+          transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
           altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
           hasAltitudeConstraint: false, // TODO
           altitudeConstraint: null, // TODO
@@ -294,11 +282,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
           speedConstraint: null, // TODO
           speedConstraintIsRespected: true,
-          efobPrediction:
-            Units.poundToKilogram(
-              this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-                ?.estimatedFuelOnBoard ?? 0,
-            ) / 1000.0,
+          efobPrediction: Units.poundToKilogram(
+            this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+              ?.estimatedFuelOnBoard ?? 0,
+          ),
           windPrediction: this.derivedFplnLegData[i].windPrediction,
           trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
           distFromLastWpt: reduceDistanceBy,
@@ -309,10 +296,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       }
 
       if (leg instanceof FlightPlanLeg) {
-        const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude ?? 18_000;
-        const transLevelAsAlt = Number.isFinite(this.loadedFlightPlan.performanceData.transitionLevel)
-          ? (this.loadedFlightPlan.performanceData.transitionLevel ?? 18_000) * 100
-          : 18_000;
+        const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
+        const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
+        const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
         const useTransLevel =
           i >=
           this.loadedFlightPlan.originSegment.legCount +
@@ -354,7 +340,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           ident: leg.ident,
           overfly: leg.definition.overfly,
           annotation,
-          etaOrSecondsFromPresent: predictionTimestamp(pred?.secondsFromPresent ?? 0),
+          etaOrSecondsFromPresent: this.predictionTimestamp(pred?.secondsFromPresent ?? 0),
           transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
           altitudePrediction: pred?.altitude ?? null,
           hasAltitudeConstraint: leg.altitudeConstraint !== undefined,
@@ -364,7 +350,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           hasSpeedConstraint: leg.speedConstraint !== undefined,
           speedConstraint: leg.speedConstraint ?? null,
           speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
-          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) / 1000.0 : 0,
+          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
           windPrediction: this.derivedFplnLegData[i].windPrediction,
           trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
           distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
@@ -414,12 +400,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     // Delete all lines only if re-render is neccessary.
     if (!shouldOnlyUpdatePredictions && this.linesDivRef.getOrDefault()) {
-      this.renderedFplnLines.forEach((line) => {
-        line.instance.destroy();
-      });
       while (this.linesDivRef.instance.firstChild) {
         this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
       }
+      this.renderedFplnLines.forEach((line) => {
+        line.instance.destroy();
+      });
+
       this.renderedFplnLines = [];
     }
 
@@ -535,6 +522,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       }
     }
   }
+
+  private predictionTimestamp = (seconds: number) => {
+    if (seconds === undefined) {
+      return 0;
+    }
+
+    const fmgcFlightPhase = this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight;
+    if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
+      const eta = (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + seconds) * 1000;
+      return eta;
+    }
+    if (this.props.fmcService.master?.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
+      const eta = ((this.props.fmcService.master.fmgc.data.estimatedTakeoffTime.get() ?? 0) + seconds) * 1000;
+      return eta;
+    }
+    return seconds * 1000;
+  };
 
   private openRevisionsMenu(legIndex: number, altnFlightPlan: boolean) {
     if (!this.revisionsMenuOpened.get()) {
@@ -743,7 +747,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    this.update(this.loadedFlightPlan.activeLegIndex, false);
     this.checkScrollButtons();
     if (this.lineData) {
       const whichLineIndex = this.lineData.findIndex(
@@ -758,7 +761,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    this.update(this.loadedFlightPlan.activeLegIndex, false);
     this.checkScrollButtons();
     if (this.lineData) {
       const whichLineIndex =
@@ -920,12 +922,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             </div>
           </div>
           <div class="mfd-fms-fpln-footer">
-            <Button
-              label="INIT"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+            <ConditionalComponent
+              condition={this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight)}
+              width={125}
+              componentIfTrue={
+                <Button
+                  label="INIT"
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+                  }
+                  buttonStyle="width: 125px;"
+                />
               }
-              buttonStyle="width: 125px;"
+              componentIfFalse={<></>}
             />
             <Button
               disabled={Subject.create(true)}
@@ -1020,6 +1029,7 @@ enum FplnLineFlags {
 }
 
 enum FplnLineType {
+  None,
   Waypoint,
   Special,
   Hold,
@@ -1049,7 +1059,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   overfly: boolean;
   annotation: string;
   etaOrSecondsFromPresent: number; // timestamp, will be printed to HH:mm
-  transitionAltitude: number;
+  transitionAltitude: number | null;
   altitudePrediction: number | null;
   hasAltitudeConstraint: boolean;
   altitudeConstraint: AltitudeConstraint | null;
@@ -1058,6 +1068,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   hasSpeedConstraint: boolean;
   speedConstraint: SpeedConstraint | null;
   speedConstraintIsRespected: boolean;
+  /** in kilograms */
   efobPrediction: number;
   windPrediction: WindVector | null;
   trackFromLastWpt?: number | null;
@@ -1128,7 +1139,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
   private lineRef = FSComponent.createRef<HTMLDivElement>();
 
-  private currentlyRenderedType: FplnLineType = FplnLineType.Waypoint;
+  private currentlyRenderedType: FplnLineType = FplnLineType.None;
+
+  private currentlyRenderedLine: VNode | null = null;
 
   private annotationRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -1204,7 +1217,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     );
 
     this.identRef.getOrDefault()?.addEventListener('click', () => {
-      if (this.props.data.get()?.originalLegIndex !== null) {
+      if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
         this.props.openRevisionsMenuCallback();
         this.selectedForRevision.set(true);
       }
@@ -1225,7 +1238,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
         }
-        FSComponent.render(this.renderWaypointLine(), this.topRef.instance);
+        if (this.currentlyRenderedLine && this.currentlyRenderedLine.instance instanceof DisplayComponent) {
+          this.currentlyRenderedLine.instance.destroy();
+        }
+        this.currentlyRenderedLine = this.renderWaypointLine();
+        FSComponent.render(this.currentlyRenderedLine, this.topRef.instance);
         this.currentlyRenderedType = FplnLineType.Waypoint;
       }
 
@@ -1282,7 +1299,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
         }
-        FSComponent.render(this.renderSpecialLine(data), this.topRef.instance);
+        if (this.currentlyRenderedLine && this.currentlyRenderedLine.instance instanceof DisplayComponent) {
+          this.currentlyRenderedLine.instance.destroy();
+        }
+        this.currentlyRenderedLine = this.renderSpecialLine(data);
+        FSComponent.render(this.currentlyRenderedLine, this.topRef.instance);
         this.currentlyRenderedType = FplnLineType.Special;
       }
 
@@ -1293,7 +1314,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
         }
-        FSComponent.render(this.renderWaypointLine(), this.topRef.instance);
+        if (this.currentlyRenderedLine && this.currentlyRenderedLine.instance instanceof DisplayComponent) {
+          this.currentlyRenderedLine.instance.destroy();
+        }
+        this.currentlyRenderedLine = this.renderWaypointLine();
+        FSComponent.render(this.currentlyRenderedLine, this.topRef.instance);
         this.currentlyRenderedType = FplnLineType.Waypoint;
       }
 
@@ -1389,7 +1414,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     let altStr: VNode = <span>-----</span>;
     const previousRow = this.props.previousRow.get();
     if (data.altitudePrediction) {
-      const isBelowTransAlt = data.altitudePrediction < (data.transitionAltitude ?? 18_000);
+      const isBelowTransAlt =
+        data.transitionAltitude !== null ? data.altitudePrediction < data.transitionAltitude : true;
       if (
         previousRow &&
         isWaypoint(previousRow) &&
@@ -1425,7 +1451,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       );
     }
     if (data.hasAltitudeConstraint && data.altitudeConstraint?.altitude1 && !data.altitudePrediction) {
-      const isBelowTransAlt = data.altitudeConstraint.altitude1 < (data.transitionAltitude ?? 18_000);
+      const isBelowTransAlt =
+        data.transitionAltitude !== null ? data.altitudeConstraint.altitude1 < data.transitionAltitude : true;
       const altCstr = isBelowTransAlt
         ? data.altitudeConstraint.altitude1.toFixed(0)
         : `FL${Math.round(data.altitudeConstraint.altitude1 / 100).toString()}`;
@@ -1633,13 +1660,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     );
   }
 
-  renderSpecialLine(data: FplnLineSpecialDisplayData) {
+  renderSpecialLine(data: FplnLineSpecialDisplayData): VNode {
     const delimiter = data.label.length > 13 ? '- - - - -' : '- - - - - - ';
     return (
       <div
         ref={this.identRef}
         class="mfd-fms-fpln-line mfd-fms-fpln-line-special"
-        style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
+        style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'}`}
       >
         {delimiter}
         <span style="margin: 0px 15px 0px 15px;">{data.label}</span>
@@ -1652,17 +1679,22 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     const data = this.props.data.get();
     if (data && isWaypoint(data)) {
       this.currentlyRenderedType = FplnLineType.Waypoint;
-      return <div ref={this.topRef}>{this.renderWaypointLine()}</div>;
+      this.currentlyRenderedLine = this.renderWaypointLine();
     }
     if (data && isSpecial(data)) {
       this.currentlyRenderedType = FplnLineType.Special;
-      return <div ref={this.topRef}>{this.renderSpecialLine(data)}</div>;
+      this.currentlyRenderedLine = this.renderSpecialLine(data);
     }
     if (data && isHold(data)) {
       this.currentlyRenderedType = FplnLineType.Hold;
-      return <div ref={this.topRef}>{this.renderWaypointLine()}</div>;
+      this.currentlyRenderedLine = this.renderWaypointLine();
     }
-    return <></>;
+
+    if (this.currentlyRenderedLine) {
+      return <div ref={this.topRef}>{this.currentlyRenderedLine}</div>;
+    } else {
+      return <></>;
+    }
   }
 }
 

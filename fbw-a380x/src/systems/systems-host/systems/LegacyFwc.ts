@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 // TODO remove this once Rust implementation is up and running
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 
 enum FwcFlightPhase {
   ElecPwr = 1,
@@ -24,6 +24,8 @@ enum FwcFlightPhase {
  * be ported to the A380X, then this class can be removed.
  */
 export class LegacyFwc {
+  private updateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
+
   toConfigTest: boolean;
 
   flightPhase: FwcFlightPhase;
@@ -85,10 +87,6 @@ export class LegacyFwc {
   memoToInhibit_conf01: NXLogic_ConfirmNode;
 
   memoLdgInhibit_conf01: NXLogic_ConfirmNode;
-
-  warningPressed: boolean;
-
-  cautionPressed: boolean;
 
   previousTargetAltitude: number;
 
@@ -159,10 +157,6 @@ export class LegacyFwc {
     // ESDL 1. 0.320
     this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
 
-    // master warning & caution buttons
-    this.warningPressed = false;
-    this.cautionPressed = false;
-
     // altitude warning
     this.previousTargetAltitude = NaN;
     this._wasBellowThreshold = false;
@@ -172,10 +166,14 @@ export class LegacyFwc {
   }
 
   update(_deltaTime: number) {
-    this._updateFlightPhase(_deltaTime);
-    this._updateTakeoffMemo(_deltaTime);
-    this._updateLandingMemo(_deltaTime);
-    this._updateAltitudeWarning();
+    const throttledT = this.updateThrottler.canUpdate(_deltaTime);
+
+    if (throttledT > 0) {
+      this._updateFlightPhase(throttledT);
+      this._updateTakeoffMemo(throttledT);
+      this._updateLandingMemo(throttledT);
+      this._updateAltitudeWarning();
+    }
   }
 
   _updateFlightPhase(_deltaTime: number) {
@@ -349,20 +347,16 @@ export class LegacyFwc {
 
     // the mixed case => warn
     if (activePhases.length > 1) {
-      console.warn(`Multiple FWC flight phases are valid: ${activePhases.join(', ')}`);
       if (activePhases.indexOf(this.flightPhase) !== -1) {
         // if the currently active one is present, keep it
-        console.warn(`Remaining in FWC flight phase ${this.flightPhase}`);
         return;
       }
       // pick the earliest one
       this._setFlightPhase(activePhases[0]);
-      console.log(`Resolving by switching FWC flight phase: ${this.flightPhase} => ${activePhases[0]}`);
       return;
     }
 
     // otherwise, no flight phase is valid => warn
-    console.warn('No valid FWC flight phase');
     if (this.flightPhase === null) {
       this._setFlightPhase(null);
     }
@@ -458,7 +452,10 @@ export class LegacyFwc {
       SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
     }
 
-    if (this.warningPressed === true) {
+    const warningPressed =
+      !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
+      !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
+    if (warningPressed === true) {
       this._wasBellowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;

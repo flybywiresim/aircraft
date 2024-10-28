@@ -11,7 +11,7 @@ doc = false
 [dependencies]
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 a320_systems = { path = "../a320_systems" }
-uom = "0.33.0"
+uom = "0.36.0"
 rand = "0.8.0"
 ntest = "0.7.2"
 num-derive = "0.3.3"

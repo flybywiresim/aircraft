@@ -31,14 +31,17 @@ export interface BaseEwdSimvars {
   n1Idle: number;
   flex: number;
   athrTogaWarning: boolean;
-  packs1: boolean;
-  packs2: boolean;
+  cpiomB1AgsDiscreteRaw: number;
+  cpiomB2AgsDiscreteRaw: number;
+  cpiomB3AgsDiscreteRaw: number;
+  cpiomB4AgsDiscreteRaw: number;
   fwc_flight_phase: number;
   limitations_apprldg: number;
   limitations_all: number;
   memo_left: number;
   memo_right: number;
   abnormal_debug_line: number;
+  nose_gear_compressed: boolean;
 }
 
 type IndexedTopics =
@@ -55,7 +58,8 @@ type IndexedTopics =
   | 'limitations_apprldg'
   | 'limitations_all'
   | 'memo_left'
-  | 'memo_right';
+  | 'memo_right'
+  | 'nose_gear_compressed';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
@@ -96,8 +100,10 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['n1Idle', { name: 'L:A32NX_ENGINE_IDLE_N1', type: SimVarValueType.Number }],
       ['flex', { name: 'L:A32NX_AIRLINER_TO_FLEX_TEMP', type: SimVarValueType.Number }],
       ['athrTogaWarning', { name: 'L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', type: SimVarValueType.Bool }],
-      ['packs1', { name: 'L:A32NX_COND_PACK_1_IS_OPERATING', type: SimVarValueType.Bool }],
-      ['packs2', { name: 'L:A32NX_COND_PACK_2_IS_OPERATING', type: SimVarValueType.Bool }],
+      ['cpiomB1AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
+      ['cpiomB2AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
+      ['cpiomB3AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
+      ['cpiomB4AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
       ['fwc_flight_phase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Enum }],
       [
         'limitations_apprldg',
@@ -110,6 +116,10 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['abnormal_debug_line', { name: 'L:A32NX_EWD_DEBUG_ABNORMAL', type: SimVarValueType.Number }],
+      [
+        'nose_gear_compressed',
+        { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
+      ],
     ];
 
     super(new Map(simvars), bus, pacer);

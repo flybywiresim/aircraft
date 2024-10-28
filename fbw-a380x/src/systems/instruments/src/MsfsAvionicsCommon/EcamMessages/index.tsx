@@ -82,8 +82,6 @@ export const EcamMemos: { [n: string]: string } = {
   '242000002': '\x1b<3mRAT OUT',
   '243000001': '\x1b<3mREMOTE C/B CTL ON',
   '000023001': '\x1b<3mMAN LDG ELEV',
-  '000025001': '\x1b<3mFUEL X FEED',
-  '000025002': '\x1b<4mFUEL X FEED',
   '000029001': '\x1b<3mSWITCHG PNL',
   '000035001': '\x1b<2mLAND ASAP',
   '000036001': '\x1b<4mLAND ASAP',
@@ -108,6 +106,7 @@ export const EcamMemos: { [n: string]: string } = {
   '230000015': '\x1b<3mVHF VOICE',
   '271000001': '\x1b<3mGND SPLRs ARMED',
   '280000001': '\x1b<3mCROSSFEED OPEN',
+  '280000013': '\x1b<4mCROSSFEED OPEN',
   '280000002': '\x1b<3mCOLDFUEL OUTR TK XFR',
   '280000003': '\x1b<3mDEFUEL IN PROGRESS',
   '280000004': '\x1b<3mFWD XFR IN PROGRESS',
@@ -196,6 +195,9 @@ export const pfdMemoDisplay: string[] = [
 
 /** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {
+  210200001: '\x1b<3mCABIN TEMP REGUL DEGRADED',
+  210200002: '\x1b<3mFWD CRG VENT DEGRADED',
+  210200003: '\x1b<3mFWD CRG TEMP REGUL DEGRADED',
   220200001: '\x1b<3mFMS 1 ON FMC-C',
   220200002: '\x1b<3mFMS 2 ON FMC-C',
   220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
@@ -209,6 +211,8 @@ export const EcamInfos: { [n: string]: string } = {
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
+  320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
+  320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
   340200002: '\x1b<3mALTN LAW : PROT LOST',
   340200003: '\x1b<3mFLS LIMITED TO F-APP + RAW',
   340200004: '\x1b<3mDIRECT LAW : PROT LOST',
@@ -218,13 +222,16 @@ export const EcamInfos: { [n: string]: string } = {
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
   800200001: '\x1b<3mFMS PRED UNRELIABLE',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
-  800200003: '\x1b<5mTAXI WITH CARE',
+  800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
-  800200005: '\x1b<5mNO BRAKED PIVOT TURN',
+  800200005: '\x1b<3mNO BRAKED PIVOT TURN',
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
 export const EcamLimitations: { [n: string]: string } = {
+  1: '\x1b<2mLAND ASAP',
+  2: '\x1b<4mLAND ANSA',
+  210400001: '\x1b<5mMAX FL : 100/MEA-MORA',
   220400001: '\x1b<5mNO AUTOLAND',
   230400001: '\x1b<5mNO COM AVAIL',
   240400001: '\x1b<5mGA THR : TOGA ONLY',
@@ -248,7 +255,47 @@ export const EcamLimitations: { [n: string]: string } = {
 
 /** All possible INOP sys, with special formatting characters. */
 export const EcamInopSys: { [n: string]: string } = {
-  210300001: '\x1b<4mCAB PRESS AUTO CTL',
+  210300001: '\x1b<4mPACK 1 CTL 1',
+  210300002: '\x1b<4mPACK 1 CTL 2',
+  210300003: '\x1b<4mPACK 2 CTL 1',
+  210300004: '\x1b<4mPACK 2 CTL 2',
+  210300005: '\x1b<4mPACK 1 CTL DEGRADED',
+  210300006: '\x1b<4mPACK 2 CTL DEGRADED',
+  210300007: '\x1b<4mPACK 1 CTL REDUND',
+  210300008: '\x1b<4mPACK 2 CTL REDUND',
+  210300009: '\x1b<4mPACK 1',
+  210300010: '\x1b<4mPACK 2',
+  210300011: '\x1b<4mPACK 1+2',
+  210300012: '\x1b<4mALL PRIMARY CAB FANS',
+  210300013: '\x1b<4mBULK CRG HEATER',
+  210300014: '\x1b<4mBULK CRG ISOL',
+  210300015: '\x1b<4mBULK CRG VENT',
+  210300016: '\x1b<4mFWD CRG ISOL',
+  210300017: '\x1b<4mFWD CRG VENT',
+  210300018: '\x1b<4mFWD CRG TEMP REGUL',
+  210300019: '\x1b<4mCKPT TEMP REGUL',
+  210300020: '\x1b<4mCAB PART TEMP REGUL',
+  210300021: '\x1b<4mTEMP CTL 1',
+  210300022: '\x1b<4mTEMP CTL 2',
+  210300023: '\x1b<4mALL ZONES TEMP REGUL',
+  210300024: '\x1b<4mTEMP CTL REDUND',
+  210300025: '\x1b<4m1 PRIMARY CAB FAN',
+  210300026: '\x1b<4m2 PRIMARY CAB FANS',
+  210300027: '\x1b<4m3 PRIMARY CAB FANS',
+  210300028: '\x1b<4mTEMP CTL DEGRADED',
+  212300001: '\x1b<4mAFT VENT CTL 1',
+  212300002: '\x1b<4mAFT VENT CTL 2',
+  212300003: '\x1b<4mAFT VENT CTL DEGRADED',
+  212300004: '\x1b<4mCAB AIR EXTRACT VLV',
+  212300005: '\x1b<4mAFT VENT CTL',
+  212300006: '\x1b<4mAFT VENT CTL REDUND',
+  212300007: '\x1b<4mFWD VENT CTL 1',
+  212300008: '\x1b<4mFWD VENT CTL 2',
+  212300009: '\x1b<4mFWD VENT CTL DEGRADED',
+  212300010: '\x1b<4mIFE BAY VENT',
+  212300011: '\x1b<4mRAM AIR',
+  212300012: '\x1b<4mFWD VENT CTL',
+  212300013: '\x1b<4mFWD VENT CTL REDUND',
   220300001: '\x1b<4mA/THR',
   220300002: '\x1b<4mCAT 3',
   220300004: '\x1b<4mAFS CTL PNL',
@@ -560,7 +607,6 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
 
-
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
   activeProcedure: boolean;
@@ -575,5 +621,9 @@ export interface WdLineData {
 }
 
 export enum WdSpecialLine {
-  ClComplete, Reset, Clear, Empty, SeparationLine,
+  ClComplete,
+  Reset,
+  Clear,
+  Empty,
+  SeparationLine,
 }
