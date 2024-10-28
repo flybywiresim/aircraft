@@ -5,7 +5,6 @@
 /* eslint-disable max-len */
 import React, { useContext, useState } from 'react';
 import {
-  AirframeType,
   DefaultPilotSeatConfig,
   PilotSeatConfig,
   usePersistentNumberProperty,
@@ -27,7 +26,6 @@ import { AircraftContext } from '@flybywiresim/flypad';
 export const SimOptionsPage = () => {
   const aircraftContext = useContext(AircraftContext);
   const [showThrottleSettings, setShowThrottleSettings] = useState(false);
-  const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
   const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
@@ -60,8 +58,6 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Right'), setting: PilotSeatConfig.Right },
   ];
 
-  const isA380X = airframeInfo.variant === AirframeType.A380_842;
-
   return (
     <>
       {!showThrottleSettings && (
@@ -80,8 +76,7 @@ export const SimOptionsPage = () => {
             </SelectGroup>
           </SettingItem>
 
-          {/* TODO: reactivate this when feature is available - deactivated in the A380X until feature is available */}
-          {!isA380X && (
+          {aircraftContext.settingsPages.sim.msfsFplnSync && (
             <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
               <SelectGroup>
                 {fpSyncButtons.map((button) => (
