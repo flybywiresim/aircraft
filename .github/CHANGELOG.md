@@ -7,6 +7,7 @@
 
 ## 0.13.0
 
+1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
 1. [GENERAL] Move Navigraph Auth to shared systems - @MicahBCode (Mischa Binder)
 
 ## 0.12.0
