@@ -29,8 +29,8 @@ class A32NX_BaroSelector {
             if (result.sessionId === sessionId) {
                 handler.clear();
                 const useInHg = result.added.length > 0 && (
-                    IN_HG_REGIONS.findIndex(result.added[0].charAt(7)) >= 0
-                    || IN_HG_REGIONS.findIndex(result.added[0].substring(7, 9)) >= 0
+                    IN_HG_REGIONS.includes(result.added[0].charAt(7))
+                    || IN_HG_REGIONS.includes(result.added[0].substring(7, 9))
                 );
                 this.setBaroSelector(!useInHg);
             }
