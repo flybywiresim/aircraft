@@ -7,6 +7,8 @@
 
 ## 0.13.0
 
+1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
+
 ## 0.12.0
 
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
