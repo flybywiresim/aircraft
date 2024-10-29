@@ -7,6 +7,7 @@ interface ConfirmationDialogProps extends ComponentProps {
   cancelAction: () => void;
   confirmAction: () => void;
   contentContainerStyle?: string;
+  amberLabel?: boolean;
 }
 
 /*
@@ -42,7 +43,7 @@ export class ConfirmationDialog extends DisplayComponent<ConfirmationDialogProps
       <div ref={this.topRef} style="position: relative;">
         <div class="mfd-dialog" style={`${this.props.contentContainerStyle ?? ''}`}>
           <div class="mfd-dialog-title">
-            <span class="mfd-label">{this.props.children}</span>
+            <span class={`mfd-label ${this.props.amberLabel ? 'amber' : ''}`}>{this.props.children}</span>
           </div>
           <div class="mfd-dialog-buttons">
             <Button label="CANCEL" onClick={() => this.props.cancelAction()} />

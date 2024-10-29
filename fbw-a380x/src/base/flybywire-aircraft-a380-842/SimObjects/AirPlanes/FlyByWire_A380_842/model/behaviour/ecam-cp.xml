@@ -9,7 +9,7 @@
             - NODE_ID           <no default>    Node-ID of the button
 
     Page State:
-            - STATE_ID          <no default>    State of the simvar (L:A380X_ECAM_CP_SELECTED_PAGE_ID)
+            - STATE_ID          <no default>    State of the simvar (L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)
 
     ... or ...
 
@@ -23,34 +23,251 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-
-            <!-- TODO find the actual bus powering the ECAM CP -->
-            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
 
             <!-- Internal -->
-            <STATE_SIMVAR>L:A380X_ECAM_CP_SELECTED_PAGE</STATE_SIMVAR>
+            <STATE_SIMVAR>L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX</STATE_SIMVAR>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-
-            <Condition Valid="HTML_EVENT">
-                <True>
-                    <LEFT_SINGLE_CODE>(&gt;H:A380X_RMP_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
-                </True>
-                <False>
-                    <LEFT_SINGLE_CODE>#STATE_ID# (&gt;#STATE_SIMVAR#)</LEFT_SINGLE_CODE>
-                    <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
-                </False>
-            </Condition>
-
+            <LEFT_SINGLE_CODE>
+                 (#STATE_SIMVAR#) #STATE_ID# != if{
+                    #STATE_ID# (&gt;#STATE_SIMVAR#)
+                } els{
+                    -1 (&gt;#STATE_SIMVAR#)
+                }
+                (&gt;H:A32NX_SD_PAGE_CHANGED)
+                </LEFT_SINGLE_CODE>
+            <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
             <CURSOR>Hand</CURSOR>
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_ECAM_BUTTON_SubTemplate">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <Condition NotEmpty="SIMVAR">
+                    <True>
+                        <LEFT_SINGLE_CODE>
+                            1 (&gt;L:#SIMVAR#)
+                        </LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>
+                            0 (&gt;L:#SIMVAR#)
+                        </LEFT_LEAVE_CODE>
+                    </True>
+                    <False>
+                        <LEFT_SINGLE_CODE>
+                            1 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                        </LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>
+                            0 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                        </LEFT_LEAVE_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="POTENTIOMETER">
+            <True>
+                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>
+
+    <Template Name="FBW_ECAM_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <BASE_NAME>UNKNOWN</BASE_NAME>
+            <GROUP_INDEX>-1</GROUP_INDEX>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_ECAM_BUTTON_SubTemplate">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="A32NX_ECAM_CLR_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <BASE_NAME>UNKNOWN</BASE_NAME>
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <LED_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ2</LED_NODE_ID>
+            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    1 (&gt;L:#SIMVAR#)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:#SIMVAR#)
+                </LEFT_LEAVE_CODE>
+            </UseTemplate>
+        </Component>
+
+
+        <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                (L:A32NX_ECAM_SFAIL) -1 &gt;
+                (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) and or
+                #SEQ1_POWERED# and
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="POTENTIOMETER">
+            <True>
+                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>
+
     <Template Name="FBW_A380X_Components_ECAM_CP">
+        <!-- ECAM T.O CONFIG -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>TOCONF</BASE_NAME>
+            <PART_ID>ECAM_TOCFG</PART_ID>
+            <TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_TOCONFIG</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM CLR -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>A32NX_ECAM_CLR_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CLR_LH</BASE_NAME>
+            <PART_ID>ECAM_CLR</PART_ID>
+            <TOOLTIPID>Clear ECAM messages</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CLR</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM CLR -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>A32NX_ECAM_CLR_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CLR_RH</BASE_NAME>
+            <PART_ID>ECAM_CLR2</PART_ID>
+            <TOOLTIPID>Clear ECAM messages</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CLR2</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM RCL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>RCLLAST</BASE_NAME>
+            <PART_ID>ECAM_RCL</PART_ID>
+            <TOOLTIPID>Recall ECAM messages</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_RCL</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM C/L -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CL</BASE_NAME>
+            <PART_ID>ECAM_CL</PART_ID>
+            <TOOLTIPID>ECAM C/L</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CL</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL CAPT -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CHECK_LH</BASE_NAME>
+            <PART_ID>ECAM_CHECK_LH</PART_ID>
+            <TOOLTIPID>ECAM checklist CAPT</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CHECK_LH</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL F/O -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>CHECK_RH</BASE_NAME>
+            <PART_ID>ECAM_CHECK_RH</PART_ID>
+            <TOOLTIPID>ECAM checklist F/O</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_CHECK_RH</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL UP -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>UP</BASE_NAME>
+            <PART_ID>ECAM_UP</PART_ID>
+            <TOOLTIPID>ECAM checklist UP</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_UP</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ECL DOWN -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>DOWN</BASE_NAME>
+            <PART_ID>ECAM_DOWN</PART_ID>
+            <TOOLTIPID>ECAM checklist DOWN</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_DOWN</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ABN PROC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>ABNPROC</BASE_NAME>
+            <PART_ID>ECAM_ABNPROC</PART_ID>
+            <TOOLTIPID>ECAM checklist abnormal procedures</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_ABNPROC</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM EMER CANC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>EMERCANC</BASE_NAME>
+            <PART_ID>ECAM_EMERCANC</PART_ID>
+            <TOOLTIPID>ECAM emergency cancel</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_EMERCANC</SIMVAR>
+        </UseTemplate>
+
         <!-- SD ENG -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_ENG</NODE_ID>
@@ -117,7 +334,16 @@
             <TOOLTIPID>SELECT HYD PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
-        <!-- TODO CB REPSOL -->
+        <!-- SD CB -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_CB</NODE_ID>
+            <STATE_ID>14</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT CB PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
 
         <!-- SD APU -->
         <UseTemplate Name="FBW_Anim_Interactions">
@@ -196,13 +422,26 @@
             <TOOLTIPID>SELECT VIDEO PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
-        <!-- TODO ALL HOLLAND -->
-        <!-- TODO CLR HOLLAND -->
-        <!-- TODO RCL LAST REPSOL -->
-        <!-- TODO STS HOLLAND -->
-        <!-- TODO MORE REPSOL -->
-        <!-- TODO RCL HOLLAND -->
-        <!-- TODO CLEAR HOLLAND -->
+        <!-- SD STS -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_STS</NODE_ID>
+            <STATE_ID>15</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT STS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- ECAM MORE -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>MORE</BASE_NAME>
+            <PART_ID>ECAM_MORE</PART_ID>
+            <TOOLTIPID>ECAM MORE...</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_MORE</SIMVAR>
+        </UseTemplate>
 
         <!-- EWD POTENTIOMETER -->
         <UseTemplate Name="FBW_Stepless_Potentiometer">

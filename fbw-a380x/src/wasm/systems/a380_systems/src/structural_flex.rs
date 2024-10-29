@@ -1,44 +1,172 @@
 use systems::{
     fuel::FuelPayload,
-    shared::SurfacesPositions,
+    shared::{random_from_range, SurfacesPositions},
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
-    structural_flex::elevator_flex::FlexibleElevators,
-    structural_flex::engine_wobble::EnginesFlexiblePhysics,
-    structural_flex::wing_flex::{
-        FlexPhysicsNG, WingAnimationMapper, WingFuelNodeMapper, WingLift, WingRootAcceleration,
+    structural_flex::{
+        elevator_flex::FlexibleElevators,
+        engine_wobble::EnginesFlexiblePhysics,
+        wing_flex::{
+            FlexPhysicsNG, GearStrutId, WingAnimationMapper, WingFuelNodeMapper, WingLift,
+            WingRootAcceleration,
+        },
+        SurfaceVibrationGenerator,
     },
-    structural_flex::SurfaceVibrationGenerator,
 };
 
 use crate::fuel::A380FuelTankType;
 
-use uom::si::{f64::*, force::newton, mass::kilogram, ratio::ratio};
+use uom::si::{
+    f64::*,
+    force::newton,
+    length::meter,
+    mass::kilogram,
+    ratio::ratio,
+    velocity::{knot, meter_per_second},
+};
 
 use nalgebra::{Vector3, Vector5};
 
+pub struct CockpitVibration {
+    output: f64,
+
+    last_impact_time: Option<f64>,
+    impact_in_progress: bool,
+}
+
+impl CockpitVibration {
+    const POSITION_OFFSET_AT_0_VIBRATION: f64 = 0.1;
+
+    const GROUND_NOISE_MIN_MAGNITUDE: f64 = 0. - Self::POSITION_OFFSET_AT_0_VIBRATION;
+    const GROUND_NOISE_MAX_MAGNITUDE: f64 = 0.13;
+    const GROUND_NOISE_MIN_SPEED_FOR_MAX_MAGNITUDE_KNOT: f64 = 40.;
+
+    const MIN_NOSE_WEIGHT_FOR_MAX_IMPACT_AMPLITUDE_KG: f64 = 10000.;
+
+    const IMPACT_NOISE_MAGNITUDE_GAIN: f64 = 0.13;
+    const IMPACT_MIN_RANDOM_MAGNITUDE: f64 = 0.8; // Max is fixed to 1, scaled with IMPACT_NOISE_MAGNITUDE_GAIN
+    const CENTERLINE_LIGHTS_SPACING_METERS: f64 = 20.0;
+    const IMPACT_DURATION_S: f64 = 0.1;
+
+    pub fn default() -> Self {
+        CockpitVibration {
+            output: 0.,
+
+            last_impact_time: None,
+            impact_in_progress: false,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        current_speed: Velocity,
+        ground_weight_ratio: Ratio,
+        nose_ground_weight: Mass,
+    ) {
+        // Speed factor so vibration kicks in from an empirical ground speed function
+        let speed_factor = f64::min(
+            1.0,
+            f64::max(0.0, 0.00001 * current_speed.get::<knot>().powi(3)),
+        );
+
+        let ground_noise = self.ground_noise_amplitude(current_speed);
+        let runway_lights_impact_amplitude =
+            self.runway_lights_impact_amplitude(context, current_speed, nose_ground_weight);
+
+        self.output = Self::POSITION_OFFSET_AT_0_VIBRATION
+            + (ground_noise + runway_lights_impact_amplitude)
+                * speed_factor
+                * ground_weight_ratio.get::<ratio>();
+    }
+
+    fn ground_noise_amplitude(&self, current_speed: Velocity) -> f64 {
+        random_from_range(
+            Self::GROUND_NOISE_MIN_MAGNITUDE,
+            Self::GROUND_NOISE_MAX_MAGNITUDE,
+        ) * (current_speed.get::<knot>() / Self::GROUND_NOISE_MIN_SPEED_FOR_MAX_MAGNITUDE_KNOT)
+            .min(1.)
+    }
+
+    // TODO figure a way to compute if we are on a runway centerline
+    fn runway_lights_impact_amplitude(
+        &mut self,
+        context: &UpdateContext,
+        current_speed: Velocity,
+        nose_ground_weight: Mass,
+    ) -> f64 {
+        let impact_signal_raw = if current_speed > Velocity::default() {
+            let time_between_impacts =
+                Self::CENTERLINE_LIGHTS_SPACING_METERS / current_speed.get::<meter_per_second>();
+
+            self.square_pulse(context, time_between_impacts)
+        } else {
+            0.0
+        };
+
+        let nose_mass_ratio = (nose_ground_weight.get::<kilogram>()
+            / Self::MIN_NOSE_WEIGHT_FOR_MAX_IMPACT_AMPLITUDE_KG)
+            .clamp(0., 1.);
+        impact_signal_raw * nose_mass_ratio * Self::IMPACT_NOISE_MAGNITUDE_GAIN
+    }
+
+    fn square_pulse(&mut self, context: &UpdateContext, time_between_impacts: f64) -> f64 {
+        if self.impact_in_progress {
+            if context.simulation_time() - self.last_impact_time.unwrap_or(0.0)
+                > Self::IMPACT_DURATION_S
+            {
+                self.impact_in_progress = false;
+            }
+            random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.)
+        } else if self.last_impact_time.is_none()
+            || context.simulation_time() - self.last_impact_time.unwrap() >= time_between_impacts
+        {
+            self.last_impact_time = Some(context.simulation_time());
+            self.impact_in_progress = true;
+            random_from_range(Self::IMPACT_MIN_RANDOM_MAGNITUDE, 1.)
+        } else {
+            0.
+        }
+    }
+
+    fn output(&self) -> f64 {
+        self.output
+    }
+}
+
 pub struct A380StructuralFlex {
+    ground_speed_id: VariableIdentifier,
     ground_weight_ratio_id: VariableIdentifier,
+    cockpit_rumble_id: VariableIdentifier,
 
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     elevators_flex_physics: FlexibleElevators,
     wing_flex: WingFlexA380,
 
     surface_vibrations: SurfaceVibrationGenerator,
+
+    cockpit_rumble: CockpitVibration,
+    ground_speed: Velocity,
 }
 impl A380StructuralFlex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
+            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             ground_weight_ratio_id: context
                 .get_identifier("GROUND_WEIGHT_ON_WHEELS_RATIO".to_owned()),
+            cockpit_rumble_id: context.get_identifier("GLARESHIELD_FLEX_CTR".to_owned()),
 
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             elevators_flex_physics: FlexibleElevators::new(context),
             wing_flex: WingFlexA380::new(context),
 
             surface_vibrations: SurfaceVibrationGenerator::default_generator(),
+
+            cockpit_rumble: CockpitVibration::default(),
+
+            ground_speed: Velocity::default(),
         }
     }
 
@@ -50,6 +178,13 @@ impl A380StructuralFlex {
         surfaces_positions: &impl SurfacesPositions,
         fuel_mass: &impl FuelPayload,
     ) {
+        self.cockpit_rumble.update(
+            context,
+            self.ground_speed,
+            self.wing_flex.ground_weight_ratio(),
+            self.wing_flex.ground_weight_per_wheel(GearStrutId::Nose),
+        );
+
         self.elevators_flex_physics.update(
             context,
             outer_inner_elevator_aero_torques,
@@ -85,6 +220,12 @@ impl SimulationElement for A380StructuralFlex {
             &self.ground_weight_ratio_id,
             self.wing_flex.ground_weight_ratio().get::<ratio>(),
         );
+
+        writer.write(&self.cockpit_rumble_id, self.cockpit_rumble.output());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.ground_speed = reader.read(&self.ground_speed_id);
     }
 }
 
@@ -270,6 +411,20 @@ impl WingFlexA380 {
 
     const WING_NODES_X_COORDINATES: [f64; WING_FLEX_NODE_NUMBER] = [0., 11.5, 22.05, 29., 36.85];
 
+    const ELEVATOR_TO_CG_LENGTH_METERS: f64 = 30.;
+
+    // Section defining points for collision detection of wing tips and outter engines
+    const OUTTER_ENGINE_VERTICAL_OFFSET: f64 = -2.3;
+    const WING_TIP_VERTICAL_OFFSET: f64 = 2.2;
+
+    const RIGHT_OUTTER_ENGINE_COORDINATES: [f64; 3] =
+        [25.60, Self::OUTTER_ENGINE_VERTICAL_OFFSET, 1.22];
+    const LEFT_OUTTER_ENGINE_COORDINATES: [f64; 3] =
+        [-25.60, Self::OUTTER_ENGINE_VERTICAL_OFFSET, 1.22];
+
+    const RIGHT_WING_TIP_COORDINATES: [f64; 3] = [39.624, Self::WING_TIP_VERTICAL_OFFSET, -13.716];
+    const LEFT_WING_TIP_COORDINATES: [f64; 3] = [-39.624, Self::WING_TIP_VERTICAL_OFFSET, -13.716];
+
     pub fn new(context: &mut InitContext) -> Self {
         let empty_mass = Self::EMPTY_MASS_KG.map(Mass::new::<kilogram>);
 
@@ -288,7 +443,10 @@ impl WingFlexA380 {
                 .get_identifier("WING_FLEX_RIGHT_OUTBOARD_MID".to_owned()),
             right_flex_outboard_id: context.get_identifier("WING_FLEX_RIGHT_OUTBOARD".to_owned()),
 
-            wing_lift: WingLift::new(context),
+            wing_lift: WingLift::new(
+                context,
+                Length::new::<meter>(Self::ELEVATOR_TO_CG_LENGTH_METERS),
+            ),
             wing_lift_dynamic: A380WingLiftModifier::default(),
 
             left_wing_fuel_mass: [Mass::default(); FUEL_TANKS_NUMBER],
@@ -297,12 +455,27 @@ impl WingFlexA380 {
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
             animation_mapper: WingAnimationMapper::new(Self::WING_NODES_X_COORDINATES),
 
-            flex_physics: [1, 2].map(|_| {
+            flex_physics: ['L', 'R'].map(|side| {
                 FlexPhysicsNG::new(
                     context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
                     Self::DAMPING_COEFFICIENTS,
+                    [
+                        None,
+                        None,
+                        Some(if side == 'L' {
+                            Vector3::from(Self::LEFT_OUTTER_ENGINE_COORDINATES)
+                        } else {
+                            Vector3::from(Self::RIGHT_OUTTER_ENGINE_COORDINATES)
+                        }),
+                        None,
+                        Some(if side == 'L' {
+                            Vector3::from(Self::LEFT_WING_TIP_COORDINATES)
+                        } else {
+                            Vector3::from(Self::RIGHT_WING_TIP_COORDINATES)
+                        }),
+                    ],
                 )
             }),
 
@@ -365,6 +538,10 @@ impl WingFlexA380 {
 
     pub fn ground_weight_ratio(&self) -> Ratio {
         self.wing_lift.ground_weight_ratio()
+    }
+
+    pub fn ground_weight_per_wheel(&self, wheel_id: GearStrutId) -> Mass {
+        self.wing_lift.ground_weight_per_wheel(wheel_id)
     }
 
     // Accelerations (vertical) of engines pylons from eng1 to eng4
@@ -586,6 +763,7 @@ mod tests {
             Self {
                 test_bed: SimulationTestBed::new(WingFlexTestAircraft::new),
             }
+            .with_nominal_height()
         }
 
         fn left_wing_lift_per_node(&self) -> Vector5<f64> {
@@ -621,6 +799,11 @@ mod tests {
                 "TOTAL WEIGHT",
                 Mass::new::<kilogram>(Self::NOMINAL_WEIGHT_KG),
             );
+            self
+        }
+
+        fn with_nominal_height(mut self) -> Self {
+            self.write_by_name("PLANE ALT ABOVE GROUND", 20.);
             self
         }
 
@@ -1295,5 +1478,75 @@ mod tests {
         assert!((76.3..=76.7).contains(&animation_position_inboard_mid));
         assert!((53.1..=53.3).contains(&animation_position_outboard_mid));
         assert!((55. ..=57.).contains(&animation_position_outboard));
+    }
+
+    #[test]
+    fn right_wing_is_higher_if_wing_strike_turning_right() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        let mut outboard_angle_left: Angle = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+        let mut outboard_angle_right: Angle = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+
+        println!(
+            "ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(
+            (outboard_angle_left.get::<degree>() - outboard_angle_right.get::<degree>()).abs()
+                < 0.1
+        );
+
+        test_bed.write_by_name("PLANE BANK DEGREES", -45.);
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        outboard_angle_right = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+        outboard_angle_left = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+
+        println!(
+            "!!!!WING STRIKE RIGHT!!!! ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>() > 5.);
+    }
+
+    #[test]
+    fn left_wing_is_higher_if_wing_strike_turning_left() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        let mut outboard_angle_left: Angle = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+        let mut outboard_angle_right: Angle = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+
+        println!(
+            "ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(
+            (outboard_angle_left.get::<degree>() - outboard_angle_right.get::<degree>()).abs()
+                < 0.1
+        );
+
+        test_bed.write_by_name("PLANE BANK DEGREES", 45.);
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        outboard_angle_right = test_bed.read_by_name("WING_FLEX_RIGHT_OUTBOARD");
+        outboard_angle_left = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+
+        println!(
+            "!!!!WING STRIKE LEFT!!!! ANGLES => LEFT TIP {:.1} RIGHT TIP {:.1}",
+            outboard_angle_left.get::<degree>(),
+            outboard_angle_right.get::<degree>(),
+        );
+
+        assert!(outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>() < 5.);
     }
 }

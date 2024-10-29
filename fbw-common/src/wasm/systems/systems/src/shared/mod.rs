@@ -11,6 +11,7 @@ use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
+    angle::radian,
     f64::*,
     length::meter,
     mass_rate::kilogram_per_second,
@@ -254,16 +255,18 @@ pub trait AdirsMeasurementOutputs {
 }
 
 pub trait AdirsDiscreteOutputs {
-    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_1(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4(&self, adiru_number: usize) -> bool;
 }
 
 pub enum GearWheel {
     NOSE = 0,
     LEFT = 1,
     RIGHT = 2,
+    WINGLEFT = 3,
+    WINGRIGHT = 4,
 }
 
 pub trait SectionPressure {
@@ -711,6 +714,17 @@ pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
 }
 
+/// Normalise angle degrees value between 0 and 360
+pub fn normalise_angle(angle_degrees: f64) -> f64 {
+    let raw = angle_degrees % 360.;
+
+    if raw >= 0. {
+        raw
+    } else {
+        raw + 360.
+    }
+}
+
 /// Returns the height over the ground of any point of the plane considering its current attitude
 /// Offset parameter is the position of the point in plane reference with respect to datum reference point
 /// X positive from left to right
@@ -758,6 +772,23 @@ pub fn local_acceleration_at_plane_coordinate(
         * (tangential_velocity_of_point.norm().powi(2) / offset_from_plane_reference.norm());
 
     centripetal_acceleration + tangential_acceleration_of_point
+}
+
+/// Gives the steering angle for a wheel that would freely caster if plane is rotating on yaw axis
+pub fn steering_angle_from_plane_yaw_rate(
+    context: &UpdateContext,
+    wheel_distance_to_rotation_center: Length,
+) -> Angle {
+    if context.local_velocity().to_ms_vector()[2].abs() > 0.01 {
+        Angle::new::<radian>(
+            (wheel_distance_to_rotation_center.get::<meter>()
+                * context.rotation_velocity_rad_s()[1]
+                / context.local_velocity().to_ms_vector()[2])
+                .atan(),
+        )
+    } else {
+        Angle::default()
+    }
 }
 
 pub struct InternationalStandardAtmosphere;

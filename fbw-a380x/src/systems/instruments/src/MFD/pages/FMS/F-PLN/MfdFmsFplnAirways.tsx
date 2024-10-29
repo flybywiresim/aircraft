@@ -9,7 +9,7 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FmsErrorType } from '@fmgc/FmsError';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
@@ -35,14 +35,10 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
   private tmpyFplnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    console.time('AIRWAYS:onNewData');
-
     const revWpt = this.props.fmcService.master?.revisedWaypoint();
     if (revWpt) {
       this.revisedFixIdent.set(revWpt.ident);
     }
-
-    console.timeEnd('AIRWAYS:onNewData');
   }
 
   private renderNextLine(fromFix: Fix): void {
@@ -208,20 +204,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return true;
               }
 
-              const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(this.props.fromFix.ident);
-              if (fixes.length === 0) {
-                this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
-                return false;
-              }
-              let chosenFix = fixes[0];
-              if (fixes.length > 1) {
-                const dedup = await this.props.fmc.deduplicateFacilities(fixes);
-                if (dedup !== undefined) {
-                  chosenFix = dedup;
-                }
-              }
-
-              const airways = await NavigationDatabaseService.activeDatabase.searchAirway(v, chosenFix);
+              const airways = await NavigationDatabaseService.activeDatabase.searchAirway(v, this.props.fromFix);
               if (airways.length === 0) {
                 this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                 return false;
@@ -255,22 +238,40 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
               if (!v) {
                 return false;
               }
+
               if (this.viaField.get() === null) {
                 this.viaField.set('DCT');
                 this.viaFieldDisabled.set(true);
               }
 
-              const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(v);
-              if (fixes.length === 0) {
-                this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
-                return false;
-              }
-              let chosenFix = fixes[0];
-              if (fixes.length > 1) {
-                const dedup = await this.props.fmc.deduplicateFacilities(fixes);
-                if (dedup !== undefined) {
-                  chosenFix = dedup;
+              let chosenFix: Fix | undefined = undefined;
+
+              if (this.viaField.get() !== 'DCT') {
+                try {
+                  chosenFix = await this.props.pendingAirways.fixAlongTailAirway(v);
+                } catch (msg: unknown) {
+                  if (msg instanceof FmsError) {
+                    this.props.fmc.showFmsErrorMessage(msg.type);
+                  }
+                  return false;
                 }
+              } else {
+                const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(v);
+                if (fixes.length === 0) {
+                  this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+                  return false;
+                }
+
+                if (fixes.length > 1) {
+                  const dedup = await this.props.fmc.deduplicateFacilities(fixes);
+                  if (dedup !== undefined) {
+                    chosenFix = dedup;
+                  }
+                }
+              }
+
+              if (!chosenFix) {
+                return false;
               }
 
               const success = this.props.pendingAirways.thenTo(chosenFix);

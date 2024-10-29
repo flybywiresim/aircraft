@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { AmdbProperties } from '@flybywiresim/fbw-sdk';
+import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData } from '@flybywiresim/fbw-sdk';
 import {
   Feature,
   FeatureCollection,
@@ -16,10 +16,9 @@ import {
   point,
   polygon,
 } from '@turf/turf';
-import { Arinc429Register, Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from './';
-import { BtvData } from './BtvPublisher';
-import { FmsOansData } from './FmsOansPublisher';
+import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
 import {
   fractionalPointAlongLine,
@@ -40,6 +39,18 @@ const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end o
  */
 
 export class BrakeToVacateUtils<T extends number> {
+  private readonly sub = this.bus.getSubscriber<BtvData & GenericAdirsEvents>();
+
+  private readonly remainingDistToExitArinc = Arinc429Register.empty();
+
+  private readonly remaininingDistToRwyEndArinc = Arinc429Register.empty();
+
+  private readonly runwayLengthArinc = Arinc429Register.empty();
+
+  private readonly runwayBearingArinc = Arinc429Register.empty();
+
+  private readonly requestedStoppingDistArinc = Arinc429Register.empty();
+
   constructor(
     private readonly bus: EventBus,
     private readonly labelManager?: OancLabelManager<T>,
@@ -51,46 +62,23 @@ export class BrakeToVacateUtils<T extends number> {
     private readonly zoomLevelIndex?: Subscribable<number>,
     private getZoomLevelInverseScale?: () => number,
   ) {
-    this.remaininingDistToExit.sub((v) => {
-      if (v < 0) {
-        Arinc429Word.toSimVarValue(
-          'L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT',
-          0,
-          Arinc429SignStatusMatrix.NoComputedData,
-        );
-      } else {
-        Arinc429Word.toSimVarValue(
-          'L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT',
-          v,
-          Arinc429SignStatusMatrix.NormalOperation,
-        );
-      }
+    this.remainingDistToExit.sub((v) => {
+      this.remainingDistToExitArinc.setValue(v < 0 ? 0 : v);
+      this.remainingDistToExitArinc.setSsm(
+        v < 0 ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
+      );
+      this.remainingDistToExitArinc.writeToSimVar('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT');
     });
 
     this.remaininingDistToRwyEnd.sub((v) => {
-      if (v < 0) {
-        Arinc429Word.toSimVarValue(
-          'L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END',
-          0,
-          Arinc429SignStatusMatrix.NoComputedData,
-        );
-      } else {
-        Arinc429Word.toSimVarValue(
-          'L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END',
-          v,
-          Arinc429SignStatusMatrix.NormalOperation,
-        );
-      }
+      this.remaininingDistToRwyEndArinc.setValue(v < 0 ? 0 : v);
+      this.remaininingDistToRwyEndArinc.setSsm(
+        v < 0 ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
+      );
+      this.remaininingDistToRwyEndArinc.writeToSimVar('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END');
     });
 
-    const sub = this.bus.getSubscriber<BtvData & GenericAdirsEvents>();
-    this.dryStoppingDistance.setConsumer(sub.on('dryStoppingDistance').whenChanged());
-    this.wetStoppingDistance.setConsumer(sub.on('wetStoppingDistance').whenChanged());
-    this.liveStoppingDistance.setConsumer(sub.on('stopBarDistance').whenChanged());
-    this.radioAltitude1.setConsumer(sub.on('radioAltitude_1').whenChanged());
-    this.radioAltitude2.setConsumer(sub.on('radioAltitude_2').whenChanged());
-    this.fwsFlightPhase.setConsumer(sub.on('fwcFlightPhase').whenChanged());
-    sub
+    this.sub
       .on('groundSpeed')
       .atFrequency(2)
       .handle((value) => this.groundSpeed.set(value));
@@ -108,7 +96,7 @@ export class BrakeToVacateUtils<T extends number> {
   private readonly groundSpeed = Arinc429Register.empty();
 
   /** Updated during deceleration on the ground. Counted from touchdown distance (min. 400m).  */
-  private readonly remaininingDistToExit = Subject.create<number>(0);
+  private readonly remainingDistToExit = Subject.create<number>(0);
 
   /** Updated during deceleration on the ground. Counted from touchdown distance (min. 400m).  */
   private readonly remaininingDistToRwyEnd = Subject.create<number>(0);
@@ -138,13 +126,13 @@ export class BrakeToVacateUtils<T extends number> {
   private btvPathGeometry: Position[];
 
   /** Stopping distance for dry rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
-  private readonly dryStoppingDistance = ConsumerSubject.create(null, 0);
+  private readonly dryStoppingDistance = ConsumerSubject.create(this.sub.on('dryStoppingDistance').whenChanged(), 0);
 
   /** Stopping distance for wet rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
-  private readonly wetStoppingDistance = ConsumerSubject.create(null, 0);
+  private readonly wetStoppingDistance = ConsumerSubject.create(this.sub.on('wetStoppingDistance').whenChanged(), 0);
 
   /** Live remaining stopping distance during deceleration, in meters. Null if not set. Counted from actual aircraft position. */
-  private readonly liveStoppingDistance = ConsumerSubject.create(null, 0);
+  private readonly liveStoppingDistance = ConsumerSubject.create(this.sub.on('stopBarDistance').whenChanged(), 0);
 
   /** "runway ahead" advisory was triggered */
   private rwyAheadTriggered: boolean = false;
@@ -155,13 +143,30 @@ export class BrakeToVacateUtils<T extends number> {
   /** Timestamp at which "runway ahead" advisory was triggered */
   private rwyAheadTriggeredTime: number = 0;
 
-  private readonly rwyAheadArinc = Arinc429Word.empty();
+  private rwyAheadPredictionVolumePoints: Position[] = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ];
 
-  private readonly radioAltitude1 = ConsumerSubject.create(null, 0);
+  private readonly rwyAheadArinc = Arinc429Register.empty();
 
-  private readonly radioAltitude2 = ConsumerSubject.create(null, 0);
+  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
+  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
+  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
-  private readonly fwsFlightPhase = ConsumerSubject.create(null, 0);
+  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  public readonly below300ftRaAndLanding = MappedSubject.create(
+    ([ra1, ra2, ra3, fp]) =>
+      fp > 8 && fp < 11 && (ra1.valueOr(2500) <= 300 || ra2.valueOr(2500) <= 300 || ra3.valueOr(2500) <= 300),
+    this.radioAltitude1,
+    this.radioAltitude2,
+    this.radioAltitude3,
+    this.fwsFlightPhase,
+  );
 
   selectRunwayFromOans(
     runway: string,
@@ -194,12 +199,18 @@ export class BrakeToVacateUtils<T extends number> {
     this.btvRunwayBearingTrue.set(heading);
     this.btvRunway.set(runway);
     this.remaininingDistToRwyEnd.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
-    this.remaininingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
+    this.remainingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
 
     const pub = this.bus.getPublisher<FmsOansData>();
     pub.pub('oansSelectedLandingRunway', runway, true);
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_LENGTH', lda, Arinc429SignStatusMatrix.NormalOperation);
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_BEARING', heading, Arinc429SignStatusMatrix.NormalOperation);
+
+    this.runwayLengthArinc.setValue(lda);
+    this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.runwayLengthArinc.writeToSimVar('L:A32NX_OANS_RWY_LENGTH');
+
+    this.runwayBearingArinc.setValue(heading);
+    this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
 
     this.drawBtvLayer();
   }
@@ -257,11 +268,9 @@ export class BrakeToVacateUtils<T extends number> {
       MIN_TOUCHDOWN_ZONE_DISTANCE;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE',
-      exitDistance,
-      Arinc429SignStatusMatrix.NormalOperation,
-    );
+    this.requestedStoppingDistArinc.setValue(exitDistance);
+    this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
 
     this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/${exit}`, true);
 
@@ -293,13 +302,26 @@ export class BrakeToVacateUtils<T extends number> {
     this.btvRunwayBearingTrue.set(heading);
     this.btvRunway.set(runway);
     this.remaininingDistToRwyEnd.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
-    this.remaininingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
+    this.remainingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
 
     const pub = this.bus.getPublisher<FmsOansData>();
     pub.pub('oansSelectedLandingRunway', runway, true);
 
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_LENGTH', lda, Arinc429SignStatusMatrix.NormalOperation);
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_BEARING', heading, Arinc429SignStatusMatrix.NormalOperation);
+    this.runwayLengthArinc.setValue(lda);
+    this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.runwayLengthArinc.writeToSimVar('L:A32NX_OANS_RWY_LENGTH');
+
+    this.runwayBearingArinc.setValue(heading);
+    this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
+  }
+
+  runwayIsSet() {
+    return (
+      this.btvThresholdPosition.length !== 0 &&
+      this.btvOppositeThresholdPosition.length !== 0 &&
+      this.btvRunway.get() !== null
+    );
   }
 
   selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
@@ -309,11 +331,9 @@ export class BrakeToVacateUtils<T extends number> {
     const correctedStoppingDistance = reqStoppingDistance - MIN_TOUCHDOWN_ZONE_DISTANCE;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE',
-      correctedStoppingDistance,
-      Arinc429SignStatusMatrix.NormalOperation,
-    );
+    this.requestedStoppingDistArinc.setValue(correctedStoppingDistance);
+    this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
 
     this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/MANUAL`, true);
 
@@ -339,30 +359,35 @@ export class BrakeToVacateUtils<T extends number> {
     pub.pub('oansSelectedExit', null, true);
     pub.pub('ndBtvMessage', '', true);
 
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_LENGTH', 0, Arinc429SignStatusMatrix.NoComputedData);
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_RWY_BEARING', 0, Arinc429SignStatusMatrix.NoComputedData);
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE', 0, Arinc429SignStatusMatrix.NoComputedData);
-    this.remaininingDistToExit.set(-1);
-    this.remaininingDistToRwyEnd.set(-1);
+    this.runwayLengthArinc.setValue(0);
+    this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    this.runwayLengthArinc.writeToSimVar('L:A32NX_OANS_RWY_LENGTH');
 
-    Arinc429Word.toSimVarValue('L:A32NX_BTV_ROT', 0, Arinc429SignStatusMatrix.NoComputedData);
-    Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_IDLE_REVERSE', 0, Arinc429SignStatusMatrix.NoComputedData);
-    Arinc429Word.toSimVarValue('L:A32NX_BTV_TURNAROUND_MAX_REVERSE', 0, Arinc429SignStatusMatrix.NoComputedData);
+    this.runwayBearingArinc.setValue(0);
+    this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
+
+    this.requestedStoppingDistArinc.setValue(0);
+    this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
+
+    this.remainingDistToExit.set(-1);
+    this.remaininingDistToRwyEnd.set(-1);
   }
 
   updateRemainingDistances(pos: Position) {
     // Only update below 600ft AGL, and in landing FMGC phase
-    const ra1 = new Arinc429Word(this.radioAltitude1.get());
-    const ra2 = new Arinc429Word(this.radioAltitude2.get());
+    const ra1 = this.radioAltitude1.get();
+    const ra2 = this.radioAltitude2.get();
+    const ra3 = this.radioAltitude3.get();
 
     if (
-      (!ra1.isNormalOperation() && !ra2.isNormalOperation()) ||
-      (ra1.isNormalOperation() ? ra1.value : ra2.value) > 600 ||
-      this.fwsFlightPhase.get() < 6 ||
-      this.fwsFlightPhase.get() > 9
+      !(ra1.valueOr(2500) < 600 || ra2.valueOr(2500) < 600 || ra3.valueOr(2500) < 600) ||
+      this.fwsFlightPhase.get() < 9 ||
+      this.fwsFlightPhase.get() > 11
     ) {
       this.remaininingDistToRwyEnd.set(-1);
-      this.remaininingDistToExit.set(-1);
+      this.remainingDistToExit.set(-1);
       return;
     }
 
@@ -397,7 +422,7 @@ export class BrakeToVacateUtils<T extends number> {
 
         const exitDistance = pointDistance(pos[0], pos[1], this.btvExitPosition[0], this.btvExitPosition[1]);
 
-        this.remaininingDistToExit.set(MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1));
+        this.remainingDistToExit.set(MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1));
       }
     }
   }
@@ -434,9 +459,10 @@ export class BrakeToVacateUtils<T extends number> {
     ctx.resetTransform();
     ctx.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
 
-    const radioAlt1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
-    const radioAlt2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
-    const radioAlt = radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData() ? radioAlt2 : radioAlt1;
+    const radioAlt =
+      this.radioAltitude1.get().isFailureWarning() || this.radioAltitude1.get().isNoComputedData()
+        ? this.radioAltitude2.get()
+        : this.radioAltitude1.get();
 
     // Below 600ft RA, if somewhere on approach, update DRY/WET lines according to predicted touchdown point
     const dryWetLinesAreUpdating = radioAlt.valueOr(1000) <= 600;
@@ -689,7 +715,7 @@ export class BrakeToVacateUtils<T extends number> {
       // Transmit no advisory
       this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
       this.rwyAheadArinc.setBitValue(11, false);
-      Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', this.rwyAheadArinc.value, this.rwyAheadArinc.ssm);
+      this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
 
       this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '', true);
       return;
@@ -707,37 +733,54 @@ export class BrakeToVacateUtils<T extends number> {
     ]);
     const leftLine = lineOffset(line, 30, { units: 'meters' });
     const rightLine = lineOffset(line, -30, { units: 'meters' });
-    const volumeCoords = [
-      globalToAirportCoordinates(airportRefPos, {
+    globalToAirportCoordinates(
+      airportRefPos,
+      {
         lat: leftLine.geometry.coordinates[0][0],
         long: leftLine.geometry.coordinates[0][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
+      },
+      this.rwyAheadPredictionVolumePoints[0],
+    );
+    globalToAirportCoordinates(
+      airportRefPos,
+      {
         lat: leftLine.geometry.coordinates[1][0],
         long: leftLine.geometry.coordinates[1][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
+      },
+      this.rwyAheadPredictionVolumePoints[1],
+    );
+    globalToAirportCoordinates(
+      airportRefPos,
+      {
         lat: rightLine.geometry.coordinates[1][0],
         long: rightLine.geometry.coordinates[1][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
+      },
+      this.rwyAheadPredictionVolumePoints[2],
+    );
+    globalToAirportCoordinates(
+      airportRefPos,
+      {
         lat: rightLine.geometry.coordinates[0][0],
         long: rightLine.geometry.coordinates[0][1],
-      }) as Position,
-      globalToAirportCoordinates(airportRefPos, {
+      },
+      this.rwyAheadPredictionVolumePoints[3],
+    );
+    globalToAirportCoordinates(
+      airportRefPos,
+      {
         lat: leftLine.geometry.coordinates[0][0],
         long: leftLine.geometry.coordinates[0][1],
-      }) as Position,
-    ];
+      },
+      this.rwyAheadPredictionVolumePoints[4],
+    );
 
     // From here on comparing local to local coords
-    const predictionVolume = polygon([volumeCoords]);
-    const acLocalCoords = globalToAirportCoordinates(airportRefPos, globalPos);
+    const predictionVolume = polygon([this.rwyAheadPredictionVolumePoints]);
 
     const insideRunways = [];
     runwayFeatures.features.forEach((feat) => {
       if (feat.properties.idrwy) {
-        const inside = booleanContains(feat.geometry as Polygon, point(acLocalCoords));
+        const inside = booleanContains(feat.geometry as Polygon, point(this.aircraftPpos));
         if (inside) {
           insideRunways.push(feat.properties.idrwy.replace('.', ' - '));
         }
@@ -778,7 +821,7 @@ export class BrakeToVacateUtils<T extends number> {
     // Transmit on bus
     this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
     this.rwyAheadArinc.setBitValue(11, this.rwyAheadTriggered && this.rwyAheadQfu !== '');
-    Arinc429Word.toSimVarValue('L:A32NX_OANS_WORD_1', this.rwyAheadArinc.value, this.rwyAheadArinc.ssm);
+    this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
 
     this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', this.rwyAheadQfu, true);
   }

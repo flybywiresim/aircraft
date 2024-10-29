@@ -265,8 +265,14 @@
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>XMLVAR_SEAT_FWDAFT</SWITCH_POSITION_VAR>
                 <MOMENTARY_REPEAT_FREQUENCY>800</MOMENTARY_REPEAT_FREQUENCY>
-                <CODE_POS_0>(L:SEAT_CPT_MOVE_FWD_AFT) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_FWD_AFT)</CODE_POS_0>
-                <CODE_POS_2>(L:SEAT_CPT_MOVE_FWD_AFT) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_FWD_AFT)</CODE_POS_2>
+                <CODE_POS_0>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_CPT_MOVE_FWD_AFT) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_FWD_AFT)
+                }
+                </CODE_POS_0>
+                <CODE_POS_2>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_CPT_MOVE_FWD_AFT) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_FWD_AFT)
+                }
+                </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
 				<ANIM_LAG>800</ANIM_LAG>
                 <STATE_MAX_TIMER>0.2</STATE_MAX_TIMER>
@@ -288,8 +294,14 @@
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>XMLVAR_SEAT_UPDOWN</SWITCH_POSITION_VAR>
                 <MOMENTARY_REPEAT_FREQUENCY>800</MOMENTARY_REPEAT_FREQUENCY>
-                <CODE_POS_0>(L:SEAT_CPT_MOVE_UP_DOWN) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_UP_DOWN)</CODE_POS_0>
-                <CODE_POS_2>(L:SEAT_CPT_MOVE_UP_DOWN) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_UP_DOWN)</CODE_POS_2>
+                <CODE_POS_0>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_CPT_MOVE_UP_DOWN) 0.4 + 100 min (&gt;L:SEAT_CPT_MOVE_UP_DOWN)
+                }
+              	</CODE_POS_0>
+                <CODE_POS_2>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_CPT_MOVE_UP_DOWN) 0.4 - 0 max (&gt;L:SEAT_CPT_MOVE_UP_DOWN)
+                }
+                </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
 				<ANIM_LAG>800</ANIM_LAG>
                 <STATE_MAX_TIMER>0.2</STATE_MAX_TIMER>
@@ -368,8 +380,14 @@
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>XMLVAR_SEAT_FO_FWDAFT</SWITCH_POSITION_VAR>
                 <MOMENTARY_REPEAT_FREQUENCY>400</MOMENTARY_REPEAT_FREQUENCY>
-                <CODE_POS_0>(L:SEAT_FO_MOVE_FWD_AFT) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_FWD_AFT)</CODE_POS_0>
-                <CODE_POS_2>(L:SEAT_FO_MOVE_FWD_AFT) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_FWD_AFT)</CODE_POS_2>
+                <CODE_POS_0>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_FO_MOVE_FWD_AFT) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_FWD_AFT)
+                }
+                </CODE_POS_0>
+                <CODE_POS_2>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_FO_MOVE_FWD_AFT) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_FWD_AFT)
+                }
+                </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
 				<ANIM_LAG>800</ANIM_LAG>
                 <STATE_MAX_TIMER>2</STATE_MAX_TIMER>
@@ -392,8 +410,14 @@
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>XMLVAR_SEAT_FO_UPDOWN</SWITCH_POSITION_VAR>
                 <MOMENTARY_REPEAT_FREQUENCY>400</MOMENTARY_REPEAT_FREQUENCY>
-                <CODE_POS_0>(L:SEAT_FO_MOVE_UP_DOWN) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_UP_DOWN)</CODE_POS_0>
-                <CODE_POS_2>(L:SEAT_FO_MOVE_UP_DOWN) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_UP_DOWN)</CODE_POS_2>
+                <CODE_POS_0>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_FO_MOVE_UP_DOWN) 0.2 + 100 min (&gt;L:SEAT_FO_MOVE_UP_DOWN)
+                }
+                </CODE_POS_0>
+                <CODE_POS_2>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) if{
+                    (L:SEAT_FO_MOVE_UP_DOWN) 0.2 - 0 max (&gt;L:SEAT_FO_MOVE_UP_DOWN)
+                }
+                </CODE_POS_2>
                 <MOMENTARY_SWITCH/>
 				<ANIM_LAG>800</ANIM_LAG>
                 <STATE_MAX_TIMER>2</STATE_MAX_TIMER>
@@ -557,7 +581,7 @@
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; if{
+                    (L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; if{
                         (L:FO_SLIDING_WINDOW) ! (&gt;L:FO_SLIDING_WINDOW)
                     } els{
                         0 (&gt;L:FO_SLIDING_WINDOW)
@@ -577,7 +601,7 @@
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (A:IS CAMERA RAY INTERSECT WITH NODE:1, Bool) 0 == (L:A32NX_PRESS_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; and if{
+                    (A:IS CAMERA RAY INTERSECT WITH NODE:1, Bool) 0 == (L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE, psi) 1.2 &lt; and if{
                         (L:CPT_SLIDING_WINDOW) ! (&gt;L:CPT_SLIDING_WINDOW)
                     } els{
                         0 (&gt;L:CPT_SLIDING_WINDOW)
@@ -736,22 +760,6 @@
                     (L:A380_LGPIN_DOOR) ! (&gt;L:A380_LGPIN_DOOR)
                 </LEFT_SINGLE_CODE>
                 <TOOLTIPID>Open or Close Landing Gear Pins Compartment</TOOLTIPID>
-            </UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M4L -->
-
-        <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M4L</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
-            </UseTemplate>
-            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-                <LEFT_SINGLE_CODE>
-                    (L:ANIM_DOOR_M4L) ! (&gt;L:ANIM_DOOR_M4L)
-                </LEFT_SINGLE_CODE>
-                <TOOLTIPID>Open or Close PAX Door M4L</TOOLTIPID>
             </UseTemplate>
         </Component>
     </Template>

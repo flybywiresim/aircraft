@@ -46,16 +46,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
 
     const sub = this.props.bus.getSubscriber<PFDSimvars & HEvent & Arinc429Values>();
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        this.lsButtonPressedVisibility = !this.lsButtonPressedVisibility;
-        SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
-
-        this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-        this.handleGsReferenceLine();
-      }
-    });
-
     sub
       .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
       .whenChanged()

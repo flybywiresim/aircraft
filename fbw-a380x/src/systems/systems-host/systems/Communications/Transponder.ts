@@ -1,4 +1,13 @@
-import { ConsumerSubject, EventBus, GameStateProvider, Instrument, SimVarValueType, Subject, Subscribable, Wait } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  GameStateProvider,
+  Instrument,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
@@ -59,6 +68,9 @@ export class Transponder implements Instrument {
     Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame).then(() => {
       // set initial squawk code as the cfg file param doesn't seem to work
       SimVar.SetSimVarValue('K:XPNDR_SET', 'number', 0x2000);
+      if (!SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool')) {
+        this.bus.getPublisher<MfdSurvEvents>().pub('mfd_xpdr_set_auto', true, true);
+      }
     });
   }
 

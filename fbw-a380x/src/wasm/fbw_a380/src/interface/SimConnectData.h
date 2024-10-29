@@ -102,6 +102,8 @@ struct SimData {
   unsigned long long speed_slot_index;
   unsigned long long engineAntiIce_1;
   unsigned long long engineAntiIce_2;
+  unsigned long long engineAntiIce_3;
+  unsigned long long engineAntiIce_4;
   unsigned long long simOnGround;
   double generalEngineElapsedTime_1;
   double generalEngineElapsedTime_2;
@@ -140,6 +142,11 @@ struct SimData {
   double wheelRpmRightBlg;
   double wheelRpmLeftWlg;
   double wheelRpmRightWlg;
+  double contact_point_compression_0;
+  double contact_point_compression_1;
+  double contact_point_compression_2;
+  double contact_point_compression_3;
+  double contact_point_compression_4;
 };
 
 struct SimInput {
@@ -276,6 +283,15 @@ struct ClientDataAutothrust {
   double status;
   double mode;
   double mode_message;
+};
+
+struct ClientDataAutothrustA380 {
+  double N1_TLA_3_percent;
+  double N1_TLA_4_percent;
+  double is_in_reverse_3;
+  double is_in_reverse_4;
+  double N1_c_3_percent;
+  double N1_c_4_percent;
 };
 
 struct ClientDataFlyByWireInput {

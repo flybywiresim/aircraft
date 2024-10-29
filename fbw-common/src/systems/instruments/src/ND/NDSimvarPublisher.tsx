@@ -10,7 +10,5 @@ export type NDSimvars = GenericAdirsEvents &
     ilsCourse: number;
     selectedHeading: Degrees;
     showSelectedHeading: boolean;
-    pposLat: Degrees;
-    pposLong: Degrees;
     absoluteTime: Seconds;
   };

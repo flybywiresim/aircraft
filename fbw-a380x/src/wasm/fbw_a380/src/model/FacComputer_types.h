@@ -1,7 +1,6 @@
-#ifndef RTW_HEADER_FacComputer_types_h_
-#define RTW_HEADER_FacComputer_types_h_
+#ifndef FacComputer_types_h_
+#define FacComputer_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
@@ -11,6 +10,95 @@ enum class SignStatusMatrix
   NoComputedData,
   FunctionalTest,
   NormalOperation
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+
+struct base_fac_discrete_outputs
+{
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+
+struct base_fac_analog_outputs
+{
+  real_T yaw_damper_order_deg;
+  real_T rudder_trim_order_deg;
+  real_T rudder_travel_limit_order_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
+#define DEFINED_TYPEDEF_FOR_base_fac_bus_
+
+struct base_fac_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 gamma_a_deg;
+  base_arinc_429 gamma_t_deg;
+  base_arinc_429 total_weight_lbs;
+  base_arinc_429 center_of_gravity_pos_percent;
+  base_arinc_429 sideslip_target_deg;
+  base_arinc_429 fac_slat_angle_deg;
+  base_arinc_429 fac_flap_angle_deg;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 rudder_travel_limit_command_deg;
+  base_arinc_429 delta_r_yaw_damper_deg;
+  base_arinc_429 estimated_sideslip_deg;
+  base_arinc_429 v_alpha_lim_kn;
+  base_arinc_429 v_ls_kn;
+  base_arinc_429 v_stall_kn;
+  base_arinc_429 v_alpha_prot_kn;
+  base_arinc_429 v_stall_warn_kn;
+  base_arinc_429 speed_trend_kn;
+  base_arinc_429 v_3_kn;
+  base_arinc_429 v_4_kn;
+  base_arinc_429 v_man_kn;
+  base_arinc_429 v_max_kn;
+  base_arinc_429 v_fe_next_kn;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 delta_r_rudder_trim_deg;
+  base_arinc_429 rudder_trim_pos_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_inputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_analog_inputs_
+
+struct base_fac_analog_inputs
+{
+  real_T yaw_damper_position_deg;
+  real_T rudder_trim_position_deg;
+  real_T rudder_travel_lim_position_deg;
+  real_T left_spoiler_pos_deg;
+  real_T right_spoiler_pos_deg;
 };
 
 #endif
@@ -68,66 +156,6 @@ struct base_fac_discrete_inputs
   boolean_T ir_3_switch;
   boolean_T adr_3_switch;
   boolean_T yaw_damper_has_hyd_press;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_inputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_analog_inputs_
-
-struct base_fac_analog_inputs
-{
-  real_T yaw_damper_position_deg;
-  real_T rudder_trim_position_deg;
-  real_T rudder_travel_lim_position_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
-
-struct base_arinc_429
-{
-  uint32_T SSM;
-  real32_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
-#define DEFINED_TYPEDEF_FOR_base_fac_bus_
-
-struct base_fac_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 gamma_a_deg;
-  base_arinc_429 gamma_t_deg;
-  base_arinc_429 total_weight_lbs;
-  base_arinc_429 center_of_gravity_pos_percent;
-  base_arinc_429 sideslip_target_deg;
-  base_arinc_429 fac_slat_angle_deg;
-  base_arinc_429 fac_flap_angle;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 rudder_travel_limit_command_deg;
-  base_arinc_429 delta_r_yaw_damper_deg;
-  base_arinc_429 estimated_sideslip_deg;
-  base_arinc_429 v_alpha_lim_kn;
-  base_arinc_429 v_ls_kn;
-  base_arinc_429 v_stall_kn;
-  base_arinc_429 v_alpha_prot_kn;
-  base_arinc_429 v_stall_warn_kn;
-  base_arinc_429 speed_trend_kn;
-  base_arinc_429 v_3_kn;
-  base_arinc_429 v_4_kn;
-  base_arinc_429 v_man_kn;
-  base_arinc_429 v_max_kn;
-  base_arinc_429 v_fe_next_kn;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 delta_r_rudder_trim_deg;
-  base_arinc_429 rudder_trim_pos_deg;
 };
 
 #endif
@@ -360,6 +388,12 @@ struct base_fac_logic_outputs
   boolean_T left_main_gear_pressed;
   boolean_T right_main_gear_pressed;
   boolean_T main_gear_out;
+  boolean_T sfcc_own_valid;
+  boolean_T all_sfcc_lost;
+  real32_T flap_handle_index;
+  real32_T flap_angle_deg;
+  real32_T slat_angle_deg;
+  real32_T slat_flap_actual_pos;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
   boolean_T double_self_detected_adr_failure;
@@ -414,33 +448,6 @@ struct base_fac_flight_envelope_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-
-struct base_fac_discrete_outputs
-{
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-
-struct base_fac_analog_outputs
-{
-  real_T yaw_damper_order_deg;
-  real_T rudder_trim_order_deg;
-  real_T rudder_travel_limit_order_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_fac_outputs_
 #define DEFINED_TYPEDEF_FOR_fac_outputs_
 
@@ -453,85 +460,6 @@ struct fac_outputs
   base_fac_discrete_outputs discrete_outputs;
   base_fac_analog_outputs analog_outputs;
   base_fac_bus bus_outputs;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-#define DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-
-struct struct_2OohiAWrazWy5wDS5iisgF
-{
-  real_T SSM;
-  real_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_fAEsrEZhvvruiP1ICEwvRC_
-#define DEFINED_TYPEDEF_FOR_struct_fAEsrEZhvvruiP1ICEwvRC_
-
-struct struct_fAEsrEZhvvruiP1ICEwvRC
-{
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_1;
-  struct_2OohiAWrazWy5wDS5iisgF gamma_a_deg;
-  struct_2OohiAWrazWy5wDS5iisgF gamma_t_deg;
-  struct_2OohiAWrazWy5wDS5iisgF total_weight_lbs;
-  struct_2OohiAWrazWy5wDS5iisgF center_of_gravity_pos_percent;
-  struct_2OohiAWrazWy5wDS5iisgF sideslip_target_deg;
-  struct_2OohiAWrazWy5wDS5iisgF fac_slat_angle_deg;
-  struct_2OohiAWrazWy5wDS5iisgF fac_flap_angle;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_2;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_travel_limit_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF delta_r_yaw_damper_deg;
-  struct_2OohiAWrazWy5wDS5iisgF estimated_sideslip_deg;
-  struct_2OohiAWrazWy5wDS5iisgF v_alpha_lim_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_ls_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_stall_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_alpha_prot_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_stall_warn_kn;
-  struct_2OohiAWrazWy5wDS5iisgF speed_trend_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_3_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_4_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_man_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_max_kn;
-  struct_2OohiAWrazWy5wDS5iisgF v_fe_next_kn;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_3;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_4;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_5;
-  struct_2OohiAWrazWy5wDS5iisgF delta_r_rudder_trim_deg;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_trim_pos_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
-#define DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
-
-struct struct_NHciy9HFthvyJ1C8wWfWlB
-{
-  real_T estimated_beta_deg;
-  real_T beta_target_deg;
-  boolean_T beta_target_visible;
-  boolean_T alpha_floor_condition;
-  real_T alpha_filtered_deg;
-  real_T computed_weight_lbs;
-  real_T computed_cg_percent;
-  real_T v_alpha_max_kn;
-  real_T v_alpha_prot_kn;
-  real_T v_stall_warn_kn;
-  real_T v_ls_kn;
-  real_T v_stall_kn;
-  real_T v_3_kn;
-  boolean_T v_3_visible;
-  real_T v_4_kn;
-  boolean_T v_4_visible;
-  real_T v_man_kn;
-  boolean_T v_man_visible;
-  real_T v_max_kn;
-  real_T v_fe_next_kn;
-  real_T v_fe_next_visible;
-  real_T v_c_trend_kn;
 };
 
 #endif

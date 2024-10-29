@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PrimComputer_h_
-#define RTW_HEADER_A380PrimComputer_h_
+#ifndef A380PrimComputer_h_
+#define A380PrimComputer_h_
 #include "rtwtypes.h"
 #include "A380PrimComputer_types.h"
 #include "A380LateralNormalLaw.h"
@@ -63,7 +63,7 @@ class A380PrimComputer final
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_d;
+    real_T eventTime_p;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     boolean_T Delay1_DSTATE_b;
@@ -82,10 +82,11 @@ class A380PrimComputer final
     boolean_T configFullEventTime_not_empty;
     boolean_T ra1CoherenceRejected;
     boolean_T ra2CoherenceRejected;
+    boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive;
-    boolean_T eventTime_not_empty_e;
+    boolean_T sProtActive_l;
+    boolean_T eventTime_not_empty_i;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_dmh;
@@ -511,16 +512,16 @@ class A380PrimComputer final
     real_T Constant_Value_g;
     real_T Gain_Gain_g;
     real_T Constant_Value_af;
-    real32_T Constant10_Value_l;
-    real32_T Constant9_Value_m;
-    real32_T Constant8_Value_hh;
-    real32_T Constant7_Value_j;
-    real32_T Constant6_Value_k;
-    real32_T Constant5_Value_g;
-    real32_T Constant4_Value_a5;
-    real32_T Constant3_Value_ge;
-    real32_T Constant2_Value_c;
-    real32_T Constant1_Value_nj;
+    real32_T Constant10_Value_d;
+    real32_T Constant9_Value_d;
+    real32_T Constant8_Value_l;
+    real32_T Constant7_Value_a;
+    real32_T Constant6_Value_a;
+    real32_T Constant5_Value_c;
+    real32_T Constant4_Value_p;
+    real32_T Constant3_Value_m;
+    real32_T Constant2_Value_n;
+    real32_T Constant1_Value_g;
     real32_T Constant14_Value;
     real32_T Constant15_Value;
     real32_T Constant24_Value;
@@ -538,12 +539,12 @@ class A380PrimComputer final
     real32_T Constant34_Value;
     real32_T Constant35_Value;
     real32_T Constant12_Value;
-    real32_T Constant11_Value_l;
+    real32_T Constant11_Value_i;
     real32_T Constant20_Value;
-    real32_T Gain_Gain_b;
-    real32_T Gain1_Gain_f;
+    real32_T Gain_Gain_k;
+    real32_T Gain1_Gain_g;
     real32_T Gain2_Gain;
-    real32_T Gain3_Gain_g;
+    real32_T Gain3_Gain_e;
     real32_T Gain4_Gain_l;
     uint32_T alphamax_maxIndex[2];
     uint32_T alphaprotection_maxIndex[2];
@@ -573,6 +574,7 @@ class A380PrimComputer final
     boolean_T Constant19_Value;
     boolean_T Constant21_Value;
     boolean_T Constant22_Value;
+    boolean_T Constant36_Value;
   };
 
   A380PrimComputer(A380PrimComputer const&) = delete;
@@ -633,8 +635,8 @@ class A380PrimComputer final
   static void A380PrimComputer_RateLimiter_e_Reset(rtDW_RateLimiter_A380PrimComputer_b_T *localDW);
   static void A380PrimComputer_RateLimiter_n(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T
     rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380PrimComputer_b_T *localDW);
-  static void A380PrimComputer_MATLABFunction_cw(const boolean_T rtu_u[19], real32_T *rty_y);
-  static void A380PrimComputer_MATLABFunction_ei(a380_pitch_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2,
+  static void A380PrimComputer_MATLABFunction_i(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void A380PrimComputer_MATLABFunction_b(a380_pitch_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2,
     boolean_T *rty_bit3);
   static void A380PrimComputer_MATLABFunction2(a380_lateral_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2);
   A380LateralDirectLaw LawMDLOBJ1;

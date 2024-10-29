@@ -3,21 +3,25 @@
 ## Contents
 
 - [A380 Local SimVars](#a380-local-simvars)
+  - [Contents](#contents)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
-  - [Auto Flight System ATA 22](#afs-ata-22)
+  - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
+  - [Flight Management System ATA 22](#flight-management-system-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
-  - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
+  - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
+  - [Engines ATA 70](#engines-ata-70)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
   - [Autobrakes](#autobrakes)
+  - [Non-Systems Related](#non-systems-related)
 
 ## Uncategorized
 
@@ -113,7 +117,121 @@
     - Angular position of right nose wheel (in wheel axis not steering)
 
 
+- A32NX_LIGHTING_PRESET_LOAD
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+
+- A32NX_LIGHTING_PRESET_SAVE
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be overwritten and saved to an ini file
+    - Will be reset to 0 after saving is done
+
+- A32NX_AIRCRAFT_PRESET_LOAD
+    - Number
+    - ID for preset (1..5)
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+    - When set to 0 during loading will stop and cancel the loading process
+    - | Value | Meaning            |
+            |-------|--------------------|
+      | 1     | Cold & Dark        |
+      | 2     | Powered            |
+      | 3     | Ready for Pushback |
+      | 4     | Ready for Taxi     |
+      | 5     | Ready for Takeoff  |
+
+- A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS
+    - Number (0.0..1.0)
+    - While loading a preset this will contain the percentage of the total progress of loading
+
+- A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE
+    - Bool
+    - When set to true the loading process will be expedited and the loading will be done as fast as possible
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Bool
+    - Read/Write
+    - 0 when pushback system is completely disabled, 1 when system is enabled
+    - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
+    - This prevents conflicts with other pushback add-ons
+
+- A32NX_PUSHBACK_SPD_FACTOR
+    - Number -1.0..1.0
+    - Read/Write
+    - Speed factor for pushback
+    - 0.0 is stopped, 1.0 is full speed forward, -1.0 is full speed backward
+
+- A32NX_PUSHBACK_HDG_FACTOR
+    - Number -1.0..1.0
+    - Read/Write
+    - Turn factor for pushback
+    - -1.0 is full left, 0.0 is straight, 1.0 is full right
+
+
 ## Air Conditioning Pressurisation Ventilation ATA 21
+
+- A32NX_COND_CPIOM_B{id}_AGS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the AGS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | AGS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | Pack 1 operating                                     |
+      | 14  | Pack 2 operating                                     |
+
+- A32NX_COND_CPIOM_B{id}_TCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the TCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | TCS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | Hot Air 1 position disagrees                         |
+      | 14  | Hot Air 2 position disagrees                         |
+      | 15  | Trim Air Pressure Regulating Valve 1 is open         |
+      | 16  | Trim Air Pressure Regulating Valve 2 is open         |
+
+- A32NX_COND_CPIOM_B{id}_VCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the VCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | VCS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | FWD Extraction fan is on                             |
+      | 14  | FWD isolation valve is open                          |
+      | 15  | Bulk Extraction fan is on                            |
+      | 16  | Bulk isolation valve is open                         |
+      | 17  | Primary fans are enabled                             |
+      | 18  | Primary Fan 1 Fault                                  |
+      | 19  | Primary Fan 2 Fault                                  |
+      | 20  | Primary Fan 3 Fault                                  |
+      | 21  | Primary Fan 4 Fault                                  |
+      | 22  | Bulk Heater Fault                                    |
+      | 23  | FWD isolation valve Fault                            |
+      | 24  | Bulk isolation valve Fault                           |
+
+- A32NX_COND_CPIOM_B{id}_CPCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the CPCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | CPCS Application INOP                                |
+      | 12  | Unused                                               |
+      | 13  | Excessive cabin altitude - warn                      |
+      | 14  | Excessive differential pressure - warn               |
+      | 15  | Excessive negative differential pressure - warn      |
+      | 16  | High differential pressure - warn                    |
+      | 17  | Low differential pressure - warn                     |
+      | 18  | Excessive residual pressure - warn                   |
 
 - A32NX_COND_{id}_TEMP
     - Degree Celsius
@@ -138,6 +256,12 @@
         - CARGO_FWD
         - CARGO_BULK
 
+- A32NX_COND_FDAC_{id1}_CHANNEL_{id2}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id - both}
+        - 1 or 2
+
 - A32NX_COND_{id}_DUCT_TEMP
     - Degree Celsius
     - Temperature of trim air coming out of the ducts in the cabin and cockpit
@@ -147,11 +271,6 @@
 - A32NX_COND_PURS_SEL_TEMPERATURE
     - Degree Celsius
     - Temperature selected by the crew using the FAP (Flight Attendant Panel). For us, this is selected in the EFB.
-
-- A32NX_COND_PACK_{id}_IS_OPERATING
-    - Bool
-    - True when the pack operates normally (at least one FCV is open)
-    - {id} 1 or 2
 
 - A32NX_COND_PACK_{id}_OUTLET_TEMPERATURE
     - Degree Celsius
@@ -164,37 +283,11 @@
     - {id}
         - Same as A32NX_COND_{id}_TEMP
 
-- A32NX_COND_HOT_AIR_VALVE_{id}_IS_ENABLED
-    - Bool
-    - True if the hot air valve {1 or 2} is enabled
-
-- A32NX_COND_HOT_AIR_VALVE_{id}_IS_OPEN
-    - Bool
-    - True if the hot air valve {1 or 2} is open
-
 - A32NX_COND_TADD_CHANNEL_{id}_FAILURE
     - Bool
     - True if the channel is failed
     - {id}
         - 1 or 2
-
-- A32NX_VENT_PRIMARY_FANS_ENABLED
-    - Bool
-    - True if the primary (high pressure) fans are enabled and operating normally
-
-- A32NX_VENT_{id}_EXTRACTION_FAN_ON
-    - Bool
-    - True when the the extraction fans of the fwd/bulk cargo compartment operate normally
-    - {id}
-        - FWD
-        - BULK
-
-- A32NX_VENT_{id}_ISOLATION_VALVE_OPEN
-    - Bool
-    - True when the isolation valves of the fwd/bulk cargo compartment are open
-    - {id}
-        - FWD
-        - BULK
 
 - A32NX_VENT_{id1}_VCM_CHANNEL_{id2}_FAILURE
     - Bool
@@ -209,28 +302,69 @@
     - Bool
     - True when the Overpressure Relief Valve Dumps are open. There are two valves but just one variable for now as they (mostly) always open and close at the same time.
 
-- A32NX_PRESS_CABIN_ALTITUDE_TARGET
+- A32NX_PRESS_CABIN_ALTITUDE_{cpiom_id}
+    - Arinc429Word<Feet>
+    - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
+
+- A32NX_PRESS_CABIN_ALTITUDE_TARGET_{cpiom_id}
     - Feet
     - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
 
-- A32NX_PRESS_{id}_OCSM_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-    - {id} 1 to 4
+- A32NX_PRESS_CABIN_VS_{cpiom_id}
+    - Arinc429Word<FPM>
+    - Rate of pressurization or depressurization of the cabin expressed as altitude change
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
 
-- A32NX_PRESS_DIFF_PRESS_HI
+- A32NX_PRESS_CABIN_VS_TARGET_{cpiom_id}
+    - Arinc429Word<FPM>
+    - Target cabin vertical speed by the pressurization system
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
+
+- A32NX_PRESS_CABIN_DELTA_PRESSURE_{cpiom_id}
+    - Arinc429Word<PSI>
+    - The difference in pressure between the cabin interior and the exterior air.
+      Positive when cabin pressure is higher than external pressure.
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
+
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
+- A32NX_PRESS_OCSM_{id1}_CHANNEL_{id2}_FAILURE
     - Bool
-    - True when FWC condition for "DIFF PRESS HI" is met (differential pressure between 8.92 and 9.2 PSI)
+    - True if the channel is failed
+    - {id1}
+        - 1 to 4
+    - {id2}
+        - 1 or 2
 
-- A32NX_PRESS_DIFF_PRESS_EXCESSIVE
+- A32NX_PRESS_OCSM_{id}_AUTO_PARTITION_FAILURE
     - Bool
-    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
-
-- A32NX_PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE
-    - Bool
-    - True when FWC condition for "EXCESS NEGATIVE DIFF PRESS" is met (differential pressure lower than -0.72 PSI)
+    - True if the the automatic outflow valve control is failed
+    - {id}
+        - 1 to 4
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)
@@ -307,6 +441,17 @@
 - A32NX_FMS_PAX_NUMBER
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+- A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
+    - Number
+    - The short term managed speed displayed on the PFD
+
+## Flight Management System ATA 22
+
+- A32NX_FMS_SWITCHING_KNOB
+    - FMS used
+    - Position (0-2)
+    - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
 ## Electrical ATA 24
 
@@ -651,6 +796,18 @@
       | 28  | Slat System Jam                          |
       | 29  | Flap System Jam                          |
 
+- A32NX_FLAPS_CONF_INDEX
+  - Number
+  - Indicates the desired flap configuration index according to the table
+  - Value | Meaning
+            --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf2S
+      5 | Conf3
+      6 | Conf4
 
 ## Indicating-Recording ATA 31
 
@@ -887,3 +1044,13 @@
 - A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED
     - Boolean
     - RTO autobrake button is pressed
+
+## Non-Systems Related
+
+- `L:FBW_PILOT_SEAT`
+  - Enum
+  - Which seat the user/pilot occupies in the flight deck.
+  - | Value | Description |
+    |-------|-------------|
+    | 0     | Left Seat   |
+    | 1     | Right Seat  |
