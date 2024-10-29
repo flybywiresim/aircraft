@@ -59,8 +59,11 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - Refuel Driver/Refuel Application placeholder pseudo-FQMS implementation (pre-cursor for realistic FQMS implementation while supporting instant load)
   - CPIOM etc. not implemented yet.
-- Automatic fuel transfer system - Not fully implemented yet i.e. AGT off when 2 engines on
-- Manual refueling - Not supported yet
+- Portions of the automatic fuel transfer system -- main transfers from the inner, mid, trim, and outer tanks are implemented with the correct scheduling as are CG control transfers from the trim tank to the appropriate inner, mid, or feed tanks. Not implemented yet are load alleviation transfers, transfers based on remaining time to destination, cold fuel transfers, and automatic transfers 
+  that occur on the ground. The transfer pump pushbuttons work and can be used to interrupt an automatic transfer.
+- The crossfeed valves work, but fuel will not be taken from the correct tank until the FADEC WASM is modified
+- Manual fuel transfer
+- Manually controlling how much fuel each tank receives when fueling
 - Integrated Refuel Panel - Simulated in the systems but not modeled in the plane model, or fully connected to ELEC
 - MFD entry - Not supported yet (ZFW/ZFWCG entry - Possible via EFB currently for testing)
 
@@ -102,7 +105,9 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
   - No glide slope adaptation
   - No handling of brakes/OANS errors
 
-<!-- ### ATA 33 Lights -->
+### ATA 33 Lights
+
+- Push button in overhead for logo lights
 
 ### ATA 34 Navigation
 
