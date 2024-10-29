@@ -181,28 +181,28 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
           <div class="fc mfd-pos-monitor-table">
-          <div class="mfd-pos-table-row">
+          <div class="mfd-pos-space-between-row ">
           <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">FMS1</span>
+              <span class="mfd-label mfd-spacing-right">  FMS1</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
           </div>
-          <div class="mfd-pos-table-row">
+          <div class="mfd-pos-space-between-row ">
           <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">RADIO</span>
+              <span class="mfd-label mfd-spacing-right"> RADIO</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
           </div>
-          <div class="mfd-pos-table-row">
+          <div class="mfd-pos-space-between-row ">
           <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right">MIXIRS</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
             <div span>{this.positionFrozenText}</div>
             </div>
-            <div class="mfd-pos-table-row">
+            <div class="mfd-pos-space-between-row ">
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">GPIRS</span>
+              <span class="mfd-label mfd-spacing-right"> GPIRS</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
             <Button
