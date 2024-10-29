@@ -33,10 +33,15 @@ const getReleaseName = (commitHash, branch, tag) => {
 exports.getGitBuildInfo = () => {
   // all git commands are wrapped in a try block so the build can still succeed outside of a git repo.
   try {
-    const commitHash = process.env.GITHUB_SHA ?? evaluate('git show-ref -s HEAD');
-    const tag = evaluate('git tag -l --contains HEAD')
-      .split('\n')
-      .filter((it) => !!it)[0];
+    const commitHash = process.env.GITHUB_SHA ? process.env.GITHUB_SHA : evaluate('git show-ref -s HEAD');
+    let tag = '';
+    try {
+      tag = evaluate('git tag -l --contains HEAD')
+        .split('\n')
+        .filter((it) => !!it)[0];
+    } catch (e) {
+      console.log('No tag', e);
+    }
 
     const isPullRequest = process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/pull/');
 
@@ -50,7 +55,7 @@ exports.getGitBuildInfo = () => {
     const buildInfo = {
       actor: process.env.GITHUB_ACTOR ?? evaluate("git log -1 --pretty=format:'%an <%ae>'"),
       event: process.env.GITHUB_EVENT_NAME ?? 'manual',
-      ref: process.env.GITHUB_REF ?? evaluate('git show-ref HEAD').replace(/.+\//, ''),
+      ref: process.env.GITHUB_REF ? process.env.GITHUB_REF : evaluate('git show-ref HEAD').replace(/.+\//, ''),
       commitHash,
       shortHash: commitHash.substring(0, 7),
       branch,
