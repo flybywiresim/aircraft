@@ -48,22 +48,6 @@ export class FwsMemos {
       sysPage: -1,
       side: 'RIGHT',
     },
-
-    '0000105': {
-      // OUTR TK FUEL XFRD
-      flightPhaseInhib: [], // Plus check that outer tanks not empty
-      simVarIsActive: MappedSubject.create(
-        ([leftOuterInnerValve, rightOuterInnerValve]) => !!leftOuterInnerValve || !!rightOuterInnerValve,
-        this.fws.leftOuterInnerValve,
-        this.fws.rightOuterInnerValve,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000010501'], // config memo
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
-      failure: 0,
-      sysPage: -1,
-      side: 'RIGHT',
-    },
     '0000060': {
       // SPEED BRK
       flightPhaseInhib: [],
