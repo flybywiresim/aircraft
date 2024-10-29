@@ -9,6 +9,7 @@
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
 1. [FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
+1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
 
 ## 0.12.0
 

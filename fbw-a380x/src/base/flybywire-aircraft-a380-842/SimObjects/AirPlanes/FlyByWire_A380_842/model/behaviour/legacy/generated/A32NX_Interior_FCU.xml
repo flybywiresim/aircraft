@@ -274,7 +274,7 @@
         </EditableTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+            <UseTemplate Name="ASOBO_GT_Knob_Infinite_Pull">
                 <CLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
                         (&gt;H:A320_Neo_FCU_VS_INC_FPA)
@@ -291,14 +291,10 @@
                     }
                     (&gt;H:A320_Neo_CDU_VS)
                 </ANTICLOCKWISE_CODE>
-                <PULL_CODE>
+                <LEFT_SINGLE_CODE>
                     (&gt;H:A320_Neo_FCU_VS_PULL)
                     (&gt;H:A320_Neo_CDU_VS)
-                </PULL_CODE>
-                <PUSH_CODE>
-                    (&gt;H:A320_Neo_FCU_VS_PUSH)
-                    (&gt;H:A320_Neo_CDU_VS)
-                </PUSH_CODE>
+                </LEFT_SINGLE_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
                 <WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
