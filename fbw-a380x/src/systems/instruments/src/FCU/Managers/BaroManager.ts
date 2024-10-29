@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEvent, Instrument, KeyEventManager, Subject, UnitType } from '@microsoft/msfs-sdk';
+import { EventBus, HEvent, Instrument, KeyEventManager, MathUtils, Subject, UnitType } from '@microsoft/msfs-sdk';
 
 export type BaroMode = ReturnType<typeof Simplane.getPressureSelectedMode>;
 export type BaroUnit = ReturnType<typeof Simplane.getPressureSelectedUnits>;
@@ -56,7 +56,7 @@ export class BaroManager implements Instrument {
       this.publisher.pub(this.modeEventKey, v);
     }, true);
 
-    this.unit.sub((v) => this.publisher.pub(this.unitEventKey, v), true);
+    this.unit.sub(this.onBaroUnitChanged.bind(this), true);
 
     this.correction.sub((v) => this.publisher.pub(this.correctionEventKey, v));
 
@@ -72,6 +72,21 @@ export class BaroManager implements Instrument {
     this.mode.set(mode);
     if (mode !== 'STD') {
       this.correction.set(correction);
+    }
+  }
+
+  private onBaroUnitChanged(newUnit: BaroUnit): void {
+    this.publisher.pub(this.unitEventKey, newUnit);
+
+    if (this.mode.get() === 'STD') {
+      // we need to change the unit of the pre-selected value
+      const correction = this.correction.get();
+      const isCorrectionInHg = correction < 100;
+      if (newUnit === 'inches of mercury' && !isCorrectionInHg) {
+        this.correction.set(MathUtils.round(UnitType.IN_HG.convertFrom(correction, UnitType.HPA), 0.01));
+      } else if (newUnit === 'millibar' && isCorrectionInHg) {
+        this.correction.set(MathUtils.round(UnitType.HPA.convertFrom(correction, UnitType.IN_HG), 1));
+      }
     }
   }
 
