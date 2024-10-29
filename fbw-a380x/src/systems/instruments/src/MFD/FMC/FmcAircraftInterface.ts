@@ -133,7 +133,6 @@ export class FmcAircraftInterface {
     );
 
     this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
-      console.log(zfw);
       this.arincZeroFuelWeight.setBnrValue(
         zfw ? zfw : 0,
         zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
@@ -1217,7 +1216,6 @@ export class FmcAircraftInterface {
     ) {
       const initZfw = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW', 'number');
       const initZfwCg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number');
-      console.log(initZfw, initZfwCg);
 
       // Update FMS ZFW and ZFWCG from SimVars, e.g. when spawning on a runway
       this.fmc.fmgc.data.zeroFuelWeight.set(initZfw);
