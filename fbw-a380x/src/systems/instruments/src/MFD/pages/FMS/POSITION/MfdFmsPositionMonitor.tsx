@@ -60,6 +60,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozenText = Subject.create('');
 
+  private readonly gpsCoordinates: Coordinates = {lat : 0, long: 0}
+
+  private readonly gpsPositionText = Subject.create('');
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const sub = this.props.bus.getSubscriber<ClockEvents>();
@@ -95,6 +99,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.fillIrData(1, this.ir1LatitudeRegister, this.ir1LongitudeRegister, this.ir1Coordinates, fmCoordinates, this.ir1Position, this.ir1PositionDeviation);
       this.fillIrData(2, this.ir2LatitudeRegister, this.ir2LongitudeRegister, this.ir2Coordinates, fmCoordinates, this.ir2Position, this.ir2PositionDeviation);
       this.fillIrData(3, this.ir3LatitudeRegister, this.ir3LongitudeRegister, this.ir3Coordinates, fmCoordinates, this.ir3Position, this.ir3PositionDeviation);
+
+      // TODO replace with MMR signals once implemented
+      this.gpsCoordinates.lat = SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude');
+      this.gpsCoordinates.long = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
+      this.gpsPositionText.set(coordinateToString(this.gpsCoordinates, false));
     }
   }
 
@@ -130,7 +139,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private setPositionFrozen() {
     const frozen = this.positionFrozen.get();
-    this.positionFrozenText.set(frozen? "POSITION FROZEN AT " + this.getUtcFormatString() : "");
+    this.positionFrozenText.set(frozen? "POSITION FROZEN <br /> AT " + this.getUtcFormatString() : "");
     this.positionFrozen.set(!frozen);
   }
 
@@ -153,7 +162,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value">{this.fmsAccuracy}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right" style="width: 100px;">
+              <span class="mfd-label mfd-spacing-right" style="width: 95px;">
                 EPU
               </span>
               <span class="mfd-value">{this.fmsEpu}</span>
@@ -173,7 +182,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
                 alignText="flex-end"
-                containerStyle="width: 150px;"
+                containerStyle="width: 170px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -198,7 +207,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label mfd-spacing-right">MIXIRS</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
-            <div span>{this.positionFrozenText}</div>
+            <div span class="mfd-label">{this.positionFrozenText}</div>
             </div>
             <div class="mfd-pos-space-between-row ">
             <div class="mfd-label-value-container">
@@ -208,9 +217,63 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <Button
                 label="FREEZE <br /> POSITION *"
                 onClick={() => this.setPositionFrozen()}
-                buttonStyle="width: 150px;"
+                buttonStyle="width: 170px;"
               />
           </div>
+          <div class="mfd-pos-monitor-table-line"></div>
+          <div class="mfd-label-value-container">
+              <span class="mfd-label mfd-spacing-right">  FMS2</span>
+              <span class="mfd-value">{this.fmPosition}</span>
+            </div>
+          <div class ="mfd-pos-monitor-table-line"></div>
+          <div class="fc" style="align-items: flex-end; margin-top: 15px;">
+            <span class="mfd-label">
+              DEVIATION FROM FMS1
+            </span>
+          </div>
+          <div class="mfd-pos-space-between-row ">
+            <div class="mfd-label-value-container">
+              <span class="mfd-label mfd-spacing-right">  IRS1</span>
+              <span class="mfd-value">{this.ir1Position}</span>
+            </div>
+            <div class="mfd-label-value-container" style={"margin-right: 65px;"}>
+            <span class="mfd-value">{this.ir1PositionDeviation}</span>
+            <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+            </div>
+            </div>
+            <div class="mfd-pos-space-between-row ">
+          <div class="mfd-label-value-container">
+          <span class="mfd-label mfd-spacing-right">  IRS2</span>
+          <span class="mfd-value">{this.ir2Position}</span>
+          </div>
+          <div class="mfd-label-value-container" style={"margin-right: 65px;"}>
+          <span class="mfd-value">{this.ir2PositionDeviation}</span>
+          <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+          </div>
+            </div>
+            <div class="mfd-pos-space-between-row ">
+          <div class="mfd-label-value-container">
+          <span class="mfd-label mfd-spacing-right">  IRS3</span>
+          <span class="mfd-value">{this.ir3Position}</span>
+          </div>
+          <div class="mfd-label-value-container" style={"margin-right: 65px;"}>
+          <span class="mfd-value">{this.ir3PositionDeviation}</span>
+          <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+          </div>
+            </div>
+            <div class="mfd-pos-monitor-table-line"></div>
+            <div class ="fc">
+            <div class="mfd-label-value-container">
+            <span class="mfd-label mfd-spacing-right">  GPS1</span>
+            <span class="mfd-value">{this.gpsPositionText}</span>
+            </div>
+            </div>
+            <div class ="fc">
+            <div class="mfd-label-value-container">
+            <span class="mfd-label mfd-spacing-right">  GPS2</span>
+            <span class="mfd-value">{this.gpsPositionText}</span>
+            </div>
+            </div>
           </div>
           <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />;
         </div>
