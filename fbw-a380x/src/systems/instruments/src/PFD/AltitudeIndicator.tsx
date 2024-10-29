@@ -37,7 +37,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
     const delta = this.altitude - this.landingElevation.value;
     const offset = ((delta - DisplayRange) * DistanceSpacing) / ValueSpacing;
     this.delta = delta;
-    if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
+    if (delta > DisplayRange || (this.flightPhase !== 9 && this.flightPhase !== 10) || !landingElevationValid) {
       this.landingElevationIndicator.instance.classList.add('HiddenElement');
     } else {
       this.landingElevationIndicator.instance.classList.remove('HiddenElement');
