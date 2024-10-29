@@ -8,8 +8,8 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding-left: 85px;
-    padding-right: 85px;
+    margin-left: 85px;
+    margin-right: 85px;
 }
 
 .mfd-pos-space-between-row {
@@ -20,6 +20,15 @@
 
 .mfd-pos-monitor-table {
     border: 2px outset $display-light-grey;
-    width: 100%;
-    margin-left: 5px
+    width: 98%;
+    margin-left: 5px;
+    padding-right: 20px;
+    margin-top: 50px;
 }
+
+.mfd-pos-monitor-table-line {
+    margin-left: 30px;
+    border: 1px outset $display-light-grey;
+    width: 98%;
+    height: 1px;
+  }
