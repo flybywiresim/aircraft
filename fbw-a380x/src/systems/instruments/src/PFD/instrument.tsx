@@ -91,16 +91,6 @@ class A380X_PFD extends BaseInstrument {
 
     this.backplane.onUpdate();
   }
-
-  // FIXME remove. This does not belong in the PFD, and in any case we should use GameStateProvider as it has workarounds for issues with onFlightStart
-  protected onFlightStart() {
-    super.onFlightStart();
-    if (SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
-      // set ready signal that JS code is initialized and flight is actually started
-      // -> user pressed 'READY TO FLY' button
-      SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
-    }
-  }
 }
 
 registerInstrument('a380x-pfd', A380X_PFD);

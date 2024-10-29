@@ -195,6 +195,17 @@ export class FwsCore {
     this.sdStatusInopApprLdgLines[0],
   );
 
+  // Input buffering
+  public readonly toConfigInputBuffer = new NXLogicMemoryNode(false);
+  public readonly clearButtonInputBuffer = new NXLogicMemoryNode(false);
+  public readonly recallButtonInputBuffer = new NXLogicMemoryNode(false);
+  public readonly clInputBuffer = new NXLogicMemoryNode(false);
+  public readonly clCheckInputBuffer = new NXLogicMemoryNode(false);
+  public readonly clUpInputBuffer = new NXLogicMemoryNode(false);
+  public readonly clDownInputBuffer = new NXLogicMemoryNode(false);
+  public readonly aThrDiscInputBuffer = new NXLogicMemoryNode(false);
+  public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
+
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
 
@@ -438,20 +449,21 @@ export class FwsCore {
 
   public readonly fms2Fault = Subject.create(false);
 
+  /** If multiple AP discs are triggered between FWS cycles, memorize the amount */
+  public autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
+
   public readonly autoPilotDisengagedInstantPulse = new NXLogicPulseNode(false);
 
-  public readonly autoPilotDisengagedDelay = new NXLogicTriggeredMonostableNode(0.1, true);
+  /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
+  public readonly autoPilotInstinctiveDiscPressedInLast1p9Sec = new NXLogicTriggeredMonostableNode(1.9, true);
 
-  public readonly autoPilotDisengagedDelayedPulse = new NXLogicPulseNode(false);
-
-  public readonly autoPilotInstinctiveDiscPressedInLast1p8Sec = new NXLogicTriggeredMonostableNode(1.9, false);
-
-  public autoPilotInstinctiveDiscWasPressed = false;
+  /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
+  public readonly autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec = new NXLogicTriggeredMonostableNode(1.9, true);
 
   public readonly autoPilotInstinctiveDiscPressedPulse = new NXLogicPulseNode(true);
 
   /** Stay in first warning stage for 1.8s. Raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotOffVoluntaryEndAfter1p8s = new NXLogicTriggeredMonostableNode(1.9, true);
+  public readonly autoPilotOffVoluntaryEndAfter1p9s = new NXLogicTriggeredMonostableNode(1.9, true);
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
 
@@ -459,7 +471,7 @@ export class FwsCore {
 
   public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
 
-  public readonly autoPilotOffVoluntaryMemory = new NXLogicMemoryNode(false);
+  public readonly autoPilotOffVoluntaryMemory = new NXLogicMemoryNode(true);
 
   public readonly autoPilotOffInvoluntaryMemory = new NXLogicMemoryNode(false);
 
@@ -470,12 +482,6 @@ export class FwsCore {
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
   public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
-
-  public readonly autoThrustDisengagedDelayedPulse = new NXLogicPulseNode(false);
-
-  public readonly autoThrustDisengagedDelay = new NXLogicTriggeredMonostableNode(0.1, true);
-
-  public autoThrustInstinctiveDiscWasPressed = false;
 
   public readonly autoThrustInstinctiveDiscPressed = new NXLogicTriggeredMonostableNode(1.5, true); // Save event for 1.5 sec
 
@@ -818,8 +824,6 @@ export class FwsCore {
 
   public readonly feedTank2LowConfirm = new NXLogicConfirmNode(30, true);
 
-  public readonly leftOuterInnerValve = ConsumerSubject.create(this.sub.on('fuel_valve_open_4'), 0);
-
   public readonly feedTank3Low = Subject.create(false);
 
   public readonly feedTank3LowConfirm = new NXLogicConfirmNode(30, true);
@@ -829,8 +833,6 @@ export class FwsCore {
   public readonly leftFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_2'), false);
 
   public readonly leftFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_5'), false);
-
-  public readonly rightOuterInnerValve = ConsumerSubject.create(this.sub.on('fuel_valve_open_5'), 0);
 
   public readonly rightFuelLow = Subject.create(false);
 
@@ -1034,16 +1036,13 @@ export class FwsCore {
 
   private toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
-  public readonly clr1PulseNode = new NXLogicPulseNode();
-
-  public readonly clr2PulseNode = new NXLogicPulseNode();
+  public readonly clrPulseNode = new NXLogicPulseNode();
 
   public readonly rclUpPulseNode = new NXLogicPulseNode();
 
   public readonly clPulseNode = new NXLogicPulseNode();
 
-  public readonly clCheckLeftPulseNode = new NXLogicPulseNode();
-  public readonly clCheckRightPulseNode = new NXLogicPulseNode();
+  public readonly clCheckPulseNode = new NXLogicPulseNode();
 
   public readonly clUpPulseNode = new NXLogicPulseNode();
 
@@ -1388,6 +1387,8 @@ export class FwsCore {
 
   public readonly autoThrustStatus = Subject.create(0);
 
+  public readonly autoThrustMode = Subject.create(0);
+
   public readonly autothrustLeverWarningFlex = Subject.create(false);
 
   public readonly autothrustLeverWarningToga = Subject.create(false);
@@ -1520,18 +1521,21 @@ export class FwsCore {
       this.registerKeyEvents();
     });
 
-    this.sub.on('key_intercept').handle((keyData) => {
-      switch (keyData.key) {
-        case 'A32NX.AUTO_THROTTLE_DISCONNECT':
-          this.autoThrottleInstinctiveDisconnect();
-          break;
-        case 'A32NX.FCU_AP_DISCONNECT_PUSH':
-        case 'A32NX.AUTOPILOT_DISENGAGE':
-        case 'AUTOPILOT_OFF':
-          this.autoPilotInstinctiveDisconnect();
-          break;
-      }
-    });
+    this.sub
+      .on('key_intercept')
+      .atFrequency(50)
+      .handle((keyData) => {
+        switch (keyData.key) {
+          case 'A32NX.AUTO_THROTTLE_DISCONNECT':
+            this.autoThrottleInstinctiveDisconnect();
+            break;
+          case 'A32NX.FCU_AP_DISCONNECT_PUSH':
+          case 'A32NX.AUTOPILOT_DISENGAGE':
+          case 'AUTOPILOT_OFF':
+            this.autoPilotInstinctiveDisconnect();
+            break;
+        }
+      });
 
     this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
@@ -1603,10 +1607,8 @@ export class FwsCore {
         !this.engine4ValueSwitch.get() &&
         !this.centerFuelPump1Auto.get() &&
         !this.centerFuelPump2Auto.get() &&
-        !this.leftOuterInnerValve.get() &&
         !this.leftFuelPump1Auto.get() &&
         !this.leftFuelPump2Auto.get() &&
-        !this.rightOuterInnerValve.get() &&
         !this.rightFuelPump1Auto.get() &&
         !this.rightFuelPump2Auto.get() &&
         this.allEngineSwitchOff.get(),
@@ -1635,7 +1637,7 @@ export class FwsCore {
   private registerKeyEvents() {
     this.keyEventManager.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
     this.keyEventManager.interceptKey('A32NX.FCU_AP_DISCONNECT_PUSH', true);
-    this.keyEventManager.interceptKey('A32NX.AUTOPILOT_DISENGAGE', true);
+    this.keyEventManager.interceptKey('A32NX.AUTOPILOT_DISENGAGE', false); // internal event, for FWS only
     this.keyEventManager.interceptKey('AUTOPILOT_OFF', true);
     this.keyEventManager.interceptKey('AUTO_THROTTLE_ARM', true);
   }
@@ -1751,45 +1753,63 @@ export class FwsCore {
    */
   update(_deltaTime: number) {
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
-    // console.log(_deltaTime, deltaTime);
 
-    // Acquire discrete inputs at a higher frequency. If pressed, save in variable and push to pulse node in next update cycle
-
+    // Acquire discrete inputs at a higher frequency, buffer them until the next FWS cycle.
     // T.O CONFIG button
-    this.toConfigPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0, _deltaTime);
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool')) {
+      this.toConfigInputBuffer.write(true, false);
+    }
 
     // CLR buttons
     const clearButtonLeft = SimVar.GetSimVarValue('L:A32NX_BTN_CLR', 'bool');
     const clearButtonRight = SimVar.GetSimVarValue('L:A32NX_BTN_CLR2', 'bool');
-    this.clr1PulseNode.write(clearButtonLeft, _deltaTime);
-    this.clr2PulseNode.write(clearButtonRight, _deltaTime);
+    if (clearButtonLeft || clearButtonRight) {
+      this.clearButtonInputBuffer.write(true, false);
+    }
 
     // RCL button
     const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
-    this.rclUpPulseNode.write(recallButton, _deltaTime);
+    if (recallButton) {
+      this.recallButtonInputBuffer.write(true, false);
+    }
 
     // C/L buttons
-    this.clPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CL', 'bool'), _deltaTime);
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_CL', 'bool')) {
+      this.clInputBuffer.write(true, false);
+    }
 
-    this.clCheckLeftPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_LH', 'bool'), _deltaTime);
-    this.clCheckRightPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_RH', 'bool'), _deltaTime);
+    if (
+      SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_LH', 'bool') ||
+      SimVar.GetSimVarValue('L:A32NX_BTN_CHECK_RH', 'bool')
+    ) {
+      this.clCheckInputBuffer.write(true, false);
+    }
 
-    this.clUpPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_UP', 'bool'), _deltaTime);
-    this.clDownPulseNode.write(SimVar.GetSimVarValue('L:A32NX_BTN_DOWN', 'bool'), _deltaTime);
-
-    // Instinctive disconnect buttons via K events
-    this.autoThrustInstinctiveDiscPressed.write(this.autoThrustInstinctiveDiscWasPressed, _deltaTime);
-    this.autoThrustInstinctiveDiscWasPressed = false;
-    this.autoPilotInstinctiveDiscPressedPulse.write(this.autoPilotInstinctiveDiscWasPressed, _deltaTime);
-    this.autoPilotInstinctiveDiscWasPressed = false;
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_UP', 'bool')) {
+      this.clUpInputBuffer.write(true, false);
+    }
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_DOWN', 'bool')) {
+      this.clDownInputBuffer.write(true, false);
+    }
 
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
-    if (deltaTime === -1) {
+    if (deltaTime === -1 || _deltaTime === 0) {
       return;
     }
 
     // A380X hack: Inject healthy messages for some systems which are not yet implemented
     this.healthInjector();
+
+    // Write pulse nodes for buffered inputs
+    this.toConfigPulseNode.write(this.toConfigInputBuffer.read(), deltaTime);
+    this.clrPulseNode.write(this.clearButtonInputBuffer.read(), deltaTime);
+    this.rclUpPulseNode.write(this.recallButtonInputBuffer.read(), deltaTime);
+    this.clPulseNode.write(this.clInputBuffer.read(), deltaTime);
+    this.clCheckPulseNode.write(this.clCheckInputBuffer.read(), deltaTime);
+    this.clUpPulseNode.write(this.clUpInputBuffer.read(), deltaTime);
+    this.clDownPulseNode.write(this.clDownInputBuffer.read(), deltaTime);
+    this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
+    this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
 
     // Inputs update
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
@@ -1935,13 +1955,14 @@ export class FwsCore {
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
     this.throttle4Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
+    this.autoThrustMode.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'enum'));
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
     this.allThrottleIdle.set(
-      this.throttle1Position.get() == 0 &&
-        this.throttle2Position.get() == 0 &&
-        this.throttle3Position.get() == 0 &&
-        this.throttle4Position.get() == 0,
+      this.throttle1Position.get() < 1 &&
+        this.throttle2Position.get() < 1 &&
+        this.throttle3Position.get() < 1 &&
+        this.throttle4Position.get() < 1,
     );
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
@@ -2372,19 +2393,13 @@ export class FwsCore {
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
-    // Delay AP disengagement by one cycle, to resolve race condition with instinctive disc. button
 
-    this.autoPilotDisengagedDelay.write(this.autoPilotDisengagedInstantPulse.read(), deltaTime);
-    this.autoPilotDisengagedDelayedPulse.write(this.autoPilotDisengagedDelay.read(), deltaTime);
-
-    this.autoPilotInstinctiveDiscPressedInLast1p8Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
-
-    const pressedTwiceWithin1p8s =
-      this.autoPilotInstinctiveDiscPressedInLast1p8Sec.read() && this.autoPilotInstinctiveDiscPressedPulse.read();
+    const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
+    this.autoPilotInstinctiveDiscPressedInLast1p9Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
 
     const voluntaryApDisc =
-      this.autoPilotDisengagedDelayedPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p8Sec.read();
-    this.autoPilotOffVoluntaryEndAfter1p8s.write(voluntaryApDisc, deltaTime);
+      this.autoPilotDisengagedInstantPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
+    this.autoPilotOffVoluntaryEndAfter1p9s.write(voluntaryApDisc, deltaTime);
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
@@ -2398,18 +2413,26 @@ export class FwsCore {
       this.autoPilotOffSendTripleClickAfterFirstCavalryCharge.read(),
     );
 
+    this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.write(
+      this.autoPilotInstinctiveDiscPressedPulse.read() &&
+        (this.autoPilotInstinctiveDiscCountSinceLastFwsCycle > 1 || apDiscPressedInLast1p8SecBeforeThisCycle),
+      deltaTime,
+    );
+
     this.autoPilotOffVoluntaryMemory.write(
       this.autoPilotOffVoluntaryDiscPulse.read(),
-      apEngaged || pressedTwiceWithin1p8s || !this.autoPilotOffVoluntaryEndAfter1p8s.read(),
+      apEngaged ||
+        this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.read() ||
+        !this.autoPilotOffVoluntaryEndAfter1p9s.read(),
     );
 
     const discPbPressedAfterDisconnection =
-      !this.autoPilotDisengagedDelayedPulse.read() &&
+      !this.autoPilotDisengagedInstantPulse.read() &&
       (this.autoPilotInstinctiveDiscPressedPulse.read() || masterWarningButtonLeft || masterCautionButtonRight);
 
     this.autoPilotOffUnacknowledged.write(
-      this.autoPilotDisengagedDelayedPulse.read(),
-      apEngaged || pressedTwiceWithin1p8s || discPbPressedAfterDisconnection,
+      this.autoPilotDisengagedInstantPulse.read(),
+      apEngaged || this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.read() || discPbPressedAfterDisconnection,
     );
 
     this.autoPilotOffInvoluntaryMemory.write(
@@ -2419,7 +2442,7 @@ export class FwsCore {
     this.autoPilotOffInvoluntary.set(this.autoPilotOffInvoluntaryMemory.read());
     this.autoPilotOffShowMemo.set(this.autoPilotOffVoluntaryMemory.read() || this.autoPilotOffInvoluntaryMemory.read());
 
-    if (this.autoPilotDisengagedDelayedPulse.read()) {
+    if (this.autoPilotDisengagedInstantPulse.read()) {
       // Request quiet CRC one time
       this.requestMasterWarningFromApOff = true;
       this.auralCavalryChargeActive.set(true);
@@ -2438,24 +2461,23 @@ export class FwsCore {
     this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
 
     // A/THR OFF
-    const aThrEngaged = this.autoThrustStatus.get() === 2;
+    const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
     this.autoThrustDisengagedInstantPulse.write(aThrEngaged, deltaTime);
-    // Delay disengagement by one cycle, to resolve race condition with instinctive disc. button
-    this.autoThrustDisengagedDelay.write(
-      this.autoThrustDisengagedInstantPulse.read() && this.fwcFlightPhase.get() !== 1,
-      deltaTime,
-    );
-    this.autoThrustDisengagedDelayedPulse.write(this.autoThrustDisengagedDelay.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 
     const below50ft =
       this.radioHeight1.valueOr(2500) < 50 &&
       this.radioHeight2.valueOr(2500) < 50 &&
       this.radioHeight3.valueOr(2500) < 50;
+
+    if (below50ft && this.allThrottleIdle.get()) {
+      this.autoThrustInhibitCaution = true;
+    }
+
     const voluntaryAThrDisc =
       !this.aircraftOnGround.get() &&
-      this.autoThrustDisengagedDelayedPulse.read() &&
-      (this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get())) &&
+      this.autoThrustDisengagedInstantPulse.read() &&
+      (this.autoThrustInstinctiveDiscPressed.read() || this.allThrottleIdle.get()) &&
       !this.autoThrustInhibitCaution;
 
     // Voluntary A/THR disconnect
@@ -2485,7 +2507,7 @@ export class FwsCore {
     // Involuntary A/THR disconnect
     const involuntaryAThrDisc =
       !this.aircraftOnGround.get() &&
-      this.autoThrustDisengagedDelayedPulse.read() &&
+      this.autoThrustDisengagedInstantPulse.read() &&
       !(this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get()));
 
     this.autoThrustOffInvoluntaryNode.write(involuntaryAThrDisc, aThrEngaged || voluntaryAThrDisc);
@@ -3560,7 +3582,7 @@ export class FwsCore {
     }
 
     /* CLEAR AND RECALL */
-    if (this.clr1PulseNode.read() || this.clr2PulseNode.read()) {
+    if (this.clrPulseNode.read()) {
       // delete the first failure
       this.presentedFailures.splice(0, 1);
       this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
@@ -3954,6 +3976,18 @@ export class FwsCore {
     this.normalChecklists.update();
     this.abnormalSensed.update();
     this.updateRowRopWarnings();
+
+    // Reset all buffered inputs
+    this.toConfigInputBuffer.write(false, true);
+    this.clearButtonInputBuffer.write(false, true);
+    this.recallButtonInputBuffer.write(false, true);
+    this.clInputBuffer.write(false, true);
+    this.clCheckInputBuffer.write(false, true);
+    this.clUpInputBuffer.write(false, true);
+    this.clDownInputBuffer.write(false, true);
+    this.aThrDiscInputBuffer.write(false, true);
+    this.apDiscInputBuffer.write(false, true);
+    this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
   }
 
   updateRowRopWarnings() {
@@ -3994,7 +4028,7 @@ export class FwsCore {
       this.requestMasterCautionFromABrkOff = false;
     }
 
-    this.autoThrustInstinctiveDiscWasPressed = true;
+    this.aThrDiscInputBuffer.write(true, false);
 
     if (this.autoThrustOffVoluntary.get()) {
       // Pressed a second time -> silence
@@ -4004,7 +4038,10 @@ export class FwsCore {
   }
 
   autoPilotInstinctiveDisconnect() {
-    this.autoPilotInstinctiveDiscWasPressed = true;
+    this.apDiscInputBuffer.write(true, false);
+    if (this.apDiscInputBuffer.read()) {
+      this.autoPilotInstinctiveDiscCountSinceLastFwsCycle++;
+    }
   }
 
   memoPriority(memoKey: string): number {

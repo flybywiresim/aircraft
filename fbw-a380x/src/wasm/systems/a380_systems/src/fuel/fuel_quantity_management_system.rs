@@ -127,7 +127,7 @@ impl RefuelPanelInput {
             && self
                 .engine_states
                 .iter()
-                .all(|state| *state == EngineState::Off)
+                .all(|state| *state == EngineState::Off || *state == EngineState::Shutting)
             && context.is_on_ground()
             && context.ground_speed() < Velocity::new::<knot>(0.1)
     }

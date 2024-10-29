@@ -92,9 +92,10 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fuelssystemPublisher = new FuelSystemPublisher(this.bus);
 
-  private readonly fwsCore = new FwsCore(1, this.bus, this);
+  private readonly fwsCore = new FwsCore(1, this.bus);
 
-  private readonly legacyFuel = new LegacyFuel(this.bus);
+  //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
+  private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
   /**
    * "mainmenu" = 0
