@@ -1,5 +1,5 @@
 import React, { forwardRef, PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { DcElectricalBus } from '@shared/electrical';
 import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
