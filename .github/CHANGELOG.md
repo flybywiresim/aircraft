@@ -8,6 +8,8 @@
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
+1. [A380X/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
+1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [EFB] Fix checklists not turning green if completed but not in the relevant flight phase - @Fabi-02 (Fabi)
 
 ## 0.12.0
