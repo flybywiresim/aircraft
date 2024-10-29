@@ -10,6 +10,8 @@
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
 1. [FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt
 1. [FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
+1. [A380X/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
+1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 
 ## 0.12.0
 
