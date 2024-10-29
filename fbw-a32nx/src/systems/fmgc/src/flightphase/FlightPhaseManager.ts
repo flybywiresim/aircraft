@@ -1,26 +1,32 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  Phase,
-  PreFlightPhase,
-  TakeOffPhase,
+  ApproachPhase,
   ClimbPhase,
   CruisePhase,
   DescentPhase,
-  ApproachPhase,
-  GoAroundPhase,
   DonePhase,
+  GoAroundPhase,
+  Phase,
+  PreFlightPhase,
+  TakeOffPhase,
 } from '@fmgc/flightphase/Phase';
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
+import { EventBus, Subject } from '@microsoft/msfs-sdk';
+
+export interface FlightPhaseManagerEvents {
+  /** The FMGC flight phase. */
+  fmgc_flight_phase: FmgcFlightPhase;
+}
 
 function canInitiateDes(distanceToDestination: number): boolean {
   const fl = Math.round(Simplane.getAltitude() / 100);
   const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
-  const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+  const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
   // Can initiate descent? OR Can initiate early descent?
   return (
@@ -32,7 +38,7 @@ function canInitiateDes(distanceToDestination: number): boolean {
 export class FlightPhaseManager {
   private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
 
-  private activePhase: FmgcFlightPhase = this.initialPhase || FmgcFlightPhase.Preflight;
+  private readonly activePhase = Subject.create(this.initialPhase || FmgcFlightPhase.Preflight);
 
   private phases: { [key in FmgcFlightPhase]: Phase } = {
     [FmgcFlightPhase.Preflight]: new PreFlightPhase(),
@@ -48,17 +54,19 @@ export class FlightPhaseManager {
   private phaseChangeListeners: Array<(prev: FmgcFlightPhase, next: FmgcFlightPhase) => void> = [];
 
   get phase() {
-    return this.activePhase;
+    return this.activePhase.get();
   }
 
-  get initialPhase() {
+  get initialPhase(): FmgcFlightPhase {
     return SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number');
   }
 
+  constructor(private readonly bus: EventBus) {}
   init(): void {
     console.log(`FMGC Flight Phase: ${this.phase}`);
     this.phases[this.phase].init();
-    this.changePhase(this.activePhase);
+    this.changePhase(this.phase);
+    this.activePhase.sub((v) => this.bus.getPublisher<FlightPhaseManagerEvents>().pub('fmgc_flight_phase', v));
   }
 
   shouldActivateNextPhase(_deltaTime: number): void {
@@ -71,14 +79,16 @@ export class FlightPhaseManager {
       }
     } else if (isReady() && isSlewActive()) {
       this.handleSlewSituation(_deltaTime);
-    } else if (this.activePhase !== this.initialPhase) {
+    } else if (this.phase !== this.initialPhase) {
       // ensure correct init of phase
-      this.activePhase = this.initialPhase;
+
       this.changePhase(this.initialPhase);
     }
   }
 
-  addOnPhaseChanged(cb: (prev: FmgcFlightPhase, next: FmgcFlightPhase) => void): void {
+  /** @deprecated Use {@link FlightPhaseManagerEvents} instead. */ addOnPhaseChanged(
+    cb: (prev: FmgcFlightPhase, next: FmgcFlightPhase) => void,
+  ): void {
     this.phaseChangeListeners.push(cb);
   }
 
@@ -137,20 +147,20 @@ export class FlightPhaseManager {
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
     const currentFlightLevel = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
-    if (this.activePhase === FmgcFlightPhase.Approach) {
+    if (this.phase === FmgcFlightPhase.Approach) {
       this.changePhase(FmgcFlightPhase.Climb);
-    } else if (currentFlightLevel < newCruiseFlightLevel && this.activePhase === FmgcFlightPhase.Descent) {
+    } else if (currentFlightLevel < newCruiseFlightLevel && this.phase === FmgcFlightPhase.Descent) {
       this.changePhase(FmgcFlightPhase.Climb);
     } else if (
       currentFlightLevel > newCruiseFlightLevel &&
-      (this.activePhase === FmgcFlightPhase.Climb || this.activePhase === FmgcFlightPhase.Descent)
+      (this.phase === FmgcFlightPhase.Climb || this.phase === FmgcFlightPhase.Descent)
     ) {
       this.changePhase(FmgcFlightPhase.Cruise);
     }
   }
 
   handleNewDestinationAirportEntered(): void {
-    if (this.activePhase === FmgcFlightPhase.GoAround) {
+    if (this.phase === FmgcFlightPhase.GoAround) {
       const accAlt = isAllEngineOn()
         ? Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_ACC_ALT')
         : Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_EO_ACC_ALT');
@@ -163,7 +173,7 @@ export class FlightPhaseManager {
   changePhase(newPhase: FmgcFlightPhase): void {
     const prevPhase = this.phase;
     console.log(`FMGC Flight Phase: ${prevPhase} => ${newPhase}`);
-    this.activePhase = newPhase;
+    this.activePhase.set(newPhase);
     SimVar.SetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'number', newPhase);
     // Updating old SimVar to ensure backwards compatibility
     SimVar.SetSimVarValue(

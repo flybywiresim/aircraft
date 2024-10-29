@@ -1,16 +1,17 @@
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
-import { DmcEvents, DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
-import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
+import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
 import './style.scss';
 import { RopRowOansPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
+import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 
 class A380X_PFD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -37,6 +38,8 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly tawsPublisher = new TawsPublisher(this.bus);
 
+  private readonly fwsPfdPublisher = new FwsPfdSimvarPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -54,6 +57,7 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('FmsDataPublisher', this.fmsDataPublisher);
     this.backplane.addPublisher('RopRowOansPublisher', this.ropRowOansPublisher);
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
+    this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
   }
 
   get templateID(): string {
@@ -86,16 +90,6 @@ class A380X_PFD extends BaseInstrument {
     super.Update();
 
     this.backplane.onUpdate();
-  }
-
-  // FIXME remove. This does not belong in the PFD, and in any case we should use GameStateProvider as it has workarounds for issues with onFlightStart
-  protected onFlightStart() {
-    super.onFlightStart();
-    if (SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
-      // set ready signal that JS code is initialized and flight is actually started
-      // -> user pressed 'READY TO FLY' button
-      SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
-    }
   }
 }
 

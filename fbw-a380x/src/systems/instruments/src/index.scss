@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Ecam';
-    src: url('/Fonts/ECAMFontRegular.ttf');
+    src: url('/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf');
 }
 
 @import "Common/definitions";
@@ -32,7 +32,7 @@
 
 .main-svg {
     width: 100%;
-    background-color: #0a0a0a;
+    background-color: $display-background;
     transform: translateY(10px);
 }
 
@@ -431,4 +431,9 @@ tspan.Transparent,
 
 .Hide {
     display: none !important;
+}
+
+.EWDWarn {
+    font-size: 26px;
+    letter-spacing: 1.75px;
 }

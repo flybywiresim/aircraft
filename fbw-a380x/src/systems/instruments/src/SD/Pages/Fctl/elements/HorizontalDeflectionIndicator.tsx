@@ -6,45 +6,57 @@ export const HORIZONTAL_MAX_DEFLECTION = 30;
 export const HORIZONTAL_MIN_DEFLECTION = -30;
 
 interface HorizontalDeflectionIndicationProps {
-    x?: number,
-    y?: number,
-    powerAvail: boolean,
-    deflectionInfoValid: boolean,
-    deflection: number,
-    position: RudderPosition,
-    onGround: boolean,
+  x?: number;
+  y?: number;
+  powerAvail: boolean;
+  deflectionInfoValid: boolean;
+  deflection: number;
+  position: RudderPosition;
+  onGround: boolean;
 }
 
 export function deflectionToXOffset(deflection: number): number {
-    const normalizedDeflection = deflection > 0 ? deflection / HORIZONTAL_MAX_DEFLECTION : -deflection / HORIZONTAL_MIN_DEFLECTION;
+  const normalizedDeflection =
+    deflection > 0 ? deflection / HORIZONTAL_MAX_DEFLECTION : -deflection / HORIZONTAL_MIN_DEFLECTION;
 
-    return normalizedDeflection * SCALE_LENGTH / 2;
+  return (normalizedDeflection * SCALE_LENGTH) / 2;
 }
 
-export const HorizontalDeflectionIndication: FC<HorizontalDeflectionIndicationProps> = ({ x = 0, y = 0, powerAvail, deflectionInfoValid, deflection, position, onGround }) => {
-    const deflectionXValue = deflectionToXOffset(deflection);
+export const HorizontalDeflectionIndication: FC<HorizontalDeflectionIndicationProps> = ({
+  x = 0,
+  y = 0,
+  powerAvail,
+  deflectionInfoValid,
+  deflection,
+  position,
+  onGround,
+}) => {
+  const deflectionXValue = deflectionToXOffset(deflection);
 
-    const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail;
+  const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail;
 
-    const powerAvailableClass = powerAvail ? 'Green' : 'Amber';
+  const powerAvailableClass = powerAvail ? 'Green' : 'Amber';
 
-    return (
-        <g transform={`translate(${x} ${y})`}>
-            <path className='Grey Fill' d='m0,0 h 116 v15 h-116 z' />
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <path className="Grey Fill" d="m0,0 h 116 v15 h-116 z" />
 
-            <path className={`Green SW2 ${maxDeflectionVisible ? '' : 'Hide'}`} d='m-1,0 v 15 M117,0 v15' />
+      <path className={`Green SW2 ${maxDeflectionVisible ? '' : 'Hide'}`} d="m-1,0 v 15 M117,0 v15" />
 
-            <path className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`} d={`m58,0 v15 h${deflectionXValue} v-15 z`} />
-            {/* This is the small line in the middle of the scale, when the surface is neutral. */}
-            <path className={`${powerAvailableClass} SW2 ${deflectionInfoValid ? '' : 'Hide'}`} d='m58,0 v15' />
+      <path
+        className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`}
+        d={`m58,0 v15 h${deflectionXValue} v-15 z`}
+      />
+      {/* This is the small line in the middle of the scale, when the surface is neutral. */}
+      <path className={`${powerAvailableClass} SW2 ${deflectionInfoValid ? '' : 'Hide'}`} d="m58,0 v15" />
 
-            <text
-                x={49}
-                y={position === RudderPosition.Upper ? 15 : 20}
-                className={`Amber F26 ${!deflectionInfoValid ? '' : 'Hide'}`}
-            >
-                X
-            </text>
-        </g>
-    );
+      <text
+        x={49}
+        y={position === RudderPosition.Upper ? 15 : 20}
+        className={`Amber F26 ${!deflectionInfoValid ? '' : 'Hide'}`}
+      >
+        X
+      </text>
+    </g>
+  );
 };

@@ -265,8 +265,8 @@ class Polynomial_A380X {
     // data or a mathematical model of the engine's behavior.
     // The choice to use different decay rates and steady state temperatures based on the previous
     // EGT suggests that the engine's shutdown behavior changes at this threshold.
-    double threshold = ambientTemp + 140;
-    double decayRate = previousEGT > threshold ? 0.0257743 : 0.00072756;
+    double threshold       = ambientTemp + 140;
+    double decayRate       = previousEGT > threshold ? 0.0257743 : 0.00072756;
     double steadyStateTemp = previousEGT > threshold ? 135 + ambientTemp : 30 + ambientTemp;
     return steadyStateTemp + (previousEGT - steadyStateTemp) * exp(-decayRate * deltaTime);
   }
@@ -283,7 +283,8 @@ class Polynomial_A380X {
    */
   static double correctedEGT(double cn1, double cff, double mach, double alt) {
     // TODO: Adjust the corrected fuel flow to account for the A380 double fuel flow. Will have to be taken care of.
-    cff = cff / 2;
+    // Divide by 3 to lower EGT. Very hacky.
+    cff = cff / 3;
 
     // Coefficients for the polynomial calculation
     double c_EGT[16] = {
@@ -381,7 +382,7 @@ class Polynomial_A380X {
                     + (c_Flow[20] * (std::pow)(alt, 3));        //
 
     // TODO: Adjust the corrected fuel flow to account for the A380 double fuel flow. Will have to be taken care of.
-    return 2 * outCFF;
+    return 2.8 * outCFF;
   }
 
   /**

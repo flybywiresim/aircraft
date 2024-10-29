@@ -400,7 +400,7 @@ export class ArincValueProvider implements Instrument {
     });
 
     // Word with Normal Operation status indicating that pitch and roll are in normal law. To be replaced by proper FCDC implementation.
-    const pitchRollNormalLawNOWord = 12884935680;
+    const pitchRollNormalLawNOWord = 14076346368;
 
     publisher.pub('fcdcDiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
     publisher.pub('fcdc1DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));

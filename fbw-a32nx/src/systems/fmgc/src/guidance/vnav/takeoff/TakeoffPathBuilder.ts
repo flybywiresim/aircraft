@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AircraftConfig } from '@fmgc/flightplanning/new/AircraftConfigTypes';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
@@ -28,8 +28,8 @@ export class TakeoffPathBuilder {
 
     profile.checkpoints.push({
       reason: VerticalCheckpointReason.Liftoff,
-      distanceFromStart: 0.6,
-      secondsFromPresent: 20,
+      distanceFromStart: 0,
+      secondsFromPresent: 0,
       altitude: departureElevation,
       remainingFuelOnBoard: fuelOnBoard,
       speed: v2Speed + 10,

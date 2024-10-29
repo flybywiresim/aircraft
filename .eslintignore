@@ -27,3 +27,5 @@ fbw-a32nx/src/systems/fmgc/src/flightplanning/WorldMagneticModel.ts
 fbw-a32nx/src/systems/fmgc/src/utils/LzUtf8.js
 fbw-a32nx/src/systems/fmgc/src/flightplanning/new/test/*
 fbw-a32nx/src/systems/fmgc/src/flightplanning/**/*.spec.ts
+
+fbw-a380x/src/base/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/LegacyA380X/*

@@ -2,7 +2,7 @@
 #include "rtwtypes.h"
 #include "AutopilotStateMachine_types.h"
 #include <cmath>
-#include "mod_2RcCQkwc.h"
+#include "mod_OlzklkXq.h"
 #include "multiword_types.h"
 #include "rt_remd.h"
 #include "AutopilotStateMachine_private.h"
@@ -44,15 +44,15 @@ const uint8_T AutopilotStateMachine_IN_InAir{ 1U };
 
 const uint8_T AutopilotStateMachine_IN_OnGround{ 2U };
 
-const real_T AutopilotStateMachine_N_p{ 2.0 };
+const real_T AutopilotStateMachine_N_c{ 2.0 };
 
-const real_T AutopilotStateMachine_N_l{ 3.0 };
+const real_T AutopilotStateMachine_N_a{ 3.0 };
 
 const real_T AutopilotStateMachine_N_j{ 4.0 };
 
-const real_T AutopilotStateMachine_N_b{ 5.0 };
+const real_T AutopilotStateMachine_N_k{ 5.0 };
 
-const real_T AutopilotStateMachine_N_h{ 6.0 };
+const real_T AutopilotStateMachine_N_kp{ 6.0 };
 
 const uint8_T AutopilotStateMachine_IN_ALT{ 1U };
 
@@ -74,11 +74,11 @@ const uint8_T AutopilotStateMachine_IN_GS_CPT{ 2U };
 
 const uint8_T AutopilotStateMachine_IN_GS_TRACK{ 3U };
 
-const uint8_T AutopilotStateMachine_IN_LAND_c{ 4U };
+const uint8_T AutopilotStateMachine_IN_LAND_d{ 4U };
 
-const uint8_T AutopilotStateMachine_IN_OFF_a{ 1U };
+const uint8_T AutopilotStateMachine_IN_OFF_o{ 1U };
 
-const uint8_T AutopilotStateMachine_IN_ON_b{ 2U };
+const uint8_T AutopilotStateMachine_IN_ON_g{ 2U };
 
 const uint8_T AutopilotStateMachine_IN_OP_CLB{ 9U };
 
@@ -127,18 +127,18 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_ON_TO_NAV(const ap_sm_out
 
 void AutopilotStateMachine::AutopilotStateMachine_NAV_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::NAV;
-  AutopilotStateMachine_B.out_p.law = lateral_law::HPATH;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::NAV;
+  AutopilotStateMachine_B.out_g.law = lateral_law::HPATH;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_HDG_entry(const ap_sm_output *BusAssignment)
 {
   if (BusAssignment->input.TRK_FPA_mode) {
-    AutopilotStateMachine_B.out_p.mode = lateral_mode::TRACK;
-    AutopilotStateMachine_B.out_p.law = lateral_law::TRACK;
+    AutopilotStateMachine_B.out_g.mode = lateral_mode::TRACK;
+    AutopilotStateMachine_B.out_g.law = lateral_law::TRACK;
   } else {
-    AutopilotStateMachine_B.out_p.mode = lateral_mode::HDG;
-    AutopilotStateMachine_B.out_p.law = lateral_law::HDG;
+    AutopilotStateMachine_B.out_g.mode = lateral_mode::HDG;
+    AutopilotStateMachine_B.out_g.law = lateral_law::HDG;
   }
 }
 
@@ -149,39 +149,39 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_ON_TO_LOC(const ap_sm_out
 
 void AutopilotStateMachine::AutopilotStateMachine_HDG_during(const ap_sm_output *BusAssignment)
 {
-  AutopilotStateMachine_B.out_p.mode_reversion = false;
-  AutopilotStateMachine_B.out_p.Psi_c_deg = BusAssignment->input.Psi_fcu_deg;
+  AutopilotStateMachine_B.out_g.mode_reversion = false;
+  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->input.Psi_fcu_deg;
   if (BusAssignment->input.TRK_FPA_mode) {
-    AutopilotStateMachine_B.out_p.mode = lateral_mode::TRACK;
-    AutopilotStateMachine_B.out_p.law = lateral_law::TRACK;
+    AutopilotStateMachine_B.out_g.mode = lateral_mode::TRACK;
+    AutopilotStateMachine_B.out_g.law = lateral_law::TRACK;
   } else {
-    AutopilotStateMachine_B.out_p.mode = lateral_mode::HDG;
-    AutopilotStateMachine_B.out_p.law = lateral_law::HDG;
+    AutopilotStateMachine_B.out_g.mode = lateral_mode::HDG;
+    AutopilotStateMachine_B.out_g.law = lateral_law::HDG;
   }
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_LOC_CPT_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::LOC_CPT;
-  AutopilotStateMachine_B.out_p.law = lateral_law::LOC_CPT;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::LOC_CPT;
+  AutopilotStateMachine_B.out_g.law = lateral_law::LOC_CPT;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_OFF_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::NONE;
-  AutopilotStateMachine_B.out_p.law = lateral_law::NONE;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::NONE;
+  AutopilotStateMachine_B.out_g.law = lateral_law::NONE;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_ROLL_OUT_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::ROLL_OUT;
-  AutopilotStateMachine_B.out_p.law = lateral_law::ROLL_OUT;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::ROLL_OUT;
+  AutopilotStateMachine_B.out_g.law = lateral_law::ROLL_OUT;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_FLARE_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::FLARE;
-  AutopilotStateMachine_B.out_p.law = lateral_law::LOC_TRACK;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::FLARE;
+  AutopilotStateMachine_B.out_g.law = lateral_law::LOC_TRACK;
 }
 
 boolean_T AutopilotStateMachine::AutopilotStateMachine_LOC_TO_X(const ap_sm_output *BusAssignment)
@@ -194,14 +194,14 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_LOC_TO_X(const ap_sm_outp
 
 void AutopilotStateMachine::AutopilotStateMachine_LOC_TRACK_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::LOC_TRACK;
-  AutopilotStateMachine_B.out_p.law = lateral_law::LOC_TRACK;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::LOC_TRACK;
+  AutopilotStateMachine_B.out_g.law = lateral_law::LOC_TRACK;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_LAND_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::LAND;
-  AutopilotStateMachine_B.out_p.law = lateral_law::LOC_TRACK;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::LAND;
+  AutopilotStateMachine_B.out_g.law = lateral_law::LOC_TRACK;
 }
 
 boolean_T AutopilotStateMachine::AutopilotStateMachine_NAV_TO_HDG(const ap_sm_output *BusAssignment)
@@ -223,34 +223,29 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_NAV_TO_HDG(const ap_sm_ou
 boolean_T AutopilotStateMachine::AutopilotStateMachine_RWY_TO_RWY_TRK(const ap_sm_output *BusAssignment)
 {
   real_T R;
-  real_T r;
+  real_T b_y_tmp;
   real_T x;
   x = (BusAssignment->data.Psi_magnetic_deg - (BusAssignment->data.nav_loc_deg + 360.0)) + 360.0;
   if (x == 0.0) {
-    r = 0.0;
+    x = 0.0;
   } else {
-    r = std::fmod(x, 360.0);
-    if (r == 0.0) {
-      r = 0.0;
+    x = std::fmod(x, 360.0);
+    if (x == 0.0) {
+      x = 0.0;
     } else if (x < 0.0) {
-      r += 360.0;
+      x += 360.0;
     }
   }
 
-  x = std::abs(-r);
-  if (360.0 - x == 0.0) {
+  b_y_tmp = std::abs(-x);
+  if (360.0 - b_y_tmp == 0.0) {
     R = 0.0;
   } else {
-    R = std::fmod(360.0 - x, 360.0);
-    if (R == 0.0) {
-      R = 0.0;
-    } else if (360.0 - x < 0.0) {
-      R += 360.0;
-    }
+    R = std::fmod(360.0 - b_y_tmp, 360.0);
   }
 
-  if (x < std::abs(R)) {
-    R = -r;
+  if (b_y_tmp < R) {
+    R = -x;
   }
 
   return ((BusAssignment->data.H_radio_ft >= 30.0) && (!BusAssignment->lateral.armed.NAV)) ||
@@ -260,34 +255,29 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_RWY_TO_RWY_TRK(const ap_s
 boolean_T AutopilotStateMachine::AutopilotStateMachine_RWY_TO_OFF(const ap_sm_output *BusAssignment)
 {
   real_T R;
-  real_T r;
+  real_T b_y_tmp;
   real_T x;
   x = (BusAssignment->data.Psi_magnetic_deg - (BusAssignment->data.nav_loc_deg + 360.0)) + 360.0;
   if (x == 0.0) {
-    r = 0.0;
+    x = 0.0;
   } else {
-    r = std::fmod(x, 360.0);
-    if (r == 0.0) {
-      r = 0.0;
+    x = std::fmod(x, 360.0);
+    if (x == 0.0) {
+      x = 0.0;
     } else if (x < 0.0) {
-      r += 360.0;
+      x += 360.0;
     }
   }
 
-  x = std::abs(-r);
-  if (360.0 - x == 0.0) {
+  b_y_tmp = std::abs(-x);
+  if (360.0 - b_y_tmp == 0.0) {
     R = 0.0;
   } else {
-    R = std::fmod(360.0 - x, 360.0);
-    if (R == 0.0) {
-      R = 0.0;
-    } else if (360.0 - x < 0.0) {
-      R += 360.0;
-    }
+    R = std::fmod(360.0 - b_y_tmp, 360.0);
   }
 
-  if (x < std::abs(R)) {
-    R = -r;
+  if (b_y_tmp < R) {
+    R = -x;
   }
 
   return (!BusAssignment->data.nav_valid) && (std::abs(R) > 20.0);
@@ -295,16 +285,16 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_RWY_TO_OFF(const ap_sm_ou
 
 void AutopilotStateMachine::AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::RWY_TRACK;
-  AutopilotStateMachine_B.out_p.law = lateral_law::TRACK;
-  AutopilotStateMachine_B.out_p.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::RWY_TRACK;
+  AutopilotStateMachine_B.out_g.law = lateral_law::TRACK;
+  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::GA_TRACK;
-  AutopilotStateMachine_B.out_p.law = lateral_law::TRACK;
-  AutopilotStateMachine_B.out_p.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::GA_TRACK;
+  AutopilotStateMachine_B.out_g.law = lateral_law::TRACK;
+  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_ON(const ap_sm_output *BusAssignment)
@@ -491,31 +481,26 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_OFF_TO_NAV(const ap_sm_ou
 boolean_T AutopilotStateMachine::AutopilotStateMachine_OFF_TO_RWY(const ap_sm_output *BusAssignment)
 {
   real_T R;
-  real_T r;
+  real_T b_y_tmp;
   real_T x;
   boolean_T y;
   x = (BusAssignment->data.Psi_magnetic_deg - (BusAssignment->data.nav_loc_deg + 360.0)) + 360.0;
   if (x == 0.0) {
-    r = 0.0;
+    x = 0.0;
   } else {
-    r = std::fmod(x, 360.0);
-    if (r == 0.0) {
-      r = 0.0;
+    x = std::fmod(x, 360.0);
+    if (x == 0.0) {
+      x = 0.0;
     } else if (x < 0.0) {
-      r += 360.0;
+      x += 360.0;
     }
   }
 
-  x = std::abs(-r);
-  if (360.0 - x == 0.0) {
+  b_y_tmp = std::abs(-x);
+  if (360.0 - b_y_tmp == 0.0) {
     R = 0.0;
   } else {
-    R = std::fmod(360.0 - x, 360.0);
-    if (R == 0.0) {
-      R = 0.0;
-    } else if (360.0 - x < 0.0) {
-      R += 360.0;
-    }
+    R = std::fmod(360.0 - b_y_tmp, 360.0);
   }
 
   if ((BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
@@ -524,8 +509,8 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_OFF_TO_RWY(const ap_sm_ou
       ((BusAssignment->data.throttle_lever_1_pos >= 35.0) || (BusAssignment->data.throttle_lever_2_pos >= 35.0)) &&
       BusAssignment->data.nav_loc_valid) {
     if (std::abs(BusAssignment->data.nav_loc_error_deg) <= 0.4) {
-      if (x < std::abs(R)) {
-        R = -r;
+      if (b_y_tmp < R) {
+        R = -x;
       }
 
       if (std::abs(R) <= 20.0) {
@@ -563,8 +548,8 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_OFF_TO_RWY_TRK(const ap_s
 
 void AutopilotStateMachine::AutopilotStateMachine_RWY_entry(void)
 {
-  AutopilotStateMachine_B.out_p.mode = lateral_mode::RWY;
-  AutopilotStateMachine_B.out_p.law = lateral_law::ROLL_OUT;
+  AutopilotStateMachine_B.out_g.mode = lateral_mode::RWY;
+  AutopilotStateMachine_B.out_g.law = lateral_law::ROLL_OUT;
 }
 
 boolean_T AutopilotStateMachine::AutopilotStateMachine_TCAS_TO_ALT(void) const
@@ -718,7 +703,7 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS_exit(void)
   }
 }
 
-void AutopilotStateMachine::AutopilotStateMachine_OFF_entry_m(void)
+void AutopilotStateMachine::AutopilotStateMachine_OFF_entry_i(void)
 {
   AutopilotStateMachine_B.out.mode = vertical_mode::NONE;
   AutopilotStateMachine_B.out.law = vertical_law::NONE;
@@ -928,12 +913,12 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS(void)
   boolean_T tmp;
   if (AutopilotStateMachine_TCAS_TO_ALT() && AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT) {
     AutopilotStateMachine_TCAS_exit();
-    AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+    AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
     AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT;
     AutopilotStateMachine_ALT_entry();
   } else if (AutopilotStateMachine_TCAS_TO_ALT_CPT()) {
     AutopilotStateMachine_TCAS_exit();
-    AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+    AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
     AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT_CPT;
     AutopilotStateMachine_ALT_CPT_entry();
   } else {
@@ -944,14 +929,14 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS(void)
     } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
                AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
       AutopilotStateMachine_TCAS_exit();
-      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
       AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
       AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
       AutopilotStateMachine_GS_CPT_entry();
     } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES &&
                AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FINAL_DES) {
       AutopilotStateMachine_TCAS_exit();
-      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
       AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
       AutopilotStateMachine_FINAL_DES_entry();
     } else {
@@ -962,12 +947,12 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS(void)
         AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
       if (tmp && (tmp_0 < -40.0)) {
         AutopilotStateMachine_TCAS_exit();
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
         AutopilotStateMachine_OP_DES_entry();
       } else if (tmp && (tmp_0 > 40.0)) {
         AutopilotStateMachine_TCAS_exit();
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
         AutopilotStateMachine_OP_CLB_entry();
       } else {
@@ -978,14 +963,14 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS(void)
             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB &&
             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active && tmp) {
           AutopilotStateMachine_TCAS_exit();
-          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
           AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
           AutopilotStateMachine_CLB_entry();
         } else if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
                    AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES &&
                    AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active && tmp) {
           AutopilotStateMachine_TCAS_exit();
-          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
           AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
           AutopilotStateMachine_DES_entry();
         } else if ((!AutopilotStateMachine_B.out.FD_connect) &&
@@ -996,8 +981,8 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS(void)
                      (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 == 0.0) &&
                      (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 == 0.0)))) {
           AutopilotStateMachine_TCAS_exit();
-          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-          AutopilotStateMachine_OFF_entry_m();
+          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+          AutopilotStateMachine_OFF_entry_i();
         } else if (AutopilotStateMachine_B.BusAssignment_g.input.VS_push ||
                    AutopilotStateMachine_B.BusAssignment_g.input.VS_pull) {
           guard1 = true;
@@ -1009,7 +994,7 @@ void AutopilotStateMachine::AutopilotStateMachine_TCAS(void)
 
     if (guard1) {
       AutopilotStateMachine_TCAS_exit();
-      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
       AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
       AutopilotStateMachine_VS_entry();
     }
@@ -1588,6 +1573,86 @@ void AutopilotStateMachine::AutopilotStateMachine_ALT_CST_CPT_entry(void)
   AutopilotStateMachine_B.out.H_c_ft = AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft;
 }
 
+void AutopilotStateMachine::AutopilotStateMachine_CLB(void)
+{
+  real_T tmp_0;
+  boolean_T guard1;
+  boolean_T guard2;
+  boolean_T guard3;
+  boolean_T tmp;
+  if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST_CPT) {
+    AutopilotStateMachine_DWork.local_H_constraint_ft = AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft;
+    AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT_CST_CPT;
+    AutopilotStateMachine_ALT_CST_CPT_entry();
+  } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.ALT &&
+             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CPT) {
+    AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT_CPT;
+    AutopilotStateMachine_ALT_CPT_entry();
+  } else {
+    guard1 = false;
+    guard2 = false;
+    guard3 = false;
+    if (AutopilotStateMachine_B.BusAssignment_g.input.VS_push || AutopilotStateMachine_B.BusAssignment_g.input.VS_pull)
+    {
+      guard1 = true;
+    } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
+               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
+      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
+      AutopilotStateMachine_GS_CPT_entry();
+    } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES &&
+               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FINAL_DES) {
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
+      AutopilotStateMachine_FINAL_DES_entry();
+    } else {
+      tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+              AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+      tmp_0 = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+        AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
+      if (tmp && (tmp_0 < -40.0)) {
+        guard2 = true;
+      } else if (tmp && (tmp_0 > 40.0)) {
+        guard3 = true;
+      } else if ((AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft <
+                  AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft) && (std::abs(tmp_0) > 40.0)) {
+        AutopilotStateMachine_B.out.mode_reversion = true;
+        AutopilotStateMachine_B.out.mode_reversion_target_fpm =
+          AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
+        guard1 = true;
+      } else if ((!AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB) && (tmp_0 > 40.0)) {
+        AutopilotStateMachine_B.out.mode_reversion = true;
+        AutopilotStateMachine_B.out.mode_reversion_target_fpm =
+          AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
+        if (tmp_0 > 40.0) {
+          guard3 = true;
+        } else if (tmp_0 < -40.0) {
+          guard2 = true;
+        } else {
+          AutopilotStateMachine_CLB_during();
+        }
+      } else {
+        AutopilotStateMachine_CLB_during();
+      }
+    }
+
+    if (guard3) {
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
+      AutopilotStateMachine_OP_CLB_entry();
+    }
+
+    if (guard2) {
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
+      AutopilotStateMachine_OP_DES_entry();
+    }
+
+    if (guard1) {
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
+      AutopilotStateMachine_VS_entry();
+    }
+  }
+}
+
 void AutopilotStateMachine::AutopilotStateMachine_DES_during(void)
 {
   AutopilotStateMachine_B.out.V_c_kn = AutopilotStateMachine_B.BusAssignment_g.input.V_fcu_kn;
@@ -1656,66 +1721,6 @@ void AutopilotStateMachine::AutopilotStateMachine_DES_during(void)
   }
 }
 
-void AutopilotStateMachine::AutopilotStateMachine_DES(void)
-{
-  real_T tmp;
-  boolean_T guard1;
-  boolean_T tmp_0;
-  if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST_CPT) {
-    AutopilotStateMachine_DWork.local_H_constraint_ft = AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft;
-    AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT_CST_CPT;
-    AutopilotStateMachine_ALT_CST_CPT_entry();
-  } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.ALT &&
-             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CPT) {
-    AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT_CPT;
-    AutopilotStateMachine_ALT_CPT_entry();
-  } else {
-    guard1 = false;
-    if (AutopilotStateMachine_B.BusAssignment_g.input.VS_push || AutopilotStateMachine_B.BusAssignment_g.input.VS_pull)
-    {
-      guard1 = true;
-    } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
-               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
-      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
-      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
-      AutopilotStateMachine_GS_CPT_entry();
-    } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES &&
-               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FINAL_DES) {
-      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
-      AutopilotStateMachine_FINAL_DES_entry();
-    } else {
-      tmp = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
-        AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
-      if ((!AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES) ||
-          ((AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft >
-            AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft) && (std::abs(tmp) > 40.0))) {
-        AutopilotStateMachine_B.out.mode_reversion = true;
-        AutopilotStateMachine_B.out.mode_reversion_target_fpm =
-          AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
-        guard1 = true;
-      } else {
-        tmp_0 = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
-                  AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
-                 AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
-        if (tmp_0 && (tmp < -40.0)) {
-          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
-          AutopilotStateMachine_OP_DES_entry();
-        } else if (tmp_0 && (tmp > 40.0)) {
-          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
-          AutopilotStateMachine_OP_CLB_entry();
-        } else {
-          AutopilotStateMachine_DES_during();
-        }
-      }
-    }
-
-    if (guard1) {
-      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
-      AutopilotStateMachine_VS_entry();
-    }
-  }
-}
-
 void AutopilotStateMachine::AutopilotStateMachine_FINAL_DES_during(void)
 {
   AutopilotStateMachine_B.out.V_c_kn = AutopilotStateMachine_B.BusAssignment_g.input.V_fcu_kn;
@@ -1777,14 +1782,91 @@ void AutopilotStateMachine::AutopilotStateMachine_GS_TRACK_entry(void)
   AutopilotStateMachine_B.out.law = vertical_law::GS;
 }
 
-void AutopilotStateMachine::AutopilotStateMachine_LAND_entry_b(void)
+void AutopilotStateMachine::AutopilotStateMachine_LAND_entry_p(void)
 {
   AutopilotStateMachine_B.out.mode = vertical_mode::LAND;
   AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode::SPEED;
   AutopilotStateMachine_B.out.law = vertical_law::GS;
 }
 
-void AutopilotStateMachine::AutopilotStateMachine_FLARE_entry_m(void)
+void AutopilotStateMachine::AutopilotStateMachine_GS_TRACK(void)
+{
+  real_T tmp_0;
+  boolean_T guard1;
+  boolean_T tmp;
+  guard1 = false;
+  if (AutopilotStateMachine_GS_TO_ALT()) {
+    if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
+        AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
+      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
+      AutopilotStateMachine_GS_CPT_entry();
+    } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES &&
+               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FINAL_DES) {
+      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
+      AutopilotStateMachine_FINAL_DES_entry();
+    } else {
+      tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+              AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+      tmp_0 = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+        AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
+      if (tmp && (tmp_0 < -40.0)) {
+        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
+        AutopilotStateMachine_OP_DES_entry();
+      } else if (tmp && (tmp_0 > 40.0)) {
+        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
+        AutopilotStateMachine_OP_CLB_entry();
+      } else {
+        tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (std::abs
+                (AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
+                 AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft) > 40.0));
+        if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
+            AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB &&
+            AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active && tmp) {
+          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
+          AutopilotStateMachine_CLB_entry();
+        } else if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
+                   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES &&
+                   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active && tmp) {
+          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
+          AutopilotStateMachine_DES_entry();
+        } else {
+          guard1 = true;
+        }
+      }
+    }
+  } else {
+    guard1 = true;
+  }
+
+  if (guard1) {
+    if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.LAND) {
+      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_LAND_d;
+      AutopilotStateMachine_LAND_entry_p();
+    } else if (AutopilotStateMachine_GS_TO_X()) {
+      AutopilotStateMachine_B.out.mode_reversion = AutopilotStateMachine_GS_TO_X_MR();
+      AutopilotStateMachine_B.out.mode_reversion_target_fpm = AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
+      if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
+        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
+        AutopilotStateMachine_VS_entry();
+      } else if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
+        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+        AutopilotStateMachine_OFF_entry_i();
+      }
+    }
+  }
+}
+
+void AutopilotStateMachine::AutopilotStateMachine_FLARE_entry_n(void)
 {
   AutopilotStateMachine_B.out.mode = vertical_mode::FLARE;
   AutopilotStateMachine_B.out.law = vertical_law::FLARE;
@@ -1795,10 +1877,8 @@ void AutopilotStateMachine::AutopilotStateMachine_GS(void)
 {
   real_T tmp_0;
   boolean_T guard1;
-  boolean_T guard2;
   boolean_T tmp;
   guard1 = false;
-  guard2 = false;
   switch (AutopilotStateMachine_DWork.is_GS) {
    case AutopilotStateMachine_IN_FLARE:
     if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ROLL_OUT) {
@@ -1820,8 +1900,8 @@ void AutopilotStateMachine::AutopilotStateMachine_GS(void)
       } else if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
         AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-        AutopilotStateMachine_OFF_entry_m();
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+        AutopilotStateMachine_OFF_entry_i();
       } else {
         guard1 = true;
       }
@@ -1831,61 +1911,13 @@ void AutopilotStateMachine::AutopilotStateMachine_GS(void)
     break;
 
    case AutopilotStateMachine_IN_GS_TRACK:
-    if (AutopilotStateMachine_GS_TO_ALT()) {
-      if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
-          AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
-        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
-        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
-        AutopilotStateMachine_GS_CPT_entry();
-      } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES &&
-                 AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FINAL_DES) {
-        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
-        AutopilotStateMachine_FINAL_DES_entry();
-      } else {
-        tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
-                AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
-               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
-        tmp_0 = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
-          AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
-        if (tmp && (tmp_0 < -40.0)) {
-          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
-          AutopilotStateMachine_OP_DES_entry();
-        } else if (tmp && (tmp_0 > 40.0)) {
-          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
-          AutopilotStateMachine_OP_CLB_entry();
-        } else {
-          tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (std::abs
-                  (AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
-                   AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft) > 40.0));
-          if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
-              AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB &&
-              AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active && tmp) {
-            AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
-            AutopilotStateMachine_CLB_entry();
-          } else if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
-                     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES &&
-                     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active && tmp) {
-            AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
-            AutopilotStateMachine_DES_entry();
-          } else {
-            guard2 = true;
-          }
-        }
-      }
-    } else {
-      guard2 = true;
-    }
+    AutopilotStateMachine_GS_TRACK();
     break;
 
-   case AutopilotStateMachine_IN_LAND_c:
+   case AutopilotStateMachine_IN_LAND_d:
     if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FLARE) {
       AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_FLARE;
-      AutopilotStateMachine_FLARE_entry_m();
+      AutopilotStateMachine_FLARE_entry_n();
     }
     break;
 
@@ -1898,31 +1930,11 @@ void AutopilotStateMachine::AutopilotStateMachine_GS(void)
       } else if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
         AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-        AutopilotStateMachine_OFF_entry_m();
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+        AutopilotStateMachine_OFF_entry_i();
       }
     }
     break;
-  }
-
-  if (guard2) {
-    if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.LAND) {
-      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_LAND_c;
-      AutopilotStateMachine_LAND_entry_b();
-    } else if (AutopilotStateMachine_GS_TO_X()) {
-      AutopilotStateMachine_B.out.mode_reversion = AutopilotStateMachine_GS_TO_X_MR();
-      AutopilotStateMachine_B.out.mode_reversion_target_fpm = AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
-      if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
-        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
-        AutopilotStateMachine_VS_entry();
-      } else if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
-        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-        AutopilotStateMachine_OFF_entry_m();
-      }
-    }
   }
 
   if (guard1) {
@@ -2273,16 +2285,14 @@ void AutopilotStateMachine::AutopilotStateMachine_exit_internal_ON(void)
   }
 }
 
-void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
+void AutopilotStateMachine::AutopilotStateMachine_ON_i(void)
 {
-  real_T tmp_0;
+  real_T tmp;
   boolean_T guard1;
   boolean_T guard2;
   boolean_T guard3;
   boolean_T guard4;
-  boolean_T guard5;
-  boolean_T guard6;
-  boolean_T tmp;
+  boolean_T tmp_0;
   if (AutopilotStateMachine_X_TO_SRS_GA()) {
     AutopilotStateMachine_exit_internal_ON();
     AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_SRS_GA;
@@ -2292,8 +2302,6 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
     guard2 = false;
     guard3 = false;
     guard4 = false;
-    guard5 = false;
-    guard6 = false;
     if ((AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 == 0.0) &&
         (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 == 0.0) &&
         (((AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.mode == vertical_mode::OP_CLB) &&
@@ -2302,7 +2310,7 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
                        (AutopilotStateMachine_B.BusAssignment_g.data.V_ias_kn <=
                         AutopilotStateMachine_B.BusAssignment_g.data.VLS_kn - 2.0)))) {
       AutopilotStateMachine_B.out.FD_disconnect = true;
-      guard6 = true;
+      guard4 = true;
     } else if (AutopilotStateMachine_X_TO_TCAS()) {
       AutopilotStateMachine_X_TO_TCAS_Action();
       AutopilotStateMachine_exit_internal_ON();
@@ -2314,7 +2322,7 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
                ((AutopilotStateMachine_B.BusAssignment_g.data.flight_phase == 7.0) &&
                 (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 == 0.0) &&
                 (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 == 0.0))) {
-      guard6 = true;
+      guard4 = true;
     } else {
       switch (AutopilotStateMachine_DWork.is_ON) {
        case AutopilotStateMachine_IN_ALT:
@@ -2354,6 +2362,10 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
         break;
 
        case AutopilotStateMachine_IN_CLB:
+        AutopilotStateMachine_CLB();
+        break;
+
+       case AutopilotStateMachine_IN_DES:
         if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST_CPT) {
           AutopilotStateMachine_DWork.local_H_constraint_ft =
             AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft;
@@ -2376,40 +2388,30 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
           AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
           AutopilotStateMachine_FINAL_DES_entry();
         } else {
-          tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
-                  AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
-                 AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
-          tmp_0 = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+          tmp = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
             AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
-          if (tmp && (tmp_0 < -40.0)) {
-            guard3 = true;
-          } else if (tmp && (tmp_0 > 40.0)) {
-            guard4 = true;
-          } else if ((AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft <
-                      AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft) && (std::abs(tmp_0) > 40.0)) {
+          if ((!AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES) ||
+              ((AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft >
+                AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft) && (std::abs(tmp) > 40.0))) {
             AutopilotStateMachine_B.out.mode_reversion = true;
             AutopilotStateMachine_B.out.mode_reversion_target_fpm =
               AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
             guard2 = true;
-          } else if ((!AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB) && (tmp_0 > 40.0)) {
-            AutopilotStateMachine_B.out.mode_reversion = true;
-            AutopilotStateMachine_B.out.mode_reversion_target_fpm =
-              AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
-            if (tmp_0 > 40.0) {
-              guard4 = true;
-            } else if (tmp_0 < -40.0) {
-              guard3 = true;
-            } else {
-              AutopilotStateMachine_CLB_during();
-            }
           } else {
-            AutopilotStateMachine_CLB_during();
+            tmp_0 = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+                      AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+                     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+            if (tmp_0 && (tmp < -40.0)) {
+              AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
+              AutopilotStateMachine_OP_DES_entry();
+            } else if (tmp_0 && (tmp > 40.0)) {
+              AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
+              AutopilotStateMachine_OP_CLB_entry();
+            } else {
+              AutopilotStateMachine_DES_during();
+            }
           }
         }
-        break;
-
-       case AutopilotStateMachine_IN_DES:
-        AutopilotStateMachine_DES();
         break;
 
        case AutopilotStateMachine_IN_FINAL_DES:
@@ -2424,13 +2426,13 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
             AutopilotStateMachine_VS_entry();
           } else if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
             AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-            AutopilotStateMachine_OFF_entry_m();
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+            AutopilotStateMachine_OFF_entry_i();
           } else {
-            guard5 = true;
+            guard3 = true;
           }
         } else {
-          guard5 = true;
+          guard3 = true;
         }
         break;
 
@@ -2456,37 +2458,27 @@ void AutopilotStateMachine::AutopilotStateMachine_ON_p(void)
       }
     }
 
-    if (guard6) {
+    if (guard4) {
       AutopilotStateMachine_exit_internal_ON();
-      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-      AutopilotStateMachine_OFF_entry_m();
+      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+      AutopilotStateMachine_OFF_entry_i();
     }
 
-    if (guard5) {
-      tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
-              AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
-             AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
-      tmp_0 = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+    if (guard3) {
+      tmp_0 = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+                AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+      tmp = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
         AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
-      if (tmp && (tmp_0 < -40.0)) {
+      if (tmp_0 && (tmp < -40.0)) {
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
         AutopilotStateMachine_OP_DES_entry();
-      } else if (tmp && (tmp_0 > 40.0)) {
+      } else if (tmp_0 && (tmp > 40.0)) {
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
         AutopilotStateMachine_OP_CLB_entry();
       } else {
         AutopilotStateMachine_FINAL_DES_during();
       }
-    }
-
-    if (guard4) {
-      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
-      AutopilotStateMachine_OP_CLB_entry();
-    }
-
-    if (guard3) {
-      AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
-      AutopilotStateMachine_OP_DES_entry();
     }
 
     if (guard2) {
@@ -2508,29 +2500,21 @@ void AutopilotStateMachine::AutopilotStateMachine_SRS_GA_during(void)
   AutopilotStateMachine_B.out.mode_reversion_TRK_FPA = false;
   allEnginesOperative = (AutopilotStateMachine_B.BusAssignment_g.data.is_engine_operative_1 &&
     AutopilotStateMachine_B.BusAssignment_g.data.is_engine_operative_2);
-  if (!AutopilotStateMachine_DWork.wereAllEnginesOperative_not_empty_p) {
-    AutopilotStateMachine_DWork.wereAllEnginesOperative_b = allEnginesOperative;
-    AutopilotStateMachine_DWork.wereAllEnginesOperative_not_empty_p = true;
+  if (!AutopilotStateMachine_DWork.wereAllEnginesOperative_not_empty_j) {
+    AutopilotStateMachine_DWork.wereAllEnginesOperative_o = allEnginesOperative;
+    AutopilotStateMachine_DWork.wereAllEnginesOperative_not_empty_j = true;
   }
 
-  if (AutopilotStateMachine_DWork.wereAllEnginesOperative_b && (!allEnginesOperative)) {
+  if (AutopilotStateMachine_DWork.wereAllEnginesOperative_o && (!allEnginesOperative)) {
     AutopilotStateMachine_B.out.V_c_kn = std::fmin(AutopilotStateMachine_B.BusAssignment_g.data.VLS_kn + 15.0, std::fmax
       (AutopilotStateMachine_B.BusAssignment_g.data.V_ias_kn, AutopilotStateMachine_B.BusAssignment_g.data.VAPP_kn));
   }
 
-  AutopilotStateMachine_DWork.wereAllEnginesOperative_b = allEnginesOperative;
+  AutopilotStateMachine_DWork.wereAllEnginesOperative_o = allEnginesOperative;
 }
 
 void AutopilotStateMachine::step()
 {
-  static const real_T c[24]{ -3.7631613045100394E-12, -3.7631613045100418E-12, 6.2076488130688133E-12,
-    2.3375903616618146E-12, -2.9675180723323623E-12, -2.9675180723323619E-12, 2.2735910872868498E-8,
-    1.1446426959338374E-8, -1.4891939010927404E-8, -2.4704337359767112E-9, 1.1555108433994175E-8, -6.25E-9,
-    -1.897274956835846E-5, 1.520958826384842E-5, 7.1712086474912069E-6, -4.4094939746938354E-6, 1.3759855421341094E-5,
-    2.4370072289329445E-5, 0.05, 0.05, 0.1, 0.1, 0.1, 0.15 };
-
-  static const int16_T b[7]{ 0, 1000, 3333, 4000, 6000, 8000, 10000 };
-
   uint64m_T tmp;
   uint64m_T tmp_0;
   uint64m_T tmp_1;
@@ -2544,44 +2528,52 @@ void AutopilotStateMachine::step()
   real_T result_tmp[9];
   real_T result[3];
   real_T result_0[3];
-  real_T L;
-  real_T L_tmp;
   real_T Phi2;
+  real_T R;
   real_T a;
   real_T b_L;
   real_T b_R;
   real_T c_R;
-  real_T distance_m;
   real_T rtb_GainTheta;
   real_T rtb_GainTheta1;
-  real_T rtb_Saturation1;
   real_T rtb_dme;
+  real_T xloc;
   int32_T high_i;
   int32_T low_i;
   int32_T low_ip1;
   int32_T mid_i;
   int32_T rtb_on_ground;
-  boolean_T conditionSoftAlt;
-  boolean_T engageCondition;
-  boolean_T guard1;
-  boolean_T guard2;
-  boolean_T inFlightDisarmCondition;
+  boolean_T isGoAroundModeActive;
   boolean_T rtb_AND;
   boolean_T rtb_AND_j;
   boolean_T rtb_BusAssignment1_input_APPR_push;
   boolean_T rtb_Compare_c;
   boolean_T rtb_Compare_dl;
   boolean_T rtb_FixPtRelationalOperator;
-  boolean_T rtb_Y_j;
+  boolean_T rtb_Y_n;
   boolean_T rtb_cFLARE;
-  boolean_T rtb_cLAND;
   boolean_T sCLB_tmp;
   boolean_T speedTargetChanged;
-  boolean_T state_d_tmp;
-  boolean_T state_d_tmp_0;
-  boolean_T state_d_tmp_1;
-  boolean_T state_k_tmp;
-  boolean_T state_k_tmp_0;
+  static const int16_T b[7]{ 0, 1000, 3333, 4000, 6000, 8000, 10000 };
+
+  static const real_T c[24]{ -3.7631613045100394E-12, -3.7631613045100418E-12, 6.2076488130688133E-12,
+    2.3375903616618146E-12, -2.9675180723323623E-12, -2.9675180723323619E-12, 2.2735910872868498E-8,
+    1.1446426959338374E-8, -1.4891939010927404E-8, -2.4704337359767112E-9, 1.1555108433994175E-8, -6.25E-9,
+    -1.897274956835846E-5, 1.520958826384842E-5, 7.1712086474912069E-6, -4.4094939746938354E-6, 1.3759855421341094E-5,
+    2.4370072289329445E-5, 0.05, 0.05, 0.1, 0.1, 0.1, 0.15 };
+
+  real_T c_L_tmp_tmp_tmp;
+  real_T rtb_dme_tmp;
+  boolean_T guard1;
+  boolean_T guard2;
+  boolean_T sCLB_tmp_0;
+  boolean_T state_a_tmp;
+  boolean_T state_a_tmp_0;
+  boolean_T state_a_tmp_1;
+  boolean_T state_a_tmp_2;
+  boolean_T state_a_tmp_3;
+  boolean_T state_e_tmp;
+  boolean_T state_e_tmp_0;
   AutopilotStateMachine_DWork.DelayInput1_DSTATE_a = (static_cast<int32_T>
     (AutopilotStateMachine_U.in.input.AP_ENGAGE_push) > static_cast<int32_T>
     (AutopilotStateMachine_DWork.DelayInput1_DSTATE_a));
@@ -2617,41 +2609,39 @@ void AutopilotStateMachine::step()
   AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push = AutopilotStateMachine_DWork.DelayInput1_DSTATE_o;
   rtb_GainTheta = AutopilotStateMachine_P.GainTheta_Gain * AutopilotStateMachine_U.in.data.Theta_deg;
   rtb_GainTheta1 = AutopilotStateMachine_P.GainTheta1_Gain * AutopilotStateMachine_U.in.data.Phi_deg;
-  a = 0.017453292519943295 * rtb_GainTheta;
-  distance_m = 0.017453292519943295 * rtb_GainTheta1;
-  rtb_dme = std::tan(a);
-  rtb_Saturation1 = std::sin(distance_m);
-  distance_m = std::cos(distance_m);
+  c_R = 0.017453292519943295 * rtb_GainTheta;
+  Phi2 = 0.017453292519943295 * rtb_GainTheta1;
+  R = std::tan(c_R);
+  rtb_dme = std::cos(Phi2);
+  Phi2 = std::sin(Phi2);
+  c_R = std::cos(c_R);
   result_tmp[0] = 1.0;
-  result_tmp[3] = rtb_Saturation1 * rtb_dme;
-  result_tmp[6] = distance_m * rtb_dme;
+  result_tmp[3] = Phi2 * R;
+  result_tmp[6] = rtb_dme * R;
   result_tmp[1] = 0.0;
-  result_tmp[4] = distance_m;
-  result_tmp[7] = -rtb_Saturation1;
+  result_tmp[4] = rtb_dme;
+  result_tmp[7] = -Phi2;
   result_tmp[2] = 0.0;
-  rtb_dme = std::cos(a);
-  Phi2 = 1.0 / rtb_dme;
-  result_tmp[5] = Phi2 * rtb_Saturation1;
-  result_tmp[8] = Phi2 * distance_m;
-  Phi2 = AutopilotStateMachine_P.Gain_Gain_k * AutopilotStateMachine_U.in.data.p_rad_s *
+  result_tmp[5] = 1.0 / c_R * Phi2;
+  result_tmp[8] = 1.0 / c_R * rtb_dme;
+  R = AutopilotStateMachine_P.Gain_Gain_k * AutopilotStateMachine_U.in.data.p_rad_s *
     AutopilotStateMachine_P.Gainpk_Gain;
-  c_R = AutopilotStateMachine_P.Gain_Gain * AutopilotStateMachine_U.in.data.q_rad_s *
-    AutopilotStateMachine_P.Gainqk_Gain;
-  L = AutopilotStateMachine_P.Gain_Gain_a * AutopilotStateMachine_U.in.data.r_rad_s;
+  a = AutopilotStateMachine_P.Gain_Gain * AutopilotStateMachine_U.in.data.q_rad_s * AutopilotStateMachine_P.Gainqk_Gain;
+  xloc = AutopilotStateMachine_P.Gain_Gain_a * AutopilotStateMachine_U.in.data.r_rad_s;
   for (high_i = 0; high_i < 3; high_i++) {
-    result[high_i] = (result_tmp[high_i + 3] * c_R + result_tmp[high_i] * Phi2) + result_tmp[high_i + 6] * L;
+    result[high_i] = (result_tmp[high_i + 3] * a + result_tmp[high_i] * R) + result_tmp[high_i + 6] * xloc;
   }
 
-  a = std::sin(a);
-  result_tmp[0] = rtb_dme;
+  R = std::sin(0.017453292519943295 * rtb_GainTheta);
+  result_tmp[0] = c_R;
   result_tmp[3] = 0.0;
-  result_tmp[6] = -a;
-  result_tmp[1] = rtb_Saturation1 * a;
-  result_tmp[4] = distance_m;
-  result_tmp[7] = rtb_dme * rtb_Saturation1;
-  result_tmp[2] = distance_m * a;
-  result_tmp[5] = 0.0 - rtb_Saturation1;
-  result_tmp[8] = distance_m * rtb_dme;
+  result_tmp[6] = -R;
+  result_tmp[1] = Phi2 * R;
+  result_tmp[4] = rtb_dme;
+  result_tmp[7] = c_R * Phi2;
+  result_tmp[2] = rtb_dme * R;
+  result_tmp[5] = 0.0 - Phi2;
+  result_tmp[8] = rtb_dme * c_R;
   for (high_i = 0; high_i < 3; high_i++) {
     result_0[high_i] = (result_tmp[high_i + 3] * AutopilotStateMachine_U.in.data.by_m_s2 + result_tmp[high_i] *
                         AutopilotStateMachine_U.in.data.bx_m_s2) + result_tmp[high_i + 6] *
@@ -2663,54 +2653,52 @@ void AutopilotStateMachine::step()
   } else if (AutopilotStateMachine_U.in.data.nav_loc_valid) {
     a = std::sin((AutopilotStateMachine_U.in.data.nav_loc_position.lat -
                   AutopilotStateMachine_U.in.data.aircraft_position.lat) * 0.017453292519943295 / 2.0);
-    distance_m = std::sin((AutopilotStateMachine_U.in.data.nav_loc_position.lon -
-      AutopilotStateMachine_U.in.data.aircraft_position.lon) * 0.017453292519943295 / 2.0);
+    xloc = std::sin((AutopilotStateMachine_U.in.data.nav_loc_position.lon -
+                     AutopilotStateMachine_U.in.data.aircraft_position.lon) * 0.017453292519943295 / 2.0);
     a = std::cos(0.017453292519943295 * AutopilotStateMachine_U.in.data.aircraft_position.lat) * std::cos
-      (0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_loc_position.lat) * distance_m * distance_m + a * a;
+      (0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_loc_position.lat) * xloc * xloc + a * a;
     rtb_dme = std::atan2(std::sqrt(a), std::sqrt(1.0 - a)) * 2.0 * 6.371E+6;
-    distance_m = AutopilotStateMachine_U.in.data.aircraft_position.alt -
-      AutopilotStateMachine_U.in.data.nav_loc_position.alt;
-    AutopilotStateMachine_B.BusAssignment_g.data.nav_dme_nmi = std::sqrt(rtb_dme * rtb_dme + distance_m * distance_m) /
-      1852.0;
+    a = AutopilotStateMachine_U.in.data.aircraft_position.alt - AutopilotStateMachine_U.in.data.nav_loc_position.alt;
+    AutopilotStateMachine_B.BusAssignment_g.data.nav_dme_nmi = std::sqrt(rtb_dme * rtb_dme + a * a) / 1852.0;
   } else {
     AutopilotStateMachine_B.BusAssignment_g.data.nav_dme_nmi = 0.0;
   }
 
-  rtb_dme = 0.017453292519943295 * AutopilotStateMachine_U.in.data.aircraft_position.lat;
+  rtb_dme_tmp = 0.017453292519943295 * AutopilotStateMachine_U.in.data.aircraft_position.lat;
   Phi2 = 0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_loc_position.lat;
-  rtb_Saturation1 = 0.017453292519943295 * AutopilotStateMachine_U.in.data.aircraft_position.lon;
   a = std::sin((AutopilotStateMachine_U.in.data.nav_loc_position.lat -
                 AutopilotStateMachine_U.in.data.aircraft_position.lat) * 0.017453292519943295 / 2.0);
-  distance_m = std::sin((AutopilotStateMachine_U.in.data.nav_loc_position.lon -
-    AutopilotStateMachine_U.in.data.aircraft_position.lon) * 0.017453292519943295 / 2.0);
+  xloc = std::sin((AutopilotStateMachine_U.in.data.nav_loc_position.lon -
+                   AutopilotStateMachine_U.in.data.aircraft_position.lon) * 0.017453292519943295 / 2.0);
   c_R = std::cos(Phi2);
-  L_tmp = std::cos(rtb_dme);
-  a = L_tmp * c_R * distance_m * distance_m + a * a;
-  distance_m = std::atan2(std::sqrt(a), std::sqrt(1.0 - a)) * 2.0 * 6.371E+6;
-  a = AutopilotStateMachine_U.in.data.aircraft_position.alt - AutopilotStateMachine_U.in.data.nav_loc_position.alt;
-  L = 0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_loc_position.lon - rtb_Saturation1;
-  b_L = mod_2RcCQkwc((mod_2RcCQkwc(mod_2RcCQkwc(360.0) + 360.0) - (mod_2RcCQkwc(mod_2RcCQkwc
+  R = std::cos(rtb_dme_tmp);
+  a = R * c_R * xloc * xloc + a * a;
+  a = std::atan2(std::sqrt(a), std::sqrt(1.0 - a)) * 2.0 * 6.371E+6;
+  xloc = AutopilotStateMachine_U.in.data.aircraft_position.alt - AutopilotStateMachine_U.in.data.nav_loc_position.alt;
+  b_L = mod_OlzklkXq((mod_OlzklkXq(mod_OlzklkXq(360.0) + 360.0) - (mod_OlzklkXq(mod_OlzklkXq
     (AutopilotStateMachine_U.in.data.nav_loc_magvar_deg) + 360.0) + 360.0)) + 360.0);
-  b_R = mod_2RcCQkwc(360.0 - b_L);
+  b_R = mod_OlzklkXq(360.0 - b_L);
+  c_L_tmp_tmp_tmp = 0.017453292519943295 * AutopilotStateMachine_U.in.data.aircraft_position.lon;
+  rtb_dme = 0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_loc_position.lon - c_L_tmp_tmp_tmp;
+  rtb_dme = mod_OlzklkXq(mod_OlzklkXq(mod_OlzklkXq(std::atan2(std::sin(rtb_dme) * c_R, R * std::sin(Phi2) - std::sin
+    (rtb_dme_tmp) * c_R * std::cos(rtb_dme)) * 57.295779513082323 + 360.0)) + 360.0);
   if (std::abs(b_L) < std::abs(b_R)) {
     b_R = -b_L;
   }
 
-  rtb_dme = std::sin(rtb_dme);
-  L = mod_2RcCQkwc(mod_2RcCQkwc(mod_2RcCQkwc(std::atan2(std::sin(L) * c_R, L_tmp * std::sin(Phi2) - rtb_dme * c_R * std::
-    cos(L)) * 57.295779513082323 + 360.0)) + 360.0) + 360.0;
-  Phi2 = mod_2RcCQkwc((mod_2RcCQkwc(mod_2RcCQkwc(mod_2RcCQkwc(mod_2RcCQkwc(AutopilotStateMachine_U.in.data.nav_loc_deg -
-    b_R) + 360.0)) + 360.0) - L) + 360.0);
-  c_R = mod_2RcCQkwc(360.0 - Phi2);
+  Phi2 = mod_OlzklkXq((mod_OlzklkXq(mod_OlzklkXq(mod_OlzklkXq(mod_OlzklkXq(AutopilotStateMachine_U.in.data.nav_loc_deg -
+    b_R) + 360.0)) + 360.0) - (rtb_dme + 360.0)) + 360.0);
+  c_R = mod_OlzklkXq(360.0 - Phi2);
   guard1 = false;
-  if (std::sqrt(distance_m * distance_m + a * a) / 1852.0 < 30.0) {
-    L = mod_2RcCQkwc((mod_2RcCQkwc(mod_2RcCQkwc(AutopilotStateMachine_U.in.data.nav_loc_deg) + 360.0) - L) + 360.0);
-    b_R = mod_2RcCQkwc(360.0 - L);
-    if (std::abs(L) < std::abs(b_R)) {
-      b_R = -L;
+  if (std::sqrt(a * a + xloc * xloc) / 1852.0 < 30.0) {
+    rtb_dme = mod_OlzklkXq((mod_OlzklkXq(mod_OlzklkXq(AutopilotStateMachine_U.in.data.nav_loc_deg) + 360.0) - (rtb_dme +
+      360.0)) + 360.0);
+    R = mod_OlzklkXq(360.0 - rtb_dme);
+    if (std::abs(rtb_dme) < std::abs(R)) {
+      R = -rtb_dme;
     }
 
-    if ((std::abs(b_R) < 90.0) && ((AutopilotStateMachine_U.in.data.nav_loc_position.lat != 0.0) ||
+    if ((std::abs(R) < 90.0) && ((AutopilotStateMachine_U.in.data.nav_loc_position.lat != 0.0) ||
          (AutopilotStateMachine_U.in.data.nav_loc_position.lon != 0.0) ||
          (AutopilotStateMachine_U.in.data.nav_loc_position.alt != 0.0))) {
       AutopilotStateMachine_B.BusAssignment_g.data.nav_e_loc_valid = true;
@@ -2739,95 +2727,74 @@ void AutopilotStateMachine::step()
   Phi2 = 0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_gs_position.lat;
   a = std::sin((AutopilotStateMachine_U.in.data.nav_gs_position.lat -
                 AutopilotStateMachine_U.in.data.aircraft_position.lat) * 0.017453292519943295 / 2.0);
-  distance_m = std::sin((AutopilotStateMachine_U.in.data.nav_gs_position.lon -
-    AutopilotStateMachine_U.in.data.aircraft_position.lon) * 0.017453292519943295 / 2.0);
+  xloc = std::sin((AutopilotStateMachine_U.in.data.nav_gs_position.lon -
+                   AutopilotStateMachine_U.in.data.aircraft_position.lon) * 0.017453292519943295 / 2.0);
   c_R = std::cos(Phi2);
-  a = L_tmp * c_R * distance_m * distance_m + a * a;
-  distance_m = std::atan2(std::sqrt(a), std::sqrt(1.0 - a)) * 2.0 * 6.371E+6;
-  a = AutopilotStateMachine_U.in.data.aircraft_position.alt - AutopilotStateMachine_U.in.data.nav_gs_position.alt;
-  distance_m = std::sqrt(distance_m * distance_m + a * a);
-  rtb_Saturation1 = 0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_gs_position.lon - rtb_Saturation1;
-  rtb_Saturation1 = std::atan2(std::sin(rtb_Saturation1) * c_R, L_tmp * std::sin(Phi2) - rtb_dme * c_R * std::cos
-    (rtb_Saturation1)) * 57.295779513082323;
-  if (rtb_Saturation1 + 360.0 == 0.0) {
+  R = std::cos(rtb_dme_tmp);
+  a = R * c_R * xloc * xloc + a * a;
+  a = std::atan2(std::sqrt(a), std::sqrt(1.0 - a)) * 2.0 * 6.371E+6;
+  b_L = AutopilotStateMachine_U.in.data.aircraft_position.alt - AutopilotStateMachine_U.in.data.nav_gs_position.alt;
+  a = std::sqrt(a * a + b_L * b_L);
+  xloc = 0.017453292519943295 * AutopilotStateMachine_U.in.data.nav_gs_position.lon - c_L_tmp_tmp_tmp;
+  rtb_dme = std::atan2(std::sin(xloc) * c_R, R * std::sin(Phi2) - std::sin(rtb_dme_tmp) * c_R * std::cos(xloc)) *
+    57.295779513082323;
+  if (rtb_dme + 360.0 == 0.0) {
     rtb_dme = 0.0;
   } else {
-    rtb_dme = std::fmod(rtb_Saturation1 + 360.0, 360.0);
+    rtb_dme = std::fmod(rtb_dme + 360.0, 360.0);
     if (rtb_dme == 0.0) {
       rtb_dme = 0.0;
-    } else if (rtb_Saturation1 + 360.0 < 0.0) {
+    } else if (rtb_dme < 0.0) {
       rtb_dme += 360.0;
     }
   }
 
   guard1 = false;
-  if (distance_m / 1852.0 < 30.0) {
+  if (a / 1852.0 < 30.0) {
     if (AutopilotStateMachine_U.in.data.nav_loc_deg == 0.0) {
-      Phi2 = 0.0;
+      R = 0.0;
     } else {
-      Phi2 = std::fmod(AutopilotStateMachine_U.in.data.nav_loc_deg, 360.0);
-      if (Phi2 == 0.0) {
-        Phi2 = 0.0;
-      } else if (AutopilotStateMachine_U.in.data.nav_loc_deg < 0.0) {
-        Phi2 += 360.0;
+      R = std::fmod(AutopilotStateMachine_U.in.data.nav_loc_deg, 360.0);
+      if (R == 0.0) {
+        R = 0.0;
+      } else if (R < 0.0) {
+        R += 360.0;
       }
     }
 
     if (rtb_dme == 0.0) {
-      rtb_Saturation1 = 0.0;
-    } else {
-      rtb_Saturation1 = std::fmod(rtb_dme, 360.0);
-      if (rtb_Saturation1 == 0.0) {
-        rtb_Saturation1 = 0.0;
-      } else if (rtb_dme < 0.0) {
-        rtb_Saturation1 += 360.0;
-      }
-    }
-
-    if (Phi2 + 360.0 == 0.0) {
-      Phi2 = 0.0;
-    } else {
-      Phi2 = std::fmod(Phi2 + 360.0, 360.0);
-    }
-
-    if (rtb_Saturation1 + 360.0 == 0.0) {
       c_R = 0.0;
     } else {
-      c_R = std::fmod(rtb_Saturation1 + 360.0, 360.0);
+      c_R = std::fmod(rtb_dme, 360.0);
     }
 
-    c_R = (Phi2 - (c_R + 360.0)) + 360.0;
+    c_R = (std::fmod(R + 360.0, 360.0) - (std::fmod(c_R + 360.0, 360.0) + 360.0)) + 360.0;
     if (c_R == 0.0) {
-      L = 0.0;
+      rtb_dme = 0.0;
     } else {
-      L = std::fmod(c_R, 360.0);
-      if (L == 0.0) {
-        L = 0.0;
-      } else if (c_R < 0.0) {
-        L += 360.0;
+      rtb_dme = std::fmod(c_R, 360.0);
+      if (rtb_dme == 0.0) {
+        rtb_dme = 0.0;
+      } else if (rtb_dme < 0.0) {
+        rtb_dme += 360.0;
       }
     }
 
-    if (360.0 - L == 0.0) {
-      b_R = 0.0;
+    if (360.0 - rtb_dme == 0.0) {
+      R = 0.0;
     } else {
-      b_R = std::fmod(360.0 - L, 360.0);
-      if (b_R == 0.0) {
-        b_R = 0.0;
-      } else if (360.0 - L < 0.0) {
-        b_R += 360.0;
-      }
+      R = std::fmod(360.0 - rtb_dme, 360.0);
     }
 
-    if (std::abs(L) < std::abs(b_R)) {
-      b_R = -L;
+    if (rtb_dme < R) {
+      R = -rtb_dme;
     }
 
-    if ((std::abs(b_R) < 90.0) && ((AutopilotStateMachine_U.in.data.nav_gs_position.lat != 0.0) ||
+    if ((std::abs(R) < 90.0) && ((AutopilotStateMachine_U.in.data.nav_gs_position.lat != 0.0) ||
          (AutopilotStateMachine_U.in.data.nav_gs_position.lon != 0.0) ||
          (AutopilotStateMachine_U.in.data.nav_gs_position.alt != 0.0))) {
       AutopilotStateMachine_B.BusAssignment_g.data.nav_e_gs_valid = true;
-      AutopilotStateMachine_B.BusAssignment_g.data.nav_e_gs_error_deg = std::asin(a / distance_m) * 57.295779513082323 -
+      AutopilotStateMachine_B.BusAssignment_g.data.nav_e_gs_error_deg = std::asin(b_L / a) * 57.295779513082323 -
         AutopilotStateMachine_DWork.nav_gs_deg;
     } else {
       guard1 = true;
@@ -2849,26 +2816,26 @@ void AutopilotStateMachine::step()
     rtb_dme = AutopilotStateMachine_P.Saturation_LowerSat;
   }
 
-  rtb_Saturation1 = AutopilotStateMachine_P.Gain1_Gain * AutopilotStateMachine_U.in.data.gear_strut_compression_2 -
+  Phi2 = AutopilotStateMachine_P.Gain1_Gain * AutopilotStateMachine_U.in.data.gear_strut_compression_2 -
     AutopilotStateMachine_P.Constant1_Value;
-  if (rtb_Saturation1 > AutopilotStateMachine_P.Saturation1_UpperSat) {
-    rtb_Saturation1 = AutopilotStateMachine_P.Saturation1_UpperSat;
-  } else if (rtb_Saturation1 < AutopilotStateMachine_P.Saturation1_LowerSat) {
-    rtb_Saturation1 = AutopilotStateMachine_P.Saturation1_LowerSat;
+  if (Phi2 > AutopilotStateMachine_P.Saturation1_UpperSat) {
+    Phi2 = AutopilotStateMachine_P.Saturation1_UpperSat;
+  } else if (Phi2 < AutopilotStateMachine_P.Saturation1_LowerSat) {
+    Phi2 = AutopilotStateMachine_P.Saturation1_LowerSat;
   }
 
-  if (AutopilotStateMachine_DWork.is_active_c5_AutopilotStateMachine == 0U) {
+  if (AutopilotStateMachine_DWork.is_active_c5_AutopilotStateMachine == 0) {
     AutopilotStateMachine_DWork.is_active_c5_AutopilotStateMachine = 1U;
     AutopilotStateMachine_DWork.is_c5_AutopilotStateMachine = AutopilotStateMachine_IN_OnGround;
     rtb_on_ground = 1;
   } else if (AutopilotStateMachine_DWork.is_c5_AutopilotStateMachine == AutopilotStateMachine_IN_InAir) {
-    if ((rtb_dme > 0.05) || (rtb_Saturation1 > 0.05)) {
+    if ((rtb_dme > 0.05) || (Phi2 > 0.05)) {
       AutopilotStateMachine_DWork.is_c5_AutopilotStateMachine = AutopilotStateMachine_IN_OnGround;
       rtb_on_ground = 1;
     } else {
       rtb_on_ground = 0;
     }
-  } else if ((rtb_dme == 0.0) && (rtb_Saturation1 == 0.0)) {
+  } else if ((rtb_dme == 0.0) && (Phi2 == 0.0)) {
     AutopilotStateMachine_DWork.is_c5_AutopilotStateMachine = AutopilotStateMachine_IN_InAir;
     rtb_on_ground = 0;
   } else {
@@ -2880,29 +2847,29 @@ void AutopilotStateMachine::step()
   rtb_Compare_c = ((AutopilotStateMachine_U.in.data.altimeter_setting_left_mbar !=
                     AutopilotStateMachine_DWork.DelayInput1_DSTATE) || AutopilotStateMachine_DWork.DelayInput1_DSTATE_o);
   rtb_BusAssignment1_input_APPR_push = AutopilotStateMachine_DWork.DelayInput1_DSTATE_h;
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty_o) {
-    AutopilotStateMachine_DWork.eventTime_h = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_o = true;
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_j) {
+    AutopilotStateMachine_DWork.eventTime_b = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_j = true;
   }
 
-  if ((rtb_on_ground == 0) || (AutopilotStateMachine_DWork.eventTime_h == 0.0)) {
-    AutopilotStateMachine_DWork.eventTime_h = AutopilotStateMachine_U.in.time.simulation_time;
+  if ((rtb_on_ground == 0) || (AutopilotStateMachine_DWork.eventTime_b == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_b = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  rtb_dme = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_h;
+  rtb_dme = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_b;
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_k) {
+    AutopilotStateMachine_DWork.eventTime_a = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_k = true;
+  }
+
+  if ((rtb_on_ground != 0) || (AutopilotStateMachine_DWork.eventTime_a == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_a = AutopilotStateMachine_U.in.time.simulation_time;
+  }
+
+  Phi2 = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_a;
   if (!AutopilotStateMachine_DWork.eventTime_not_empty_c) {
-    AutopilotStateMachine_DWork.eventTime_e = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_c = true;
-  }
-
-  if ((rtb_on_ground != 0) || (AutopilotStateMachine_DWork.eventTime_e == 0.0)) {
-    AutopilotStateMachine_DWork.eventTime_e = AutopilotStateMachine_U.in.time.simulation_time;
-  }
-
-  rtb_Saturation1 = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_e;
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty_i) {
     AutopilotStateMachine_DWork.eventTime_n = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_i = true;
+    AutopilotStateMachine_DWork.eventTime_not_empty_c = true;
   }
 
   if (((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS) &&
@@ -2911,41 +2878,41 @@ void AutopilotStateMachine::step()
     AutopilotStateMachine_DWork.eventTime_n = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  a = AutopilotStateMachine_P.Constant_Value_j / AutopilotStateMachine_U.in.time.dt;
-  if (a < 1.0) {
-    a = AutopilotStateMachine_U.in.input.H_fcu_ft;
+  c_R = AutopilotStateMachine_P.Constant_Value_j / AutopilotStateMachine_U.in.time.dt;
+  if (c_R < 1.0) {
+    c_R = AutopilotStateMachine_U.in.input.H_fcu_ft;
   } else {
-    if (a > 100.0) {
+    if (c_R > 100.0) {
       high_i = 100;
     } else {
-      high_i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(a), 4.294967296E+9)));
+      high_i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(c_R), 4.294967296E+9)));
     }
 
-    a = AutopilotStateMachine_DWork.Delay_DSTATE_d5[100U - static_cast<uint32_T>(high_i)];
+    c_R = AutopilotStateMachine_DWork.Delay_DSTATE_d5[100U - static_cast<uint32_T>(high_i)];
   }
 
-  rtb_Compare_dl = (a != AutopilotStateMachine_U.in.input.H_fcu_ft);
-  rtb_Y_j = ((AutopilotStateMachine_U.in.input.H_constraint_ft != 0.0) && (((AutopilotStateMachine_U.in.input.H_fcu_ft >
+  rtb_Compare_dl = (c_R != AutopilotStateMachine_U.in.input.H_fcu_ft);
+  rtb_Y_n = ((AutopilotStateMachine_U.in.input.H_constraint_ft != 0.0) && (((AutopilotStateMachine_U.in.input.H_fcu_ft >
     AutopilotStateMachine_U.in.data.H_ind_ft) && (AutopilotStateMachine_U.in.input.H_constraint_ft >
     AutopilotStateMachine_U.in.data.H_ind_ft) && (AutopilotStateMachine_U.in.input.H_constraint_ft <
     AutopilotStateMachine_U.in.input.H_fcu_ft)) || ((AutopilotStateMachine_U.in.input.H_fcu_ft <
     AutopilotStateMachine_U.in.data.H_ind_ft) && (AutopilotStateMachine_U.in.input.H_constraint_ft <
     AutopilotStateMachine_U.in.data.H_ind_ft) && (AutopilotStateMachine_U.in.input.H_constraint_ft >
     AutopilotStateMachine_U.in.input.H_fcu_ft))));
-  a = AutopilotStateMachine_P.Constant_Value_jq / AutopilotStateMachine_U.in.time.dt;
-  if (a < 1.0) {
-    a = AutopilotStateMachine_U.in.input.Psi_fcu_deg;
+  c_R = AutopilotStateMachine_P.Constant_Value_jq / AutopilotStateMachine_U.in.time.dt;
+  if (c_R < 1.0) {
+    c_R = AutopilotStateMachine_U.in.input.Psi_fcu_deg;
   } else {
-    if (a > 100.0) {
+    if (c_R > 100.0) {
       high_i = 100;
     } else {
-      high_i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(a), 4.294967296E+9)));
+      high_i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(c_R), 4.294967296E+9)));
     }
 
-    a = AutopilotStateMachine_DWork.Delay_DSTATE_c[100U - static_cast<uint32_T>(high_i)];
+    c_R = AutopilotStateMachine_DWork.Delay_DSTATE_c[100U - static_cast<uint32_T>(high_i)];
   }
 
-  AutopilotStateMachine_DWork.DelayInput1_DSTATE_o = (a != AutopilotStateMachine_U.in.input.Psi_fcu_deg);
+  AutopilotStateMachine_DWork.DelayInput1_DSTATE_o = (c_R != AutopilotStateMachine_U.in.input.Psi_fcu_deg);
   AutopilotStateMachine_DWork.DelayInput1_DSTATE_h = (AutopilotStateMachine_U.in.input.Psi_fcu_deg !=
     AutopilotStateMachine_P.CompareToConstant_const_h);
   rtb_AND = (AutopilotStateMachine_DWork.DelayInput1_DSTATE_o && AutopilotStateMachine_DWork.DelayInput1_DSTATE_h);
@@ -2956,26 +2923,26 @@ void AutopilotStateMachine::step()
     AutopilotStateMachine_DWork.pY_not_empty = true;
   }
 
-  a = AutopilotStateMachine_U.in.time.dt * AutopilotStateMachine_P.LagFilter_C1;
-  distance_m = a / (a + 2.0);
-  AutopilotStateMachine_DWork.pY = (2.0 - a) / (a + 2.0) * AutopilotStateMachine_DWork.pY +
-    (AutopilotStateMachine_U.in.data.nav_gs_error_deg * distance_m + AutopilotStateMachine_DWork.pU * distance_m);
+  c_R = AutopilotStateMachine_U.in.time.dt * AutopilotStateMachine_P.LagFilter_C1;
+  R = c_R / (c_R + 2.0);
+  AutopilotStateMachine_DWork.pY = (2.0 - c_R) / (c_R + 2.0) * AutopilotStateMachine_DWork.pY +
+    (AutopilotStateMachine_U.in.data.nav_gs_error_deg * R + AutopilotStateMachine_DWork.pU * R);
   AutopilotStateMachine_DWork.pU = AutopilotStateMachine_U.in.data.nav_gs_error_deg;
   rtb_FixPtRelationalOperator = (AutopilotStateMachine_DWork.pY < AutopilotStateMachine_DWork.DelayInput1_DSTATE_b);
-  a = AutopilotStateMachine_P.Constant_Value_m / AutopilotStateMachine_U.in.time.dt;
-  if (a < 1.0) {
-    a = AutopilotStateMachine_U.in.input.V_fcu_kn;
+  c_R = AutopilotStateMachine_P.Constant_Value_m / AutopilotStateMachine_U.in.time.dt;
+  if (c_R < 1.0) {
+    c_R = AutopilotStateMachine_U.in.input.V_fcu_kn;
   } else {
-    if (a > 100.0) {
+    if (c_R > 100.0) {
       high_i = 100;
     } else {
-      high_i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(a), 4.294967296E+9)));
+      high_i = static_cast<int32_T>(static_cast<uint32_T>(std::fmod(std::trunc(c_R), 4.294967296E+9)));
     }
 
-    a = AutopilotStateMachine_DWork.Delay_DSTATE_d2[100U - static_cast<uint32_T>(high_i)];
+    c_R = AutopilotStateMachine_DWork.Delay_DSTATE_d2[100U - static_cast<uint32_T>(high_i)];
   }
 
-  AutopilotStateMachine_DWork.DelayInput1_DSTATE_o = (a != AutopilotStateMachine_U.in.input.V_fcu_kn);
+  AutopilotStateMachine_DWork.DelayInput1_DSTATE_o = (c_R != AutopilotStateMachine_U.in.input.V_fcu_kn);
   AutopilotStateMachine_DWork.DelayInput1_DSTATE_h = (AutopilotStateMachine_U.in.input.V_fcu_kn !=
     AutopilotStateMachine_P.CompareToConstant_const_l);
   rtb_AND_j = (AutopilotStateMachine_DWork.DelayInput1_DSTATE_o && AutopilotStateMachine_DWork.DelayInput1_DSTATE_h);
@@ -2988,27 +2955,26 @@ void AutopilotStateMachine::step()
   speedTargetChanged = (std::abs(AutopilotStateMachine_U.in.input.V_fcu_kn - AutopilotStateMachine_DWork.lastTargetSpeed)
                         > 2.0);
   AutopilotStateMachine_DWork.lastTargetSpeed = AutopilotStateMachine_U.in.input.V_fcu_kn;
-  a = std::abs(AutopilotStateMachine_U.in.input.V_fcu_kn - AutopilotStateMachine_U.in.data.V_ias_kn);
-  if ((a <= 4.0) || (!AutopilotStateMachine_DWork.timeDeltaSpeed4_not_empty)) {
+  c_R = std::abs(AutopilotStateMachine_U.in.input.V_fcu_kn - AutopilotStateMachine_U.in.data.V_ias_kn);
+  if ((c_R <= 4.0) || (!AutopilotStateMachine_DWork.timeDeltaSpeed4_not_empty)) {
     AutopilotStateMachine_DWork.timeDeltaSpeed4 = AutopilotStateMachine_U.in.time.simulation_time;
     AutopilotStateMachine_DWork.timeDeltaSpeed4_not_empty = true;
   }
 
-  if ((a <= 10.0) || (!AutopilotStateMachine_DWork.timeDeltaSpeed10_not_empty)) {
+  if ((c_R <= 10.0) || (!AutopilotStateMachine_DWork.timeDeltaSpeed10_not_empty)) {
     AutopilotStateMachine_DWork.timeDeltaSpeed10 = AutopilotStateMachine_U.in.time.simulation_time;
     AutopilotStateMachine_DWork.timeDeltaSpeed10_not_empty = true;
   }
 
-  conditionSoftAlt = ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT) &&
-                      (AutopilotStateMachine_U.in.data.flight_phase == 3.0) &&
-                      AutopilotStateMachine_U.in.input.MACH_mode && AutopilotStateMachine_U.in.input.ATHR_engaged && (a <
-    4.0));
-  if ((!conditionSoftAlt) || speedTargetChanged || (!AutopilotStateMachine_DWork.timeConditionSoftAlt_not_empty)) {
+  rtb_cFLARE = ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT) &&
+                (AutopilotStateMachine_U.in.data.flight_phase == 3.0) && AutopilotStateMachine_U.in.input.MACH_mode &&
+                AutopilotStateMachine_U.in.input.ATHR_engaged && (c_R < 4.0));
+  if ((!rtb_cFLARE) || speedTargetChanged || (!AutopilotStateMachine_DWork.timeConditionSoftAlt_not_empty)) {
     AutopilotStateMachine_DWork.timeConditionSoftAlt = AutopilotStateMachine_U.in.time.simulation_time;
     AutopilotStateMachine_DWork.timeConditionSoftAlt_not_empty = true;
   }
 
-  AutopilotStateMachine_DWork.stateSoftAlt = ((conditionSoftAlt && (AutopilotStateMachine_U.in.time.simulation_time -
+  AutopilotStateMachine_DWork.stateSoftAlt = ((rtb_cFLARE && (AutopilotStateMachine_U.in.time.simulation_time -
     AutopilotStateMachine_DWork.timeConditionSoftAlt >= 120.0)) || AutopilotStateMachine_DWork.stateSoftAlt);
   if (speedTargetChanged || (!AutopilotStateMachine_U.in.input.MACH_mode) ||
       (!AutopilotStateMachine_U.in.input.ATHR_engaged) || (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode !=
@@ -3024,29 +2990,29 @@ void AutopilotStateMachine::step()
     AutopilotStateMachine_DWork.Delay_DSTATE_g, AutopilotStateMachine_P.Raising_Value_a *
     AutopilotStateMachine_U.in.time.dt), AutopilotStateMachine_P.Falling_Value_f /
     AutopilotStateMachine_P.Debounce_Value * AutopilotStateMachine_U.in.time.dt);
-  engageCondition = ((AutopilotStateMachine_U.in.data.H_radio_ft > 100.0) && (rtb_Saturation1 > 5.0));
-  rtb_Compare_c = ((AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC ||
-                    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_CPT) ||
-                    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
-                    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND) ||
-                    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE) ||
-                    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::ROLL_OUT)) &&
-                   (AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS ||
-                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_CPT) ||
-                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
-                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND) ||
-                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FLARE) ||
-                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ROLL_OUT)));
-  speedTargetChanged = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::ROLL_OUT) ||
-                        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ROLL_OUT));
-  conditionSoftAlt = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::GA_TRACK) &&
-                      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS_GA));
-  if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_a && engageCondition) {
-    state_d_tmp = !AutopilotStateMachine_DWork.sAP2;
-    if ((!AutopilotStateMachine_DWork.sAP1) && state_d_tmp) {
+  rtb_Compare_c = ((AutopilotStateMachine_U.in.data.H_radio_ft > 100.0) && (Phi2 > 5.0));
+  speedTargetChanged = ((AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC ||
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_CPT) ||
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND) ||
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE) ||
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::ROLL_OUT)) &&
+                        (AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS ||
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_CPT) ||
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND) ||
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FLARE) ||
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ROLL_OUT)));
+  rtb_cFLARE = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::ROLL_OUT) ||
+                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ROLL_OUT));
+  isGoAroundModeActive = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::GA_TRACK) &&
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS_GA));
+  if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_a && rtb_Compare_c) {
+    state_a_tmp = !AutopilotStateMachine_DWork.sAP2;
+    if ((!AutopilotStateMachine_DWork.sAP1) && state_a_tmp) {
       AutopilotStateMachine_DWork.sAP1 = true;
-    } else if (rtb_Compare_c) {
-      if (AutopilotStateMachine_DWork.sAP1 && state_d_tmp) {
+    } else if (speedTargetChanged) {
+      if (AutopilotStateMachine_DWork.sAP1 && state_a_tmp) {
         AutopilotStateMachine_DWork.sAP2 = true;
       } else {
         AutopilotStateMachine_DWork.sAP1 = ((AutopilotStateMachine_DWork.sAP2 && (!AutopilotStateMachine_DWork.sAP1)) ||
@@ -3055,9 +3021,9 @@ void AutopilotStateMachine::step()
     }
   } else if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_p) {
     if (!AutopilotStateMachine_DWork.sAP1) {
-      if (engageCondition) {
+      if (rtb_Compare_c) {
         AutopilotStateMachine_DWork.sAP1 = true;
-        AutopilotStateMachine_DWork.sAP2 = (rtb_Compare_c && AutopilotStateMachine_DWork.sAP2);
+        AutopilotStateMachine_DWork.sAP2 = (speedTargetChanged && AutopilotStateMachine_DWork.sAP2);
       }
     } else {
       AutopilotStateMachine_DWork.sAP1 = false;
@@ -3065,135 +3031,129 @@ void AutopilotStateMachine::step()
     }
   } else if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_bo) {
     if (!AutopilotStateMachine_DWork.sAP2) {
-      if (engageCondition) {
+      if (rtb_Compare_c) {
         AutopilotStateMachine_DWork.sAP2 = true;
-        AutopilotStateMachine_DWork.sAP1 = (rtb_Compare_c && AutopilotStateMachine_DWork.sAP1);
+        AutopilotStateMachine_DWork.sAP1 = (speedTargetChanged && AutopilotStateMachine_DWork.sAP1);
       }
     } else {
       AutopilotStateMachine_DWork.sAP1 = false;
       AutopilotStateMachine_DWork.sAP2 = false;
     }
   } else {
-    state_d_tmp = !AutopilotStateMachine_DWork.sGoAroundModeActive;
-    if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_d || ((!speedTargetChanged) &&
-         AutopilotStateMachine_DWork.sRollOutActive) || ((rtb_on_ground != 0) && conditionSoftAlt && state_d_tmp) ||
-        (rtb_GainTheta > 25.0) || (rtb_GainTheta < -13.0) || (std::abs(rtb_GainTheta1) > 45.0)) {
+    state_a_tmp = !AutopilotStateMachine_DWork.sGoAroundModeActive;
+    if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_d || ((!rtb_cFLARE) && AutopilotStateMachine_DWork.sRollOutActive)
+        || ((rtb_on_ground != 0) && isGoAroundModeActive && state_a_tmp) || (rtb_GainTheta > 25.0) || (rtb_GainTheta <
+         -13.0) || (std::abs(rtb_GainTheta1) > 45.0)) {
       AutopilotStateMachine_DWork.sAP1 = false;
       AutopilotStateMachine_DWork.sAP2 = false;
-    } else if ((!rtb_Compare_c) && AutopilotStateMachine_DWork.sLandModeArmedOrActive && (!conditionSoftAlt) &&
+    } else if ((!speedTargetChanged) && AutopilotStateMachine_DWork.sLandModeArmedOrActive && (!isGoAroundModeActive) &&
                AutopilotStateMachine_DWork.sAP1 && AutopilotStateMachine_DWork.sAP2) {
       AutopilotStateMachine_DWork.sAP2 = false;
     } else {
-      AutopilotStateMachine_DWork.sAP2 = ((conditionSoftAlt || state_d_tmp || (!AutopilotStateMachine_DWork.sAP1) ||
+      AutopilotStateMachine_DWork.sAP2 = ((isGoAroundModeActive || state_a_tmp || (!AutopilotStateMachine_DWork.sAP1) ||
         (!AutopilotStateMachine_DWork.sAP2)) && AutopilotStateMachine_DWork.sAP2);
     }
   }
 
-  AutopilotStateMachine_DWork.sLandModeArmedOrActive = rtb_Compare_c;
-  AutopilotStateMachine_DWork.sRollOutActive = speedTargetChanged;
-  AutopilotStateMachine_DWork.sGoAroundModeActive = conditionSoftAlt;
+  AutopilotStateMachine_DWork.sLandModeArmedOrActive = speedTargetChanged;
+  AutopilotStateMachine_DWork.sRollOutActive = rtb_cFLARE;
+  AutopilotStateMachine_DWork.sGoAroundModeActive = isGoAroundModeActive;
   if (!AutopilotStateMachine_DWork.wasFlightPlanAvailable_not_empty) {
     AutopilotStateMachine_DWork.wasFlightPlanAvailable = AutopilotStateMachine_U.in.data.is_flight_plan_available;
     AutopilotStateMachine_DWork.wasFlightPlanAvailable_not_empty = true;
   }
 
-  state_d_tmp = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.NAV;
-  AutopilotStateMachine_DWork.state_d = ((AutopilotStateMachine_U.in.data.is_flight_plan_available &&
+  state_a_tmp = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.NAV;
+  AutopilotStateMachine_DWork.state_a = ((AutopilotStateMachine_U.in.data.is_flight_plan_available &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::NAV) &&
     (AutopilotStateMachine_DWork.DelayInput1_DSTATE_e || ((rtb_on_ground != 0) &&
     (!AutopilotStateMachine_DWork.wasFlightPlanAvailable) && AutopilotStateMachine_U.in.data.is_flight_plan_available) ||
-     (state_d_tmp && AutopilotStateMachine_U.in.input.FM_rnav_appr_selected && rtb_BusAssignment1_input_APPR_push) ||
-     (state_d_tmp && (!AutopilotStateMachine_DWork.wasInSrsGa) && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode
+     (state_a_tmp && AutopilotStateMachine_U.in.input.FM_rnav_appr_selected && rtb_BusAssignment1_input_APPR_push) ||
+     (state_a_tmp && (!AutopilotStateMachine_DWork.wasInSrsGa) && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode
     == vertical_mode::SRS_GA))) && ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::NAV) &&
     ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_CPT) ||
      AutopilotStateMachine_U.in.input.FM_rnav_appr_selected)) && ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode
     != lateral_mode::LOC_TRACK) || AutopilotStateMachine_U.in.input.FM_rnav_appr_selected) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LAND) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::FLARE)) ||
-    AutopilotStateMachine_DWork.state_d);
+    AutopilotStateMachine_DWork.state_a);
   rtb_Compare_c = !rtb_BusAssignment1_input_APPR_push;
-  speedTargetChanged = !AutopilotStateMachine_U.in.input.FM_rnav_appr_selected;
-  rtb_cLAND = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC;
-  state_d_tmp_0 = !AutopilotStateMachine_DWork.Delay1_DSTATE.armed.FINAL_DES;
-  state_d_tmp_1 = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_g;
-  AutopilotStateMachine_DWork.state_d = (state_d_tmp_1 && AutopilotStateMachine_U.in.data.is_flight_plan_available &&
-    ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) || (!rtb_AND)) && (rtb_cLAND ||
+  state_a_tmp_0 = !AutopilotStateMachine_U.in.input.FM_rnav_appr_selected;
+  state_a_tmp_1 = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC;
+  state_a_tmp_2 = !AutopilotStateMachine_DWork.Delay1_DSTATE.armed.FINAL_DES;
+  state_a_tmp_3 = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_g;
+  AutopilotStateMachine_DWork.state_a = (state_a_tmp_3 && AutopilotStateMachine_U.in.data.is_flight_plan_available &&
+    ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) || (!rtb_AND)) && (state_a_tmp_1 ||
     AutopilotStateMachine_U.in.input.FM_rnav_appr_selected) && (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode !=
     lateral_mode::NAV) && (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LAND) &&
-    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::FLARE) && (state_d_tmp_0 || state_d_tmp ||
-    speedTargetChanged || rtb_Compare_c) && AutopilotStateMachine_DWork.state_d);
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::FLARE) && (state_a_tmp_2 || state_a_tmp ||
+    state_a_tmp_0 || rtb_Compare_c) && AutopilotStateMachine_DWork.state_a);
   AutopilotStateMachine_DWork.wasFlightPlanAvailable = AutopilotStateMachine_U.in.data.is_flight_plan_available;
   AutopilotStateMachine_DWork.wasInSrsGa = (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::
     SRS_GA);
-  rtb_cFLARE = (AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS ||
-                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_CPT) ||
-                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
-                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND) ||
-                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FLARE));
-  state_k_tmp = !rtb_cFLARE;
-  state_k_tmp_0 = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_CPT) &&
-                   (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_TRACK) &&
-                   (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LAND) &&
-                   (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::FLARE));
-  conditionSoftAlt = (AutopilotStateMachine_U.in.input.FD_active || AutopilotStateMachine_DWork.sAP1 ||
-                      AutopilotStateMachine_DWork.sAP2);
-  AutopilotStateMachine_DWork.state_k = (((AutopilotStateMachine_U.in.data.H_radio_ft > 400.0) &&
+  speedTargetChanged = (AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS ||
+                        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_CPT) ||
+                        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
+                        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND) ||
+                        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FLARE));
+  rtb_cFLARE = !speedTargetChanged;
+  isGoAroundModeActive = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_CPT) &&
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_TRACK) &&
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LAND) &&
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::FLARE));
+  state_e_tmp = (AutopilotStateMachine_U.in.input.FD_active || AutopilotStateMachine_DWork.sAP1 ||
+                 AutopilotStateMachine_DWork.sAP2);
+  AutopilotStateMachine_DWork.state_e = (((AutopilotStateMachine_U.in.data.H_radio_ft > 400.0) &&
     AutopilotStateMachine_U.in.data.nav_valid && (AutopilotStateMachine_U.in.data.throttle_lever_1_pos < 45.0) &&
     (AutopilotStateMachine_U.in.data.throttle_lever_2_pos < 45.0) && (AutopilotStateMachine_DWork.DelayInput1_DSTATE_fn ||
-    (rtb_BusAssignment1_input_APPR_push && speedTargetChanged)) && state_k_tmp_0 && state_k_tmp && conditionSoftAlt) ||
-    AutopilotStateMachine_DWork.state_k);
-  engageCondition = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_fn;
-  AutopilotStateMachine_DWork.state_k = ((engageCondition || rtb_cLAND || rtb_cFLARE) && (rtb_Compare_c || state_k_tmp) &&
-    (rtb_Compare_c || speedTargetChanged) && state_d_tmp && state_k_tmp_0 &&
+    (rtb_BusAssignment1_input_APPR_push && state_a_tmp_0)) && isGoAroundModeActive && rtb_cFLARE && state_e_tmp) ||
+    AutopilotStateMachine_DWork.state_e);
+  state_e_tmp_0 = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_fn;
+  AutopilotStateMachine_DWork.state_e = ((state_e_tmp_0 || state_a_tmp_1 || speedTargetChanged) && (rtb_Compare_c ||
+    rtb_cFLARE) && (rtb_Compare_c || state_a_tmp_0) && state_a_tmp && isGoAroundModeActive &&
     (AutopilotStateMachine_U.in.data.throttle_lever_1_pos != 45.0) &&
-    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && conditionSoftAlt &&
-    AutopilotStateMachine_DWork.state_k);
+    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && state_e_tmp && AutopilotStateMachine_DWork.state_e);
   c_R = (AutopilotStateMachine_U.in.data.Psi_magnetic_track_deg - (AutopilotStateMachine_U.in.data.nav_loc_deg + 360.0))
     + 360.0;
   if (c_R == 0.0) {
-    a = 0.0;
+    c_R = 0.0;
   } else {
-    a = std::fmod(c_R, 360.0);
-    if (a == 0.0) {
-      a = 0.0;
+    c_R = std::fmod(c_R, 360.0);
+    if (c_R == 0.0) {
+      c_R = 0.0;
     } else if (c_R < 0.0) {
-      a += 360.0;
+      c_R += 360.0;
     }
   }
 
-  if (360.0 - a == 0.0) {
-    distance_m = 0.0;
+  if (360.0 - c_R == 0.0) {
+    R = 0.0;
   } else {
-    distance_m = std::fmod(360.0 - a, 360.0);
-    if (distance_m == 0.0) {
-      distance_m = 0.0;
-    } else if (360.0 - a < 0.0) {
-      distance_m += 360.0;
-    }
+    R = std::fmod(360.0 - c_R, 360.0);
   }
 
-  if (a < distance_m) {
-    distance_m = -a;
+  if (c_R < R) {
+    R = -c_R;
+  }
+
+  if (R < 0.0) {
+    high_i = -1;
+  } else {
+    high_i = (R > 0.0);
   }
 
   if (AutopilotStateMachine_U.in.input.Phi_loc_c < 0.0) {
-    high_i = -1;
-  } else {
-    high_i = (AutopilotStateMachine_U.in.input.Phi_loc_c > 0.0);
-  }
-
-  if (distance_m < 0.0) {
     low_i = -1;
   } else {
-    low_i = (distance_m > 0.0);
+    low_i = (AutopilotStateMachine_U.in.input.Phi_loc_c > 0.0);
   }
 
-  if (low_i == high_i) {
-    Phi2 = std::abs(AutopilotStateMachine_U.in.input.Phi_loc_c);
+  if (high_i == low_i) {
+    c_R = std::abs(AutopilotStateMachine_U.in.input.Phi_loc_c);
     guard1 = false;
-    if (Phi2 > 5.0) {
+    if (c_R > 5.0) {
       if (std::abs(rtb_GainTheta1) <= 5.0) {
-        state_d_tmp = true;
+        speedTargetChanged = true;
       } else {
         if (rtb_GainTheta1 < 0.0) {
           low_ip1 = -1;
@@ -3201,8 +3161,8 @@ void AutopilotStateMachine::step()
           low_ip1 = (rtb_GainTheta1 > 0.0);
         }
 
-        if (high_i != low_ip1) {
-          state_d_tmp = true;
+        if (low_i != low_ip1) {
+          speedTargetChanged = true;
         } else {
           guard1 = true;
         }
@@ -3218,24 +3178,25 @@ void AutopilotStateMachine::step()
         low_ip1 = (rtb_GainTheta1 > 0.0);
       }
 
-      state_d_tmp = ((Phi2 >= std::abs(rtb_GainTheta1)) && (high_i == low_ip1));
+      speedTargetChanged = ((c_R >= std::abs(rtb_GainTheta1)) && (low_i == low_ip1));
     }
   } else {
-    state_d_tmp = false;
+    speedTargetChanged = false;
   }
 
   if (AutopilotStateMachine_U.in.data.nav_valid && AutopilotStateMachine_U.in.data.nav_loc_valid) {
-    Phi2 = std::abs(distance_m);
-    if (Phi2 < 115.0) {
-      c_R = std::abs(AutopilotStateMachine_U.in.data.nav_loc_error_deg);
+    c_R = std::abs(R);
+    if (c_R < 115.0) {
+      R = std::abs(AutopilotStateMachine_U.in.data.nav_loc_error_deg);
       if (AutopilotStateMachine_U.in.data.nav_loc_error_deg < 0.0) {
-        high_i = -1;
+        low_i = -1;
       } else {
-        high_i = (AutopilotStateMachine_U.in.data.nav_loc_error_deg > 0.0);
+        low_i = (AutopilotStateMachine_U.in.data.nav_loc_error_deg > 0.0);
       }
 
-      if (((Phi2 > 25.0) && ((c_R < 10.0) && ((low_i != high_i) && state_d_tmp))) || (c_R < 1.92)) {
-        AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LOC_CPT = (state_d_tmp || ((Phi2 < 15.0) && (c_R < 1.1)));
+      if (((c_R > 25.0) && ((R < 10.0) && ((high_i != low_i) && speedTargetChanged))) || (R < 1.92)) {
+        AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LOC_CPT = (speedTargetChanged || ((c_R < 15.0) && (R <
+          1.1)));
       } else {
         AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LOC_CPT = false;
       }
@@ -3246,34 +3207,34 @@ void AutopilotStateMachine::step()
     AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LOC_CPT = false;
   }
 
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty_l) {
-    AutopilotStateMachine_DWork.eventTime_ht = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_l = true;
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_o) {
+    AutopilotStateMachine_DWork.eventTime_dp = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_o = true;
   }
 
-  state_d_tmp = !AutopilotStateMachine_U.in.data.nav_valid;
-  if (state_d_tmp || (!AutopilotStateMachine_U.in.data.nav_loc_valid) || ((std::abs
+  state_a_tmp = !AutopilotStateMachine_U.in.data.nav_valid;
+  if (state_a_tmp || (!AutopilotStateMachine_U.in.data.nav_loc_valid) || ((std::abs
         (AutopilotStateMachine_U.in.data.nav_loc_error_deg) >= 0.16) ||
        ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_CPT) &&
         (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_TRACK))) ||
-      (AutopilotStateMachine_DWork.eventTime_ht == 0.0)) {
-    AutopilotStateMachine_DWork.eventTime_ht = AutopilotStateMachine_U.in.time.simulation_time;
+      (AutopilotStateMachine_DWork.eventTime_dp == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_dp = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty_k) {
-    AutopilotStateMachine_DWork.eventTime_l = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_k = true;
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_k5) {
+    AutopilotStateMachine_DWork.eventTime_g = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_k5 = true;
   }
 
-  if ((AutopilotStateMachine_U.in.data.H_radio_ft >= 400.0) || (AutopilotStateMachine_DWork.eventTime_l == 0.0)) {
-    AutopilotStateMachine_DWork.eventTime_l = AutopilotStateMachine_U.in.time.simulation_time;
+  if ((AutopilotStateMachine_U.in.data.H_radio_ft >= 400.0) || (AutopilotStateMachine_DWork.eventTime_g == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_g = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  rtb_cLAND = ((AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_l >= 1.2) &&
-               ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
-                (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND)) &&
-               ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
-                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND)));
+  speedTargetChanged = ((AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_g >=
+    1.2) && ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
+             (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND)) &&
+                        ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND)));
   rtb_cFLARE = (AutopilotStateMachine_U.in.input.condition_Flare &&
                 ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND) ||
                  (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE)) &&
@@ -3284,20 +3245,20 @@ void AutopilotStateMachine::step()
   }
 
   if (AutopilotStateMachine_U.in.data.V_gnd_kn >= 40.0) {
-    Phi2 = AutopilotStateMachine_U.in.data.Psi_magnetic_track_deg;
+    c_R = AutopilotStateMachine_U.in.data.Psi_magnetic_track_deg;
   } else {
-    Phi2 = AutopilotStateMachine_U.in.data.Psi_magnetic_deg;
+    c_R = AutopilotStateMachine_U.in.data.Psi_magnetic_deg;
   }
 
-  c_R = (AutopilotStateMachine_DWork.runwayHeadingStored - Phi2) + 180.0;
+  c_R = (AutopilotStateMachine_DWork.runwayHeadingStored - c_R) + 180.0;
   if (c_R == 0.0) {
-    Phi2 = 0.0;
+    R = 0.0;
   } else {
-    Phi2 = std::fmod(c_R, 360.0);
-    if (Phi2 == 0.0) {
-      Phi2 = 0.0;
-    } else if (c_R < 0.0) {
-      Phi2 += 360.0;
+    R = std::fmod(c_R, 360.0);
+    if (R == 0.0) {
+      R = 0.0;
+    } else if (R < 0.0) {
+      R += 360.0;
     }
   }
 
@@ -3306,48 +3267,47 @@ void AutopilotStateMachine::step()
     ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FLARE) ||
      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ROLL_OUT))) ||
     AutopilotStateMachine_DWork.state);
-  state_k_tmp = (AutopilotStateMachine_DWork.sAP1 || AutopilotStateMachine_DWork.sAP2);
-  AutopilotStateMachine_DWork.state = ((std::abs(Phi2 - 180.0) <= 7.0) && ((state_k_tmp ||
-    (AutopilotStateMachine_U.in.data.flight_phase != 7.0)) && (state_k_tmp || (rtb_dme <= 10.0) || rtb_Compare_c) &&
-    ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE) ||
-     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::ROLL_OUT)) &&
+  isGoAroundModeActive = (AutopilotStateMachine_DWork.sAP1 || AutopilotStateMachine_DWork.sAP2);
+  AutopilotStateMachine_DWork.state = ((std::abs(R - 180.0) <= 7.0) && ((isGoAroundModeActive ||
+    (AutopilotStateMachine_U.in.data.flight_phase != 7.0)) && (isGoAroundModeActive || (rtb_dme <= 10.0) ||
+    rtb_Compare_c) && ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE) ||
+                       (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::ROLL_OUT)) &&
     ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FLARE) ||
      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ROLL_OUT)) &&
     AutopilotStateMachine_DWork.state));
-  state_k_tmp_0 = ((AutopilotStateMachine_U.in.data.throttle_lever_1_pos == 45.0) ||
+  state_a_tmp_1 = ((AutopilotStateMachine_U.in.data.throttle_lever_1_pos == 45.0) ||
                    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos == 45.0));
-  state_k_tmp = ((!AutopilotStateMachine_DWork.sThrottleCondition) && state_k_tmp_0 &&
-                 (AutopilotStateMachine_U.in.data.flaps_handle_index >= 1.0) && ((rtb_on_ground == 0) || (rtb_dme < 30.0))
-                 && (AutopilotStateMachine_U.in.data.flight_phase >= 2.0) &&
-                 (AutopilotStateMachine_U.in.data.flight_phase <= 6.0) &&
-                 (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::GA_TRACK) &&
-                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS) &&
-                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS_GA));
-  AutopilotStateMachine_DWork.sThrottleCondition = state_k_tmp_0;
+  isGoAroundModeActive = ((!AutopilotStateMachine_DWork.sThrottleCondition) && state_a_tmp_1 &&
+    (AutopilotStateMachine_U.in.data.flaps_handle_index >= 1.0) && ((rtb_on_ground == 0) || (rtb_dme < 30.0)) &&
+    (AutopilotStateMachine_U.in.data.flight_phase >= 2.0) && (AutopilotStateMachine_U.in.data.flight_phase <= 6.0) &&
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::GA_TRACK) &&
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS) &&
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS_GA));
+  AutopilotStateMachine_DWork.sThrottleCondition = state_a_tmp_1;
   if (rtb_Compare_dl) {
-    AutopilotStateMachine_DWork.newFcuAltitudeSelected_j = true;
+    AutopilotStateMachine_DWork.newFcuAltitudeSelected_a = true;
   } else if (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT) {
-    AutopilotStateMachine_DWork.newFcuAltitudeSelected_j = ((std::abs(AutopilotStateMachine_U.in.data.H_ind_ft -
-      AutopilotStateMachine_U.in.input.H_fcu_ft) >= 40.0) && AutopilotStateMachine_DWork.newFcuAltitudeSelected_j);
+    AutopilotStateMachine_DWork.newFcuAltitudeSelected_a = ((std::abs(AutopilotStateMachine_U.in.data.H_ind_ft -
+      AutopilotStateMachine_U.in.input.H_fcu_ft) >= 40.0) && AutopilotStateMachine_DWork.newFcuAltitudeSelected_a);
   }
 
-  distance_m = AutopilotStateMachine_U.in.input.H_fcu_ft - AutopilotStateMachine_U.in.data.H_ind_ft;
-  c_R = std::abs(distance_m);
+  rtb_dme_tmp = AutopilotStateMachine_U.in.input.H_fcu_ft - AutopilotStateMachine_U.in.data.H_ind_ft;
+  R = std::abs(rtb_dme_tmp);
   AutopilotStateMachine_DWork.was_TCAS_active = ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::
-    TCAS) || ((c_R <= 250.0) && AutopilotStateMachine_DWork.was_TCAS_active));
+    TCAS) || ((R <= 250.0) && AutopilotStateMachine_DWork.was_TCAS_active));
   if ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::CLB) ||
       (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::OP_CLB) ||
       (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::DES) ||
       (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::OP_DES)) {
-    state_k_tmp_0 = true;
+    state_a_tmp_1 = true;
   } else {
     guard1 = false;
     guard2 = false;
     if (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::VS) {
-      if (distance_m < 0.0) {
+      if (rtb_dme_tmp < 0.0) {
         high_i = -1;
       } else {
-        high_i = (distance_m > 0.0);
+        high_i = (rtb_dme_tmp > 0.0);
       }
 
       if (AutopilotStateMachine_U.in.input.H_dot_fcu_fpm < 0.0) {
@@ -3357,7 +3317,7 @@ void AutopilotStateMachine::step()
       }
 
       if (high_i == low_i) {
-        state_k_tmp_0 = true;
+        state_a_tmp_1 = true;
       } else {
         guard2 = true;
       }
@@ -3367,10 +3327,10 @@ void AutopilotStateMachine::step()
 
     if (guard2) {
       if (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FPA) {
-        if (distance_m < 0.0) {
+        if (rtb_dme_tmp < 0.0) {
           high_i = -1;
         } else {
-          high_i = (distance_m > 0.0);
+          high_i = (rtb_dme_tmp > 0.0);
         }
 
         if (AutopilotStateMachine_U.in.input.FPA_fcu_deg < 0.0) {
@@ -3380,7 +3340,7 @@ void AutopilotStateMachine::step()
         }
 
         if (high_i == low_i) {
-          state_k_tmp_0 = true;
+          state_a_tmp_1 = true;
         } else {
           guard1 = true;
         }
@@ -3391,10 +3351,10 @@ void AutopilotStateMachine::step()
 
     if (guard1) {
       if (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::TCAS) {
-        if (distance_m < 0.0) {
+        if (rtb_dme_tmp < 0.0) {
           high_i = -1;
         } else {
-          high_i = (distance_m > 0.0);
+          high_i = (rtb_dme_tmp > 0.0);
         }
 
         if (AutopilotStateMachine_DWork.Delay1_DSTATE.output.H_dot_c_fpm < 0.0) {
@@ -3404,44 +3364,44 @@ void AutopilotStateMachine::step()
         }
 
         if ((high_i == low_i) && AutopilotStateMachine_DWork.Delay1_DSTATE.output.TCAS_sub_mode_compatible) {
-          state_k_tmp_0 = true;
+          state_a_tmp_1 = true;
         } else {
-          state_k_tmp_0 = ((((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS) ||
+          state_a_tmp_1 = ((((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS) ||
                              (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS_GA)) &&
-                            (distance_m > 250.0)) || (((AutopilotStateMachine_U.in.data.flight_phase == 0.0) ||
+                            (rtb_dme_tmp > 250.0)) || (((AutopilotStateMachine_U.in.data.flight_phase == 0.0) ||
             (AutopilotStateMachine_U.in.data.flight_phase == 1.0) || (AutopilotStateMachine_U.in.data.flight_phase ==
             7.0)) && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.CLB)));
         }
       } else {
-        state_k_tmp_0 = ((((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS) ||
+        state_a_tmp_1 = ((((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS) ||
                            (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS_GA)) &&
-                          (distance_m > 250.0)) || (((AutopilotStateMachine_U.in.data.flight_phase == 0.0) ||
+                          (rtb_dme_tmp > 250.0)) || (((AutopilotStateMachine_U.in.data.flight_phase == 0.0) ||
           (AutopilotStateMachine_U.in.data.flight_phase == 1.0) || (AutopilotStateMachine_U.in.data.flight_phase == 7.0))
           && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.CLB)));
       }
     }
   }
 
-  if (AutopilotStateMachine_DWork.newFcuAltitudeSelected_j && state_k_tmp_0) {
-    AutopilotStateMachine_DWork.canArm_i = 1.0;
+  if (AutopilotStateMachine_DWork.newFcuAltitudeSelected_a && state_a_tmp_1) {
+    AutopilotStateMachine_DWork.canArm_f = 1.0;
   } else if ((std::abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) > 250.0) &&
-             state_k_tmp_0) {
-    AutopilotStateMachine_DWork.canArm_i = 1.0;
+             state_a_tmp_1) {
+    AutopilotStateMachine_DWork.canArm_f = 1.0;
   } else if ((AutopilotStateMachine_DWork.was_TCAS_active && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode ==
-               vertical_mode::VS) && state_k_tmp_0) || ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode ==
-               vertical_mode::TCAS) && state_k_tmp_0)) {
-    AutopilotStateMachine_DWork.canArm_i = 1.0;
+               vertical_mode::VS) && state_a_tmp_1) || ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode ==
+               vertical_mode::TCAS) && state_a_tmp_1)) {
+    AutopilotStateMachine_DWork.canArm_f = 1.0;
   }
 
   if (((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::VS) ||
        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::FPA) ||
-       (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::TCAS)) && (!state_k_tmp_0) &&
-      (!AutopilotStateMachine_DWork.newFcuAltitudeSelected_j)) {
-    AutopilotStateMachine_DWork.canArm_i = 0.0;
+       (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::TCAS)) && (!state_a_tmp_1) &&
+      (!AutopilotStateMachine_DWork.newFcuAltitudeSelected_a)) {
+    AutopilotStateMachine_DWork.canArm_f = 0.0;
   }
 
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.ALT = ((AutopilotStateMachine_U.in.data.flight_phase <= 7.0) &&
-    (AutopilotStateMachine_DWork.canArm_i != 0.0) && (((!rtb_Y_j) &&
+    (AutopilotStateMachine_DWork.canArm_f != 0.0) && (((!rtb_Y_n) &&
     ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::CLB) ||
      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::DES))) ||
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::OP_CLB) ||
@@ -3458,7 +3418,7 @@ void AutopilotStateMachine::step()
   if ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT_CPT) ||
       ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT) && (std::abs
         (AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) < 40.0))) {
-    AutopilotStateMachine_DWork.canArm_i = 0.0;
+    AutopilotStateMachine_DWork.canArm_f = 0.0;
     AutopilotStateMachine_DWork.was_TCAS_active = false;
   }
 
@@ -3469,7 +3429,7 @@ void AutopilotStateMachine::step()
   }
 
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.ALT_CST = ((AutopilotStateMachine_U.in.data.flight_phase < 7.0)
-    && (AutopilotStateMachine_DWork.canArm != 0.0) && rtb_Y_j && ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode
+    && (AutopilotStateMachine_DWork.canArm != 0.0) && rtb_Y_n && ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode
     == vertical_mode::CLB) || (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::DES)));
   switch (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode) {
    case vertical_mode::ALT_CPT:
@@ -3486,24 +3446,24 @@ void AutopilotStateMachine::step()
   if ((AutopilotStateMachine_U.in.data.flight_phase == 2.0) || (AutopilotStateMachine_U.in.data.flight_phase == 3.0) ||
       (AutopilotStateMachine_U.in.data.flight_phase == 6.0)) {
     if (AutopilotStateMachine_U.in.input.H_fcu_ft < AutopilotStateMachine_U.in.data.H_ind_ft) {
-      inFlightDisarmCondition = true;
-    } else if (c_R < 50.0) {
-      inFlightDisarmCondition = true;
+      state_a_tmp_1 = true;
+    } else if (R < 50.0) {
+      state_a_tmp_1 = true;
     } else if ((AutopilotStateMachine_U.in.input.H_fcu_ft == AutopilotStateMachine_U.in.input.H_constraint_ft) && (std::
                 abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) < 50.0)) {
-      inFlightDisarmCondition = true;
+      state_a_tmp_1 = true;
     } else if ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::ALT_CST) &&
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::ALT_CST_CPT) &&
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS) &&
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS_GA)) {
-      inFlightDisarmCondition = true;
+      state_a_tmp_1 = true;
     } else {
-      inFlightDisarmCondition = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
-        (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
+      state_a_tmp_1 = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
+                       (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
     }
   } else {
-    inFlightDisarmCondition = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
-      (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
+    state_a_tmp_1 = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
+                     (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
   }
 
   sCLB_tmp = ((((AutopilotStateMachine_U.in.data.flight_phase == 0.0) || (AutopilotStateMachine_U.in.data.flight_phase ==
@@ -3515,99 +3475,98 @@ void AutopilotStateMachine::step()
                (AutopilotStateMachine_U.in.data.acceleration_altitude < AutopilotStateMachine_U.in.input.H_fcu_ft)) ||
               (((AutopilotStateMachine_U.in.data.flight_phase == 2.0) || (AutopilotStateMachine_U.in.data.flight_phase ==
     3.0) || (AutopilotStateMachine_U.in.data.flight_phase == 6.0)) &&
-               (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::NAV) && (distance_m > 50.0) &&
+               (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::NAV) && (rtb_dme_tmp > 50.0) &&
                ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT_CST_CPT) ||
                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT_CST) ||
                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS) ||
                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS_GA))));
   AutopilotStateMachine_DWork.sCLB = (sCLB_tmp || AutopilotStateMachine_DWork.sCLB);
-  state_k_tmp_0 = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ib) &&
-                   (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_bd) &&
-                   (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ah));
-  AutopilotStateMachine_DWork.sCLB = (state_k_tmp_0 && (!inFlightDisarmCondition) && (sCLB_tmp &&
-    AutopilotStateMachine_DWork.sCLB));
+  sCLB_tmp_0 = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ib) &&
+                (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_bd) &&
+                (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ah));
+  AutopilotStateMachine_DWork.sCLB = (sCLB_tmp_0 && (!state_a_tmp_1) && (sCLB_tmp && AutopilotStateMachine_DWork.sCLB));
   if (rtb_on_ground == 0) {
     if (AutopilotStateMachine_U.in.input.H_fcu_ft > AutopilotStateMachine_U.in.data.H_ind_ft) {
-      inFlightDisarmCondition = true;
-    } else if (c_R < 50.0) {
-      inFlightDisarmCondition = true;
+      state_a_tmp_1 = true;
+    } else if (R < 50.0) {
+      state_a_tmp_1 = true;
     } else if ((AutopilotStateMachine_U.in.input.H_fcu_ft == AutopilotStateMachine_U.in.input.H_constraint_ft) && (std::
                 abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) < 50.0)) {
-      inFlightDisarmCondition = true;
+      state_a_tmp_1 = true;
     } else {
-      inFlightDisarmCondition = (((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::ALT_CST) &&
-        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::ALT_CST_CPT)) ||
-        ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::NAV) &&
-         (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_CPT) &&
-         (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_TRACK)));
+      state_a_tmp_1 = (((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::ALT_CST) &&
+                        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::ALT_CST_CPT)) ||
+                       ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::NAV) &&
+                        (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_CPT) &&
+                        (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::LOC_TRACK)));
     }
   } else {
-    inFlightDisarmCondition = false;
+    state_a_tmp_1 = false;
   }
 
-  AutopilotStateMachine_DWork.sDES = (((rtb_on_ground == 0) && (distance_m < -50.0) &&
+  AutopilotStateMachine_DWork.sDES = (((rtb_on_ground == 0) && (rtb_dme_tmp < -50.0) &&
     ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT_CST) ||
      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT_CST_CPT)) &&
     ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::NAV) ||
      (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_CPT) ||
      (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK))) ||
     AutopilotStateMachine_DWork.sDES);
-  AutopilotStateMachine_DWork.sDES = (state_k_tmp_0 && (!inFlightDisarmCondition) && AutopilotStateMachine_DWork.sDES);
-  AutopilotStateMachine_DWork.sFINAL_DES = (((AutopilotStateMachine_U.in.data.H_radio_ft >= 400.0) && state_d_tmp_0 &&
+  AutopilotStateMachine_DWork.sDES = (sCLB_tmp_0 && (!state_a_tmp_1) && AutopilotStateMachine_DWork.sDES);
+  AutopilotStateMachine_DWork.sFINAL_DES = (((AutopilotStateMachine_U.in.data.H_radio_ft >= 400.0) && state_a_tmp_2 &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::FINAL_DES) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS_GA) &&
     rtb_BusAssignment1_input_APPR_push && AutopilotStateMachine_U.in.input.FM_rnav_appr_selected) ||
     AutopilotStateMachine_DWork.sFINAL_DES);
-  state_k_tmp_0 = !AutopilotStateMachine_DWork.Delay1_DSTATE.condition.TCAS;
-  AutopilotStateMachine_DWork.sFINAL_DES = ((state_d_tmp_0 || rtb_Compare_c) && (engageCondition || state_d_tmp) &&
-    state_d_tmp_1 && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS_GA) &&
-    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::FINAL_DES) && state_k_tmp_0 &&
+  sCLB_tmp = !AutopilotStateMachine_DWork.Delay1_DSTATE.condition.TCAS;
+  AutopilotStateMachine_DWork.sFINAL_DES = ((state_a_tmp_2 || rtb_Compare_c) && (state_e_tmp_0 || state_a_tmp) &&
+    state_a_tmp_3 && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::SRS_GA) &&
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::FINAL_DES) && sCLB_tmp &&
     AutopilotStateMachine_DWork.sFINAL_DES);
-  state_d_tmp_0 = ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_CPT) &&
+  state_a_tmp_1 = ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_CPT) &&
                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_TRACK) &&
                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::LAND) &&
                    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::FLARE));
-  AutopilotStateMachine_DWork.state_j = (((AutopilotStateMachine_U.in.data.H_radio_ft > 400.0) &&
+  AutopilotStateMachine_DWork.state_l = (((AutopilotStateMachine_U.in.data.H_radio_ft > 400.0) &&
     AutopilotStateMachine_U.in.data.nav_valid && (AutopilotStateMachine_U.in.data.throttle_lever_1_pos < 45.0) &&
-    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos < 45.0) && rtb_BusAssignment1_input_APPR_push &&
-    speedTargetChanged && state_d_tmp_0 && conditionSoftAlt) || AutopilotStateMachine_DWork.state_j);
-  AutopilotStateMachine_DWork.state_j = ((rtb_Compare_c || (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS)) &&
-    engageCondition && (rtb_BusAssignment1_input_APPR_push || (AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC ||
+    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos < 45.0) && rtb_BusAssignment1_input_APPR_push && state_a_tmp_0
+    && state_a_tmp_1 && state_e_tmp) || AutopilotStateMachine_DWork.state_l);
+  AutopilotStateMachine_DWork.state_l = ((rtb_Compare_c || (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS)) &&
+    state_e_tmp_0 && (rtb_BusAssignment1_input_APPR_push || (AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC ||
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_CPT) ||
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND) ||
-    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE))) && state_d_tmp_0 &&
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE))) && state_a_tmp_1 &&
     (AutopilotStateMachine_U.in.data.throttle_lever_1_pos != 45.0) &&
-    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && state_k_tmp_0 && conditionSoftAlt &&
-    AutopilotStateMachine_DWork.state_j);
-  rtb_Compare_c = (AutopilotStateMachine_U.in.input.TCAS_mode_available &&
+    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && sCLB_tmp && state_e_tmp &&
+    AutopilotStateMachine_DWork.state_l);
+  state_a_tmp_0 = (AutopilotStateMachine_U.in.input.TCAS_mode_available &&
                    (!AutopilotStateMachine_U.in.input.TCAS_mode_fail));
-  AutopilotStateMachine_DWork.sTCAS_l = ((rtb_Compare_c && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.TCAS) &&
+  AutopilotStateMachine_DWork.sTCAS_b = ((state_a_tmp_0 && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.TCAS) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::TCAS) &&
     (AutopilotStateMachine_U.in.input.TCAS_advisory_state == 1.0) && (AutopilotStateMachine_U.in.data.H_radio_ft >=
-    900.0)) || AutopilotStateMachine_DWork.sTCAS_l);
-  AutopilotStateMachine_DWork.sTCAS_l = (rtb_Compare_c && (AutopilotStateMachine_U.in.input.TCAS_advisory_state != 0.0) &&
+    900.0)) || AutopilotStateMachine_DWork.sTCAS_b);
+  AutopilotStateMachine_DWork.sTCAS_b = (state_a_tmp_0 && (AutopilotStateMachine_U.in.input.TCAS_advisory_state != 0.0) &&
     (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode !=
-    vertical_mode::TCAS) && AutopilotStateMachine_DWork.sTCAS_l);
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty_g) {
-    AutopilotStateMachine_DWork.eventTime_ec = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_g = true;
+    vertical_mode::TCAS) && AutopilotStateMachine_DWork.sTCAS_b);
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_kq) {
+    AutopilotStateMachine_DWork.eventTime_o = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_kq = true;
   }
 
-  if (c_R >= 40.0) {
-    AutopilotStateMachine_DWork.eventTime_ec = AutopilotStateMachine_U.in.time.simulation_time;
-  } else if (AutopilotStateMachine_DWork.eventTime_ec == 0.0) {
-    AutopilotStateMachine_DWork.eventTime_ec = AutopilotStateMachine_U.in.time.simulation_time;
+  if (R >= 40.0) {
+    AutopilotStateMachine_DWork.eventTime_o = AutopilotStateMachine_U.in.time.simulation_time;
+  } else if (AutopilotStateMachine_DWork.eventTime_o == 0.0) {
+    AutopilotStateMachine_DWork.eventTime_o = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  Phi2 = std::abs(AutopilotStateMachine_U.in.data.H_dot_ft_min);
+  c_R = std::abs(AutopilotStateMachine_U.in.data.H_dot_ft_min);
   high_i = 7;
   low_i = 0;
   low_ip1 = 2;
   while (high_i > low_ip1) {
     mid_i = ((low_i + high_i) + 1) >> 1;
-    if (Phi2 >= b[mid_i - 1]) {
+    if (c_R >= b[mid_i - 1]) {
       low_i = mid_i - 1;
       low_ip1 = mid_i + 1;
     } else {
@@ -3615,15 +3574,14 @@ void AutopilotStateMachine::step()
     }
   }
 
-  L = Phi2 - static_cast<real_T>(b[low_i]);
+  xloc = c_R - static_cast<real_T>(b[low_i]);
   a = AutopilotStateMachine_U.in.data.H_dot_ft_min * 0.00508;
-  a *= a;
-  if (c_R <= std::fmin(3000.0, std::fmax(80.0, a / ((((L * c[low_i] + c[low_i + 6]) * L + c[low_i + 12]) * L + c[low_i +
-          18]) * 9.81) * 3.2808398950131235))) {
-    if (distance_m < 0.0) {
+  if (R <= std::fmin(3000.0, std::fmax(80.0, a * a / ((((xloc * c[low_i] + c[low_i + 6]) * xloc + c[low_i + 12]) * xloc
+          + c[low_i + 18]) * 9.81) * 3.2808398950131235))) {
+    if (rtb_dme_tmp < 0.0) {
       high_i = -1;
     } else {
-      high_i = (distance_m > 0.0);
+      high_i = (rtb_dme_tmp > 0.0);
     }
 
     if (AutopilotStateMachine_U.in.data.H_dot_ft_min < 0.0) {
@@ -3633,22 +3591,22 @@ void AutopilotStateMachine::step()
     }
 
     if (high_i == low_i) {
-      if (Phi2 >= 100.0) {
-        if (!AutopilotStateMachine_DWork.eventTime_not_empty_ma) {
-          AutopilotStateMachine_DWork.eventTime_a2 = AutopilotStateMachine_U.in.time.simulation_time;
-          AutopilotStateMachine_DWork.eventTime_not_empty_ma = true;
+      if (c_R >= 100.0) {
+        if (!AutopilotStateMachine_DWork.eventTime_not_empty_or) {
+          AutopilotStateMachine_DWork.eventTime_c = AutopilotStateMachine_U.in.time.simulation_time;
+          AutopilotStateMachine_DWork.eventTime_not_empty_or = true;
         }
 
-        if (rtb_Compare_dl || (AutopilotStateMachine_DWork.eventTime_a2 == 0.0)) {
-          AutopilotStateMachine_DWork.eventTime_a2 = AutopilotStateMachine_U.in.time.simulation_time;
+        if (rtb_Compare_dl || (AutopilotStateMachine_DWork.eventTime_c == 0.0)) {
+          AutopilotStateMachine_DWork.eventTime_c = AutopilotStateMachine_U.in.time.simulation_time;
         }
 
-        c_R = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_a2;
-        if (c_R > 0.0) {
-          c_R += 0.5;
+        R = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_c;
+        if (R > 0.0) {
+          R += 0.5;
         }
 
-        AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CPT = ((c_R >= 3.0) &&
+        AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CPT = ((R >= 3.0) &&
           (AutopilotStateMachine_U.in.data.H_radio_ft > 400.0));
       } else {
         AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CPT = false;
@@ -3662,19 +3620,19 @@ void AutopilotStateMachine::step()
 
   if ((AutopilotStateMachine_U.in.input.H_constraint_ft != 0.0) && (AutopilotStateMachine_U.in.input.H_constraint_ft !=
        AutopilotStateMachine_U.in.input.H_fcu_ft)) {
-    if (!AutopilotStateMachine_DWork.eventTime_not_empty_m) {
-      AutopilotStateMachine_DWork.eventTime_ae = AutopilotStateMachine_U.in.time.simulation_time;
-      AutopilotStateMachine_DWork.eventTime_not_empty_m = true;
+    if (!AutopilotStateMachine_DWork.eventTime_not_empty_a) {
+      AutopilotStateMachine_DWork.eventTime_nz = AutopilotStateMachine_U.in.time.simulation_time;
+      AutopilotStateMachine_DWork.eventTime_not_empty_a = true;
     }
 
     if (std::abs(AutopilotStateMachine_U.in.input.H_constraint_ft - AutopilotStateMachine_U.in.data.H_ind_ft) >= 40.0) {
-      AutopilotStateMachine_DWork.eventTime_ae = AutopilotStateMachine_U.in.time.simulation_time;
-    } else if (AutopilotStateMachine_DWork.eventTime_ae == 0.0) {
-      AutopilotStateMachine_DWork.eventTime_ae = AutopilotStateMachine_U.in.time.simulation_time;
+      AutopilotStateMachine_DWork.eventTime_nz = AutopilotStateMachine_U.in.time.simulation_time;
+    } else if (AutopilotStateMachine_DWork.eventTime_nz == 0.0) {
+      AutopilotStateMachine_DWork.eventTime_nz = AutopilotStateMachine_U.in.time.simulation_time;
     }
 
     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST =
-      ((AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_ae > 0.8) &&
+      ((AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_nz > 0.8) &&
        (!rtb_Compare_dl));
   } else {
     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST = false;
@@ -3685,7 +3643,7 @@ void AutopilotStateMachine::step()
   low_ip1 = 2;
   while (high_i > low_ip1) {
     mid_i = ((low_i + high_i) + 1) >> 1;
-    if (Phi2 >= b[mid_i - 1]) {
+    if (c_R >= b[mid_i - 1]) {
       low_i = mid_i - 1;
       low_ip1 = mid_i + 1;
     } else {
@@ -3693,12 +3651,12 @@ void AutopilotStateMachine::step()
     }
   }
 
-  L = Phi2 - static_cast<real_T>(b[low_i]);
+  xloc = c_R - static_cast<real_T>(b[low_i]);
   if ((AutopilotStateMachine_U.in.input.H_constraint_ft != 0.0) && (AutopilotStateMachine_U.in.input.H_constraint_ft !=
        AutopilotStateMachine_U.in.input.H_fcu_ft)) {
     if (std::abs(AutopilotStateMachine_U.in.input.H_constraint_ft - AutopilotStateMachine_U.in.data.H_ind_ft) <= std::
-        fmin(3000.0, std::fmax(80.0, a / ((((L * c[low_i] + c[low_i + 6]) * L + c[low_i + 12]) * L + c[low_i + 18]) *
-           9.81) * 3.2808398950131235))) {
+        fmin(3000.0, std::fmax(80.0, a * a / ((((xloc * c[low_i] + c[low_i + 6]) * xloc + c[low_i + 12]) * xloc +
+            c[low_i + 18]) * 9.81) * 3.2808398950131235))) {
       a = AutopilotStateMachine_U.in.input.H_constraint_ft - AutopilotStateMachine_U.in.data.H_ind_ft;
       if (a < 0.0) {
         high_i = -1;
@@ -3713,22 +3671,22 @@ void AutopilotStateMachine::step()
       }
 
       if (high_i == low_i) {
-        if (Phi2 >= 100.0) {
-          if (!AutopilotStateMachine_DWork.eventTime_not_empty_ow) {
-            AutopilotStateMachine_DWork.eventTime_a = AutopilotStateMachine_U.in.time.simulation_time;
-            AutopilotStateMachine_DWork.eventTime_not_empty_ow = true;
+        if (c_R >= 100.0) {
+          if (!AutopilotStateMachine_DWork.eventTime_not_empty_p) {
+            AutopilotStateMachine_DWork.eventTime_j = AutopilotStateMachine_U.in.time.simulation_time;
+            AutopilotStateMachine_DWork.eventTime_not_empty_p = true;
           }
 
-          if (rtb_Compare_dl || (AutopilotStateMachine_DWork.eventTime_a == 0.0)) {
-            AutopilotStateMachine_DWork.eventTime_a = AutopilotStateMachine_U.in.time.simulation_time;
+          if (rtb_Compare_dl || (AutopilotStateMachine_DWork.eventTime_j == 0.0)) {
+            AutopilotStateMachine_DWork.eventTime_j = AutopilotStateMachine_U.in.time.simulation_time;
           }
 
-          c_R = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_a;
-          if (c_R > 0.0) {
-            c_R += 0.5;
+          R = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_j;
+          if (R > 0.0) {
+            R += 0.5;
           }
 
-          AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST_CPT = ((c_R >= 3.0) &&
+          AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST_CPT = ((R >= 3.0) &&
             (AutopilotStateMachine_U.in.data.H_radio_ft > 400.0));
         } else {
           AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST_CPT = false;
@@ -3747,77 +3705,76 @@ void AutopilotStateMachine::step()
       ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_CPT) ||
        (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK)) &&
       (AutopilotStateMachine_U.in.data.nav_gs_error_deg >= -0.1)) {
-    Phi2 = std::abs(AutopilotStateMachine_U.in.data.nav_gs_error_deg);
-    if ((Phi2 < 0.8) && rtb_FixPtRelationalOperator) {
+    c_R = std::abs(AutopilotStateMachine_U.in.data.nav_gs_error_deg);
+    if ((c_R < 0.8) && rtb_FixPtRelationalOperator) {
       AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT = true;
     } else {
-      AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT = (Phi2 < 0.1333);
+      AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT = (c_R < 0.1333);
     }
   } else {
     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT = false;
   }
 
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty_k5) {
-    AutopilotStateMachine_DWork.eventTime_i = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty_k5 = true;
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_jt) {
+    AutopilotStateMachine_DWork.eventTime_ax = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_jt = true;
   }
 
-  if (state_d_tmp || (!AutopilotStateMachine_U.in.data.nav_gs_valid) || ((std::abs
+  if (state_a_tmp || (!AutopilotStateMachine_U.in.data.nav_gs_valid) || ((std::abs
         (AutopilotStateMachine_U.in.data.nav_gs_error_deg) >= 0.1333) ||
        ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_CPT) &&
         (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_TRACK))) ||
-      (AutopilotStateMachine_DWork.eventTime_i == 0.0)) {
-    AutopilotStateMachine_DWork.eventTime_i = AutopilotStateMachine_U.in.time.simulation_time;
+      (AutopilotStateMachine_DWork.eventTime_ax == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_ax = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
   if ((rtb_dme >= 30.0) && (AutopilotStateMachine_U.in.data.V2_kn >= 90.0) &&
       (AutopilotStateMachine_U.in.data.flaps_handle_index > 0.0)) {
-    if (!AutopilotStateMachine_DWork.eventTime_not_empty_f) {
-      AutopilotStateMachine_DWork.eventTime_g = AutopilotStateMachine_U.in.time.simulation_time;
-      AutopilotStateMachine_DWork.eventTime_not_empty_f = true;
+    if (!AutopilotStateMachine_DWork.eventTime_not_empty_jq) {
+      AutopilotStateMachine_DWork.eventTime_d = AutopilotStateMachine_U.in.time.simulation_time;
+      AutopilotStateMachine_DWork.eventTime_not_empty_jq = true;
     }
 
     if ((((AutopilotStateMachine_U.in.data.throttle_lever_1_pos <= 35.0) ||
           (AutopilotStateMachine_U.in.data.throttle_lever_2_pos <= 35.0)) &&
          ((!AutopilotStateMachine_U.in.input.is_FLX_active) || (AutopilotStateMachine_U.in.data.throttle_lever_1_pos <
            35.0) || (AutopilotStateMachine_U.in.data.throttle_lever_2_pos < 35.0))) ||
-        (AutopilotStateMachine_DWork.eventTime_g == 0.0)) {
-      AutopilotStateMachine_DWork.eventTime_g = AutopilotStateMachine_U.in.time.simulation_time;
+        (AutopilotStateMachine_DWork.eventTime_d == 0.0)) {
+      AutopilotStateMachine_DWork.eventTime_d = AutopilotStateMachine_U.in.time.simulation_time;
     }
 
-    speedTargetChanged = (AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_g >=
-                          0.5);
+    rtb_Compare_c = (AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_d >= 0.5);
   } else {
-    speedTargetChanged = false;
+    rtb_Compare_c = false;
   }
 
-  AutopilotStateMachine_DWork.sSRS = (speedTargetChanged || (((!AutopilotStateMachine_DWork.sSRS) ||
+  AutopilotStateMachine_DWork.sSRS = (rtb_Compare_c || (((!AutopilotStateMachine_DWork.sSRS) ||
     (((AutopilotStateMachine_U.in.data.throttle_lever_1_pos != 0.0) ||
       (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 0.0)) &&
      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::SRS))) && AutopilotStateMachine_DWork.sSRS));
   if (rtb_Compare_dl) {
     AutopilotStateMachine_DWork.newFcuAltitudeSelected = true;
   } else {
-    Phi2 = std::abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft);
-    if (Phi2 > 250.0) {
+    c_R = std::abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft);
+    if (c_R > 250.0) {
       AutopilotStateMachine_DWork.newFcuAltitudeSelected = true;
     } else if (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::ALT) {
-      AutopilotStateMachine_DWork.newFcuAltitudeSelected = ((Phi2 >= 40.0) &&
+      AutopilotStateMachine_DWork.newFcuAltitudeSelected = ((c_R >= 40.0) &&
         AutopilotStateMachine_DWork.newFcuAltitudeSelected);
     }
   }
 
-  if (rtb_Compare_c && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) &&
+  if (state_a_tmp_0 && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) &&
       (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode !=
        vertical_mode::TCAS) && (!AutopilotStateMachine_DWork.latch)) {
     AutopilotStateMachine_DWork.sTCAS = true;
     AutopilotStateMachine_DWork.latch = true;
   }
 
-  AutopilotStateMachine_DWork.sTCAS = (rtb_Compare_c && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) &&
+  AutopilotStateMachine_DWork.sTCAS = (state_a_tmp_0 && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) &&
     (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode !=
     vertical_mode::TCAS) && AutopilotStateMachine_DWork.sTCAS);
-  AutopilotStateMachine_DWork.latch = (rtb_Compare_c && (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) &&
+  AutopilotStateMachine_DWork.latch = (state_a_tmp_0 && (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) &&
     (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) && AutopilotStateMachine_DWork.latch);
   AutopilotStateMachine_B.BusAssignment_g.time = AutopilotStateMachine_U.in.time;
   AutopilotStateMachine_B.BusAssignment_g.data.aircraft_position = AutopilotStateMachine_U.in.data.aircraft_position;
@@ -3903,11 +3860,11 @@ void AutopilotStateMachine::step()
     != AutopilotStateMachine_P.CompareToConstant_const_c);
   AutopilotStateMachine_B.BusAssignment_g.data.total_weight_kg = AutopilotStateMachine_U.in.data.total_weight_kg;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_touchdown = rtb_dme;
-  AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_lift_off = rtb_Saturation1;
+  AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_lift_off = Phi2;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_SRS = AutopilotStateMachine_U.in.time.simulation_time
     - AutopilotStateMachine_DWork.eventTime_n;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.H_fcu_in_selection = rtb_Compare_dl;
-  AutopilotStateMachine_B.BusAssignment_g.data_computed.H_constraint_valid = rtb_Y_j;
+  AutopilotStateMachine_B.BusAssignment_g.data_computed.H_constraint_valid = rtb_Y_n;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.Psi_fcu_in_selection = rtb_AND;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.gs_convergent_towards_beam = rtb_FixPtRelationalOperator;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.V_fcu_in_selection = (rtb_AND_j &&
@@ -4022,34 +3979,34 @@ void AutopilotStateMachine::step()
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.TCAS_message_RA_inhibit;
   AutopilotStateMachine_B.BusAssignment_g.output.TCAS_message_TRK_FPA_deselection =
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.TCAS_message_TRK_FPA_deselection;
-  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.NAV = AutopilotStateMachine_DWork.state_d;
-  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.LOC = AutopilotStateMachine_DWork.state_k;
+  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.NAV = AutopilotStateMachine_DWork.state_a;
+  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.LOC = AutopilotStateMachine_DWork.state_e;
   AutopilotStateMachine_B.BusAssignment_g.lateral.condition.NAV = ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) &&
     AutopilotStateMachine_U.in.data.is_flight_plan_available && (AutopilotStateMachine_U.in.data.flight_guidance_xtk_nmi
     < 10.0));
   AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LOC_TRACK = (AutopilotStateMachine_U.in.time.simulation_time
-    - AutopilotStateMachine_DWork.eventTime_ht >= 10.0);
-  AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LAND = rtb_cLAND;
+    - AutopilotStateMachine_DWork.eventTime_dp >= 10.0);
+  AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LAND = speedTargetChanged;
   AutopilotStateMachine_B.BusAssignment_g.lateral.condition.FLARE = rtb_cFLARE;
   AutopilotStateMachine_B.BusAssignment_g.lateral.condition.ROLL_OUT = AutopilotStateMachine_DWork.state;
-  AutopilotStateMachine_B.BusAssignment_g.lateral.condition.GA_TRACK = (state_k_tmp &&
+  AutopilotStateMachine_B.BusAssignment_g.lateral.condition.GA_TRACK = (isGoAroundModeActive &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::NAV) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::HDG) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode::TRACK));
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.CLB = AutopilotStateMachine_DWork.sCLB;
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.DES = AutopilotStateMachine_DWork.sDES;
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES = AutopilotStateMachine_DWork.sFINAL_DES;
-  AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS = AutopilotStateMachine_DWork.state_j;
-  AutopilotStateMachine_B.BusAssignment_g.vertical.armed.TCAS = AutopilotStateMachine_DWork.sTCAS_l;
+  AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS = AutopilotStateMachine_DWork.state_l;
+  AutopilotStateMachine_B.BusAssignment_g.vertical.armed.TCAS = AutopilotStateMachine_DWork.sTCAS_b;
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT = ((AutopilotStateMachine_U.in.time.simulation_time -
-    AutopilotStateMachine_DWork.eventTime_ec > 0.8) && (!rtb_Compare_dl));
-  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB = ((rtb_Saturation1 > 5.0) && (distance_m > 50.0) &&
+    AutopilotStateMachine_DWork.eventTime_o > 0.8) && (!rtb_Compare_dl));
+  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB = ((Phi2 > 5.0) && (rtb_dme_tmp > 50.0) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::NAV) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_CPT) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode::GS_TRACK) &&
     (AutopilotStateMachine_U.in.data.flight_phase >= 2.0) && (AutopilotStateMachine_U.in.data.flight_phase != 4.0) &&
     (AutopilotStateMachine_U.in.data.flight_phase != 5.0) && (AutopilotStateMachine_U.in.data.flight_phase != 6.0));
-  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES = ((rtb_Saturation1 > 5.0) && (distance_m < -50.0) &&
+  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES = ((Phi2 > 5.0) && (rtb_dme_tmp < -50.0) &&
     ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::NAV) ||
      (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_CPT) ||
      (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK)) &&
@@ -4067,18 +4024,18 @@ void AutopilotStateMachine::step()
     (AutopilotStateMachine_U.in.input.FM_final_des_can_engage && (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode ==
       lateral_mode::NAV));
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_TRACK = (AutopilotStateMachine_U.in.time.simulation_time
-    - AutopilotStateMachine_DWork.eventTime_i >= 15.0);
-  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.LAND = rtb_cLAND;
+    - AutopilotStateMachine_DWork.eventTime_ax >= 15.0);
+  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.LAND = speedTargetChanged;
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FLARE = rtb_cFLARE;
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ROLL_OUT = AutopilotStateMachine_DWork.state;
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.SRS = AutopilotStateMachine_DWork.sSRS;
-  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.SRS_GA = state_k_tmp;
+  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.SRS_GA = isGoAroundModeActive;
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.THR_RED = (AutopilotStateMachine_U.in.data.H_ind_ft >=
     AutopilotStateMachine_U.in.data.thrust_reduction_altitude);
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active =
     AutopilotStateMachine_DWork.newFcuAltitudeSelected;
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.TCAS = AutopilotStateMachine_DWork.sTCAS;
-  if (AutopilotStateMachine_DWork.is_active_c1_AutopilotStateMachine == 0U) {
+  if (AutopilotStateMachine_DWork.is_active_c1_AutopilotStateMachine == 0) {
     AutopilotStateMachine_DWork.is_active_c1_AutopilotStateMachine = 1U;
     AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
     AutopilotStateMachine_OFF_entry();
@@ -4105,7 +4062,7 @@ void AutopilotStateMachine::step()
 
      case AutopilotStateMachine_IN_OFF:
       if (AutopilotStateMachine_OFF_TO_HDG(&AutopilotStateMachine_B.BusAssignment_g)) {
-        AutopilotStateMachine_B.out_p.mode_reversion = true;
+        AutopilotStateMachine_B.out_g.mode_reversion = true;
         AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_ON;
         AutopilotStateMachine_DWork.is_ON_j = AutopilotStateMachine_IN_HDG;
         AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
@@ -4143,19 +4100,19 @@ void AutopilotStateMachine::step()
     }
   }
 
-  AutopilotStateMachine_B.BusAssignment_g.lateral.output = AutopilotStateMachine_B.out_p;
-  if (AutopilotStateMachine_DWork.is_active_c6_AutopilotStateMachine == 0U) {
+  AutopilotStateMachine_B.BusAssignment_g.lateral.output = AutopilotStateMachine_B.out_g;
+  if (AutopilotStateMachine_DWork.is_active_c6_AutopilotStateMachine == 0) {
     AutopilotStateMachine_DWork.is_active_c6_AutopilotStateMachine = 1U;
-    AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-    AutopilotStateMachine_OFF_entry_m();
+    AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+    AutopilotStateMachine_OFF_entry_i();
   } else {
     guard1 = false;
     switch (AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine) {
-     case AutopilotStateMachine_IN_OFF_a:
+     case AutopilotStateMachine_IN_OFF_o:
       if (AutopilotStateMachine_B.BusAssignment_g.input.FD_active &&
           (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) &&
           AutopilotStateMachine_B.BusAssignment_g.vertical.condition.SRS) {
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_SRS;
         AutopilotStateMachine_SRS_entry();
       } else if (((AutopilotStateMachine_B.BusAssignment_g.input.FD_active &&
@@ -4171,17 +4128,17 @@ void AutopilotStateMachine::step()
         AutopilotStateMachine_B.out.mode_reversion = true;
         AutopilotStateMachine_B.out.mode_reversion_target_fpm =
           AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min;
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
         AutopilotStateMachine_VS_entry();
       } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.CLB &&
                  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB) {
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
         AutopilotStateMachine_CLB_entry();
       } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.DES &&
                  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES) {
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
         AutopilotStateMachine_DES_entry();
       } else if (AutopilotStateMachine_X_TO_TCAS()) {
@@ -4197,60 +4154,60 @@ void AutopilotStateMachine::step()
       }
       break;
 
-     case AutopilotStateMachine_IN_ON_b:
-      AutopilotStateMachine_ON_p();
+     case AutopilotStateMachine_IN_ON_g:
+      AutopilotStateMachine_ON_i();
       break;
 
      case AutopilotStateMachine_IN_SRS_GA:
       if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
           AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
         AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
         AutopilotStateMachine_GS_CPT_entry();
       } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES &&
                  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FINAL_DES) {
-        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_FINAL_DES;
         AutopilotStateMachine_FINAL_DES_entry();
       } else {
-        Phi2 = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+        rtb_GainTheta = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
           AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
-        state_d_tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+        state_a_tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
                         AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
                        AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
-        if (state_d_tmp && (Phi2 < -40.0)) {
-          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+        if (state_a_tmp && (rtb_GainTheta < -40.0)) {
+          AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
           AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
           AutopilotStateMachine_OP_DES_entry();
-        } else if (state_d_tmp && (Phi2 > 40.0)) {
+        } else if (state_a_tmp && (rtb_GainTheta > 40.0)) {
           guard1 = true;
         } else {
-          Phi2 = std::abs(AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
-                          AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft);
+          c_R = std::abs(AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
+                         AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft);
           if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB &&
               AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active &&
-              ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (Phi2 > 40.0))) {
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+              ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (c_R > 40.0))) {
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
             AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
             AutopilotStateMachine_CLB_entry();
           } else if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
                      AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES &&
                      AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active &&
-                     ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (Phi2 > 40.0))) {
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+                     ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (c_R > 40.0))) {
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
             AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
             AutopilotStateMachine_DES_entry();
           } else if (AutopilotStateMachine_B.BusAssignment_g.input.VS_push ||
                      AutopilotStateMachine_B.BusAssignment_g.input.VS_pull) {
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
             AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
             AutopilotStateMachine_VS_entry();
           } else if ((AutopilotStateMachine_B.BusAssignment_g.data.H_radio_ft > 400.0) &&
                      (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.ALT &&
                       AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CPT)) {
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
             AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT_CPT;
             AutopilotStateMachine_ALT_CPT_entry();
           } else if ((AutopilotStateMachine_B.BusAssignment_g.data_computed.V_fcu_in_selection &&
@@ -4266,8 +4223,8 @@ void AutopilotStateMachine::step()
                      (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 == 0.0) &&
                      (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 == 0.0) &&
                      (!AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.FD_connect)) {
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_a;
-            AutopilotStateMachine_OFF_entry_m();
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+            AutopilotStateMachine_OFF_entry_i();
           } else {
             AutopilotStateMachine_SRS_GA_during();
           }
@@ -4281,7 +4238,7 @@ void AutopilotStateMachine::step()
     }
 
     if (guard1) {
-      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_b;
+      AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_g;
       AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
       AutopilotStateMachine_OP_CLB_entry();
     }
@@ -4315,24 +4272,24 @@ void AutopilotStateMachine::step()
     Double2MultiWord(std::floor(rtb_GainTheta1), &tmp_8.chunks[0U], 2);
     MultiWordIor(&tmp_7.chunks[0U], &tmp_8.chunks[0U], &tmp_6.chunks[0U], 2);
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.CLB),
-      static_cast<int32_T>(AutopilotStateMachine_N_p)), &tmp_7.chunks[0U], 2);
+      static_cast<int32_T>(AutopilotStateMachine_N_c)), &tmp_7.chunks[0U], 2);
     MultiWordIor(&tmp_6.chunks[0U], &tmp_7.chunks[0U], &tmp_5.chunks[0U], 2);
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.DES),
-      static_cast<int32_T>(AutopilotStateMachine_N_l)), &tmp_6.chunks[0U], 2);
+      static_cast<int32_T>(AutopilotStateMachine_N_a)), &tmp_6.chunks[0U], 2);
     MultiWordIor(&tmp_5.chunks[0U], &tmp_6.chunks[0U], &tmp_4.chunks[0U], 2);
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS),
       static_cast<int32_T>(AutopilotStateMachine_N_j)), &tmp_5.chunks[0U], 2);
     MultiWordIor(&tmp_4.chunks[0U], &tmp_5.chunks[0U], &tmp_3.chunks[0U], 2);
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.FINAL_DES),
-      static_cast<int32_T>(AutopilotStateMachine_N_b)), &tmp_4.chunks[0U], 2);
+      static_cast<int32_T>(AutopilotStateMachine_N_k)), &tmp_4.chunks[0U], 2);
     MultiWordIor(&tmp_3.chunks[0U], &tmp_4.chunks[0U], &tmp_2.chunks[0U], 2);
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.TCAS),
-      static_cast<int32_T>(AutopilotStateMachine_N_h)), &tmp_3.chunks[0U], 2);
+      static_cast<int32_T>(AutopilotStateMachine_N_kp)), &tmp_3.chunks[0U], 2);
     MultiWordIor(&tmp_2.chunks[0U], &tmp_3.chunks[0U], &tmp_1.chunks[0U], 2);
     AutopilotStateMachine_Y.out.output.vertical_mode_armed = uMultiWord2Double(&tmp_1.chunks[0U], 2, 0);
   } else {
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.TCAS),
-      static_cast<int32_T>(AutopilotStateMachine_N_h)), &tmp_0.chunks[0U], 2);
+      static_cast<int32_T>(AutopilotStateMachine_N_kp)), &tmp_0.chunks[0U], 2);
     AutopilotStateMachine_Y.out.output.vertical_mode_armed = uMultiWord2Double(&tmp_0.chunks[0U], 2, 0);
   }
 
@@ -4362,13 +4319,13 @@ void AutopilotStateMachine::step()
     AutopilotStateMachine_DWork.eventTimeMR_not_empty = true;
   }
 
-  state_d_tmp = !AutopilotStateMachine_B.BusAssignment_g.input.VS_pull;
+  state_a_tmp = !AutopilotStateMachine_B.BusAssignment_g.input.VS_pull;
   if (AutopilotStateMachine_B.out.mode_reversion &&
       (((AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.mode == vertical_mode::CLB) &&
         (AutopilotStateMachine_B.out.mode == vertical_mode::OP_CLB)) ||
        ((AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.mode == vertical_mode::DES) &&
         (AutopilotStateMachine_B.out.mode == vertical_mode::VS))) &&
-      (!AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull) && state_d_tmp) {
+      (!AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull) && state_a_tmp) {
     AutopilotStateMachine_DWork.warningArmedNAV = true;
     AutopilotStateMachine_DWork.warningArmedVS = false;
     AutopilotStateMachine_DWork.eventTimeTC = AutopilotStateMachine_B.BusAssignment_g.time.simulation_time;
@@ -4396,7 +4353,7 @@ void AutopilotStateMachine::step()
       ((AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.mode == vertical_mode::OP_CLB) ||
        (AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.mode == vertical_mode::OP_DES) ||
        (AutopilotStateMachine_B.BusAssignment_g.vertical_previous.output.mode == vertical_mode::ALT_CPT)) &&
-      (!AutopilotStateMachine_B.BusAssignment_g.input.VS_push) && state_d_tmp) {
+      (!AutopilotStateMachine_B.BusAssignment_g.input.VS_push) && state_a_tmp) {
     AutopilotStateMachine_DWork.warningArmedVS = true;
     AutopilotStateMachine_DWork.warningArmedNAV = false;
     AutopilotStateMachine_DWork.eventTimeTC = AutopilotStateMachine_B.BusAssignment_g.time.simulation_time;

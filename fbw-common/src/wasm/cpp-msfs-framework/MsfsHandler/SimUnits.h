@@ -16,7 +16,7 @@
 struct SimUnit {
  public:
   const char* name;
-  const ENUM id;
+  const ENUM  id;
   [[maybe_unused]] explicit SimUnit(const char* nameInSim) : name(nameInSim), id(get_units_enum(name)) {
     // LOG_INFO("SimUnit::SimUnit() " + std::string(name) + " = " + std::to_string(id));
   }
@@ -29,7 +29,7 @@ class SimUnits {
  public:
   // Selected commonly used units
 
-  const SimUnit None{""};  // special case for no unit (e.g. in conjunction with a data type)
+  const SimUnit None{""};  // special case for no unit (e.g., in conjunction with a data type)
   const SimUnit Bool{"Bool"};
   const SimUnit Celsius{"Celsius"};
   const SimUnit Feet{"Feet"};

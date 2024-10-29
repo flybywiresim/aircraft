@@ -397,7 +397,6 @@ struct CoreHydraulicForce {
 
     max_flow: VolumeRate,
     min_flow: VolumeRate,
-    flow_error_prev: VolumeRate,
 
     bore_side_area: Area,
     rod_side_area: Area,
@@ -420,7 +419,7 @@ struct CoreHydraulicForce {
     soft_lock_velocity: (AngularVelocity, AngularVelocity),
 }
 impl CoreHydraulicForce {
-    const MIN_MAX_FORCE_CONTROLLER_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(30);
+    const MIN_MAX_FORCE_CONTROLLER_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1);
 
     const MAX_ABSOLUTE_FORCE_NEWTON: f64 = 500000.;
 
@@ -488,7 +487,7 @@ impl CoreHydraulicForce {
 
             max_flow,
             min_flow,
-            flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
+
             bore_side_area,
             rod_side_area,
             last_control_force: Force::new::<newton>(0.),
@@ -807,6 +806,22 @@ impl CoreHydraulicForce {
             .set_max(self.max_control_force.output().get::<newton>());
     }
 
+    fn flow_restriction_factor(&self, current_pressure: Pressure) -> f64 {
+        // Selecting old 3000psi vs new hydraulic architecture based on max pressure of the system
+        // New 5000 psi systems have a higher flow degradation with pressure going lower
+        if self.max_working_pressure < Pressure::new::<psi>(4000.) {
+            (1. / (self.max_working_pressure.get::<psi>()
+                - Self::FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI)
+                * current_pressure.get::<psi>().powi(2)
+                * 1.
+                / (self.max_working_pressure.get::<psi>()
+                    - Self::FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI))
+                .min(1.)
+        } else {
+            (current_pressure.get::<psi>().powi(3) * (0.00000004 / 5000.)).min(1.)
+        }
+    }
+
     fn force_position_control(
         &mut self,
         context: &UpdateContext,
@@ -817,20 +832,18 @@ impl CoreHydraulicForce {
         speed: Velocity,
     ) -> Force {
         if self.is_dev_tuning_active {
-            self.pid_controller
-                .set_gains(self.test_p_gain, self.test_i_gain, self.test_force_gain);
+            self.pid_controller.set_gains(
+                self.test_p_gain,
+                self.test_i_gain,
+                0.,
+                self.test_force_gain,
+            );
         }
 
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
 
         let pressure_correction_factor = if self.has_flow_restriction {
-            (1. / (self.max_working_pressure.get::<psi>()
-                - Self::FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI)
-                * current_pressure.get::<psi>().powi(2)
-                * 1.
-                / (self.max_working_pressure.get::<psi>()
-                    - Self::FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI))
-                .min(1.)
+            self.flow_restriction_factor(current_pressure)
         } else {
             1.
         };
@@ -873,9 +886,10 @@ impl Debug for CoreHydraulicForce {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "\nCOREHYD => Mode {:?} Force(N) {:.0}",
+            "\nCOREHYD => Mode {:?} Force(N) {:.0} MaxForce {:.0}",
             self.current_mode,
-            self.force().get::<newton>()
+            self.force().get::<newton>(),
+            self.max_control_force.output().get::<newton>(),
         )
     }
 }
@@ -942,7 +956,6 @@ pub struct LinearActuator {
 
     volume_extension_ratio: Ratio,
     signed_flow: VolumeRate,
-    flow_error_prev: VolumeRate,
 
     delta_displacement: Length,
 
@@ -1040,7 +1053,6 @@ impl LinearActuator {
 
             volume_extension_ratio,
             signed_flow: VolumeRate::new::<gallon_per_second>(0.),
-            flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
 
             delta_displacement: Length::new::<meter>(0.),
 
@@ -1262,12 +1274,18 @@ impl Debug for LinearActuator {
         if self.electro_hydrostatic_backup.is_some() {
             write!(
                 f,
-                "Actuator => Type:EHA {:?} / {:?}",
+                "Actuator => Type:EHA {:?} / {:?} / Current flow gpm{:.3}",
                 self.electro_hydrostatic_backup.unwrap(),
                 self.core_hydraulics,
+                self.signed_flow.get::<gallon_per_minute>()
             )
         } else {
-            write!(f, "Actuator => Type:Standard / {:?}", self.core_hydraulics,)
+            write!(
+                f,
+                "Actuator => Type:Standard / {:?} / Current flow gpm{:.3}",
+                self.core_hydraulics,
+                self.signed_flow.get::<gallon_per_minute>()
+            )
         }
     }
 }
@@ -1574,6 +1592,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
 
+    // Speed cap for all rigid bodies movements. Avoids chain reaction to numerical instability
+    const MAX_ABSOLUTE_ANGULAR_SPEED_RAD_S: f64 = 8.;
+
     pub fn new(
         mass: Mass,
         size: Vector3<f64>,
@@ -1789,6 +1810,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                     * context.delta_as_secs_f64(),
             );
 
+            self.limit_absolute_angular_speed();
             self.limit_angular_speed_from_soft_lock();
 
             self.angular_position += Angle::new::<radian>(
@@ -1827,6 +1849,16 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                 .min(self.max_soft_lock_velocity)
                 .max(self.min_soft_lock_velocity);
         }
+    }
+
+    fn limit_absolute_angular_speed(&mut self) {
+        let max_angular_speed =
+            AngularVelocity::new::<radian_per_second>(Self::MAX_ABSOLUTE_ANGULAR_SPEED_RAD_S);
+
+        self.angular_speed = self
+            .angular_speed
+            .min(max_angular_speed)
+            .max(-max_angular_speed);
     }
 
     fn limit_position_to_range(&mut self) {

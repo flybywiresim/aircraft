@@ -220,11 +220,11 @@ class CDUFlightPlanPage {
             winI = winI % (waypointsAndMarkers.length);
 
             const {
-                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/new/legs/FlightPlanLeg').FlightPlanElement} */
+                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
                 wp,
                 pwp,
                 marker,
-                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/new/legs/FlightPlanLeg').FlightPlanElement} */
+                /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
                 holdResumeExit,
                 fpIndex,
                 inAlternate,
@@ -1044,7 +1044,7 @@ function formatMachNumber(rawNumber) {
  * @return {boolean}
  */
 function legHasAltConstraint(leg) {
-    return leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint();
+    return !leg.isXA() && (leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint());
 }
 
 /**

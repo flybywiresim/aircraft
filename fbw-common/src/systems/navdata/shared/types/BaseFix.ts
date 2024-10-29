@@ -15,3 +15,7 @@ export interface BaseFix<T extends SectionCode> extends DatabaseItem<T> {
  * Union of all possible fix interfaces
  */
 export type Fix = VhfNavaid | NdbNavaid | Waypoint;
+
+export function isFix(o: any): o is Fix {
+  return typeof o === 'object' && 'location' in o && 'databaseId' in o;
+}

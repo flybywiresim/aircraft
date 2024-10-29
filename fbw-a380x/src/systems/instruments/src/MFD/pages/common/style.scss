@@ -1,0 +1,785 @@
+@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.mfd-main {
+  position: absolute;
+  width: 768px;
+  height: 1024px; /* 1:1.33 W:H  */
+  background: $display-background;
+  font-family: "Ecam", monospace !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.mfd-label {
+  font-size: 20px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+}
+
+.mfd-label.green {
+  color: $display-green;
+}
+
+.mfd-label.amber {
+  color: $display-amber;
+}
+
+.mfd-label.magenta {
+  color: $display-magenta;
+}
+
+.mfd-label.bigger {
+  font-size: 24px;
+}
+
+.mfd-label.biggest {
+  font-size: 28px;
+}
+
+.mfd-label-unit {
+  color: $display-dark-blue;
+  font-size: 20px;
+}
+
+.mfd-value {
+  color: $display-green;
+  font-size: 25px;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+}
+
+.mfd-value.amber {
+  color: $display-amber;
+}
+
+.mfd-value.cyan {
+  color: $display-cyan;
+}
+
+.mfd-value.magenta {
+  color: $display-magenta;
+  font-size: 25px;
+}
+
+.mfd-value.tmpy {
+  color: $display-yellow;
+  font-size: 25px;
+}
+
+.mfd-value.sec {
+  color: $display-white;
+  font-size: 25px;
+}
+
+.mfd-value.smaller {
+  font-size: 20px;
+}
+
+.mfd-value.bigger {
+  font-size: 30px;
+}
+
+.mfd-button {
+  display: flex;
+  font-size: 22px;
+  background-color: $display-mfd-darker-grey;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  border: 2px outset $display-light-grey;
+  padding: 9px 12px 5px 12px;
+}
+
+.mfd-button.opened {
+  background-color: $display-dark-grey;
+  border: 2px inset $display-light-grey;
+}
+
+.mfd-button:hover {
+  border-color: $display-cyan;
+}
+
+.mfd-button.disabled {
+  color: $display-dark-grey;
+}
+
+.mfd-button.selected {
+  background-color: $display-dark-grey;
+  border: 2px inset $display-light-grey;
+}
+
+.mfd-button.disabled:hover {
+  border-color: $display-light-grey;
+}
+
+.mfd-icon-button {
+  display: flex;
+  flex-direction: row;
+  background-color: $display-mfd-darker-grey;
+  color: $display-white;
+  border: 2px outset $display-light-grey;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-icon-button:hover {
+  border: 2px outset $display-cyan;
+}
+
+.mfd-dropdown-container {
+  position: relative;
+}
+
+.mfd-dropdown-outer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: $display-mfd-darker-grey;
+  border: 2px outset $display-light-grey;
+}
+
+.mfd-dropdown-outer.inactive {
+  background-color: $display-background;
+  border: 2px outset transparent !important;
+}
+
+.mfd-dropdown-outer:hover {
+  border-color: $display-cyan;
+}
+
+.mfd-dropdown-inner {
+  background-color: $display-background;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+}
+
+.mfd-dropdown-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+}
+
+.mfd-dropdown-arrow.inactive {
+  visibility: hidden;
+}
+
+.mfd-dropdown-menu::-webkit-scrollbar {
+  width: 20px;
+}
+
+.mfd-dropdown-menu::-webkit-scrollbar-track {
+  background: $display-mfd-darker-grey;
+}
+
+.mfd-dropdown-menu::-webkit-scrollbar-thumb {
+  background: $display-light-grey;
+}
+
+.mfd-dropdown-menu {
+  background-color: $display-mfd-darker-grey;
+  min-width: 100%;
+  position: absolute;
+  z-index: 60;
+  overflow: auto;
+  max-height: 275px;
+  display: none;
+  border: 2px outset $display-light-grey;
+}
+
+.mfd-dropdown-menu-element {
+  color: $display-white;
+  font-size: 20px;
+  padding: 12px 16px;
+  display: block;
+  border: 3px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: left;
+  padding: 5px 16px;
+}
+
+.mfd-dropdown-menu-element:hover {
+  border: 3px solid $display-cyan;
+}
+
+.mfd-dropdown-menu-element.disabled {
+  color: $display-dark-grey;
+}
+
+.mfd-page-selector-label {
+  font-size: 22px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  padding: 2px;
+  text-align: center;
+  display: inline;
+  margin: 10px;
+  padding: 3px;
+  border: 1px solid transparent;
+}
+
+.mfd-page-selector-label.active {
+  border: 1px solid $display-white;
+}
+
+.mfd-page-selector-outer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: $display-mfd-darker-grey;
+  border-top: 2px solid $display-light-grey;
+  border-left: 2px solid $display-light-grey;
+  border-bottom: 2px solid rgba(211, 211, 211, 0.432);
+  border-right: 2px solid rgba(211, 211, 211, 0.432);
+}
+
+.mfd-page-selector-outer:hover {
+  border-color: $display-cyan;
+}
+
+.mfd-page-selector-label-container {
+  display: flex;
+  flex: 8;
+  justify-content: center;
+}
+
+.mfd-page-selector-label-triangle {
+  display: flex;
+}
+
+.mfd-page-selector-label-triangle > span {
+  padding: 8px;
+}
+
+.mfd-page-container {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.mfd-spacing-right {
+  margin-right: 15px;
+}
+
+.mfd-unit-leading {
+  margin-right: 6px;
+}
+
+.mfd-unit-trailing {
+  margin-left: 6px;
+}
+
+.mfd-top-tab-navigator-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  margin: 2px;
+}
+
+.mfd-navigator-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mfd-navigator-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mfd-top-tab-navigator-bar {
+  display: flex;
+}
+
+.mfd-top-tab-navigator-bar-element-outer {
+  display: flex;
+  flex: 1;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.mfd-top-tab-navigator-bar-element-label {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: $display-mfd-darker-grey;
+  border-top: 2px solid $display-light-grey;
+  padding: 6px 0px 2px 0px;
+}
+
+.mfd-top-tab-navigator-bar-element-label.active {
+  background-color: $display-background;
+}
+
+.mfd-top-tab-navigator-bar-element-label:hover {
+  border: 2px outset $display-cyan;
+}
+
+.mfd-top-tab-navigator-bar-element-outer.active {
+  background-color: $display-background;
+  border-bottom-style: none;
+}
+
+.mfd-top-tab-navigator-tab-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 2px outset $display-light-grey;
+  border-top-style: none;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.mfd-label-value-container {
+  padding: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.mfd-radio-button{
+  -webkit-appearance: none; /* WebKit */
+  -moz-appearance: none; /* Mozilla */
+  -o-appearance: none; /* Opera */
+  -ms-appearance: none; /* Internet Explorer */
+  appearance: none; /* CSS3 */
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  border: 2px solid transparent;
+}
+
+.mfd-radio-button + .mfd-radio-button {
+  margin-top: 5px;
+}
+
+.mfd-radio-button input[type="radio"] {
+  appearance: none; /* CSS3 */
+  background-color: $display-background;
+  width: 30px;
+  height: 30px;
+  border: 2px inset $display-light-grey;
+  border-radius: 50%;
+  margin-right: 15px;
+  display: grid;
+  place-content: center;
+}
+
+.mfd-radio-button input[type="radio"]::after {
+  display: none;
+}
+
+
+.mfd-radio-button input[type="radio"]:checked {
+  box-shadow: inset 0 0 0px 4px $display-background;
+}
+
+.mfd-radio-button.yellow input[type="radio"]:checked {
+  background: $display-yellow;
+}
+
+.mfd-radio-button.green input[type="radio"]:checked {
+  background: $display-green;
+}
+
+.mfd-radio-button.white input[type="radio"]:checked {
+  background: $display-white;
+}
+
+.mfd-radio-button.cyan input[type="radio"]:checked {
+  background: $display-cyan;
+}
+
+.mfd-radio-button input[type="radio"]:disabled {
+  background: $display-dark-grey !important;
+}
+
+
+.mfd-radio-button input[type="radio"]:checked {
+  background: $display-cyan;
+  box-shadow: inset 0 0 0px 4px $display-background;
+}
+
+.mfd-radio-button input[type="radio"]:checked ~ * {
+  color: $display-cyan;
+}
+
+.mfd-radio-button.yellow input[type="radio"]:checked ~ * {
+  color: $display-yellow;
+}
+
+.mfd-radio-button.green input[type="radio"]:checked ~ * {
+  color: $display-green;
+}
+
+.mfd-radio-button.white input[type="radio"]:checked ~ * {
+  color: $display-white;
+}
+
+.mfd-radio-button.cyan input[type="radio"]:checked ~ * {
+  color: $display-cyan;
+}
+
+.mfd-radio-button input[type="radio"]:disabled ~ * {
+  color: $display-dark-grey !important;
+}
+
+.mfd-radio-button:hover {
+  border: 2px outset $display-cyan;
+}
+
+.mfd-context-menu {
+  font-family: "Ecam", monospace;
+  background-color: $display-mfd-darker-grey;
+  border: 2px outset $display-light-grey;
+  position: absolute;
+  z-index: 10;
+  overflow: auto;
+  display: none;
+}
+
+.mfd-context-menu-element {
+  color: $display-white;
+  font-size: 22px;
+  text-align: left;
+  padding: 7px 2px;
+  display: block;
+  border: 3px solid transparent;
+}
+
+.mfd-context-menu-element:hover {
+  border: 3px solid $display-cyan;
+}
+
+.mfd-context-menu-element.disabled {
+  color: $display-dark-grey;
+}
+
+.mfd-context-menu-element.disabled:hover {
+  border: 3px solid transparent;
+}
+
+.mfd-input-field-root {
+  display: flex;
+  flex-direction: row;
+  justify-items: flex-start;
+  align-items: baseline;
+}
+
+.mfd-input-field-root.overflow {
+  position: relative;
+  top: 0px;
+}
+
+.mfd-input-field-container {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  align-items: baseline;
+  padding: 4px 2px;
+  background-color: $display-background;
+  border: 2px inset $display-light-grey;
+  overflow: visible;
+  height: 37px;
+}
+
+.mfd-input-field-container.inactive {
+  border: 2px inset transparent !important;
+  background-color: $display-background !important;
+}
+
+.mfd-input-field-container.disabled {
+  background-color: $display-mfd-darker-grey;
+}
+
+.mfd-input-field-container:hover {
+  border: 2px inset $display-cyan;
+}
+
+.mfd-input-field-container.overflow {
+  position: absolute;
+  top: -18px;
+  z-index: 5;
+  border: 1px solid $display-dark-grey !important;
+}
+
+.mfd-input-field-text-input {
+  background-color: $display-background;
+  border: none;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+  font-size: 27px;
+  line-height: 27px;
+  color: $display-cyan;
+  padding: 0px;
+}
+
+.mfd-input-field-text-input.inactive {
+  background-color: $display-background !important;
+  color: $display-green !important;
+}
+
+.mfd-input-field-text-input.tmpy {
+  color: $display-yellow;
+}
+
+.mfd-input-field-text-input.validating {
+  color: $display-light-grey;
+}
+
+.mfd-input-field-text-input.disabled {
+  background-color: $display-mfd-darker-grey;
+  color: $display-light-grey;
+}
+
+.mfd-input-field-text-input.mandatory {
+  color: $display-amber;
+}
+
+.mfd-input-field-text-input.valueSelected {
+  background-color: $display-cyan;
+  color: $display-background;
+}
+
+.mfd-input-field-text-input.tmpy.valueSelected {
+  background-color: $display-yellow;
+  color: $display-background;
+}
+
+.mfd-input-field-text-input.editing {
+  font-size: 27px !important;
+}
+
+.mfd-input-field-text-input.computedByFms {
+  font-size: 22px;
+}
+
+.mfd-input-field-caret {
+  animation: blinking 1s step-start infinite;
+  height: 27px;
+  width: 18px;
+  background-color: $display-cyan;
+  color: $display-background;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+  font-size: 27px;
+  text-align: center;
+  vertical-align: center;
+}
+
+@keyframes blinking {
+  50% {
+    background-color: $display-background;
+    color: $display-cyan;
+  }
+}
+
+.mfd-input-field-unit {
+  align-self: center;
+}
+
+.mfd-input-field-text-input-container {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-self: center;
+  align-items: center;
+}
+
+.mfd-mouse-cursor {
+  pointer-events: none;
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  z-index: 999;
+}
+
+.mfd-dialog {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 10;
+  overflow: auto;
+  position: absolute;
+  background-color: $display-background;
+  border: 2px outset $display-light-grey;
+  padding: 5px;
+  margin: 5px;
+}
+
+.mfd-dialog-title {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.mfd-dialog-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.mfd-title-bar-container {
+  display: flex;
+}
+
+.mfd-title-bar-title {
+  flex: 10;
+  background-color: $display-dark-grey;
+  padding: 3px 10px 3px 7px;
+}
+
+.mfd-title-bar-title-label {
+  color: #222222;
+  font-size: 28px;
+}
+
+.mfd-title-bar-eo-section {
+  display: flex;
+  width: 70px;
+  background-color: $display-dark-grey;
+  margin-left: 2px;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-title-bar-eo-label {
+  background-color: $display-amber;
+  color: #222222;
+  font-size: 26px;
+  padding: 2px;
+}
+
+.mfd-title-bar-tmpy-section {
+  display: flex;
+  width: 100px;
+  background-color: $display-dark-grey;
+  margin-left: 2px;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-title-bar-tmpy-label {
+  background-color: $display-yellow;
+  color: #222222;
+  font-size: 26px;
+  padding: 2px;
+}
+
+.mfd-header-sys-select-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.mfd-header-callsign {
+  width: 25%;
+  text-align: left;
+  padding: 4px 10px 0px 10px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  font-size: 24px;
+}
+
+.mfd-header-page-select-row {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.mfd-footer {
+  display: flex;
+  border-top: 2px solid $display-mfd-darker-grey;
+  padding: 5px;
+}
+
+.mfd-footer-message-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 15px;
+  font-size: 26px;
+  color: $display-background;
+  font-family: "Ecam", monospace;
+}
+
+.fr {
+  display: flex;
+  flex-direction: row;
+}
+
+.fc {
+  display: flex;
+  flex-direction: column;
+}
+
+.aic {
+  align-items: center;
+}
+
+.jcc {
+  justify-content: center;
+}
+
+.mfd-surv-heading {
+  font-size: 28px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+}
+
+.mfd-surv-heading.failed {
+  color: $display-amber;
+}
+
+.mfd-surv-button {
+  border: 4px inset $display-light-grey;
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  height: 65px;
+}
+
+.mfd-surv-button.disabled {
+  background-color: $display-dark-grey;
+  border: none;
+}
+
+.mfd-surv-label {
+  font-size: 20px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}

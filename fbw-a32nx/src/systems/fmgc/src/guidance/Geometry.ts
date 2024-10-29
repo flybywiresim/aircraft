@@ -25,9 +25,9 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { distanceTo } from 'msfs-geo';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 
