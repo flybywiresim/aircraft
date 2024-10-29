@@ -7,6 +7,9 @@
 
 ## 0.13.0
 
+1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
+1. [FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
+
 ## 0.12.0
 
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
