@@ -61,7 +61,8 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
   - CPIOM etc. not implemented yet.
 - Portions of the automatic fuel transfer system -- main transfers from the inner, mid, trim, and outer tanks are implemented with the correct scheduling as are CG control transfers from the trim tank to the appropriate inner, mid, or feed tanks. Not implemented yet are load alleviation transfers, transfers based on remaining time to destination, cold fuel transfers, and automatic transfers 
   that occur on the ground.
-- Manually controlling how much fuel each tank receives
+- Manual fuel transfer in flight
+- Manually controlling how much fuel each tank receives when fueling
 - Integrated Refuel Panel - Simulated in the systems but not modeled in the plane model, or fully connected to ELEC
 - MFD entry - Not supported yet (ZFW/ZFWCG entry - Possible via EFB currently for testing)
 
