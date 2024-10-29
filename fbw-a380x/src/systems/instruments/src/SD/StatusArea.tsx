@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { NXUnits } from '@shared/NXUnits';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { Layer } from '@instruments/common/utils';
 
 export const StatusArea = () => {

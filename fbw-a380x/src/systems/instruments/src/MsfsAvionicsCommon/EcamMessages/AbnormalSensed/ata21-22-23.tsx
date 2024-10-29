@@ -18,7 +18,6 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   // ATA 21: AC
-  // TODO: items is not done yet for most abnormal procedures
   211800001: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 CTL 1 FAULT',
     sensed: true,
@@ -45,17 +44,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   211800006: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 CTL DEGRADED  ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 CTL DEGRADED',
     sensed: true,
     items: [],
   },
   211800007: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 CTL REDUNDANCY LOST  ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 CTL REDUNDANCY LOST',
     sensed: true,
     items: [],
   },
   211800008: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 CTL REDUNDANCY LOST ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 2 CTL REDUNDANCY LOST',
     sensed: true,
     items: [],
   },
@@ -63,6 +62,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 FAULT',
     sensed: true,
     items: [
+      {
+        name: 'PACK 1 CTL 1+2 FAULT',
+        sensed: false,
+        style: ChecklistLineStyle.Amber,
+      },
       {
         name: 'PACK 1',
         sensed: true,
@@ -75,6 +79,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
+        name: 'PACK 2 CTL 1+2 FAULT',
+        sensed: false,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
         name: 'PACK 2',
         sensed: true,
         labelNotCompleted: 'OFF',
@@ -82,7 +91,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     ],
   },
   211800011: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 OFF ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1 OFF',
     sensed: true,
     items: [],
   },
@@ -191,7 +200,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   211800021: {
-    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1+2 FAULT  ',
+    title: '\x1b<4m\x1b4mAIR\x1bm PACK 1+2 FAULT',
     sensed: true,
     // If at least one door is not closed or is not locked, and at least one engine is running:
     items: [
@@ -234,13 +243,18 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       // In flight, if above FL 100
       {
-        name: 'DESCENT TO FL 100/MEA',
+        name: 'DESCENT TO FL 100/MEA-MORA',
         sensed: false,
         labelNotCompleted: 'INITIATE',
         level: 1,
       },
       {
-        name: 'WHEN DIFF PRESS < 1 PSI & FL < 100/MEA :',
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'WHEN DIFF PRESS < 2 PSI & FL < 100/MEA-MORA :',
         sensed: false,
         level: 2,
       },
@@ -256,9 +270,22 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OVRD',
         level: 2,
       },
+      // In flight, if below FL 100
       {
-        name: 'MAX FL : 100/MEA',
+        name: 'MAX FL : 100/MEA-MORA',
         sensed: false,
+        level: 1,
+      },
+      {
+        name: 'RAM AIR:',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'CABIN AIR EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
         level: 1,
       },
     ],
@@ -292,7 +319,13 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   211800026: {
     title: '\x1b<4m\x1b4mCOND\x1bm BULK CARGO ISOL FAULT  ',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'BULK ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   211800027: {
     title: '\x1b<4m\x1b4mCOND\x1bm BULK CARGO VENT FAULT  ',
@@ -307,7 +340,13 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   211800029: {
     title: '\x1b<4m\x1b4mCOND\x1bm FWD CARGO ISOL FAULT  ',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FWD ISOL VALVES',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   211800030: {
     title: '\x1b<4m\x1b4mCOND\x1bm FWD CARGO TEMP REGUL FAULT  ',
@@ -365,12 +404,12 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   211800039: {
-    title: '\x1b<4m\x1b4mCOND\x1bm TEMP CTL 1 FAULT   ',
+    title: '\x1b<4m\x1b4mCOND\x1bm TEMP CTL 1 FAULT',
     sensed: true,
     items: [],
   },
   211800040: {
-    title: '\x1b<4m\x1b4mCOND\x1bm TEMP CTL 2 FAULT  ',
+    title: '\x1b<4m\x1b4mCOND\x1bm TEMP CTL 2 FAULT',
     sensed: true,
     items: [],
   },
@@ -408,6 +447,31 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OFF',
       },
     ],
+  },
+  211800046: {
+    title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 1 OFF',
+    sensed: true,
+    items: [],
+  },
+  211800047: {
+    title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 2 OFF',
+    sensed: true,
+    items: [],
+  },
+  211800048: {
+    title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 1 VLV OPEN',
+    sensed: true,
+    items: [],
+  },
+  211800049: {
+    title: '\x1b<4m\x1b4mCOND\x1bm HOT AIR 2 VLV OPEN',
+    sensed: true,
+    items: [],
+  },
+  211800050: {
+    title: '\x1b<4m\x1b4mCOND\x1bm TEMP CTL DEGRADED',
+    sensed: true,
+    items: [],
   },
   // ATA 21: VENT
   212800001: {

@@ -265,11 +265,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.pposLonWord.setWord(value);
       });
 
-    this.btvUtils.below300ftRaAndLanding.sub((v) => {
+    // This lead to BTV being disarmed at 300ft. We'll have to investigate and then fix FIXME
+    /* this.btvUtils.below300ftRaAndLanding.sub((v) => {
       if (this.navigraphAvailable.get() === false && v && !this.btvUtils.runwayIsSet()) {
         this.setBtvRunwayFromFmsRunway();
       }
-    });
+    });*/
 
     this.fmsDataStore.landingRunway.sub(async (it) => {
       // Set control panel display
