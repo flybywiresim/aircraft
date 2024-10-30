@@ -11,6 +11,7 @@
 1. [A380X/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
+1. [A380X/FCU] Added metric altitude button - @tracernz (Mike)
 
 ## 0.12.0
 
