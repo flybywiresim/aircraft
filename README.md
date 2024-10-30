@@ -66,7 +66,8 @@ Our [known issues](https://docs.flybywiresim.com/start/reported-issues) list con
 
 Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/). 
 
-Liveries for the A380X will be available once it is released in alpha and livery builders had some time to create them. 
+Liveries for the A380X can be found on [Flightsim.to](https://flightsim.to/liveries/flybywire-a380x/).
+
 
 ### When is the next update?
 
