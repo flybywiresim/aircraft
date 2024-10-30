@@ -58,7 +58,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozen = Subject.create(false);
 
-  private readonly positionFrozenLabel = this.positionFrozen.map(v => v? 'UNFREEZE POSITION *' : 'FREEZE POSITION *');
+  private readonly positionFrozenLabel = this.positionFrozen.map(v => v? 'UNFREEZE' : 'FREEZE');
 
   private readonly positionFrozenText = Subject.create('');
 
@@ -161,10 +161,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     }
   }
 
-  private setPositionFrozen() {
-    const frozen = this.positionFrozen.get();
-    this.positionFrozenText.set(frozen? "POSITION FROZEN <br /> AT " + this.getUtcFormatString() : "");
-    this.positionFrozen.set(!frozen);
+  private togglePositonFrozen() {
+    const frozen = !this.positionFrozen.get();
+    this.positionFrozen.set(frozen);
+    this.positionFrozenText.set(frozen? "POSITION FROZEN \n AT   " + this.getUtcFormatString() : ""); // spaces for centering in relation to button
   }
 
   private getUtcFormatString() : string {
@@ -206,6 +206,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
                 containerStyle="width: 130px;"
+                alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -230,7 +231,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label mfd-spacing-right">MIXIRS</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
-            <div span class="mfd-label">{this.positionFrozenText}</div>
+            <div span class="mfd-label" style={"width:195px; height:40px;"}>{this.positionFrozenText}</div>
             </div>
             <div class="mfd-pos-space-between-row ">
             <div class="mfd-label-value-container">
@@ -238,9 +239,19 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
             <Button
-                label="FREEZE <br /> POSITION *"
-                onClick={() => this.setPositionFrozen()}
-                buttonStyle="width: 170px;"
+                label={Subject.create(
+                  <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                    <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                      {this.positionFrozenLabel}
+                      <br />
+                     POSITION
+                    </span>
+                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                  </div>,
+                )}
+                onClick={() => this.togglePositonFrozen()}
+                selected={this.positionFrozen}
+                buttonStyle="width: 155px; margin-right:20px"
               />
           </div>
           <div class="mfd-pos-monitor-table-line"></div>
@@ -343,11 +354,13 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           </div>
               </div>
           </div>
+          <div style="flex-grow: 1;" />
+          {/* fill space vertically */}
           <div class ="mfd-pos-space-between-row">
           <Button
-              label="RETURN"
+              label="RETURN" // TODO should only be visible if accessed via the PERF page
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
-              buttonStyle="margin-right: 5px; width:150px;"
+              buttonStyle="margin-right: 5px; width:150px;" 
             />
             <div class ="fr">
             <Button
