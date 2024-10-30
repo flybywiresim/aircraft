@@ -13,7 +13,7 @@
 [![Facebook](https://img.shields.io/badge/-FlyByWireSimulations-e84393?label=&logo=facebook&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://www.facebook.com/FlyByWireSimulations/)
 [![Instagram](https://img.shields.io/badge/-@FlyByWireSim-e84393?label=&logo=instagram&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://instagram.com/flybywiresim)
 
-The A32NX and A380X Projects are community-driven open source projects to recreate, respectively, a free Airbus A320-200N and A380-800 in Microsoft Flight Simulator that are as close to reality as possible.
+The A32NX and A380X Projects are community-driven open source projects to recreate a free Airbus A320-200N and A380-800 in Microsoft Flight Simulator that are as close to reality as possible.
 
 The following aircraft configurations are currently simulated or targeted:
 
@@ -64,7 +64,9 @@ Our [known issues](https://docs.flybywiresim.com/start/reported-issues) list con
 
 ### What liveries are available?
 
-Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/). They will be available for the A380X once it is released in alpha.
+Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/). 
+
+Liveries for the A380X will be available once it is released in alpha and livery builders had some time to create them. 
 
 ### When is the next update?
 
