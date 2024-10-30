@@ -2,14 +2,16 @@
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
-import { Arinc429Register, coordinateToString } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, coordinateToString, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Footer } from '../../common/Footer';
 import { InputField } from '../../common/InputField';
-import { RnpFormat } from '../../common/DataEntryFormats';
+import { RnpFormat, WaypointFormat } from '../../common/DataEntryFormats';
 import './MfdFmsPositionMonitor.scss';
 import { distanceTo } from 'msfs-geo';
 import { Button } from '../../common/Button';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { FmsErrorType } from '@fmgc/FmsError';
 
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
 
@@ -64,6 +66,16 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly gpsPositionText = Subject.create('');
 
+  private monitorWaypoint : Fix | null = null;
+
+  private readonly bearingDistanceWaypointIdent = Subject.create('');
+
+  private readonly bearingToWaypoint = Subject.create('');
+
+  private readonly distanceToWaypoint = Subject.create('');
+
+  private readonly waypointEntered = Subject.create(false);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const sub = this.props.bus.getSubscriber<ClockEvents>();
@@ -88,10 +100,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     this.fmsEpu.set(navigation.getEpe() != Infinity ? navigation.getEpe().toFixed(2) : '--.-');
     this.fmsRnp.set(rnp);
     this.rnpEnteredByPilot.set(navigation.isRnpManual());
-
+    const fmCoordinates = this.props.fmcService.master.navigation.getPpos();
+    const fmPositionAvailable = fmCoordinates != null;
     if (!this.positionFrozen.get()) {
-      const fmCoordinates = this.props.fmcService.master.navigation.getPpos();
-      const fmPositionAvailable = fmCoordinates != null
       this.fmPosition.set(
         fmPositionAvailable? 
         coordinateToString(this.props.fmcService.master.navigation.getPpos()!, false) : '--°--.--/---°--.-',
@@ -105,6 +116,18 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.gpsCoordinates.long = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
       this.gpsPositionText.set(coordinateToString(this.gpsCoordinates, false));
     }
+
+    // calculate bearing distance to waypoint
+    if(this.monitorWaypoint && fmCoordinates) {
+      const distanceToWaypointNm = distanceTo(fmCoordinates, this.monitorWaypoint.location);
+      const distDigits = distanceToWaypointNm > 9999 ? 0 : 1;
+      this.distanceToWaypoint.set(distanceToWaypointNm.toFixed(distDigits).padStart(6));
+      this.bearingToWaypoint.set(A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(fmCoordinates, this.monitorWaypoint.location)).toFixed(0).padStart(3,"0"));
+    } else {
+      this.distanceToWaypoint.set('----.-');
+      this.bearingToWaypoint.set('---');
+    }
+
   }
 
   private fillIrData(
@@ -126,7 +149,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       longitude.isNoComputedData()
     ) {
       irPositionSubject.set('--°--.--/---°--.-');
-      irFmPositionDeviationSubject.set('-.-')
+      irFmPositionDeviationSubject.set('-.-');
+      return;
     }
     coordinates.lat = latitude.value;
     coordinates.long = longitude.value;
@@ -162,7 +186,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value">{this.fmsAccuracy}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right" style="width: 95px;">
+              <span class="mfd-label mfd-spacing-right" style="width: 73px;">
                 EPU
               </span>
               <span class="mfd-value">{this.fmsEpu}</span>
@@ -181,8 +205,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 onModified={(v) => this.props.fmcService.master?.navigation.setRnp(v ? v : null)}
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
-                alignText="flex-end"
-                containerStyle="width: 170px;"
+                containerStyle="width: 130px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -190,7 +213,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
           <div class="fc mfd-pos-monitor-table">
-          <div class="mfd-pos-space-between-row ">
+          <div class="mfd-pos-space-between-row" style={"margin-bottom: 10px;"}>
           <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right">  FMS1</span>
               <span class="mfd-value">{this.fmPosition}</span>
@@ -262,22 +285,92 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           </div>
             </div>
             <div class="mfd-pos-monitor-table-line"></div>
-            <div class ="fc">
             <div class="mfd-label-value-container">
             <span class="mfd-label mfd-spacing-right">  GPS1</span>
             <span class="mfd-value">{this.gpsPositionText}</span>
             </div>
-            </div>
-            <div class ="fc">
             <div class="mfd-label-value-container">
             <span class="mfd-label mfd-spacing-right">  GPS2</span>
             <span class="mfd-value">{this.gpsPositionText}</span>
             </div>
+          </div>
+          <div class ="mfd-pos-space-between-row" style={"margin:10px 15px 15px 5px;"}>
+          <Button
+                label="POSITION <br /> UPDATE"
+                disabled={Subject.create(true)}
+                onClick={() => {}}
+                buttonStyle="width: 130px;"
+              />
+              <div >
+                <div class ="mfd-label-value-container">
+                <span class="mfd-label mfd-spacing-right">BRG / DIST TO</span>
+              <InputField<string>
+                dataEntryFormat={new WaypointFormat()}
+                value={this.bearingDistanceWaypointIdent}
+                dataHandlerDuringValidation={async (v) => 
+                  {
+                    if(v) {
+                      if(this.props.fmcService.master) {
+                        const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, v, true, undefined);
+                        if(!wpt) {
+                          this.props.fmcService.master.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+                          return false;
+                        }
+                        this.monitorWaypoint = wpt;
+                        this.waypointEntered.set(true);
+                    } else {
+                      return false;
+                    }
+                  } else {
+                    this.waypointEntered.set(false);
+                    this.monitorWaypoint = null;
+                  } 
+                  return true;
+                }}
+                enteredByPilot={this.waypointEntered}
+                canBeCleared={Subject.create(true)}
+                alignText="center"
+                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
+              />
+                </div>
+                <div class="mfd-label-value-container">
+          <span class="mfd-value">{this.bearingToWaypoint}</span>
+          <span class="mfd-label-unit mfd-unit-trailing">° </span>
+          <span class ="mfd-value">/{this.distanceToWaypoint}</span>
+          <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+          </div>
+              </div>
+          </div>
+          <div class ="mfd-pos-space-between-row">
+          <Button
+              label="RETURN"
+              onClick={() => this.props.mfd.uiService.navigateTo('back')}
+              buttonStyle="margin-right: 5px; width:150px;"
+            />
+            <div class ="fr">
+            <Button
+              label="NAVAIDS"
+              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
+              buttonStyle="margin-right: 5px; width:150px;"
+            />
+             <Button
+              label="GPS"
+              disabled={Subject.create(true)}
+              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gps')}
+              buttonStyle="margin-right: 5px; width:150px;"
+            />
+             <Button
+              label="IRS"
+              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
+              buttonStyle="margin-right: 5px; width:150px;"
+            />
             </div>
           </div>
-          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />;
+          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
         </div>
       </>
-    );
+    )
   }
 }
