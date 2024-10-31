@@ -6,13 +6,10 @@
 import { NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 export class TelexCheck {
-  public xmlConfig: Document;
-
   constructor() {
     console.log('TelexCheck: Created');
   }
 
-  // TODO: Replace with new function for commbus implementation to sync VFS markup config to WASM
   public startPublish(): void {
     const onlineFeaturesStatus = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'UNKNOWN');
     const popup = new PopUpDialog();
