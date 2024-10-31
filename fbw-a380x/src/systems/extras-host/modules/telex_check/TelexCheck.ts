@@ -1,6 +1,6 @@
 // If the consent is not set, show telex page
 
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
