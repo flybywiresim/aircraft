@@ -39,6 +39,7 @@ import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { PreFlightPhase } from '@fmgc/flightphase/Phase';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -754,7 +755,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTablePredLine2.set(null);
           } else {
             this.clbTableModeLine1.set('SELECTED');
-            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.clbTablePredLine1.set(null);
 
@@ -861,7 +862,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
@@ -877,7 +878,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTablePredLine2.set(null);
           } else {
             this.crzTableModeLine1.set('SELECTED');
-            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
+            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : (obs?.fcuSpeed.toFixed(0) ?? null));
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.crzTablePredLine1.set(null);
 
@@ -886,7 +887,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
@@ -898,10 +899,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
           // Update CRZ DEST predictions
           const destPred = this.props.fmcService.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
+          let destEta = '--:--';
           if (destPred?.secondsFromPresent !== undefined) {
-            this.destEta.set(new TimeHHMMFormat().format(destPred.secondsFromPresent / 60)[0] ?? '--:--');
-            this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true).toFixed(1) ?? '--.-');
+            if (this.activeFlightPhase.get() == FmgcFlightPhase.Preflight) {
+              destEta = new TimeHHMMFormat().format(destPred.secondsFromPresent / 60)[0] ?? '--:--';
+            } else {
+              const date = new Date(destPred.secondsFromPresent * 1000);
+              destEta = `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
+            }
           }
+          this.destEta.set(destEta);
+          this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true).toFixed(1) ?? '--.-');
 
           // Update DES speed table
           if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
@@ -926,7 +934,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
