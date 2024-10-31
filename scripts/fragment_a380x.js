@@ -33,6 +33,10 @@ const execute = async () => {
           name: 'Panels',
           sourceDir: './SimObjects/AirPlanes/FlyByWire_A380_842/panel',
         },
+        {
+          name: 'FBW-PRIDE-Livery',
+          sourceDir: './SimObjects/AirPlanes/_FlyByWire_A380_842-PRIDE',
+        },
       ],
     });
     console.log(result);
