@@ -36,10 +36,9 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
-import { getApproachName } from '../../shared/utils';
+import { formatUtcEtaString, getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { PreFlightPhase } from '@fmgc/flightphase/Phase';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -905,7 +904,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               destEta = new TimeHHMMFormat().format(destPred.secondsFromPresent / 60)[0] ?? '--:--';
             } else {
               const date = new Date(destPred.secondsFromPresent * 1000);
-              destEta = `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
+              destEta = formatUtcEtaString(date);
             }
           }
           this.destEta.set(destEta);

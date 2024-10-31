@@ -3,6 +3,10 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
+export function formatUtcEtaString(date: Date) {
+  return `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
+}
+
 export function secondsToHHmmString(seconds: number) {
   const minutesTotal = seconds / 60;
   const hours = Math.abs(Math.floor(minutesTotal / 60))
