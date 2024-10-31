@@ -105,7 +105,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     if (!this.positionFrozen.get()) {
       this.fmPosition.set(
         fmPositionAvailable? 
-        coordinateToString(this.props.fmcService.master.navigation.getPpos()!, false) : '--°--.--/---°--.-',
+        coordinateToString(this.props.fmcService.master.navigation.getPpos()!, false) : '--°--.--/---°--.--',
       );
       this.fillIrData(1, this.ir1LatitudeRegister, this.ir1LongitudeRegister, this.ir1Coordinates, fmCoordinates, this.ir1Position, this.ir1PositionDeviation);
       this.fillIrData(2, this.ir2LatitudeRegister, this.ir2LongitudeRegister, this.ir2Coordinates, fmCoordinates, this.ir2Position, this.ir2PositionDeviation);
@@ -148,7 +148,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       !longitude.isNormalOperation() ||
       longitude.isNoComputedData()
     ) {
-      irPositionSubject.set('--°--.--/---°--.-');
+      irPositionSubject.set('--°--.--/---°--.--');
       irFmPositionDeviationSubject.set('-.-');
       return;
     }
@@ -223,7 +223,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="mfd-pos-space-between-row ">
           <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right"> RADIO</span>
-              <span class="mfd-value">{this.fmPosition}</span>
+              <span class="mfd-value">{Subject.create('--°--.--/---°--.--')}</span>
             </div>
           </div>
           <div class="mfd-pos-space-between-row ">
