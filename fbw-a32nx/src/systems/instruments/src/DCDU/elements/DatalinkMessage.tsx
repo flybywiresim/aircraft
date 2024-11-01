@@ -112,7 +112,6 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({
         content += `${text}\n`;
       }
     });
-    content += '//';
 
     if (messages[0].SemanticResponseRequired && messages[0].Response) {
       messageSeperatorLine = content.split('\n').length;
