@@ -15,13 +15,14 @@ import {
 import { AtcAocRouterMessages } from '../../router/src';
 import { AtcAocMessages } from './databus/AtcAocBus';
 import { AtcFmsMessages } from './databus/FmsBus';
+import { AtcRmpBus } from './databus/RmpBus';
 
 export class DigitalOutputs {
   private requestId: number = 0;
 
   private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
 
-  private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages> = null;
+  private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages & AtcRmpBus> = null;
 
   private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
@@ -36,7 +37,7 @@ export class DigitalOutputs {
     private readonly synchronizedRouter: boolean,
   ) {
     this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
-    this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages>();
+    this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages & AtcRmpBus>();
 
     this.subscriber.on('routerSendMessageResponse').handle((response) => {
       this.sendMessageCallbacks.every((callback, index) => {
@@ -117,6 +118,10 @@ export class DigitalOutputs {
       default:
         return new Promise<AtsuStatusCodes>((resolve, _reject) => resolve(AtsuStatusCodes.UnknownMessage));
     }
+  }
+
+  public sendLoadFrequency(frequency: number): void {
+    this.publisher.pub('atcLoadFrequency', frequency, false, false);
   }
 
   public async receiveAtis(
