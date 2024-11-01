@@ -51,11 +51,24 @@ export interface NavigationProvider {
    */
   getSelectedNavaids(cdu?: 1 | 2): SelectedNavaid[];
 
-  getRnp(): number;
+  /**
+   * Get the required navigation accuracy of the FMS
+   */
+  getRnp(): NauticalMiles;
 
+  /**
+   * Get if the FMS position accuracy is HIGH
+   */
   isAcurracyHigh(): boolean;
 
-  setRnp(rnp: number | null);
+  /**
+   * Updates the required navigation performance of the FMS
+   * @param rnp number The RNP value to set or null to clear a previous manual input
+   */
+  updateRnp(rnp: NauticalMiles | null);
 
+  /**
+   * Get if a manual RNP entry was performed
+   */
   isRnpManual(): boolean;
 }
