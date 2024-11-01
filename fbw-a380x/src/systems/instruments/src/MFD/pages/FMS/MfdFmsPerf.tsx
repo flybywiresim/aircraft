@@ -753,7 +753,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTablePredLine2.set(null);
           } else {
             this.clbTableModeLine1.set('SELECTED');
-            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
+            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
             this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.clbTablePredLine1.set(null);
 
@@ -864,7 +864,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : (this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null),
+                : this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
@@ -879,7 +879,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTablePredLine2.set(null);
           } else {
             this.crzTableModeLine1.set('SELECTED');
-            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : (obs?.fcuSpeed.toFixed(0) ?? null));
+            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
 
             this.crzTableModeLine2.set('MANAGED');
@@ -887,7 +887,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : (this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null),
+                : this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
@@ -932,7 +932,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
