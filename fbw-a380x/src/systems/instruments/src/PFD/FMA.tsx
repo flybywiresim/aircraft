@@ -1389,13 +1389,13 @@ const getBC3Message = (
     className = 'FontMediumSmaller Cyan';
   } else if (tcasRaInhibited && !isAttExcessive) {
     text = 'TCAS RA INHIBITED';
-    className = 'White';
+    className = 'FontMedium White';
   } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
     text = 'TRK FPA DESELECTED';
-    className = 'White';
+    className = 'FontMedium White';
   } else if (tdReached) {
     text = 'T/D REACHED';
-    className = 'White';
+    className = 'FontMedium White';
   } else if (false) {
     text = 'EXTEND SPD BRK';
     className = 'White';
@@ -1407,7 +1407,7 @@ const getBC3Message = (
     className = 'White';
   } else if (setHoldSpeed) {
     text = 'SET HOLD SPD';
-    className = 'White';
+    className = 'FontMedium White';
   } else if (false) {
     text = 'EXIT MISSED';
     className = 'White';

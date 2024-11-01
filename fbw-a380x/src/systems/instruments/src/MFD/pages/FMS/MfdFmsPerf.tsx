@@ -808,13 +808,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.crzPredStepAheadRef.instance.style.display = 'none';
                 this.crzPredWaypoint.set('N/A'); // Where to get this from?
                 this.crzPredAltitudeTarget.set(0); // Where to get this from?
+                this.crzTablePredLine1.set(null);
               }
             }
           }
 
           if (crzPred?.secondsFromPresent !== undefined && crzPred?.distanceFromPresentPosition !== undefined) {
             const timePrediction = getEtaUtcOrFromPresent(
-              crzPred.secondsFromPresent,
+              crzPred.distanceFromPresentPosition < 0 ? null : crzPred.secondsFromPresent,
               this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
             );
             if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {

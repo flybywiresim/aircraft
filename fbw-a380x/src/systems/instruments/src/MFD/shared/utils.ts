@@ -3,8 +3,8 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
-export function getEtaFromUtcOrPresent(seconds: number, fromPresent: boolean) {
-  if (seconds === undefined) {
+export function getEtaFromUtcOrPresent(seconds: number | null, fromPresent: boolean) {
+  if (seconds === null) {
     return '--:--';
   }
 
