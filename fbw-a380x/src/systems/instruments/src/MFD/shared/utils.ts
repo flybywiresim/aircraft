@@ -3,8 +3,14 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
-export function formatUtcEtaString(date: Date) {
-  return `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
+export function getEtaFromUtcOrPresent(seconds: number, fromPresent: boolean) {
+  if (seconds === undefined) {
+    return '--:--';
+  }
+
+  const secondsEta = fromPresent ? seconds : seconds + SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+  const eta = new Date(secondsEta * 1000);
+  return `${eta.getUTCHours().toString().padStart(2, '0')}:${eta.getUTCMinutes().toString().padStart(2, '0')}`;
 }
 
 export function secondsToHHmmString(seconds: number) {
