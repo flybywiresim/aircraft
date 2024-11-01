@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 // import { useInteractionEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { DisplayUnitID, LegacyCdsDisplayUnit } from '@instruments/common/LegacyCdsDisplayUnit';
@@ -37,6 +37,7 @@ const APU_CONDITION_TIMER_DURATION = 10;
 const FCTL_CONDITION_TIMER_DURATION = 20;
 const STS_DISPLAY_TIMER_DURATION = 3;
 const ECAM_LIGHT_DELAY_ALL = 200;
+const ECAM_ALL_CYCLE_DELAY = 3000;
 
 export const SystemDisplay = () => {
   const [currentPage, setCurrentPage] = useState(SdPages.Door);
@@ -50,6 +51,7 @@ export const SystemDisplay = () => {
   const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
 
   const [ecamAllButtonPushed] = useSimVar('L:A32NX_BTN_ALL', 'Bool', 100);
+  const startPageAllCycleRef = useRef(-1);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
   const [crzCondTimer, setCrzCondTimer] = useState(CRZ_CONDITION_TIMER_DURATION);
   const [ecamFCTLTimer, setEcamFCTLTimer] = useState(FCTL_CONDITION_TIMER_DURATION);
@@ -126,23 +128,31 @@ export const SystemDisplay = () => {
       }
     }
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
-      // button press
+      // if the ALL button was pressed for the first time, remember the start page
+      startPageAllCycleRef.current = currentPage;
       setCurrentPage((prev) => {
-        prev = page === SdPages.None ? SdPages.Eng : prev + 1;
         setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
-        return prev % SdPages.Crz; // CRZ page should not be shown when pressing ALL button - return 0
+        prev = page === SdPages.None ? SdPages.Eng : prev + 1;
+        // wrap around to SdPages.Eng when reaching SdPages.Crz
+        return prev % SdPages.Crz;
       });
       setEcamCycleInterval(
+        // interval to cycle through pages when ALL button is held
         setInterval(() => {
           setCurrentPage((prev) => {
-            prev = Math.min(prev + 1, SdPages.Cb); // CRZ page should be last page so index should not exceed SdPages.Cb
+            // if the ALL button did a full circle back to the page it started, do not advance pages anymore
+            if (prev === startPageAllCycleRef.current) {
+              return prev;
+            }
+            // C/B page should be last page so index should not exceed SdPages.Crz
+            prev = prev === SdPages.Cb ? SdPages.Eng : prev + 1;
             setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
             return prev;
           });
-        }, 3000) as unknown as number,
+        }, ECAM_ALL_CYCLE_DELAY) as unknown as number,
       );
     } else if (!ecamAllButtonPushed && prevEcamAllButtonState) {
-      // button release
+      // ALL button released
       clearInterval(ecamCycleInterval);
     } else if (!ecamAllButtonPushed) {
       if (currentPage !== SdPages.Status) {
