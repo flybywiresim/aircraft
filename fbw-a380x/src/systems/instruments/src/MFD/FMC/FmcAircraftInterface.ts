@@ -286,8 +286,6 @@ export class FmcAircraftInterface {
     );
   }
 
-  public TdReachedSpeedMdoeChecks() {}
-
   public updatePerformanceData() {
     if (!this.flightPlanService.hasActive) {
       return;
