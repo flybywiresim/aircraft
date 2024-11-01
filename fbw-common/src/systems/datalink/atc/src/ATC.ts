@@ -21,6 +21,7 @@ import {
   coordinateToString,
   timestampToString,
   Conversion,
+  CpdlcMessageContentFrequency,
 } from '../../common/src';
 import { FmsRouteData } from './databus/FmsBus';
 import { MailboxBus } from './databus/MailboxBus';
@@ -811,6 +812,17 @@ export class Atc {
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
       });
+
+      const type = cpdlcMessage.Content[0].TypeId;
+      if (type === 'UM117' || type === 'UM120') {
+        const frequency = (cpdlcMessage.Content[0].Content[1] as CpdlcMessageContentFrequency).Value.split('.');
+        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
+        this.digitalOutputs.sendLoadFrequency(frequencyHz);
+      } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
+        const frequency = (cpdlcMessage.Content[0].Content[2] as CpdlcMessageContentFrequency).Value.split('.');
+        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
+        this.digitalOutputs.sendLoadFrequency(frequencyHz);
+      }
 
       let concatMessages = true;
       if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Content !== undefined) {
