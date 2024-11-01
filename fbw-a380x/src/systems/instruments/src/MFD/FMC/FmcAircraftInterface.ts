@@ -15,8 +15,8 @@ import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
+import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -95,7 +95,7 @@ export class FmcAircraftInterface {
   private readonly speedVapp = Subject.create(0);
   private readonly speedShortTermManaged = Subject.create(0);
 
-  private readonly tdReached = Subject.create(this.bus.getSubscriber<FmsVars>().on('tdReached').whenChanged());
+  private readonly tdReached = Subject.create(this.bus.getSubscriber<FmsMfdVars>().on('tdReached').whenChanged());
 
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase').whenChanged(),
