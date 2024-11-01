@@ -8,6 +8,7 @@
 #include "../model/AutopilotStateMachine.h"
 #include "../model/Autothrust.h"
 #include "../sec/Sec.h"
+#include "LocalVariable.h"
 #include "RecordingDataTypes.h"
 #include "zfstream.h"
 
@@ -36,10 +37,10 @@ class FlightDataRecorder {
  private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\FlightDataRecorder.ini";
 
-  bool isEnabled = false;
-  int sampleCounter = false;
-  int maximumSampleCounter = 0;
-  int maximumFileCount = 0;
+  std::unique_ptr<LocalVariable> idIsEnabled;
+  std::unique_ptr<LocalVariable> idMaximumSampleCounter;
+  std::unique_ptr<LocalVariable> idMaximumFileCount;
+  int sampleCounter = 0;
   std::shared_ptr<gzofstream> fileStream;
 
   void manageFlightDataRecorderFiles();
@@ -47,6 +48,10 @@ class FlightDataRecorder {
   std::string getFlightDataRecorderFilename();
 
   void cleanUpFlightDataRecorderFiles();
+
+  void loadConfiguration();
+
+  void writeConfiguration();
 
   void writeElac(Elac& elac);
 
