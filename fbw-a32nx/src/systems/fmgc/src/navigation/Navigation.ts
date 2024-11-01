@@ -151,25 +151,6 @@ export class Navigation implements NavigationProvider {
     this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.bus, this.flightPlanService, this);
     this.navaidTuner = new NavaidTuner(this.bus, this, this.navaidSelectionManager, this.landingSystemSelectionManager);
   }
-  isRnpManual(): boolean {
-    return this.requiredPerformance.manualRnp;
-  }
-
-  isAcurracyHigh(): boolean {
-    return this.accuracyHigh;
-  }
-
-  getRnp(): number {
-    return this.requiredPerformance.activeRnp;
-  }
-
-  setRnp(rnp: number | null) {
-    if (rnp) {
-      this.requiredPerformance.setPilotRnp(rnp);
-    } else {
-      this.requiredPerformance.clearPilotRnp();
-    }
-  }
 
   init(): void {
     this.navaidTuner.init();
@@ -284,12 +265,32 @@ export class Navigation implements NavigationProvider {
     this.nearbyAirportMonitor.setLocation(this.ppos.lat, this.ppos.long);
   }
 
+  public updateRnp(rnp: number | null) {
+    if (rnp) {
+      this.requiredPerformance.setPilotRnp(rnp);
+    } else {
+      this.requiredPerformance.clearPilotRnp();
+    }
+  }
+
+  public isRnpManual(): boolean {
+    return this.requiredPerformance.manualRnp;
+  }
+
+  public isAcurracyHigh(): boolean {
+    return this.accuracyHigh;
+  }
+
   public getBaroCorrectedAltitude(): number | null {
     return this.baroAltitude;
   }
 
-  public getEpe(): number {
+  public getEpe(): NauticalMiles {
     return this.currentPerformance ?? Infinity;
+  }
+
+  public getRnp(): NauticalMiles {
+    return this.requiredPerformance.activeRnp;
   }
 
   public getPpos(): Coordinates | null {
@@ -323,6 +324,10 @@ export class Navigation implements NavigationProvider {
 
   public getNavaidTuner(): NavaidTuner {
     return this.navaidTuner;
+  }
+
+  public getRequiredPerformance(): RequiredPerformance {
+    return this.requiredPerformance;
   }
 
   private resetSelectedNavaid(i: number): void {
