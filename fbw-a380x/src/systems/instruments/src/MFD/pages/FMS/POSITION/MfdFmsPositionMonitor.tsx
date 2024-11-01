@@ -216,7 +216,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
                 value={this.fmsRnp}
-                onModified={(v) => this.props.fmcService.master?.navigation.setRnp(v ? v : null)}
+                onModified={(v) => this.props.fmcService.master?.navigation.updateRnp(v ? v : null)}
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
                 containerStyle="width: 130px;"
