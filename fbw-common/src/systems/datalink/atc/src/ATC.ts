@@ -254,6 +254,7 @@ export class Atc {
       const ids = this.messageMonitoring.checkMessageConditions();
       ids.forEach((id) => {
         const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
+
         if (message) {
           UplinkMessageStateMachine.update(this, message, false, true);
           this.mailboxBus.update(message, true);
@@ -582,6 +583,7 @@ export class Atc {
           if (code === AtsuStatusCodes.Ok) {
             message.Response.ComStatus = AtsuMessageComStatus.Sent;
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
+
             setTimeout(() => {
               if (this.mailboxBus.currentMessageStatus(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
                 this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
