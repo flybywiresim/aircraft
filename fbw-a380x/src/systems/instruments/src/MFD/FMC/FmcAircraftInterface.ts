@@ -15,6 +15,7 @@ import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
 
 /**
@@ -93,6 +94,9 @@ export class FmcAircraftInterface {
   private readonly speedVfeNext = Subject.create(0);
   private readonly speedVapp = Subject.create(0);
   private readonly speedShortTermManaged = Subject.create(0);
+
+  private readonly tdReached = Subject.create(this.bus.getSubscriber<FmsVars>().on('tdReached').whenChanged());
+
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase').whenChanged(),
     FmgcFlightPhase.Preflight,
@@ -151,6 +155,14 @@ export class FmcAircraftInterface {
         0,
       ),
     );
+
+    this.tdReached.sub((v) => {
+      if (v) {
+        this.fmc.addMessageToQueue(NXSystemMessages.tdReached, undefined, () => {
+          SimVar.SetSimVarValue('L:A32NX_PFD_TD_REACHED', 'Bool', false);
+        });
+      }
+    });
   }
 
   thrustReductionAccelerationChecks() {
@@ -269,6 +281,8 @@ export class FmcAircraftInterface {
       0,
     );
   }
+
+  public TdReachedSpeedMdoeChecks() {}
 
   public updatePerformanceData() {
     if (!this.flightPlanService.hasActive) {

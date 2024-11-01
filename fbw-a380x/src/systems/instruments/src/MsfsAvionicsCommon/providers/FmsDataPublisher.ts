@@ -7,6 +7,7 @@ export interface FmsVars {
   linearDeviationActive: boolean;
   targetAltitude: number;
   verticalProfileLatched: boolean;
+  tdReached: boolean;
   showSpeedMargins: boolean;
   upperSpeedMargin: number;
   lowerSpeedMargin: number;
@@ -37,6 +38,7 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
           { name: (_side) => 'L:A32NX_PFD_LINEAR_DEVIATION_ACTIVE', type: SimVarValueType.Bool },
         ],
         ['targetAltitude', { name: (_side) => 'L:A32NX_PFD_TARGET_ALTITUDE', type: SimVarValueType.Feet }],
+        ['tdReached', { name: (_side) => 'L:A32NX_PFD_TD_REACHED', type: SimVarValueType.Bool }],
         [
           'verticalProfileLatched',
           { name: (_side) => 'L:A32NX_PFD_VERTICAL_PROFILE_LATCHED', type: SimVarValueType.Bool },

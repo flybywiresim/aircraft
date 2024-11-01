@@ -99,6 +99,7 @@ export const NXSystemMessages = {
   rwyLsMismatch: new TypeIIMessage('RWY/LS MISMATCH', true),
   selectDesiredSystem: new TypeIMessage('SELECT DESIRED SYSTEM'),
   setHoldSpeed: new TypeIIMessage('SET HOLD SPEED'),
+  tdReached: new TypeIIMessage('TD REACHED'),
   spdLimExceeded: new TypeIIMessage('SPD LIM EXCEEDED', true),
   systemBusy: new TypeIMessage('SYSTEM BUSY-TRY LATER'),
   toSpeedTooLow: new TypeIIMessage('TO SPEEDS TOO LOW', true),
