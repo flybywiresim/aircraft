@@ -70,10 +70,10 @@
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
-                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode
                 </PULL_CODE>
                 <PUSH_CODE>
-                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
