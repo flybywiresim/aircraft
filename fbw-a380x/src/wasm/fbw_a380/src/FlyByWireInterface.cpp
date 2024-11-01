@@ -158,7 +158,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   // do not further process when active pause is on
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
-    flightDataRecorder.update(baseData, aircraftSpecificData, prims, secs, facs, &autopilotStateMachine, &autopilotLaws, &autoThrust,
+    flightDataRecorder.update(baseData, aircraftSpecificData, prims, secs, facs, autopilotStateMachine, autopilotLaws, autoThrust,
                               simConnectInterface.getFuelSystemData());
   }
 

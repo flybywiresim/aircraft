@@ -25,13 +25,13 @@ class FlightDataRecorder {
 
   void update(const BaseData& baseData,
               const AircraftSpecificData& aircraftSpecificData,
-              Prim prims[3],
-              Sec secs[3],
-              Fac facs[2],
-              AutopilotStateMachine* autopilotStateMachine,
-              AutopilotLawsModelClass* autopilotLaws,
-              Autothrust* autoThrust,
-              FuelSystemData fuelSystemData);
+              Prim (&prims)[3],
+              Sec (&secs)[3],
+              Fac (&facs)[2],
+              const AutopilotStateMachine& autopilotStateMachine,
+              const AutopilotLawsModelClass& autopilotLaws,
+              const Autothrust& autoThrust,
+              const FuelSystemData& fuelSystemData);
 
   void terminate();
 

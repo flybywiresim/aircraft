@@ -39,13 +39,13 @@ void FlightDataRecorder::initialize() {
 
 void FlightDataRecorder::update(const BaseData& baseData,
                                 const AircraftSpecificData& aircraftSpecificData,
-                                Prim prims[3],
-                                Sec secs[3],
-                                Fac facs[2],
-                                AutopilotStateMachine* autopilotStateMachine,
-                                AutopilotLawsModelClass* autopilotLaws,
-                                Autothrust* autoThrust,
-                                FuelSystemData fuelSystemData) {
+                                Prim (&prims)[3],
+                                Sec (&secs)[3],
+                                Fac (&facs)[2],
+                                const AutopilotStateMachine& autopilotStateMachine,
+                                const AutopilotLawsModelClass& autopilotLaws,
+                                const Autothrust& autoThrust,
+                                const FuelSystemData& fuelSystemData) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -76,13 +76,16 @@ void FlightDataRecorder::update(const BaseData& baseData,
   }
 
   // write AP state machine data
-  fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
+  auto autopilotStateMachineOut = autopilotStateMachine.getExternalOutputs().out;
+  fileStream->write((char*)(&autopilotStateMachineOut), sizeof(autopilotStateMachineOut));
 
   // write AP laws data
-  fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
+  auto autopilotLawsOut = autopilotLaws.getExternalOutputs().out;
+  fileStream->write((char*)(&autopilotLawsOut), sizeof(autopilotLawsOut));
 
   // write ATHR data
-  fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
+  auto autoThrustOut = autoThrust.getExternalOutputs().out;
+  fileStream->write((char*)(&autoThrustOut), sizeof(autoThrustOut));
 
   // write fuel system data
   fileStream->write((char*)(&fuelSystemData), sizeof(fuelSystemData));
