@@ -270,10 +270,10 @@ class SimConnectInterface {
 
   SimInputThrottles& getSimInputThrottles();
 
-  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine output);
+  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output);
   ClientDataAutopilotStateMachine& getClientDataAutopilotStateMachine();
 
-  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws output);
+  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws& output);
   ClientDataAutopilotLaws& getClientDataAutopilotLaws();
 
   ClientDataAutothrust& getClientDataAutothrust();

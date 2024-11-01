@@ -1618,7 +1618,7 @@ void SimConnectInterface::resetSimInputThrottles() {
   simInputThrottles.ATHR_reset_disable = 0;
 }
 
-bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws output) {
+bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws& output) {
   // write data and return result
   return sendClientData(ClientData::AUTOPILOT_LAWS, sizeof(output), &output);
 }
@@ -1627,7 +1627,7 @@ ClientDataAutopilotLaws& SimConnectInterface::getClientDataAutopilotLaws() {
   return clientDataAutopilotLaws;
 }
 
-bool SimConnectInterface::setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine output) {
+bool SimConnectInterface::setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output) {
   // write data and return result
   return sendClientData(ClientData::AUTOPILOT_STATE_MACHINE, sizeof(output), &output);
 }
