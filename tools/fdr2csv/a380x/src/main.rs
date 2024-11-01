@@ -62,15 +62,20 @@ fn read_bytes<T: AnyBitPattern>(reader: &mut impl Read) -> Result<T, Error> {
 // A single FDR record
 #[derive(Serialize, Default)]
 struct FdrData {
-    base_data: BaseData,
-    specific_data: AircraftSpecificData,
-    prim_1_data: PrimData,
-    sec_1_data: SecData,
-    fac_1_data: FacData,
+    base: BaseData,
+    specific: AircraftSpecificData,
+    prim_1: PrimData,
+    prim_2: PrimData,
+    prim_3: PrimData,
+    sec_1: SecData,
+    sec_2: SecData,
+    sec_3: SecData,
+    fac_1: FacData,
+    fac_2: FacData,
     ap_sm: ap_sm_output,
     ap_law: ap_raw_output,
     athr: athr_out,
-    fuel_data: FuelSystemData,
+    fuel: FuelSystemData,
 }
 
 #[derive(Serialize, Default)]
@@ -97,15 +102,20 @@ struct FacData {
 // These are helper functions to read in a whole FDR record.
 fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
-        base_data: read_bytes::<BaseData>(reader)?,
-        specific_data: read_bytes::<AircraftSpecificData>(reader)?,
-        prim_1_data: read_prim(reader)?,
-        sec_1_data: read_sec(reader)?,
-        fac_1_data: read_fac(reader)?,
+        base: read_bytes::<BaseData>(reader)?,
+        specific: read_bytes::<AircraftSpecificData>(reader)?,
+        prim_1: read_prim(reader)?,
+        prim_2: read_prim(reader)?,
+        prim_3: read_prim(reader)?,
+        sec_1: read_sec(reader)?,
+        sec_2: read_sec(reader)?,
+        sec_3: read_sec(reader)?,
+        fac_1: read_fac(reader)?,
+        fac_2: read_fac(reader)?,
         ap_sm: read_bytes::<ap_sm_output>(reader)?,
         ap_law: read_bytes::<ap_raw_output>(reader)?,
         athr: read_bytes::<athr_out>(reader)?,
-        fuel_data: read_bytes::<FuelSystemData>(reader)?,
+        fuel: read_bytes::<FuelSystemData>(reader)?,
     })
 }
 

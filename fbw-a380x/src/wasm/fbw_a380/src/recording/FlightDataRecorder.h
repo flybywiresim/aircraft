@@ -17,9 +17,9 @@ class FlightDataRecorder {
   // IMPORTANT: this constant needs to increased with every interface change
   const uint64_t INTERFACE_VERSION = 3800001;
 
-  const uint32_t NUMBER_OF_PRIM_TO_WRITE = 1;
-  const uint32_t NUMBER_OF_SEC_TO_WRITE = 1;
-  const uint32_t NUMBER_OF_FAC_TO_WRITE = 1;
+  const uint32_t NUMBER_OF_PRIM_TO_WRITE = 3;
+  const uint32_t NUMBER_OF_SEC_TO_WRITE = 3;
+  const uint32_t NUMBER_OF_FAC_TO_WRITE = 2;
 
   void initialize();
 
