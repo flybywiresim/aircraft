@@ -12,6 +12,7 @@
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
 1. [A380X/FCU] Added metric altitude button - @tracernz (Mike)
+1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 
 ## 0.12.0
 
