@@ -122,7 +122,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({
   }
 
   // remove the last newline
-  if (content.length !== 0) {
+  if (content.length !== 0 && content[content.length - 1] === '\n') {
     content = content.slice(0, -1);
   }
 
