@@ -56,6 +56,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmPosition = Subject.create('');
 
+  private readonly noPositionImplemented = Subject.create('--°--.--/---°--.--'); // TODO remove & replace with RADIO, MIX IRS & GPIRS position once implemented
+
+  private readonly onSideFms = Subject.create('');
+
+  private readonly offSideFms = Subject.create('');
+
   private readonly positionFrozen = Subject.create(false);
 
   private readonly positionFrozenLabel = this.positionFrozen.map(v => v? 'UNFREEZE' : 'FREEZE');
@@ -68,7 +74,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private monitorWaypoint : Fix | null = null;
 
-  private readonly bearingDistanceWaypointIdent = Subject.create('');
+  private readonly waypointIdent = Subject.create('');
 
   private readonly bearingToWaypoint = Subject.create('');
 
@@ -78,7 +84,16 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const side = this.props.mfd.uiService.captOrFo;
+    this.onSideFms.set(side === 'CAPT' ? 'FMS1' : 'FMS2');
+    this.offSideFms.set(side === 'CAPT'? 'FMS2' : 'FMS1');
     const sub = this.props.bus.getSubscriber<ClockEvents>();
+    this.monitorWaypoint = this.props.mfd.positionMonitorFix;
+    if(this.monitorWaypoint) {
+      this.waypointIdent.set(this.monitorWaypoint.ident);
+      this.waypointEntered.set(true);
+    }
     this.subs.push(
       sub
         .on('realTime')
@@ -117,7 +132,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.gpsPositionText.set(coordinateToString(this.gpsCoordinates, false));
     }
 
-    // calculate bearing distance to waypoint
     if(this.monitorWaypoint && fmCoordinates) {
       const distanceToWaypointNm = distanceTo(fmCoordinates, this.monitorWaypoint.location);
       const distDigits = distanceToWaypointNm > 9999 ? 0 : 1;
@@ -216,27 +230,27 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="fc mfd-pos-monitor-table">
           <div class="mfd-pos-space-between-row" style={"margin-bottom: 10px;"}>
           <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">  FMS1</span>
+              <span class="mfd-label mfd-spacing-right">  {this.onSideFms}</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
           </div>
           <div class="mfd-pos-space-between-row ">
           <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right"> RADIO</span>
-              <span class="mfd-value">{Subject.create('--°--.--/---°--.--')}</span>
+              <span class="mfd-value">{this.noPositionImplemented}</span>
             </div>
           </div>
           <div class="mfd-pos-space-between-row ">
           <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right">MIXIRS</span>
-              <span class="mfd-value">{this.fmPosition}</span>
+              <span class="mfd-value">{this.noPositionImplemented}</span>
             </div>
             <div span class="mfd-label" style={"width:195px; height:40px;"}>{this.positionFrozenText}</div>
             </div>
             <div class="mfd-pos-space-between-row ">
             <div class="mfd-label-value-container">
               <span class="mfd-label mfd-spacing-right"> GPIRS</span>
-              <span class="mfd-value">{this.fmPosition}</span>
+              <span class="mfd-value">{this.noPositionImplemented}</span>
             </div>
             <Button
                 label={Subject.create(
@@ -256,13 +270,13 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           </div>
           <div class="mfd-pos-monitor-table-line"></div>
           <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">  FMS2</span>
+              <span class="mfd-label mfd-spacing-right">  {this.offSideFms}</span>
               <span class="mfd-value">{this.fmPosition}</span>
             </div>
           <div class ="mfd-pos-monitor-table-line"></div>
           <div class="fc" style="align-items: flex-end; margin-top: 15px;">
             <span class="mfd-label">
-              DEVIATION FROM FMS1
+              DEVIATION FROM {this.onSideFms}
             </span>
           </div>
           <div class="mfd-pos-space-between-row ">
@@ -317,7 +331,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-label mfd-spacing-right">BRG / DIST TO</span>
               <InputField<string>
                 dataEntryFormat={new WaypointFormat()}
-                value={this.bearingDistanceWaypointIdent}
+                value={this.waypointIdent}
                 dataHandlerDuringValidation={async (v) => 
                   {
                     if(v) {
@@ -336,6 +350,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                     this.waypointEntered.set(false);
                     this.monitorWaypoint = null;
                   } 
+                  this.props.mfd.positionMonitorFix = this.monitorWaypoint;
                   return true;
                 }}
                 enteredByPilot={this.waypointEntered}
