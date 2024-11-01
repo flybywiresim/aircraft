@@ -95,7 +95,17 @@ export class FmcAircraftInterface {
   private readonly speedVapp = Subject.create(0);
   private readonly speedShortTermManaged = Subject.create(0);
 
-  private readonly tdReached = Subject.create(this.bus.getSubscriber<FmsMfdVars>().on('tdReached').whenChanged());
+  private readonly tdReached = this.bus
+    .getSubscriber<FmsMfdVars>()
+    .on('tdReached')
+    .whenChanged()
+    .handle((v) => {
+      if (v) {
+        this.fmc.addMessageToQueue(NXSystemMessages.tdReached, undefined, () => {
+          SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'Bool', false);
+        });
+      }
+    });
 
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase').whenChanged(),
@@ -155,14 +165,6 @@ export class FmcAircraftInterface {
         0,
       ),
     );
-
-    this.tdReached.sub((v) => {
-      if (v) {
-        this.fmc.addMessageToQueue(NXSystemMessages.tdReached, undefined, () => {
-          SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'Bool', false);
-        });
-      }
-    });
   }
 
   thrustReductionAccelerationChecks() {
