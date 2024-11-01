@@ -16,6 +16,8 @@
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
 1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A380X/MFD] Fix ETA and add TOD prediction in PERF page - @BravoMike99 (bruno_pt99)
+1. [A380/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
