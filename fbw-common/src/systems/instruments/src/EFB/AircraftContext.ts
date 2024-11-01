@@ -46,9 +46,10 @@ interface RealismOptions {
 
 interface SimOptions {
   cones: boolean;
+  msfsFplnSync: boolean;
+  pilotSeat: boolean;
   registrationDecal: boolean;
   wheelChocks: boolean;
-  pilotSeat: boolean;
   cabinLighting: boolean;
 }
 
@@ -94,6 +95,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
     },
     sim: {
       cones: false,
+      msfsFplnSync: false,
       pilotSeat: false,
       registrationDecal: false,
       wheelChocks: false,

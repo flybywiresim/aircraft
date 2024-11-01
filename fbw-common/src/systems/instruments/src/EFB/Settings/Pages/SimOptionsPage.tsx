@@ -83,19 +83,21 @@ export const SimOptionsPage = () => {
             </SelectGroup>
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
-            <SelectGroup>
-              {fpSyncButtons.map((button) => (
-                <SelectItem
-                  key={button.setting}
-                  onSelect={() => setFpSync(button.setting)}
-                  selected={fpSync === button.setting}
-                >
-                  {button.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.msfsFplnSync && (
+            <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
+              <SelectGroup>
+                {fpSyncButtons.map((button) => (
+                  <SelectItem
+                    key={button.setting}
+                    onSelect={() => setFpSync(button.setting)}
+                    selected={fpSync === button.setting}
+                  >
+                    {button.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
             <SelectGroup>
