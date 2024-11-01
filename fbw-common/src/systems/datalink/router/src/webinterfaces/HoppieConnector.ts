@@ -229,7 +229,7 @@ export class HoppieConnector {
     let minScore = 100000;
 
     // clear the message from marker, etc.
-    const clearedMessage = message.replace('@', '').replace('_', ' ');
+    const clearedMessage = message.replace(/@/gi, '').replace(/_/gi, ' ');
 
     // test all uplink messages
     for (const ident in CpdlcMessagesUplink) {
@@ -284,12 +284,16 @@ export class HoppieConnector {
       }
     }
 
-    // TODO add some more heuristic about messages
-
     // create a deep-copy of the message
     const retval: CpdlcMessageElement = CpdlcMessagesUplink[matches[0]][1].deepCopy();
-    let elements = message.split(' ');
-    console.log(`Selected UM-ID: ${matches[0]}`);
+    let elements: string[] = [];
+
+    // keep the highlight flags for freetext messages
+    if (retval.TypeId === 'UM169' || retval.TypeId === 'UM183') {
+      elements = message.replace(/_/gi, ' ').split(' ');
+    } else {
+      elements = clearedMessage.split(' ');
+    }
 
     // parse the content and store it in the deep copy
     retval.Content.forEach((entry) => {
@@ -369,7 +373,7 @@ export class HoppieConnector {
             if (elements[3] !== '') {
               cpdlc.PreviousTransmissionId = parseInt(elements[3]);
             }
-            cpdlc.Message = elements[5].replace(/@/g, '').replace(/_/g, '\n');
+            cpdlc.Message = elements[5];
             cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(cpdlc.Message));
             if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0]?.ExpectedResponse) {
               cpdlc.Content[0].ExpectedResponse = elements[4] as CpdlcMessageExpectedResponseType;
