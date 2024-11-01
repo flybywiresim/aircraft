@@ -244,9 +244,9 @@ class SimConnectInterface {
 
   bool sendEvent(Events eventId, DWORD data, DWORD priority);
 
-  bool setClientDataLocalVariables(ClientDataLocalVariables output);
+  bool setClientDataLocalVariables(ClientDataLocalVariables& output);
 
-  bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output);
+  bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust& output);
 
   void resetSimInputPitchTrim();
 
@@ -256,65 +256,65 @@ class SimConnectInterface {
 
   void resetSimInputThrottles();
 
-  SimData getSimData();
+  SimData& getSimData();
 
-  FuelSystemData getFuelSystemData();
+  FuelSystemData& getFuelSystemData();
 
-  SimInput getSimInput();
+  SimInput& getSimInput();
 
-  SimInputAutopilot getSimInputAutopilot();
+  SimInputAutopilot& getSimInputAutopilot();
 
-  SimInputPitchTrim getSimInputPitchTrim();
+  SimInputPitchTrim& getSimInputPitchTrim();
 
-  SimInputRudderTrim getSimInputRudderTrim();
+  SimInputRudderTrim& getSimInputRudderTrim();
 
-  SimInputThrottles getSimInputThrottles();
+  SimInputThrottles& getSimInputThrottles();
 
   bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine output);
-  ClientDataAutopilotStateMachine getClientDataAutopilotStateMachine();
+  ClientDataAutopilotStateMachine& getClientDataAutopilotStateMachine();
 
   bool setClientDataAutopilotLaws(ClientDataAutopilotLaws output);
-  ClientDataAutopilotLaws getClientDataAutopilotLaws();
+  ClientDataAutopilotLaws& getClientDataAutopilotLaws();
 
-  ClientDataAutothrust getClientDataAutothrust();
+  ClientDataAutothrust& getClientDataAutothrust();
 
-  ClientDataAutothrustA380 getClientDataAutothrustA380();
+  ClientDataAutothrustA380& getClientDataAutothrustA380();
 
-  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput output);
+  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput& output);
 
-  bool setClientDataFlyByWire(ClientDataFlyByWire output);
-  ClientDataFlyByWire getClientDataFlyByWire();
+  bool setClientDataFlyByWire(ClientDataFlyByWire& output);
+  ClientDataFlyByWire& getClientDataFlyByWire();
 
-  bool setClientDataPrimDiscretes(base_prim_discrete_inputs output);
-  bool setClientDataPrimAnalog(base_prim_analog_inputs output);
-  bool setClientDataPrimBusInput(base_prim_out_bus output, int primIndex);
+  bool setClientDataPrimDiscretes(base_prim_discrete_inputs& output);
+  bool setClientDataPrimAnalog(base_prim_analog_inputs& output);
+  bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
 
-  base_prim_discrete_outputs getClientDataPrimDiscretesOutput();
-  base_prim_analog_outputs getClientDataPrimAnalogsOutput();
-  base_prim_out_bus getClientDataPrimBusOutput();
+  base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
+  base_prim_analog_outputs& getClientDataPrimAnalogsOutput();
+  base_prim_out_bus& getClientDataPrimBusOutput();
 
-  bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
-  bool setClientDataSecAnalog(base_sec_analog_inputs output);
-  bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+  bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
+  bool setClientDataSecAnalog(base_sec_analog_inputs& output);
+  bool setClientDataSecBus(base_sec_out_bus& output, int secIndex);
 
-  base_sec_discrete_outputs getClientDataSecDiscretesOutput();
-  base_sec_analog_outputs getClientDataSecAnalogsOutput();
-  base_sec_out_bus getClientDataSecBusOutput();
+  base_sec_discrete_outputs& getClientDataSecDiscretesOutput();
+  base_sec_analog_outputs& getClientDataSecAnalogsOutput();
+  base_sec_out_bus& getClientDataSecBusOutput();
 
-  bool setClientDataFacDiscretes(base_fac_discrete_inputs output);
-  bool setClientDataFacAnalog(base_fac_analog_inputs output);
-  bool setClientDataFacBus(base_fac_bus output, int facIndex);
+  bool setClientDataFacDiscretes(base_fac_discrete_inputs& output);
+  bool setClientDataFacAnalog(base_fac_analog_inputs& output);
+  bool setClientDataFacBus(base_fac_bus& output, int facIndex);
 
-  base_fac_discrete_outputs getClientDataFacDiscretesOutput();
-  base_fac_analog_outputs getClientDataFacAnalogsOutput();
-  base_fac_bus getClientDataFacBusOutput();
+  base_fac_discrete_outputs& getClientDataFacDiscretesOutput();
+  base_fac_analog_outputs& getClientDataFacAnalogsOutput();
+  base_fac_bus& getClientDataFacBusOutput();
 
-  bool setClientDataAdr(base_adr_bus output, int adrIndex);
-  bool setClientDataIr(base_ir_bus output, int irIndex);
-  bool setClientDataRa(base_ra_bus output, int raIndex);
-  bool setClientDataLgciu(base_lgciu_bus output, int lgciuIndex);
-  bool setClientDataSfcc(base_sfcc_bus output, int sfccIndex);
-  bool setClientDataFmgcB(base_fmgc_b_bus output, int fmgcIndex);
+  bool setClientDataAdr(base_adr_bus& output, int adrIndex);
+  bool setClientDataIr(base_ir_bus& output, int irIndex);
+  bool setClientDataRa(base_ra_bus& output, int raIndex);
+  bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
+  bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
+  bool setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
