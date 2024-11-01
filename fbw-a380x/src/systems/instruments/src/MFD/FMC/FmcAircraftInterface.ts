@@ -104,6 +104,8 @@ export class FmcAircraftInterface {
         this.fmc.addMessageToQueue(NXSystemMessages.tdReached, undefined, () => {
           SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'Bool', false);
         });
+      } else {
+        this.fmc.removeMessageFromQueue(NXSystemMessages.tdReached.text);
       }
     });
 
