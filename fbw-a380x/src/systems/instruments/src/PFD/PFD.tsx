@@ -89,7 +89,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
       this.pitchTrimIndicatorVisible.set(false);
     } else if (gs < 30) {
       this.pitchTrimIndicatorVisible.set(true);
-    } else if (gs < 80 && (this.spoilersArmed.get() === true || flapsRetracted === true || this.thrustTla.get() > 5)) {
+    } else if (gs < 80 && (this.spoilersArmed.get() === false || flapsRetracted === true || this.thrustTla.get() > 5)) {
       // FIXME add "flight crew presses pitch trim switches"
       this.pitchTrimIndicatorVisible.set(true);
     }
