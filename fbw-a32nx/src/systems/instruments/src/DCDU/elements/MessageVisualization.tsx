@@ -265,9 +265,9 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(
     const rgb = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;
     let backgroundIdx = maxLines;
     if (backgroundNeeded) {
-      if (seperatorLine && seperatorLine >= messageView.lineOffset) {
-        backgroundIdx = seperatorLine - messageView.lineOffset >= maxLines ? 0 : seperatorLine - messageView.lineOffset;
-      } else if (seperatorLine) {
+      if (seperatorLine) {
+        backgroundIdx = seperatorLine - messageView.lineOffset;
+      } else {
         backgroundIdx = 0;
       }
     }
