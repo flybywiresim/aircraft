@@ -125,7 +125,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor.startPublish();
         this.simVarPublisher.startPublish();
         this.aircraftSync.startPublish();
-        this.telexCheck.startPublish();
+        this.telexCheck.showPopup();
 
         // Signal that the aircraft is ready via L:A32NX_IS_READY
         SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);

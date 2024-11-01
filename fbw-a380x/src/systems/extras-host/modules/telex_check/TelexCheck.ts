@@ -6,11 +6,7 @@
 import { NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 export class TelexCheck {
-  constructor() {
-    console.log('TelexCheck: Created');
-  }
-
-  public startPublish(): void {
+  public showPopup(): void {
     const onlineFeaturesStatus = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'UNKNOWN');
     const popup = new PopUpDialog();
 
