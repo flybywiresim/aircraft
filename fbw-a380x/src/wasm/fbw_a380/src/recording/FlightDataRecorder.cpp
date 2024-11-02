@@ -144,8 +144,9 @@ void FlightDataRecorder::writeConfiguration() {
   // create structure
   INIStructure iniStructure;
   iniStructure["FLIGHT_DATA_RECORDER"]["ENABLED"] = idIsEnabled->get() == 1 ? "true" : "false";
-  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = idMaximumFileCount->get();
-  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] = idMaximumSampleCounter->get();
+  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = std::to_string(static_cast<int>(idMaximumFileCount->get()));
+  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] =
+      std::to_string(static_cast<int>(idMaximumSampleCounter->get()));
 
   // write file
   iniFile.write(iniStructure, true);
