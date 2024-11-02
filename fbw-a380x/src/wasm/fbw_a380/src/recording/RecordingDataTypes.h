@@ -39,6 +39,7 @@ struct BaseData {
   double aircraft_zeta_trim_pos;
   double aircraft_total_air_temperature_deg_celsius;
   double aircraft_ice_structure_percent;
+  double aircraft_dfdr_event_button_pressed;
   double atmosphere_ambient_pressure_mbar;
   double atmosphere_ambient_wind_velocity_kn;
   double atmosphere_ambient_wind_direction_deg;

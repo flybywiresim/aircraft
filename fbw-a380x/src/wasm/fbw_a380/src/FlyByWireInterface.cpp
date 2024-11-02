@@ -1105,6 +1105,7 @@ bool FlyByWireInterface::updateBaseData(double sampleTime) {
   baseData.aircraft_zeta_trim_pos = simData.zeta_trim_pos;
   baseData.aircraft_total_air_temperature_deg_celsius = simData.ambient_temperature_celsius;
   baseData.aircraft_ice_structure_percent = simData.ice_structure_percent;
+  baseData.aircraft_dfdr_event_button_pressed = idFdrEvent->get();
   baseData.atmosphere_ambient_pressure_mbar = simData.ambient_pressure_mbar;
   baseData.atmosphere_ambient_wind_velocity_kn = simData.ambient_wind_velocity_kn;
   baseData.atmosphere_ambient_wind_direction_deg = simData.ambient_wind_direction_deg;
