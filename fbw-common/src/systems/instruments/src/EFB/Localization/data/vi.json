@@ -712,7 +712,7 @@
   "VersionCheck": {
     "CurrentVersionText": "Bạn đang sử dụng bản $edition với phiên bản:",
     "LatestVersionText": "Phiên bản $edition mới nhất là",
-    "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng cách sử dụng Trình cài đặt FlyByWire.",
+    "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng Trình cài đặt FlyByWire.",
     "StatusBarWarning": "Phiên bản máy bay đã cũ",
     "TT": {
       "StatusBarWarning": "Vui lòng cập nhật bằng trình cài đặt FlyByWire."
