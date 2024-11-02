@@ -307,6 +307,12 @@ export class MailboxBus {
         this.uploadMessagesToMailbox([message as CpdlcMessage]);
       }
     });
+
+    this.subscriber.on('visibleMessage').handle((uid: number) => {
+      if (!this.poweredUp) return;
+
+      this.atc.updateShownMessageInMailbox(uid, uid === this.recallMessageId);
+    });
   }
 
   private validateNotificationCondition() {
