@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -401,6 +401,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param data performance data available in uplink
    */
   setImportedPerformanceData(data: ImportedPerformanceData) {
+    // TODO don't do this on 2024
     this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
     this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
     this.setPerformanceData('costIndex', data.costIndex);
@@ -450,6 +451,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotThrustReductionAltitude', null);
     plan.setPerformanceData('pilotAccelerationAltitude', null);
     plan.setPerformanceData('pilotEngineOutAccelerationAltitude', null);
+
+    plan.setPerformanceData('databaseTransitionAltitude', airport?.transitionAltitude ?? null);
   }
 
   /**
@@ -486,6 +489,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotMissedThrustReductionAltitude', null);
     plan.setPerformanceData('pilotMissedAccelerationAltitude', null);
     plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
+
+    plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
   }
 
   static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
