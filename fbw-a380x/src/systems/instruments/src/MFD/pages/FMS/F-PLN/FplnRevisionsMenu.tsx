@@ -1,4 +1,4 @@
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { TurnDirection, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlanIndex } from '@fmgc/index';
@@ -123,9 +123,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     },
     {
       name: 'AIRWAYS',
-      disabled: [
-        !revisedLeg?.isXF() || FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath,
-      ].includes(type),
+      disabled:
+        [
+          FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath,
+        ].includes(type) ||
+        revisedLeg?.waypointDescriptor === WaypointDescriptor.Airport ||
+        revisedLeg?.waypointDescriptor === WaypointDescriptor.Runway,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.startAirwayEntry(legIndex);
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-airways`);
@@ -166,9 +169,11 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         ),
     },
     {
-      name: 'CMS',
+      name: '(N/A) CMS',
       disabled:
-        altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        true ||
+        altnFlightPlan ||
+        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/cms`,
