@@ -5,7 +5,7 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
-## 0.13.0
+## 0.12.1
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
 1. [A380X/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
