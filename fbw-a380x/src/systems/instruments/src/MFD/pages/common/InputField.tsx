@@ -187,13 +187,20 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   private onKeyPress(ev: KeyboardEvent) {
     // Un-select the text
     this.textInputRef.instance.classList.remove('valueSelected');
+
     // ev.key is undefined, so we have to use the deprecated keyCode here
     const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
-    if (ev.keyCode !== KeyCode.KEY_ENTER) {
-      this.handleKeyInput(key);
-    } else {
+    if (ev.keyCode === KeyCode.KEY_ENTER) {
       this.handleEnter();
+    }
+
+    if (key.match(/^[A-Z0-9/.+\- ]$/)) {
+      this.handleKeyInput(key);
+    }
+
+    if (key === ',') {
+      this.handleKeyInput('.');
     }
   }
 
