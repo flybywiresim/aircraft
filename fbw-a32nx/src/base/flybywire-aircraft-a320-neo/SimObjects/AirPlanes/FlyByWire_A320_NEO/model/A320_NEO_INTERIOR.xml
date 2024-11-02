@@ -1689,7 +1689,7 @@
                 <!-- EXT LT STROBE -->
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Strobe_Template</ANIM_TEMPLATE>
+                    <ANIM_TEMPLATE>FBW_Switch_Light_Strobe</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_STROBE</NODE_ID>
                     <PART_ID>EXTLT_STROBE</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_STROBE</ANIM_NAME>
