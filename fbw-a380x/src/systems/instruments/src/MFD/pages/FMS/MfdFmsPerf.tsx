@@ -1315,10 +1315,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                 </div>
                 <div class="mfd-fms-perf-to-thrred-noise-grid">
-                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-bottom: 15px; width: 125px;">
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; width: 125px;">
                     <span class="mfd-label">THR RED</span>
                   </div>
-                  <div style="margin-bottom: 15px;">
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
@@ -1339,7 +1339,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div
                       class="mfd-fms-perf-to-thrred-noise-grid-cell"
                       ref={this.toNoiseFieldsRefs[0]}
-                      style="margin-bottom: 15px; margin-right: 15px;"
+                      style="margin-right: 15px;"
                     >
                       <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                         <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
@@ -1350,7 +1350,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div>
-                    <div ref={this.toNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
+                    <div ref={this.toNoiseFieldsRefs[1]} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <InputField<number>
                         dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                         mandatory={Subject.create(false)}
@@ -1365,10 +1365,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div style="grid-row-start: span 2;">
-                    <div
-                      ref={this.toNoiseFieldsRefs[2]}
-                      style="display: flex; justify-content: center; align-items: center;"
-                    >
+                    <div ref={this.toNoiseFieldsRefs[2]} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <ConditionalComponent
                         width={112}
                         height={62}
@@ -1386,13 +1383,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    class="mfd-fms-perf-to-thrred-noise-grid-cell"
-                    style="margin-right: 15px; margin-bottom: 15px; width: 125px;"
-                  >
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; width: 125px;">
                     <span class="mfd-label">ACCEL</span>
                   </div>
-                  <div style="margin-bottom: 15px;">
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
@@ -1413,7 +1407,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div
                       ref={this.toNoiseFieldsRefs[3]}
                       class="mfd-fms-perf-to-thrred-noise-grid-cell"
-                      style="margin-right: 15px; margin-bottom: 15px;"
+                      style="margin-right: 15px;"
                     >
                       <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                         <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
@@ -1424,7 +1418,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div>
-                    <div ref={this.toNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
+                    <div ref={this.toNoiseFieldsRefs[4]} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         mandatory={Subject.create(false)}
@@ -1438,16 +1432,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    class="mfd-fms-perf-to-thrred-noise-grid-cell"
-                    style="margin-right: 15px; margin-bottom: 15px; width: 125px;"
-                  >
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; width: 125px;">
                     <span ref={this.toNoiseEndLabelRef} class="mfd-label">
                       NOISE END
                     </span>
                   </div>
                   <div>
-                    <div ref={this.toNoiseButtonRef} style="display: flex;">
+                    <div ref={this.toNoiseButtonRef} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <ConditionalComponent
                         width={98}
                         height={40}
@@ -1465,7 +1456,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         componentIfTrue={<></>}
                       />
                     </div>
-                    <div ref={this.toNoiseEndInputRef}>
+                    <div ref={this.toNoiseEndInputRef} class="mfd-fms-perf-to-thrred-noise-grid-cell-centered">
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) =>

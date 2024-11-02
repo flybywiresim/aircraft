@@ -8,6 +8,7 @@ import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/Pushbutton
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
+import { TelexCheck } from 'extras-host/modules/telex_check/TelexCheck';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -57,6 +58,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly aircraftSync: AircraftSync;
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
+
+  private readonly telexCheck = new TelexCheck();
 
   /**
    * "mainmenu" = 0
@@ -122,6 +125,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor.startPublish();
         this.simVarPublisher.startPublish();
         this.aircraftSync.startPublish();
+        this.telexCheck.showPopup();
 
         // Signal that the aircraft is ready via L:A32NX_IS_READY
         SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
