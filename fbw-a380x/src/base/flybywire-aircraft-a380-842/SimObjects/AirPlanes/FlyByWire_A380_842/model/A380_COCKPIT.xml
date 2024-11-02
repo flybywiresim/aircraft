@@ -2331,7 +2331,7 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_LOGO</NODE_ID>
                     <PART_ID>SWITCH_OVHD_EXTLT_LOGO</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_LOGO</ANIM_NAME>
-                    <TYPE>Dimmer</TYPE>
+                    <TYPE>Auto</TYPE>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <INVERT_ANIM>1</INVERT_ANIM>
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
