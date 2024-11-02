@@ -69,6 +69,8 @@ import {
   TurnDirection as MSTurnDirection,
   VorClass as MSVorClass,
   VorType,
+  LandingSystemCategory,
+  SpeedRestrictionDescriptor,
 } from './FsTypes';
 import { FacilityCache, LoadType } from './FacilityCache';
 import { Gate } from '../../../shared/types/Gate';
@@ -135,6 +137,16 @@ export class MsfsMapping {
     // MSFS doesn't give the airport elevation... so we take the mean of the runway elevations
     const elevation = elevations.reduce((a, b) => a + b, 0) / elevations.length;
 
+    const transitionAltitude =
+      msAirport.transitionAlt !== undefined && msAirport.transitionAlt > 0
+        ? Math.round(msAirport.transitionAlt / 0.3048)
+        : undefined;
+
+    const transitionLevel =
+      msAirport.transitionLevel !== undefined && msAirport.transitionLevel > 0
+        ? Math.round(msAirport.transitionLevel / 30.48)
+        : undefined;
+
     return {
       databaseId: msAirport.icao,
       sectionCode: SectionCode.Airport,
@@ -145,6 +157,8 @@ export class MsfsMapping {
       location: { lat: msAirport.lat, long: msAirport.lon, alt: elevation },
       longestRunwayLength: longestRunway[0],
       longestRunwaySurfaceType: this.mapRunwaySurface(longestRunway[1]?.surface),
+      transitionAltitude,
+      transitionLevel,
     };
   }
 
@@ -433,7 +447,9 @@ export class MsfsMapping {
     let locBearing = -1;
     let runwayIdent = '';
     let gsSlope = undefined;
-    let category = LsCategory.None;
+    let category = this.mapLsCategory(ls.ils?.lsCategory);
+
+    // TODO don't need all these hax in FS2024, as we have ls.ils
 
     let jsFrequency: JS_ILSFrequency | null = null;
     for (const r of airport.runways) {
@@ -486,6 +502,32 @@ export class MsfsMapping {
       stationDeclination: MathUtils.normalise180(360 - ls.magneticVariation),
       gsSlope,
     };
+  }
+
+  private mapLsCategory(lsCategory?: LandingSystemCategory): LsCategory {
+    switch (lsCategory) {
+      case LandingSystemCategory.Cat1:
+        return LsCategory.Category1;
+      case LandingSystemCategory.Cat2:
+        return LsCategory.Category2;
+      case LandingSystemCategory.Cat3:
+        return LsCategory.Category3;
+      case LandingSystemCategory.Igs:
+        return LsCategory.IgsOnly;
+      case LandingSystemCategory.LdaNoGs:
+        return LsCategory.LdaOnly;
+      case LandingSystemCategory.LdaWithGs:
+        return LsCategory.LdaGlideslope;
+      case LandingSystemCategory.Localizer:
+        return LsCategory.LocOnly;
+      case LandingSystemCategory.SdfNoGs:
+        return LsCategory.SdfOnly;
+      case LandingSystemCategory.SdfWithGs:
+        return LsCategory.SdfGlideslope;
+      case LandingSystemCategory.None:
+        return LsCategory.None;
+    }
+    return LsCategory.None;
   }
 
   private approachHasGlideslope(approach: JS_Approach): boolean {
@@ -619,8 +661,13 @@ export class MsfsMapping {
           const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
           // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-          const authorisationRequired = approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
+          const authorisationRequired =
+            approach.rnpAr !== undefined
+              ? approach.rnpAr
+              : approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
           const rnp = authorisationRequired ? 0.3 : undefined;
+          const missedApproachAuthorisationRequired =
+            approach.rnpArMissed !== undefined ? approach.rnpArMissed : authorisationRequired;
 
           const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
 
@@ -639,6 +686,7 @@ export class MsfsMapping {
             multipleIndicator: approach.approachSuffix,
             type: this.mapApproachType(approach.approachType),
             authorisationRequired,
+            missedApproachAuthorisationRequired,
             levelOfService,
             transitions,
             legs: approach.finalLegs.map((leg, legIndex) =>
@@ -912,7 +960,7 @@ export class MsfsMapping {
     airport: JS_FacilityAirport,
     procedureIdent: string,
     approachType?: MSApproachType,
-    rnp?: number,
+    fallbackRnp?: number,
   ): ProcedureLeg {
     const arcCentreFixFacility = FacilityCache.validFacilityIcao(leg.arcCenterFixIcao)
       ? facilities.get(leg.arcCenterFixIcao)
@@ -943,6 +991,15 @@ export class MsfsMapping {
     const approachWaypointDescriptor =
       approachType !== undefined ? this.mapMsLegToApproachWaypointDescriptor(leg, legIndex, approachType) : undefined;
 
+    const rnp = leg.rnp !== undefined ? (leg.rnp > 0 ? leg.rnp / 1852 : undefined) : fallbackRnp;
+
+    const speedDescriptor =
+      leg.speedRestrictionType !== undefined
+        ? this.mapSpeedDescriptor(leg.speedRestrictionType)
+        : leg.speedRestriction > 0
+          ? SpeedDescriptor.Maximum
+          : undefined;
+
     // TODO for approach, pass approach type to mapMsAltDesc
     return {
       procedureIdent,
@@ -959,8 +1016,8 @@ export class MsfsMapping {
       altitudeDescriptor: this.mapMsAltDesc(leg.altDesc, leg.fixTypeFlags, approachType, approachWaypointDescriptor),
       altitude1: Math.round(leg.altitude1 / 0.3048),
       altitude2: Math.round(leg.altitude2 / 0.3048),
-      speed: leg.speedRestriction > 0 ? leg.speedRestriction : undefined,
-      speedDescriptor: leg.speedRestriction > 0 ? SpeedDescriptor.Maximum : undefined,
+      speed: speedDescriptor !== undefined ? leg.speedRestriction : undefined,
+      speedDescriptor,
       turnDirection: this.mapMsTurnDirection(leg.turnDirection),
       magneticCourse: leg.course, // TODO check magnetic/true
       waypointDescriptor: this.mapMsIcaoToWaypointDescriptor(leg.fixIcao),
@@ -968,6 +1025,20 @@ export class MsfsMapping {
       verticalAngle: Math.abs(leg.verticalAngle) > Number.EPSILON ? leg.verticalAngle - 360 : undefined,
       rnp,
     };
+  }
+
+  private mapSpeedDescriptor(desc: SpeedRestrictionDescriptor): SpeedDescriptor | undefined {
+    switch (desc) {
+      case SpeedRestrictionDescriptor.At:
+        return SpeedDescriptor.Mandatory;
+      case SpeedRestrictionDescriptor.AtOrAbove:
+        return SpeedDescriptor.Minimum;
+      case SpeedRestrictionDescriptor.AtOrBelow:
+        return SpeedDescriptor.Maximum;
+      case SpeedRestrictionDescriptor.Between:
+      case SpeedRestrictionDescriptor.Unused:
+        return undefined;
+    }
   }
 
   private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): TerminalWaypoint | undefined {
