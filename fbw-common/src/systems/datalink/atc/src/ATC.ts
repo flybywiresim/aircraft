@@ -265,10 +265,14 @@ export class Atc {
     this.digitalInputs.powerUp();
     this.mailboxBus.powerUp();
     this.poweredUp = true;
+
+    this.digitalOutputs.resetRmpFrequency();
   }
 
   public powerDown(): void {
     if (!this.poweredUp) return;
+
+    this.digitalOutputs.resetRmpFrequency();
 
     if (this.messageWatchdogInterval !== null) {
       clearInterval(this.messageWatchdogInterval);

@@ -1,4 +1,5 @@
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { Arinc429Register, Arinc429SignStatusMatrix } from 'shared/src';
 import {
   AtisMessage,
   AtisType,
@@ -126,6 +127,12 @@ export class DigitalOutputs {
     frequencyWord.setValue(frequency);
 
     this.publisher.pub('atcFrequency', frequencyWord, false, false);
+  }
+
+  public resetRmpFrequency(): void {
+    const emptyWord = Arinc429Register.empty();
+    emptyWord.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    this.publisher.pub('atcFrequency', Arinc429Register.empty(), false, false);
   }
 
   public async receiveAtis(
