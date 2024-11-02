@@ -171,15 +171,23 @@ const DCDU: React.FC = () => {
         const message = updatedMap.get(sortedMessages[index - 1].messages[0].UniqueMessageID);
         if (message) {
           message.messageVisible = true;
+          publisherRef.current.pub('visibleMessage', message.messages[0].UniqueMessageID, true, false);
         }
       } else if (index + 1 < sortedMessages.length) {
         const message = updatedMap.get(sortedMessages[index + 1].messages[0].UniqueMessageID);
         if (message) {
           message.messageVisible = true;
+          publisherRef.current.pub('visibleMessage', message.messages[0].UniqueMessageID, true, false);
         }
       }
 
       updatedMap.delete(uid);
+
+      // no other message visible
+      if (updatedMap.size === 0) {
+        publisherRef.current.pub('visibleMessage', -1, true, false);
+      }
+
       setMessages(updatedMap);
     }
   };
@@ -208,6 +216,7 @@ const DCDU: React.FC = () => {
         oldMessage.messageVisible = false;
         newMessage.messageVisible = true;
         setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
+        publisherRef.current.pub('visibleMessage', newMessage.messages[0].UniqueMessageID, true, false);
       }
     }
   });
@@ -232,6 +241,7 @@ const DCDU: React.FC = () => {
         oldMessage.messageVisible = false;
         newMessage.messageVisible = true;
         setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
+        publisherRef.current.pub('visibleMessage', newMessage.messages[0].UniqueMessageID, true, false);
       }
     }
   });
@@ -346,6 +356,7 @@ const DCDU: React.FC = () => {
           const message = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
           if (message) {
             message.messageVisible = true;
+            publisherRef.current.pub('visibleMessage', message.messages[0].UniqueMessageID, true, false);
           }
         }
 

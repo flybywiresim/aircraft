@@ -46,6 +46,7 @@ export interface AtsuMailboxMessages {
   deleteMessage: number;
   closeMessage: number;
   readMessage: number;
+  visibleMessage: number;
   invertSemanticResponse: number;
   recallMessage: boolean;
   updateMessageMonitoring: number;
