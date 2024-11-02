@@ -328,7 +328,8 @@ export class BrakeToVacateUtils<T extends number> {
     this.btvExitPosition = btvExitPosition;
 
     // Account for touchdown zone distance
-    const correctedStoppingDistance = reqStoppingDistance - MIN_TOUCHDOWN_ZONE_DISTANCE;
+    // Don't subtract touchdown zone distance for now, creates confusion for users
+    const correctedStoppingDistance = reqStoppingDistance;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
     this.requestedStoppingDistArinc.setValue(correctedStoppingDistance);
