@@ -120,8 +120,12 @@ export class DigitalOutputs {
     }
   }
 
-  public sendLoadFrequency(frequency: number): void {
-    this.publisher.pub('atcLoadFrequency', frequency, false, false);
+  public sendRmpFrequency(frequency: number): void {
+    const frequencyWord = Arinc429Register.empty();
+    frequencyWord.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    frequencyWord.setValue(frequency);
+
+    this.publisher.pub('atcFrequency', frequencyWord, false, false);
   }
 
   public async receiveAtis(
