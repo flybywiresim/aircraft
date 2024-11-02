@@ -11,6 +11,7 @@
 1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl#9432)
+1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
 
 ## 0.12.0
 
