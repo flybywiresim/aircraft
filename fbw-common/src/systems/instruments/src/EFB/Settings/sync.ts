@@ -75,6 +75,11 @@ export const globalSyncedSettings: SyncedSettingDefinition[] = [
     defaultValue: '0',
   },
   {
+    configKey: 'FDR_ENABLED',
+    localVarName: 'L:A32NX_FDR_ENABLED',
+    defaultValue: '1',
+  },
+  {
     configKey: 'MODEL_WHEELCHOCKS_ENABLED',
     localVarName: 'L:A32NX_MODEL_WHEELCHOCKS_ENABLED',
     localVarUnit: 'bool',
