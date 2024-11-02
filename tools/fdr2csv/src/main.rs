@@ -42,6 +42,9 @@ struct Args {
     /// Print interface version of input file
     #[arg(short, long, default_value_t = false)]
     get_input_file_version: bool,
+    /// Print interface version of input file
+    #[arg(short = 'r', long, default_value_t = false)]
+    get_raw_input_file_version: bool,
 }
 
 // Read number of bytes specified by the size of T from the binary file
@@ -94,6 +97,9 @@ fn main() -> Result<(), std::io::Error> {
             "Aircraft Type is {:?}, Interface version is {}",
             aircraft_type, file_format_version
         );
+        return Ok(());
+    } else if args.get_raw_input_file_version {
+        println!("{}", file_format_version);
         return Ok(());
     } else if aircraft_interface_version != file_format_version {
         return Err(std::io::Error::new(
