@@ -270,7 +270,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (!this.props.value.get() && this.props.mandatory?.get()) {
+      if (this.props.value.get() === null && this.props.mandatory?.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -391,7 +391,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.mandatory.sub((val) => {
-        if (val && !this.props.value.get()) {
+        if (val && this.props.value.get() === null) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
@@ -427,7 +427,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
-            if (this.props.mandatory?.get() && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.props.value.get() === null) {
               this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
@@ -435,7 +435,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.remove('disabled');
             this.textInputRef.instance.classList.remove('disabled');
 
-            if (this.props.mandatory?.get() && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.props.value.get() === null) {
               this.textInputRef.instance.classList.add('mandatory');
             }
           }
