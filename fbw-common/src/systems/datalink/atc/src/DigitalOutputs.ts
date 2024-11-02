@@ -1,5 +1,5 @@
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429SignStatusMatrix } from 'shared/src';
+import { Arinc429Register, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import {
   AtisMessage,
   AtisType,
