@@ -10,7 +10,7 @@
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
 1. [A380X/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
-1. [A380X/EFB] Fixed doors automatically opening in flight
+1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl#9432)
 
 ## 0.12.0
 
