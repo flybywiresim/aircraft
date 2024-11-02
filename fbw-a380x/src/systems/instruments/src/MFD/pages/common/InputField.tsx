@@ -239,12 +239,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
       this.isFocused.set(true);
 
-      // After 10s, unfocus field, if some other weird focus error happens
+      // After 20s, unfocus field, if some other weird focus error happens
       setTimeout(() => {
         if (this.isFocused.get()) {
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
         }
-      }, 10_000);
+      }, 20_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
       if (this.props.mandatory?.get()) {
