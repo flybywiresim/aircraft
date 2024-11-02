@@ -422,6 +422,33 @@ export class Atc {
     return this.nextAtc !== '';
   }
 
+  public updateShownMessageInMailbox(uid: number, recallMessage: boolean): void {
+    // no visible message
+    if (uid === -1 || recallMessage === true) {
+      this.digitalOutputs.resetRmpFrequency();
+      return;
+    }
+
+    // find the message and check if it is a RMP relevant message
+    const message = this.messageQueue.find((message) => message.UniqueMessageID === uid);
+    if (message !== undefined && message.Direction === AtsuMessageDirection.Uplink) {
+      const type = message.Content[0].TypeId;
+      if (type === 'UM117' || type === 'UM120') {
+        const frequency = (message.Content[0].Content[1] as CpdlcMessageContentFrequency).Value.split('.');
+        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
+        this.digitalOutputs.sendRmpFrequency(frequencyHz);
+      } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
+        const frequency = (message.Content[0].Content[2] as CpdlcMessageContentFrequency).Value.split('.');
+        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
+        this.digitalOutputs.sendRmpFrequency(frequencyHz);
+      } else {
+        this.digitalOutputs.resetRmpFrequency();
+      }
+    } else {
+      this.digitalOutputs.resetRmpFrequency();
+    }
+  }
+
   public resetLogon(): void {
     this.currentAtc = '';
     this.nextAtc = '';
@@ -818,17 +845,6 @@ export class Atc {
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
       });
-
-      const type = cpdlcMessage.Content[0].TypeId;
-      if (type === 'UM117' || type === 'UM120') {
-        const frequency = (cpdlcMessage.Content[0].Content[1] as CpdlcMessageContentFrequency).Value.split('.');
-        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
-        this.digitalOutputs.sendRmpFrequency(frequencyHz);
-      } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
-        const frequency = (cpdlcMessage.Content[0].Content[2] as CpdlcMessageContentFrequency).Value.split('.');
-        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
-        this.digitalOutputs.sendRmpFrequency(frequencyHz);
-      }
 
       let concatMessages = true;
       if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Content !== undefined) {
