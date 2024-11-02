@@ -28,8 +28,8 @@ struct Args {
     #[arg(short, long)]
     input: String,
     /// Output file
-    #[arg(short, long)]
-    output: String,
+    #[arg(short, long, required_unless_present_any(["get_input_file_version", "get_raw_input_file_version"]))]
+    output: Option<String>,
     /// Delimiter
     #[arg(short, long, default_value = ",")]
     delimiter: char,
@@ -113,7 +113,7 @@ fn main() -> Result<(), std::io::Error> {
     // Print info on conversion start
     println!(
         "Converting from '{}' to '{}' for aircraft type '{:?}' with interface version '{}' and delimiter '{}'",
-        args.input, args.output, aircraft_type, file_format_version, args.delimiter
+        args.input, args.output.clone().unwrap(), aircraft_type, file_format_version, args.delimiter
     );
 
     // Open or create output file in truncate mode
@@ -121,7 +121,7 @@ fn main() -> Result<(), std::io::Error> {
         .write(true)
         .truncate(true)
         .create(true)
-        .open(args.output.trim())
+        .open(args.output.clone().unwrap().trim())
         .map_err(|e| std::io::Error::new(e.kind(), "Failed to open output file!"))?;
 
     let mut buf_writer = BufWriter::new(out_file);
