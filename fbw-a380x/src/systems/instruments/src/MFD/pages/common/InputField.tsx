@@ -167,6 +167,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private onKeyDown(ev: KeyboardEvent) {
+    if (!this.isFocused.get()) {
+      return;
+    }
+
     if (ev.keyCode === KeyCode.KEY_BACK_SPACE) {
       this.handleBackspace();
     }
@@ -185,6 +189,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private onKeyPress(ev: KeyboardEvent) {
+    if (!this.isFocused.get()) {
+      return;
+    }
+
     // Un-select the text
     this.textInputRef.instance.classList.remove('valueSelected');
     // ev.key is undefined, so we have to use the deprecated keyCode here
@@ -231,12 +239,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
       this.isFocused.set(true);
 
-      // After 30s, unfocus field, if some other weird focus error happens
+      // After 10s, unfocus field, if some other weird focus error happens
       setTimeout(() => {
         if (this.isFocused.get()) {
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
         }
-      }, 30_000);
+      }, 10_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
       if (this.props.mandatory?.get()) {
