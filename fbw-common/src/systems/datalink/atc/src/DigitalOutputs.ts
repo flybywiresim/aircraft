@@ -16,14 +16,13 @@ import {
 import { AtcAocRouterMessages } from '../../router/src';
 import { AtcAocMessages } from './databus/AtcAocBus';
 import { AtcFmsMessages } from './databus/FmsBus';
-import { AtcRmpBus } from './databus/RmpBus';
 
 export class DigitalOutputs {
   private requestId: number = 0;
 
   private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
 
-  private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages & AtcRmpBus> = null;
+  private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages> = null;
 
   private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
@@ -38,7 +37,7 @@ export class DigitalOutputs {
     private readonly synchronizedRouter: boolean,
   ) {
     this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
-    this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages & AtcRmpBus>();
+    this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages>();
 
     this.subscriber.on('routerSendMessageResponse').handle((response) => {
       this.sendMessageCallbacks.every((callback, index) => {
@@ -125,14 +124,13 @@ export class DigitalOutputs {
     const frequencyWord = Arinc429Register.empty();
     frequencyWord.setSsm(Arinc429SignStatusMatrix.NoComputedData);
     frequencyWord.setValue(frequency);
-
-    this.publisher.pub('atcFrequency', frequencyWord, false, false);
+    frequencyWord.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
   }
 
   public resetRmpFrequency(): void {
     const emptyWord = Arinc429Register.empty();
     emptyWord.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-    this.publisher.pub('atcFrequency', Arinc429Register.empty(), false, false);
+    emptyWord.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
   }
 
   public async receiveAtis(
