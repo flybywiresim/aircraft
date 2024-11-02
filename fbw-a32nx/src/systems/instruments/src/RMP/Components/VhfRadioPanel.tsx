@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
-import { useSplitSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import React, { useEffect } from 'react';
+import { useSplitSimVar, useInteractionEvent, Arinc429Register, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
@@ -60,6 +60,27 @@ export const VhfRadioPanel = (props: Props) => {
   const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.vhf);
   const [, setValueOppositePanelStandby] =
     props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
+  const atsuFrequencyRegister = useArinc429Var('L:A32NX_ATSU_RMP_FREQUENCY');
+
+  useEffect(() => {
+    let modeId = 0;
+    if (atsuFrequencyRegister.isNormalOperation() === true) {
+      modeId = 32;
+    }
+
+    SimVar.SetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum', modeId);
+  }, [atsuFrequencyRegister]);
+
+  // handle the load button
+  useInteractionEvent(`A32NX_RMP_${props.side}_LOAD_BUTTON_PRESSED`, () => {
+    const frequency = Arinc429Register.empty();
+    frequency.setFromSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
+
+    // store the frequency as the new standby frequency
+    if (frequency.isNormalOperation() === true) {
+      setStandby(frequency.value);
+    }
+  });
 
   // Handle Transfer Button Pressed.
   useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
