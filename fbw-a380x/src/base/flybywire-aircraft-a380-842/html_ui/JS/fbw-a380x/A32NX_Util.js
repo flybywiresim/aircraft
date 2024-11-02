@@ -277,6 +277,8 @@ class NXPopUp {
      * @param {function} callbackNo Callback function -> NO button is clicked.
      */
     showPopUp(title, message, style, callbackYes, callbackNo) {
+        Coherent.trigger('UNFOCUS_INPUT_FIELD'); // Needed to return focus back to camera if it has been taken elsewhere.
+        SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
         if (title) {
             this.params.title = title;
         }
