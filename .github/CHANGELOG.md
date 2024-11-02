@@ -137,7 +137,6 @@
 1. [FMS] Run vertical predictions without V-speeds - @BlueberryKing (BlueberryKing)
 1. [ELEC] Use ADIRU and LGCIU signals for speed and in flight determination - @Gurgel100 (Pascal)
 1. [FMS] Do not transmit bearing information to ND on manual legs - @BravoMike99 (bruno_pt99)
-1. [MCDU] Suppress TMPY FPLN when no changes made on airways page - @robertxing2004 (robeet)
 
 ## 0.11.0
 
