@@ -73,12 +73,14 @@ export const VhfRadioPanel = (props: Props) => {
 
   // handle the load button
   useInteractionEvent(`A32NX_RMP_${props.side}_LOAD_BUTTON_PRESSED`, () => {
+    const availableMode = SimVar.GetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum');
     const frequency = Arinc429Register.empty();
     frequency.setFromSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
 
     // store the frequency as the new standby frequency
-    if (frequency.isNormalOperation() === true) {
+    if (frequency.isNormalOperation() === true && availableMode === 32) {
       setStandby(frequency.value);
+      SimVar.SetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum', 0);
     }
   });
 
