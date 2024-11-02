@@ -39,10 +39,10 @@ struct Args {
     /// Print struct size
     #[arg(short, long, default_value_t = false)]
     print_struct_size: bool,
-    /// Print interface version of input file
+    /// Print interface version and aircraft type of input file
     #[arg(short, long, default_value_t = false)]
     get_input_file_version: bool,
-    /// Print interface version of input file
+    /// Print raw interface version of input file
     #[arg(short = 'r', long, default_value_t = false)]
     get_raw_input_file_version: bool,
 }
