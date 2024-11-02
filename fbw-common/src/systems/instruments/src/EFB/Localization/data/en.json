@@ -669,6 +669,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg",
       "SimbridgeMachine": "Simbridge Host Machine",
