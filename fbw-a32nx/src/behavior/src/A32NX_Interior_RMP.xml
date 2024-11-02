@@ -367,8 +367,21 @@
 
         <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <!-- TODO -->
-                <EMISSIVE_CODE>0</EMISSIVE_CODE>
+                <EMISSIVE_CODE type="rnp" return="number">
+                    let inop = #INOP, boolean#;
+                    let indicatorsPowered = #INDICATORS_POWERED, bool#;
+                    let modeId = #MODE_ID, number#;
+                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
+                    alias availableMode = (L:A32NX_RMP_#SIDE#_AVAILABLE_MODE, number);
+                    alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                    alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
+                    let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
+                    (if (!inop and toggleSwitch and (availableMode == modeId) or ((annunciatorLight == 0) and dc2Powered)) and indicatorsPowered {
+                        1 * emissiveDim
+                    } else {
+                        0
+                    })
+                </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>
