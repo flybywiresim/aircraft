@@ -819,11 +819,11 @@ export class Atc {
       if (type === 'UM117' || type === 'UM120') {
         const frequency = (cpdlcMessage.Content[0].Content[1] as CpdlcMessageContentFrequency).Value.split('.');
         const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
-        this.digitalOutputs.sendLoadFrequency(frequencyHz);
+        this.digitalOutputs.sendRmpFrequency(frequencyHz);
       } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
         const frequency = (cpdlcMessage.Content[0].Content[2] as CpdlcMessageContentFrequency).Value.split('.');
         const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
-        this.digitalOutputs.sendLoadFrequency(frequencyHz);
+        this.digitalOutputs.sendRmpFrequency(frequencyHz);
       }
 
       let concatMessages = true;
