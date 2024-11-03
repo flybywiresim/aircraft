@@ -987,6 +987,14 @@
   - The powered status of the associated engine's FADEC dependant on the button on the OVHD
   - {ENG} = 1, 2, 3, 4
 
+  - L:A380X_ENGINE_OIL_TOTAL:{index}
+  - Number (quarts)
+  - Total engine {index} oil quantity in the oil system (tank + circuit)
+
+  - L:A380X_ENGINE_OIL_QTY:{index}
+  - Number (quarts)
+  - Total engine {index} oil quantity in the oil tank
+
 ## Hydraulics
 
 - A32NX_OVHD_HYD_ENG_{ENG}AB_PUMP_DISC_PB_IS_AUTO
