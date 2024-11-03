@@ -108,7 +108,7 @@ export class LightSync implements Instrument {
       if (timeOfDay !== TimeOfDayState.Day) {
         switch (fmgcFlightPhase) {
           case FmgcFlightPhase.Preflight:
-            this.setPotentiometer(8, fwcFlightPhase >= FwcFlightPhase.FirstEngineStarted ? 1 : 85);
+            this.setPotentiometer(60, fwcFlightPhase >= FwcFlightPhase.FirstEngineStarted ? 1 : 85);
             SimVar.SetSimVarValue(
               'L:A32NX_CABIN_AUTOBRIGHTNESS',
               'number',
@@ -118,31 +118,31 @@ export class LightSync implements Instrument {
           case FmgcFlightPhase.Takeoff:
           case FmgcFlightPhase.Approach:
           case FmgcFlightPhase.GoAround:
-            this.setPotentiometer(8, 0);
+            this.setPotentiometer(60, 0);
             SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 1);
             break;
 
           case FmgcFlightPhase.Climb:
           case FmgcFlightPhase.Descent:
-            this.setPotentiometer(8, 35);
+            this.setPotentiometer(60, 35);
             SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 5);
             break;
           case FmgcFlightPhase.Cruise:
-            this.setPotentiometer(8, 10);
+            this.setPotentiometer(60, 10);
             SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 2);
             break;
           case FmgcFlightPhase.Done:
-            this.setPotentiometer(8, 85);
+            this.setPotentiometer(60, 85);
             SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 85);
             break;
         }
       } else {
-        this.setPotentiometer(8, autoBrightness);
+        this.setPotentiometer(60, autoBrightness);
         SimVar.SetSimVarValue('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', autoBrightness);
       }
     } else {
       const manualBrightness = SimVar.GetSimVarValue('L:A32NX_CABIN_MANUAL_BRIGHTNESS', 'number');
-      this.setPotentiometer(8, manualBrightness);
+      this.setPotentiometer(60, manualBrightness);
     }
   }
 
