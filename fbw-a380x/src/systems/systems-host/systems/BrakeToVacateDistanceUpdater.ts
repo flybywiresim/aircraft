@@ -96,7 +96,9 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
   private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
-  private readonly verticalSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed')); // Tmpy hax until flight phase improve FIXME
+  private readonly verticalSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_1'));
+  private readonly verticalSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_2'));
+  private readonly verticalSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_3'));
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
@@ -146,15 +148,18 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
   private updateRemainingDistances() {
     // Only update below 600ft AGL, and in landing FMGC phase
-    const ra1 = this.radioAltitude1.get();
-    const ra2 = this.radioAltitude2.get();
-    const ra3 = this.radioAltitude3.get();
-
+    // Also, V/S should be below +400ft/min, to avoid ROW during G/A
     if (
-      !(ra1.valueOr(2500) < 600 || ra2.valueOr(2500) < 600 || ra3.valueOr(2500) < 600) ||
+      !(
+        this.radioAltitude1.get().valueOr(2500) < 600 ||
+        this.radioAltitude2.get().valueOr(2500) < 600 ||
+        this.radioAltitude3.get().valueOr(2500) < 600
+      ) ||
       this.fwsFlightPhase.get() < 9 ||
       this.fwsFlightPhase.get() > 11 ||
-      this.verticalSpeed.get().valueOr(0) > 500 // Tmpy hax until flight phase improve FIXME
+      this.verticalSpeed1.get().valueOr(0) > 400 ||
+      this.verticalSpeed2.get().valueOr(0) > 400 ||
+      this.verticalSpeed3.get().valueOr(0) > 400
     ) {
       this.remaininingDistToRwyEnd.set(-1);
       this.remainingDistToExit.set(-1);
