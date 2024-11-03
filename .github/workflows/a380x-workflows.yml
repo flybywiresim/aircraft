@@ -1,7 +1,8 @@
-# Build-script for the aircraft a380x-experimental branch
-# Builds the A32NX and the A380X and uploads them to the CloudFlare CDN
+#TODO: Remove
+# Build-script for the aircraft master branch
+# Builds the A32NX and the A380X and uploads them to the CloudFlare CDN and GitHub Pre-Release Assets
 
-name: a380x-workflows
+name: master
 on:
   push:
     branches:
@@ -16,7 +17,8 @@ jobs:
     env:
       FBW_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      BUILD_DIR_NAME: a380x-experimental-a32nx
+      STANDALONE_ZIP_NAME: A32NX-master.7z
+      BUILD_DIR_NAME: master-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
       AIRCRAFT_VARIANT: a320-251n
     steps:
@@ -33,7 +35,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -60,9 +61,6 @@ jobs:
         run: |
           rm -rf ./fbw-a380x/
           rm -rf ./large-files/fbw-a380x/
-      - name: Show disk usage
-        run: |
-          du -h -x / | sort -hr
       - name: Build ZIP files
         run: |
           df -h
@@ -71,10 +69,9 @@ jobs:
           node ./scripts/install-source_a32nx.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a32nx/out/
-          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
           df -h
-
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
@@ -89,9 +86,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      BUILD_DIR_NAME: a380x-experimental-a380x
+      BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
-      STANDALONE_ZIP_NAME: A380X-exp.7z
+      STANDALONE_ZIP_NAME: A380X-master-8K.7z
       AIRCRAFT_VARIANT: a380-842
     steps:
       - name: Maximize build space
@@ -128,7 +125,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -168,7 +164,7 @@ jobs:
       - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/${{ secrets.A380X_EXP_DIRECTORY }}/a380x-workflows-8k
+          CDN_BUCKET_DESTINATION: addons/a380x/a380x-workflows-8k
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
       - name: Build Standalone Download files
@@ -179,6 +175,9 @@ jobs:
           7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
           df -h
+      - name: Count Standalone Download files
+        run: |
+          ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
 
   build_a380x_4k:
     name: Build and deploy A380X (4K)
@@ -187,9 +186,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      BUILD_DIR_NAME: a380x-experimental-a380x
+      BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
-      STANDALONE_ZIP_NAME: A380X-exp.7z
+      STANDALONE_ZIP_NAME: A380X-master-4K.7z
       AIRCRAFT_VARIANT: a380-842
     steps:
       - name: Maximize build space
@@ -226,7 +225,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.LARGE_FILES_TEMPORARY_PAT }}
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -263,7 +261,7 @@ jobs:
       - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/${{ secrets.A380X_EXP_DIRECTORY }}/a380x-workflows-4k
+          CDN_BUCKET_DESTINATION: addons/a380x/a380x-workflows-4k
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
       - name: Build Standalone Download files
@@ -274,3 +272,6 @@ jobs:
           7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
           df -h
+      - name: Count Standalone Download files
+        run: |
+          ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
