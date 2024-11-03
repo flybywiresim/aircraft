@@ -96,6 +96,8 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
   private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
 
+  private readonly verticalSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed')); // Tmpy hax until flight phase improve FIXME
+
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   public readonly below300ftRaAndLanding = MappedSubject.create(
@@ -151,7 +153,8 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     if (
       !(ra1.valueOr(2500) < 600 || ra2.valueOr(2500) < 600 || ra3.valueOr(2500) < 600) ||
       this.fwsFlightPhase.get() < 9 ||
-      this.fwsFlightPhase.get() > 11
+      this.fwsFlightPhase.get() > 11 ||
+      this.verticalSpeed.get().valueOr(0) > 500 // Tmpy hax until flight phase improve FIXME
     ) {
       this.remaininingDistToRwyEnd.set(-1);
       this.remainingDistToExit.set(-1);

@@ -29,6 +29,8 @@ export interface BtvData {
   lgciuDiscreteWord2_1: number;
   lgciuDiscreteWord2_2: number;
 
+  verticalSpeed: number; // Tmpy hax until flight phase improve FIXME see #9354
+
   fwcFlightPhase: number;
 }
 
@@ -47,6 +49,7 @@ export enum BtvSimVars {
   groundSpeed_3 = 'L:A32NX_ADIRS_IR_3_GROUND_SPEED',
   lgciuDiscreteWord2_1 = 'L:A32NX_LGCIU_1_DISCRETE_WORD_2',
   lgciuDiscreteWord2_2 = 'L:A32NX_LGCIU_2_DISCRETE_WORD_2',
+  verticalSpeed = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
 }
 
@@ -66,6 +69,7 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
     ['groundSpeed_3', { name: BtvSimVars.groundSpeed_3, type: SimVarValueType.Number }],
     ['lgciuDiscreteWord2_1', { name: BtvSimVars.lgciuDiscreteWord2_1, type: SimVarValueType.Number }],
     ['lgciuDiscreteWord2_2', { name: BtvSimVars.lgciuDiscreteWord2_2, type: SimVarValueType.Number }],
+    ['verticalSpeed', { name: BtvSimVars.verticalSpeed, type: SimVarValueType.Number }],
     ['fwcFlightPhase', { name: BtvSimVars.fwcFlightPhase, type: SimVarValueType.Enum }],
   ]);
 
