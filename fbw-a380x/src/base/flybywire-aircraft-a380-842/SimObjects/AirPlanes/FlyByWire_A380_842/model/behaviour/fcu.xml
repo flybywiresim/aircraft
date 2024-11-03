@@ -173,7 +173,7 @@
         <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
             <NODE_ID>PUSH_FCU_ALT</NODE_ID>
             <INDICATOR_CODE>0</INDICATOR_CODE>
-            <TOOLTIPID>AMONG US SUSSY IMPOSTER</TOOLTIPID> <!-- TODO actually put something useful here -->
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID> <!-- FIXME: Add localisation TT when button is functional-->
 
             <BUTTON_CODE />
 
