@@ -54,7 +54,7 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FmsDataStore } from './OancControlPanelUtils';
-import { BrakeToVacateUtils } from './BrakeToVacateUtils';
+import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
@@ -312,7 +312,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-  private readonly btvUtils = new BrakeToVacateUtils<T>(
+  private readonly btvUtils = new OansBrakeToVacateSelection<T>(
     this.props.bus,
     this.labelManager,
     this.aircraftOnGround,
@@ -362,7 +362,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public static async setBtvRunwayFromFmsRunway(
     fmsDataStore: FmsDataStore,
-    btvUtils: BrakeToVacateUtils<number>,
+    btvUtils: OansBrakeToVacateSelection<number>,
   ): Promise<[Runway, Coordinates]> {
     const destination = fmsDataStore.destination.get();
     const rwyIdent = fmsDataStore.landingRunway.get();
@@ -1012,15 +1012,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.projectCoordinates(this.ppos, this.projectedPpos);
 
-    if (this.props.side === 'L') {
-      this.btvUtils.updateRemainingDistances(this.projectedPpos);
-      this.btvUtils.updateRwyAheadAdvisory(
-        this.ppos,
-        this.arpCoordinates,
-        this.planeTrueHeading.get(),
-        this.layerFeatures[2],
-      );
-    }
+    this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos, true);
+    this.btvUtils.updateRwyAheadAdvisory(
+      this.ppos,
+      this.arpCoordinates,
+      this.planeTrueHeading.get(),
+      this.layerFeatures[2],
+    );
 
     // If OANS is not visible on this side (i.e. range selector is not on ZOOM), don't continue here to save runtime
     if (!this.oansVisible.get()) {

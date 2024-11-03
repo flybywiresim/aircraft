@@ -22,13 +22,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
-  BrakeToVacateUtils,
   ControlPanelAirportSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
   FmsDataStore,
   NavigraphAmdbClient,
   Oanc,
+  OansBrakeToVacateSelection,
   OansControlEvents,
   globalToAirportCoordinates,
 } from '@flybywiresim/oanc';
@@ -160,7 +160,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private landingRunwayNavdata: Runway | undefined;
 
-  private btvUtils = new BrakeToVacateUtils(this.props.bus);
+  private btvUtils = new OansBrakeToVacateSelection(this.props.bus);
 
   private readonly airportDatabase = this.navigraphAvailable.map((a) => (a ? 'FBW9027250BB04' : 'N/A'));
 
@@ -319,7 +319,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
         if (this.arpCoordinates && ppos.lat && this.navigraphAvailable.get() === false) {
           globalToAirportCoordinates(this.arpCoordinates, ppos, this.localPpos);
-          this.btvUtils.updateRemainingDistances(this.localPpos);
+          this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
         }
       });
 
