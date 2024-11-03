@@ -23,6 +23,7 @@ import {
   timestampToString,
   Conversion,
   CpdlcMessageContentFrequency,
+  CpdlcMessageContentPosition,
 } from '../../common/src';
 import { FmsRouteData } from './databus/FmsBus';
 import { MailboxBus } from './databus/MailboxBus';
@@ -435,15 +436,21 @@ export class Atc {
     if (message !== undefined && message.Direction === AtsuMessageDirection.Uplink) {
       const type = message.Content[0].TypeId;
       if (type === 'UM117' || type === 'UM120') {
+        // CONTACT/MONTOR XXX
         const bcdFrequency = RadioUtils.packVhfComFrequencyToArinc(
           parseFloat((message.Content[0].Content[1] as CpdlcMessageContentFrequency).Value) * 1000000,
         );
         this.digitalOutputs.sendRmpFrequency(bcdFrequency);
       } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
+        // AT XXX CONTACT/MONITOR YYY
         const bcdFrequency = RadioUtils.packVhfComFrequencyToArinc(
           parseFloat((message.Content[0].Content[2] as CpdlcMessageContentFrequency).Value) * 1000000,
         );
         this.digitalOutputs.sendRmpFrequency(bcdFrequency);
+      } else if (type === 'UM74' || type === 'UM75') {
+        // PROCEED DIRECT TO XXX
+        const waypoint = (message.Content[0].Content[0] as CpdlcMessageContentPosition).Value;
+        this.digitalOutputs.requestDirectTo(waypoint);
       } else {
         this.digitalOutputs.resetRmpFrequency();
       }
