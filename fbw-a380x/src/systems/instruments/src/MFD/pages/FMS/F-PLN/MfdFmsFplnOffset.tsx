@@ -7,6 +7,8 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex } from '@fmgc/index';
+import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { OffsetAngleFormat, OffsetDistFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 
 interface MfdFmsFplnOffsetProps extends AbstractMfdPageProps {}
 
@@ -27,7 +29,13 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
 
   private distToWpt = Subject.create<string>('---');
 
+  private offsetInterceptAngle = Subject.create<number | null>(null);
+
+  private offsetDist = Subject.create<number | null>(null);
+
   protected onNewData(): void {
+    this.offsetInterceptAngle.set(30);
+    this.offsetDist.set(5);
     // Use active FPLN for building the list (page only works for active anyways)
     const activeFpln = this.props.fmcService.master?.flightPlanService.active;
     if (activeFpln) {
@@ -78,46 +86,75 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
         {super.render()}
         {/* begin page content */}
         <div class="fr">
-          <div class="mfd-fms-fpln-offset-grid">
-            <div>
-              <span class="mfd-label">START WPT</span>
-            </div>
-            <div>
-              <span class="mfd-lebal">END WPT</span>
-            </div>
-            <div style="grid-row-start: span 2; border-left: 1px solid lightgrey; margin-right: 10px;" />
-            <div>
-              <span class="mfd-lable">INTERCEPT ANGLE</span>
-            </div>
-            <div style="margin-top: 15px;">
-              <DropdownMenu
-                ref={this.dropdownMenuRef}
-                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_offsetStartDropdown`}
-                selectedIndex={this.selectedStartWaypointIndex}
-                values={this.availableWaypoints}
-                freeTextAllowed
-                containerStyle="width: 175px;"
-                alignLabels="flex-start"
-                numberOfDigitsForInputField={7}
-                tmpyActive={this.tmpyActive}
-                hEventConsumer={this.props.mfd.hEventConsumer}
-                interactionMode={this.props.mfd.interactionMode}
-              />
-            </div>
-            <div style="margin-top: 15px;">
-              <DropdownMenu
-                ref={this.dropdownMenuRef}
-                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_offsetEndDropdown`}
-                selectedIndex={this.selectedEndWaypointIndex}
-                values={this.availableWaypoints}
-                freeTextAllowed
-                containerStyle="width: 175px;"
-                alignLabels="flex-start"
-                numberOfDigitsForInputField={7}
-                tmpyActive={this.tmpyActive}
-                hEventConsumer={this.props.mfd.hEventConsumer}
-                interactionMode={this.props.mfd.interactionMode}
-              />
+          <div style="display: flex; justify-content:space-between;">
+            <div class="mfd-fms-fpln-offset-waypoint-text-grid">
+              <div>
+                <div>
+                  <span class="mfd-label">START WPT</span>
+                </div>
+                <div style="margin-top: 15px;">
+                  <DropdownMenu
+                    ref={this.dropdownMenuRef}
+                    idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_offsetStartDropdown`}
+                    selectedIndex={this.selectedStartWaypointIndex}
+                    values={this.availableWaypoints}
+                    freeTextAllowed
+                    containerStyle="width: 175px;"
+                    alignLabels="flex-start"
+                    numberOfDigitsForInputField={7}
+                    tmpyActive={this.tmpyActive}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+              </div>
+              <div>
+                <div>
+                  <span class="mfd-label">END WPT</span>
+                </div>
+                <div style="margin-top: 15px;">
+                  <DropdownMenu
+                    ref={this.dropdownMenuRef}
+                    idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_offsetEndDropdown`}
+                    selectedIndex={this.selectedEndWaypointIndex}
+                    values={this.availableWaypoints}
+                    freeTextAllowed
+                    containerStyle="width: 175px;"
+                    alignLabels="flex-start"
+                    numberOfDigitsForInputField={7}
+                    tmpyActive={this.tmpyActive}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+              </div>
+              <div style="grid-row-start: span 2; border-left: 1px solid lightgrey; margin-right: 10px;" />
+              <div class="mfd-offset-dist-angle-input-grid">
+                <div>
+                  <span class="mfd-label">INTERCEPT ANGLE</span>
+                </div>
+                <div>
+                  <InputField<number>
+                    dataEntryFormat={new OffsetAngleFormat()}
+                    value={this.offsetInterceptAngle}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div>
+                  <span class="mfd-label">OFFSET DIST</span>
+                </div>
+                <div>
+                  <InputField<number>
+                    dataEntryFormat={new OffsetDistFormat()}
+                    value={this.offsetDist}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
