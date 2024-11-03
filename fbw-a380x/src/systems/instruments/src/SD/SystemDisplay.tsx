@@ -22,7 +22,6 @@ import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
 import { StatusArea } from './StatusArea';
-import { Mailbox } from './Mailbox';
 
 import '../index.scss';
 import { useArinc429Var, useUpdate } from '@flybywiresim/fbw-sdk';
@@ -292,7 +291,6 @@ export const SystemDisplay = () => {
       <g>
         {PAGES[currentPage]}
         <StatusArea />
-        <Mailbox />
       </g>
     </LegacyCdsDisplayUnit>
   );
