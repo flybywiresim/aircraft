@@ -54,6 +54,9 @@ export interface AtcFmsMessages {
   atcResynchronizeDclMessage: DclMessage;
   atcResynchronizeOclMessage: OclMessage;
   atcDeleteMessage: number;
+
+  // trigger to request a direct to and maybe switch to the DIR TO page
+  atcRequestDirectTo: string;
 }
 
 export interface FmsAtcMessages {
