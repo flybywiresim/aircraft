@@ -92,6 +92,49 @@ struct base_ils_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
+
+struct base_fmgc_a_bus
+{
+  base_arinc_429 pfd_sel_spd_kts;
+  base_arinc_429 runway_hdg_memorized_deg;
+  base_arinc_429 preset_mach_from_mcdu;
+  base_arinc_429 preset_speed_from_mcdu_kts;
+  base_arinc_429 roll_fd_command;
+  base_arinc_429 pitch_fd_command;
+  base_arinc_429 yaw_fd_command;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 fm_alt_constraint_ft;
+  base_arinc_429 altitude_ft;
+  base_arinc_429 mach;
+  base_arinc_429 cas_kts;
+  base_arinc_429 flx_to_temp_deg_c;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 ats_fma_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_6;
+  base_arinc_429 synchro_spd_mach_value;
+  base_arinc_429 low_target_speed_margin_kts;
+  base_arinc_429 high_target_speed_margin_kts;
+  base_arinc_429 delta_p_ail_voted_cmd_deg;
+  base_arinc_429 delta_p_splr_voted_cmd_deg;
+  base_arinc_429 delta_r_voted_cmd_deg;
+  base_arinc_429 delta_nosewheel_voted_cmd_deg;
+  base_arinc_429 delta_q_voted_cmd_deg;
+  base_arinc_429 track_deg;
+  base_arinc_429 heading_deg;
+  base_arinc_429 fpa_deg;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 vertical_speed_ft_min;
+  base_arinc_429 discrete_word_7;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 
@@ -159,49 +202,6 @@ struct base_fmgc_b_bus
   base_arinc_429 delta_q_cmd_deg;
   base_arinc_429 n1_left_percent;
   base_arinc_429 n1_right_percent;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-
-struct base_fmgc_a_bus
-{
-  base_arinc_429 pfd_sel_spd_kts;
-  base_arinc_429 runway_hdg_memorized_deg;
-  base_arinc_429 preset_mach_from_mcdu;
-  base_arinc_429 preset_speed_from_mcdu_kts;
-  base_arinc_429 roll_fd_command;
-  base_arinc_429 pitch_fd_command;
-  base_arinc_429 yaw_fd_command;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 fm_alt_constraint_ft;
-  base_arinc_429 altitude_ft;
-  base_arinc_429 mach;
-  base_arinc_429 cas_kts;
-  base_arinc_429 flx_to_temp_deg_c;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_6;
-  base_arinc_429 synchro_spd_mach_value;
-  base_arinc_429 low_target_speed_margin_kts;
-  base_arinc_429 high_target_speed_margin_kts;
-  base_arinc_429 delta_p_ail_voted_cmd_deg;
-  base_arinc_429 delta_p_splr_voted_cmd_deg;
-  base_arinc_429 delta_r_voted_cmd_deg;
-  base_arinc_429 delta_nosewheel_voted_cmd_deg;
-  base_arinc_429 delta_q_voted_cmd_deg;
-  base_arinc_429 track_deg;
-  base_arinc_429 heading_deg;
-  base_arinc_429 fpa_deg;
-  base_arinc_429 n1_command_percent;
-  base_arinc_429 vertical_speed_ft_min;
-  base_arinc_429 discrete_word_7;
 };
 
 #endif
@@ -390,40 +390,6 @@ struct base_ecu_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcdc_bus_
-#define DEFINED_TYPEDEF_FOR_base_fcdc_bus_
-
-struct base_fcdc_bus
-{
-  base_arinc_429 efcs_status_word_1;
-  base_arinc_429 efcs_status_word_2;
-  base_arinc_429 efcs_status_word_3;
-  base_arinc_429 efcs_status_word_4;
-  base_arinc_429 efcs_status_word_5;
-  base_arinc_429 capt_roll_command_deg;
-  base_arinc_429 fo_roll_command_deg;
-  base_arinc_429 rudder_pedal_position_deg;
-  base_arinc_429 capt_pitch_command_deg;
-  base_arinc_429 fo_pitch_command_deg;
-  base_arinc_429 aileron_left_pos_deg;
-  base_arinc_429 elevator_left_pos_deg;
-  base_arinc_429 aileron_right_pos_deg;
-  base_arinc_429 elevator_right_pos_deg;
-  base_arinc_429 horiz_stab_trim_pos_deg;
-  base_arinc_429 spoiler_1_left_pos_deg;
-  base_arinc_429 spoiler_2_left_pos_deg;
-  base_arinc_429 spoiler_3_left_pos_deg;
-  base_arinc_429 spoiler_4_left_pos_deg;
-  base_arinc_429 spoiler_5_left_pos_deg;
-  base_arinc_429 spoiler_1_right_pos_deg;
-  base_arinc_429 spoiler_2_right_pos_deg;
-  base_arinc_429 spoiler_3_right_pos_deg;
-  base_arinc_429 spoiler_4_right_pos_deg;
-  base_arinc_429 spoiler_5_right_pos_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_ra_bus_
 #define DEFINED_TYPEDEF_FOR_base_ra_bus_
 
@@ -490,8 +456,6 @@ struct base_fmgc_bus_inputs
   base_ir_bus ir_own_bus;
   base_ecu_bus fadec_opp_bus;
   base_ecu_bus fadec_own_bus;
-  base_fcdc_bus fcdc_opp_bus;
-  base_fcdc_bus fcdc_own_bus;
   base_ra_bus ra_opp_bus;
   base_ra_bus ra_own_bus;
   base_ils_bus ils_opp_bus;

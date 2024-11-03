@@ -1,6 +1,18 @@
 #ifndef FmgcOuterLoops_types_h_
 #define FmgcOuterLoops_types_h_
 #include "rtwtypes.h"
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+#define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+
+struct ap_raw_output_command
+{
+  real_T Theta_c_deg;
+  real_T Phi_c_deg;
+  real_T Beta_c_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
 #define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
 
@@ -13,18 +25,6 @@ struct ap_raw_laws_flare
   real_T delta_Theta_bz_deg;
   real_T delta_Theta_bx_deg;
   real_T delta_Theta_beta_c_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
-#define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
-
-struct ap_raw_output_command
-{
-  real_T Theta_c_deg;
-  real_T Phi_c_deg;
-  real_T Beta_c_deg;
 };
 
 #endif

@@ -1770,8 +1770,6 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.ir_own_bus = fmgcIndex == 0 ? irBusOutputs[0] : irBusOutputs[1];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fadec_opp_bus = fadecBusOutputs[oppFmgcIndex];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fadec_own_bus = fadecBusOutputs[fmgcIndex];
-  fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fcdc_opp_bus = fcdcsBusOutputs[oppFmgcIndex];
-  fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fcdc_own_bus = fcdcsBusOutputs[fmgcIndex];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.ra_opp_bus = raBusOutputs[oppFmgcIndex];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.ra_own_bus = raBusOutputs[fmgcIndex];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.ils_opp_bus = ilsBusOutputs[oppFmgcIndex];
