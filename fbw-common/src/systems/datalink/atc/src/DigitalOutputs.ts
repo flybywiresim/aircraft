@@ -121,6 +121,10 @@ export class DigitalOutputs {
     }
   }
 
+  public requestDirectTo(waypoint: string): void {
+    this.publisher.pub('atcRequestDirectTo', waypoint, true, false);
+  }
+
   public sendRmpFrequency(frequency: number): void {
     const frequencyWord = Arinc429Register.empty();
     frequencyWord.setSsm(Arinc429SignStatusMatrix.NormalOperation);
