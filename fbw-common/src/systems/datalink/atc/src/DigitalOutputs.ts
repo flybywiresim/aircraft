@@ -122,7 +122,7 @@ export class DigitalOutputs {
 
   public sendRmpFrequency(frequency: number): void {
     const frequencyWord = Arinc429Register.empty();
-    frequencyWord.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    frequencyWord.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     frequencyWord.setValue(frequency);
     frequencyWord.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
   }
