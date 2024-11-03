@@ -139,6 +139,7 @@ class Display : public DisplayBase {
         if (decodedWidth != width || decodedHeight != height) {
           // This should never happen, but bail just in case
           fprintf(stderr, "TERR ON ND: The image size does not match the expected size. Expected: %dx%d, actual: %dx%d\n", width, height, decodedWidth, decodedHeight);
+          stbi_image_free(decodedImage);
           return;
         }
 
