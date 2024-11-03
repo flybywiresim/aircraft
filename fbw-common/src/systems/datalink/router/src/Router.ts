@@ -76,7 +76,7 @@ export class Router {
                 } else if (message.Type === AtsuMessageType.CPDLC) {
                   this.digitalOutputs.receivedCpdlcMessage(message as CpdlcMessage);
                 } else {
-                  console.log('ERROR: Unknown message received in datalink');
+                  console.error('ERROR: Unknown message received in datalink');
                 }
               }
 
