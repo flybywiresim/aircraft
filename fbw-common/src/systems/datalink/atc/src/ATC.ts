@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from '@microsoft/msfs-sdk';
+import { RadioUtils } from '@flybywiresim/fbw-sdk';
 import {
   InputValidation,
   AtsuStatusCodes,
@@ -434,13 +435,15 @@ export class Atc {
     if (message !== undefined && message.Direction === AtsuMessageDirection.Uplink) {
       const type = message.Content[0].TypeId;
       if (type === 'UM117' || type === 'UM120') {
-        const frequency = (message.Content[0].Content[1] as CpdlcMessageContentFrequency).Value.split('.');
-        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
-        this.digitalOutputs.sendRmpFrequency(frequencyHz);
+        const bcdFrequency = RadioUtils.packVhfComFrequencyToArinc(
+          parseFloat((message.Content[0].Content[1] as CpdlcMessageContentFrequency).Value) * 1000000,
+        );
+        this.digitalOutputs.sendRmpFrequency(bcdFrequency);
       } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
-        const frequency = (message.Content[0].Content[2] as CpdlcMessageContentFrequency).Value.split('.');
-        const frequencyHz = parseInt(frequency[0]) * 1000 + parseInt(frequency[1]);
-        this.digitalOutputs.sendRmpFrequency(frequencyHz);
+        const bcdFrequency = RadioUtils.packVhfComFrequencyToArinc(
+          parseFloat((message.Content[0].Content[2] as CpdlcMessageContentFrequency).Value) * 1000000,
+        );
+        this.digitalOutputs.sendRmpFrequency(bcdFrequency);
       } else {
         this.digitalOutputs.resetRmpFrequency();
       }
