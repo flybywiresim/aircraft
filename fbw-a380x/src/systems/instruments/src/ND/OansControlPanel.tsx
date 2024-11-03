@@ -633,6 +633,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                           dataHandlerDuringValidation={async (val) => {
                             if (this.navigraphAvailable.get() === false) {
+                              SimVar.SetSimVarValue(
+                                'L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE',
+                                SimVarValueType.Number,
+                                val,
+                              );
+
                               if (val && this.landingRunwayNavdata && this.arpCoordinates) {
                                 const exitLocation = placeBearingDistance(
                                   this.landingRunwayNavdata.thresholdLocation,
@@ -656,11 +662,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div
                       class="oans-cp-map-data-btv-rwy-length"
-                      style={{
-                        visibility: this.fmsLandingRunwayVisibility.map((it) =>
-                          it === 'hidden' ? 'inherit' : 'hidden',
-                        ),
-                      }}
+                      style={{ visibility: this.fmsLandingRunwayVisibility }}
                     >
                       <div class="mfd-label amber" style="margin-right: 10px;">
                         SELECT LANDING RUNWAY IN FMS
