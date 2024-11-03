@@ -1,0 +1,51 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+
+.sys-box-upper {
+  border: 1px solid $display-light-grey;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  width: 310px;
+  height: 280px;
+  justify-content: space-between;
+}
+
+.sys-box-lower {
+  border: 1px solid $display-light-grey;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  width: 310px;
+  height: 180px;
+  justify-content: space-between;
+}
+
+.sys-box.active {
+  border: 1px solid $display-green;
+}
+
+.sys-group {
+  border: 1px solid $display-light-grey;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sys-group.active {
+  border: 1px solid $display-green;
+}
+
+.sys-group.failed {
+  border: 1px solid $display-amber;
+}
+
+.sys-status-item {
+  font-size: 24px;
+  color: green;
+}
+
+.sys-status-item.failed {
+  color: $display-amber;
+}
