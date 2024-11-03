@@ -2,7 +2,12 @@
 
 .mfd-fms-fpln-offset-waypoint-text-grid {
   display: grid;
-  grid-template-columns: auto auto 15px auto auto;
+  grid-template-columns: 280px 280px 15px 280px;
   margin-top: 10px;
   padding-bottom: 15px;
+}
+
+.mfd-offset-dist-angle-input-grid {
+  display: grid;
+  grid-template-columns: auto;
 }
