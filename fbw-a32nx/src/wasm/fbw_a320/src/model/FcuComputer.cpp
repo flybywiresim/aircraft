@@ -332,7 +332,6 @@ void FcuComputer::step()
   boolean_T rtb_AND1;
   boolean_T rtb_AND1_l;
   boolean_T rtb_AND2_m;
-  boolean_T rtb_AND_g;
   boolean_T rtb_BusAssignment_d_baro_std;
   boolean_T rtb_BusAssignment_d_fd_on;
   boolean_T rtb_BusAssignment_d_ls_on;
@@ -575,7 +574,7 @@ void FcuComputer::step()
 
     FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel_bit, &rtb_Switch1_oa);
     FcuComputer_MATLABFunction_m(rtb_Switch_k_0, &rtb_dashes_n);
-    rtb_AND_g = ((rtb_Switch1_oa != 0U) && rtb_dashes_n);
+    rtb_BusAssignment_m.logic.afs.auto_speed_control = ((rtb_Switch1_oa != 0U) && rtb_dashes_n);
     FcuComputer_MATLABFunction_a(rtb_Switch_k_0, FcuComputer_P.BitfromLabel1_bit_e, &rtb_Switch1_oa);
     rtb_AND1_l = (rtb_dashes_n && (rtb_Switch1_oa != 0U));
     if (rtb_fmgc1Priority) {
@@ -727,18 +726,27 @@ void FcuComputer::step()
     FcuComputer_MATLABFunction_m(rtb_Switch_k_0, &rtb_dashes_n);
     rtb_BusAssignment_m.logic.afs.appr_active = (rtb_Equal6 || (rtb_y_e && (rtb_Equal8 || (rtb_Switch1_oa != 0U)) &&
       rtb_dashes_n));
-    FcuComputer_MATLABFunction_d((rtb_AND_g || (!rtb_AND1_l)), FcuComputer_P.PulseNode_isRisingEdge_l, &rtb_Equal6,
+    FcuComputer_MATLABFunction_d(rtb_AND1_l, FcuComputer_P.PulseNode_isRisingEdge_l, &rtb_y_e,
       &FcuComputer_DWork.sf_MATLABFunction_kl);
     if (!FcuComputer_DWork.eventTime_not_empty) {
       FcuComputer_DWork.eventTime = FcuComputer_U.in.time.simulation_time;
       FcuComputer_DWork.eventTime_not_empty = true;
     }
 
-    if (rtb_Equal6) {
+    if (rtb_y_e) {
       FcuComputer_DWork.eventTime = (FcuComputer_U.in.time.simulation_time - 10.0) - 1.0;
-    } else if (rtb_AND1_l || (FcuComputer_U.in.discrete_inputs.afs_inputs.spd_knob.turns !=
-                FcuComputer_P.CompareToConstant_const_p0)) {
-      FcuComputer_DWork.eventTime = FcuComputer_U.in.time.simulation_time;
+    } else {
+      if (rtb_fmgc1Priority) {
+        rtb_Switch1_oa = FcuComputer_U.in.bus_inputs.fmgc_1_bus.discrete_word_5.SSM;
+      } else {
+        rtb_Switch1_oa = FcuComputer_U.in.bus_inputs.fmgc_2_bus.discrete_word_5.SSM;
+      }
+
+      if (rtb_AND1_l || (FcuComputer_U.in.discrete_inputs.afs_inputs.spd_knob.turns !=
+                         FcuComputer_P.CompareToConstant_const_p0) || (rtb_Switch1_oa == static_cast<uint32_T>
+           (SignStatusMatrix::FailureWarning))) {
+        FcuComputer_DWork.eventTime = FcuComputer_U.in.time.simulation_time;
+      }
     }
 
     rtb_DataTypeConversion_e = (FcuComputer_U.in.time.simulation_time - FcuComputer_DWork.eventTime > 10.0);
@@ -824,7 +832,6 @@ void FcuComputer::step()
     rtb_BusAssignment_m.logic.afs.mach_active = rtb_BusAssignment_jg_logic_afs_mach_active;
     rtb_BusAssignment_m.logic.afs.trk_fpa_active = FcuComputer_DWork.p_trk_fpa_active;
     rtb_BusAssignment_m.logic.afs.metric_alt_active = FcuComputer_DWork.p_metric_alt_active;
-    rtb_BusAssignment_m.logic.afs.auto_speed_control = rtb_AND_g;
     rtb_BusAssignment_m.logic.afs.selected_speed_control = rtb_AND1_l;
     rtb_BusAssignment_m.logic.afs.hdg_trk_managed = (rtb_OR3_j || rtb_AND1);
     rtb_BusAssignment_m.logic.afs.hdg_trk_selected = rtb_BusAssignment_jg_logic_afs_hdg_trk_selected;
@@ -1355,7 +1362,7 @@ void FcuComputer::step()
     FcuComputer_Y.out.logic.afs.mach_active = rtb_BusAssignment_jg_logic_afs_mach_active;
     FcuComputer_Y.out.logic.afs.trk_fpa_active = FcuComputer_DWork.p_trk_fpa_active;
     FcuComputer_Y.out.logic.afs.metric_alt_active = FcuComputer_DWork.p_metric_alt_active;
-    FcuComputer_Y.out.logic.afs.auto_speed_control = rtb_AND_g;
+    FcuComputer_Y.out.logic.afs.auto_speed_control = rtb_BusAssignment_m.logic.afs.auto_speed_control;
     FcuComputer_Y.out.logic.afs.selected_speed_control = rtb_AND1_l;
     FcuComputer_Y.out.logic.afs.spd_mach_display_value = FcuComputer_DWork.pValue_n;
     FcuComputer_Y.out.logic.afs.spd_mach_dashes = rtb_DataTypeConversion_e;
@@ -1421,7 +1428,7 @@ void FcuComputer::step()
     FcuComputer_Y.out.discrete_outputs.afs_outputs.mach_mode = rtb_BusAssignment_jg_logic_afs_mach_active;
     FcuComputer_Y.out.discrete_outputs.afs_outputs.spd_mach_value = FcuComputer_DWork.pValue_n;
     FcuComputer_Y.out.discrete_outputs.afs_outputs.spd_mach_dashes = rtb_DataTypeConversion_e;
-    FcuComputer_Y.out.discrete_outputs.afs_outputs.spd_mach_managed = rtb_AND_g;
+    FcuComputer_Y.out.discrete_outputs.afs_outputs.spd_mach_managed = rtb_BusAssignment_m.logic.afs.auto_speed_control;
     FcuComputer_Y.out.discrete_outputs.afs_outputs.hdg_trk_value = FcuComputer_DWork.pValue_b;
     FcuComputer_Y.out.discrete_outputs.afs_outputs.hdg_trk_dashes = rtb_dashes_n;
     FcuComputer_Y.out.discrete_outputs.afs_outputs.hdg_trk_managed = rtb_BusAssignment_m.logic.afs.hdg_trk_managed;

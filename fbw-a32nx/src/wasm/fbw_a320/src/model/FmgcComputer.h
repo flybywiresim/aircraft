@@ -72,7 +72,7 @@ class FmgcComputer final
     boolean_T Delay_DSTATE_p;
     boolean_T Delay_DSTATE_k;
     boolean_T Delay_DSTATE_o;
-    boolean_T DelayInput1_DSTATE_f;
+    boolean_T Delay_DSTATE_fe;
     boolean_T Delay_DSTATE_c;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_g;
@@ -150,7 +150,6 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_aag;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_od;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_d5;
-    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_dtd;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_jcu;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_hjm;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_hpe;
@@ -935,7 +934,6 @@ class FmgcComputer final
     boolean_T ConfirmNode_isRisingEdge_nz;
     boolean_T ConfirmNode1_isRisingEdge_b4;
     boolean_T PulseNode3_isRisingEdge_ko;
-    boolean_T PulseNode1_isRisingEdge_kl;
     boolean_T PulseNode2_isRisingEdge_f;
     boolean_T PulseNode4_isRisingEdge_a;
     boolean_T PulseNode7_isRisingEdge;
@@ -963,7 +961,6 @@ class FmgcComputer final
     boolean_T PulseNode_isRisingEdge_fz;
     boolean_T ConfirmNode_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_cs;
-    boolean_T DetectChange_vinit_c;
     int8_T CompareToConstant_const_b;
     int8_T CompareToConstant_const_cq;
     int8_T CompareToConstant_const_ja;
@@ -1092,7 +1089,7 @@ class FmgcComputer final
     boolean_T Logic_table_oq[16];
     boolean_T Logic_table_dj[16];
     boolean_T Logic_table_bs[16];
-    boolean_T Constant_Value_k;
+    boolean_T Delay_InitialCondition_d;
     boolean_T Logic_table_kg[16];
     boolean_T Logic_table_ds[16];
     boolean_T Delay_InitialCondition_a;
@@ -1117,6 +1114,7 @@ class FmgcComputer final
     boolean_T Constant9_Value;
     boolean_T Constant_Value_jf;
     boolean_T Constant1_Value_a;
+    boolean_T Constant_Value_k;
   };
 
   FmgcComputer(FmgcComputer const&) = delete;
