@@ -16,6 +16,7 @@
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
 1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A380X/FLIGHTMODEL] Adjusted Drag Coefficents to correct Max mach of 0.853 up to 0.90 prior to the large drag coef changes - @callie0923 (Matthew Campbell) 
 
 ## 0.12.0
 
