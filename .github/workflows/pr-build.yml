@@ -127,9 +127,11 @@ jobs:
           node ./scripts/fragment_a380x.js
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
+      - name: Rename folder
+        run: mv ./fbw-a380x/out/flybywire-aircraft-a380-842/ ./fbw-a380x/out/flybywire-aircraft-a380-842-2/
       - name: Upload PR artifact
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a380-842
-          path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
+          path: ./fbw-a380x/out/flybywire-aircraft-a380-842-2/
