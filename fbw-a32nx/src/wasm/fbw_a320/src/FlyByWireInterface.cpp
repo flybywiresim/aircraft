@@ -737,10 +737,15 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuShimRightLsActive = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
   idFcuShimRightBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro2_Mode");
 
+  idFcuShimSpdDashes = std::make_unique<LocalVariable>("A32NX_FCU_SPD_MANAGED_DASHES");
+  idFcuShimSpdDot = std::make_unique<LocalVariable>("A32NX_FCU_SPD_MANAGED_DOT");
+  idFcuShimSpdValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_SPEED_SELECTED");
   idFcuShimTrkFpaActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuShimHdgValue1 = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SELECTED");
   idFcuShimHdgValue2 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
   idFcuShimShowHdg = std::make_unique<LocalVariable>("A320_FCU_SHOW_SELECTED_HEADING");
+  idFcuShimHdgDashes = std::make_unique<LocalVariable>("A32NX_FCU_HDG_MANAGED_DASHES");
+  idFcuShimHdgDot = std::make_unique<LocalVariable>("A32NX_FCU_HDG_MANAGED_DOT");
   idFcuShimAltManaged = std::make_unique<LocalVariable>("A32NX_FCU_ALT_MANAGED");
   idFcuShimVsValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
   idFcuShimFpaValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
@@ -2161,7 +2166,11 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
                                 SIMCONNECT_GROUP_PRIORITY_STANDARD);
   idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
   idFcuShimSpdDot->set(discreteOutputs.afs_outputs.spd_mach_managed);
-  idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
+  if (discreteOutputs.afs_outputs.spd_mach_dashes) {
+    idFcuShimSpdValue->set(-1.);
+  } else {
+    idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
+  }
 
   idFcuShimTrkFpaActive->set(discreteOutputs.afs_outputs.trk_fpa_mode);
 
@@ -2172,6 +2181,8 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   idFcuShimHdgValue1->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
   idFcuShimHdgValue2->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
   idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes);
+  idFcuShimHdgDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes);
+  idFcuShimHdgDot->set(discreteOutputs.afs_outputs.hdg_trk_managed);
 
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_ALT_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    discreteOutputs.afs_outputs.alt_value, 3);

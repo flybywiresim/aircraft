@@ -4419,6 +4419,51 @@ In the variables below, {number} should be replaced with one item in the set: { 
       NONE | 0
       A_FLOOR | 13
 
+- A32NX_AUTOPILOT_SPEED_SELECTED
+    - SPEED mode: 100 to 399 (knots)
+    - MACH mode: 0.10 to 0.99 (M)
+    - Indicates the selected speed on the FCU, instantly updated
+    - In case of managed speed mode, the value is -1
+
+- A32NX_AUTOPILOT_FPA_SELECTED
+    - Number (Degrees)
+    - Indicates the selected FPA on the FCU, instantly updated
+
+- A32NX_AUTOPILOT_VS_SELECTED
+    - Number (Feet per minute)
+    - Indicates the selected V/S on the FCU, instantly updated
+
+- A32NX_FCU_SPD_MANAGED_DASHES
+    - Boolean
+    - Indicates if managed speed/mach mode is active and a numerical value is not displayed
+      State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_SPD_MANAGED_DOT
+    - Boolean
+    - Indicates if managed speed/mach mode is active
+      State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_HDG_MANAGED_DASHES
+    - Boolean
+    - Indicates if managed heading mode is active and a numerical value is not displayed
+      State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_HDG_MANAGED_DOT
+    - Boolean
+    - Indicates if managed heading mode is active or armed
+      State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED/ARMED | 1
 
 - A32NX_AUTOTHRUST_MODE_MESSAGE
     - Enum
