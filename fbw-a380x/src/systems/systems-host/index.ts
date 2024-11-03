@@ -90,7 +90,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly weightAndBalancePublisher = new WeightBalanceSimvarPublisher(this.bus);
 
-  private readonly fuelssystemPublisher = new FuelSystemPublisher(this.bus);
+  private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
   private readonly fwsCore = new FwsCore(1, this.bus);
 
@@ -121,7 +121,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
     this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
-    this.backplane.addPublisher('FuelPublisher', this.fuelssystemPublisher);
+    this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
