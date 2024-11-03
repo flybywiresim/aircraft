@@ -327,7 +327,8 @@ export class BrakeToVacateUtils<T extends number> {
   selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
     this.btvExitPosition = btvExitPosition;
 
-    // Requested stopping distance measured from runway threshold (i.e. LDA)
+    // Account for touchdown zone distance
+    // Don't subtract touchdown zone distance for now, creates confusion for users
     const correctedStoppingDistance = reqStoppingDistance;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
