@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect } from 'react';
-import { useSplitSimVar, useInteractionEvent, Arinc429Register, useArinc429Var } from '@flybywiresim/fbw-sdk';
+import React, { useEffect, useState } from 'react';
+import { useSplitSimVar, useInteractionEvent, Arinc429Register, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
+import { EventBus, EventSubscriber } from '@microsoft/msfs-sdk';
+import { AtcRmpMessages } from '@datalink/atc';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
@@ -56,31 +58,42 @@ const useStandbyVhfFrequency = (side: string, transceiver: number) => {
  * Renders active frequency RadioPanelDisplay and appropriate StandbyFrequency sub-components.
  */
 export const VhfRadioPanel = (props: Props) => {
+  const [_subscriber, setSubscriber] = useState<EventSubscriber<AtcRmpMessages> | null>(null);
   const [active, setActive] = useActiveVhfFrequency(props.vhf);
   const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.vhf);
+  const [atsuFrequency, setAtsuFrequency] = useState<Arinc429Register>(Arinc429Register.empty());
   const [, setValueOppositePanelStandby] =
     props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
-  const atsuFrequencyRegister = useArinc429Var('L:A32NX_ATSU_RMP_FREQUENCY');
+
+  useEffect(() => {
+    const eventBus = new EventBus();
+
+    const subscriber = eventBus.getSubscriber<AtcRmpMessages>();
+
+    subscriber.on('atcHandoverFrequency').handle((frequency: Arinc429Register) => {
+      setAtsuFrequency(frequency);
+    });
+
+    setSubscriber(subscriber);
+  }, []);
 
   useEffect(() => {
     let modeId = 0;
-    if (atsuFrequencyRegister.isNormalOperation() === true) {
+    if (atsuFrequency.ssm === Arinc429SignStatusMatrix.NormalOperation) {
       modeId = 32;
     }
 
     SimVar.SetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum', modeId);
-  }, [atsuFrequencyRegister]);
+  }, [atsuFrequency]);
 
   // handle the load button
   useInteractionEvent(`A32NX_RMP_${props.side}_LOAD_BUTTON_PRESSED`, () => {
     const availableMode = SimVar.GetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum');
-    const frequency = Arinc429Register.empty();
-    frequency.setFromSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
 
     // store the frequency as the new standby frequency
-    if (frequency.isNormalOperation() === true && availableMode === 32) {
-      setStandby(frequency.value);
-      SimVar.SetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum', 0);
+    if (atsuFrequency.isNormalOperation() === true && availableMode === 32) {
+      setStandby(atsuFrequency.value);
+      setAtsuFrequency(Arinc429Register.empty());
     }
   });
 
