@@ -3,10 +3,16 @@
 
 import { ConsumerSubject, EventBus, Instrument, MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { Arinc429LocalVarConsumerSubject, BtvData, FmsOansData } from '@flybywiresim/fbw-sdk';
-import { pointDistance } from '@flybywiresim/oanc';
+import {
+  FmsDataStore,
+  globalToAirportCoordinates,
+  MIN_TOUCHDOWN_ZONE_DISTANCE,
+  pointDistance,
+} from '@flybywiresim/oanc';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
-
-const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
+import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
+import { placeBearingDistance } from 'msfs-geo';
+import { Position } from '@turf/turf';
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
@@ -14,6 +20,8 @@ const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to t
 
 export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData>();
+
+  private readonly fmsDataStore = new FmsDataStore(this.bus);
 
   private readonly airportLocalPos = ConsumerSubject.create(this.sub.on('oansAirportLocalCoordinates'), []);
 
@@ -57,9 +65,20 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
         this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
       }
     }, true);
+
+    // If BTV runway not set when passing 300ft, set from FMS. Needed for ROW/ROP
+    // FIXME Predict landing runway separately for ROP/ROW
+    this.below300ftRaAndLanding.sub((below300) => {
+      if (below300 && !this.runwayIsSet()) {
+        this.setBtvRunwayFromFmsRunway();
+      }
+    });
   }
 
   init() {
+    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    NavigationDatabaseService.activeDatabase = db;
+
     this.clearSelection();
   }
 
@@ -89,7 +108,33 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   );
 
   private runwayIsSet() {
-    return this.thresholdPositions.get()[0].length !== 0 && this.thresholdPositions.get()[1].length !== 0;
+    const thresPos = this.thresholdPositions.get();
+    return thresPos.length >= 2 && thresPos[0].length > 0 && thresPos[1].length > 0;
+  }
+
+  private async setBtvRunwayFromFmsRunway() {
+    const destination = this.fmsDataStore.destination.get();
+    const rwyIdent = this.fmsDataStore.landingRunway.get();
+    if (destination && rwyIdent) {
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+      const arps = await db.getAirports([destination]);
+      const arpCoordinates = arps[0].location;
+
+      const runways = await db.getRunways(destination);
+      const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+      const oppositeThreshold = placeBearingDistance(
+        landingRunwayNavdata.thresholdLocation,
+        landingRunwayNavdata.bearing,
+        landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+      );
+      const localThr: Position = [0, 0];
+      const localOppThr: Position = [0, 0];
+      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
+
+      this.bus.getPublisher<FmsOansData>().pub('oansThresholdPositions', [localThr, localOppThr]);
+    }
   }
 
   private clearSelection() {

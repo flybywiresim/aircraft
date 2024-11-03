@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData, Runway } from '@flybywiresim/fbw-sdk';
 import {
   booleanContains,
   booleanDisjoint,
@@ -17,7 +17,7 @@ import {
   Position,
 } from '@turf/turf';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { Label, LabelStyle } from '.';
+import { FmsDataStore, Label, LabelStyle } from '.';
 import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
 import {
@@ -28,8 +28,9 @@ import {
   pointToLineDistance,
 } from './OancMapUtils';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
+import { NavigationDatabaseService } from '@fmgc/index';
 
-const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
+export const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
 const CLAMP_DRY_STOPBAR_DISTANCE = 100; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 
@@ -310,6 +311,39 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.runwayBearingArinc.setValue(heading);
     this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
+  }
+
+  public async setBtvRunwayFromFmsRunway(fmsDataStore: FmsDataStore): Promise<[Runway, Coordinates]> {
+    const destination = fmsDataStore.destination.get();
+    const rwyIdent = fmsDataStore.landingRunway.get();
+    if (destination && rwyIdent) {
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+      const arps = await db.getAirports([destination]);
+      const arpCoordinates = arps[0].location;
+
+      const runways = await db.getRunways(destination);
+      const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+      const oppositeThreshold = placeBearingDistance(
+        landingRunwayNavdata.thresholdLocation,
+        landingRunwayNavdata.bearing,
+        landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+      );
+      const localThr: Position = [0, 0];
+      const localOppThr: Position = [0, 0];
+      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
+
+      this.selectRunwayFromNavdata(
+        rwyIdent,
+        landingRunwayNavdata.length,
+        landingRunwayNavdata.bearing,
+        localThr,
+        localOppThr,
+      );
+
+      return [landingRunwayNavdata, arpCoordinates];
+    }
   }
 
   selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {

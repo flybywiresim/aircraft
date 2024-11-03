@@ -32,7 +32,6 @@ import {
   EfisSide,
   FmsOansData,
   FcuSimVars,
-  Runway,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -62,7 +61,6 @@ import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
-import { NavigationDatabaseService } from '@fmgc/index';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -360,42 +358,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly oansNotAvailable = ConsumerSubject.create(this.sub.on('oansNotAvail'), true);
 
-  public static async setBtvRunwayFromFmsRunway(
-    fmsDataStore: FmsDataStore,
-    btvUtils: OansBrakeToVacateSelection<number>,
-  ): Promise<[Runway, Coordinates]> {
-    const destination = fmsDataStore.destination.get();
-    const rwyIdent = fmsDataStore.landingRunway.get();
-    if (destination && rwyIdent) {
-      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-      const arps = await db.getAirports([destination]);
-      const arpCoordinates = arps[0].location;
-
-      const runways = await db.getRunways(destination);
-      const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
-      const oppositeThreshold = placeBearingDistance(
-        landingRunwayNavdata.thresholdLocation,
-        landingRunwayNavdata.bearing,
-        landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
-      );
-      const localThr: Position = [0, 0];
-      const localOppThr: Position = [0, 0];
-      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
-      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
-
-      btvUtils.selectRunwayFromNavdata(
-        rwyIdent,
-        landingRunwayNavdata.length,
-        landingRunwayNavdata.bearing,
-        localThr,
-        localOppThr,
-      );
-
-      return [landingRunwayNavdata, arpCoordinates];
-    }
-  }
-
   public getZoomLevelInverseScale() {
     const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
@@ -442,13 +404,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         }
       }
     }, true);
-
-    // This lead to BTV being disarmed at 300ft. We'll have to investigate and then fix FIXME
-    /* this.btvUtils.below300ftRaAndLanding.sub(async (v) => {
-      if (this.oansNotAvailable.get() === false && v && !this.btvUtils.runwayIsSet()) {
-        [, this.arpCoordinates] = await Oanc.setBtvRunwayFromFmsRunway(this.fmsDataStore, this.btvUtils);
-      }
-    });*/
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
