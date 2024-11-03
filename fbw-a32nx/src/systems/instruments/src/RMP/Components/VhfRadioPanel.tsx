@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSplitSimVar, useInteractionEvent, Arinc429Register, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
+import {
+  useSplitSimVar,
+  useInteractionEvent,
+  Arinc429Register,
+  Arinc429SignStatusMatrix,
+  RadioUtils,
+} from '@flybywiresim/fbw-sdk';
 import { EventBus, EventSubscriber } from '@microsoft/msfs-sdk';
 import { AtcRmpMessages } from '@datalink/atc';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
@@ -91,8 +97,8 @@ export const VhfRadioPanel = (props: Props) => {
     const availableMode = SimVar.GetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum');
 
     // store the frequency as the new standby frequency
-    if (atsuFrequency.isNormalOperation() === true && availableMode === 32) {
-      setStandby(atsuFrequency.value);
+    if (atsuFrequency.ssm === Arinc429SignStatusMatrix.NormalOperation && availableMode === 32) {
+      setStandby(RadioUtils.unpackVhfComFrequencyFromArincToHz(atsuFrequency.value));
       setAtsuFrequency(Arinc429Register.empty());
     }
   });
