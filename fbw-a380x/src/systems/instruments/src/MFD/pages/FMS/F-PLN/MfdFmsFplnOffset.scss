@@ -1,0 +1,8 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fms-fpln-offset-waypoint-text-grid {
+  display: grid;
+  grid-template-columns: auto auto 15px auto auto;
+  margin-top: 10px;
+  padding-bottom: 15px;
+}
