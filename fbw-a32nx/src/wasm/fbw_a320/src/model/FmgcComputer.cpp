@@ -716,14 +716,23 @@ void FmgcComputer::step()
     rtb_adrOwnInvalid = ((FmgcComputer_U.in.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
                           (SignStatusMatrix::FailureWarning)) ||
                          (FmgcComputer_U.in.bus_inputs.adr_own_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>
+                          (SignStatusMatrix::FailureWarning)) || (FmgcComputer_U.in.bus_inputs.adr_own_bus.mach.SSM ==
+      static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
+                         (FmgcComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.SSM == static_cast<uint32_T>
                           (SignStatusMatrix::FailureWarning)));
     rtb_adrOppInvalid = ((FmgcComputer_U.in.bus_inputs.adr_opp_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
                           (SignStatusMatrix::FailureWarning)) ||
                          (FmgcComputer_U.in.bus_inputs.adr_opp_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>
+                          (SignStatusMatrix::FailureWarning)) || (FmgcComputer_U.in.bus_inputs.adr_opp_bus.mach.SSM ==
+      static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
+                         (FmgcComputer_U.in.bus_inputs.adr_opp_bus.altitude_standard_ft.SSM == static_cast<uint32_T>
                           (SignStatusMatrix::FailureWarning)));
     rtb_adr3Invalid = ((FmgcComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
                         (SignStatusMatrix::FailureWarning)) ||
                        (FmgcComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>
+                        (SignStatusMatrix::FailureWarning)) || (FmgcComputer_U.in.bus_inputs.adr_3_bus.mach.SSM ==
+      static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
+                       (FmgcComputer_U.in.bus_inputs.adr_3_bus.altitude_standard_ft.SSM == static_cast<uint32_T>
                         (SignStatusMatrix::FailureWarning)));
     rtb_doubleAdrFault = ((rtb_adrOwnInvalid && rtb_adrOppInvalid) || (rtb_adrOwnInvalid && rtb_adr3Invalid) ||
                           (rtb_adrOppInvalid && rtb_adr3Invalid));
@@ -733,15 +742,49 @@ void FmgcComputer::step()
     rtb_irOwnInvalid = ((FmgcComputer_U.in.bus_inputs.ir_own_bus.body_yaw_rate_deg_s.SSM != static_cast<uint32_T>
                          (SignStatusMatrix::NormalOperation)) ||
                         (FmgcComputer_U.in.bus_inputs.ir_own_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
+                         (SignStatusMatrix::NormalOperation)) ||
+                        (FmgcComputer_U.in.bus_inputs.ir_own_bus.pitch_angle_deg.SSM != static_cast<uint32_T>
+                         (SignStatusMatrix::NormalOperation)) ||
+                        (FmgcComputer_U.in.bus_inputs.ir_own_bus.roll_angle_deg.SSM != static_cast<uint32_T>
+                         (SignStatusMatrix::NormalOperation)) ||
+                        (FmgcComputer_U.in.bus_inputs.ir_own_bus.heading_true_deg.SSM != static_cast<uint32_T>
+                         (SignStatusMatrix::NormalOperation)) ||
+                        (FmgcComputer_U.in.bus_inputs.ir_own_bus.track_angle_true_deg.SSM != static_cast<uint32_T>
+                         (SignStatusMatrix::NormalOperation)) ||
+                        (FmgcComputer_U.in.bus_inputs.ir_own_bus.inertial_vertical_speed_ft_s.SSM !=
+                         static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
+                        (FmgcComputer_U.in.bus_inputs.ir_own_bus.latitude_deg.SSM != static_cast<uint32_T>
                          (SignStatusMatrix::NormalOperation)));
     rtb_adrOwnInvalid = ((FmgcComputer_U.in.bus_inputs.ir_opp_bus.body_yaw_rate_deg_s.SSM != static_cast<uint32_T>
                           (SignStatusMatrix::NormalOperation)) ||
                          (FmgcComputer_U.in.bus_inputs.ir_opp_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
+                          (SignStatusMatrix::NormalOperation)) ||
+                         (FmgcComputer_U.in.bus_inputs.ir_opp_bus.pitch_angle_deg.SSM != static_cast<uint32_T>
+                          (SignStatusMatrix::NormalOperation)) ||
+                         (FmgcComputer_U.in.bus_inputs.ir_opp_bus.roll_angle_deg.SSM != static_cast<uint32_T>
+                          (SignStatusMatrix::NormalOperation)) ||
+                         (FmgcComputer_U.in.bus_inputs.ir_opp_bus.heading_true_deg.SSM != static_cast<uint32_T>
+                          (SignStatusMatrix::NormalOperation)) ||
+                         (FmgcComputer_U.in.bus_inputs.ir_opp_bus.track_angle_true_deg.SSM != static_cast<uint32_T>
+                          (SignStatusMatrix::NormalOperation)) ||
+                         (FmgcComputer_U.in.bus_inputs.ir_opp_bus.inertial_vertical_speed_ft_s.SSM !=
+                          static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
+                         (FmgcComputer_U.in.bus_inputs.ir_opp_bus.latitude_deg.SSM != static_cast<uint32_T>
                           (SignStatusMatrix::NormalOperation)));
     rtb_ir3Invalid = ((FmgcComputer_U.in.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM != static_cast<uint32_T>
                        (SignStatusMatrix::NormalOperation)) ||
                       (FmgcComputer_U.in.bus_inputs.ir_3_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
-                       (SignStatusMatrix::NormalOperation)));
+                       (SignStatusMatrix::NormalOperation)) ||
+                      (FmgcComputer_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.SSM != static_cast<uint32_T>
+                       (SignStatusMatrix::NormalOperation)) || (FmgcComputer_U.in.bus_inputs.ir_3_bus.roll_angle_deg.SSM
+      != static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
+                      (FmgcComputer_U.in.bus_inputs.ir_3_bus.heading_true_deg.SSM != static_cast<uint32_T>
+                       (SignStatusMatrix::NormalOperation)) ||
+                      (FmgcComputer_U.in.bus_inputs.ir_3_bus.track_angle_true_deg.SSM != static_cast<uint32_T>
+                       (SignStatusMatrix::NormalOperation)) ||
+                      (FmgcComputer_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.SSM != static_cast<uint32_T>
+                       (SignStatusMatrix::NormalOperation)) || (FmgcComputer_U.in.bus_inputs.ir_3_bus.latitude_deg.SSM
+      != static_cast<uint32_T>(SignStatusMatrix::NormalOperation)));
     rtb_adr3Invalid = ((rtb_irOwnInvalid && rtb_adrOwnInvalid) || (rtb_irOwnInvalid && rtb_ir3Invalid) ||
                        (rtb_adrOwnInvalid && rtb_ir3Invalid));
     rtb_irOwnInvalid = !rtb_irOwnInvalid;
