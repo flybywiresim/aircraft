@@ -19,6 +19,7 @@
 1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
 1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
 1. [A380X] Various fixes in FMS and ECL @flogross89 (floridude)
+1. [A380X/PFD] Removes numerical deviation path indication & white selected altitude color from PFD @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 

@@ -414,86 +414,46 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       this.activeVerticalMode !== VerticalMode.VS &&
       this.activeVerticalMode !== VerticalMode.FPA;
 
-    const selectedAltIgnored =
-      (this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT) ||
-      this.activeVerticalMode === VerticalMode.FINAL;
-
     this.isManaged = this.constraint > 0 && clbActive;
 
     this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
 
-    if (selectedAltIgnored) {
+    if (this.isManaged) {
       this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-      this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-      this.selectedAltLowerFLText.instance.classList.add('White');
-
-      this.selectedAltLowerText.instance.classList.remove('Cyan');
-      this.selectedAltLowerText.instance.classList.remove('Magenta');
-      this.selectedAltLowerText.instance.classList.add('White');
-
-      this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-      this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-      this.selectedAltUpperFLText.instance.classList.add('White');
-
-      this.selectedAltUpperText.instance.classList.remove('Cyan');
-      this.selectedAltUpperText.instance.classList.remove('Magenta');
-      this.selectedAltUpperText.instance.classList.add('White');
-
-      this.altTapeTargetText.instance.classList.remove('Cyan');
-      this.altTapeTargetText.instance.classList.add('White');
-
-      this.targetSymbolRef.instance.classList.remove('Cyan');
-      this.targetSymbolRef.instance.classList.remove('Magenta');
-
-      this.targetSymbolRef.instance.classList.add('White');
-    } else if (this.isManaged) {
-      this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-      this.selectedAltLowerFLText.instance.classList.remove('White');
       this.selectedAltLowerFLText.instance.classList.add('Magenta');
 
       this.selectedAltLowerText.instance.classList.remove('Cyan');
-      this.selectedAltLowerText.instance.classList.remove('White');
       this.selectedAltLowerText.instance.classList.add('Magenta');
 
       this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-      this.selectedAltUpperFLText.instance.classList.remove('White');
       this.selectedAltUpperFLText.instance.classList.add('Magenta');
 
       this.selectedAltUpperText.instance.classList.remove('Cyan');
-      this.selectedAltUpperText.instance.classList.remove('White');
       this.selectedAltUpperText.instance.classList.add('Magenta');
 
       this.altTapeTargetText.instance.classList.remove('Cyan');
-      this.altTapeTargetText.instance.classList.remove('White');
       this.altTapeTargetText.instance.classList.add('Magenta');
 
       this.targetSymbolRef.instance.classList.remove('Cyan');
-      this.targetSymbolRef.instance.classList.remove('White');
       this.targetSymbolRef.instance.classList.add('Magenta');
     } else {
       this.selectedAltLowerFLText.instance.classList.add('Cyan');
       this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-      this.selectedAltLowerFLText.instance.classList.remove('White');
 
       this.selectedAltLowerText.instance.classList.add('Cyan');
       this.selectedAltLowerText.instance.classList.remove('Magenta');
-      this.selectedAltLowerText.instance.classList.remove('White');
 
       this.selectedAltUpperFLText.instance.classList.add('Cyan');
       this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-      this.selectedAltUpperFLText.instance.classList.remove('White');
 
       this.selectedAltUpperText.instance.classList.add('Cyan');
       this.selectedAltUpperText.instance.classList.remove('Magenta');
-      this.selectedAltUpperText.instance.classList.remove('White');
 
       this.altTapeTargetText.instance.classList.add('Cyan');
       this.altTapeTargetText.instance.classList.remove('Magenta');
-      this.altTapeTargetText.instance.classList.remove('White');
 
       this.targetSymbolRef.instance.classList.add('Cyan');
       this.targetSymbolRef.instance.classList.remove('Magenta');
-      this.targetSymbolRef.instance.classList.remove('White');
     }
   }
 
