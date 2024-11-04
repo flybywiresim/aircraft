@@ -22,7 +22,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           draft: false
-          prerelease: true
+          prerelease: false
 
   build_a32nx:
     name: Build and publish A32NX
@@ -32,8 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/stable-test
-      PRE_RELEASE_ID: 183386135
+      PRE_RELEASE_TAG: assets/stable
+      PRE_RELEASE_ID: 66067814
       STANDALONE_ZIP_NAME: A32NX-stable.7z
       BUILD_DIR_NAME: stable-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
@@ -88,7 +88,7 @@ jobs:
       - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/stable-test
+          CDN_BUCKET_DESTINATION: addons/a32nx/stable
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
       - name: Build Standalone Download files
@@ -150,8 +150,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/stable-test
-      PRE_RELEASE_ID: 183386135
+      PRE_RELEASE_TAG: assets/stable
+      PRE_RELEASE_ID: 66067814
       BUILD_DIR_NAME: stable-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-stable-8K.7z
@@ -230,7 +230,7 @@ jobs:
       - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/stable-test-8k
+          CDN_BUCKET_DESTINATION: addons/a380x/stable-8k
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
       - name: Build Standalone Download files
@@ -280,8 +280,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/stable-test
-      PRE_RELEASE_ID: 183386135
+      PRE_RELEASE_TAG: assets/stable
+      PRE_RELEASE_ID: 66067814
       BUILD_DIR_NAME: stable-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-stable-4K.7z
@@ -357,7 +357,7 @@ jobs:
       - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/stable-test-4k
+          CDN_BUCKET_DESTINATION: addons/a380x/stable-4k
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
       - name: Build Standalone Download files
