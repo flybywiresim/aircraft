@@ -93,8 +93,11 @@ jobs:
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a32nx/out/
           rm -rf build-modules
-          7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            mv ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}.001 ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} # Only applicable if split in 1 part!
+          fi
           df -h
       - name: Count Standalone Download files
         run: |
@@ -207,7 +210,7 @@ jobs:
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a380x/out/
           rm -rf build-modules
-          7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
           df -h
       - name: Count Standalone Download files
@@ -320,7 +323,7 @@ jobs:
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a380x/out/
           rm -rf build-modules
-          7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
           df -h
       - name: Count Standalone Download files
