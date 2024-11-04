@@ -77,7 +77,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     },
     {
       name: 'OFFSET',
-      disabled: false,
+      disabled: !fpln.loadedFlightPlan?.legElementAt(legIndex).isXF,
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-offset`),
     },
