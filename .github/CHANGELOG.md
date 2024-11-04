@@ -5,20 +5,21 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
-## 0.13.0
+## 0.12.2
+
+1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
+1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
+
+## 0.12.1
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
 1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
-1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
-1. [A380X/FCU] Added metric altitude button - @tracernz (Mike)
-1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
-1. [A380X/TELEX] Added popup for telex consent - @saschl (saschl) @Maximilian-Reuter (\_chaoz)
-1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
-1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
-1. [A380X] Various fixes in FMS and ECL @flogross89 (floridude)
+1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 
 ## 0.12.0
 
