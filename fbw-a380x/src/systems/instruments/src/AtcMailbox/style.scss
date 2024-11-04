@@ -31,6 +31,21 @@
 
 .atc-mailbox-center-bottom {
   display: flex;
+  flex: 1;
   flex-direction: row;
-  justify-content: flex-end;
+}
+
+.atc-mailbox-center-top {
+  display: flex;
+  flex: 8;
+  border-bottom: 2px solid white;
+}
+
+.atc-mailbox-cb-1 {
+  flex: 1;
+  border-right: 2px solid white;
+}
+
+.atc-mailbox-cb-2 {
+  flex: 1;
 }

@@ -33,10 +33,10 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
             <Button label="RECALL" onClick={() => {}} buttonStyle="height: 50px;"></Button>
           </div>
           <div class="atc-mailbox-center-layout">
-            <div style="display: flex; flex: 8; border-bottom: 2px solid white;"></div>
-            <div style="display: flex; flex: 1; flex-direction: row;">
-              <div style="flex: 1; border-right: 2px solid white;" />
-              <div style="flex: 1;" />
+            <div class="atc-mailbox-center-top"></div>
+            <div class="atc-mailbox-center-bottom">
+              <div class="atc-mailbox-cb-1" />
+              <div class="atc-mailbox-cb-2" />
             </div>
           </div>
           <div class="atc-mailbox-right-layout">
