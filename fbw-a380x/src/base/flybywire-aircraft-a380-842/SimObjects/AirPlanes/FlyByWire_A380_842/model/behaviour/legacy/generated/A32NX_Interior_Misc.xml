@@ -662,10 +662,12 @@
             <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
             <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
             <GNDCTL_PERMISSIVES>
-18 sp0
-(A:GENERAL ENG OIL PRESSURE:1, psi) l0 &lt; sp1
-(A:GENERAL ENG OIL PRESSURE:2, psi) l0 &lt; sp2
-(L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED, bool) l1 and l2 and
+10 sp0
+(L:A32NX_ENGINE_N1:1) l0 &lt; sp1
+(L:A32NX_ENGINE_N1:2) l0 &lt; sp2
+(L:A32NX_ENGINE_N1:3) l0 &lt; sp3
+(L:A32NX_ENGINE_N1:4) l0 &lt; sp4
+(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, bool) l1 and l2 and l3 and l4 and
             </GNDCTL_PERMISSIVES>
         </DefaultTemplateParameters>
         <UseTemplate Name="FBW_Push_Held">
