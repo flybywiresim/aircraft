@@ -1,15 +1,13 @@
 #ifndef FadecComputer_types_h_
 #define FadecComputer_types_h_
 #include "rtwtypes.h"
-#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
-#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
-enum class SignStatusMatrix
-  : int32_T {
-  FailureWarning = 0,
-  NoComputedData,
-  FunctionalTest,
-  NormalOperation
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
 };
 
 #endif
@@ -29,13 +27,28 @@ enum class athr_thrust_limit_type
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
-struct base_arinc_429
+enum class SignStatusMatrix
+  : int32_T {
+  FailureWarning = 0,
+  NoComputedData,
+  FunctionalTest,
+  NormalOperation
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
+#define DEFINED_TYPEDEF_FOR_athr_data_computed_
+
+struct athr_data_computed
 {
-  uint32_T SSM;
-  real32_T Data;
+  boolean_T TLA_in_active_range;
+  boolean_T is_FLX_active;
+  boolean_T ATHR_disabled;
+  real_T time_since_touchdown;
 };
 
 #endif
@@ -57,19 +70,6 @@ struct base_ecu_bus
   base_arinc_429 selected_n2_actual_percent;
   base_arinc_429 selected_n1_actual_percent;
   base_arinc_429 ecu_maintenance_word_6;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
-#define DEFINED_TYPEDEF_FOR_athr_data_computed_
-
-struct athr_data_computed
-{
-  boolean_T TLA_in_active_range;
-  boolean_T is_FLX_active;
-  boolean_T ATHR_disabled;
-  real_T time_since_touchdown;
 };
 
 #endif

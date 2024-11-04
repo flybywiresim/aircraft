@@ -249,11 +249,10 @@ void FadecComputer::step()
     FadecComputer_P.A429ValueOrDefault_defaultValue_a, &rtb_y_o);
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel3_bit,
     &rtb_y_jc);
-  rtb_NOT1_f = (rtb_y_jc != 0U);
+  rtb_NOT1_f = (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_TLA_in_active_range || (rtb_y_jc
+    != 0U));
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel2_bit,
     &rtb_y_jc);
-  rtb_NOT1_f = ((rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_TLA_in_active_range || rtb_NOT1_f)
-                && (rtb_y_jc != 0U) && rtb_AND && FadecComputer_DWork.Memory_PreviousInput_p);
   if (!FadecComputer_DWork.pU_not_empty) {
     FadecComputer_DWork.pU = FadecComputer_U.in.data.engine_N1_percent;
     FadecComputer_DWork.pU_not_empty = true;
@@ -263,7 +262,7 @@ void FadecComputer::step()
     FadecComputer_DWork.pU = FadecComputer_U.in.data.engine_N1_percent;
   }
 
-  if (rtb_NOT1_f) {
+  if (rtb_NOT1_f && (rtb_y_jc != 0U) && rtb_AND && FadecComputer_DWork.Memory_PreviousInput_p) {
     if ((rtb_y_n != 0U) && (rtb_y_c != 0U) && rtb_DataTypeConversion_l_tmp) {
       N1_end = FadecComputer_U.in.input.thrust_limit_TOGA_percent;
       rtb_Switch2_idx_1 = rtb_N1c;
@@ -346,6 +345,9 @@ void FadecComputer::step()
   FadecComputer_Y.out.fadec_bus_output.ecu_status_word_1.SSM = static_cast<uint32_T>
     (FadecComputer_P.EnumeratedConstant1_Value);
   FadecComputer_Y.out.fadec_bus_output.ecu_status_word_1.Data = FadecComputer_P.Constant2_Value_n;
+  FadecComputer_Y.out.fadec_bus_output.ecu_status_word_2.SSM = static_cast<uint32_T>
+    (FadecComputer_P.EnumeratedConstant1_Value);
+  FadecComputer_Y.out.fadec_bus_output.ecu_status_word_2.Data = FadecComputer_P.Constant1_Value;
   rtb_VectorConcatenate[0] = FadecComputer_P.Constant_Value;
   rtb_VectorConcatenate[1] = FadecComputer_P.Constant_Value;
   rtb_VectorConcatenate[2] = FadecComputer_P.Constant_Value;
@@ -354,7 +356,7 @@ void FadecComputer::step()
   rtb_VectorConcatenate[5] = FadecComputer_P.Constant_Value;
   rtb_VectorConcatenate[6] = FadecComputer_P.Constant_Value;
   rtb_VectorConcatenate[7] = FadecComputer_P.Constant_Value;
-  rtb_VectorConcatenate[8] = rtb_NOT1_f;
+  rtb_VectorConcatenate[8] = FadecComputer_DWork.Memory_PreviousInput_p;
   rtb_VectorConcatenate[9] = FadecComputer_P.Constant_Value;
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel5_bit_h,
     &rtb_y_jc);
@@ -367,12 +369,9 @@ void FadecComputer::step()
   rtb_VectorConcatenate[16] = FadecComputer_P.Constant_Value;
   rtb_VectorConcatenate[17] = FadecComputer_P.Constant_Value;
   rtb_VectorConcatenate[18] = FadecComputer_P.Constant_Value;
-  FadecComputer_MATLABFunction_l(rtb_VectorConcatenate, &FadecComputer_Y.out.fadec_bus_output.ecu_status_word_2.Data);
-  FadecComputer_Y.out.fadec_bus_output.ecu_status_word_2.SSM = static_cast<uint32_T>
-    (FadecComputer_P.EnumeratedConstant1_Value);
+  FadecComputer_MATLABFunction_l(rtb_VectorConcatenate, &FadecComputer_Y.out.fadec_bus_output.ecu_status_word_3.Data);
   FadecComputer_Y.out.fadec_bus_output.ecu_status_word_3.SSM = static_cast<uint32_T>
     (FadecComputer_P.EnumeratedConstant1_Value);
-  FadecComputer_Y.out.fadec_bus_output.ecu_status_word_3.Data = FadecComputer_P.Constant1_Value;
   FadecComputer_Y.out.fadec_bus_output.n1_limit_percent.SSM = static_cast<uint32_T>
     (FadecComputer_P.EnumeratedConstant1_Value);
   FadecComputer_Y.out.fadec_bus_output.n1_limit_percent.Data = static_cast<real32_T>(N1_begin);
@@ -452,7 +451,7 @@ void FadecComputer::step()
   FadecComputer_Y.out.output.thrust_limit_type = rtb_type;
   FadecComputer_Y.out.output.thrust_limit_percent = N1_begin;
   FadecComputer_Y.out.output.N1_c_percent = rtb_Switch2_idx_1;
-  FadecComputer_Y.out.output.athr_control_active = rtb_NOT1_f;
+  FadecComputer_Y.out.output.athr_control_active = FadecComputer_DWork.Memory_PreviousInput_p;
   FadecComputer_Y.out.output.memo_thrust_active = FadecComputer_DWork.Memory_PreviousInput_j;
 }
 

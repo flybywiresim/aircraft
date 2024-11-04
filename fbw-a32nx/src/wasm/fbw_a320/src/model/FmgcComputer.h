@@ -257,7 +257,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_pu;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mm;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mb;
-    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_oe;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_oep;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_hi;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_nj;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_fw;
@@ -267,6 +267,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_d4;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_jt;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_o1;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_dx;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_mn;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_kz;
     rtDW_MATLABFunction_FmgcComputer_a_T sf_MATLABFunction_j3;
@@ -341,6 +342,8 @@ class FmgcComputer final
     real_T BitfromLabel_bit_n;
     real_T BitfromLabel1_bit_i;
     real_T BitfromLabel_bit_g;
+    real_T BitfromLabel1_bit_iq;
+    real_T BitfromLabel2_bit_b;
     real_T BitfromLabel1_bit_c;
     real_T BitfromLabel3_bit_m;
     real_T BitfromLabel4_bit_p;
@@ -353,7 +356,7 @@ class FmgcComputer final
     real_T BitfromLabel_bit_f;
     real_T BitfromLabel1_bit_n;
     real_T BitfromLabel_bit_k;
-    real_T BitfromLabel2_bit_b;
+    real_T BitfromLabel2_bit_br;
     real_T BitfromLabel1_bit_l;
     real_T BitfromLabel_bit_ff;
     real_T BitfromLabel2_bit_ft;
@@ -544,6 +547,7 @@ class FmgcComputer final
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode1_timeDelay_l;
     real_T ConfirmNode2_timeDelay;
+    real_T ConfirmNode3_timeDelay;
     real_T ConfirmNode_timeDelay_i;
     real_T ConfirmNode_timeDelay_h;
     real_T ConfirmNode1_timeDelay_e;
@@ -846,6 +850,7 @@ class FmgcComputer final
     boolean_T PulseNode3_isRisingEdge_a;
     boolean_T PulseNode4_isRisingEdge;
     boolean_T PulseNode5_isRisingEdge;
+    boolean_T ConfirmNode3_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_l;
     boolean_T ConfirmNode_isRisingEdge_h;
     boolean_T PulseNode_isRisingEdge_p;
