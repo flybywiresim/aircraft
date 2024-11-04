@@ -11,6 +11,8 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 export interface FgBus {
   fdEngaged: boolean;
   pfdSelectedSpeed: Arinc429Word;
+  preselMach: Arinc429Word;
+  preselSpeed: Arinc429Word;
   rollFdCommand: Arinc429Word;
   pitchFdCommand: Arinc429Word;
   yawFdCommand: Arinc429Word;
@@ -69,6 +71,30 @@ export class FgBusProvider implements Instrument {
     subscriber.on('fmgc2PfdSelectedSpeedRaw').handle((word) => {
       if (!this.fg1Selected) {
         publisher.pub('pfdSelectedSpeed', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc1PreselMachRaw').handle((word) => {
+      if (this.fg1Selected) {
+        publisher.pub('preselMach', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc2PreselMachRaw').handle((word) => {
+      if (!this.fg1Selected) {
+        publisher.pub('preselMach', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc1PreselSpeedRaw').handle((word) => {
+      if (this.fg1Selected) {
+        publisher.pub('preselSpeed', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc2PreselSpeedRaw').handle((word) => {
+      if (!this.fg1Selected) {
+        publisher.pub('preselSpeed', new Arinc429Word(word));
       }
     });
 

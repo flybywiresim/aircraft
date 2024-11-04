@@ -693,6 +693,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcIlsTuneInhibit[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ILS_TUNE_INHIBIT");
 
     idFmgcABusPfdSelectedSpeed[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PFD_SELECTED_SPEED");
+    idFmgcABusPreselMach[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PRESEL_MACH");
+    idFmgcABusPreselSpeed[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PRESEL_SPEED");
     idFmgcABusRwyHdgMemo[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_RWY_HDG_MEMO");
     idFmgcABusRollFdCommand[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_ROLL_FD_COMMAND");
     idFmgcABusPitchFdCommand[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_PITCH_FD_COMMAND");
@@ -1814,6 +1816,8 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcIlsTuneInhibit[fmgcIndex]->set(fmgcsDiscreteOutputs[fmgcIndex].ils_test_inhibit);
 
   idFmgcABusPfdSelectedSpeed[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.pfd_sel_spd_kts));
+  idFmgcABusPreselMach[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.preset_mach_from_mcdu));
+  idFmgcABusPreselSpeed[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.preset_speed_from_mcdu_kts));
   idFmgcABusRwyHdgMemo[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.runway_hdg_memorized_deg));
   idFmgcABusRollFdCommand[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.roll_fd_command));
   idFmgcABusPitchFdCommand[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.pitch_fd_command));

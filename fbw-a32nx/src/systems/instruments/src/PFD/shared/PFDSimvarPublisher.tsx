@@ -29,8 +29,6 @@ export type PFDSimvars = AdirsSimVars &
     noseGearCompressed: boolean;
     leftMainGearCompressed: boolean;
     rightMainGearCompressed: boolean;
-    machPreselVal: number;
-    speedPreselVal: number;
     attHdgKnob: number;
     airKnob: number;
     vsBaro: number;
@@ -138,6 +136,10 @@ export type PFDSimvars = AdirsSimVars &
     fm2Backbeam: boolean;
     fmgc1PfdSelectedSpeedRaw: number;
     fmgc2PfdSelectedSpeedRaw: number;
+    fmgc1PreselMachRaw: number;
+    fmgc2PreselMachRaw: number;
+    fmgc1PreselSpeedRaw: number;
+    fmgc2PreselSpeedRaw: number;
     fmgc1RollFdCommandRaw: number;
     fmgc2RollFdCommandRaw: number;
     fmgc1PitchFdCommandRaw: number;
@@ -197,8 +199,6 @@ export enum PFDVars {
   noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
   leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
   rightMainGearCompressed = 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED',
-  machPreselVal = 'L:A32NX_MachPreselVal',
-  speedPreselVal = 'L:A32NX_SpeedPreselVal',
   attHdgKnob = 'L:A32NX_ATT_HDG_SWITCHING_KNOB',
   airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
   vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
@@ -309,6 +309,10 @@ export enum PFDVars {
   fm2Backbeam = 'L:A32NX_FM2_BACKBEAM_SELECTED',
   fmgc1PfdSelectedSpeedRaw = 'L:A32NX_FMGC_1_PFD_SELECTED_SPEED',
   fmgc2PfdSelectedSpeedRaw = 'L:A32NX_FMGC_2_PFD_SELECTED_SPEED',
+  fmgc1PreselMachRaw = 'L:A32NX_FMGC_1_PRESEL_MACH',
+  fmgc2PreselMachRaw = 'L:A32NX_FMGC_2_PRESEL_MACH',
+  fmgc1PreselSpeedRaw = 'L:A32NX_FMGC_1_PRESEL_SPEED',
+  fmgc2PreselSpeedRaw = 'L:A32NX_FMGC_2_PRESEL_SPEED',
   fmgc1RollFdCommandRaw = 'L:A32NX_FMGC_1_ROLL_FD_COMMAND',
   fmgc2RollFdCommandRaw = 'L:A32NX_FMGC_2_ROLL_FD_COMMAND',
   fmgc1PitchFdCommandRaw = 'L:A32NX_FMGC_1_PITCH_FD_COMMAND',
@@ -371,8 +375,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
     ['leftMainGearCompressed', { name: PFDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],
     ['rightMainGearCompressed', { name: PFDVars.rightMainGearCompressed, type: SimVarValueType.Bool }],
-    ['machPreselVal', { name: PFDVars.machPreselVal, type: SimVarValueType.Number }],
-    ['speedPreselVal', { name: PFDVars.speedPreselVal, type: SimVarValueType.Knots }],
     ['attHdgKnob', { name: PFDVars.attHdgKnob, type: SimVarValueType.Enum }],
     ['airKnob', { name: PFDVars.airKnob, type: SimVarValueType.Enum }],
     ['vsBaro', { name: PFDVars.vsBaro, type: SimVarValueType.Number }],
@@ -481,6 +483,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2Backbeam', { name: PFDVars.fm2Backbeam, type: SimVarValueType.Bool }],
     ['fmgc1PfdSelectedSpeedRaw', { name: PFDVars.fmgc1PfdSelectedSpeedRaw, type: SimVarValueType.Number }],
     ['fmgc2PfdSelectedSpeedRaw', { name: PFDVars.fmgc2PfdSelectedSpeedRaw, type: SimVarValueType.Number }],
+    ['fmgc1PreselMachRaw', { name: PFDVars.fmgc1PreselMachRaw, type: SimVarValueType.Number }],
+    ['fmgc2PreselMachRaw', { name: PFDVars.fmgc2PreselMachRaw, type: SimVarValueType.Number }],
+    ['fmgc1PreselSpeedRaw', { name: PFDVars.fmgc1PreselSpeedRaw, type: SimVarValueType.Number }],
+    ['fmgc2PreselSpeedRaw', { name: PFDVars.fmgc2PreselSpeedRaw, type: SimVarValueType.Number }],
     ['fmgc1RollFdCommandRaw', { name: PFDVars.fmgc1RollFdCommandRaw, type: SimVarValueType.Number }],
     ['fmgc2RollFdCommandRaw', { name: PFDVars.fmgc2RollFdCommandRaw, type: SimVarValueType.Number }],
     ['fmgc1PitchFdCommandRaw', { name: PFDVars.fmgc1PitchFdCommandRaw, type: SimVarValueType.Number }],

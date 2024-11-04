@@ -12,7 +12,7 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
@@ -56,29 +56,86 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private fmgcDiscreteWord4 = new Arinc429Word(0);
 
-  private fmgcDiscreteWord7 = new Arinc429Word(0);
+  private fmgcDiscreteWord7 = Arinc429RegisterSubject.createEmpty();
 
-  private athrModeMessage = 0;
+  private machPreselVal = Arinc429RegisterSubject.createEmpty();
 
-  private machPreselVal = 0;
+  private speedPreselVal = Arinc429RegisterSubject.createEmpty();
 
-  private speedPreselVal = 0;
+  private setHoldSpeed = Subject.create(false);
 
-  private setHoldSpeed = false;
+  private tdReached = Subject.create(false);
 
-  private tdReached = false;
+  private checkSpeedMode = Subject.create(false);
 
-  private checkSpeedMode = false;
+  private fcdcDiscreteWord1 = Arinc429RegisterSubject.createEmpty();
 
-  private fcdcDiscreteWord1 = new Arinc429Word(0);
-
-  private fwcFlightPhase = 0;
+  private fwcFlightPhase = Subject.create(0);
 
   private firstBorderSub = Subject.create('');
 
   private secondBorderSub = Subject.create('');
 
-  private AB3Message = Subject.create(false);
+  private fcuAtsFmaDiscreteWord = Arinc429RegisterSubject.createEmpty();
+
+  private ecu1MaintenanceWord6 = Arinc429RegisterSubject.createEmpty();
+
+  private ecu2MaintenanceWord6 = Arinc429RegisterSubject.createEmpty();
+
+  private autobrakeMode = Subject.create(0);
+
+  private preselActive = MappedSubject.create(
+    ([machPresel, spdPresel]) => machPresel.isNormalOperation() || spdPresel.isNormalOperation(),
+    this.machPreselVal,
+    this.speedPreselVal,
+  );
+
+  private BC3Message = MappedSubject.create(
+    ([isAttExcessive, fmgcDiscreteWord7, setHoldSpeed, fcdcDiscreteWord1, fwcFlightPhase, tdReached, checkSpeedMode]) =>
+      getBC3Message(
+        isAttExcessive,
+        fmgcDiscreteWord7,
+        setHoldSpeed,
+        fcdcDiscreteWord1,
+        fwcFlightPhase,
+        tdReached,
+        checkSpeedMode,
+      ),
+    this.props.isAttExcessive,
+    this.fmgcDiscreteWord7,
+    this.setHoldSpeed,
+    this.fcdcDiscreteWord1,
+    this.fwcFlightPhase,
+    this.tdReached,
+    this.checkSpeedMode,
+  );
+
+  private BC3MessageActive = MappedSubject.create(([BC3Message]) => BC3Message[0] !== null, this.BC3Message);
+
+  private A3Message = MappedSubject.create(
+    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message]) =>
+      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message),
+    this.fcuAtsFmaDiscreteWord,
+    this.ecu1MaintenanceWord6,
+    this.ecu2MaintenanceWord6,
+    this.autobrakeMode,
+    this.preselActive,
+  );
+
+  private A3MessageActive = MappedSubject.create(([A3Message]) => A3Message[0] !== null, this.A3Message);
+
+  private AB3MessageInhibit = MappedSubject.create(
+    ([BC3Message, A3Message]) => BC3Message || A3Message,
+    this.BC3MessageActive,
+    this.A3MessageActive,
+  );
+
+  private AB3Message = MappedSubject.create(
+    ([machPreselVal, speedPreselVal, inhibit]) => getAB3Message(machPreselVal, speedPreselVal, inhibit),
+    this.machPreselVal,
+    this.speedPreselVal,
+    this.AB3MessageInhibit,
+  );
 
   private handleFMABorders() {
     const rollOutActive = this.fmgcDiscreteWord2.bitValueOr(26, false);
@@ -90,37 +147,25 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
     const sharedModeActive = rollOutActive || flareActive || landActive || (navActive && finalActive);
 
-    const BC3Message =
-      getBC3Message(
-        this.props.isAttExcessive.get(),
-        this.fmgcDiscreteWord7,
-        this.setHoldSpeed,
-        this.fcdcDiscreteWord1,
-        this.fwcFlightPhase,
-        this.tdReached,
-        this.checkSpeedMode,
-      )[0] !== null;
-
-    const engineMessage = this.athrModeMessage;
-    const AB3Message = (this.machPreselVal !== -1 || this.speedPreselVal !== -1) && !BC3Message && engineMessage === 0;
+    const BC3MessageActive = this.BC3Message.get()[0] !== null;
+    const AB3MessageActive = this.AB3Message.get()[0] !== null;
 
     let secondBorder: string;
     if (sharedModeActive && !this.props.isAttExcessive.get()) {
       secondBorder = '';
-    } else if (BC3Message) {
+    } else if (BC3MessageActive) {
       secondBorder = 'm66.241 0.33732v15.766';
     } else {
       secondBorder = 'm66.241 0.33732v20.864';
     }
 
     let firstBorder: string;
-    if (AB3Message && !this.props.isAttExcessive.get()) {
+    if (AB3MessageActive && !this.props.isAttExcessive.get()) {
       firstBorder = 'm33.117 0.33732v15.766';
     } else {
       firstBorder = 'm33.117 0.33732v20.864';
     }
 
-    this.AB3Message.set(AB3Message);
     this.firstBorderSub.set(firstBorder);
     this.secondBorderSub.set(secondBorder);
   }
@@ -128,11 +173,13 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FgBus>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FgBus & FcuBus>();
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
     });
+
+    this.BC3Message.sub(() => this.handleFMABorders());
 
     sub
       .on('fmgcDiscreteWord1')
@@ -158,68 +205,43 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.handleFMABorders();
       });
 
-    sub
-      .on('fmgcDiscreteWord7')
-      .whenChanged()
-      .handle((word) => {
-        this.fmgcDiscreteWord7 = word;
-        this.handleFMABorders();
-      });
+    sub.on('fmgcDiscreteWord7').handle((word) => {
+      this.fmgcDiscreteWord7.setWord(word.rawWord);
+    });
 
-    sub
-      .on('speedPreselVal')
-      .whenChanged()
-      .handle((s) => {
-        this.speedPreselVal = s;
-        this.handleFMABorders();
-      });
+    sub.on('preselSpeed').handle((word) => {
+      this.speedPreselVal.setWord(word.rawWord);
+    });
 
-    sub
-      .on('machPreselVal')
-      .whenChanged()
-      .handle((m) => {
-        this.machPreselVal = m;
-        this.handleFMABorders();
-      });
+    sub.on('preselMach').handle((word) => {
+      this.machPreselVal.setWord(word.rawWord);
+    });
 
-    sub
-      .on('setHoldSpeed')
-      .whenChanged()
-      .handle((shs) => {
-        this.setHoldSpeed = shs;
-        this.handleFMABorders();
-      });
+    sub.on('setHoldSpeed').handle(this.setHoldSpeed.set.bind(this.setHoldSpeed));
 
-    sub
-      .on('fcdcDiscreteWord1')
-      .atFrequency(1)
-      .handle((fcdcDiscreteWord1) => {
-        this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
-        this.handleFMABorders();
-      });
+    sub.on('fcdcDiscreteWord1').handle((word) => {
+      this.fcdcDiscreteWord1.setWord(word.rawWord);
+    });
 
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fwcFlightPhase) => {
-        this.fwcFlightPhase = fwcFlightPhase;
-      });
+    sub.on('fwcFlightPhase').handle(this.fwcFlightPhase.set.bind(this.fwcFlightPhase));
 
-    sub
-      .on('tdReached')
-      .whenChanged()
-      .handle((tdr) => {
-        this.tdReached = tdr;
-        this.handleFMABorders();
-      });
+    sub.on('tdReached').handle(this.tdReached.set.bind(this.tdReached));
 
-    sub
-      .on('checkSpeedMode')
-      .whenChanged()
-      .handle((csm) => {
-        this.checkSpeedMode = csm;
-        this.handleFMABorders();
-      });
+    sub.on('checkSpeedMode').handle(this.checkSpeedMode.set.bind(this.checkSpeedMode));
+
+    sub.on('autoBrakeMode').handle(this.autobrakeMode.set.bind(this.autobrakeMode));
+
+    sub.on('fcuAtsFmaDiscreteWord').handle((word) => {
+      this.fcuAtsFmaDiscreteWord.setWord(word.rawWord);
+    });
+
+    sub.on('ecu1MaintenanceWord6').handle((word) => {
+      this.ecu1MaintenanceWord6.setWord(word.rawWord);
+    });
+
+    sub.on('ecu2MaintenanceWord6').handle((word) => {
+      this.ecu2MaintenanceWord6.setWord(word.rawWord);
+    });
   }
 
   render(): VNode {
@@ -234,7 +256,13 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
         <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
-        <Row3 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} AB3Message={this.AB3Message} />
+        <Row3
+          bus={this.props.bus}
+          isAttExcessive={this.props.isAttExcessive}
+          AB3Message={this.AB3Message}
+          BC3Message={this.BC3Message}
+          A3Message={this.A3Message}
+        />
       </g>
     );
   }
@@ -410,7 +438,9 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 class Row3 extends DisplayComponent<{
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
-  AB3Message: Subscribable<boolean>;
+  AB3Message: Subscribable<string[]>;
+  BC3Message: Subscribable<string[]>;
+  A3Message: Subscribable<string[]>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
@@ -429,12 +459,12 @@ class Row3 extends DisplayComponent<{
   render(): VNode {
     return (
       <g>
-        <A3Cell bus={this.props.bus} AB3Message={this.props.AB3Message} />
+        <A3Cell bus={this.props.bus} A3Message={this.props.A3Message} />
         <g ref={this.cellsToHide}>
-          <AB3Cell bus={this.props.bus} />
+          <AB3Cell AB3Message={this.props.AB3Message} />
           <D3Cell bus={this.props.bus} />
         </g>
-        <BC3Cell isAttExcessive={this.props.isAttExcessive} bus={this.props.bus} />
+        <BC3Cell BC3Message={this.props.BC3Message} />
         <E3Cell bus={this.props.bus} />
       </g>
     );
@@ -656,8 +686,47 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
+const getA3Message = (
+  fcuAtsFmaDiscreteWord: Arinc429Register,
+  ecu1MaintenanceWord6: Arinc429Register,
+  ecu2MaintenanceWord6: Arinc429Register,
+  autobrakeMode: number,
+  AB3Message: boolean,
+) => {
+  const clbDemand = fcuAtsFmaDiscreteWord.bitValueOr(22, false);
+  const mctDemand = fcuAtsFmaDiscreteWord.bitValueOr(23, false);
+  const assymThrust = fcuAtsFmaDiscreteWord.bitValueOr(21, false);
+  const thrLocked = ecu1MaintenanceWord6.bitValueOr(12, false) || ecu2MaintenanceWord6.bitValueOr(12, false);
+
+  let text: string;
+  let className: string;
+  if (thrLocked) {
+    text = 'THR LK';
+    className = 'Amber BlinkInfinite';
+  } else if (false) {
+    text = 'LVR TOGA';
+    className = 'White BlinkInfinite';
+  } else if (clbDemand) {
+    text = 'LVR CLB';
+    className = 'White BlinkInfinite';
+  } else if (mctDemand) {
+    text = 'LVR MCT';
+    className = 'White BlinkInfinite';
+  } else if (assymThrust) {
+    text = 'LVR ASYM';
+    className = 'Amber';
+  } else if (autobrakeMode === 3 && !AB3Message) {
+    text = 'BRK MAX';
+    className = 'FontMediumSmaller MiddleAlign Cyan';
+  } else {
+    return [null, null];
+  }
+
+  return [text, className];
+};
+
 interface A3CellProps extends CellProps {
-  AB3Message: Subscribable<boolean>;
+  A3Message: Subscribable<string[]>;
 }
 
 class A3Cell extends DisplayComponent<A3CellProps> {
@@ -665,47 +734,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private textSub = Subject.create('');
 
-  private fcuAtsFmaDiscreteWord = new Arinc429Word(0);
-
-  private ecu1MaintenanceWord6 = new Arinc429Word(0);
-
-  private ecu2MaintenanceWord6 = new Arinc429Word(0);
-
-  private autobrakeMode = 0;
-
-  private AB3Message = false;
-
   private updateMessage() {
-    const clbDemand = this.fcuAtsFmaDiscreteWord.bitValueOr(22, false);
-    const mctDemand = this.fcuAtsFmaDiscreteWord.bitValueOr(23, false);
-    const assymThrust = this.fcuAtsFmaDiscreteWord.bitValueOr(21, false);
-    const thrLocked =
-      this.ecu1MaintenanceWord6.bitValueOr(12, false) || this.ecu2MaintenanceWord6.bitValueOr(12, false);
-
-    let text: string = '';
-    let className: string = '';
-    // TODO Implement ECU Bus for THR LK
-    if (thrLocked) {
-      text = 'THR LK';
-      className = 'Amber BlinkInfinite';
-    } else if (false) {
-      text = 'LVR TOGA';
-      className = 'White BlinkInfinite';
-    } else if (clbDemand) {
-      text = 'LVR CLB';
-      className = 'White BlinkInfinite';
-    } else if (mctDemand) {
-      text = 'LVR MCT';
-      className = 'White BlinkInfinite';
-    } else if (assymThrust) {
-      text = 'LVR ASYM';
-      className = 'Amber';
-    } else if (this.autobrakeMode === 3 && !this.AB3Message) {
-      text = 'BRK MAX';
-      className = 'FontMediumSmaller MiddleAlign Cyan';
-    } else {
-      text = '';
-    }
+    const className = this.props.A3Message.get()[1];
+    const text = this.props.A3Message.get()[0];
 
     this.textSub.set(text);
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
@@ -714,53 +745,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FcuBus>();
-
-    sub
-      .on('fcuAtsFmaDiscreteWord')
-      .whenChanged()
-      .handle((word) => {
-        this.fcuAtsFmaDiscreteWord = word;
-        this.updateMessage();
-      });
-
-    sub
-      .on('ecu1MaintenanceWord6')
-      .whenChanged()
-      .handle((word) => {
-        this.ecu1MaintenanceWord6 = word;
-        this.updateMessage();
-      });
-
-    sub
-      .on('ecu2MaintenanceWord6')
-      .whenChanged()
-      .handle((word) => {
-        this.ecu2MaintenanceWord6 = word;
-        this.updateMessage();
-      });
-
-    sub
-      .on('autoBrakeMode')
-      .whenChanged()
-      .handle((am) => {
-        this.autobrakeMode = am;
-        this.updateMessage();
-      });
-
-    this.props.AB3Message.sub((ab3) => {
-      this.AB3Message = ab3;
-      this.updateMessage();
-    });
-
-    sub
-      .on('autoBrakeActive')
-      .whenChanged()
-      .handle((a) => {
-        if (a) {
-          this.classSub.set('HiddenElement');
-        }
-      });
+    this.props.A3Message.sub(() => this.updateMessage());
   }
 
   render(): VNode {
@@ -772,13 +757,20 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 }
 
-class AB3Cell extends DisplayComponent<CellProps> {
-  private speedPreselVal = -1;
+const getAB3Message = (machPresel: Arinc429Register, spdPresel: Arinc429Register, inhibit: boolean) => {
+  /* use vertical bar instead of : for PRESEL text since : is not aligned to the bottom as the other fonts and the font file is used on ECAM, ND etc.
+              vertical bar is mapped to ":" aligned to bottom in font file
+               */
+  if (!inhibit && spdPresel.isNormalOperation()) {
+    return ['SPEED SEL|   ', Math.round(spdPresel.value).toString()];
+  } else if (!inhibit && machPresel.isNormalOperation()) {
+    return ['MACH SEL|   ', machPresel.value.toFixed(2)];
+  } else {
+    return [null, null];
+  }
+};
 
-  private machPreselVal = -1;
-
-  private athrModeMessage = 0;
-
+class AB3Cell extends DisplayComponent<{ AB3Message: Subscribable<string[]> }> {
   private textSub = Subject.create('');
 
   private text2Sub = Subject.create('');
@@ -786,54 +778,20 @@ class AB3Cell extends DisplayComponent<CellProps> {
   private textXPosSub = Subject.create(0);
 
   private getText() {
-    if (this.athrModeMessage === 0) {
-      /* use vertical bar instead of : for PRESEL text since : is not aligned to the bottom as the other fonts and the font file is used on ECAM, ND etc.
-                vertical bar is mapped to ":" aligned to bottom in font file
-                 */
-      if (this.speedPreselVal !== -1 && this.machPreselVal === -1) {
-        const text = Math.round(this.speedPreselVal);
-        this.textSub.set('SPEED SEL|   ');
-        this.text2Sub.set(`${text}`);
-        this.textXPosSub.set(35.434673);
-      } else if (this.machPreselVal !== -1 && this.speedPreselVal === -1) {
-        this.textSub.set('MACH SEL|   ');
-        this.text2Sub.set(`${this.machPreselVal.toFixed(2)}`);
-        this.textXPosSub.set(33.834673);
-      } else if (this.machPreselVal === -1 && this.speedPreselVal === -1) {
-        this.textSub.set('');
-        this.text2Sub.set('');
-      }
+    this.textSub.set(this.props.AB3Message.get()[0]);
+    this.text2Sub.set(this.props.AB3Message.get()[1]);
+
+    if (this.textSub.get() === 'SPEED SEL|   ') {
+      this.textXPosSub.set(35.434673);
     } else {
-      this.textSub.set('');
-      this.text2Sub.set('');
+      this.textXPosSub.set(33.834673);
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    sub
-      .on('speedPreselVal')
-      .whenChanged()
-      .handle((m) => {
-        this.speedPreselVal = m;
-        this.getText();
-      });
-
-    sub
-      .on('machPreselVal')
-      .whenChanged()
-      .handle((m) => {
-        this.machPreselVal = m;
-        this.getText();
-      });
-
-    // sub.on('athrModeMessage').whenChanged().handle((m) => {
-    //     this.athrModeMessage = m;
-    //     this.getText();
-    // });
+    this.props.AB3Message.sub(() => this.getText());
   }
 
   render(): VNode {
@@ -1587,35 +1545,15 @@ const getBC3Message = (
   return [text, className];
 };
 
-class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; bus: ArincEventBus }> {
+class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> }> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
   private classNameSub = Subject.create('');
 
-  private isAttExcessive = false;
-
-  private fmgcDiscreteWord7 = new Arinc429Word(0);
-
-  private setHoldSpeed = false;
-
-  private fcdcDiscreteWord1 = new Arinc429Word(0);
-
-  private fwcFlightPhase = 0;
-
-  private tdReached = false;
-
-  private checkSpeedMode = false;
-
   private fillBC3Cell() {
-    const [text, className] = getBC3Message(
-      this.isAttExcessive,
-      this.fmgcDiscreteWord7,
-      this.setHoldSpeed,
-      this.fcdcDiscreteWord1,
-      this.fwcFlightPhase,
-      this.tdReached,
-      this.checkSpeedMode,
-    );
+    const className = this.props.BC3Message.get()[1];
+    const text = this.props.BC3Message.get()[0];
+
     this.classNameSub.set(`MiddleAlign ${className}`);
     if (text !== null) {
       this.bc3Cell.instance.innerHTML = text;
@@ -1627,59 +1565,9 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FgBus>();
-
-    this.props.isAttExcessive.sub((e) => {
-      this.isAttExcessive = e;
+    this.props.BC3Message.sub(() => {
       this.fillBC3Cell();
     });
-
-    sub
-      .on('fmgcDiscreteWord7')
-      .whenChanged()
-      .handle((word) => {
-        this.fmgcDiscreteWord7 = word;
-        this.fillBC3Cell();
-      });
-
-    sub
-      .on('setHoldSpeed')
-      .whenChanged()
-      .handle((shs) => {
-        this.setHoldSpeed = shs;
-        this.fillBC3Cell();
-      });
-
-    sub
-      .on('fcdcDiscreteWord1')
-      .atFrequency(1)
-      .handle((fcdcDiscreteWord1) => {
-        this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
-        this.fillBC3Cell();
-      });
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fwcFlightPhase) => {
-        this.fwcFlightPhase = fwcFlightPhase;
-      });
-
-    sub
-      .on('tdReached')
-      .whenChanged()
-      .handle((tdr) => {
-        this.tdReached = tdr;
-        this.fillBC3Cell();
-      });
-
-    sub
-      .on('checkSpeedMode')
-      .whenChanged()
-      .handle((csm) => {
-        this.checkSpeedMode = csm;
-        this.fillBC3Cell();
-      });
   }
 
   render(): VNode {
