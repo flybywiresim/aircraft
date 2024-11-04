@@ -31,6 +31,8 @@ export class DigitalOutputs {
   private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] =
     [];
 
+  private static rmpFrequencyArinc: Arinc429Register = Arinc429Register.empty();
+
   constructor(
     private readonly bus: EventBus,
     private readonly synchronizedAoc: boolean,
@@ -72,6 +74,7 @@ export class DigitalOutputs {
 
   public powerDown(): void {
     this.publisher.pub('atcResetData', true, true, false);
+    DigitalOutputs.rmpFrequencyArinc = Arinc429Register.empty();
   }
 
   private async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
@@ -121,16 +124,14 @@ export class DigitalOutputs {
   }
 
   public sendRmpFrequency(frequency: number): void {
-    const frequencyWord = Arinc429Register.empty();
-    frequencyWord.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    frequencyWord.setValue(frequency);
-    frequencyWord.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
+    DigitalOutputs.rmpFrequencyArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    DigitalOutputs.rmpFrequencyArinc.setValue(frequency);
+    DigitalOutputs.rmpFrequencyArinc.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
   }
 
   public resetRmpFrequency(): void {
-    const emptyWord = Arinc429Register.empty();
-    emptyWord.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-    emptyWord.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
+    DigitalOutputs.rmpFrequencyArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    DigitalOutputs.rmpFrequencyArinc.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
   }
 
   public async receiveAtis(
