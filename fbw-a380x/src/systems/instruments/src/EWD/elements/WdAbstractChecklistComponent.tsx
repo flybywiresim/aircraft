@@ -18,7 +18,7 @@ import {
   WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EclClickspots } from 'instruments/src/EWD/elements/EclClickspots';
+import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
 
 interface WdAbstractChecklistComponentProps {
   bus: EventBus;
@@ -117,7 +117,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
             />
           ))}
         </div>
-        <EclClickspots bus={this.props.bus} />
+        <EclSoftKeys bus={this.props.bus} />
       </div>
     );
   }

@@ -480,10 +480,10 @@ text, tspan, span {
   border-bottom: 3px solid $display-white;
 }
 
-.EclClickspots {
+.EclSoftKeys {
   position: absolute;
   top: 965px;
-  right: 0px;
+  right: 3px;
   display: flex;
   flex-direction: row;
 }

@@ -631,6 +631,7 @@
       "AutofillChecklists": "Autofill Checklists",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
+      "EclSoftKeys": "Show soft keys for EWD electronic checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Mode",
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",

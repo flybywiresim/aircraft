@@ -3,6 +3,7 @@
 
 import React, { useContext } from 'react';
 import {
+  AirframeType,
   usePersistentBooleanProperty,
   usePersistentNumberProperty,
   usePersistentProperty,
@@ -15,7 +16,7 @@ import { ButtonType, SettingGroup, SettingItem, SettingsPage } from '../Settings
 
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { AircraftContext } from '@flybywiresim/flypad';
+import { AircraftContext, useAppSelector } from '@flybywiresim/flypad';
 
 type SimVarButton = {
   simVarValue: number;
@@ -23,6 +24,7 @@ type SimVarButton = {
 
 export const RealismPage = () => {
   const aircraftContext = useContext(AircraftContext);
+  const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
   const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
   const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
@@ -40,6 +42,7 @@ export const RealismPage = () => {
     'CONFIG_FIRST_OFFICER_AVATAR_VISIBLE',
     0,
   );
+  const [eclSoftKeys, setEclSoftKeys] = usePersistentNumberProperty('CONFIG_A380X_SHOW_ECL_SOFTKEYS', 0);
 
   const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
     { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -177,6 +180,12 @@ export const RealismPage = () => {
             </SettingItem>
           )}
         </SettingGroup>
+      )}
+
+      {airframeInfo.variant === AirframeType.A380_842 && (
+        <SettingItem name={t('Settings.Realism.EclSoftKeys')} unrealistic>
+          <Toggle value={!!eclSoftKeys} onToggle={(value) => setEclSoftKeys(value ? 1 : 0)} />
+        </SettingItem>
       )}
     </SettingsPage>
   );
