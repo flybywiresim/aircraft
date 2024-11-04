@@ -9,6 +9,7 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex } from '@fmgc/index';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { OffsetAngleFormat, OffsetDistFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 
 interface MfdFmsFplnOffsetProps extends AbstractMfdPageProps {}
 
@@ -33,9 +34,12 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
 
   private offsetDist = Subject.create<number | null>(null);
 
+  private OffsetLRIndex = Subject.create<number | null>(1);
+
   protected onNewData(): void {
     this.offsetInterceptAngle.set(30);
     this.offsetDist.set(5);
+    this.OffsetLRIndex.set(1);
     // Use active FPLN for building the list (page only works for active anyways)
     const activeFpln = this.props.fmcService.master?.flightPlanService.active;
     if (activeFpln) {
@@ -133,7 +137,7 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                 <div>
                   <span class="mfd-label">INTERCEPT ANGLE</span>
                 </div>
-                <div>
+                <div style="padding-top: 5px;">
                   <InputField<number>
                     dataEntryFormat={new OffsetAngleFormat()}
                     value={this.offsetInterceptAngle}
@@ -145,14 +149,25 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                 <div>
                   <span class="mfd-label">OFFSET DIST</span>
                 </div>
-                <div>
-                  <InputField<number>
-                    dataEntryFormat={new OffsetDistFormat()}
-                    value={this.offsetDist}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                    hEventConsumer={this.props.mfd.hEventConsumer}
-                    interactionMode={this.props.mfd.interactionMode}
-                  />
+                <div class="mfd-offset-dist-input-grid">
+                  <div style="grid-row-start: span 1; width: 100px;">
+                    <InputField<number>
+                      dataEntryFormat={new OffsetDistFormat()}
+                      value={this.offsetDist}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
+                    />
+                  </div>
+                  <div>
+                    <RadioButtonGroup
+                      values={['LEFT', 'RIGHT']}
+                      selectedIndex={this.OffsetLRIndex}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_offsetDirectLeftRight`}
+                      additionalVerticalSpacing={10}
+                      color={Subject.create('green')}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
