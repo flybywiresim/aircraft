@@ -74,3 +74,19 @@ export interface StepData {
 
   ident: string;
 }
+
+export interface OffsetData {
+  interceptAngle?: number;
+
+  offsetDistance?: NauticalMiles;
+
+  offsetDirection?: TurnDirection;
+
+  offsetMetadata: offsetMetadata;
+}
+
+export enum offsetMetadata {
+  Start = 0,
+  Intermediate = 1,
+  End = 2,
+}
