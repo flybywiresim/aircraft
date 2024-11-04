@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
       STANDALONE_ZIP_NAME: A32NX-master.7z
       BUILD_DIR_NAME: master-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
@@ -61,23 +60,35 @@ jobs:
         run: |
           rm -rf ./fbw-a380x/
           rm -rf ./large-files/fbw-a380x/
-      - name: Build ZIP files
+      - name: Build Fragmenter modules
         run: |
           df -h
           node ./scripts/fragment_a32nx.js
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           node ./scripts/install-source_a32nx.js
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          cd ./fbw-a32nx/out/
-          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
-          cd ../../
           df -h
-      - name: Upload to CloudFlare CDN
+      - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
           CDN_BUCKET_DESTINATION: addons/a32nx/a380x-workflows
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
+      - name: Build Standalone Download files
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cd ./fbw-a32nx/out/
+          rm -rf build-modules
+          7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          cd ../../
+          df -h
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            echo "Standalone Download is is not split"
+          else
+            echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
 
   build_a380x_8k:
     name: Build and deploy A380X (8K)
@@ -177,7 +188,12 @@ jobs:
           df -h
       - name: Count Standalone Download files
         run: |
-          ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 2 ]; then
+            echo "Standalone Download is split in 2 parts"
+          else
+            echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
 
   build_a380x_4k:
     name: Build and deploy A380X (4K)
@@ -274,4 +290,9 @@ jobs:
           df -h
       - name: Count Standalone Download files
         run: |
-          ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 2 ]; then
+            echo "Standalone Download is split in 2 parts"
+          else
+            echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
