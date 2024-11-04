@@ -123,6 +123,10 @@ export class DigitalOutputs {
     }
   }
 
+  public requestDirectTo(waypoint: string): void {
+    this.publisher.pub('atcRequestDirectTo', waypoint, true, false);
+  }
+
   public sendRmpFrequency(frequency: number): void {
     DigitalOutputs.rmpFrequencyArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     DigitalOutputs.rmpFrequencyArinc.setValue(frequency);
