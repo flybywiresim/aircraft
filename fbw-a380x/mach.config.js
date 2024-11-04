@@ -54,6 +54,7 @@ function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
       templateId: `A380X_${name}`,
       mountElementId: `${name}_CONTENT`,
       fileName: name.toLowerCase(),
+      imports: ['/JS/dataStorage.js'],
     },
   };
 }
@@ -66,7 +67,7 @@ function reactInstrument(name, additionalImports) {
       type: 'react',
       isInteractive: false,
       fileName: name.toLowerCase(),
-      imports: ['/JS/fbw-a380x/A380X_Simvars.js', ...(additionalImports ?? [])],
+      imports: ['/JS/dataStorage.js', '/JS/fbw-a380x/A380X_Simvars.js', ...(additionalImports ?? [])],
     },
   };
 }
