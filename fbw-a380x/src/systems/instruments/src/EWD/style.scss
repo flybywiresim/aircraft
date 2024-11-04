@@ -479,3 +479,11 @@ text, tspan, span {
 .EclLineEndMarker.Last {
   border-bottom: 3px solid $display-white;
 }
+
+.EclClickspots {
+  position: absolute;
+  top: 965px;
+  right: 0px;
+  display: flex;
+  flex-direction: row;
+}
