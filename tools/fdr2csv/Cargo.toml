@@ -1,5 +1,5 @@
 [package]
-name = "fdr2csv-a32nx"
+name = "fdr2csv"
 version = "0.1.0"
 authors = ["FlyByWire Simulations"]
 edition = "2021"
@@ -10,8 +10,6 @@ edition = "2021"
 bindgen = "0.69.5"
 
 [dependencies]
-fdr2csv_common = { path = "../common" }
-
 clap = { version = "4.5.20", features = ["derive"] }
 serde = { version = "1.0.213", features = ["derive"] }
 bytemuck = { version = "1.19.0", features = ["derive"] }
