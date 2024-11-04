@@ -18,7 +18,7 @@
 1. [A380X/TELEX] Added popup for telex consent - @saschl (saschl) @Maximilian-Reuter (\_chaoz)
 1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
 1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
-1. [A380X] Various fixes in FMS, ECL, BTV fallback @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL @flogross89 (floridude)
 
 ## 0.12.0
 
