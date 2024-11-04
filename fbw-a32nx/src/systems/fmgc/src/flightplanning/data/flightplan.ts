@@ -82,10 +82,10 @@ export interface OffsetData {
 
   offsetDirection?: TurnDirection;
 
-  offsetMetadata: offsetMetadata;
+  offsetFlags: offsetFlags;
 }
 
-export enum offsetMetadata {
+export enum offsetFlags {
   Start = 0,
   Intermediate = 1,
   End = 2,
