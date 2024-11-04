@@ -3,25 +3,25 @@
 ## Contents
 
 - [A380 Local SimVars](#a380-local-simvars)
-  - [Contents](#contents)
-  - [Uncategorized](#uncategorized)
-  - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
-  - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
-  - [Flight Management System ATA 22](#flight-management-system-ata-22)
-  - [Electrical ATA 24](#electrical-ata-24)
-  - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
-  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
-  - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
-  - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
-  - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
-  - [Bleed Air ATA 36](#bleed-air-ata-36)
-  - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
-  - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
-  - [Engines ATA 70](#engines-ata-70)
-  - [Hydraulics](#hydraulics)
-  - [Sound Variables](#sound-variables)
-  - [Autobrakes](#autobrakes)
-  - [Non-Systems Related](#non-systems-related)
+    - [Contents](#contents)
+    - [Uncategorized](#uncategorized)
+    - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+    - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
+    - [Flight Management System ATA 22](#flight-management-system-ata-22)
+    - [Electrical ATA 24](#electrical-ata-24)
+    - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
+    - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
+    - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
+    - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
+    - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
+    - [Bleed Air ATA 36](#bleed-air-ata-36)
+    - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
+    - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
+    - [Engines ATA 70](#engines-ata-70)
+    - [Hydraulics](#hydraulics)
+    - [Sound Variables](#sound-variables)
+    - [Autobrakes](#autobrakes)
+    - [Non-Systems Related](#non-systems-related)
 
 ## Uncategorized
 
@@ -29,7 +29,7 @@
     - Enum
     - Represents the state of the ANN LT switch
     - | State | Value |
-      |-------|-------|
+            |-------|-------|
       | TEST  | 0     |
       | BRT   | 1     |
       | DIM   | 2     |
@@ -136,7 +136,7 @@
     - Will be reset to 0 after loading is done
     - When set to 0 during loading will stop and cancel the loading process
     - | Value | Meaning            |
-            |-------|--------------------|
+                  |-------|--------------------|
       | 1     | Cold & Dark        |
       | 2     | Powered            |
       | 3     | Ready for Pushback |
@@ -170,7 +170,6 @@
     - Turn factor for pushback
     - -1.0 is full left, 0.0 is straight, 1.0 is full right
 
-
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
 - A32NX_COND_CPIOM_B{id}_AGS_DISCRETE_WORD
@@ -178,7 +177,7 @@
     - Discrete Data word of the AGS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-      |:---:|:----------------------------------------------------:|
+            |:---:|:----------------------------------------------------:|
       | 11  | AGS Application INOP                                 |
       | 12  | Unused                                               |
       | 13  | Pack 1 operating                                     |
@@ -189,7 +188,7 @@
     - Discrete Data word of the TCS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-      |:---:|:----------------------------------------------------:|
+            |:---:|:----------------------------------------------------:|
       | 11  | TCS Application INOP                                 |
       | 12  | Unused                                               |
       | 13  | Hot Air 1 position disagrees                         |
@@ -202,7 +201,7 @@
     - Discrete Data word of the VCS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-      |:---:|:----------------------------------------------------:|
+            |:---:|:----------------------------------------------------:|
       | 11  | VCS Application INOP                                 |
       | 12  | Unused                                               |
       | 13  | FWD Extraction fan is on                             |
@@ -223,7 +222,7 @@
     - Discrete Data word of the CPCS Application in the CPIOM B (assumed)
     - {id} 1, 2, 3 or 4
     - | Bit |                      Description                     |
-      |:---:|:----------------------------------------------------:|
+            |:---:|:----------------------------------------------------:|
       | 11  | CPCS Application INOP                                |
       | 12  | Unused                                               |
       | 13  | Excessive cabin altitude - warn                      |
@@ -385,7 +384,7 @@
 - A32NX_OVHD_COND_RAM_AIR_PB_IS_ON
     - Bool
     - True if the ram air pushbutton is pressed in the on position
-  (on light iluminates)
+      (on light iluminates)
 
 - A32NX_OVHD_CARGO_AIR_{id}_SELECTOR_KNOB
     - Number (0 to 300)
@@ -505,44 +504,44 @@
     - Bool
     - True when the given bus is powered
     - {name}
-      - AC_1
-      - AC_2
-      - AC_3
-      - AC_4
-      - AC_ESS
-      - AC_ESS_SCHED
-      - AC_247XP
-      - DC_1
-      - DC_2
-      - DC_ESS
-      - DC_247PP
-      - DC_HOT_1
-      - DC_HOT_2
-      - DC_HOT_3
-      - DC_HOT_4
-      - DC_GND_FLT_SVC
+        - AC_1
+        - AC_2
+        - AC_3
+        - AC_4
+        - AC_ESS
+        - AC_ESS_SCHED
+        - AC_247XP
+        - DC_1
+        - DC_2
+        - DC_ESS
+        - DC_247PP
+        - DC_HOT_1
+        - DC_HOT_2
+        - DC_HOT_3
+        - DC_HOT_4
+        - DC_GND_FLT_SVC
 
 - A32NX_ELEC_{name}_POTENTIAL
     - Volts
     - The electric potential of the given element
     - {name}
-      - APU_GEN_1
-      - APU_GEN_2
-      - ENG_GEN_1
-      - ENG_GEN_2
-      - ENG_GEN_3
-      - ENG_GEN_4
-      - EXT_PWR
-      - STAT_INV
-      - EMER_GEN
-      - TR_1
-      - TR_2
-      - TR_3: TR ESS
-      - TR_4: TR APU
-      - BAT_1
-      - BAT_2
-      - BAT_3: BAT ESS
-      - BAT_4: BAT APU
+        - APU_GEN_1
+        - APU_GEN_2
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - ENG_GEN_3
+        - ENG_GEN_4
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - TR_4: TR APU
+        - BAT_1
+        - BAT_2
+        - BAT_3: BAT ESS
+        - BAT_4: BAT APU
 
 - A32NX_ELEC_{name}_POTENTIAL_NORMAL
     - Bool
@@ -666,7 +665,7 @@
     - Arinc429<Discrete>
     - Discrete Data word of the Fire Detection Unit (assumed)
     - | Bit |                      Description                     |
-      |:---:|:----------------------------------------------------:|
+            |:---:|:----------------------------------------------------:|
       | 11  | Fire detected ENG 1                                  |
       | 12  | Fire detected ENG 2                                  |
       | 13  | Fire detected ENG 3                                  |
@@ -767,7 +766,6 @@
     - Bool
     - True when the overhead fire test pushbutton is pressed
 
-
 ## Flaps / Slats (ATA 27)
 
 - A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
@@ -775,7 +773,7 @@
     - Arinc429<Discrete>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |      Description A380X, if different     |
-      |:---:|:----------------------------------------:|
+            |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |
       | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
       | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
@@ -797,71 +795,71 @@
       | 29  | Flap System Jam                          |
 
 - A32NX_FLAPS_CONF_INDEX
-  - Number
-  - Indicates the desired flap configuration index according to the table
-  - Value | Meaning
-            --- | ---
-      0 | Conf0
-      1 | Conf1
-      2 | Conf1F
-      3 | Conf2
-      4 | Conf2S
-      5 | Conf3
-      6 | Conf4
+    - Number
+    - Indicates the desired flap configuration index according to the table
+    - Value | Meaning
+                  --- | ---
+        0 | Conf0
+        1 | Conf1
+        2 | Conf1F
+        3 | Conf2
+        4 | Conf2S
+        5 | Conf3
+        6 | Conf4
 
 ## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the captain's side is available
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the captain's side is available
 
 - A32NX_CDS_CAN_BUS_1_2_AVAIL
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the captain's side is available
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the captain's side is available
 
 - A32NX_CDS_CAN_BUS_2_1_AVAIL
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the first officer's side is available
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the first officer's side is available
 
 - A32NX_CDS_CAN_BUS_2_2_AVAIL
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the first officer's side is available
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the first officer's side is available
 
 - A32NX_CDS_CAN_BUS_1_1_FAILURE
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the captain's side simulates a failure
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the captain's side simulates a failure
 
 - A32NX_CDS_CAN_BUS_1_2_FAILURE
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the captain's side simulates a failure
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the captain's side simulates a failure
 
 - A32NX_CDS_CAN_BUS_2_1_FAILURE
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
 
 - A32NX_CDS_CAN_BUS_2_2_FAILURE
-  - Bool
-  - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
+    - Bool
+    - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
 
 - A32NX_CDS_CAN_BUS_1_1_<FUNCTION_ID>_RECEIVED
-  - Bool
-  - Indicates if the system per function ID in the CDS bus received the last sent message
+    - Bool
+    - Indicates if the system per function ID in the CDS bus received the last sent message
 
 - A32NX_CDS_CAN_BUS_1_1
-  - ArincWord852<>
-  - First CAN bus of the CDS on the captain's side
+    - ArincWord852<>
+    - First CAN bus of the CDS on the captain's side
 
 - A32NX_CDS_CAN_BUS_1_2
-  - ArincWord852<>
-  - Second CAN bus of the CDS on the captain's side
+    - ArincWord852<>
+    - Second CAN bus of the CDS on the captain's side
 
 - A32NX_CDS_CAN_BUS_2_1
-  - ArincWord852<>
-  - First CAN bus of the CDS on the first officer's side
+    - ArincWord852<>
+    - First CAN bus of the CDS on the first officer's side
 
 - A32NX_CDS_CAN_BUS_2_2
-  - ArincWord852<>
-  - Second CAN bus of the CDS on the first officer's side
+    - ArincWord852<>
+    - Second CAN bus of the CDS on the first officer's side
 
 ## ECAM Control Panel ATA 31
 
@@ -884,11 +882,11 @@
         - TOCONFIG
         - UP
 
-- A380X_ECAM_CP_SELECTED_PAGE
+- A32NX_ECAM_SD_CURRENT_PAGE_INDEX
     - Enum
 - Currently requested page on the ECAM CP
     - | State | Value |
-      |-------|-------|
+            |-------|-------|
       | ENG   | 0     |
       | APU   | 1     |
       | BLEED | 2     |
@@ -905,7 +903,6 @@
       | CRZ   | 13    |
       | STS   | 14    |
       | VIDEO | 15    |
-
 
 ## EFIS Control Panel ATA 31
 
@@ -929,7 +926,7 @@
     - Indicates which waypoint filter is selected
     - {side} = L or R
     - | State | Value |
-      |-------|-------|
+            |-------|-------|
       | WPT   | 1     |
       | VORD  | 2     |
       | NDB   | 3     |
@@ -939,7 +936,7 @@
     - Indicates which waypoint filter is selected
     - {side} = L or R
     - | State | Value |
-      |-------|-------|
+            |-------|-------|
       | WX    | 0     |
       | TERR  | 1     |
 
@@ -961,53 +958,55 @@
 ## Bleed Air ATA 36
 
 - A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE
-  - Psi
-  - Pressure measured at the intermediate pressure transducer at engine {number}, -1 if no output
+    - Psi
+    - Pressure measured at the intermediate pressure transducer at engine {number}, -1 if no output
 
 ## Integrated Modular Avionics ATA 42
 
 -A32NX_AFDX_<SOURCE_ID>_<DESTINATION_ID>_REACHABLE
-  - Bool
-  - Indicates if the AFDX switch with the source id can reach the switch with the destination id
+
+- Bool
+- Indicates if the AFDX switch with the source id can reach the switch with the destination id
 
 - A32NX_AFDX_SWITCH_<ID>_FAILURE
-  - Bool
-  - Indicates if a specific AFDX switch is in a failure mode
+    - Bool
+    - Indicates if a specific AFDX switch is in a failure mode
 
 - A32NX_AFDX_SWITCH_<ID>_AVAIL
-  - Bool
-  - Indicates if a specific AFDX switch is available
+    - Bool
+    - Indicates if a specific AFDX switch is available
 
 - A32NX_CPIOM_<NAME>_FAILURE
-  - Bool
-  - Indicates if a specific CPIOM system is in a failure mode
+    - Bool
+    - Indicates if a specific CPIOM system is in a failure mode
 
 - A32NX_CPIOM_<NAME>_AVAIL
-  - Bool
-  - Indicates if a specific CPIOM system is available
+    - Bool
+    - Indicates if a specific CPIOM system is available
 
 - A32NX_IOM_<NAME>_FAILURE
-  - Bool
-  - Indicates if a specific IOM system is in a failure mode
+    - Bool
+    - Indicates if a specific IOM system is in a failure mode
 
 - A32NX_IOM_<NAME>_AVAIL
-  - Bool
-  - Indicates if a specific IOM system is available
+    - Bool
+    - Indicates if a specific IOM system is available
 
 ## Auxiliary Power Unit ATA 49
 
 - A32NX_APU_N2
-  - `Arinc429Word<Percent>`
-  - The APU's N2 rotations per minute in percentage of the maximum RPM
+    - `Arinc429Word<Percent>`
+    - The APU's N2 rotations per minute in percentage of the maximum RPM
 
 - A32NX_APU_FUEL_USED
-  - `Arinc429Word<Mass>`
-  - The APU fuel used, in kilograms
+    - `Arinc429Word<Mass>`
+    - The APU fuel used, in kilograms
 
 ## Engines ATA 70
-  - L:A32NX_OVHD_FADEC_{ENG}
-  - The powered status of the associated engine's FADEC dependant on the button on the OVHD
-  - {ENG} = 1, 2, 3, 4
+
+- L:A32NX_OVHD_FADEC_{ENG}
+- The powered status of the associated engine's FADEC dependant on the button on the OVHD
+- {ENG} = 1, 2, 3, 4
 
 ## Hydraulics
 
@@ -1038,7 +1037,7 @@
     - Number
     - Indicates position of the autobrake selection knob
     -   | State  | Number |
-        |--------|--------|
+                |--------|--------|
         | DISARM | 0      |
         | BTV    | 1      |
         | LOW    | 2      |
@@ -1050,7 +1049,7 @@
     - Number
     - Indicates actual armed mode of autobrake system
     -   | State  | Number |
-        |--------|--------|
+                |--------|--------|
         | DISARM | 0      |
         | BTV    | 1      |
         | LOW    | 2      |
@@ -1070,9 +1069,9 @@
 ## Non-Systems Related
 
 - `L:FBW_PILOT_SEAT`
-  - Enum
-  - Which seat the user/pilot occupies in the flight deck.
-  - | Value | Description |
-    |-------|-------------|
-    | 0     | Left Seat   |
-    | 1     | Right Seat  |
+    - Enum
+    - Which seat the user/pilot occupies in the flight deck.
+    - | Value | Description |
+          |-------|-------------|
+      | 0     | Left Seat   |
+      | 1     | Right Seat  |
