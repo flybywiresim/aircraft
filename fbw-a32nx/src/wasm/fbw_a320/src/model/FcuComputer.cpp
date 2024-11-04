@@ -856,8 +856,9 @@ void FcuComputer::step()
     rtb_Equal6 = !rtb_BusAssignment_jg_logic_afs_hdg_trk_selected;
     FcuComputer_MATLABFunction_d((rtb_Equal6 && rtb_BusAssignment_j_logic_afs_any_ap_fd_engaged),
       FcuComputer_P.PulseNode1_isRisingEdge_d, &rtb_dashes_n, &FcuComputer_DWork.sf_MATLABFunction_du);
-    FcuComputer_MATLABFunction_d((rtb_Equal6 && (!rtb_BusAssignment_jg_logic_afs_hdg_trk_preset_available)),
-      FcuComputer_P.PulseNode_isRisingEdge_h, &rtb_y_e, &FcuComputer_DWork.sf_MATLABFunction_dc);
+    FcuComputer_MATLABFunction_d((rtb_Equal6 && (!rtb_BusAssignment_jg_logic_afs_hdg_trk_preset_available) &&
+      rtb_BusAssignment_j_logic_afs_any_ap_fd_engaged), FcuComputer_P.PulseNode_isRisingEdge_h, &rtb_y_e,
+      &FcuComputer_DWork.sf_MATLABFunction_dc);
     rtb_OR3_j = !rtb_BusAssignment_j_logic_afs_any_ap_fd_engaged;
     FcuComputer_MATLABFunction1(&rtb_BusAssignment_m, (rtb_dashes_n || rtb_y_e),
       (rtb_BusAssignment_jg_logic_afs_hdg_trk_selected || rtb_OR3_j ||
@@ -896,9 +897,9 @@ void FcuComputer::step()
       }
 
       rtb_y = std::abs(rtb_y);
-      if ((rtb_y < 5.0F) && FcuComputer_DWork.p_trk_fpa_active) {
+      if (((rtb_y < 5.0F) || rtb_OR3_j) && FcuComputer_DWork.p_trk_fpa_active) {
         FcuComputer_DWork.pValue_b = rtb_y_o;
-      } else if ((rtb_y < 5.0F) && (!FcuComputer_DWork.p_trk_fpa_active)) {
+      } else if (((rtb_y < 5.0F) || rtb_OR3_j) && (!FcuComputer_DWork.p_trk_fpa_active)) {
         FcuComputer_DWork.pValue_b = rtb_y_f;
       }
     }
