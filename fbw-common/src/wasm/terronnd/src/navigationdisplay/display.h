@@ -11,8 +11,10 @@
 #include <cstdint>
 #include <string_view>
 #include <vector>
-
 #include <iostream>
+
+#define FMT_HEADER_ONLY
+#include <fmt/format.h>
 
 #include "../simconnect/clientdataarea.hpp"
 #include "../simconnect/connection.hpp"
@@ -119,7 +121,7 @@ class Display : public DisplayBase {
           // If we don't have an image yet, create one
           this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
           if (this->_nanovgImage == 0) {
-            fprintf(stderr, "TERR ON ND: Unable to decode the image from the stream. Reason: %s\n", stbi_failure_reason());
+            std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
           }
 
           return;
@@ -129,7 +131,7 @@ class Display : public DisplayBase {
         int decodedWidth, decodedHeight;
         uint8_t* decodedImage = stbi_load_from_memory(this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize), &decodedWidth, &decodedHeight, nullptr, 4);
         if (decodedImage == nullptr) {
-          fprintf(stderr, "TERR ON ND: Unable to decode the image from the stream. Reason: %s\n", stbi_failure_reason());
+          std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
           return;
         }
 
@@ -138,7 +140,7 @@ class Display : public DisplayBase {
 
         if (decodedWidth != width || decodedHeight != height) {
           // This should never happen, but bail just in case
-          fprintf(stderr, "TERR ON ND: The image size does not match the expected size. Expected: %dx%d, actual: %dx%d\n", width, height, decodedWidth, decodedHeight);
+          std::cerr << fmt::format("TERR ON ND: The image size does not match the expected size. Expected: {}x{}, actual: {}x{}", width, height, decodedWidth, decodedHeight);
           stbi_image_free(decodedImage);
           return;
         }
