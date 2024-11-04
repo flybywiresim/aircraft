@@ -2,16 +2,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   useSplitSimVar,
   useInteractionEvent,
   Arinc429Register,
   Arinc429SignStatusMatrix,
   RadioUtils,
+  useArinc429Var,
 } from '@flybywiresim/fbw-sdk';
-import { EventBus, EventSubscriber } from '@microsoft/msfs-sdk';
-import { AtcRmpMessages } from '@datalink/atc';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
@@ -64,24 +63,11 @@ const useStandbyVhfFrequency = (side: string, transceiver: number) => {
  * Renders active frequency RadioPanelDisplay and appropriate StandbyFrequency sub-components.
  */
 export const VhfRadioPanel = (props: Props) => {
-  const [_subscriber, setSubscriber] = useState<EventSubscriber<AtcRmpMessages> | null>(null);
   const [active, setActive] = useActiveVhfFrequency(props.vhf);
   const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.vhf);
-  const [atsuFrequency, setAtsuFrequency] = useState<Arinc429Register>(Arinc429Register.empty());
+  const atsuFrequency = useArinc429Var('L:A32NX_ATSU_RMP_FREQUENCY');
   const [, setValueOppositePanelStandby] =
     props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
-
-  useEffect(() => {
-    const eventBus = new EventBus();
-
-    const subscriber = eventBus.getSubscriber<AtcRmpMessages>();
-
-    subscriber.on('atcHandoverFrequency').handle((frequency: Arinc429Register) => {
-      setAtsuFrequency(frequency);
-    });
-
-    setSubscriber(subscriber);
-  }, []);
 
   useEffect(() => {
     let modeId = 0;
@@ -99,7 +85,7 @@ export const VhfRadioPanel = (props: Props) => {
     // store the frequency as the new standby frequency
     if (atsuFrequency.ssm === Arinc429SignStatusMatrix.NormalOperation && availableMode === 32) {
       setStandby(RadioUtils.unpackVhfComFrequencyFromArincToHz(atsuFrequency.value));
-      setAtsuFrequency(Arinc429Register.empty());
+      Arinc429Register.empty().writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
     }
   });
 
