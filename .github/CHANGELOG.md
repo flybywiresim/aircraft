@@ -15,7 +15,8 @@
 1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
-1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A380X/TELEX] Added popup for telex consent - @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality @ImenesFBW (Imenes)
 
 ## 0.12.0
