@@ -665,7 +665,9 @@
 18 sp0
 (A:GENERAL ENG OIL PRESSURE:1, psi) l0 &lt; sp1
 (A:GENERAL ENG OIL PRESSURE:2, psi) l0 &lt; sp2
-(L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED, bool) l1 and l2 and
+(A:GENERAL ENG OIL PRESSURE:3, psi) l0 &lt; sp3
+(A:GENERAL ENG OIL PRESSURE:4, psi) l0 &lt; sp4
+(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, bool) l1 and l2 and l3 and l4 and
             </GNDCTL_PERMISSIVES>
         </DefaultTemplateParameters>
         <UseTemplate Name="FBW_Push_Held">
