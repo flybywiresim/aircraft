@@ -113,7 +113,7 @@ jobs:
         with:
           name: flybywire-aircraft-a320-neo
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
-  build-a380x_8k:
+  build_a380x_8k:
     name: Build and upload A380X (8K)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
@@ -199,7 +199,7 @@ jobs:
         with:
           name: flybywire-aircraft-a380-842 (8K)
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
-  build-a380x_4k:
+  build_a380x_4k:
     name: Build and upload A380X (4K)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
