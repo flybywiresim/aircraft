@@ -582,6 +582,8 @@ export interface NormalProcedure {
   title: string;
   /** An array of possible checklist items.. */
   items: ChecklistAction[];
+  /** Checklist is deferred, i.e. only activated by request */
+  deferred?: boolean;
 }
 
 export function isChecklistAction(element: ChecklistAction | ChecklistCondition): element is ChecklistAction {
