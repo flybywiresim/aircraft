@@ -132,7 +132,7 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                   />
                 </div>
               </div>
-              <div style="grid-row-start: span 2; border-left: 1px solid lightgrey; margin-right: 10px;" />
+              <div style="grid-row-start: span 2; border-left: 2px solid lightgrey; margin-right: 10px;" />
               <div class="mfd-offset-dist-angle-input-grid">
                 <div style="margin-bottom: 20px;">
                   <span class="mfd-label">INTERCEPT ANGLE</span>
@@ -146,11 +146,11 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                     interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
-                <div style="margin-bottom: 10px; padding-top: 30px;">
+                <div style="margin-bottom: 10px; padding-top: 80px;">
                   <span class="mfd-label">OFFSET DIST</span>
                 </div>
                 <div class="mfd-offset-dist-input-grid">
-                  <div>
+                  <div style="padding-top: 35px;">
                     <InputField<number>
                       dataEntryFormat={new OffsetDistFormat()}
                       value={this.offsetDist}
@@ -164,7 +164,7 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                       values={['LEFT', 'RIGHT']}
                       selectedIndex={this.OffsetLRIndex}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_offsetDirectLeftRight`}
-                      additionalVerticalSpacing={10}
+                      additionalVerticalSpacing={15}
                       color={Subject.create('green')}
                     />
                   </div>
