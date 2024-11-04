@@ -11,11 +11,10 @@
 
 .mfd-offset-dist-angle-input-grid {
   display: grid;
-  grid-template-columns: 400px;
-  padding-top: 20px;
+  grid-template-columns: auto;
 }
 
-mfd-offset-dist-input-grid {
+.mfd-offset-dist-input-grid {
   display: grid;
-  grid-template-columns: 200px 200px;
+  grid-template-columns: 75px 75px;
 }
