@@ -14,7 +14,7 @@ body:
     label: Aircraft Version
     description: What version of the A380X are you using?
     options:
-    - Development
+    - Stable
   validations:
     required: true
 - type: textarea
