@@ -2168,9 +2168,9 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
                                    fmgcsBusOutputs[fmgcsDiscreteOutputs[0].fmgc_healthy ? 0 : 1].fmgc_a_bus.pfd_sel_spd_kts.Data, 0);
   simConnectInterface.sendEvent(SimConnectInterface::Events::AP_SPEED_SLOT_INDEX_SET, discreteOutputs.afs_outputs.spd_mach_managed ? 2 : 1,
                                 SIMCONNECT_GROUP_PRIORITY_STANDARD);
-  idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
+  idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes || !discreteOutputs.fcu_healthy);
   idFcuShimSpdDot->set(discreteOutputs.afs_outputs.spd_mach_managed);
-  if (discreteOutputs.afs_outputs.spd_mach_dashes) {
+  if (discreteOutputs.afs_outputs.spd_mach_dashes || !discreteOutputs.fcu_healthy) {
     idFcuShimSpdValue->set(-1.);
   } else {
     idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
@@ -2182,10 +2182,12 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
                                    discreteOutputs.afs_outputs.hdg_trk_value, 1);
   simConnectInterface.sendEvent(SimConnectInterface::Events::AP_HEADING_SLOT_INDEX_SET, discreteOutputs.afs_outputs.hdg_trk_managed ? 2 : 1,
                                 SIMCONNECT_GROUP_PRIORITY_STANDARD);
-  idFcuShimHdgValue1->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
-  idFcuShimHdgValue2->set(discreteOutputs.afs_outputs.hdg_trk_dashes ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
-  idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes);
-  idFcuShimHdgDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes);
+  idFcuShimHdgValue1->set(
+      discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuShimHdgValue2->set(
+      discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes && discreteOutputs.fcu_healthy);
+  idFcuShimHdgDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy);
   idFcuShimHdgDot->set(discreteOutputs.afs_outputs.hdg_trk_managed);
 
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_ALT_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
