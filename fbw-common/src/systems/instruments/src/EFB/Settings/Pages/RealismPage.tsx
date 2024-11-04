@@ -3,7 +3,6 @@
 
 import React, { useContext } from 'react';
 import {
-  AirframeType,
   usePersistentBooleanProperty,
   usePersistentNumberProperty,
   usePersistentProperty,
@@ -16,7 +15,7 @@ import { ButtonType, SettingGroup, SettingItem, SettingsPage } from '../Settings
 
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { AircraftContext, useAppSelector } from '@flybywiresim/flypad';
+import { AircraftContext } from '@flybywiresim/flypad';
 
 type SimVarButton = {
   simVarValue: number;
@@ -24,7 +23,6 @@ type SimVarButton = {
 
 export const RealismPage = () => {
   const aircraftContext = useContext(AircraftContext);
-  const airframeInfo = useAppSelector((state) => state.config.airframeInfo);
 
   const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
   const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
@@ -182,7 +180,7 @@ export const RealismPage = () => {
         </SettingGroup>
       )}
 
-      {airframeInfo.variant === AirframeType.A380_842 && (
+      {aircraftContext.settingsPages.realism.eclSoftKeys && (
         <SettingItem name={t('Settings.Realism.EclSoftKeys')} unrealistic>
           <Toggle value={!!eclSoftKeys} onToggle={(value) => setEclSoftKeys(value ? 1 : 0)} />
         </SettingItem>
