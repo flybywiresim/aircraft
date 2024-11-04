@@ -7,6 +7,9 @@
   display: grid;
   grid-template-columns: 13% auto 18%;
   height: 256px;
+  width: 768px;
+  position: absolute;
+  top: 768px;
 }
 
 .atc-mailbox-left-layout {
