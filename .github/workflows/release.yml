@@ -99,14 +99,6 @@ jobs:
           7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
           df -h
-      - name: Count Standalone Download files
-        run: |
-          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
-            echo "Standalone Download is is not split"
-          else
-            echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
-            exit 1
-          fi
       - name: Upload release assets
         uses: dwenegar/upload-release-assets@v1
         env:
@@ -114,6 +106,15 @@ jobs:
         with:
           release_id: ${{ needs.create_github_release.outputs.id }}
           assets_path: ./${{ env.BUILD_DIR_NAME }}/
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            echo "Standalone Download is is not split"
+          else
+            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+            echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
       - name: Delete old GitHub pre-release assets
         uses: mknejp/delete-release-assets@v1
         with:
@@ -237,14 +238,6 @@ jobs:
           7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
           df -h
-      - name: Count Standalone Download files
-        run: |
-          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 2 ]; then
-            echo "Standalone Download is split in 2 parts"
-          else
-            echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
-            exit 1
-          fi
       - name: Upload release assets
         uses: dwenegar/upload-release-assets@v1
         env:
@@ -252,6 +245,15 @@ jobs:
         with:
           release_id: ${{ needs.create_github_release.outputs.id }}
           assets_path: ./${{ env.BUILD_DIR_NAME }}/
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 3 ]; then
+            echo "Standalone Download is split in 3 parts"
+          else
+            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+            echo "Error: The number of standalone download parts is not 3. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
       - name: Delete old GitHub pre-release assets
         uses: mknejp/delete-release-assets@v1
         with:
@@ -363,14 +365,6 @@ jobs:
           7z a -t7z -m0=lzma2 -mx=7 -v2g ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
           cd ../../
           df -h
-      - name: Count Standalone Download files
-        run: |
-          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 2 ]; then
-            echo "Standalone Download is split in 2 parts"
-          else
-            echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
-            exit 1
-          fi
       - name: Upload release assets
         uses: dwenegar/upload-release-assets@v1
         env:
@@ -378,6 +372,15 @@ jobs:
         with:
           release_id: ${{ needs.create_github_release.outputs.id }}
           assets_path: ./${{ env.BUILD_DIR_NAME }}/
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 2 ]; then
+            echo "Standalone Download is split in 2 parts"
+          else
+            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+            echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
       - name: Delete old GitHub pre-release assets
         uses: mknejp/delete-release-assets@v1
         with:
