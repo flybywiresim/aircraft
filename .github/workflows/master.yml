@@ -123,6 +123,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
+      PRE_RELEASE_TAG: assets/master
+      PRE_RELEASE_ID: 66067756
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-master-8K.7z
@@ -220,6 +222,20 @@ jobs:
             echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
             exit 1
           fi
+      - name: Delete old GitHub pre-release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "*A380X-master-8K*"
+          fail-if-no-assets: false
+      - name: Upload pre-release assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release_id: ${{ env.PRE_RELEASE_ID }}
+          assets_path: ./${{ env.BUILD_DIR_NAME }}/
 
   build_a380x_4k:
     name: Build and deploy A380X (4K)
@@ -228,6 +244,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
+      PRE_RELEASE_TAG: assets/master
+      PRE_RELEASE_ID: 66067756
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-master-4K.7z
@@ -322,3 +340,17 @@ jobs:
             echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
             exit 1
           fi
+      - name: Delete old GitHub pre-release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "*A380X-master-4K*"
+          fail-if-no-assets: false
+      - name: Upload pre-release assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release_id: ${{ env.PRE_RELEASE_ID }}
+          assets_path: ./${{ env.BUILD_DIR_NAME }}/

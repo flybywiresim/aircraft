@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
+      PRE_RELEASE_TAG: assets/master-test
+      PRE_RELEASE_ID: 183386537
       STANDALONE_ZIP_NAME: A32NX-master.7z
       BUILD_DIR_NAME: master-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
@@ -89,6 +91,31 @@ jobs:
             echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
             exit 1
           fi
+      - name: Delete old GitHub Pre-Release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "${{ env.STANDALONE_ZIP_NAME }}"
+          fail-if-no-assets: false
+      - name: Upload aircraft package to GitHub Pre-Release Assets
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.PRE_RELEASE_ID }}/assets{?name,label}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}
+          asset_name: ${{ env.STANDALONE_ZIP_NAME }}
+          asset_content_type: application/zip
+      - name: Update GitHub Pre-Release Body
+        run: |
+          curl --request PATCH \
+            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.PRE_RELEASE_ID }}' \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.PRE_RELEASE_TAG }}/${{ env.STANDALONE_ZIP_NAME }}"
+            }'
 
   build_a380x_8k:
     name: Build and deploy A380X (8K)
@@ -97,6 +124,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
+      PRE_RELEASE_TAG: assets/master-test
+      PRE_RELEASE_ID: 183386537
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-master-8K.7z
@@ -194,6 +223,20 @@ jobs:
             echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
             exit 1
           fi
+      - name: Delete old GitHub pre-release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "*A380X-master-8K*"
+          fail-if-no-assets: false
+      - name: Upload pre-release assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release_id: ${{ env.PRE_RELEASE_ID }}
+          assets_path: ./${{ env.BUILD_DIR_NAME }}/
 
   build_a380x_4k:
     name: Build and deploy A380X (4K)
@@ -202,6 +245,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
+      PRE_RELEASE_TAG: assets/master-test
+      PRE_RELEASE_ID: 183386537
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-master-4K.7z
@@ -296,3 +341,17 @@ jobs:
             echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
             exit 1
           fi
+      - name: Delete old GitHub pre-release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "*A380X-master-4K*"
+          fail-if-no-assets: false
+      - name: Upload pre-release assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release_id: ${{ env.PRE_RELEASE_ID }}
+          assets_path: ./${{ env.BUILD_DIR_NAME }}/
