@@ -3,14 +3,11 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
-#include "AdditionalData.h"
 #include "Arinc429.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
-#include "EngineData.h"
-#include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
@@ -21,6 +18,8 @@
 #include "fac/Fac.h"
 #include "failures/FailuresConsumer.h"
 #include "fcdc/Fcdc.h"
+#include "recording/FlightDataRecorder.h"
+#include "recording/RecordingDataTypes.h"
 #include "sec/Sec.h"
 
 #include "utils/ConfirmNode.h"
@@ -170,6 +169,7 @@ class FlyByWireInterface {
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_H_dot_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bz_deg;
@@ -305,7 +305,9 @@ class FlyByWireInterface {
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  AdditionalData additionalData = {};
+  BaseData baseData = {};
+  AircraftSpecificData aircraftSpecificData = {};
+
   std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
@@ -316,43 +318,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idHydraulicYellowPressure;
   std::unique_ptr<LocalVariable> idMasterWarning;
   std::unique_ptr<LocalVariable> idMasterCaution;
-
-  EngineData engineData = {};
-  std::unique_ptr<LocalVariable> engineEngine1N2;
-  std::unique_ptr<LocalVariable> engineEngine2N2;
-  std::unique_ptr<LocalVariable> engineEngine1N1;
-  std::unique_ptr<LocalVariable> engineEngine2N1;
-  std::unique_ptr<LocalVariable> engineEngineIdleN1;
-  std::unique_ptr<LocalVariable> engineEngineIdleN2;
-  std::unique_ptr<LocalVariable> engineEngineIdleFF;
-  std::unique_ptr<LocalVariable> engineEngineIdleEGT;
-  std::unique_ptr<LocalVariable> engineEngine1EGT;
-  std::unique_ptr<LocalVariable> engineEngine2EGT;
-  std::unique_ptr<LocalVariable> engineEngine1Oil;
-  std::unique_ptr<LocalVariable> engineEngine2Oil;
-  std::unique_ptr<LocalVariable> engineEngine1OilTotal;
-  std::unique_ptr<LocalVariable> engineEngine2OilTotal;
-  std::unique_ptr<LocalVariable> engineEngine1VibN1;
-  std::unique_ptr<LocalVariable> engineEngine2VibN1;
-  std::unique_ptr<LocalVariable> engineEngine1VibN2;
-  std::unique_ptr<LocalVariable> engineEngine2VibN2;
-  std::unique_ptr<LocalVariable> engineEngine1FF;
-  std::unique_ptr<LocalVariable> engineEngine2FF;
-  std::unique_ptr<LocalVariable> engineEngine1PreFF;
-  std::unique_ptr<LocalVariable> engineEngine2PreFF;
-  std::unique_ptr<LocalVariable> engineEngineImbalance;
-  std::unique_ptr<LocalVariable> engineFuelUsedLeft;
-  std::unique_ptr<LocalVariable> engineFuelUsedRight;
-  std::unique_ptr<LocalVariable> engineFuelLeftPre;
-  std::unique_ptr<LocalVariable> engineFuelRightPre;
-  std::unique_ptr<LocalVariable> engineFuelAuxLeftPre;
-  std::unique_ptr<LocalVariable> engineFuelAuxRightPre;
-  std::unique_ptr<LocalVariable> engineFuelCenterPre;
-  std::unique_ptr<LocalVariable> engineEngineCycleTime;
-  std::unique_ptr<LocalVariable> engineEngine1State;
-  std::unique_ptr<LocalVariable> engineEngine2State;
-  std::unique_ptr<LocalVariable> engineEngine1Timer;
-  std::unique_ptr<LocalVariable> engineEngine2Timer;
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
@@ -590,8 +555,8 @@ class FlyByWireInterface {
 
   bool updateRadioReceiver(double sampleTime);
 
-  bool updateEngineData(double sampleTime);
-  bool updateAdditionalData(double sampleTime);
+  bool updateBaseData(double sampleTime);
+  bool updateAircraftSpecificData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);
