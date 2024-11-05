@@ -208,7 +208,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((db) => {
       const from = new Date(db.effectiveFrom);
       const to = new Date(db.effectiveTo);
-      this.activeDatabase.set(`${from.getDay()}${months[from.getMonth()]}-${to.getDay()}${months[to.getMonth()]}`);
+      this.activeDatabase.set(`${from.getDate()}${months[from.getMonth()]}-${to.getDate()}${months[to.getMonth()]}`);
     });
 
     NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
