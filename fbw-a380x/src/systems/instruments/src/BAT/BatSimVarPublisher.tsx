@@ -1,7 +1,7 @@
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type BatSimVars = {
-  ovhdBatSelectorKnob: number;
+  ovhdBatSelectorSwitchPos: number;
   ovhdAnnLtSwitchPos: number;
   dc2Powered: boolean;
   bat1Potential: number;
@@ -11,7 +11,7 @@ export type BatSimVars = {
 };
 
 export enum BatVars {
-  ovhdBatSelectorKnob = 'L:A380X_OVHD_ELEC_BAT_SELECTOR_KNOB',
+  ovhdBatSelectorSwitchPos = 'L:A380X_OVHD_ELEC_BAT_SELECTOR_KNOB',
   ovhdAnnLtSwitchPos = 'L:A380X_OVHD_INTLT_ANN',
   dc2Powered = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
   bat1Potential = 'L:A32NX_ELEC_BAT_1_POTENTIAL',
@@ -22,7 +22,7 @@ export enum BatVars {
 
 export class BatSimVarPublisher extends SimVarPublisher<BatSimVars> {
   private static simvars = new Map<keyof BatSimVars, SimVarDefinition>([
-    ['ovhdBatSelectorKnob', { name: BatVars.ovhdBatSelectorKnob, type: SimVarValueType.Number }],
+    ['ovhdBatSelectorSwitchPos', { name: BatVars.ovhdBatSelectorSwitchPos, type: SimVarValueType.Number }],
     ['ovhdAnnLtSwitchPos', { name: BatVars.ovhdAnnLtSwitchPos, type: SimVarValueType.Number }],
     ['dc2Powered', { name: BatVars.dc2Powered, type: SimVarValueType.Bool }],
     ['bat1Potential', { name: BatVars.bat1Potential, type: SimVarValueType.Volts }],

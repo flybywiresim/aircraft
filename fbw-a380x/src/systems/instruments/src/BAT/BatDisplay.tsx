@@ -38,7 +38,10 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
 
   private readonly annLtSwitchPosConsumer = ConsumerSubject.create<number>(this.sub.on('ovhdAnnLtSwitchPos'), 1);
 
-  private readonly batSelectorPositionConsumer = ConsumerSubject.create<number>(this.sub.on('ovhdBatSelectorKnob'), 2);
+  private readonly batSelectorPositionConsumer = ConsumerSubject.create<number>(
+    this.sub.on('ovhdBatSelectorSwitchPos'),
+    2,
+  );
 
   private readonly displayDigits = Subject.create<string>('000');
 
@@ -127,7 +130,7 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
 
     this.subs.push(
       this.sub
-        .on('ovhdBatSelectorKnob')
+        .on('ovhdBatSelectorSwitchPos')
         .whenChanged()
         .handle(() => {
           // Reset timeout
