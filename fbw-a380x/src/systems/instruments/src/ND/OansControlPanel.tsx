@@ -462,12 +462,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     if (this.landingRunwayNavdata) {
       this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
       this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
-      this.btvFallbackSetDistance(this.landingRunwayNavdata.length);
     }
   }
 
   private btvFallbackSetDistance(distance: number | null) {
     if (this.navigraphAvailable.get() === false) {
+      this.setBtvRunwayFromFmsRunway();
       if (distance && this.landingRunwayNavdata && this.arpCoordinates) {
         const exitLocation = placeBearingDistance(
           this.landingRunwayNavdata.thresholdLocation,
