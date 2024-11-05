@@ -154,7 +154,10 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
         .on('ovhdBatSelectorSwitchPos')
         .whenChanged()
         .handle((switchPosition) => {
-          if (this.previousBatSelectorPosition === BatSelectorPositions.OFF) {
+          if (
+            this.previousBatSelectorPosition === BatSelectorPositions.OFF &&
+            !(this.annLtSwitchPosConsumer.get() === 0 && this.dcBus2PoweredConsumer.get())
+          ) {
             this.targetOverride.active = true;
             this.targetOverride.until = new Date().valueOf() + FULL_DISPLAY_REFRESH_TIME_MS;
           }
