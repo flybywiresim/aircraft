@@ -20,6 +20,7 @@
 1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
 1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
 1. [A380X/EWD] QoL: Add soft keys to EWD checklists, can be enabled via EFB - @flogross89 (floridude)
+1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality @ImenesFBW (Imenes)
 
 ## 0.12.0
 
