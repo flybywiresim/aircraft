@@ -60,6 +60,8 @@ export class PopUpDialog {
    */
   /* eslint-disable no-underscore-dangle */
   _showPopUp(params: any = {}): void {
+    Coherent.trigger('UNFOCUS_INPUT_FIELD', uuidv4()); // Needed to mitigate an issue when ALT-TAB or using toggle free look
+    SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
     Coherent.trigger('SHOW_POP_UP', params);
   }
 
@@ -78,8 +80,6 @@ export class PopUpDialog {
     callbackYes: () => void,
     callbackNo: () => void,
   ): void {
-    Coherent.trigger('UNFOCUS_INPUT_FIELD', uuidv4()); // Needed to mitigate an issue when ALT-TAB or using toggle free look
-    SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
     if (title) {
       this.params.title = title;
     }
