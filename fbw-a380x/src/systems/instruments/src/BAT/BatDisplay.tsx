@@ -34,7 +34,7 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
 
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & BatSimVars>();
 
-  private readonly dcBus2Powered = ConsumerSubject.create<boolean>(this.sub.on('dc2Powered'), false);
+  private readonly dcBus2PoweredConsumer = ConsumerSubject.create<boolean>(this.sub.on('dc2Powered'), false);
 
   private readonly annLtSwitchPosConsumer = ConsumerSubject.create<number>(this.sub.on('ovhdAnnLtSwitchPos'), 1);
 
@@ -62,7 +62,7 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
       selectorPosition === BatSelectorPositions.OFF && !(annLtSwitchPos === 0 && dc2BusPowered),
     this.batSelectorPositionConsumer,
     this.annLtSwitchPosConsumer,
-    this.dcBus2Powered,
+    this.dcBus2PoweredConsumer,
   );
 
   private readonly targetDigits = MappedSubject.create(
@@ -92,7 +92,7 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
     },
     this.batSelectorPositionConsumer,
     this.annLtSwitchPosConsumer,
-    this.dcBus2Powered,
+    this.dcBus2PoweredConsumer,
     ...this.voltageSubs,
   );
 
