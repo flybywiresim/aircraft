@@ -632,6 +632,7 @@
       "AutofillChecklists": "自動填充檢查單",
       "BoardingTime": "登機需時",
       "DmcSelfTestTime": "DMC 自檢時間",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "家用駕駛艙模式",
       "McduFocusTimeout": "MCDU 對焦超時 (秒)",

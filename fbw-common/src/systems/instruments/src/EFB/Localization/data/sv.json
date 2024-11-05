@@ -632,6 +632,7 @@
       "AutofillChecklists": "Auto-fyll checklistor",
       "BoardingTime": "Ombordstigningstid",
       "DmcSelfTestTime": "DMC självtesttid",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Visa första officer avatar",
       "HomeCockpitMode": "Hem Cockpit-läge",
       "McduFocusTimeout": "Tidsgräns för MCDU fokus (sekunder)",

@@ -632,6 +632,7 @@
       "AutofillChecklists": "Автозаполнение контрольных списков",
       "BoardingTime": "Скорость посадки",
       "DmcSelfTestTime": "Время самотестирования DMC",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Режим домашней кабины",
       "McduFocusTimeout": "Тайм-аут фокуса MCDU (секунды)",

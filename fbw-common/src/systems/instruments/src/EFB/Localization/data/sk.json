@@ -632,6 +632,7 @@
       "AutofillChecklists": "Automatické vyplňovanie kontrolných zoznamov",
       "BoardingTime": "Čas nástupu",
       "DmcSelfTestTime": "DMC Čas testovania",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Domáci režim kokpitu",
       "McduFocusTimeout": "Časový limit zaostrenia MCDU (sekundy)",

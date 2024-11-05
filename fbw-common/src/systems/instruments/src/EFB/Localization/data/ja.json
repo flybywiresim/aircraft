@@ -361,7 +361,7 @@
       "Messages": {
         "CgOutOfLimits": "CGが離陸範囲を超過",
         "FlexNotPossible": "Flex使用不可",
-        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "HeadwindLimited": "向かい風制限は{max_headwind} knotsまで減少した",
         "InvalidData": "無効な入力",
         "MaximumPressureAlt": "最高気圧高度({max_zp} ft)を超過",
         "MaximumRunwaySlope": "滑走路の勾配制限を超過 (±2%)",
@@ -632,6 +632,7 @@
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "副操縦士のアバターを表示",
       "HomeCockpitMode": "ホームコックピットモード",
       "McduFocusTimeout": "MCDUへのフォーカスがタイムアウトする時間(秒)",

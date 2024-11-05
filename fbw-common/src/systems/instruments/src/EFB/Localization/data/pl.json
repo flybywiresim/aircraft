@@ -632,6 +632,7 @@
       "AutofillChecklists": "Automatyczne Wypełnianie Checklist",
       "BoardingTime": "Czas Wejścia Pasażerów na Pokład",
       "DmcSelfTestTime": "Czas Autotestu DMC",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Tryb Kokpitu Domowego",
       "McduFocusTimeout": "Czas Aktywności MCDU (sekundy)",
