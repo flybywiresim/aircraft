@@ -221,13 +221,11 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // load values - autothrust
-  autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
-
-  // initialize local variable for reverse
-  idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
+  autothrustThrustLimitReversePercentageToga =
+      INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA", 0.813);
 
   // print configuration into console
-  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << std::endl;
+  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA    = " << autothrustThrustLimitReversePercentageToga << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - flight controls
@@ -2636,6 +2634,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   idThrottlePosition3d_2->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_2->get()));
   idThrottlePosition3d_3->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_3->get()));
   idThrottlePosition3d_4->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_4->get()));
+
+  // update reverser thrust limit
+  idAutothrustThrustLimitREV->set(idAutothrustThrustLimitTOGA->get() * autothrustThrustLimitReversePercentageToga);
 
   // set client data if needed
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {

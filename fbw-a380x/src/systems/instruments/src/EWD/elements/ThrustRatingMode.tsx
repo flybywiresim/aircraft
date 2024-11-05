@@ -20,9 +20,25 @@ export class N1Limit extends DisplayComponent<{
 }> {
   private readonly N1LimitType = ConsumerSubject.create(null, 0);
   private readonly N1ThrustLimit = ConsumerSubject.create(null, 0);
+  private readonly N1ThrustLimitIdle = ConsumerSubject.create(null, 0);
+  private readonly N1ThrustLimitToga = ConsumerSubject.create(null, 0);
   private readonly flexTemp = ConsumerSubject.create(null, 0);
   private readonly sat = Arinc429ConsumerSubject.create(undefined);
   private readonly thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
+  private readonly thrIdleOffset = 0.042;
+
+  private readonly N1ThrustLimitPercent = MappedSubject.create(
+    ([thrustLimit, thrustLimitIdle, thrustLimitToga]) =>
+      Math.min(
+        1,
+        Math.max(0, Math.pow((thrustLimit - thrustLimitIdle) / (thrustLimitToga - thrustLimitIdle), 2)) *
+          (1 - this.thrIdleOffset) +
+          this.thrIdleOffset,
+      ) * 100,
+    this.N1ThrustLimit,
+    this.N1ThrustLimitIdle,
+    this.N1ThrustLimitToga,
+  );
 
   private readonly displayFlexTemp = MappedSubject.create(
     ([flexTemp, sat, N1LimitType, active]) => {
@@ -41,6 +57,8 @@ export class N1Limit extends DisplayComponent<{
 
     this.N1LimitType.setConsumer(sub.on('thrust_limit_type').whenChanged());
     this.N1ThrustLimit.setConsumer(sub.on('thrust_limit').whenChanged());
+    this.N1ThrustLimitIdle.setConsumer(sub.on('thrust_limit_idle').whenChanged());
+    this.N1ThrustLimitToga.setConsumer(sub.on('thrust_limit_toga').whenChanged());
     this.flexTemp.setConsumer(sub.on('flex').whenChanged());
     this.sat.setConsumer(sub.on('sat').withArinc429Precision(0));
   }
@@ -71,7 +89,7 @@ export class N1Limit extends DisplayComponent<{
           x={this.props.x + 69}
           y={this.props.y - 2}
         >
-          {this.N1ThrustLimit.map((l) => splitDecimals(l)[0])}
+          {this.N1ThrustLimitPercent.map((l) => splitDecimals(l)[0])}
         </text>
         <text
           class="F26 End Green"
@@ -87,7 +105,7 @@ export class N1Limit extends DisplayComponent<{
           x={this.props.x + 101}
           y={this.props.y - 2}
         >
-          {this.N1ThrustLimit.map((l) => splitDecimals(l)[1])}
+          {this.N1ThrustLimitPercent.map((l) => splitDecimals(l)[1])}
         </text>
         <text
           class="F20 End Cyan"
