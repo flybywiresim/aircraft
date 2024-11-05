@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { FlightDeckBounds, NotificationManager, PilotSeatManager } from '@flybywiresim/fbw-sdk';
+import { FlightDeckBounds, NotificationManager, PilotSeatManager, TelexCheck } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
@@ -67,6 +67,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   public readonly xmlConfig: Document;
+
+  private readonly telexCheck = new TelexCheck();
 
   /**
    * "mainmenu" = 0
@@ -138,6 +140,7 @@ class ExtrasHost extends BaseInstrument {
         this.simVarPublisher.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
+        this.telexCheck.showPopup();
       }
       this.gameState = gs;
     } else {
