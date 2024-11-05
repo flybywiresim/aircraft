@@ -10,9 +10,9 @@
             <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
             <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_2>
             <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
-            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_3>
             <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
             <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
             <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
@@ -70,10 +70,10 @@
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
-                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
