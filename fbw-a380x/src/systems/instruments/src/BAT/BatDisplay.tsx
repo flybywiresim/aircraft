@@ -16,6 +16,7 @@ import { BatSimVars } from 'instruments/src/BAT/BatSimVarPublisher';
 
 const BASE_DELAY_MS = 800;
 const DIGIT_REFRESH_INTERVAL_MS = 125;
+const FULL_DISPLAY_REFRESH_TIME_MS = BASE_DELAY_MS + 2 * DIGIT_REFRESH_INTERVAL_MS;
 
 enum BatSelectorPositions {
   ESS = 0,
@@ -79,7 +80,7 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
           return this.voltageToString(apuVoltage);
 
         case BatSelectorPositions.OFF:
-          return '000';
+          return this.displayDigits.get();
 
         case BatSelectorPositions.BAT1:
           return this.voltageToString(bat1Voltage);
@@ -98,6 +99,11 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
 
   private lastFullUpdateTimestamp = 0;
   private updateDigitIndex = 0;
+  private targetOverride = {
+    active: false,
+    until: 0, // Stores the timestamp until which the override should be in place
+  };
+  private previousBatSelectorPosition = BatSelectorPositions.OFF;
 
   private handleUpdate(timestamp: number) {
     /**
@@ -107,20 +113,35 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
      */
     if (this.lastFullUpdateTimestamp === -1) {
       this.lastFullUpdateTimestamp = timestamp;
+      return;
     }
 
-    const targetDigits = this.targetDigits.get();
+    let targetDigits;
+    if (this.targetOverride.active) {
+      if (this.targetOverride.until! >= timestamp) {
+        targetDigits = '000';
+        timestamp += FULL_DISPLAY_REFRESH_TIME_MS;
+      } else {
+        this.targetOverride.active = false;
+        this.updateDigitIndex = 0;
+      }
+    }
+
+    if (!this.targetOverride.active) {
+      targetDigits = this.targetDigits.get();
+    }
     const timeDiff = timestamp - this.lastFullUpdateTimestamp;
 
     // Update only a single digit per pass (since frequency is potentially lower than DIGIT_REFRESH_INTERVAL_MS)
     const index = this.updateDigitIndex;
     if (timeDiff >= BASE_DELAY_MS + index * DIGIT_REFRESH_INTERVAL_MS) {
       const oldDigits = this.displayDigits.get();
-      this.displayDigits.set(`${oldDigits.slice(0, index)}${targetDigits[index]}${oldDigits.slice(index + 1)}`);
+      this.displayDigits.set(`${oldDigits.slice(0, index)}${targetDigits![index]}${oldDigits.slice(index + 1)}`);
 
       this.updateDigitIndex = (index + 1) % 3;
       if (index === 2) {
-        this.lastFullUpdateTimestamp = timestamp;
+        const timeLeftOnCycle = timeDiff - FULL_DISPLAY_REFRESH_TIME_MS;
+        this.lastFullUpdateTimestamp = timestamp - timeLeftOnCycle;
       }
     }
   }
@@ -132,16 +153,22 @@ export class BatteryDisplay extends DisplayComponent<BatteryProps> {
       this.sub
         .on('ovhdBatSelectorSwitchPos')
         .whenChanged()
-        .handle(() => {
+        .handle((switchPosition) => {
+          if (this.previousBatSelectorPosition === BatSelectorPositions.OFF) {
+            this.targetOverride.active = true;
+            this.targetOverride.until = new Date().valueOf() + FULL_DISPLAY_REFRESH_TIME_MS;
+          }
+
           // Reset timeout
           this.lastFullUpdateTimestamp = -1;
+          this.previousBatSelectorPosition = switchPosition;
         }),
     );
 
     this.subs.push(
       this.sub
         .on('realTime')
-        .atFrequency(8)
+        .atFrequency(7)
         .handle((ts) => this.handleUpdate(ts)),
     );
   }
