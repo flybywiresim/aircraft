@@ -32,6 +32,7 @@ import {
   EfisSide,
   FmsOansData,
   FcuSimVars,
+  Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -61,6 +62,7 @@ import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
+import { GenericAdirsEvents } from 'instruments/src/ND/types/GenericAdirsEvents';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -146,7 +148,9 @@ export interface OancProps<T extends number> extends ComponentProps {
 }
 
 export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
-  private readonly sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
+  private readonly sub = this.props.bus.getSubscriber<
+    FcuSimVars & OansControlEvents & FmsOansData & GenericAdirsEvents
+  >();
 
   private readonly animationContainerRef = [
     FSComponent.createRef<HTMLDivElement>(),
@@ -185,7 +189,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private dataBbox: BBox | undefined;
 
-  private arpCoordinates: Coordinates | undefined;
+  private arpCoordinates: Subject<Coordinates | undefined> = Subject.create(undefined);
 
   private canvasCenterCoordinates: Coordinates | undefined;
 
@@ -270,9 +274,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private canvasCentreY = Subject.create(0);
 
-  public readonly ppos: Coordinates = { lat: 0, long: 0 };
+  // TODO: Should be using GPS position interpolated with IRS velocity data
+  private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
-  public readonly referencePos: Coordinates = { lat: 0, long: 0 };
+  private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
+
+  public readonly ppos = MappedSubject.create(
+    ([latWord, lonWord]) => ({ lat: latWord.value, long: lonWord.value }) as Coordinates,
+    this.pposLatWord,
+    this.pposLonWord,
+  );
+
+  private readonly trueHeadingWord = Arinc429RegisterSubject.createEmpty();
+
+  public referencePos: Coordinates = { lat: 0, long: 0 };
 
   public readonly aircraftWithinAirport = Subject.create(false);
 
@@ -280,11 +295,19 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly airportBearing = Subject.create(0);
 
-  public readonly projectedPpos: Position = [0, 0];
+  public readonly projectedPpos = MappedSubject.create(
+    ([ppos, arpCoordinates], previous: Position) => {
+      if (arpCoordinates) {
+        return globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
+      }
+
+      return previous;
+    },
+    this.ppos,
+    this.arpCoordinates,
+  );
 
   private readonly aircraftOnGround = Subject.create(true);
-
-  private readonly planeTrueHeading = Subject.create(0);
 
   private readonly mapHeading = Subject.create(0);
 
@@ -390,6 +413,21 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       .handle((airport) => {
         this.loadAirportMap(airport);
       });
+
+    this.sub
+      .on('latitude')
+      .whenChanged()
+      .handle((v) => this.pposLatWord.setWord(v));
+
+    this.sub
+      .on('longitude')
+      .whenChanged()
+      .handle((v) => this.pposLonWord.setWord(v));
+
+    this.sub
+      .on('trueHeadingRaw')
+      .whenChanged()
+      .handle((v) => this.trueHeadingWord.setWord(v));
 
     this.oansNotAvailable.sub((na) => {
       if (this.props.messageScreenRef.getOrDefault()) {
@@ -572,7 +610,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       );
       return;
     }
-    this.arpCoordinates = { lat: refPointLat, long: refPointLong };
+    this.arpCoordinates.set({ lat: refPointLat, long: refPointLong });
 
     this.data = airportMap;
 
@@ -583,8 +621,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     // Figure out the boundaries of the map data
     const dataBbox = bbox(airportMap);
 
-    this.updatePosition();
-    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos, bboxPolygon(dataBbox)));
+    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(dataBbox)));
 
     const width = (dataBbox[2] - dataBbox[0]) * 1;
     const height = (dataBbox[3] - dataBbox[1]) * 1;
@@ -619,7 +656,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ) + 90,
     );
 
-    return placeBearingDistance(this.arpCoordinates, reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
+    return placeBearingDistance(this.arpCoordinates.get(), reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
   }
 
   private createLabelElement(label: Label): HTMLDivElement {
@@ -910,22 +947,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private lastTime = 0;
 
-  /**
-   *
-   * @param coordinates coordinates to be transformed
-   * @param out Output argument: Write projected coordinates here
-   */
-  private projectCoordinates(coordinates: Coordinates, out: Position): Position {
-    globalToAirportCoordinates(this.arpCoordinates, coordinates, out);
-    return out;
-  }
-
   public Update() {
     const now = Date.now();
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
-
-    this.updatePosition();
 
     if (!this.data || this.dataLoading) return;
 
@@ -933,27 +958,25 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
-    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos, bboxPolygon(bbox(this.data))));
+    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(bbox(this.data))));
 
-    const distToArpt = this.ppos && this.arpCoordinates ? distanceTo(this.ppos, this.arpCoordinates) : 9999;
+    const distToArpt = this.arpCoordinates ? distanceTo(this.ppos.get(), this.arpCoordinates.get()) : 9999;
 
     // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
     const airportTooFarAwayAndInArcMode = this.usingPposAsReference.get() && distToArpt > 30;
 
     if (this.arpCoordinates) {
       this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
-      this.airportBearing.set(bearingTo(this.ppos, this.arpCoordinates));
+      this.airportBearing.set(bearingTo(this.ppos.get(), this.arpCoordinates.get()));
     } else {
       this.airportWithinRange.set(true);
       this.airportBearing.set(0);
     }
 
     if (this.usingPposAsReference.get() || !this.arpCoordinates) {
-      this.referencePos.lat = this.ppos.lat;
-      this.referencePos.long = this.ppos.long;
+      this.referencePos = this.ppos.get();
     } else {
-      this.referencePos.lat = this.arpCoordinates.lat;
-      this.referencePos.long = this.arpCoordinates.long;
+      this.referencePos = this.arpCoordinates.get();
     }
 
     const position = this.positionComputer.computePosition();
@@ -965,13 +988,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.positionVisible.set(false);
     }
 
-    this.projectCoordinates(this.ppos, this.projectedPpos);
-
-    this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos, true);
+    this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
     this.btvUtils.updateRwyAheadAdvisory(
-      this.ppos,
-      this.arpCoordinates,
-      this.planeTrueHeading.get(),
+      this.ppos.get(),
+      this.arpCoordinates.get(),
+      this.trueHeadingWord.get().value,
       this.layerFeatures[2],
     );
 
@@ -980,7 +1001,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       return;
     }
 
-    const mapTargetHeading = this.modeAnimationMapNorthUp.get() ? 0 : this.planeTrueHeading.get();
+    const mapTargetHeading = this.modeAnimationMapNorthUp.get() ? 0 : this.trueHeadingWord.get().value;
     this.mapHeading.set(mapTargetHeading);
 
     const interpolatedMapHeading = this.interpolatedMapHeading.get();
@@ -1006,7 +1027,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const mapCurrentHeading = this.interpolatedMapHeading.get();
 
     this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
-    this.arpReferencedMapParams.compute(this.arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+    this.arpReferencedMapParams.compute(this.arpCoordinates.get(), 0, 0.539957, 1_000, mapCurrentHeading);
 
     let [offsetX, offsetY]: [number, number] = [0, 0];
     if (airportTooFarAwayAndInArcMode) {
@@ -1047,7 +1068,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     // Transform airplane
     this.aircraftX.set(384);
     this.aircraftY.set(384);
-    this.aircraftRotation.set(this.planeTrueHeading.get() - mapCurrentHeading);
+    this.aircraftRotation.set(this.trueHeadingWord.get().value - mapCurrentHeading);
 
     // FIXME Use this to update pan offset when zooming
     /* if (this.previousZoomLevelIndex.get() !== this.zoomLevelIndex.get()) {
@@ -1093,16 +1114,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     } else {
       this.lastLayerDrawnIndex++;
       this.lastFeatureDrawnIndex = 0;
-    }
-  }
-
-  private updatePosition(): void {
-    this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-    this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
-    this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
-
-    if (this.arpCoordinates) {
-      this.projectCoordinates(this.ppos, this.projectedPpos);
     }
   }
 
