@@ -631,6 +631,7 @@
       "AutofillChecklists": "Autofill Checklists",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Mode",
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
@@ -639,7 +640,7 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
