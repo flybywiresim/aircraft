@@ -39,8 +39,11 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
   protected onNewData(): void {
     this.offsetInterceptAngle.set(30);
     this.offsetDist.set(5);
-    this.OffsetLRIndex.set(1);
+    this.OffsetLRIndex.set(0);
     // Use active FPLN for building the list (page only works for active anyways)
+    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+    this.selectedStartWaypointIndex.set(revWptIdx!);
+
     const activeFpln = this.props.fmcService.master?.flightPlanService.active;
     if (activeFpln) {
       this.availableWaypointsToLegIndex = [];
