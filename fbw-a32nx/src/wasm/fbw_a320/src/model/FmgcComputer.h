@@ -476,6 +476,7 @@ class FmgcComputer final
     real_T CompareToConstant2_const_a;
     real_T CompareToConstant2_const_e;
     real_T CompareToConstant2_const_l;
+    real_T CompareToConstant_const_od;
     real_T CompareToConstant1_const_n2;
     real_T CompareToConstant2_const_iq;
     real_T CompareToConstant2_const_h;
