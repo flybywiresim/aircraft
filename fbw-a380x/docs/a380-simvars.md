@@ -865,25 +865,47 @@
 
 ## ECAM Control Panel ATA 31
 
-- A380X_ECAM_CP_SELECTED_PAGE
+- A32NX_BTN_{button_name}
+    - Number
+    - Button state of the ECAM CP buttons
+        - 0: Not pressed, 1: Pressed
+    - {button_name}
+        - ALL
+        - ABNPROC
+        - CHECK_LH
+        - CHECK_RH
+        - CL
+        - CLR
+        - CLR2
+        - DOWN
+        - EMERCANC
+        - MORE
+        - RCL
+        - TOCONFIG
+        - UP
+
+- A32NX_ECAM_SD_CURRENT_PAGE_INDEX
     - Enum
-    - Currently requested page on the ECAM CP
+- Currently requested page on the ECAM CP
     - | State | Value |
       |-------|-------|
       | ENG   | 0     |
-      | BLEED | 1     |
-      | PRESS | 2     |
-      | EL/AC | 3     |
-      | FUEL  | 4     |
-      | HYD   | 5     |
-      | C/B   | 6     |
-      | APU   | 7     |
-      | COND  | 8     |
-      | DOOR  | 9     |
-      | EL/DC | 10    |
-      | WHEEL | 11    |
-      | F/CTL | 12    |
-      | VIDEO | 13    |
+      | APU   | 1     |
+      | BLEED | 2     |
+      | COND  | 3     |
+      | PRESS | 4     |
+      | DOOR  | 5     |
+      | EL/AC | 6     |
+      | EL/DC | 7     |
+      | FUEL  | 8     |
+      | WHEEL | 9     |
+      | HYD   | 10    |
+      | F/CTL | 11    |
+      | C/B   | 12    |
+      | CRZ   | 13    |
+      | STS   | 14    |
+      | VIDEO | 15    |
+
 
 ## EFIS Control Panel ATA 31
 
