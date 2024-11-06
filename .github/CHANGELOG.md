@@ -12,10 +12,20 @@
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
 1. [A380X/FCU] Added metric altitude button - @tracernz (Mike)
+1. [A380X/FCU] Baro knob now requires to be pushed to enter STD mode and pulled to enter BARO mode, as per the real thing - @danestfanous (Daniel Estfanous)
 1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
-1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A380X/TELEX] Added popup for telex consent - @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
+1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
+1. [A380X/EWD] QoL: Add soft keys to EWD checklists, can be enabled via EFB - @flogross89 (floridude)
+1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
+1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
+1. [A380/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
+
 
 ## 0.12.0
 
@@ -44,7 +54,7 @@
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
 1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_chaoz_)
-1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Implement calculated yaw damper gain - @lukecologne (luke)
 1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
@@ -86,7 +96,7 @@
 1. [FUEL] Lowered starting fuel on C/D spawn, will only load last saved fuel on C/D spawn, center tank refuel now happens simultaneous with wing refuel - @Maximilian-Reuter
 1. [EFB/SIMBRIEF] Option to import SimBrief Fuel & Payload when SimBrief Data is imported - @Fragtality (Fragtality) + @Maximilian-Reuter
 1. [FLIGHTMODEL] Fixes some crosswind issues - @donstim (donbikes)
-1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR -  @Maximilian-Reuter
+1. [LIGHTS] Movement of landing lights now requires power and position is output into LVAR - @Maximilian-Reuter
 1. [CDU] Fix auto weight and balance import on INIT B during GSX boarding not using the target values - @Maximilian-Reuter
 1. [FAC] Improve sideslip estimation - @lukecologne (luke)
 1. [FWC] Implement overspeed VMO/MMO warning - @tracernz (Mike)
@@ -263,7 +273,7 @@
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 1. [ND] Fixed RNP <= 0.3 indications to appear more reliably and consistently - @tracernz (Mike)
-1. [EFB] Mitigated issue with flypad fuel page for very long translation strings  - @frankkopp (Frank Kopp)
+1. [EFB] Mitigated issue with flypad fuel page for very long translation strings - @frankkopp (Frank Kopp)
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
 1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
 1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
@@ -300,7 +310,7 @@
 1. [FLIGHTMODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
 1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
 1. [MODEL] Fix mouse collision boxes for the fire guards on the overhead - @tracernz (Mike)
-1. [FLIGHTMODEL/FUEL] Reinstate updated outer fuel tank position from updated CG for ELAC 103 -  @donstim (donbikes#4084)
+1. [FLIGHTMODEL/FUEL] Reinstate updated outer fuel tank position from updated CG for ELAC 103 - @donstim (donbikes#4084)
 1. [MODEL] Change pitch trim scale to correct neo scale - @tracernz (Mike)
 1. [MCDU] Fix no overfly shown on forced turn on F-PLN page, return to F-PLN page on TMPY insert - @tracernz (Mike)
 1. [FMS] Handle approach transitions hidden inside other transition with Navigraph data - @tracernz (Mike)
@@ -1451,4 +1461,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
-1. [ECAM] Added F units to CRZ and COND pages for Cabin temps.  Currently tied to kg/lbs  option in EFB -Patrick Macken  (@PatM on Discord)
+1. [ECAM] Added F units to CRZ and COND pages for Cabin temps. Currently tied to kg/lbs option in EFB -Patrick Macken  (@PatM on Discord)

@@ -2315,23 +2315,34 @@
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
+                <!-- NAV LT -->
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Navigation_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
                     <PART_ID>SWITCH_OVHD_EXTLT_NAVLOGO</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
+                    <TYPE>OnOff</TYPE>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
-                    <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
-                    <LIGHT_TYPE_2>LOGO</LIGHT_TYPE_2>
-                    <TYPE>OnOff_TwoSimvars</TYPE>
-
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
+                <!-- LOGO LT -->
+                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Logo_Template">
+                    <NODE_ID>SWITCH_OVHD_EXTLT_LOGO</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_EXTLT_LOGO</PART_ID>
+                    <ANIM_NAME>SWITCH_OVHD_EXTLT_LOGO</ANIM_NAME>
+                    <TYPE>Auto</TYPE>
+                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
+                    <INVERT_ANIM>1</INVERT_ANIM>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
+                </UseTemplate>
+
                 <!-- turn off the connection to the logo lights when the plane is not on ground and
-                the flaps are retracted -->
+                the flaps are retracted and the logo light switch is not in the on position -->
                 <Update Frequency="5">
-                    (A:SIM ON GROUND, BOOL) 0 != (A:FLAPS HANDLE PERCENT, percent) 0 &gt; or
+                    (A:SIM ON GROUND, BOOL) 0 !=
+                    (A:FLAPS HANDLE PERCENT, percent) 0 &gt; or
+                    (L:LIGHTING_LOGO_0, number) 0 == or
                     (&gt;O:_ShouldBeConnectedToPowerGrid)
                     (O:_ShouldBeConnectedToPowerGrid) sp0
                     2 (&gt;A:BUS LOOKUP INDEX, Number)
@@ -4477,7 +4488,7 @@
                             <UseTemplate Name="FBW_CVR_Ground_Control_Pushbutton">
                                 <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
                                 <PART_ID>PUSH_OVHD_RCDR_GNDCTL</PART_ID>
-                                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                                <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4859,7 +4870,7 @@
                         <HOLD_SIMVAR>L:A32NX_APU_AUTOEXITING_RESET</HOLD_SIMVAR>
                         <TOOLTIPID>Reset APU autoexiting (Inop.)</TOOLTIPID>
                     </UseTemplate>
-                    
+
 					<!-- INOP PBs ON UPPER OVERHEAD -->
 					<!-- FUEL -->
 					<UseTemplate Name="FBW_Push_Toggle">
@@ -4870,7 +4881,7 @@
                         <NODE_ID>PUSH_OVHD_AUTO_GND_XFR</NODE_ID>
 						<INOP></INOP>
                     </UseTemplate>
-					
+
 					<!-- MISC -->
 					<UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_GND_HF_DATA_LINK</NODE_ID>
@@ -4878,7 +4889,7 @@
 						<DISABLE_SEQ1></DISABLE_SEQ1>
 						<DISABLE_SEQ2></DISABLE_SEQ2>
                     </UseTemplate>
-					
+
 					<!-- MAINT -->
 					<UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_MAINT_GND_CONNECTION</NODE_ID>
@@ -4886,7 +4897,7 @@
 						<DISABLE_SEQ1></DISABLE_SEQ1>
 						<DISABLE_SEQ2></DISABLE_SEQ2>
                     </UseTemplate>
-					
+
 					<!-- NSS -->
 					<UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GATELINK</NODE_ID>
@@ -4896,7 +4907,7 @@
                         <NODE_ID>PUSH_OVHD_CAB_DATA_TO_NSS</NODE_ID>
 						<INOP></INOP>
                     </UseTemplate>
-					
+
 					<!-- AIR / VENT -->
 					<UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_OVHT_COND_FANS</NODE_ID>
