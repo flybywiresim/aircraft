@@ -25,13 +25,13 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
-  private changeEventHandler = (i: number) => {
+  private changeEventHandler(i: number) {
     if (this.props.onModified) {
       this.props.onModified(i);
     } else {
       this.props.selectedIndex.set(i);
     }
-  };
+  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);

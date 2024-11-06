@@ -62,7 +62,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         this.renderedMenuItems?.forEach((val, i) => {
           document
             .getElementById(`${this.props.idPrefix}_${i}`)
-            ?.removeEventListener('click', this.itemClickHandler.bind(this, val));
+            ?.removeEventListener('click', this.onItemClick.bind(this, val));
         });
 
         // Delete contextMenuRef's children
@@ -94,27 +94,29 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         items?.forEach((val, i) => {
           document
             .getElementById(`${this.props.idPrefix}_${i}`)
-            ?.addEventListener('click', this.itemClickHandler.bind(this, val));
+            ?.addEventListener('click', this.onItemClick.bind(this, val));
         });
       }, true),
     );
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.closeHandler);
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onCloseHandler);
   }
 
-  private itemClickHandler = (val: ContextMenuElement) => {
+  private onItemClick(val: ContextMenuElement) {
     if (!val.disabled) {
       this.hideMenu();
       val.onPressed();
     }
-  };
+  }
 
-  private closeHandler = () => {
+  private onClose() {
     if (Date.now() - this.openedAt > 100 && this.props.opened.get() === true) {
       this.hideMenu();
     }
-  };
+  }
+
+  private onCloseHandler = this.onClose.bind(this);
 
   render(): VNode {
     return <div ref={this.contextMenuRef} class="mfd-context-menu" />;

@@ -144,10 +144,10 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
     }
   }
 
-  private itemClickedHandler = (i: number) => {
+  private itemClickedHandler(i: number) {
     this.callback(this.duplicateOptions.get()[i].fixData);
     this.props.visible.set(false);
-  };
+  }
 
   // Entry point after opening this dialog
   public deduplicateFacilities<T extends DatabaseItem<any>>(

@@ -1216,23 +1216,25 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }),
     );
 
-    this.identRef.getOrDefault()?.addEventListener('click', this.identClickedHandler);
+    this.identRef.getOrDefault()?.addEventListener('click', this.onIdentClickedHandler);
 
     this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.rta);
   }
 
-  private identClickedHandler = () => {
+  private onIdentClicked() {
     if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
       this.props.openRevisionsMenuCallback();
       this.selectedForRevision.set(true);
     }
-  };
+  }
+
+  private onIdentClickedHandler = this.onIdentClicked.bind(this);
 
   public destroy(): void {
     this.subs.forEach((sub) => sub.destroy());
     this.lineColor.destroy();
 
-    this.identRef.getOrDefault()?.removeEventListener('click', this.identClickedHandler);
+    this.identRef.getOrDefault()?.removeEventListener('click', this.onIdentClickedHandler);
     this.timeRef.getOrDefault()?.parentElement?.removeEventListener('click', this.props.callbacks.rta);
 
     if (this.props.displayEfobAndWind.get()) {

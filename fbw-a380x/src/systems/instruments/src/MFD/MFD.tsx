@@ -263,12 +263,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
       this.activeUriChanged(uri);
     });
 
-    this.topRef.instance.addEventListener('mousemove', this.mouseMoveHandler);
+    this.topRef.instance.addEventListener('mousemove', this.onMouseMoveHandler);
   }
 
-  private mouseMoveHandler = (ev: MouseEvent) => {
+  private onMouseMove(ev: MouseEvent) {
     this.mouseCursorRef.getOrDefault()?.updatePosition(ev.clientX, ev.clientY);
-  };
+  }
+
+  private onMouseMoveHandler = this.onMouseMove.bind(this);
 
   private activeUriChanged(uri: ActiveUriInformation) {
     if (!this.props.fmcService.master) {
@@ -328,7 +330,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   }
 
   destroy(): void {
-    this.topRef.instance.removeEventListener('mousemove', this.mouseMoveHandler);
+    this.topRef.instance.removeEventListener('mousemove', this.onMouseMoveHandler);
 
     super.destroy();
   }

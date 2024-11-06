@@ -71,7 +71,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     true,
   );
 
-  private clickHandler = (i: number) => {
+  private onClick(i: number) {
     if (!this.props.inactive?.get()) {
       this.freeTextEntered = false;
       if (this.props.onModified) {
@@ -82,7 +82,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       this.dropdownIsOpened.set(false);
       this.filterList('');
     }
-  };
+  }
 
   private onFieldSubmit(text: string) {
     if (this.props.onModified && !this.props.inactive?.get()) {
@@ -102,7 +102,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private filterList(text: string) {
     const arr = this.props.values.getArray();
-    this.renderedDropdownOptionsIndices = arr.map((val, idx) => idx).filter((val, idx) => arr[idx].startsWith(text));
+    this.renderedDropdownOptionsIndices = arr.map((val, idx) => idx).filter((_, idx) => arr[idx].startsWith(text));
     this.renderedDropdownOptions.set(arr.filter((val) => val.startsWith(text)));
   }
 
@@ -134,7 +134,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
             document
               .getElementById(`${this.props.idPrefix}_${i}`)
-              ?.removeEventListener('click', this.clickHandler.bind(this, i));
+              ?.removeEventListener('click', this.onClick.bind(this, i));
           }
         });
 
@@ -158,9 +158,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
         // Add click handlers
         array.forEach((val, i) => {
-          document
-            .getElementById(`${this.props.idPrefix}_${i}`)
-            ?.addEventListener('click', () => this.clickHandler.bind(this, i));
+          document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', this.onClick.bind(this, i));
         });
       }),
     );
@@ -186,10 +184,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       }),
     );
 
-    this.dropdownSelectorRef.instance.addEventListener('click', this.openCloseClickHandler);
+    this.dropdownSelectorRef.instance.addEventListener('click', this.onOpenCloseClickHandler);
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.clickedOutsideHandler);
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onClickedOutsideHandler);
 
     this.subs.push(
       this.dropdownIsOpened.sub((val) => {
@@ -225,17 +223,21 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // TODO add KCCU events
   }
 
-  private openCloseClickHandler = () => {
+  private onOpenCloseClick() {
     if (!this.props.inactive?.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
     }
-  };
+  }
 
-  private clickedOutsideHandler = (e: MouseEvent) => {
+  private onOpenCloseClickHandler = this.onOpenCloseClick.bind(this);
+
+  private onClickedOutside(e: MouseEvent) {
     if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
       this.dropdownIsOpened.set(false);
     }
-  };
+  }
+
+  private onClickedOutsideHandler = this.onClickedOutside.bind(this);
 
   /**
    * Scrolls the dropdown list to the given index
@@ -256,8 +258,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.dropdownSelectorRef.instance.removeEventListener('click', this.openCloseClickHandler);
-    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.clickedOutsideHandler);
+    this.dropdownSelectorRef.instance.removeEventListener('click', this.onOpenCloseClickHandler);
+    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
 
     super.destroy();
   }
