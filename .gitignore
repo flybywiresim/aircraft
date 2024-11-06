@@ -35,6 +35,8 @@
 !CMakeLists.txt
 
 # Project folders
+!large-files
+large-files/node_modules
 
 # === A32NX ===
 /fbw-a32nx/*
