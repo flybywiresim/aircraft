@@ -1,4 +1,12 @@
-import { ConsumerSubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import './MfdSurvStatusSwitching.scss';
 
@@ -7,6 +15,7 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { SurvStatusButton } from 'instruments/src/MFD/pages/common/SurvStatusButton';
 
 interface MfdSurvStatusSwitchingProps extends AbstractMfdPageProps {}
 
@@ -17,6 +26,10 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
   private readonly tcas1Failed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
+
+  private readonly activeSystemGroupWxrTaws = Subject.create<number>(1);
+
+  private readonly activeSystemGroupXpdrTcas = Subject.create<number>(1);
 
   private readonly activeSystemWxr = Subject.create<number>(1);
 
@@ -48,13 +61,14 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
         />
         {/* begin page content */}
         <div class="mfd-page-container">
-          <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 30px;">
+          <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 50px;">
             {/* upper left sys box */}
-            <div class="sys-box-upper">
-              <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 15px;">
-                SYS 1
-              </div>
-              <span></span>
+            <div class="sys-box">
+              <SurvStatusButton
+                label={'SYS 1'}
+                active={MappedSubject.create(() => true)}
+                onClick={() => console.log('button clicked')}
+              />
               <div
                 class={{
                   'sys-group': true,
@@ -78,19 +92,21 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
               </div>
             </div>
             {/* upper middle text */}
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <div class="mfd-label bigger" style="position: relative; top: 80px;">
+            <div style="text-align: center;">
+              <div class="mfd-label bigger" style="margin-top: 55px;">
                 WXR
               </div>
-              <div class="mfd-label bigger" style="position: relative; top: 180px;">
+              <div class="mfd-label bigger" style="margin-top: 90px;">
                 TAWS
               </div>
             </div>
             {/* upper right sys box */}
-            <div class="sys-box-upper">
-              <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 15px;">
-                SYS 2
-              </div>
+            <div class="sys-box">
+              <SurvStatusButton
+                label={'SYS 2'}
+                active={MappedSubject.create(([value]) => value === 2, this.activeSystemGroupWxrTaws)}
+                onClick={() => console.log('button clicked')}
+              />
               <div class={{ 'sys-group': true, active: this.activeSystemWxr.get() === 2 }} style="margin-bottom: 10px;">
                 <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px;">
                   WX DISPLAY 2
@@ -109,13 +125,15 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
             </div>
           </div>
           {/* lower line */}
-          <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 30px;">
+          <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 50px;">
             {/* lower left sys box */}
-            <div class="sys-box-lower">
-              <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 15px;">
-                SYS 1
-              </div>
-              <div class={{ 'sys-group': true, active: this.activeSystemXpdr.get() === 1 }}>
+            <div class="sys-box">
+              <SurvStatusButton
+                label={'SYS 1'}
+                active={MappedSubject.create(([value]) => value === 1, this.activeSystemGroupWxrTaws)}
+                onClick={() => console.log('button clicked')}
+              />
+              <div class={{ 'sys-group': true, active: this.activeSystemXpdr.get() === 1 }} style="margin-bottom: 5px;">
                 <div class={{ 'sys-status-item': true, active: this.activeSystemXpdr.get() === 1 }}>XPDR 1</div>
               </div>
               <div class={{ 'sys-group': true, active: this.activeSystemTcas.get() === 1, failed: this.tcas1Failed }}>
@@ -123,24 +141,28 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
               </div>
             </div>
             {/* lower middle text */}
-            <div style="display: flex; flex-direction: column; align-items: center">
-              <div class="mfd-label bigger" style="position: relative; top: 80px;">
+            <div style="text-align: center;">
+              <div class="mfd-label bigger" style="margin-top: 55px;">
                 XPDR
               </div>
-              <div class="mfd-label bigger" style="position: relative; top: 110px;">
+              <div class="mfd-label bigger" style="margin-top: 20px;">
                 TCAS
               </div>
             </div>
             {/* lower right sys box */}
-            <div class="sys-box-lower">
-              <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 15px;">
-                SYS 2
-              </div>
-              <div class={{ 'sys-group': true, active: this.activeSystemXpdr.get() === 2 }}>
+            <div class="sys-box">
+              <SurvStatusButton
+                label={'SYS 2'}
+                active={MappedSubject.create(([value]) => value === 2, this.activeSystemGroupWxrTaws)}
+                onClick={() => console.log('button clicked')}
+              />
+              <div class={{ 'sys-group': true, active: this.activeSystemXpdr.get() === 2 }} style="margin-bottom: 5px;">
                 <div class={{ 'sys-status-item': true }}>XPDR 2</div>
               </div>
               <div class={{ 'sys-group': true, active: this.activeSystemTcas.get() === 2 }}>
-                <div class={{ 'sys-status-item': true }}>TCAS 2</div>
+                <div onClick={() => console.log('button clicked')} class={{ 'sys-status-item': true }}>
+                  TCAS 2
+                </div>
               </div>
             </div>
           </div>

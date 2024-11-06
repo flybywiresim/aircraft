@@ -1,24 +1,12 @@
 ﻿@import "../../../MsfsAvionicsCommon/definitions.scss";
 
 
-.sys-box-upper {
+.sys-box {
   border: 1px solid $display-light-grey;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  width: 310px;
-  height: 280px;
-  justify-content: space-between;
-}
-
-.sys-box-lower {
-  border: 1px solid $display-light-grey;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  width: 310px;
-  height: 180px;
-  justify-content: space-between;
+  padding: 10px;
+  padding-top: 50px;
+  width: 270px;
+  position: relative;
 }
 
 .sys-box.active {
@@ -28,9 +16,6 @@
 .sys-group {
   border: 1px solid $display-light-grey;
   padding: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .sys-group.active {
