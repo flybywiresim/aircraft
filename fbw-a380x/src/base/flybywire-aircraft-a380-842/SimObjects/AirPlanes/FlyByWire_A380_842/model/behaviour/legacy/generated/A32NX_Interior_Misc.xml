@@ -607,12 +607,6 @@
                                 </CLOCKWISE_CODE>
                                 <CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
                                 <ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
-                                <PULL_CODE>
-                                    #MODE_STD# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                                </PULL_CODE>
-                                <PUSH_CODE>
-                                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == if{ #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) } els{ (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) }
-                                </PUSH_CODE>
                                 <CENTER_RADIUS>0</CENTER_RADIUS>
                                 <OVERRIDE_PUSH_ANIM_CODE>0 100 (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == ? 50 (O:_PushAnimVar) ?</OVERRIDE_PUSH_ANIM_CODE>
                                 <COUNT>36</COUNT>

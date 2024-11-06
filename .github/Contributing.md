@@ -21,6 +21,7 @@ It's recommended to set gitbash as your default shell in vscode
 ```shell
 git clone https://github.com/flybywiresim/aircraft.git
 cd aircraft
+git submodule update --init
 .\scripts\dev-env\run.cmd ./scripts/setup.sh
 ```
 
@@ -32,10 +33,9 @@ cd aircraft
 
 Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).
 
-If you are using WSL, ensure that the `Vmmem` process is not memory limited. At least `10GB` of memory is the recommended setting. This can be configured in `C:\<user>\.wslconfig`.
-## Asobo branch
+To build only the A32NX or the A380X, change `build.sh` to `build_a32nx.sh` or `build_a380x.sh`. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command.
 
-The master branch only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the master branch, simply copy it over from the latest Asobo branch, and add it in its own commit. Please DO NOT add, modify, or delete files from the Asobo branch.
+If you are using WSL, ensure that the `Vmmem` process is not memory limited. At least `10GB` of memory is the recommended setting. This can be configured in `C:\<user>\.wslconfig`.
 
 ## Helping others
 
