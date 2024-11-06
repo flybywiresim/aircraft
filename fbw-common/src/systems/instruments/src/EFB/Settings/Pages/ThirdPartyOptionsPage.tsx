@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState } from 'react';
-import { NavigraphSubscriptionStatus, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import {
+  NavigraphSubscriptionStatus,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  navigraphAuth,
+} from '@flybywiresim/fbw-sdk';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { IconTrash } from '@tabler/icons';
@@ -14,7 +19,6 @@ import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 // @ts-ignore
 import NavigraphIcon from '../../Assets/navigraph-logo-alone.svg';
-import { navigraphAuth } from '@flybywiresim/fbw-sdk';
 
 export const ThirdPartyOptionsPage = () => {
   const history = useHistory();

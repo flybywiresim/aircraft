@@ -1,8 +1,13 @@
 ﻿// Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString } from '@flybywiresim/fbw-sdk';
-import { navigraphAuth } from '@flybywiresim/fbw-sdk';
+import {
+  AmdbAirportSearchResponse,
+  AmdbProjection,
+  AmdbResponse,
+  FeatureTypeString,
+  navigraphAuth,
+} from '@flybywiresim/fbw-sdk';
 import { navigraphRequest } from 'navigraph/auth';
 
 export async function searchAmdbAirports(queryString: string): Promise<AmdbAirportSearchResponse> {

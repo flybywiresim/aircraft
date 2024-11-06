@@ -15,7 +15,7 @@ import {
   SunFill,
   XCircleFill,
 } from 'react-bootstrap-icons';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { navigraphCharts, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { Chart } from 'navigraph/charts';
 import { t } from '../Localization/translation';
@@ -38,7 +38,6 @@ import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
 import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 import { useNavigraphAuth } from '../../react/navigraph';
-import { navigraphCharts } from '@flybywiresim/fbw-sdk';
 
 export const navigationTabs: (PageLink & { associatedTab: NavigationTab })[] = [
   { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
