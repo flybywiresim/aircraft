@@ -16,8 +16,8 @@ export interface NavigationProvider {
   getBaroCorrectedAltitude(): number | null;
 
   /**
-   * Gets the current estimated position error
-   * @returns epe, or Infinity if no position
+   * Gets the estimated position error.
+   * @returns Estimated position error in nautical miles, or Infinity if no position.
    */
   getEpe(): number;
 
@@ -52,23 +52,26 @@ export interface NavigationProvider {
   getSelectedNavaids(cdu?: 1 | 2): SelectedNavaid[];
 
   /**
-   * Get the required navigation accuracy of the FMS
+   * Gets the active RNP considering priority order.
+   * @returns RNP in nautical miles, or undefined if none.
    */
-  getRnp(): NauticalMiles;
+  getActiveRnp(): number | undefined;
 
   /**
-   * Get if the FMS position accuracy is HIGH
+   * Gets if the FMS position accuracy is high
+   * @returns true if the position accuracy is high or false if low
    */
   isAcurracyHigh(): boolean;
 
   /**
    * Updates the required navigation performance of the FMS
-   * @param rnp number The RNP value to set or null to clear a previous manual input
+   * @param rnp number The RNP value to set or null to clear a previous pilot input
    */
-  updateRnp(rnp: NauticalMiles | null);
+  setPilotRnp(rnp: number | null);
 
   /**
-   * Get if a manual RNP entry was performed
+   * Gets if a pilot RNP entry was performed
+   * @returns true if a pilot RNP entry was performed or false if not
    */
-  isRnpManual(): boolean;
+  isPilotRnp(): boolean;
 }

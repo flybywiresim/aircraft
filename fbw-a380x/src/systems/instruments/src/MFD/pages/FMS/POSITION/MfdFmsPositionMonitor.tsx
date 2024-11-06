@@ -110,11 +110,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     }
 
     const navigation = this.props.fmcService.master.navigation;
-    const rnp = navigation.getRnp();
+    const rnp = navigation.getActiveRnp();
     this.fmsAccuracy.set(navigation.isAcurracyHigh() ? 'HIGH' : 'LO');
     this.fmsEpu.set(navigation.getEpe() != Infinity ? navigation.getEpe().toFixed(2) : '--.-');
-    this.fmsRnp.set(rnp);
-    this.rnpEnteredByPilot.set(navigation.isRnpManual());
+    this.fmsRnp.set(rnp?? null);
+    this.rnpEnteredByPilot.set(navigation.isPilotRnp());
     const fmCoordinates = this.props.fmcService.master.navigation.getPpos();
     const fmPositionAvailable = fmCoordinates != null;
     if (!this.positionFrozen.get()) {
@@ -216,7 +216,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
                 value={this.fmsRnp}
-                onModified={(v) => this.props.fmcService.master?.navigation.updateRnp(v)}
+                onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
                 containerStyle="width: 130px;"
