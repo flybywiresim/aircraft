@@ -1438,9 +1438,10 @@ mod tests {
         );
     }
 
-    // Check that provided following XML formula, final animation value matches expected values
+    // Utility to run to check that provided following XML formula, final animation value matches expected values
     // Need to set XML code according to those formulas
     #[test]
+    #[ignore]
     fn util_to_compute_xml_offsets_from_desired_angles_in_flight() {
         let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
 
