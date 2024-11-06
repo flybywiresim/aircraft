@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, NodeReference, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
@@ -23,17 +23,17 @@ interface FlightPathVectorData {
 }
 
 export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
-    private bird = FSComponent.createRef<SVGGElement>();
 
+    private bird = FSComponent.createRef<SVGGElement>();
     private isTrkFpaActive = false;
 
+    //TODO: test Arinc429Register.empty() instead of Arinc429Word(0)
     private data: FlightPathVectorData = {
         roll: new Arinc429Word(0),
         pitch: new Arinc429Word(0),
         fpa: new Arinc429Word(0),
         da: new Arinc429Word(0),
     }
-
     private needsUpdate = false;
 
     onAfterRender(node: VNode): void {
@@ -45,26 +45,21 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
             this.data.fpa = fpa;
             this.needsUpdate = true;
         });
-
         sub.on('da').handle((da) => {
             this.data.da = da;
             this.needsUpdate = true;
         });
-
         sub.on('rollAr').handle((r) => {
             this.data.roll = r;
             this.needsUpdate = true;
         });
-
         sub.on('pitchAr').handle((p) => {
             this.data.pitch = p;
             this.needsUpdate = true;
         });
-
         sub.on('realTime').handle((_t) => {
             if (this.needsUpdate) {
                 this.needsUpdate = false;
-
                 const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
                 if (daAndFpaValid) {
                     this.bird.instance.classList.remove('HiddenElement');
@@ -94,23 +89,23 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
                 <g ref={this.bird} id="bird">
                     <g>
                         <circle
-                            class="NormalStroke Green"
+                            class="SmallStroke Green"
                             cx="640"
                             cy="512"
                             r="16"
                         />
                         <path
-                            class="NormalStroke Green"
+                            class="SmallStroke Green"
                             d="m 590,512 h 34"
 
                         />
                         <path
-                            class="NormalStroke Green"
+                            class="SmallStroke Green"
                             d="m 656,512 h 34"
 
                         />
                         <path
-                            class="NormalStroke Green"
+                            class="SmallStroke Green"
                             d="M 640,496 V 484"
 
                         />
@@ -153,8 +148,8 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
     render(): VNode | null {
         return (
             <g id="TotalFlightPathAngle" ref={this.refElement}>
-                <path class="NormalStroke Green" d="m 574,500 12,12 -12,12" />
-                <path class="NormalStroke Green" d="m 706,500 -12,12 12,12" />
+                <path class="SmallStroke Green" d="m 574,500 12,12 -12,12" />
+                <path class="SmallStroke Green" d="m 706,500 -12,12 12,12" />
             </g>
         );
     }
@@ -278,7 +273,8 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus}> {
     }
 
     private moveBird() {
-        if (this.data.fdActive && this.isTrkFpaActive) {
+        // if (this.data.fdActive && this.isTrkFpaActive) {
+        if (this.data.fdActive) {
             const FDRollOrder = this.data.fdRoll;
             // FIXME assume that the FPD reaches the wing of the bird when roll order is +-45
             const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 10), -10) * 3.4;
@@ -301,7 +297,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus}> {
 
             <g ref={this.birdPath}>
                 <circle
-                    class="NormalStroke Green"
+                    class="SmallStroke Green"
                     cx="640"
                     cy="512"
                     r="10"
@@ -381,12 +377,12 @@ export class SelectedFlightPathAngle extends DisplayComponent<{ bus: ArincEventB
             if (this.needsUpdate) {
                 this.needsUpdate = false;
 
-                if (this.isTrkFpaActive && this.fdActive && this.selectFpaChanged) {
+                if (this.fdActive && this.selectFpaChanged) {
                     this.selectFpaChanged = false;
                     this.refElement.instance.style.visibility = 'visible';
                     this.refElement.instance.classList.remove('Apear5s');
                     this.refElement.instance.classList.add('Apear5s');
-                } else if (this.isTrkFpaActive && this.fdActive && this.armedVerticalMode === VerticalMode.FPA) {
+                } else if (this.fdActive && this.armedVerticalMode === VerticalMode.FPA) {
                     this.refElement.instance.classList.remove('Apear5s');
                     this.refElement.instance.style.visibility = 'visible';
                 } else {
@@ -399,7 +395,7 @@ export class SelectedFlightPathAngle extends DisplayComponent<{ bus: ArincEventB
     render(): VNode | null {
         return (
             <g id="SelectedFlightPathAngle" ref={this.refElement}>
-                <circle class="NormalStroke Green" cx="640" cy="512" r="5" />
+                <circle class="ScaledStroke Green" cx="640" cy="512" r="5" />
                 <text class="FontLarge StartAlign Green" x="518" y="682">{this.text}</text>
             </g>
         );
@@ -514,12 +510,12 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
         }
         return (
             <>
-                <path ref={this.speedRefs[0]} class="NormalStroke CornerRound Green" d="m 595,507.4 h 12 v 9.2 h -12 z" style="visibility:hidden" />
-                <path ref={this.speedRefs[1]} class="NormalStroke CornerRound Green" style="visibility:hidden" />
-                <path ref={this.speedRefs[2]} class="NormalStroke CornerRound Green" style="visibility:hidden" />
-                <path ref={this.speedRefs[3]} class="NormalStroke CornerRound Green" d="m 595,512 h 12" style="visibility:hidden" />
-                <path ref={this.speedRefs[4]} class="NormalStroke CornerRound Green" style="visibility:hidden" />
-                <g ref={this.speedRefs[5]} class="NormalStroke CornerRound Green" style="visibility:hidden">
+                <path ref={this.speedRefs[0]} class="ScaledStroke CornerRound Green" d="m 595,507.4 h 12 v 9.2 h -12 z" style="visibility:hidden" />
+                <path ref={this.speedRefs[1]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
+                <path ref={this.speedRefs[2]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
+                <path ref={this.speedRefs[3]} class="ScaledStroke CornerRound Green" d="m 595,512 h 12" style="visibility:hidden" />
+                <path ref={this.speedRefs[4]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
+                <g ref={this.speedRefs[5]} class="ScaledStroke CornerRound Green" style="visibility:hidden">
                     <path d="m 595,466 v 92" />
                     <path d="m 601,466 v 92" />
                     <path d="m 607,466 v 92" />

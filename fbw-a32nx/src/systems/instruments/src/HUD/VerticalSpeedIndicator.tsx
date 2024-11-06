@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -25,6 +25,8 @@ interface TcasState {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
+
+
     private yOffsetSub = Subject.create(0);
 
     private needleColour = Subject.create('Green');
@@ -55,7 +57,9 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents >();
+        
+
 
         sub.on('tcasState').whenChanged().handle((s) => {
             this.tcasState.tcasState = s;
@@ -83,15 +87,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             this.needsUpdate = true;
         });
 
-        sub.on('simTime').handle((_r) => {
-            if (this.needsUpdate) {
-                if (this.tcasState.tcasState === 2) {
-                    this.needleColour.set('White');
-                }
-                this.vspeedTcas.instance.update(this.tcasState);
-            }
-        });
-
         sub.on('vs').withArinc429Precision(3).handle((vs) => {
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
@@ -103,19 +98,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             } else {
                 this.vsFailed.instance.style.visibility = 'hidden';
                 this.vsNormal.instance.style.visibility = 'visible';
-            }
-
-            const radioAltitudeValid = !this.radioAlt.isNoComputedData() && !this.radioAlt.isFailureWarning();
-            if (this.tcasState.tcasState !== 2) {
-                if (
-                    absVSpeed >= 6000
-                    || (vs.value <= -2000 && radioAltitudeValid && this.filteredRadioAltitude <= 2500 && this.filteredRadioAltitude >= 1000)
-                    || (vs.value <= -1200 && radioAltitudeValid && this.filteredRadioAltitude <= 1000)
-                ) {
-                    this.needleColour.set('Amber');
-                } else {
-                    this.needleColour.set('Green');
-                }
             }
 
             const sign = Math.sign(filteredVS);
@@ -142,19 +124,19 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
     render(): VNode {
         return (
-            <g>
-                <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
+            <g transform="scale(5 5) translate(90 10)">
+                {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
                 <g id="VSpeedFailText" ref={this.vsFailed}>
-                    <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13206" y="77.501472">V</text>
-                    <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13406" y="83.211388">/</text>
-                    <text class="Blink9Seconds FontLargest Red EndAlign" x="152.99374" y="88.870819">S</text>
+                    <text class="Blink9Seconds FontMediumSmaller Red EndAlign" x="153.13206" y="77.501472">V</text>
+                    <text class="Blink9Seconds FontMediumSmaller Red EndAlign" x="153.13406" y="83.211388">/</text>
+                    <text class="Blink9Seconds FontMediumSmaller Red EndAlign" x="152.99374" y="88.870819">S</text>
                 </g>
 
-                <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} />
+                {/* <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} /> */}
 
-                <g id="VerticalSpeedGroup" ref={this.vsNormal}>
-                    <g class="Fill White">
+                <g id="VerticalSpeedGroup" ref={this.vsNormal} transform="scale(1 1) translate(0 0)">
+                    {/* <g class="Fill White">
                         <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
                         <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
                         <path d="m149.92 34.054v-1.2095h1.9151v1.2095z" />
@@ -177,8 +159,8 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                         <text x="148.49667" y="55.316456">1</text>
                         <text x="148.26495" y="45.356102">2</text>
                         <text x="148.21367" y="35.195072">6</text>
-                    </g>
-                    <path class="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
+                    </g> */}
+                    <path class="ScaledStrokeThin  Green" d="m145.79 80.65 h 6.0476 v 0.25 h-6.0476z" />
                     <VSpeedNeedle yOffset={this.yOffsetSub} needleColour={this.needleColour} />
 
                     <VSpeedText bus={this.props.bus} yOffset={this.yOffsetSub} textColour={this.needleColour.map((c) => (c === 'White' ? 'Green' : c))} />
@@ -208,14 +190,14 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
         });
 
         this.props.needleColour.sub((colour) => {
-            this.indicatorRef.instance.setAttribute('class', `HugeStroke ${colour}`);
+            this.indicatorRef.instance.setAttribute('class', `ScaledStroke Green`);
         }, true);
     }
 
     render(): VNode | null {
         return (
             <>
-                <path d={this.pathSub} class="HugeOutline" />
+                {/* <path d={this.pathSub} class="HugeOutline" /> */}
                 <path d={this.pathSub} ref={this.indicatorRef} id="VSpeedIndicator" />
             </>
         );
@@ -253,7 +235,7 @@ class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscri
         });
 
         this.props.textColour.sub((colour) => {
-            const className = `FontSmallest MiddleAlign ${colour}`;
+            const className = `FontTiny MiddleAlign ${colour}`;
             this.vsTextRef.instance.setAttribute('class', className);
         }, true);
     }
@@ -326,7 +308,7 @@ class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
                         ref={this.redZoneElement}
                         zoneBoundLow={this.redZone}
                         zoneBoundHigh={this.redZoneHigh}
-                        zoneClass="Fill Red"
+                        zoneClass="Fill Green"
                         isCorrective={this.isCorrective}
                         extended={Subject.create(false)}
                     />
@@ -343,7 +325,7 @@ class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
                     <VSpeedTcasZone
                         zoneBoundLow={this.redZone}
                         zoneBoundHigh={this.redZoneHigh}
-                        zoneClass="Fill Red"
+                        zoneClass="Fill Green"
                         extended={Subject.create(false)}
                         isCorrective={Subject.create(false)}
                     />

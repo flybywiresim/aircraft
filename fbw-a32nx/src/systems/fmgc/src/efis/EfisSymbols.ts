@@ -191,11 +191,35 @@ export class EfisSymbols<T extends number> {
     const hasSuitableRunway = (airport: Airport): boolean =>
       airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
+    // 	Phiφ is latitude, Lambdaλ is longitude, θ is the bearing (clockwise from north), δ is the angular distance d/R; d being the distance travelled, R the earth’s radius
+    //  (all angles in radians)
+
+    function DestFromPointCoordsBearingDistance(brng: number, d: number, Lat1: number, Lon1: number): LatLongAlt {
+      const rBrng = (brng / 180) * Math.PI;
+      const rLat1 = (Lat1 / 180) * Math.PI;
+      const rLon1 = (Lon1 / 180) * Math.PI;
+      const R = 6371;
+
+      const rLat2 = Math.asin(Math.sin(rLat1) * Math.cos(d / R) + Math.cos(rLat1) * Math.sin(d / R) * Math.cos(rBrng));
+      const rLon2 =
+        rLon1 +
+        Math.atan2(
+          Math.sin(rBrng) * Math.sin(d / R) * Math.cos(rLat1),
+          Math.cos(d / R) - Math.sin(rLat1) * Math.sin(rLat2),
+        );
+
+      const dLat2 = (rLat2 / Math.PI) * 180;
+      const dLon2 = (rLon2 / Math.PI) * 180;
+
+      return new LatLongAlt(dLat2, dLon2);
+    }
+
     const activeFp = this.flightPlanService.active;
     // FIXME dirty hack on type check
     if (activeFp.destinationAirport) {
       const runway = activeFp.destinationRunway;
-      const endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
+
+      const endCoordinates = DestFromPointCoordsBearingDistance(
         runway.bearing,
         runway.length,
         runway.startLocation.lat,
@@ -203,41 +227,48 @@ export class EfisSymbols<T extends number> {
       );
       if (runway) {
         const cornerCoor: LatLongAlt[] = [];
-        const p1 = Avionics.Utils.bearingDistanceToCoordinates(
+        const p1 = DestFromPointCoordsBearingDistance(
           runway.bearing - 90,
           runway.width / 2 / 1852,
           endCoordinates.lat,
           endCoordinates.long,
         );
-        p1.alt = (runway.thresholdCrossingHeight + (runway.gradient * runway.length) / 100) * 3.28084;
+        p1.alt = runway.thresholdCrossingHeight - runway.length * 3.281 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
         cornerCoor.push(p1);
-        const p2 = Avionics.Utils.bearingDistanceToCoordinates(
+
+        const p2 = DestFromPointCoordsBearingDistance(
           runway.bearing + 90,
           runway.width / 2 / 1852,
           endCoordinates.lat,
           endCoordinates.long,
         );
-        p2.alt = p1.alt;
+        p2.alt = runway.thresholdCrossingHeight - runway.length * 3.281 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
         cornerCoor.push(p2);
+
         const p3 = Avionics.Utils.bearingDistanceToCoordinates(
           runway.bearing + 90,
           runway.width / 2 / 1852,
-          runway.startLocation.lat,
-          runway.startLocation.long,
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
         );
-        p3.alt = (runway.thresholdCrossingHeight - (runway.gradient * runway.length) / 100) * 3.28084;
+        p3.alt = runway.thresholdCrossingHeight; //in feet
         cornerCoor.push(p3);
         const p4 = Avionics.Utils.bearingDistanceToCoordinates(
           runway.bearing - 90,
-          runway.width / 2 / 1852,
-          runway.startLocation.lat,
-          runway.startLocation.long,
+          runway.width / 2 / 1852, //1852: nautical miles to meters
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
         );
-        p4.alt = p3.alt;
+        p4.alt = runway.thresholdCrossingHeight; //in feet
         cornerCoor.push(p4);
 
         const HUDSymbol: HUDSyntheticRunway = {
-          direction: runway.bearing,
+          gradient: runway.gradient,
+          location: runway.location,
+          direction: (runway as any).bearing,
+          startLocation: runway.startLocation,
+          thresholdLocation: runway.thresholdLocation,
+          thresholdCrossingHeight: runway.thresholdCrossingHeight,
           latitude: (runway as any).latitude,
           longitude: (runway as any).longitude,
           elevation: runway.thresholdCrossingHeight, // in meters

@@ -164,11 +164,17 @@ export interface TcasWxrMessage {
 }
 
 export interface HUDSyntheticRunway {
+  // LatLongAlt
+  location: Coordinates;
+  thresholdLocation: Coordinates;
+  startLocation: Coordinates;
   // degrees
+  gradient: number;
   direction: number;
   latitude: number;
   longitude: number;
   // metres
+  thresholdCrossingHeight: number;
   elevation: number;
   length: number;
   width: number;

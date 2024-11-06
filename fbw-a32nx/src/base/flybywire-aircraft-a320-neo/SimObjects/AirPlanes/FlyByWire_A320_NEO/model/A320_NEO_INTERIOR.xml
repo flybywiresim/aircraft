@@ -755,6 +755,7 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
+            <!-- hud declutter -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_Transfer_Template</ANIM_TEMPLATE>
@@ -783,6 +784,16 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>88</POTENTIOMETER>
+                </UseTemplate>
+
+                <!-- CPT HUD SCREEN -->
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_HUD_L</NODE_ID>
+                    <POTENTIOMETER>88</POTENTIOMETER>
+                    <PART_ID>SCREEN_HUD1</PART_ID>
+                    <CAMERA_TITLE>HUD</CAMERA_TITLE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- CPT PFD SCREEN -->
@@ -814,13 +825,14 @@
                         <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                        <NODE_ID>KNOB_EFIS_CS_LOUDSPKR</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                         <NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                         <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                        <NODE_ID>KNOB_EFIS_CS_LOUDSPKR</NODE_ID>
                     </UseTemplate>
                 </Component>
 

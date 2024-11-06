@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, HEvent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -12,8 +12,8 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { getDisplayIndex } from './HUD';
 
-const DisplayRange = 24;
-const DistanceSpacing = 7.555;
+const DisplayRange = 18;
+const DistanceSpacing = 182.857;
 const ValueSpacing = 5;
 
 interface HeadingTapeProps {
@@ -61,7 +61,8 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
 
     private ILSCourse = Subject.create(0);
 
-    private lsPressed = Subject.create(false);
+    private lsPressed = ConsumerSubject.create(null, false);
+
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -84,29 +85,23 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
             this.ILSCourse.set(n);
         });
 
-        sub.on('hEvent').handle((eventName) => {
-            if (eventName === `A320_Neo_HUD_BTN_LS_${getDisplayIndex()}`) {
-                this.lsPressed.set(!this.lsPressed.get());
-            }
-        });
+        this.lsPressed.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
+
     }
 
     render(): VNode {
         return (
             <>
                 <g ref={this.abnormalRef}>
-                    <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" class="TapeBackground" />
-                    <path id="HeadingTapeOutline" class="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />
                     <text id="HDGFailText" class="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>
                 </g>
-                <g id="HeadingOfftapeGroup" ref={this.normalRef}>
-                    <path id="HeadingTapeOutline" class="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
+                <g id="HeadingOfftapeGroup" ref={this.normalRef} transform="translate(571 367)">
                     <SelectedHeading heading={this.heading} bus={this.props.bus} />
                     <QFUIndicator heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />
-                    <path class="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
+                    <path class="Fill Green" d="m69.61 155h-1.5119v-18h1.5119z" /> 
                     <GroundTrackBug bus={this.props.bus} heading={this.heading} />
                     <TrueFlag bus={this.props.bus} />
-                </g>
+                </g> 
             </>
         );
     }
@@ -123,10 +118,6 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
     private showSelectedHeading = 0;
 
     private targetIndicator = FSComponent.createRef<SVGPathElement>();
-
-    private headingTextRight = FSComponent.createRef<SVGPathElement>();
-
-    private headingTextLeft = FSComponent.createRef<SVGPathElement>();
 
     private text = Subject.create('');
 
@@ -163,9 +154,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
         this.text.set(Math.round(selectedHeading).toString().padStart(3, '0'));
 
         if (Number.isNaN(selectedHeading)) {
-            this.headingTextLeft.instance.classList.add('HiddenElement');
             this.targetIndicator.instance.classList.add('HiddenElement');
-            this.headingTextRight.instance.classList.add('HiddenElement');
             return;
         }
 
@@ -174,29 +163,20 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
             this.targetIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
             this.targetIndicator.instance.classList.remove('HiddenElement');
-            this.headingTextRight.instance.classList.add('HiddenElement');
-            this.headingTextLeft.instance.classList.add('HiddenElement');
+
             return;
         }
         this.targetIndicator.instance.classList.add('HiddenElement');
 
-        if (headingDelta > 0) {
-            this.headingTextRight.instance.classList.remove('HiddenElement');
-            this.headingTextLeft.instance.classList.add('HiddenElement');
-        } else {
-            this.headingTextRight.instance.classList.add('HiddenElement');
-            this.headingTextLeft.instance.classList.remove('HiddenElement');
-        }
+  
     }
 
     render(): VNode {
         return (
 
             <>
-                <path ref={this.targetIndicator} id="HeadingTargetIndicator" class="NormalStroke Cyan CornerRound" d="m69.978 145.1 1.9501-5.3609h-6.0441l1.9501 5.3609" />
-                <text ref={this.headingTextRight} id="SelectedHeadingTextRight" class="FontSmallest MiddleAlign Cyan" x="101.70432" y="144.34792">{this.text}</text>
-                <text ref={this.headingTextLeft} id="SelectedHeadingTextLeft" class="FontSmallest MiddleAlign Cyan" x="36.418198" y="144.32108">{this.text}</text>
-            </>
+                <path ref={this.targetIndicator} id="HeadingTargetIndicator" class="ThickStroke  Green CornerRound" d="m70 145.1  5.5 -15 h -13.2 l 5.5 15" />
+             </>
         );
     }
 }
@@ -230,8 +210,8 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     render(): VNode {
         return (
             <g style={{ transform: this.transformSub, display: this.isVisibleSub.map((v) => (v ? '' : 'none')) }} id="ActualTrackIndicator">
-                <path class="ThickOutline CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
-                <path class="ThickStroke Green CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+                <path class="ThickOutline CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" />
+                <path class="ThickStroke Green CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" />
             </g>
         );
     }
@@ -332,16 +312,8 @@ class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, h
         return (
             <g ref={this.qfuContainer}>
                 <g id="ILSCoursePointer" class="HiddenElement" ref={this.ilsCoursePointer}>
-                    <path class="ThickOutline" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-                    <path class="ThickStroke Magenta" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-                </g>
-                <g id="ILSCourseRight" class="HiddenElement" ref={this.ilsCourseRight}>
-                    <path class="BlackFill NormalStroke White" d="m100.57 149.68h12.088v6.5516h-12.088z" />
-                    <text id="ILSCourseTextRight" class="FontMedium MiddleAlign Magenta" x="106.95047" y="155.22305">{this.text}</text>
-                </g>
-                <g id="ILSCourseLeft" class="HiddenElement" ref={this.ilsCourseLeft}>
-                    <path class="BlackFill NormalStroke White" d="m26.094 156.18v-6.5516h12.088v6.5516z" />
-                    <text id="ILSCourseTextLeft" class="FontMedium MiddleAlign Magenta" x="32.406616" y="155.22305">{this.text}</text>
+                    <path class="ThickOutline" d="m58.9 135 h 20 m -10 -22 v30" />
+                    <path class="ThickStroke Green" d="m58.9 135 h 20 m -10 -22 v30" />
                 </g>
             </g>
         );

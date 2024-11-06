@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode,  
+    SubscribableMapFunctions,
+    ConsumerSubject,
+    HEvent, } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
@@ -21,6 +24,7 @@ import { LinearDeviationIndicator } from './LinearDeviationIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
@@ -33,6 +37,10 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
+    private readonly lsVisible = ConsumerSubject.create(null, false);
+    private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
+    
+
     private headingFailed = Subject.create(true);
 
     private displayBrightness = Subject.create(0);
@@ -67,7 +75,19 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
         this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent>();
+        
+        sub.on('hEvent').handle((eventName) => {
+            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
+                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+                SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
+            }
+            if (eventName === `A320_Neo_HUD_XWINDMODE`) {
+                // SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
+            }
+          });
+          this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
+          
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
@@ -123,32 +143,55 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         instrument={this.props.instrument}
                         isAttExcessive={this.isAttExcessive}
                         filteredRadioAlt={this.filteredRadioAltitude}
+                        
+                 
                     />
+                       
+
+                    <path id="PitchScaleMask"  class= "BackgroundFill"  
+                        d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278 v 800 h -1278 Z"/> 
+
+                    <g id="TapesMasks" class={{ HiddenElement: this.lsVisible }} >
+                    
+                        <path id="AltTapeMask" class="BlackFill" d="m1045 322 h 114 v 365 h-114z"></path>
+                        <path id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
+                        {/* <path id="AltTapeMask" class="BlackFill" d="m1059 274 h 98 v 364 h-98z"></path>
+                        <path id="SpeedTapeMask" class="BlackFill" d="m70 274 h 98 v 364 h-98z"></path> */}
+                    </g>
+
+                    <g id="WindIndicator" class="Wind" transform="translate(250 200) ">
+                        <WindIndicator bus={this.props.bus} />
+                    </g>
                     <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
-                    <path
-                        id="Mask1"
-                        class="BackgroundFill"
-                        // eslint-disable-next-line max-len
-                        d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
-                    />
-                    {/* <HeadingTape bus={this.props.bus} failed={this.headingFailed} /> */}
+
                     <AltitudeIndicator bus={this.props.bus} />
                     <AirspeedIndicator
                         bus={this.props.bus}
                         instrument={this.props.instrument}
                     />
-                    <path
+
+                    {/* mask2 speedtape draw limits | mask3 altTape draw limits */}
+                    <g id="TapesMasks2" class={{ HiddenElement: this.lsVisible }} >
+                        <path
                         id="Mask2"
                         class="BackgroundFill"
-                        // eslint-disable-next-line max-len
-                        d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h20.344v85.473zm-113.33 0v-85.473h27.548v85.473z"
-                    />
+                        d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z" 
+                        // d="M 60 0 H 208 V 1024 H 60 Z  M 61 274 v 364 h 146 v -364 z" 
+                        />
+                        <path
+                        id="Mask3"
+                        class="BackgroundFill"
+                        d="M 1038 250 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z" 
+                        // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z" 
+                        />
+                    </g>
+                    
                     <AirspeedIndicatorOfftape bus={this.props.bus} />
 
                     <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
                     <AttitudeIndicatorFixedUpper bus={this.props.bus} />
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />
-                    <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
+                    {/* <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} /> */}
                     <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />
                     <LinearDeviationIndicator bus={this.props.bus} />
 
@@ -158,4 +201,8 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             </DisplayUnit>
         );
     }
+
+
+
+
 }

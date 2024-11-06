@@ -1,12 +1,21 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode,ConsumerSubject, SubscribableMapFunctions, HEvent  } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
+import { HUDSimvars } from './shared/HUDSimvarPublisher';
+
+export const getDisplayIndex = () => {
+    const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
+    return url ? parseInt(url.substring(url.length - 1), 10) : 0;
+};
 
 type LinearDeviationIndicatorProps = {
     bus: EventBus,
 }
 
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
+    private readonly lsVisible = ConsumerSubject.create(null, false);
+    private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
+    
     private shouldShowLinearDeviation = false;
 
     private componentTransform = Subject.create('');
@@ -33,7 +42,17 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent   & HUDSimvars>();
+        sub.on('hEvent').handle((eventName) => {
+            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
+                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+                SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
+            }
+            if (eventName === `A320_Neo_HUD_XWINDMODE`) {
+                // SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
+            }
+          });
+          this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
 
         sub.on('altitudeAr').handle((alt) => {
             if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
@@ -99,8 +118,8 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
     render(): VNode {
         return (
-            <g id="LinearDeviationIndicator">
-                <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontSmallest Green">{this.upperLinearDeviationReadoutText}</text>
+            <g id="LinearDeviationIndicator" transform="scale(4.25 4.25) translate(131 26.5)"  class={{ HiddenElement: this.lsVisible }}>
+                <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontMediumSmaller  Green">{this.upperLinearDeviationReadoutText}</text>
                 <g id="LinearDeviationDot" transform={this.componentTransform}>
                     <path
                         id="EntireDot"
@@ -122,7 +141,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
                     />
                     <path visibility={this.latchSymbolVisibility} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
                 </g>
-                <text visibility={this.lowerLinearDeviationReadoutVisibility} x="110" y="123" class="FontSmallest Green">{this.lowerLinearDeviationReadoutText}</text>
+                <text visibility={this.lowerLinearDeviationReadoutVisibility} x="110" y="123" class="FontMediumSmaller  Green">{this.lowerLinearDeviationReadoutText}</text>
             </g>
         );
     }

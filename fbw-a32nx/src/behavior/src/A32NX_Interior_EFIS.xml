@@ -21,6 +21,7 @@
             </INDICATOR_CODE>
             <BUTTON_CODE type="rnp">
                 (H:A320_Neo_PFD_BTN_LS_#ID#, boolean) = true;
+                (H:A320_Neo_HUD_XWINDMODE, boolean) = true;
             </BUTTON_CODE>
         </UseTemplate>
     </Template>

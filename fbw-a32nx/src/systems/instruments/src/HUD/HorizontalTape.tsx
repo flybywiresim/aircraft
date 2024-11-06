@@ -8,6 +8,9 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
+
+
+
 interface HorizontalTapeProps {
     displayRange: number;
     valueSpacing: number;
@@ -30,17 +33,19 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     private buildHorizonTicks():{ticks: SVGPathElement[], labels?: SVGTextElement[]} {
         const result = { ticks: [] as SVGPathElement[], labels: [] as SVGTextElement[] };
 
-        result.ticks.push(<path transform="translate(0 0)" class="NormalStroke White" d="m68.906 80.823v1.8" />);
+        result.ticks.push(<path transform="translate(0 0)" class="ScaledStroke White" d="m68.906 80.823v1.8" />);
 
         for (let i = 0; i < 6; i++) {
             const headingOffset = (1 + i) * this.props.valueSpacing;
             const dX = this.props.distanceSpacing / this.props.valueSpacing * headingOffset;
 
             if (headingOffset % 10 === 0) {
-                result.ticks.push(<path class="NormalStroke White" d="m68.906 80.823v1.8" transform={`translate(${dX} 0)`} />);
-                result.ticks.unshift(<path class="NormalStroke White" d="m68.906 80.823v1.8" transform={`translate(${-dX} 0)`} />);
+                result.ticks.push(<path class="ScaledStroke White" d="m68.906 80.823v1.8" transform={`translate(${dX} 0)`} />);
+                result.ticks.unshift(<path class="ScaledStroke White" d="m68.906 80.823v1.8" transform={`translate(${-dX} 0)`} />);
             }
         }
+
+
 
         return result;
     }
@@ -54,7 +59,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         const tickLength = 7;
         let textRef = FSComponent.createRef<SVGTextElement>();
 
-        result.ticks.push(<path class="NormalStroke Green" d={`m640 512v${tickLength}`} transform="translate(0 0)" />);
+        result.ticks.push(<path class="ScaledStroke Green" d={`m640 512v${tickLength}`} transform="translate(0 0)" />);
 
         result.labels.push(
             <text
@@ -77,11 +82,11 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             const dX = this.props.distanceSpacing / this.props.valueSpacing * headingOffset;
 
             // if (headingOffset % 10 === 0) {
-            result.ticks.push(<path class="NormalStroke Green" d={`m640 512v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
-            result.ticks.unshift(<path class="NormalStroke Green" d={`m640 512v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
+            result.ticks.push(<path class="ScaledStroke Green" d={`m640 512v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
+            result.ticks.unshift(<path class="ScaledStroke Green" d={`m640 512v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             // } else {
-            //     result.ticks.push(<path class="NormalStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
-            //     result.ticks.unshift(<path class="NormalStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
+            //     result.ticks.push(<path class="ScaledStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
+            //     result.ticks.unshift(<path class="ScaledStroke Green" d={`m512 384v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             // }
 
             if (headingOffset % 10 === 0) {
@@ -172,12 +177,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         const tapeContent = this.props.type === 'horizon' ? this.buildHorizonTicks() : this.buildHeadingTicks();
 
         return (
-
+ 
             <g id="HeadingTick" ref={this.refElement}>
-
                 {tapeContent.ticks}
                 {this.props.type === 'headingTape' && tapeContent.labels}
-
             </g>
 
         );

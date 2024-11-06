@@ -112,3 +112,5 @@ cmake-*/
 
 # MacOS files
 **/.DS_Store
+scripts/copyToComFolder.sh
+scripts/copyToComFolderPanelCfg.sh

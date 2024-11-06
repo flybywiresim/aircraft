@@ -13,6 +13,7 @@ import {
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
+    crosswindMode: boolean;
     declutterMode: number;
     coldDark: number;
     elec: boolean;
@@ -167,7 +168,8 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fm2TransLvlRaw: number
   }
 
-export enum HUDVars {
+  export enum HUDVars {
+    crosswindMode = 'L:A32NX_HUD_CROSSWIND_MODE',
     declutterMode = 'L:A32NX_HUD_DECLUTTER_MODE',
     coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
     elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
@@ -330,6 +332,7 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
         ...AdirsSimVarDefinitions,
         ...SwitchingPanelSimVarsDefinitions,
+        ['crosswindMode', { name: HUDVars.crosswindMode, type: SimVarValueType.Bool }],
         ['declutterMode', { name: HUDVars.declutterMode, type: SimVarValueType.Number }],
         ['coldDark', { name: HUDVars.coldDark, type: SimVarValueType.Number }],
         ['elec', { name: HUDVars.elec, type: SimVarValueType.Bool }],

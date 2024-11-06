@@ -2,18 +2,24 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils, Subject, Subscribable, SubscribableMapFunctions, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils, Subject, Subscribable, SubscribableMapFunctions, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
+
+const DistanceSpacing = 1024 / 28 * 5;   //182.857
+const ValueSpacing = 5;
+
+
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
     private readonly lsVisible = ConsumerSubject.create(null, false);
-
     private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
 
     private readonly xtk = ConsumerSubject.create(null, 0);
@@ -39,14 +45,16 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
 
     private readonly isVDevHidden = Subject.create(true);
 
+    private isTrkFpaActive = false;
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
 
         // FIXME clean this up.. should be handled by an IE in the XML
         sub.on('hEvent').handle((eventName) => {
-            if (eventName === `A320_Neo_HUD_BTN_LS_${getDisplayIndex()}`) {
+            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
                 SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
             }
         });
@@ -60,28 +68,28 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
         this.ldevRequest.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight'));
 
         this.xtk.setConsumer(sub.on('xtk'));
+
+
     }
+
+
+
+
+
 
     render(): VNode {
         return (
             <>
-                <g id="LSGroup" class={{ HiddenElement: this.lsHidden }}>
+                <g id="LSGroup" class={{ HiddenElement: this.lsHidden }} transform="scale(2.5 2.5) translate(185 51)" >
                     <LandingSystemInfo bus={this.props.bus} isVisible={this.lsVisible} />
 
                     <g id="LSGroup">
                         <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
                         <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
                         <MarkerBeaconIndicator bus={this.props.bus} />
-                    </g>
 
-                    <path
-                        class={{
-                            Yellow: true,
-                            Fill: true,
-                            HiddenElement: this.isGsReferenceLineHidden,
-                        }}
-                        d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
-                    />
+
+                    </g>
                 </g>
                 <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
                     <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
@@ -90,15 +98,16 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
                     <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
                         <VDevIndicator bus={this.props.bus} />
                     </g>
+                    <path
+                        transform="translate(110 -20)"
+                        class={{
+                            Green: true,
+                            Fill: true,
+                            HiddenElement: this.isGsReferenceLineHidden,
+                        }}
+                        d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
+                    />
                 </g>
-                <path
-                    class={{
-                        Yellow: true,
-                        Fill: true,
-                        HiddenElement: this.isGsReferenceLineHidden,
-                    }}
-                    d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
-                />
             </>
         );
     }
@@ -237,12 +246,13 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
         return (
             <g
                 id="LSInfoGroup"
+                 transform=" translate(-160 -20)"
                 class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}
             >
                 <text
                     id="ILSIdent"
                     class={{
-                        Magenta: true,
+                        Green: true,
                         FontLarge: true,
                         AlignLeft: true,
                         HiddenElement: this.isLsIdentHidden,
@@ -255,7 +265,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
                 <text
                     id="ILSFreqLeading"
                     class={{
-                        Magenta: true,
+                        Green: true,
                         FontLarge: true,
                         AlignLeft: true,
                         HiddenElement: this.isLsFreqHidden,
@@ -268,8 +278,8 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
                 <text
                     id="ILSFreqTrailing"
                     class={{
-                        Magenta: true,
-                        FontSmallest: true,
+                        Green: true,
+                        FontMediumSmaller : true,
                         AlignLeft: true,
                         HiddenElement: this.isLsFreqHidden,
                     }}
@@ -280,15 +290,15 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
                 </text>
 
                 <g id="ILSDistGroup" class={{ HiddenElement: this.isDmeAvailable.map((v) => !v) }}>
-                    <text class="Magenta AlignLeft" x="1.3685881" y="157.26602">
+                    <text class="Green AlignLeft" x="1.3685881" y="157.26602">
                         <tspan id="ILSDistLeading" class="FontLarge StartAlign">
                             {this.dmeTextLeading}
                         </tspan>
-                        <tspan id="ILSDistTrailing" class="FontSmallest StartAlign">
+                        <tspan id="ILSDistTrailing" class="FontMediumSmaller StartAlign">
                             {this.dmeTextTrailing}
                         </tspan>
                     </text>
-                    <text class="Cyan FontSmallest AlignLeft" x="17.159119" y="157.22606">NM</text>
+                    <text class="Green FontMediumSmaller AlignLeft" x="17.159119" y="157.22606">NM</text>
                 </g>
 
             </g>
@@ -346,36 +356,55 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
 
     render(): VNode {
         return (
-            <g id="LocalizerSymbolsGroup">
-                <path class="NormalStroke White" d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
-                <path class="NormalStroke White" d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-                <path class="NormalStroke White" d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
-                <path class="NormalStroke White" d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+            <g id="LocalizerSymbolsGroup" transform="scale(1 1) translate(0 60)">
+                <path class="NormalStroke Green" d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke Green" d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke Green" d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke Green" d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
                 <g class="HiddenElement" ref={this.diamondGroup}>
-                    <path id="LocDiamondRight" ref={this.rightDiamond} class="NormalStroke Magenta HiddenElement" d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198" />
-                    <path id="LocDiamondLeft" ref={this.leftDiamond} class="NormalStroke Magenta HiddenElement" d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198" />
+                    <path id="LocDiamondRight" ref={this.rightDiamond} class="NormalStroke Green HiddenElement" d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198" />
+                    <path id="LocDiamondLeft" ref={this.leftDiamond} class="NormalStroke Green HiddenElement" d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198" />
                     <path
                         id="LocDiamond"
                         ref={this.locDiamond}
-                        class="NormalStroke Magenta HiddenElement"
+                        class="NormalStroke Green HiddenElement"
                         d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
                     />
                 </g>
-                <path id="LocalizerNeutralLine" class="Yellow Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
+                <path id="LocalizerNeutralLine" class="Green Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
             </g>
         );
     }
 }
 
-class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
-    private lagFilter = new LagFilter(1.5);
+interface LSPath {
+    roll: Arinc429WordData;
+    pitch: Arinc429WordData;
+    fpa: Arinc429WordData;
+    da: Arinc429WordData;
+}
 
+class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {   
+
+    private needsUpdate = false;
+
+    private glideGroupOffest = FSComponent.createRef<SVGGElement>();
+
+    private data: LSPath = {
+      roll: new Arinc429Word(0),
+      pitch: new Arinc429Word(0),
+      fpa: new Arinc429Word(0),
+      da: new Arinc429Word(0),
+    }
+    
+    private lagFilter = new LagFilter(1.5);
+    
     private upperDiamond = FSComponent.createRef<SVGPathElement>();
 
     private lowerDiamond = FSComponent.createRef<SVGPathElement>();
-
+    
     private glideSlopeDiamond = FSComponent.createRef<SVGPathElement>();
-
+    
     private diamondGroup = FSComponent.createRef<SVGGElement>();
 
     private hasGlideSlope = false;
@@ -400,10 +429,13 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrume
         }
     }
 
+
+
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<HUDSimvars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
 
         sub.on('hasGlideslope').whenChanged().handle((hasGlideSlope) => {
             this.hasGlideSlope = hasGlideSlope;
@@ -420,22 +452,65 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrume
                 this.handleGlideSlopeError(gs);
             }
         });
-    }
 
+        sub.on('fpa').handle((fpa) => {
+            this.data.fpa = fpa;
+            this.needsUpdate = true;
+          });
+          sub.on('da').handle((da) => {
+              this.data.da = da;
+              this.needsUpdate = true;
+          });
+          sub.on('rollAr').handle((r) => {
+              this.data.roll = r;
+              this.needsUpdate = true;
+          });
+          sub.on('pitchAr').handle((p) => {
+              this.data.pitch = p;
+              this.needsUpdate = true;
+          });
+          sub.on('realTime').handle((_t) => {
+            if (this.needsUpdate) {
+                this.needsUpdate = false;
+                const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+                if (daAndFpaValid) {
+                    // this.threeDegRef.instance.classList.remove('HiddenElement');
+                    this.MoveGlideSlopeGroup();
+                } else {
+                    // this.threeDegRef.instance.classList.add('HiddenElement');
+                }
+            }
+          });
+    }
+    private MoveGlideSlopeGroup() {
+        const daLimConv = this.data.da.value * DistanceSpacing / ValueSpacing;
+        const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
+        const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
+        const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
+    
+        const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+        const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin ;
+        //this.glideGroupOffest.instance.style.transform = `translate3d(0px, ${yOffset/2.5}px, 0px)`;
+        this.glideGroupOffest.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + 3 * DistanceSpacing / ValueSpacing )/2.5}px, 0px)`;
+        //DistanceSpacing
+    }
     render(): VNode {
         return (
-            <g id="LocalizerSymbolsGroup">
-                <path class="NormalStroke White" d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-                <path class="NormalStroke White" d="m110.71 65.704a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-                <path class="NormalStroke White" d="m110.71 95.942a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-                <path class="NormalStroke White" d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+            <g id="LocalizerSymbolsGroup"  ref={this.glideGroupOffest}>
+                <path  class={{Green: true,Fill: true }}
+                    d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
+                />
+                <path class="NormalStroke Green" d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke Green" d="m110.71 65.704a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke Green" d="m110.71 95.942a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke Green" d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
                 <g class="HideGSDiamond" ref={this.diamondGroup}>
-                    <path id="GlideSlopeDiamondLower" ref={this.upperDiamond} class="NormalStroke Magenta HiddenElement" d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798" />
-                    <path id="GlideSlopeDiamondUpper" ref={this.lowerDiamond} class="NormalStroke Magenta HiddenElement" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />
+                    <path id="GlideSlopeDiamondLower" ref={this.upperDiamond} class="NormalStroke Green HiddenElement" d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798" />
+                    <path id="GlideSlopeDiamondUpper" ref={this.lowerDiamond} class="NormalStroke Green HiddenElement" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />
                     <path
                         id="GlideSlopeDiamond"
                         ref={this.glideSlopeDiamond}
-                        class="NormalStroke Magenta HiddenElement"
+                        class="NormalStroke Green HiddenElement"
                         d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
                     />
                 </g>
@@ -443,6 +518,8 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrume
         );
     }
 }
+
+//toDo: RNAV postioning
 
 class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
@@ -476,12 +553,12 @@ class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
 
     render(): VNode {
         return (
-            <g id="VertDevSymbolsGroup">
-                <text class="FontSmallest AlignRight Green" x="96.410" y="46.145">V/DEV</text>
-                <path class="NormalStroke White" d="m108.7 65.704h2.0147" />
-                <path class="NormalStroke White" d="m108.7 50.585h2.0147" />
-                <path class="NormalStroke White" d="m108.7 111.06h2.0147" />
-                <path class="NormalStroke White" d="m108.7 95.942h2.0147" />
+            <g id="VertDevSymbolsGroup" transform="scale(2.5 2.5) translate(295 120)">
+                <text class="FontMediumSmaller AlignRight Green" x="96.410" y="46.145">V/DEV</text>
+                <path class="NormalStroke Green" d="m108.7 65.704h2.0147" />
+                <path class="NormalStroke Green" d="m108.7 50.585h2.0147" />
+                <path class="NormalStroke Green" d="m108.7 111.06h2.0147" />
+                <path class="NormalStroke Green" d="m108.7 95.942h2.0147" />
                 <path id="VDevSymbolLower" ref={this.VDevSymbolLower} class="NormalStroke Green" d="m 106.58482,111.06072 v 2.00569 h 6.2384 v -2.00569" />
                 <path id="VDevSymbolUpper" ref={this.VDevSymbolUpper} class="NormalStroke Green" d="m 106.58482,50.584541 v -2.005689 h 6.2384 v 2.005689" />
                 <path id="VDevSymbol" ref={this.VDevSymbol} class="NormalStroke Green" d="m 112.83172,78.62553 h -6.25541 v 2.197103 2.197106 h 6.25541 v -2.197106 z" />
@@ -524,16 +601,16 @@ class LDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
 
     render(): VNode {
         return (
-            <g id="LatDeviationSymbolsGroup">
-                <text class="FontSmallest AlignRight Green" x="31.578" y="125.392">L/DEV</text>
-                <path class="NormalStroke White" d="m38.686 129.51v2.0158" />
-                <path class="NormalStroke White" d="m53.796 129.51v2.0158" />
-                <path class="NormalStroke White" d="m84.017 129.51v2.0158" />
-                <path class="NormalStroke White" d="m99.127 129.51v2.0158" />
+            <g id="LatDeviationSymbolsGroup" transform="scale(2.5 2.5) translate(185 140)">
+                <text class="FontMediumSmaller  AlignRight Green" x="31.578" y="125.392">L/DEV</text>
+                <path class="NormalStroke Green" d="m38.686 129.51v2.0158" />
+                <path class="NormalStroke Green" d="m53.796 129.51v2.0158" />
+                <path class="NormalStroke Green" d="m84.017 129.51v2.0158" />
+                <path class="NormalStroke Green" d="m99.127 129.51v2.0158" />
                 <path id="LDevSymbolLeft" ref={this.LDevSymbolLeft} class="NormalStroke Green" d="m 38.68595,127.35727 h -2.003935 v 6.31326 h 2.003935" />
                 <path id="LDevSymbolRight" ref={this.LDevSymbolRight} class="NormalStroke Green" d="m 99.126865,127.35727 h 2.003925 v 6.31326 h -2.003925" />
                 <path id="LDevSymbol" ref={this.LDevSymbol} class="NormalStroke Green" d="m 66.693251,127.36221 v 6.30339 h 2.213153 2.213153 v -6.30339 h -2.213153 z" />
-                <path id="LDevNeutralLine" class="Yellow Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
+                <path id="LDevNeutralLine" class="Green Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
             </g>
         );
     }

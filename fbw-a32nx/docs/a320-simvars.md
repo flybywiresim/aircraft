@@ -1305,14 +1305,7 @@
   - Current takeoff flex temperature of the aircraft
   - note: this LVar was named incorrectly before missing the prefix:`AIRLINER_TO_FLEX_TEMP`
 
-- A32NX_HUD_DECLUTTER_MODE
-    - Enum
-    - Provides selected declutter mode for HUD
-      Value | Meaning
-      --- | ---
-      0 | Normal mode
-      1 | Declutter 1 mode
-      2 | Declutter 2 mode
+
 
 ## Model/XML Interface
 
@@ -1488,6 +1481,19 @@ These variables are the interface between the 3D model and the systems/code.
     - Knots
     - Indicates the speed for the lower speed margin limit in DES mode
 
+- A32NX_HUD_DECLUTTER_MODE
+    - Enum
+    - Provides selected declutter mode for HUD
+      Value | Meaning
+      --- | ---
+      0 | Normal mode
+      1 | Declutter 1 mode
+      2 | Declutter 2 mode
+
+ - A32NX_HUD_CROSSWIND_MODE
+    - Bool
+    - Indicates whether HUD crosswind mode is active
+      
 - A32NX_ISIS_LS_ACTIVE
     - Bool
     - Indicates whether LS scales are shown on the ISIS

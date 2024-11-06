@@ -29,6 +29,11 @@
   animation-iteration-count: 9;
 }
 
+.Wind text{
+  fill: $display-green;
+  stroke: none;
+}
+
 .BarAmber {
   fill: $display-amber;
   stroke: $display-amber;
@@ -39,32 +44,45 @@
   stroke: $display-red;
   stroke-width: 0.11px;
 }
+.BarGreenThin {
+  fill: $display-green;
+  stroke: $display-green;
+  stroke-width: 0.13px;
+}
 .BarGreen {
   fill: $display-green;
   stroke: $display-green;
   stroke-width: 0.37px;
 }
 
+.ThickStroke {
+  stroke-width: 0.64mm;
+  stroke-linecap: round;
+}
+
 .SmallStroke {
-  stroke-width: 0.10mm;
+  stroke-width: 0.4mm;
   stroke-linecap: round;
 }
 
 .NormalStroke {
-  stroke-width: 0.16mm;
-  stroke-linecap: round;
-}
-
-.ThickStroke {
-  stroke-width: 0.22mm;
+  stroke-width: 0.1mm;
   stroke-linecap: round;
 }
 
 .HugeStroke {
-  stroke-width: 0.32mm;
+  stroke-width: 0.8mm;
   stroke-linecap: round;
 }
 
+.ScaledStroke {
+  stroke-width: 0.2mm;
+  stroke-linecap: square;
+}
+.ScaledStrokeThin {
+  stroke-width: 0.05mm;
+  stroke-linecap: square;
+}
 .SmallOutline {
   stroke-width: 0.09mm;
   stroke: $display-background !important;
@@ -83,7 +101,7 @@
   stroke-linecap: round;
 }
 .HugeOutline {
-  stroke-width: 0.39mm;
+  stroke-width: 0.15mm;
   stroke: $display-background;
   fill: none;
   stroke-linecap: round;
@@ -146,7 +164,7 @@
   stroke: $display-magenta;
 }
 text.Magenta {
-  fill: $display-magenta;
+  fill: $display-green;
   stroke: none;
 }
 
@@ -155,14 +173,18 @@ text.Magenta {
   stroke: $display-cyan;
 }
 text.Cyan {
-  fill: $display-cyan;
+  fill: $display-green;
   stroke: none;
 }
 tspan.Cyan {
-  fill: $display-cyan;
+  fill: $display-green;
   stroke: none;
 }
 
+tspan.Green {
+  fill: $display-green;
+  stroke: none;
+}
 .None {
   fill: none;
   stroke: none;
@@ -177,7 +199,7 @@ tspan.Cyan {
   stroke: none;
 }
 text.White {
-  fill: $display-white;
+  fill: $display-green;
   stroke: none;
 }
 
@@ -197,41 +219,41 @@ text.Green {
 }
 
 .Amber {
-  stroke: $display-amber;
+  stroke: $display-green;
   fill: none;
 }
 .Amber.Fill {
-  fill: $display-amber;
+  fill: $display-green;
   stroke: none;
 }
 text.Amber {
-  fill: $display-amber;
+  fill: $display-green;
   stroke: none;
 }
 
 .Yellow {
-  stroke: $display-yellow;
+  stroke: $display-green;
   fill: none;
 }
 .Yellow.Fill {
-  fill: $display-yellow;
+  fill: $display-green;
   stroke: none;
 }
 text.Yellow {
-  fill: $display-yellow;
+  fill: $display-green;
   stroke: none;
 }
 
 .Red {
-  stroke: $display-red;
+  stroke: $display-green;
   fill: none;
 }
 .Red.Fill {
-  fill: $display-red;
+  fill: $display-green;
   stroke: none;
 }
 text.Red {
-  fill: $display-red;
+  fill: $display-green;
   stroke: none;
 }
 
