@@ -100,7 +100,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
       thrIdleOffset,
     this.throttlePositionN1,
     this.thrustLimitIdle,
-    this.thrustLimitToga,
+    this.thrustLimitMax,
     this.thrIdleOffset,
   );
 
@@ -110,7 +110,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
       thrIdleOffset,
     this.n1Commanded,
     this.thrustLimitIdle,
-    this.thrustLimitToga,
+    this.thrustLimitMax,
     this.thrIdleOffset,
   );
 
@@ -131,7 +131,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
       ) * 100,
     this.n1,
     this.thrustLimitIdle,
-    this.thrustLimitToga,
+    this.thrustLimitMax,
     this.thrIdleOffset,
   );
 

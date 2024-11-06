@@ -25,19 +25,28 @@ export class N1Limit extends DisplayComponent<{
   private readonly flexTemp = ConsumerSubject.create(null, 0);
   private readonly sat = Arinc429ConsumerSubject.create(undefined);
   private readonly thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
+  // this offset is currently set for idle thrust and needs to be removed when proper %THR calculation is implemented, see also ThrustGauge.tsx
   private readonly thrIdleOffset = 0.042;
 
+  private readonly N1ThrustLimitMax = MappedSubject.create(
+    ([cpiomB, thrustLimitToga]) =>
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+    this.cpiomBAgsDiscrete,
+    this.N1ThrustLimitToga,
+  );
+
   private readonly N1ThrustLimitPercent = MappedSubject.create(
-    ([thrustLimit, thrustLimitIdle, thrustLimitToga]) =>
+    ([thrustLimit, thrustLimitIdle, thrustLimitMax]) =>
       Math.min(
         1,
-        Math.max(0, Math.pow((thrustLimit - thrustLimitIdle) / (thrustLimitToga - thrustLimitIdle), 2)) *
+        Math.max(0, Math.pow((thrustLimit - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle), 2)) *
           (1 - this.thrIdleOffset) +
           this.thrIdleOffset,
       ) * 100,
     this.N1ThrustLimit,
     this.N1ThrustLimitIdle,
-    this.N1ThrustLimitToga,
+    this.N1ThrustLimitMax,
   );
 
   private readonly displayFlexTemp = MappedSubject.create(
@@ -55,12 +64,13 @@ export class N1Limit extends DisplayComponent<{
 
     const sub = this.props.bus.getArincSubscriber<EwdSimvars & Arinc429Values>();
 
-    this.N1LimitType.setConsumer(sub.on('thrust_limit_type').whenChanged());
-    this.N1ThrustLimit.setConsumer(sub.on('thrust_limit').whenChanged());
-    this.N1ThrustLimitIdle.setConsumer(sub.on('thrust_limit_idle').whenChanged());
-    this.N1ThrustLimitToga.setConsumer(sub.on('thrust_limit_toga').whenChanged());
-    this.flexTemp.setConsumer(sub.on('flex').whenChanged());
+    this.N1LimitType.setConsumer(sub.on('thrust_limit_type'));
+    this.N1ThrustLimit.setConsumer(sub.on('thrust_limit'));
+    this.N1ThrustLimitIdle.setConsumer(sub.on('thrust_limit_idle'));
+    this.N1ThrustLimitToga.setConsumer(sub.on('thrust_limit_toga'));
+    this.flexTemp.setConsumer(sub.on('flex'));
     this.sat.setConsumer(sub.on('sat').withArinc429Precision(0));
+    this.cpiomBAgsDiscrete.setConsumer(sub.on('cpiomBAgsDiscrete'));
   }
 
   render(): VNode {
