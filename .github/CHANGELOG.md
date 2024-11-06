@@ -24,7 +24,7 @@
 1. [A380X/EWD] QoL: Add soft keys to EWD checklists, can be enabled via EFB - @flogross89 (floridude)
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
 1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
-
+1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
 
 ## 0.12.0
 
