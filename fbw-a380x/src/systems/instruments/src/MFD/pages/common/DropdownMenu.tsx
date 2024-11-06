@@ -71,18 +71,18 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     true,
   );
 
-  clickHandler(i: number, thisArg: DropdownMenu) {
+  private clickHandler = (i: number) => {
     if (!this.props.inactive?.get()) {
       this.freeTextEntered = false;
-      if (thisArg.props.onModified) {
-        thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
+      if (this.props.onModified) {
+        this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
       } else {
-        thisArg.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
+        this.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
       }
-      thisArg.dropdownIsOpened.set(false);
+      this.dropdownIsOpened.set(false);
       this.filterList('');
     }
-  }
+  };
 
   private onFieldSubmit(text: string) {
     if (this.props.onModified && !this.props.inactive?.get()) {
@@ -134,7 +134,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
             document
               .getElementById(`${this.props.idPrefix}_${i}`)
-              ?.removeEventListener('click', () => this.clickHandler(i, this));
+              ?.removeEventListener('click', this.clickHandler.bind(this, i));
           }
         });
 
@@ -160,7 +160,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         array.forEach((val, i) => {
           document
             .getElementById(`${this.props.idPrefix}_${i}`)
-            ?.addEventListener('click', () => this.clickHandler(i, this));
+            ?.addEventListener('click', () => this.clickHandler.bind(this, i));
         });
       }),
     );
@@ -186,18 +186,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       }),
     );
 
-    this.dropdownSelectorRef.instance.addEventListener('click', () => {
-      if (!this.props.inactive?.get()) {
-        this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
-      }
-    });
+    this.dropdownSelectorRef.instance.addEventListener('click', this.openCloseClickHandler);
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
-        this.dropdownIsOpened.set(false);
-      }
-    });
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.clickedOutsideHandler);
 
     this.subs.push(
       this.dropdownIsOpened.sub((val) => {
@@ -233,6 +225,18 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // TODO add KCCU events
   }
 
+  private openCloseClickHandler = () => {
+    if (!this.props.inactive?.get()) {
+      this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+    }
+  };
+
+  private clickedOutsideHandler = (e: MouseEvent) => {
+    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
+      this.dropdownIsOpened.set(false);
+    }
+  };
+
   /**
    * Scrolls the dropdown list to the given index
    *
@@ -251,6 +255,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    this.dropdownSelectorRef.instance.removeEventListener('click', this.openCloseClickHandler);
+    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.clickedOutsideHandler);
 
     super.destroy();
   }

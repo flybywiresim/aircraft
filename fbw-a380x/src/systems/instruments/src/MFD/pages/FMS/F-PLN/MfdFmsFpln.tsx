@@ -1216,19 +1216,32 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }),
     );
 
-    this.identRef.getOrDefault()?.addEventListener('click', () => {
-      if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
-        this.props.openRevisionsMenuCallback();
-        this.selectedForRevision.set(true);
-      }
-    });
+    this.identRef.getOrDefault()?.addEventListener('click', this.identClickedHandler);
 
-    this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', () => this.props.callbacks.rta());
+    this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.rta);
   }
+
+  private identClickedHandler = () => {
+    if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
+      this.props.openRevisionsMenuCallback();
+      this.selectedForRevision.set(true);
+    }
+  };
 
   public destroy(): void {
     this.subs.forEach((sub) => sub.destroy());
     this.lineColor.destroy();
+
+    this.identRef.getOrDefault()?.removeEventListener('click', this.identClickedHandler);
+    this.timeRef.getOrDefault()?.parentElement?.removeEventListener('click', this.props.callbacks.rta);
+
+    if (this.props.displayEfobAndWind.get()) {
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.wind);
+    } else {
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.altitude);
+      this.speedRef.instance.parentElement?.addEventListener('click', this.props.callbacks.speed);
+    }
+
     super.destroy();
   }
 
@@ -1346,12 +1359,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     while (this.speedRef.instance.firstChild) {
-      this.speedRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.speed());
+      this.speedRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.speed);
       this.speedRef.instance.removeChild(this.speedRef.instance.firstChild);
     }
     while (this.altRef.instance.firstChild) {
-      this.altRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.altitude());
-      this.altRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.wind());
+      this.altRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.altitude);
+      this.altRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.wind);
       this.altRef.instance.removeChild(this.altRef.instance.firstChild);
     }
     FSComponent.render(this.efobOrSpeed(data), this.speedRef.instance);
@@ -1360,7 +1373,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     if (this.props.displayEfobAndWind.get()) {
       this.altRef.instance.style.alignSelf = 'flex-end';
       this.altRef.instance.style.paddingRight = '20px';
-      this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.wind());
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.wind);
       this.speedRef.instance.style.paddingLeft = '10px';
       if (this.speedRef.instance.parentElement) {
         this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
@@ -1368,9 +1381,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     } else {
       this.altRef.instance.style.alignSelf = '';
       this.altRef.instance.style.paddingRight = '';
-      this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.altitude());
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.altitude);
       this.speedRef.instance.style.paddingLeft = '';
-      this.speedRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.speed());
+      this.speedRef.instance.parentElement?.addEventListener('click', this.props.callbacks.speed);
       if (this.speedRef.instance.parentElement) {
         this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
       }

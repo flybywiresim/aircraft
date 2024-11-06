@@ -29,11 +29,11 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
 
   private fillColor = Subject.create('white');
 
-  clickHandler(): void {
+  private clickHandler = () => {
     if (!this.props?.disabled?.get() && this.props.onClick !== undefined) {
       this.props.onClick();
     }
-  }
+  };
 
   updateSvgColor(color: string) {
     if (this.svgGroupRef) {
@@ -58,12 +58,14 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
       }, true),
     );
 
-    this.spanRef.instance.addEventListener('click', () => this.clickHandler());
+    this.spanRef.instance.addEventListener('click', this.clickHandler);
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    this.spanRef.instance.removeEventListener('click', this.clickHandler);
 
     super.destroy();
   }

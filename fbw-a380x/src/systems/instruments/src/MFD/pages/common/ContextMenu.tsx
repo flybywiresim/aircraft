@@ -60,12 +60,9 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
       this.props.values.sub((items) => {
         // Delete click handler, delete contextMenuRef children, render contextMenuRef children,
         this.renderedMenuItems?.forEach((val, i) => {
-          document.getElementById(`${this.props.idPrefix}_${i}`)?.removeEventListener('click', () => {
-            if (!val.disabled) {
-              this.hideMenu();
-              val.onPressed();
-            }
-          });
+          document
+            .getElementById(`${this.props.idPrefix}_${i}`)
+            ?.removeEventListener('click', this.itemClickHandler.bind(this, val));
         });
 
         // Delete contextMenuRef's children
@@ -95,23 +92,29 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 
         // Add click event listener
         items?.forEach((val, i) => {
-          document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
-            if (!val.disabled) {
-              this.hideMenu();
-              val.onPressed();
-            }
-          });
+          document
+            .getElementById(`${this.props.idPrefix}_${i}`)
+            ?.addEventListener('click', this.itemClickHandler.bind(this, val));
         });
       }, true),
     );
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', () => {
-      if (Date.now() - this.openedAt > 100 && this.props.opened.get() === true) {
-        this.hideMenu();
-      }
-    });
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.closeHandler);
   }
+
+  private itemClickHandler = (val: ContextMenuElement) => {
+    if (!val.disabled) {
+      this.hideMenu();
+      val.onPressed();
+    }
+  };
+
+  private closeHandler = () => {
+    if (Date.now() - this.openedAt > 100 && this.props.opened.get() === true) {
+      this.hideMenu();
+    }
+  };
 
   render(): VNode {
     return <div ref={this.contextMenuRef} class="mfd-context-menu" />;

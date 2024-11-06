@@ -55,11 +55,11 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
     this.props.disabled ?? Subject.create(false),
   );
 
-  private clickHandler(): void {
+  private clickHandler = () => {
     if (!this.props.disabled?.get()) {
       this.props.onChanged(!this.props.state.get());
     }
-  }
+  };
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -67,7 +67,7 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
     if (this.props.disabled === undefined) {
       this.props.disabled = Subject.create(false);
     }
-    this.topRef.instance.addEventListener('click', () => this.clickHandler());
+    this.topRef.instance.addEventListener('click', this.clickHandler);
 
     this.subs.push(
       this.props.disabled.sub((val) => {
@@ -83,6 +83,8 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    this.topRef.instance.removeEventListener('click', this.clickHandler);
 
     super.destroy();
   }

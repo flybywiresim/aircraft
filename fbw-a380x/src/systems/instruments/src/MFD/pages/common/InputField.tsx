@@ -188,7 +188,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.onInput();
   }
 
-  private onKeyPress(ev: KeyboardEvent) {
+  private onKeyPress = (ev: KeyboardEvent) => {
     if (!this.isFocused.get()) {
       return;
     }
@@ -210,9 +210,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     if (key === ',') {
       this.handleKeyInput('.');
     }
-  }
+  };
 
-  private handleKeyInput(key: string) {
+  private handleKeyInput = (key: string) => {
     if (this.modifiedFieldValue.get() === null) {
       this.modifiedFieldValue.set('');
       this.spanningDivRef.instance.style.justifyContent = 'flex-start';
@@ -224,7 +224,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     this.onInput();
-  }
+  };
 
   private handleEnter() {
     if (this.props.handleFocusBlurExternally) {
@@ -234,7 +234,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
   }
 
-  public onFocus() {
+  public onFocus = () => {
     if (
       !this.isFocused.get() &&
       !this.isValidating.get() &&
@@ -261,9 +261,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.spanningDivRef.instance.style.justifyContent = this.alignTextSub.get();
       this.updateDisplayElement();
     }
-  }
+  };
 
-  public async onBlur(validateAndUpdate: boolean = true) {
+  public onBlur = async (validateAndUpdate: boolean = true) => {
     if (!this.props.disabled?.get() && !this.props.inactive?.get() && this.isFocused.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
@@ -292,7 +292,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.spanningDivRef.instance.style.justifyContent = this.alignTextSub.get();
       this.textInputRef.instance.classList.remove('editing');
     }
-  }
+  };
 
   private populatePlaceholders() {
     const [formatted, unitLeading, unitTrailing] = this.props.dataEntryFormat.format(null);
@@ -352,6 +352,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.modifiedFieldValue.set(null);
     this.isValidating.set(false);
   }
+
+  private focusTextInput = () => {
+    this.textInputRef.instance.focus();
+  };
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -483,23 +487,15 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
 
-    this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
-    this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
+    this.textInputRef.instance.addEventListener('keypress', this.onKeyPress);
+    this.textInputRef.instance.addEventListener('keydown', this.onKeyDown);
 
     if (!this.props.handleFocusBlurExternally) {
-      this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
-      this.textInputRef.instance.addEventListener('blur', () => {
-        this.onBlur();
-      });
-      this.spanningDivRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.leadingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.trailingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
+      this.textInputRef.instance.addEventListener('focus', this.onFocus);
+      this.textInputRef.instance.addEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.instance.addEventListener('click', this.focusTextInput);
+      this.leadingUnitRef.instance.addEventListener('click', this.focusTextInput);
+      this.trailingUnitRef.instance.addEventListener('click', this.focusTextInput);
     }
 
     this.props.hEventConsumer.handle((key) => {
@@ -566,6 +562,24 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 }
             }));
         } */
+  }
+
+  destroy(): void {
+    // Destroy all subscriptions to remove all references to this instance.
+    this.subs.forEach((x) => x.destroy());
+
+    this.textInputRef.instance.removeEventListener('keypress', this.onKeyPress);
+    this.textInputRef.instance.removeEventListener('keydown', this.onKeyDown);
+
+    if (!this.props.handleFocusBlurExternally) {
+      this.textInputRef.instance.removeEventListener('focus', this.onFocus);
+      this.textInputRef.instance.removeEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.instance.removeEventListener('click', this.focusTextInput);
+      this.leadingUnitRef.instance.removeEventListener('click', this.focusTextInput);
+      this.trailingUnitRef.instance.removeEventListener('click', this.focusTextInput);
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
