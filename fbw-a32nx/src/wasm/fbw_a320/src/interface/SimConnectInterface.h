@@ -234,59 +234,59 @@ class SimConnectInterface {
 
   void resetSimInputThrottles();
 
-  SimData getSimData();
+  SimData& getSimData();
 
-  SimInput getSimInput();
+  SimInput& getSimInput();
 
-  SimInputAutopilot getSimInputAutopilot();
+  SimInputAutopilot& getSimInputAutopilot();
 
-  SimInputRudderTrim getSimInputRudderTrim();
+  SimInputRudderTrim& getSimInputRudderTrim();
 
-  SimInputThrottles getSimInputThrottles();
+  SimInputThrottles& getSimInputThrottles();
 
-  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine output);
-  ClientDataAutopilotStateMachine getClientDataAutopilotStateMachine();
+  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output);
+  ClientDataAutopilotStateMachine& getClientDataAutopilotStateMachine();
 
-  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws output);
-  ClientDataAutopilotLaws getClientDataAutopilotLaws();
+  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws& output);
+  ClientDataAutopilotLaws& getClientDataAutopilotLaws();
 
-  ClientDataAutothrust getClientDataAutothrust();
+  ClientDataAutothrust& getClientDataAutothrust();
 
-  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput output);
+  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput& output);
 
-  bool setClientDataFlyByWire(ClientDataFlyByWire output);
-  ClientDataFlyByWire getClientDataFlyByWire();
+  bool setClientDataFlyByWire(ClientDataFlyByWire& output);
+  ClientDataFlyByWire& getClientDataFlyByWire();
 
-  bool setClientDataElacDiscretes(base_elac_discrete_inputs output);
-  bool setClientDataElacAnalog(base_elac_analog_inputs output);
-  bool setClientDataElacBusInput(base_elac_out_bus output, int elacIndex);
+  bool setClientDataElacDiscretes(base_elac_discrete_inputs& output);
+  bool setClientDataElacAnalog(base_elac_analog_inputs& output);
+  bool setClientDataElacBusInput(base_elac_out_bus& output, int elacIndex);
 
-  base_elac_discrete_outputs getClientDataElacDiscretesOutput();
-  base_elac_analog_outputs getClientDataElacAnalogsOutput();
-  base_elac_out_bus getClientDataElacBusOutput();
+  base_elac_discrete_outputs& getClientDataElacDiscretesOutput();
+  base_elac_analog_outputs& getClientDataElacAnalogsOutput();
+  base_elac_out_bus& getClientDataElacBusOutput();
 
-  bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
-  bool setClientDataSecAnalog(base_sec_analog_inputs output);
-  bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+  bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
+  bool setClientDataSecAnalog(base_sec_analog_inputs& output);
+  bool setClientDataSecBus(base_sec_out_bus& output, int secIndex);
 
-  base_sec_discrete_outputs getClientDataSecDiscretesOutput();
-  base_sec_analog_outputs getClientDataSecAnalogsOutput();
-  base_sec_out_bus getClientDataSecBusOutput();
+  base_sec_discrete_outputs& getClientDataSecDiscretesOutput();
+  base_sec_analog_outputs& getClientDataSecAnalogsOutput();
+  base_sec_out_bus& getClientDataSecBusOutput();
 
-  bool setClientDataFacDiscretes(base_fac_discrete_inputs output);
-  bool setClientDataFacAnalog(base_fac_analog_inputs output);
-  bool setClientDataFacBus(base_fac_bus output, int facIndex);
+  bool setClientDataFacDiscretes(base_fac_discrete_inputs& output);
+  bool setClientDataFacAnalog(base_fac_analog_inputs& output);
+  bool setClientDataFacBus(base_fac_bus& output, int facIndex);
 
-  base_fac_discrete_outputs getClientDataFacDiscretesOutput();
-  base_fac_analog_outputs getClientDataFacAnalogsOutput();
-  base_fac_bus getClientDataFacBusOutput();
+  base_fac_discrete_outputs& getClientDataFacDiscretesOutput();
+  base_fac_analog_outputs& getClientDataFacAnalogsOutput();
+  base_fac_bus& getClientDataFacBusOutput();
 
-  bool setClientDataAdr(base_adr_bus output, int adrIndex);
-  bool setClientDataIr(base_ir_bus output, int irIndex);
-  bool setClientDataRa(base_ra_bus output, int raIndex);
-  bool setClientDataLgciu(base_lgciu_bus output, int lgciuIndex);
-  bool setClientDataSfcc(base_sfcc_bus output, int sfccIndex);
-  bool setClientDataFmgcB(base_fmgc_b_bus output, int fmgcIndex);
+  bool setClientDataAdr(base_adr_bus& output, int adrIndex);
+  bool setClientDataIr(base_ir_bus& output, int irIndex);
+  bool setClientDataRa(base_ra_bus& output, int raIndex);
+  bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
+  bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
+  bool setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -426,7 +426,8 @@ class SimConnectInterface {
    * in the event->dwData field of the SIMCONNECT_RECV_EVENT struct.
    *
    * @param event The pointer to the corresponding event data
-   * @see https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent.htm
+   * @see
+   * https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent.htm
    */
   void simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event);
 
@@ -443,7 +444,8 @@ class SimConnectInterface {
    * all other parameters.
    *
    * @param event The pointer to the corresponding event data
-   * @see https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent_EX1.htm
+   * @see
+   * https://docs.flightsimulator.com/flighting/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_TransmitClientEvent_EX1.htm
    */
   void simConnectProcessEvent_EX1(const SIMCONNECT_RECV_EVENT_EX1* event);
 
@@ -471,7 +473,6 @@ class SimConnectInterface {
   static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 
  private:
-
   /**
    * @brief Process a SimConnect event with one parameter.
    * @param eventId Specifies the ID of the client event.
