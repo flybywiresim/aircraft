@@ -265,7 +265,7 @@ export class Navigation implements NavigationProvider {
     this.nearbyAirportMonitor.setLocation(this.ppos.lat, this.ppos.long);
   }
 
-  public updateRnp(rnp: number | null) {
+  public setPilotRnp(rnp: number | null) {
     if (rnp) {
       this.requiredPerformance.setPilotRnp(rnp);
     } else {
@@ -273,7 +273,7 @@ export class Navigation implements NavigationProvider {
     }
   }
 
-  public isRnpManual(): boolean {
+  public isPilotRnp(): boolean {
     return this.requiredPerformance.manualRnp;
   }
 
@@ -285,11 +285,11 @@ export class Navigation implements NavigationProvider {
     return this.baroAltitude;
   }
 
-  public getEpe(): NauticalMiles {
+  public getEpe(): number {
     return this.currentPerformance ?? Infinity;
   }
 
-  public getRnp(): NauticalMiles {
+  public getActiveRnp(): number {
     return this.requiredPerformance.activeRnp;
   }
 
