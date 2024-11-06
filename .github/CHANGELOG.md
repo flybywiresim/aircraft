@@ -25,6 +25,7 @@
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
 1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
 1. [A380/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
+1. [A380/FLIGHTMODEL] Tweaked jetway connect position - @C-Schaffhausen (Cedric)
 
 
 ## 0.12.0
