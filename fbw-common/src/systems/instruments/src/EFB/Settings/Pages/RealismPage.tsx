@@ -40,6 +40,7 @@ export const RealismPage = () => {
     'CONFIG_FIRST_OFFICER_AVATAR_VISIBLE',
     0,
   );
+  const [eclSoftKeys, setEclSoftKeys] = usePersistentNumberProperty('CONFIG_A380X_SHOW_ECL_SOFTKEYS', 0);
 
   const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
     { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -177,6 +178,12 @@ export const RealismPage = () => {
             </SettingItem>
           )}
         </SettingGroup>
+      )}
+
+      {aircraftContext.settingsPages.realism.eclSoftKeys && (
+        <SettingItem name={t('Settings.Realism.EclSoftKeys')} unrealistic>
+          <Toggle value={!!eclSoftKeys} onToggle={(value) => setEclSoftKeys(value ? 1 : 0)} />
+        </SettingItem>
       )}
     </SettingsPage>
   );
