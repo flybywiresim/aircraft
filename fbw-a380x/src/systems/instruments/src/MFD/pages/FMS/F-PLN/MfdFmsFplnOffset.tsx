@@ -40,10 +40,30 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
     this.offsetInterceptAngle.set(30);
     this.offsetDist.set(5);
     this.OffsetLRIndex.set(0);
-    // Use active FPLN for building the list (page only works for active anyways)
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
-    this.selectedStartWaypointIndex.set(revWptIdx! - 2);
+    const activeLegIndex = this.props.fmcService.master?.flightPlanService.get(
+      this.loadedFlightPlanIndex.get(),
+    ).activeLegIndex;
+    if (activeLegIndex) {
+      const wpt = this.loadedFlightPlan?.allLegs
+        .slice(activeLegIndex + 1)
+        .map((el) => {
+          if (el.isDiscontinuity === false) {
+            return el.ident;
+          }
+          return null;
+        })
+        .filter((el) => el !== null) as string[] | undefined;
+      if (wpt) {
+        this.availableWaypoints.set(wpt);
+      }
 
+      const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+      if (revWptIdx && this.props.fmcService.master?.revisedWaypointIndex.get() !== undefined) {
+        this.selectedStartWaypointIndex.set(revWptIdx - activeLegIndex - 1);
+      }
+    }
+
+    // Use active FPLN for building the list (page only works for active anyways)
     const activeFpln = this.props.fmcService.master?.flightPlanService.active;
     if (activeFpln) {
       this.availableWaypointsToLegIndex = [];
