@@ -63,7 +63,7 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
   { 0.0, 163.0, 243.0, 344.0, 400.0 },
 
 
-  { 0.0, 0.06, 0.1, 0.2, 1.0 },
+  { 0.0, 0.06, 0.1, 0.13, 0.26, 1.0 },
 
 
   { 0.0, 163.0, 243.0, 344.0, 400.0 },
@@ -246,7 +246,7 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
   { 1.0, 1.0, 0.5, 0.3, 0.3 },
 
 
-  { 1.0, 1.0, 0.5, 0.3, 0.3 },
+  { 1.0, 1.0, 1.0, 1.0, 1.0, 0.25 },
 
 
   { 1.0, 1.0, 0.5, 0.3, 0.3 },
@@ -1866,7 +1866,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
     A380PitchNormalLaw_rtP.ScheduledGain1_Table, 4U);
   rtb_Y_a = rtb_Saturation_ix * rtb_Sum_ma;
   rtb_Sum_ma = look1_binlxpw(*rtu_In_time_dt, A380PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_d,
-    A380PitchNormalLaw_rtP.ScheduledGain_Table_hh, 4U);
+    A380PitchNormalLaw_rtP.ScheduledGain_Table_hh, 5U);
   rtb_Sum_ma = rtb_Y_a * rtb_Sum_ma * A380PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
   rtb_Y_a = *rtu_In_eta_deg - rtb_Sum_ma;
   rtb_AND = ((rtb_Y_pa == 0.0) || (rtb_ManualSwitch == A380PitchNormalLaw_rtP.CompareToConstant_const) ||
