@@ -11,7 +11,7 @@ import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
   containerStyle?: string;
-  icon: 'double-up' | 'double-down' | '' | null;
+  icon: 'double-up' | 'double-down' | 'ecl-single-up' | 'ecl-single-down' | 'ecl-check' | '' | null;
   disabled?: Subscribable<boolean>;
   onClick?: () => void;
 }
@@ -84,6 +84,43 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
             <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
               <polygon points="0,17.5 17.5,0 35,17.5" />
               <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'ecl-single-up' && (
+          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill-opacity="0.0" stroke={this.fillColor} stroke-width="3">
+              <polygon points="3,32 17.5,3 32,32" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'ecl-single-down' && (
+          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g
+              ref={this.svgGroupRef}
+              fill-opacity="0.0"
+              stroke={this.fillColor}
+              stroke-width="3"
+              transform="rotate(180 17.5 17.5)"
+            >
+              <polygon points="3,32 17.5,3 32,32" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'ecl-check' && (
+          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g
+              ref={this.svgGroupRef}
+              fill="white"
+              stroke={this.fillColor}
+              stroke-width="3"
+              transform="translate(0.000000,35.000000) scale(0.100000,-0.100000)"
+            >
+              <path
+                d="M255 270 c-52 -41 -145 -147 -145 -165 0 -5 -9 5 -20 23 -19 31 -52
+                    43 -65 23 -3 -5 6 -26 19 -46 14 -20 28 -45 31 -56 12 -36 35 -18 93 72 24 37
+                    69 94 100 128 66 70 60 79 -13 21z"
+              />
             </g>
           </svg>
         )}

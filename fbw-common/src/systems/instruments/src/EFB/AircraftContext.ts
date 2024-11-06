@@ -42,6 +42,7 @@ interface RealismOptions {
   mcduKeyboard: boolean;
   pauseOnTod: boolean;
   pilotAvatars: boolean;
+  eclSoftKeys: boolean;
 }
 
 interface SimOptions {
@@ -91,6 +92,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       mcduKeyboard: false,
       pauseOnTod: false,
       pilotAvatars: false,
+      eclSoftKeys: false,
     },
     sim: {
       cones: false,
