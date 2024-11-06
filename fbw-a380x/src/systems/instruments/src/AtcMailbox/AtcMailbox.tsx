@@ -17,18 +17,20 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
 
   private readonly mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
-  mouseMoveListener = (ev: MouseEvent) => {
+  private onMouseMove(ev: MouseEvent) {
     this.mouseCursorRef.getOrDefault()?.updatePosition(ev.clientX, ev.clientY - 768);
-  };
+  }
+
+  private onMouseMoveHandler = this.onMouseMove.bind(this);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.topRef.instance.addEventListener('mousemove', this.mouseMoveListener);
+    this.topRef.instance.addEventListener('mousemove', this.onMouseMoveHandler);
   }
 
   destroy(): void {
-    this.topRef.instance.removeEventListener('mousemove', this.mouseMoveListener);
+    this.topRef.instance.removeEventListener('mousemove', this.onMouseMoveHandler);
 
     super.destroy();
   }
