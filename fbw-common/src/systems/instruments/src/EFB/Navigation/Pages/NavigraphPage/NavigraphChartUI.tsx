@@ -13,7 +13,7 @@ import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartViewer } from '../../Navigation';
-import { navigraphCharts, ChartCategory } from '@flybywiresim/fbw-sdk';
+import { ChartCategory, navigraphCharts } from '@flybywiresim/fbw-sdk';
 
 export const NavigraphChartUI = () => {
   const dispatch = useAppDispatch();

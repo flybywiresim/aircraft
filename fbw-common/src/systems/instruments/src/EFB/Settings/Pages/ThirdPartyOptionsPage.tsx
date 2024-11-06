@@ -3,10 +3,10 @@
 
 import React, { useState } from 'react';
 import {
+  navigraphAuth,
   NavigraphSubscriptionStatus,
   usePersistentNumberProperty,
   usePersistentProperty,
-  navigraphAuth,
 } from '@flybywiresim/fbw-sdk';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
