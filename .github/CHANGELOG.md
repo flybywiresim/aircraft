@@ -78,6 +78,7 @@
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
+1. [A30X/MFD] Added unit conversion for lbs/ft - MikioDK (Mikio)
 
 ## 0.12.0
 
