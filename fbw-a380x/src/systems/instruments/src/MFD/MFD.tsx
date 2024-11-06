@@ -56,9 +56,7 @@ export interface MfdDisplayInterface {
 
   openMessageList(): void;
 
-  get positionMonitorFix(): Fix | null;
-
-  set positionMonitorFix(fix: Fix | null);
+  positionMonitorFix: Fix | null;
 }
 
 export enum InteractionMode {
@@ -74,6 +72,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   get uiService() {
     return this.#uiService;
   }
+
+  public positionMonitorFix: Fix | null = null;
 
   public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
@@ -125,16 +125,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   private duplicateNamesOpened = Subject.create<boolean>(false);
 
   private duplicateNamesRef = FSComponent.createRef<MfdFmsFplnDuplicateNames>();
-
-  private posMonitorFix: Fix | null = null;
-
-  get positionMonitorFix(): Fix | null {
-    return this.posMonitorFix;
-  }
-
-  set positionMonitorFix(fix: Fix | null) {
-    this.posMonitorFix = fix;
-  }
 
   // Necessary to enable mouse interaction
   get isInteractive(): boolean {
