@@ -7,6 +7,7 @@ import { ApproachType, LandingSystemUtils } from '@fmgc/index';
 import { getApproachName } from '../../../shared/utils';
 
 import './MfdFmsFpln.scss';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,
@@ -454,9 +455,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {this.rwyLength}
+                  {NXUnits.mToUser(this.rwyLength)}
                 </span>
-                <span class="mfd-label-unit mfd-unit-trailing">M</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userDistanceUnit()}</span>
               </div>
             </div>
             <div class="fc" style="flex: 0.2;">

@@ -1025,6 +1025,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       dataHandlerDuringValidation={async (v) =>
                         this.props.fmcService.master?.fmgc.data.takeoffShift.set(v)
                       }
+                      unitConversion={'unitWeightConversion'}
                       mandatory={Subject.create(false)}
                       inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                       value={this.toShift}

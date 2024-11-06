@@ -5,6 +5,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}
 
@@ -231,9 +232,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {this.rwyLength}
+                  {NXUnits.mToUser(this.rwyLength)}
                 </span>
-                <span class="mfd-label-unit mfd-unit-trailing">M</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userDistanceUnit()}</span>
               </div>
             </div>
             <div class="fc" style="flex: 0.7;">

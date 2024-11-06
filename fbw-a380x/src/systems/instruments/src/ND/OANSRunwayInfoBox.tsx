@@ -4,6 +4,7 @@
 import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './oans-style.scss';
 import { EntityTypes } from './OansControlPanel';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 interface OansRunwayInfoBoxProps {
   rwyOrStand: Subscribable<EntityTypes | null>;
@@ -61,16 +62,16 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
             TORA:{' '}
           </span>
           <span class="mfd-value smaller">
-            {this.props.tora}
-            <span style="color: rgb(33, 33, 255)">M</span>
+            {NXUnits.mToUser(this.props.tora)}
+            <span style="color: rgb(33, 33, 255)">{NXUnits.userDistanceUnit()}</span>
           </span>
           <span
             class="mfd-label"
             style="grid-column: span 2; text-align: right; margin-right: 15px;"
           >{`${this.props.ldaIsReduced.get() ? 'REDUCED ' : ''}LDA: `}</span>
           <span class="mfd-value smaller" style={this.props.ldaIsReduced.get() ? 'color: cyan;' : ''}>
-            {this.props.lda}
-            <span style="color: rgb(33, 33, 255)">M</span>
+            {NXUnits.mToUser(this.props.lda)}
+            <span style="color: rgb(33, 33, 255)">{NXUnits.userDistanceUnit()}</span>
           </span>
         </div>
         <div
