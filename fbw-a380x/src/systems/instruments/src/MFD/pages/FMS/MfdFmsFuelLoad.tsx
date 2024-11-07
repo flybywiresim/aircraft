@@ -160,7 +160,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.centerOfGravity.set(cg);
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
-            this.fuelOnBoard.set(NXUnits.kgToUser(this.props.fmcService.master.fmgc.getFOB()));
+            const convertedFuelUnit = NXUnits.kgToUser(this.props.fmcService.master.fmgc.getFOB());
+            // Display in Tonnes for Metric and lbs for Imperial
+            this.fuelOnBoard.set(NXUnits.metricWeight ? convertedFuelUnit : convertedFuelUnit * 1000);
           }
 
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
@@ -233,7 +235,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">FOB</span>
-                <span class="mfd-value">{this.fuelOnBoard.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                <span class="mfd-value">{this.fuelOnBoard.map((it) => (it ? it.toFixed(1) : '---.-'))}</span>
                 <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
               </div>
             </div>
