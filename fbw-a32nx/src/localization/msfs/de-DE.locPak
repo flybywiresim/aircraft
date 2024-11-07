@@ -27,7 +27,7 @@
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Turn off the ident of the ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Turn on the ident of the ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE": "Decrease the volume of the ident of the ILS",
-      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Increase the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Erhöhen Sie die Lautstärke des Idents des ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE": "Turn off the ident of the Markers beacons",
       "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE": "Einschalten der Identifikation des Marker-Beacons",
       "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE": "Verringern der Lautstärke der Identifikation des Marker-Beacons",
