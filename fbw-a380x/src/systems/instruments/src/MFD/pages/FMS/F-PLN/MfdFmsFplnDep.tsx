@@ -50,7 +50,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
       const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
       const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
         return {
-          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M ${rw.lsIdent ? 'ILS' : ''}`,
+          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${NXUnits.mToUser(rw.length).toFixed(0).padStart(5, ' ')}${NXUnits.userDistanceUnit()} ${rw.lsIdent ? 'ILS' : ''}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setOriginRunway(
               rw.ident,
@@ -74,7 +74,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
 
       if (flightPlan.originRunway) {
         this.rwyIdent.set(flightPlan.originRunway.ident.substring(4));
-        this.rwyLength.set(flightPlan.originRunway.length.toFixed(0) ?? '----');
+        this.rwyLength.set(
+          flightPlan.originRunway.length ? NXUnits.mToUser(flightPlan.originRunway.length).toFixed(0) : '----',
+        );
         this.rwyCrs.set(flightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
         this.rwyEoSid.set('NONE');
         this.rwyFreq.set(flightPlan.originRunway.lsFrequencyChannel?.toFixed(2) ?? '---.--');
