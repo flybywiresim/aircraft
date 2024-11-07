@@ -28,6 +28,7 @@
 1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
 1. [A380X/FLIGHT MODEL] Fix for stall and auto-rotation issues- @donstim (donbikes)
+1. [A380X/MODEL] Optimized 4K textures - @Repsol
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
 
 ## 0.12.0
