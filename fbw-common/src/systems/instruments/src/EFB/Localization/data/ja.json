@@ -632,7 +632,7 @@
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",
-      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
+      "EclSoftKeys": "EWD電子チェックリストの画面に操作ボタンを表示する",
       "FirstOfficerAvatar": "副操縦士のアバターを表示",
       "HomeCockpitMode": "ホームコックピットモード",
       "McduFocusTimeout": "MCDUへのフォーカスがタイムアウトする時間(秒)",
