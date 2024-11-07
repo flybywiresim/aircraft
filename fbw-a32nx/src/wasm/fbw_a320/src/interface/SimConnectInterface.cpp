@@ -231,23 +231,6 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:1", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:2", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "SIM ON GROUND", "BOOL");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG ELAPSED TIME:1", "SECONDS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG ELAPSED TIME:2", "SECONDS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "STANDARD ATM TEMPERATURE", "CELSIUS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED FF:1", "POUNDS PER HOUR");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED FF:2", "POUNDS PER HOUR");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK LEFT AUX CAPACITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK RIGHT AUX CAPACITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK LEFT MAIN CAPACITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK RIGHT MAIN CAPACITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK CENTER CAPACITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK LEFT AUX QUANTITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK RIGHT AUX QUANTITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK LEFT MAIN QUANTITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK RIGHT MAIN QUANTITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK CENTER QUANTITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TOTAL QUANTITY", "GALLONS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL WEIGHT PER GALLON", "POUNDS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:0", "MBAR");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:1", "MBAR");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
@@ -1199,23 +1182,23 @@ bool SimConnectInterface::setClientDataLocalVariablesAutothrust(ClientDataLocalV
   return sendClientData(ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(output), &output);
 }
 
-SimData SimConnectInterface::getSimData() {
+SimData& SimConnectInterface::getSimData() {
   return simData;
 }
 
-SimInput SimConnectInterface::getSimInput() {
+SimInput& SimConnectInterface::getSimInput() {
   return simInput;
 }
 
-SimInputAutopilot SimConnectInterface::getSimInputAutopilot() {
+SimInputAutopilot& SimConnectInterface::getSimInputAutopilot() {
   return simInputAutopilot;
 }
 
-SimInputRudderTrim SimConnectInterface::getSimInputRudderTrim() {
+SimInputRudderTrim& SimConnectInterface::getSimInputRudderTrim() {
   return simInputRudderTrim;
 }
 
-SimInputThrottles SimConnectInterface::getSimInputThrottles() {
+SimInputThrottles& SimConnectInterface::getSimInputThrottles() {
   return simInputThrottles;
 }
 
@@ -1248,53 +1231,53 @@ void SimConnectInterface::resetSimInputThrottles() {
   simInputThrottles.ATHR_reset_disable = 0;
 }
 
-bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws output) {
+bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws& output) {
   // write data and return result
   return sendClientData(ClientData::AUTOPILOT_LAWS, sizeof(output), &output);
 }
 
-ClientDataAutopilotLaws SimConnectInterface::getClientDataAutopilotLaws() {
+ClientDataAutopilotLaws& SimConnectInterface::getClientDataAutopilotLaws() {
   return clientDataAutopilotLaws;
 }
 
-bool SimConnectInterface::setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine output) {
+bool SimConnectInterface::setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output) {
   // write data and return result
   return sendClientData(ClientData::AUTOPILOT_STATE_MACHINE, sizeof(output), &output);
 }
 
-ClientDataAutopilotStateMachine SimConnectInterface::getClientDataAutopilotStateMachine() {
+ClientDataAutopilotStateMachine& SimConnectInterface::getClientDataAutopilotStateMachine() {
   return clientDataAutopilotStateMachine;
 }
 
-ClientDataAutothrust SimConnectInterface::getClientDataAutothrust() {
+ClientDataAutothrust& SimConnectInterface::getClientDataAutothrust() {
   return clientDataAutothrust;
 }
 
-ClientDataFlyByWire SimConnectInterface::getClientDataFlyByWire() {
+ClientDataFlyByWire& SimConnectInterface::getClientDataFlyByWire() {
   return clientDataFlyByWire;
 }
 
-bool SimConnectInterface::setClientDataElacDiscretes(base_elac_discrete_inputs output) {
+bool SimConnectInterface::setClientDataElacDiscretes(base_elac_discrete_inputs& output) {
   return sendClientData(ClientData::ELAC_DISCRETE_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataElacAnalog(base_elac_analog_inputs output) {
+bool SimConnectInterface::setClientDataElacAnalog(base_elac_analog_inputs& output) {
   return sendClientData(ClientData::ELAC_ANALOG_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataElacBusInput(base_elac_out_bus output, int elacIndex) {
+bool SimConnectInterface::setClientDataElacBusInput(base_elac_out_bus& output, int elacIndex) {
   return sendClientData(ClientData::ELAC_1_BUS_OUTPUT + elacIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs output) {
+bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs& output) {
   return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs output) {
+bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs& output) {
   return sendClientData(ClientData::SEC_ANALOG_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIndex) {
+bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus& output, int secIndex) {
   if (secIndex < 2) {
     return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
   } else {
@@ -1302,75 +1285,75 @@ bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIn
   }
 }
 
-bool SimConnectInterface::setClientDataFacDiscretes(base_fac_discrete_inputs output) {
+bool SimConnectInterface::setClientDataFacDiscretes(base_fac_discrete_inputs& output) {
   return sendClientData(ClientData::FAC_DISCRETE_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataFacAnalog(base_fac_analog_inputs output) {
+bool SimConnectInterface::setClientDataFacAnalog(base_fac_analog_inputs& output) {
   return sendClientData(ClientData::FAC_ANALOG_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataFacBus(base_fac_bus output, int facIndex) {
+bool SimConnectInterface::setClientDataFacBus(base_fac_bus& output, int facIndex) {
   return sendClientData(ClientData::FAC_1_BUS_OUTPUT + facIndex, sizeof(output), &output);
 }
 
-base_elac_discrete_outputs SimConnectInterface::getClientDataElacDiscretesOutput() {
+base_elac_discrete_outputs& SimConnectInterface::getClientDataElacDiscretesOutput() {
   return clientDataElacDiscreteOutputs;
 }
 
-base_elac_analog_outputs SimConnectInterface::getClientDataElacAnalogsOutput() {
+base_elac_analog_outputs& SimConnectInterface::getClientDataElacAnalogsOutput() {
   return clientDataElacAnalogOutputs;
 }
 
-base_elac_out_bus SimConnectInterface::getClientDataElacBusOutput() {
+base_elac_out_bus& SimConnectInterface::getClientDataElacBusOutput() {
   return clientDataElacBusOutputs;
 }
 
-base_sec_discrete_outputs SimConnectInterface::getClientDataSecDiscretesOutput() {
+base_sec_discrete_outputs& SimConnectInterface::getClientDataSecDiscretesOutput() {
   return clientDataSecDiscreteOutputs;
 }
 
-base_sec_analog_outputs SimConnectInterface::getClientDataSecAnalogsOutput() {
+base_sec_analog_outputs& SimConnectInterface::getClientDataSecAnalogsOutput() {
   return clientDataSecAnalogOutputs;
 }
 
-base_sec_out_bus SimConnectInterface::getClientDataSecBusOutput() {
+base_sec_out_bus& SimConnectInterface::getClientDataSecBusOutput() {
   return clientDataSecBusOutputs;
 }
 
-base_fac_discrete_outputs SimConnectInterface::getClientDataFacDiscretesOutput() {
+base_fac_discrete_outputs& SimConnectInterface::getClientDataFacDiscretesOutput() {
   return clientDataFacDiscreteOutputs;
 }
 
-base_fac_analog_outputs SimConnectInterface::getClientDataFacAnalogsOutput() {
+base_fac_analog_outputs& SimConnectInterface::getClientDataFacAnalogsOutput() {
   return clientDataFacAnalogOutputs;
 }
 
-base_fac_bus SimConnectInterface::getClientDataFacBusOutput() {
+base_fac_bus& SimConnectInterface::getClientDataFacBusOutput() {
   return clientDataFacBusOutputs;
 }
 
-bool SimConnectInterface::setClientDataAdr(base_adr_bus output, int adrIndex) {
+bool SimConnectInterface::setClientDataAdr(base_adr_bus& output, int adrIndex) {
   return sendClientData(ClientData::ADR_1_INPUTS + adrIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataIr(base_ir_bus output, int irIndex) {
+bool SimConnectInterface::setClientDataIr(base_ir_bus& output, int irIndex) {
   return sendClientData(ClientData::IR_1_INPUTS + irIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataRa(base_ra_bus output, int raIndex) {
+bool SimConnectInterface::setClientDataRa(base_ra_bus& output, int raIndex) {
   return sendClientData(ClientData::RA_1_BUS + raIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataLgciu(base_lgciu_bus output, int lgciuIndex) {
+bool SimConnectInterface::setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex) {
   return sendClientData(ClientData::LGCIU_1_BUS + lgciuIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataSfcc(base_sfcc_bus output, int sfccIndex) {
+bool SimConnectInterface::setClientDataSfcc(base_sfcc_bus& output, int sfccIndex) {
   return sendClientData(ClientData::SFCC_1_BUS + sfccIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataFmgcB(base_fmgc_b_bus output, int fmgcIndex) {
+bool SimConnectInterface::setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex) {
   return sendClientData(ClientData::FMGC_1_B_BUS + fmgcIndex, sizeof(output), &output);
 }
 

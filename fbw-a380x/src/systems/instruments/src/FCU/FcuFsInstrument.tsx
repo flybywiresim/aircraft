@@ -23,6 +23,7 @@ import { SpeedManager } from './Managers/SpeedManager';
 import { VerticalSpeedManager } from './Managers/VerticalSpeedManager';
 import { FcuPublisher } from './Publishers/FcuPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { OverheadPublisher } from '../MsfsAvionicsCommon/providers/OverheadPublisher';
 
 import './style.scss';
 
@@ -68,6 +69,7 @@ export class FcuFsInstrument implements FsInstrument {
 
     this.backplane.addPublisher('FcuPublisher', new FcuPublisher(this.bus));
     this.backplane.addPublisher('FgBusPublisher', new FGDataPublisher(this.bus));
+    this.backplane.addPublisher('OverheadPublisher', new OverheadPublisher(this.bus));
     this.backplane.addPublisher('MsfsAutopilotAssistancePublisher', new MsfsAutopilotAssitancePublisher(this.bus));
     this.backplane.addPublisher('MsfsRadioNavigationPublisher', new MsfsRadioNavigationPublisher(this.bus));
 

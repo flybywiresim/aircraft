@@ -127,6 +127,9 @@
       "A380X.TOOLTIPS.RMP_NAV_SEL_VOR_2": "VOR 2",
       "A380X.TOOLTIPS.RMP_NAV_SEL_MKR": "MKR",
 
+      "A380X.TOOLTIPS.DOORS_OPEN_CLOSE": "Open or close passenger door",
+      "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Arm or disarm slides for passenger door",
+
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
     }

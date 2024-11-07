@@ -11,7 +11,6 @@ import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/provid
 
 import './style.scss';
 import { RopRowOansPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
-import { PfdSpeedsDropInSimvarPublisher } from 'instruments/src/PFD/shared/PfdSpeedsDropInPublisher';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 
 class A380X_PFD extends BaseInstrument {
@@ -26,9 +25,6 @@ class A380X_PFD extends BaseInstrument {
   private readonly simVarPublisher = new PFDSimvarPublisher(this.bus);
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
-
-  // FIXME when PRIM FE is implemented
-  private readonly pfdSpeedsProvider = new PfdSpeedsDropInSimvarPublisher(this.bus);
 
   private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
@@ -55,7 +51,6 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('PfdSimVars', this.simVarPublisher);
     this.backplane.addInstrument('ArincProvider', this.arincProvider);
-    this.backplane.addPublisher('PfdSpeeds', this.pfdSpeedsProvider);
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
     this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
@@ -95,16 +90,6 @@ class A380X_PFD extends BaseInstrument {
     super.Update();
 
     this.backplane.onUpdate();
-  }
-
-  // FIXME remove. This does not belong in the PFD, and in any case we should use GameStateProvider as it has workarounds for issues with onFlightStart
-  protected onFlightStart() {
-    super.onFlightStart();
-    if (SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
-      // set ready signal that JS code is initialized and flight is actually started
-      // -> user pressed 'READY TO FLY' button
-      SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
-    }
   }
 }
 

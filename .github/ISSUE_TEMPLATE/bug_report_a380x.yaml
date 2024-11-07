@@ -7,14 +7,14 @@ body:
     value: "# A380X Bug Report Form"
 - type: markdown
   attributes:
-    value: "Please make sure to check existing issues and the list of INOP systems (link TODO)"
+    value: "Please make sure to check existing issues (https://github.com/flybywiresim/aircraft/issues) and the list of INOP systems (https://github.com/flybywiresim/aircraft/tree/master/fbw-a380x). Only open an issue here if they don't already exist there. "
 - type: dropdown
   id: version
   attributes:
     label: Aircraft Version
     description: What version of the A380X are you using?
     options:
-    - Development
+    - Stable
   validations:
     required: true
 - type: textarea
