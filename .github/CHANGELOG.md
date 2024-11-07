@@ -27,6 +27,7 @@
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
 1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
+1. [A380X/FLIGHT MODEL] Fix for stall and auto-rotation issues- @donstim (donbikes)
 
 ## 0.12.0
 
