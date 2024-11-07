@@ -10,7 +10,6 @@
 1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
 1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
 1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
-1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
 
 ## 0.12.1
 
