@@ -75,7 +75,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
       if (flightPlan.originRunway) {
         this.rwyIdent.set(flightPlan.originRunway.ident.substring(4));
         this.rwyLength.set(
-          flightPlan.originRunway.length ? NXUnits.mToUser(flightPlan.originRunway.length).toFixed(0) : '----',
+          flightPlan.originRunway?.length ? NXUnits.mToUser(flightPlan.originRunway.length).toFixed(0) : '----',
         );
         this.rwyCrs.set(flightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
         this.rwyEoSid.set('NONE');
@@ -234,7 +234,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {NXUnits.mToUser(this.rwyLength)}
+                  {this.rwyLength}
                 </span>
                 <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userDistanceUnit()}</span>
               </div>
