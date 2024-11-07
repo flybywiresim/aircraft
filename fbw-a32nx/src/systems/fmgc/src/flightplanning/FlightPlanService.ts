@@ -9,7 +9,7 @@ import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/Fli
 import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -122,22 +122,24 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
-    const activeFromLeg = this.active.maybeElementAt(temporaryPlan.activeLegIndex - 1);
 
     const directToInTmpy =
       tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
-    const directToInActive =
-      activeFromLeg?.isDiscontinuity === false && activeFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
 
-    const directToBeingInserted = directToInTmpy && !directToInActive;
+    const directToBeingInserted =
+      directToInTmpy && BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.PendingDirectToTurningPoint);
 
     // Update T-P
     if (directToBeingInserted) {
-      // TODO fm pos
+      temporaryPlan.editLegFlags(
+        temporaryPlan.activeLegIndex - 1,
+        (tmpyFromLeg.flags &= ~FlightPlanLegFlags.PendingDirectToTurningPoint),
+      );
       temporaryPlan.editLegDefinition(temporaryPlan.activeLegIndex - 1, {
         waypoint: {
           ...tmpyFromLeg.definition.waypoint,
           location: {
+            // TODO fm pos
             lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
             long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
           },

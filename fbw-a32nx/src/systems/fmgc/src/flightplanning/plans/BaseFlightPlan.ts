@@ -125,6 +125,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     );
 
     this.subscriptions.push(
+      subs.on('SYNC_flightPlan.legFlagsEdit').handle((event) => {
+        if (!this.ignoreSync) {
+          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+            return;
+          }
+
+          const element = this.legElementAt(event.atIndex);
+
+          element.flags = event.newFlags;
+
+          this.incrementVersion();
+
+          flightPlanEventsPub.pub('flightPlan.legFlagsEdit', event);
+        }
+      }),
+    );
+
+    this.subscriptions.push(
       subs.on('SYNC_flightPlan.legDefinitionEdit').handle((event) => {
         if (!this.ignoreSync) {
           if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
@@ -450,6 +468,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
 
     this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: false, segmentIndex, legs });
+  }
+
+  syncLegFlagsChange(atIndex: number) {
+    const leg = this.elementAt(atIndex);
+
+    if (leg.isDiscontinuity === false) {
+      this.sendEvent('flightPlan.legFlagsEdit', {
+        planIndex: this.index,
+        atIndex,
+        forAlternate: this instanceof AlternateFlightPlan,
+        newFlags: leg.flags,
+      });
+    }
   }
 
   syncLegDefinitionChange(atIndex: number) {
@@ -1378,6 +1409,16 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.adjustIFLegs();
 
     this.incrementVersion();
+  }
+
+  editLegFlags(index: number, flags: number, notify = true): void {
+    const leg = this.legElementAt(index);
+
+    leg.flags = flags;
+
+    if (notify) {
+      this.syncLegFlagsChange(index);
+    }
   }
 
   editLegDefinition(index: number, changes: Partial<FlightPlanLegDefinition>, notify = true): void {
