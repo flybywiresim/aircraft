@@ -8,7 +8,7 @@ import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { AircraftConfig, EngineModelParameters } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { EngineModel } from '../EngineModel';
 import { Predictions, StepResults } from '../Predictions';
 import { AtmosphericConditions } from '../AtmosphericConditions';
@@ -138,8 +138,15 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
 
     const n1 =
       this.verticalSpeed > 0
-        ? getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, initialSpeed, managedClimbSpeedMach)
-        : EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+        ? getClimbThrustN1Limit(
+            this.acConfig.engineModelParameters,
+            this.atmosphericConditions,
+            initialAltitude,
+            initialSpeed,
+            managedClimbSpeedMach,
+          )
+        : EngineModel.getIdleN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
+          this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.verticalSpeedStepWithSpeedChange(
       this.acConfig,
@@ -255,8 +262,15 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const predictedN1 =
       this.flightPathAngle > 0
-        ? getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, initialSpeed, managedClimbSpeedMach)
-        : EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+        ? getClimbThrustN1Limit(
+            this.acConfig.engineModelParameters,
+            this.atmosphericConditions,
+            initialAltitude,
+            initialSpeed,
+            managedClimbSpeedMach,
+          )
+        : EngineModel.getIdleN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
+          this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.speedChangeStep(
       this.acConfig,
@@ -306,6 +320,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       speed,
       mach,
       getClimbThrustN1Limit(
+        this.acConfig.engineModelParameters,
         this.atmosphericConditions,
         (initialAltitude + finalAltitude) / 2,
         speed,
@@ -340,7 +355,13 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       distance,
       speed,
       mach,
-      getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, speed, managedClimbSpeedMach),
+      getClimbThrustN1Limit(
+        this.acConfig.engineModelParameters,
+        this.atmosphericConditions,
+        initialAltitude,
+        speed,
+        managedClimbSpeedMach,
+      ),
       zeroFuelWeight,
       fuelOnBoard,
       headwindComponent.value,
@@ -370,7 +391,13 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       initialSpeed,
       finalSpeed,
       mach,
-      getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, initialSpeed, managedClimbSpeedMach),
+      getClimbThrustN1Limit(
+        this.acConfig.engineModelParameters,
+        this.atmosphericConditions,
+        initialAltitude,
+        initialSpeed,
+        managedClimbSpeedMach,
+      ),
       zeroFuelWeight,
       fuelOnBoard,
       headwindComponent.value,
@@ -385,6 +412,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
 }
 
 function getClimbThrustN1Limit(
+  engineModelParameters: EngineModelParameters,
   atmosphericConditions: AtmosphericConditions,
   altitude: Feet,
   speed: Knots,
@@ -393,5 +421,5 @@ function getClimbThrustN1Limit(
   const climbSpeedMach = Math.min(maxMach, atmosphericConditions.computeMachFromCas(altitude, speed));
   const estimatedTat = atmosphericConditions.totalAirTemperatureFromMach(altitude, climbSpeedMach);
 
-  return EngineModel.tableInterpolation(EngineModel.maxClimbThrustTableLeap, estimatedTat, altitude);
+  return EngineModel.getClimbThrustN1(engineModelParameters, altitude, estimatedTat);
 }
