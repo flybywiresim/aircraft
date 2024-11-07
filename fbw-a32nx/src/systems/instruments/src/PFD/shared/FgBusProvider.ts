@@ -25,6 +25,8 @@ export interface FgBus {
   fmgcDiscreteWord1: Arinc429Word;
   fmgcDiscreteWord2: Arinc429Word;
   fmgcDiscreteWord7: Arinc429Word;
+  fmgcSpeedMarginHigh: Arinc429Word;
+  fmgcSpeedMarginLow: Arinc429Word;
 }
 export class FgBusProvider implements Instrument {
   private fcuEisDiscreteWord2 = new Arinc429Word(0);
@@ -233,6 +235,30 @@ export class FgBusProvider implements Instrument {
     subscriber.on('fmgc2DiscreteWord7Raw').handle((word) => {
       if (!this.fg1Selected) {
         publisher.pub('fmgcDiscreteWord7', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc1SpeedMarginHighRaw').handle((word) => {
+      if (this.fg1Selected) {
+        publisher.pub('fmgcSpeedMarginHigh', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc2SpeedMarginHighRaw').handle((word) => {
+      if (!this.fg1Selected) {
+        publisher.pub('fmgcSpeedMarginHigh', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc1SpeedMarginLowRaw').handle((word) => {
+      if (this.fg1Selected) {
+        publisher.pub('fmgcSpeedMarginLow', new Arinc429Word(word));
+      }
+    });
+
+    subscriber.on('fmgc2SpeedMarginLowRaw').handle((word) => {
+      if (!this.fg1Selected) {
+        publisher.pub('fmgcSpeedMarginLow', new Arinc429Word(word));
       }
     });
   }

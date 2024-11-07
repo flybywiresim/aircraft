@@ -338,6 +338,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
   idFmsLsCourse = std::make_unique<LocalVariable>("A32NX_FM_LS_COURSE");
 
+  idFmsSpeedMarginHigh = std::make_unique<LocalVariable>("A32NX_PFD_UPPER_SPEED_MARGIN");
+  idFmsSpeedMarginLow = std::make_unique<LocalVariable>("A32NX_PFD_LOWER_SPEED_MARGIN");
+  idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
+
   idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
   idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFlightGuidanceTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
@@ -713,6 +717,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFmgcABusDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_2");
     idFmgcABusDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_6");
     idFmgcABusDiscreteWord7[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_DISCRETE_WORD_7");
+    idFmgcABusSpeedMarginHigh[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_SPEED_MARGIN_HIGH");
+    idFmgcABusSpeedMarginLow[i] = std::make_unique<LocalVariable>("A32NX_FMGC_" + idString + "_SPEED_MARGIN_LOW");
   }
 
   idStickLockActive = std::make_unique<LocalVariable>("A32NX_STICK_LOCK_ACTIVE");
@@ -1756,6 +1762,9 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_2_kts = idFmgcV2->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_app_kts = idFmgcV_APP->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_managed_kts = idFmsManagedSpeedTarget->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_upper_margin_kts = idFmsSpeedMarginHigh->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_lower_margin_kts = idFmsSpeedMarginLow->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.show_speed_margins = idFmsSpeedMarginVisible->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_spd_kts = idFmsPresetSpeed->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_mach = idFmsPresetMach->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_spd_mach_activate = simInputAutopilot.preset_spd_activate;
@@ -1832,6 +1841,8 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   idFmgcABusDiscreteWord2[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_2));
   idFmgcABusDiscreteWord6[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_6));
   idFmgcABusDiscreteWord7[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.discrete_word_7));
+  idFmgcABusSpeedMarginHigh[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.high_target_speed_margin_kts));
+  idFmgcABusSpeedMarginLow[fmgcIndex]->set(Arinc429Utils::toSimVar(fmgcsBusOutputs[fmgcIndex].fmgc_a_bus.low_target_speed_margin_kts));
 
   // Set the stick lock var (for sounds) and inst. disc. discretes, after both FMGCs have updated
   if (fmgcIndex == 1) {

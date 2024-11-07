@@ -236,6 +236,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcFlexTemperature;
   std::unique_ptr<LocalVariable> idFmgcDirToTrigger;
   std::unique_ptr<LocalVariable> idFmsLsCourse;
+  std::unique_ptr<LocalVariable> idFmsSpeedMarginHigh;
+  std::unique_ptr<LocalVariable> idFmsSpeedMarginLow;
+  std::unique_ptr<LocalVariable> idFmsSpeedMarginVisible;
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;
@@ -554,6 +557,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord6[2];
   std::unique_ptr<LocalVariable> idFmgcABusDiscreteWord7[2];
+  std::unique_ptr<LocalVariable> idFmgcABusSpeedMarginHigh[2];
+  std::unique_ptr<LocalVariable> idFmgcABusSpeedMarginLow[2];
 
   std::unique_ptr<LocalVariable> idStickLockActive;
 

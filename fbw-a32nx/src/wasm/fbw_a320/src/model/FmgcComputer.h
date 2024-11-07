@@ -626,6 +626,7 @@ class FmgcComputer final
     SignStatusMatrix EnumeratedConstant1_Value;
     SignStatusMatrix EnumeratedConstant1_Value_d;
     SignStatusMatrix EnumeratedConstant_Value_i;
+    fmgc_des_submode EnumeratedConstant1_Value_i;
     fmgc_flight_phase EnumeratedConstant_Value_i5;
     fmgc_flight_phase EnumeratedConstant_Value_a;
     fmgc_flight_phase EnumeratedConstant1_Value_dg;
@@ -637,7 +638,7 @@ class FmgcComputer final
     fmgc_flight_phase EnumeratedConstant3_Value;
     fmgc_flight_phase EnumeratedConstant4_Value;
     fmgc_flight_phase EnumeratedConstant_Value_pq;
-    fmgc_flight_phase EnumeratedConstant1_Value_i;
+    fmgc_flight_phase EnumeratedConstant1_Value_iv;
     fmgc_flight_phase EnumeratedConstant1_Value_c;
     fmgc_flight_phase EnumeratedConstant2_Value_pi;
     fmgc_flight_phase EnumeratedConstant_Value_b;
@@ -1048,8 +1049,6 @@ class FmgcComputer final
     real32_T Gain1_Gain_go;
     real32_T Gain2_Gain_o;
     real32_T Constant26_Value;
-    real32_T Constant27_Value;
-    real32_T Constant28_Value;
     real32_T Constant11_Value;
     real32_T Constant2_Value_n;
     boolean_T Constant_Value_a;

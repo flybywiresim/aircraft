@@ -1334,21 +1334,21 @@ void FmgcComputer::step()
     rtb_BusAssignment_o_logic_ils_failure = ((!rtb_y_i2) && (!rtb_y_fd));
     rtb_BusAssignment_o_logic_both_ils_valid = (rtb_y_i2 && rtb_y_fd);
     if (rtb_y_fd) {
-      rtb_y = FmgcComputer_U.in.bus_inputs.ils_own_bus.runway_heading_deg.SSM;
+      rtb_Switch_m = FmgcComputer_U.in.bus_inputs.ils_own_bus.runway_heading_deg.SSM;
       rtb_Switch_i_runway_heading_deg_Data = FmgcComputer_U.in.bus_inputs.ils_own_bus.runway_heading_deg.Data;
       FmgcComputer_Y.out.logic.ils_computation_data.ils_frequency_mhz =
         FmgcComputer_U.in.bus_inputs.ils_own_bus.ils_frequency_mhz;
-      rtb_Switch_m = FmgcComputer_U.in.bus_inputs.ils_own_bus.localizer_deviation_deg.SSM;
+      rtb_y = FmgcComputer_U.in.bus_inputs.ils_own_bus.localizer_deviation_deg.SSM;
       rtb_DataTypeConversion2_bh = FmgcComputer_U.in.bus_inputs.ils_own_bus.localizer_deviation_deg.Data;
       rtb_Switch_i_glideslope_deviation_deg_SSM = FmgcComputer_U.in.bus_inputs.ils_own_bus.glideslope_deviation_deg.SSM;
       rtb_Switch_i_glideslope_deviation_deg_Data =
         FmgcComputer_U.in.bus_inputs.ils_own_bus.glideslope_deviation_deg.Data;
     } else {
-      rtb_y = FmgcComputer_U.in.bus_inputs.ils_opp_bus.runway_heading_deg.SSM;
+      rtb_Switch_m = FmgcComputer_U.in.bus_inputs.ils_opp_bus.runway_heading_deg.SSM;
       rtb_Switch_i_runway_heading_deg_Data = FmgcComputer_U.in.bus_inputs.ils_opp_bus.runway_heading_deg.Data;
       FmgcComputer_Y.out.logic.ils_computation_data.ils_frequency_mhz =
         FmgcComputer_U.in.bus_inputs.ils_opp_bus.ils_frequency_mhz;
-      rtb_Switch_m = FmgcComputer_U.in.bus_inputs.ils_opp_bus.localizer_deviation_deg.SSM;
+      rtb_y = FmgcComputer_U.in.bus_inputs.ils_opp_bus.localizer_deviation_deg.SSM;
       rtb_DataTypeConversion2_bh = FmgcComputer_U.in.bus_inputs.ils_opp_bus.localizer_deviation_deg.Data;
       rtb_Switch_i_glideslope_deviation_deg_SSM = FmgcComputer_U.in.bus_inputs.ils_opp_bus.glideslope_deviation_deg.SSM;
       rtb_Switch_i_glideslope_deviation_deg_Data =
@@ -1380,7 +1380,7 @@ void FmgcComputer::step()
 
     raOwnInvalid = (rtb_y_au && (rtb_DataTypeConversion2_kb > FmgcComputer_P.CompareToConstant_const) && rtb_NOT1_i &&
                     rtb_y_hy && (rtb_DataTypeConversion1_e != 0U));
-    rtb_BusAssignment_f_logic_ils_computation_data_runway_heading_deg.SSM = rtb_y;
+    rtb_BusAssignment_f_logic_ils_computation_data_runway_heading_deg.SSM = rtb_Switch_m;
     rtb_BusAssignment_f_logic_ils_computation_data_runway_heading_deg.Data = rtb_Switch_i_runway_heading_deg_Data;
     FmgcComputer_Y.out.logic.tcas_failure = !rtb_y_au;
     rtb_y_i2 = (FmgcComputer_DWork.Delay_DSTATE.lateral_modes.rwy_loc_submode_active ||
@@ -1739,9 +1739,9 @@ void FmgcComputer::step()
       rtb_irComputationBus_heading_magnetic_deg_SSM;
     rtb_BusAssignment_f4_logic_ir_computation_data_heading_magnetic_deg.Data =
       rtb_irComputationBus_heading_magnetic_deg_Data;
-    rtb_BusAssignment_f4_logic_ils_computation_data_runway_heading_deg.SSM = rtb_y;
+    rtb_BusAssignment_f4_logic_ils_computation_data_runway_heading_deg.SSM = rtb_Switch_m;
     rtb_BusAssignment_f4_logic_ils_computation_data_runway_heading_deg.Data = rtb_Switch_i_runway_heading_deg_Data;
-    rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg.SSM = rtb_Switch_m;
+    rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg.SSM = rtb_y;
     rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg.Data = rtb_DataTypeConversion2_bh;
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_m, &rtb_DataTypeConversion1_e);
@@ -2168,7 +2168,7 @@ void FmgcComputer::step()
       rtb_irComputationBus_heading_magnetic_deg_Data;
     rtb_BusAssignment_k_logic_ir_computation_data_roll_angle_deg.SSM = rtb_irComputationBus_roll_angle_deg_SSM;
     rtb_BusAssignment_k_logic_ir_computation_data_roll_angle_deg.Data = rtb_irComputationBus_roll_angle_deg_Data;
-    rtb_BusAssignment_k_logic_ils_computation_data_localizer_deviation_deg.SSM = rtb_Switch_m;
+    rtb_BusAssignment_k_logic_ils_computation_data_localizer_deviation_deg.SSM = rtb_y;
     rtb_BusAssignment_k_logic_ils_computation_data_localizer_deviation_deg.Data = rtb_DataTypeConversion2_bh;
     FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fmgc_opp_bus.discrete_word_2,
       FmgcComputer_P.BitfromLabel_bit_j, &rtb_DataTypeConversion1_e);
@@ -2662,7 +2662,7 @@ void FmgcComputer::step()
       rtb_appCapability_idx_0) && FmgcComputer_DWork.Delay_DSTATE.lateral_modes.nav_active &&
       FmgcComputer_U.in.fms_inputs.vertical_flight_plan_valid && rtb_GreaterThan3 &&
       ((FmgcComputer_P.EnumeratedConstant_Value_pq != FmgcComputer_U.in.fms_inputs.fms_flight_phase) &&
-       (FmgcComputer_U.in.fms_inputs.fms_flight_phase != FmgcComputer_P.EnumeratedConstant1_Value_i)) &&
+       (FmgcComputer_U.in.fms_inputs.fms_flight_phase != FmgcComputer_P.EnumeratedConstant1_Value_iv)) &&
       ((FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed && rtb_y_ld) || (rtb_y_l1 && ((!rtb_AND_e_tmp) ||
       (rtb_AND_e_tmp && (!FmgcComputer_DWork.Delay_DSTATE.armed_modes.clb_armed) && rtb_y_hy))))));
     FmgcComputer_MATLABFunction_a(rtb_y_fd, FmgcComputer_U.in.time.dt, FmgcComputer_P.ConfirmNode_isRisingEdge_fc,
@@ -3264,7 +3264,13 @@ void FmgcComputer::step()
         rtb_Switch_e[0] = rtb_Phi_c_deg;
         rtb_Switch_e[1] = rtb_Nosewheel_c;
       } else {
-        rtb_Switch_e[0] = FmgcComputer_U.in.fms_inputs.v_managed_kts;
+        if ((FmgcComputer_U.in.fms_inputs.requested_des_submode == FmgcComputer_P.EnumeratedConstant1_Value_i) &&
+            FmgcComputer_DWork.Memory_PreviousInput_b3 && FmgcComputer_U.in.fms_inputs.show_speed_margins) {
+          rtb_Switch_e[0] = FmgcComputer_U.in.fms_inputs.v_upper_margin_kts;
+        } else {
+          rtb_Switch_e[0] = FmgcComputer_U.in.fms_inputs.v_managed_kts;
+        }
+
         rtb_Switch_e[1] = FmgcComputer_U.in.fms_inputs.v_managed_kts;
       }
     } else {
@@ -3968,8 +3974,9 @@ void FmgcComputer::step()
       rtb_Switch1_a = FmgcComputer_DWork.Delay_DSTATE_l;
     }
 
-    rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg.SSM = rtb_y;
+    rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg.SSM = rtb_Switch_m;
     rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg.Data = rtb_Switch_i_runway_heading_deg_Data;
+    rtb_Switch_m = static_cast<uint32_T>(FmgcComputer_P.EnumeratedConstant_Value);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_mach, &rtb_y_cc);
     FmgcComputer_MATLABFunction_ie(&FmgcComputer_U.in.bus_inputs.fcu_bus.selected_spd_kts, &rtb_y_k0);
     FmgcComputer_MATLABFunction_ie(&rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg, &rtb_y_mo);
@@ -4143,6 +4150,10 @@ void FmgcComputer::step()
     rtb_VectorConcatenate_f[18] = FmgcComputer_P.Constant9_Value;
     FmgcComputer_MATLABFunction_gy(rtb_VectorConcatenate_f,
       &FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_6.Data);
+    if (FmgcComputer_U.in.fms_inputs.show_speed_margins) {
+      rtb_Switch_m = static_cast<uint32_T>(FmgcComputer_P.EnumeratedConstant1_Value);
+    }
+
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.discrete_word_7.Data = static_cast<real32_T>(rtb_Switch1_a);
     rtb_VectorConcatenate_f[0] = FmgcComputer_P.Constant_Value_jf;
     rtb_VectorConcatenate_f[1] = FmgcComputer_DWork.Memory_PreviousInput_n0;
@@ -4266,7 +4277,7 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.logic.both_ils_valid = rtb_BusAssignment_o_logic_both_ils_valid;
     FmgcComputer_Y.out.logic.ils_computation_data.runway_heading_deg =
       rtb_BusAssignment_pw_logic_ils_computation_data_runway_heading_deg;
-    FmgcComputer_Y.out.logic.ils_computation_data.localizer_deviation_deg.SSM = rtb_Switch_m;
+    FmgcComputer_Y.out.logic.ils_computation_data.localizer_deviation_deg.SSM = rtb_y;
     FmgcComputer_Y.out.logic.ils_computation_data.localizer_deviation_deg.Data =
       rtb_BusAssignment_f4_logic_ils_computation_data_localizer_deviation_deg.Data;
     FmgcComputer_Y.out.logic.ils_computation_data.glideslope_deviation_deg.SSM =
@@ -4509,12 +4520,12 @@ void FmgcComputer::step()
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.synchro_spd_mach_value.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.synchro_spd_mach_value.Data = FmgcComputer_P.Constant26_Value;
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.low_target_speed_margin_kts.SSM = static_cast<uint32_T>
-      (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.low_target_speed_margin_kts.Data = FmgcComputer_P.Constant27_Value;
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.high_target_speed_margin_kts.SSM = static_cast<uint32_T>
-      (FmgcComputer_P.EnumeratedConstant1_Value);
-    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.high_target_speed_margin_kts.Data = FmgcComputer_P.Constant28_Value;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.low_target_speed_margin_kts.SSM = rtb_Switch_m;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.low_target_speed_margin_kts.Data = static_cast<real32_T>
+      (FmgcComputer_U.in.fms_inputs.v_lower_margin_kts);
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.high_target_speed_margin_kts.SSM = rtb_Switch_m;
+    FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.high_target_speed_margin_kts.Data = static_cast<real32_T>
+      (FmgcComputer_U.in.fms_inputs.v_upper_margin_kts);
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.delta_p_ail_voted_cmd_deg.SSM = static_cast<uint32_T>
       (FmgcComputer_P.EnumeratedConstant1_Value);
     FmgcComputer_Y.out.bus_outputs.fmgc_a_bus.delta_p_ail_voted_cmd_deg.Data = static_cast<real32_T>

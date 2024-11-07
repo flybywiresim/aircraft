@@ -162,6 +162,10 @@ export type PFDSimvars = AdirsSimVars &
     fmgc2DiscreteWord2Raw: number;
     fmgc1DiscreteWord7Raw: number;
     fmgc2DiscreteWord7Raw: number;
+    fmgc1SpeedMarginHighRaw: number;
+    fmgc2SpeedMarginHighRaw: number;
+    fmgc1SpeedMarginLowRaw: number;
+    fmgc2SpeedMarginLowRaw: number;
     fcuSelectedHeadingRaw: number;
     fcuSelectedAltitudeRaw: number;
     fcuSelectedAirspeedRaw: number;
@@ -335,6 +339,10 @@ export enum PFDVars {
   fmgc2DiscreteWord2Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_2',
   fmgc1DiscreteWord7Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_7',
   fmgc2DiscreteWord7Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_7',
+  fmgc1SpeedMarginHighRaw = 'L:A32NX_FMGC_1_SPEED_MARGIN_HIGH',
+  fmgc2SpeedMarginHighRaw = 'L:A32NX_FMGC_2_SPEED_MARGIN_HIGH',
+  fmgc1SpeedMarginLowRaw = 'L:A32NX_FMGC_1_SPEED_MARGIN_LOW',
+  fmgc2SpeedMarginLowRaw = 'L:A32NX_FMGC_2_SPEED_MARGIN_LOW',
   fcuSelectedHeadingRaw = 'L:A32NX_FCU_SELECTED_HEADING',
   fcuSelectedAltitudeRaw = 'L:A32NX_FCU_SELECTED_ALTITUDE',
   fcuSelectedAirspeedRaw = 'L:A32NX_FCU_SELECTED_AIRSPEED',
@@ -509,6 +517,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fmgc2DiscreteWord2Raw', { name: PFDVars.fmgc2DiscreteWord2Raw, type: SimVarValueType.Number }],
     ['fmgc1DiscreteWord7Raw', { name: PFDVars.fmgc1DiscreteWord7Raw, type: SimVarValueType.Number }],
     ['fmgc2DiscreteWord7Raw', { name: PFDVars.fmgc2DiscreteWord7Raw, type: SimVarValueType.Number }],
+    ['fmgc1SpeedMarginHighRaw', { name: PFDVars.fmgc1SpeedMarginHighRaw, type: SimVarValueType.Number }],
+    ['fmgc2SpeedMarginHighRaw', { name: PFDVars.fmgc2SpeedMarginHighRaw, type: SimVarValueType.Number }],
+    ['fmgc1SpeedMarginLowRaw', { name: PFDVars.fmgc1SpeedMarginLowRaw, type: SimVarValueType.Number }],
+    ['fmgc2SpeedMarginLowRaw', { name: PFDVars.fmgc2SpeedMarginLowRaw, type: SimVarValueType.Number }],
     ['fcuSelectedHeadingRaw', { name: PFDVars.fcuSelectedHeadingRaw, type: SimVarValueType.Number }],
     ['fcuSelectedAltitudeRaw', { name: PFDVars.fcuSelectedAltitudeRaw, type: SimVarValueType.Number }],
     ['fcuSelectedAirspeedRaw', { name: PFDVars.fcuSelectedAirspeedRaw, type: SimVarValueType.Number }],

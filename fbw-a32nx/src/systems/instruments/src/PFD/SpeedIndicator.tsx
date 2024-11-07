@@ -6,6 +6,7 @@ import {
   ClockEvents,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   NodeReference,
   Subject,
   Subscribable,
@@ -13,7 +14,6 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -1187,34 +1187,53 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
-  private shouldShowMargins = false;
-
   private currentSpeed = Subject.create(Arinc429Word.empty());
 
-  private upperSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+  private speedMarginHigh = Subject.create(Arinc429Word.empty());
 
-  private lowerSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+  private speedMarginLow = Subject.create(Arinc429Word.empty());
 
-  private upperMarginTransform = Subject.create('translate(0 0)');
+  private upperSpeedMarginVisibility = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => this.computeVisibility(currentSpeed, speedMargin),
+    this.currentSpeed,
+    this.speedMarginHigh,
+  );
 
-  private lowerMarginTransform = Subject.create('translate(0 0)');
+  private lowerSpeedMarginVisibility = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => this.computeVisibility(currentSpeed, speedMargin),
+    this.currentSpeed,
+    this.speedMarginLow,
+  );
+
+  private upperMarginTransform = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => `translate(0 ${this.computeOffset(currentSpeed, speedMargin).toFixed(2)})`,
+    this.currentSpeed,
+    this.speedMarginHigh,
+  );
+
+  private lowerMarginTransform = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => `translate(0 ${this.computeOffset(currentSpeed, speedMargin).toFixed(2)})`,
+    this.currentSpeed,
+    this.speedMarginLow,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars>();
-
-    sub
-      .on('showSpeedMargins')
-      .whenChanged()
-      .handle((active) => (this.shouldShowMargins = active));
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FgBus>();
 
     sub
       .on('speedAr')
       .withArinc429Precision(2)
       .handle((s) => this.currentSpeed.set(s));
 
-    sub.on('upperSpeedMargin').handle(this.updateMargin(this.upperSpeedMarginVisibility, this.upperMarginTransform));
-    sub.on('lowerSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));
+    sub
+      .on('fmgcSpeedMarginHigh')
+      .withArinc429Precision(2)
+      .handle((s) => this.speedMarginHigh.set(s));
+    sub
+      .on('fmgcSpeedMarginLow')
+      .withArinc429Precision(2)
+      .handle((s) => this.speedMarginLow.set(s));
   }
 
   render(): VNode {
@@ -1238,31 +1257,19 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
     );
   }
 
-  private updateMargin(visibility: Subject<'visible' | 'hidden'>, transform: Subject<string>) {
-    return (speed: number) => {
-      const shouldForceHideMargins = !this.shouldShowMargins || !this.currentSpeed.get().isNormalOperation();
-      const marginIsVisible = visibility.get() === 'visible';
+  private computeVisibility(currentSpeed: Arinc429Word, speedMargin: Arinc429Word) {
+    if (
+      Math.abs(currentSpeed.value - speedMargin.value) < DisplayRange &&
+      !(speedMargin.isFailureWarning() || speedMargin.isNoComputedData())
+    ) {
+      return 'visible';
+    } else {
+      return 'hidden';
+    }
+  }
 
-      if (shouldForceHideMargins) {
-        if (marginIsVisible) {
-          visibility.set('hidden');
-        }
-
-        return;
-      }
-
-      const isInRange = Math.abs(this.currentSpeed.get().value - speed) < DisplayRange;
-      if (isInRange) {
-        const offset = (
-          Math.round((100 * (this.currentSpeed.get().value - speed) * DistanceSpacing) / ValueSpacing) / 100
-        ).toFixed(2);
-        transform.set(`translate(0 ${offset})`);
-      }
-
-      if (isInRange !== marginIsVisible) {
-        visibility.set(isInRange ? 'visible' : 'hidden');
-      }
-    };
+  private computeOffset(currentSpeed: Arinc429Word, speedMargin: Arinc429Word) {
+    return Math.round((100 * (currentSpeed.value - speedMargin.value) * DistanceSpacing) / ValueSpacing) / 100;
   }
 }
 
