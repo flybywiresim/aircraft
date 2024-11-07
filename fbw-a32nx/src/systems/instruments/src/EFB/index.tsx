@@ -50,9 +50,11 @@ render(
           mcduKeyboard: true,
           pauseOnTod: true,
           pilotAvatars: true,
+          eclSoftKeys: false,
         },
         sim: {
           cones: true,
+          msfsFplnSync: true,
           pilotSeat: false,
           registrationDecal: true,
           wheelChocks: true,

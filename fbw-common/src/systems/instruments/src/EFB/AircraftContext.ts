@@ -42,13 +42,15 @@ interface RealismOptions {
   mcduKeyboard: boolean;
   pauseOnTod: boolean;
   pilotAvatars: boolean;
+  eclSoftKeys: boolean;
 }
 
 interface SimOptions {
   cones: boolean;
+  msfsFplnSync: boolean;
+  pilotSeat: boolean;
   registrationDecal: boolean;
   wheelChocks: boolean;
-  pilotSeat: boolean;
 }
 
 interface ThrottleOptions {
@@ -90,9 +92,11 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       mcduKeyboard: false,
       pauseOnTod: false,
       pilotAvatars: false,
+      eclSoftKeys: false,
     },
     sim: {
       cones: false,
+      msfsFplnSync: false,
       pilotSeat: false,
       registrationDecal: false,
       wheelChocks: false,
