@@ -10,11 +10,19 @@ import { FlightPlanIndex } from '@fmgc/index';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { OffsetAngleFormat, OffsetDistFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { Button } from 'instruments/src/MFD/pages/common/Button';
 
 interface MfdFmsFplnOffsetProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
   private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
+
+  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
+  private cancelButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
+  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   private availableWaypoints = ArraySubject.create<string>([]);
 
@@ -107,6 +115,19 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
     }
   }
 
+  public onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subs.push(
+      this.tmpyActive.sub((v) => {
+        if (this.returnButtonDiv.getOrDefault() && this.tmpyInsertButtonDiv.getOrDefault()) {
+          this.returnButtonDiv.instance.style.visibility = v ? 'hidden' : 'visible';
+          this.tmpyInsertButtonDiv.instance.style.visibility = v ? 'hidden' : 'visible';
+        }
+      }, true),
+    );
+  }
+
   render(): VNode {
     return (
       <>
@@ -115,7 +136,7 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
         <div class="fr">
           <div style="display: flex; justify-content:space-between;">
             <div class="mfd-fms-fpln-offset-waypoint-text-grid">
-              <div>
+              <div style="padding-left: 20px;">
                 <div>
                   <span class="mfd-label">START WPT</span>
                 </div>
@@ -135,7 +156,7 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                   />
                 </div>
               </div>
-              <div>
+              <div style="padding-left: 20px;">
                 <div>
                   <span class="mfd-label">END WPT</span>
                 </div>
@@ -155,8 +176,8 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                   />
                 </div>
               </div>
-              <div style="grid-row-start: span 2; border-left: 2px solid lightgrey; margin-right: 10px;" />
-              <div class="mfd-offset-dist-angle-input-grid">
+              <div style="grid-row-start: span 2; border-left: 2px solid lightgrey; margin-left: 20px;" />
+              <div class="mfd-offset-dist-angle-input-grid" style="padding-left: 20px;">
                 <div style="margin-bottom: 20px;">
                   <span class="mfd-label">INTERCEPT ANGLE</span>
                 </div>
@@ -193,9 +214,50 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                   </div>
                 </div>
               </div>
+              <div class="mfd-offset-ret-canc-tmpy-grid">
+                <div style="place-self: end start;">
+                  <Button
+                    label="RETURN"
+                    onClick={() => {
+                      this.props.mfd.uiService.navigateTo('back');
+                    }}
+                  />
+                </div>
+                <div style="justify-self: center;">
+                  <Button
+                    label={Subject.create(
+                      <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                        <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                          DELETE
+                          <br />
+                          ALT CSTR
+                        </span>
+                        <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                      </div>,
+                    )}
+                    onClick={() => {
+                      this.props.mfd.uiService.navigateTo('back');
+                    }}
+                  />
+                </div>
+                <div style="place-self: end end;">
+                  <Button
+                    label="TMPY F-PLN"
+                    onClick={() => {
+                      this.props.fmcService.master?.resetRevisedWaypoint();
+                      this.props.mfd.uiService.navigateTo(
+                        `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`,
+                      );
+                    }}
+                    buttonStyle="color: yellow"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        {/* end page content */}
+        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
     );
   }
