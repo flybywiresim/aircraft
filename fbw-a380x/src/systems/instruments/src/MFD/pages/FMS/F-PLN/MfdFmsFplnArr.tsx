@@ -94,7 +94,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
       sortedRunways.forEach((rw) => {
         runways.push({
-          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M`,
+          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${NXUnits.mToUser(rw.length).toFixed(0).padStart(5, ' ')}${NXUnits.userDistanceUnit()}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
               rw.ident,
@@ -118,7 +118,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
       if (flightPlan.destinationRunway) {
         this.rwyIdent.set(flightPlan.destinationRunway.ident.substring(4));
-        this.rwyLength.set(flightPlan.destinationRunway.length.toFixed(0) ?? '----');
+        this.rwyLength.set(
+          flightPlan.destinationRunway?.length
+            ? NXUnits.mToUser(flightPlan.destinationRunway.length).toFixed(0)
+            : '----',
+        );
         this.rwyCrs.set(flightPlan.destinationRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
       } else {
         this.rwyIdent.set('---');
@@ -455,7 +459,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {NXUnits.mToUser(this.rwyLength)}
+                  {this.rwyLength}
                 </span>
                 <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userDistanceUnit()}</span>
               </div>
