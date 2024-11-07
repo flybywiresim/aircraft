@@ -164,7 +164,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                     containerStyle="width: 175px;"
                     alignLabels="flex-start"
                     onModified={(i, text) => {
-                      if (i) {
+                      if (i !== null) {
                         this.onDropdownModified(i, text);
                       }
                     }}
