@@ -750,7 +750,7 @@
       "TwentyFourHours": "24h",
       "Utc": "UTC",
       "UtcAndLocal": "UTC and Local",
-      "DisablePushbackConflictWarning": "Disable pushpack system conflict warning"
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning"
     }
   },
   "StatusBar": {
