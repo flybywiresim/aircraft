@@ -9,11 +9,11 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 export interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;

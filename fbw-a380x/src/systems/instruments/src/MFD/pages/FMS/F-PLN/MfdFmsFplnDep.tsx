@@ -1,11 +1,11 @@
 ﻿import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}
 
