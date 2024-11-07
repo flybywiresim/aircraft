@@ -1458,15 +1458,15 @@ These variables are the interface between the 3D model and the systems/code.
 
 - A32NX_PFD_SHOW_SPEED_MARGINS
     - Boolean
-    - Indicates whether speed margins are shown on the PFD in DES mode.
+    - Indicates whether speed margins are shown on the PFD in DES mode. Only for FMS -> FG communication
 
 - A32NX_PFD_UPPER_SPEED_MARGIN
     - Knots
-    - Indicates the speed for the upper speed margin limit in DES mode
+    - Indicates the speed for the upper speed margin limit in DES mode. Only for FMS -> FG communication
 
 - A32NX_PFD_LOWER_SPEED_MARGIN
     - Knots
-    - Indicates the speed for the lower speed margin limit in DES mode
+    - Indicates the speed for the lower speed margin limit in DES mode. Only for FMS -> FG communication
 
 - A32NX_ISIS_LS_ACTIVE
     - Bool
@@ -2865,7 +2865,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_FMGC_{number}_PFD_SELECTED_SPEED
     - The PFD target speed (managed or selected)
-    - Arinc429<Degrees>
+    - Arinc429<Knots>
+
+- A32NX_FMGC_{number}_PRESEL_MACH
+    - The preselected Mach number for display on the FMA
+    - Arinc429<Number>
+
+- A32NX_FMGC_{number}_PRESEL_SPEED
+    - The preselected speed for display on the FMA
+    - Arinc429<Knots>
 
 - A32NX_FMGC_{number}_RWY_HDG_MEMO
     - The FG memorized runway heading
@@ -3053,6 +3061,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 27  | ? TCAS RA Corrective              |
       | 28  | TCAS RA Nose Up                   |
       | 29  | ? TCAS RA Nose Down               |
+
+- A32NX_FMGC_{number}_SPEED_MARGIN_HIGH
+    - Arinc429<Knots>
+    - The higher speed margin in DES with managed speed, for display on the PFD
+
+- A32NX_FMGC_{number}_SPEED_MARGIN_LOW
+    - Arinc429<Knots>
+    - The lower speed margin in DES with managed speed, for display on the PFD
 
 - A32NX_STICK_LOCK_ACTIVE
     - Indicates if the stick lock is active (when AP engaged).
