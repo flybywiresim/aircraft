@@ -74,7 +74,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'NEUTRAL',
         sensed: true,
       },
-
     ],
   },
   1000004: {
@@ -165,6 +164,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   },
   1000006: {
     title: '<<DEPARTURE CHANGE>>',
+    deferred: true,
     items: [
       {
         name: 'RWY & SID',
@@ -247,7 +247,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         labelNotCompleted: 'LDG',
         sensed: true,
       },
-
     ],
   },
   1000009: {

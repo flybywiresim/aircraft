@@ -41,11 +41,11 @@ interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProp
 }
 const Spoiler = ({ x, y, number, side, fcdcWord3, fcdcWord4 }: SpoilerProps) => {
   const availAndValidBit = 20 + number;
-  const isAvail = fcdcWord3.getBitValueOr(availAndValidBit, false);
-  const isPosValid = fcdcWord4.getBitValueOr(availAndValidBit, false);
+  const isAvail = fcdcWord3.bitValueOr(availAndValidBit, false);
+  const isPosValid = fcdcWord4.bitValueOr(availAndValidBit, false);
 
   const spoilerOutIndex = 9 + number * 2 + (side === 'left' ? 0 : 1);
-  const isSpoilerOut = fcdcWord4.getBitValueOr(spoilerOutIndex, false);
+  const isSpoilerOut = fcdcWord4.bitValueOr(spoilerOutIndex, false);
 
   return (
     <SvgGroup x={x} y={y}>

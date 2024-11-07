@@ -11,7 +11,7 @@ const RTPIDisplay = () => {
   const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 400);
   const fac2DiscreteWord2 = useArinc429Var('L:A32NX_FAC_2_DISCRETE_WORD_2');
 
-  const facSourceForTrim = fac2DiscreteWord2.getBitValueOr(13, false) ? 2 : 1;
+  const facSourceForTrim = fac2DiscreteWord2.bitValueOr(13, false) ? 2 : 1;
   const trimPos = useArinc429Var(`L:A32NX_FAC_${facSourceForTrim}_RUDDER_TRIM_POS`);
 
   if (!trimPos.isFailureWarning() || ltsTest === 0) {

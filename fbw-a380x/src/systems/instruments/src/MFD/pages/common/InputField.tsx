@@ -167,6 +167,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private onKeyDown(ev: KeyboardEvent) {
+    if (!this.isFocused.get()) {
+      return;
+    }
+
     if (ev.keyCode === KeyCode.KEY_BACK_SPACE) {
       this.handleBackspace();
     }
@@ -185,15 +189,26 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private onKeyPress(ev: KeyboardEvent) {
+    if (!this.isFocused.get()) {
+      return;
+    }
+
     // Un-select the text
     this.textInputRef.instance.classList.remove('valueSelected');
+
     // ev.key is undefined, so we have to use the deprecated keyCode here
     const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
-    if (ev.keyCode !== KeyCode.KEY_ENTER) {
-      this.handleKeyInput(key);
-    } else {
+    if (ev.keyCode === KeyCode.KEY_ENTER) {
       this.handleEnter();
+    }
+
+    if (key.match(/^[A-Z0-9/.+\- ]$/)) {
+      this.handleKeyInput(key);
+    }
+
+    if (key === ',') {
+      this.handleKeyInput('.');
     }
   }
 
@@ -231,12 +246,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
       this.isFocused.set(true);
 
-      // After 30s, unfocus field, if some other weird focus error happens
+      // After 20s, unfocus field, if some other weird focus error happens
       setTimeout(() => {
         if (this.isFocused.get()) {
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
         }
-      }, 30_000);
+      }, 20_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
       if (this.props.mandatory?.get()) {
@@ -270,7 +285,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (!this.props.value.get() && this.props.mandatory?.get()) {
+      if (this.props.value.get() === null && this.props.mandatory?.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -391,7 +406,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.mandatory.sub((val) => {
-        if (val && !this.props.value.get()) {
+        if (val && this.props.value.get() === null) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
@@ -427,7 +442,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
-            if (this.props.mandatory?.get() && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.props.value.get() === null) {
               this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
@@ -435,7 +450,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.remove('disabled');
             this.textInputRef.instance.classList.remove('disabled');
 
-            if (this.props.mandatory?.get() && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.props.value.get() === null) {
               this.textInputRef.instance.classList.add('mandatory');
             }
           }

@@ -230,6 +230,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return -1;
   }
 
+  get isDepartureProcedureActive(): boolean {
+    return (
+      this.departureSegment.procedure !== undefined &&
+      ((this.departureRunwayTransitionSegment.legCount > 0 && this.activeLegIndex < this.findLastDepartureLeg()[2]) ||
+        this.isProcedureBeingFlownInSegment(this.departureSegment.procedure.ident, this.enrouteSegment)) // legs of departure are moved to enroute after direct
+    );
+  }
+
   get isApproachActive(): boolean {
     // `this.approach` can be undefined for runway-by-itself approaches
     return (
@@ -1954,6 +1962,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
               lastLegInFirst.annotation,
             );
 
+            this.mergeConstraints(element, lastLegInFirst);
+
             if (LnavConfig.VERBOSE_FPM_LOG) {
               console.trace('[fpm] stringSegmentsForwards - popping legs of first');
             }
@@ -2095,7 +2105,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       if (bothXf) {
         if (element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
-          // Use leg from the first segment, do not transfer any information from the second segment, see FBW-22-08
+          // Use leg from the first segment for annotation and ident, see FBW-22-08,
+          // but merge constraints
+          this.mergeConstraints(element, firstLegInSecond);
+
           second.allLegs.shift();
           second.flightPlan.syncSegmentLegsChange(first);
           cutBefore = i;
@@ -2226,6 +2239,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
       this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this.enrouteSegment);
     }
+  }
+
+  private isProcedureBeingFlownInSegment(ident: string, segment: FlightPlanSegment): boolean {
+    return (
+      segment.allLegs.filter(
+        (el, idx) => idx >= this.activeLegIndex && el.isDiscontinuity === false && el.annotation === ident,
+      ).length > 0
+    );
   }
 
   private findLastDepartureLeg(): [FlightPlanSegment, number, number] {

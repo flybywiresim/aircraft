@@ -1264,9 +1264,9 @@ export class PseudoFWC {
     this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
     const leftCompressedHardwireLgciu1 =
-      this.dcESSBusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_1_L_GEAR_COMPRESSED', 'bool') > 0;
+      this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
-      this.dc2BusPowered.get() && SimVar.GetSimVarValue('A32NX_LGCIU_2_L_GEAR_COMPRESSED', 'bool') > 0;
+      this.dc2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_LEFT_GEAR_COMPRESSED', 'bool') > 0;
 
     // General logic
     const mainGearDownlocked =
@@ -1374,14 +1374,13 @@ export class PseudoFWC {
       !(adr2Discrete1.isNormalOperation() || adr2Discrete1.isFunctionalTest())
     ) {
       const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
-      overspeedWarning ||= adr3Discrete1.getBitValueOr(9, false);
+      overspeedWarning ||= adr3Discrete1.bitValueOr(9, false);
     }
-    overspeedWarning ||= adr1Discrete1.getBitValueOr(9, false) || adr2Discrete1.getBitValueOr(9, false);
+    overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     this.overspeedWarning.set(overspeedWarning);
 
     // TO SPEEDS NOT INSERTED
-    const fmToSpeedsNotInserted =
-      fm1DiscreteWord3.getBitValueOr(18, false) && fm2DiscreteWord3.getBitValueOr(18, false);
+    const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
 
     this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw, deltaTime);
 
@@ -1401,7 +1400,7 @@ export class PseudoFWC {
     );
 
     // TO SPEEDS TOO LOW
-    const toSpeedsTooLow = fm1DiscreteWord3.getBitValueOr(17, false) && fm2DiscreteWord3.getBitValueOr(17, false);
+    const toSpeedsTooLow = fm1DiscreteWord3.bitValueOr(17, false) && fm2DiscreteWord3.bitValueOr(17, false);
     this.toSpeedsTooLowWarning.set(
       (this.toConfigCheckedInPhase2Or3 || this.fwcFlightPhase.get() === 3) &&
         !this.toConfigPulseNode.read() &&
@@ -1410,7 +1409,7 @@ export class PseudoFWC {
     );
 
     // TO V1/VR/V2 DISAGREE
-    const toV2VRV2Disagree = fm1DiscreteWord3.getBitValueOr(16, false) && fm2DiscreteWord3.getBitValueOr(16, false);
+    const toV2VRV2Disagree = fm1DiscreteWord3.bitValueOr(16, false) && fm2DiscreteWord3.bitValueOr(16, false);
     this.toV2VRV2DisagreeWarning.set(
       (this.toConfigCheckedInPhase2Or3 || this.fwcFlightPhase.get() === 3) &&
         !this.toConfigPulseNode.read() &&
@@ -1423,13 +1422,13 @@ export class PseudoFWC {
     const fm2DiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_FM2_DISCRETE_WORD_2');
 
     /** MCDU TO CONF 0 selected */
-    const mcduToFlapPos0 = fm1DiscreteWord2.getBitValueOr(13, false) || fm2DiscreteWord2.getBitValueOr(13, false);
+    const mcduToFlapPos0 = fm1DiscreteWord2.bitValueOr(13, false) || fm2DiscreteWord2.bitValueOr(13, false);
     /** MCDU TO CONF 1 selected */
-    const mcduToFlapPos1 = fm1DiscreteWord2.getBitValueOr(14, false) || fm2DiscreteWord2.getBitValueOr(14, false);
+    const mcduToFlapPos1 = fm1DiscreteWord2.bitValueOr(14, false) || fm2DiscreteWord2.bitValueOr(14, false);
     /** MCDU TO CONF 2 selected */
-    const mcduToFlapPos2 = fm1DiscreteWord2.getBitValueOr(15, false) || fm2DiscreteWord2.getBitValueOr(15, false);
+    const mcduToFlapPos2 = fm1DiscreteWord2.bitValueOr(15, false) || fm2DiscreteWord2.bitValueOr(15, false);
     /** MCDU TO CONF 3 selected */
-    const mcduToFlapPos3 = fm1DiscreteWord2.getBitValueOr(16, false) || fm2DiscreteWord2.getBitValueOr(16, false);
+    const mcduToFlapPos3 = fm1DiscreteWord2.bitValueOr(16, false) || fm2DiscreteWord2.bitValueOr(16, false);
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -1645,20 +1644,20 @@ export class PseudoFWC {
 
     // ELAC 1 FAULT computation
     const se1f =
-      (fcdc1DiscreteWord1.getBitValueOr(19, false) || fcdc2DiscreteWord1.getBitValueOr(19, false)) &&
-      (fcdc1DiscreteWord1.getBitValueOr(20, false) || fcdc2DiscreteWord1.getBitValueOr(20, false));
+      (fcdc1DiscreteWord1.bitValueOr(19, false) || fcdc2DiscreteWord1.bitValueOr(19, false)) &&
+      (fcdc1DiscreteWord1.bitValueOr(20, false) || fcdc2DiscreteWord1.bitValueOr(20, false));
     const elac1FaultCondition =
       !(
         [1, 10].includes(this.fwcFlightPhase.get()) &&
-        (fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false))
+        (fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false))
       ) &&
       this.dcESSBusPowered.get() &&
-      (fcdc1DiscreteWord1.getBitValueOr(23, false) ||
-        fcdc2DiscreteWord1.getBitValueOr(23, false) ||
+      (fcdc1DiscreteWord1.bitValueOr(23, false) ||
+        fcdc2DiscreteWord1.bitValueOr(23, false) ||
         (!this.elac1HydConfirmNodeOutput.get() && se1f));
     this.elac1FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false)) &&
-        (fcdc1DiscreteWord1.getBitValueOr(23, false) || fcdc2DiscreteWord1.getBitValueOr(23, false)),
+      !(fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false)) &&
+        (fcdc1DiscreteWord1.bitValueOr(23, false) || fcdc2DiscreteWord1.bitValueOr(23, false)),
     );
     this.elac1HydConfirmNodeOutput.set(
       this.elac1HydConfirmNode.write(!greenSysPressurised && !blueSysPressurised, deltaTime),
@@ -1667,20 +1666,20 @@ export class PseudoFWC {
 
     // ELAC 2 FAULT computation
     const se2f =
-      (fcdc1DiscreteWord1.getBitValueOr(21, false) || fcdc2DiscreteWord1.getBitValueOr(21, false)) &&
-      (fcdc1DiscreteWord1.getBitValueOr(22, false) || fcdc2DiscreteWord1.getBitValueOr(22, false));
+      (fcdc1DiscreteWord1.bitValueOr(21, false) || fcdc2DiscreteWord1.bitValueOr(21, false)) &&
+      (fcdc1DiscreteWord1.bitValueOr(22, false) || fcdc2DiscreteWord1.bitValueOr(22, false));
     const elac2FaultCondition =
       !(
         [1, 10].includes(this.fwcFlightPhase.get()) &&
-        (fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false))
+        (fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false))
       ) &&
       this.dc2BusPowered.get() &&
-      (fcdc1DiscreteWord1.getBitValueOr(24, false) ||
-        fcdc2DiscreteWord1.getBitValueOr(24, false) ||
+      (fcdc1DiscreteWord1.bitValueOr(24, false) ||
+        fcdc2DiscreteWord1.bitValueOr(24, false) ||
         (!this.elac2HydConfirmNodeOutput.get() && se2f));
     this.elac2FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false)) &&
-        (fcdc1DiscreteWord1.getBitValueOr(24, false) || fcdc2DiscreteWord1.getBitValueOr(24, false)),
+      !(fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false)) &&
+        (fcdc1DiscreteWord1.bitValueOr(24, false) || fcdc2DiscreteWord1.bitValueOr(24, false)),
     );
     this.elac2HydConfirmNodeOutput.set(
       this.elac2HydConfirmNode.write((!greenSysPressurised || !yellowSysPressurised) && !blueSysPressurised, deltaTime),
@@ -1688,45 +1687,45 @@ export class PseudoFWC {
     this.elac2FaultConfirmNodeOutput.set(this.elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime));
 
     // SEC 1 FAULT computation
-    const ss1f = fcdc1DiscreteWord1.getBitValueOr(25, false) || fcdc2DiscreteWord1.getBitValueOr(25, false);
+    const ss1f = fcdc1DiscreteWord1.bitValueOr(25, false) || fcdc2DiscreteWord1.bitValueOr(25, false);
     this.sec1FaultCondition.set(
       !(
         [1, 10].includes(this.fwcFlightPhase.get()) &&
-        (fcdc1DiscreteWord3.getBitValueOr(27, false) || fcdc2DiscreteWord3.getBitValueOr(27, false))
+        (fcdc1DiscreteWord3.bitValueOr(27, false) || fcdc2DiscreteWord3.bitValueOr(27, false))
       ) &&
         this.dcESSBusPowered.get() &&
         ss1f,
     );
     this.sec1FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.getBitValueOr(27, false) || fcdc2DiscreteWord3.getBitValueOr(27, false)),
+      !(fcdc1DiscreteWord3.bitValueOr(27, false) || fcdc2DiscreteWord3.bitValueOr(27, false)),
     );
 
     // SEC 2 FAULT computation
-    const ss2f = fcdc1DiscreteWord1.getBitValueOr(26, false) || fcdc2DiscreteWord1.getBitValueOr(26, false);
+    const ss2f = fcdc1DiscreteWord1.bitValueOr(26, false) || fcdc2DiscreteWord1.bitValueOr(26, false);
     this.sec2FaultCondition.set(
       !(
         [1, 10].includes(this.fwcFlightPhase.get()) &&
-        (fcdc1DiscreteWord3.getBitValueOr(28, false) || fcdc2DiscreteWord3.getBitValueOr(28, false))
+        (fcdc1DiscreteWord3.bitValueOr(28, false) || fcdc2DiscreteWord3.bitValueOr(28, false))
       ) &&
         this.dc2BusPowered.get() &&
         ss2f,
     );
     this.sec2FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.getBitValueOr(28, false) || fcdc2DiscreteWord3.getBitValueOr(28, false)),
+      !(fcdc1DiscreteWord3.bitValueOr(28, false) || fcdc2DiscreteWord3.bitValueOr(28, false)),
     );
 
     // SEC 3 FAULT computation
-    const ss3f = fcdc1DiscreteWord1.getBitValueOr(29, false) || fcdc2DiscreteWord1.getBitValueOr(29, false);
+    const ss3f = fcdc1DiscreteWord1.bitValueOr(29, false) || fcdc2DiscreteWord1.bitValueOr(29, false);
     this.sec3FaultCondition.set(
       !(
         [1, 10].includes(this.fwcFlightPhase.get()) &&
-        (fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false))
+        (fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false))
       ) &&
         this.dc2BusPowered.get() &&
         ss3f,
     );
     this.sec3FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false)),
+      !(fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false)),
     );
 
     // FCDC 1+2 FAULT computation
@@ -1744,37 +1743,35 @@ export class PseudoFWC {
     this.fcdc2FaultCondition.set(SFCDC2FT && !(SFCDC12FT || !this.dc2BusPowered.get()));
 
     // ALTN LAW 2 computation
-    const SPA2 = fcdc1DiscreteWord1.getBitValueOr(13, false) || fcdc2DiscreteWord1.getBitValueOr(13, false);
+    const SPA2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
     this.altn2LawConfirmNodeOutput.set(
       this.altn2LawConfirmNode.write(SPA2 && ![1, 10].includes(this.fwcFlightPhase.get()), deltaTime),
     );
 
     // ALTN LAW 1 computation
-    const SPA1 = fcdc1DiscreteWord1.getBitValueOr(12, false) || fcdc2DiscreteWord1.getBitValueOr(12, false);
+    const SPA1 = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
     this.altn1LawConfirmNodeOutput.set(
       this.altn1LawConfirmNode.write(SPA1 && ![1, 10].includes(this.fwcFlightPhase.get()), deltaTime),
     );
 
     // DIRECT LAW computation
     const SPBUL =
-      (false && SFCDC12FT) ||
-      fcdc1DiscreteWord1.getBitValueOr(15, false) ||
-      fcdc2DiscreteWord1.getBitValueOr(15, false);
+      (false && SFCDC12FT) || fcdc1DiscreteWord1.bitValueOr(15, false) || fcdc2DiscreteWord1.bitValueOr(15, false);
     this.directLawCondition.set(SPBUL && ![1, 10].includes(this.fwcFlightPhase.get()));
 
     // L+R ELEV FAULT computation
     const lhElevBlueFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(15, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(15, false));
+      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(15, false)) ||
+      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(15, false));
     const lhElevGreenFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(16, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(16, false));
+      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(16, false)) ||
+      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(16, false));
     const rhElevBlueFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(17, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(17, false));
+      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(17, false)) ||
+      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(17, false));
     const rhElevGreenFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(18, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(18, false));
+      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(18, false)) ||
+      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(18, false));
     this.lrElevFaultCondition.set(
       lhElevBlueFail &&
         lhElevGreenFail &&
@@ -1784,21 +1781,19 @@ export class PseudoFWC {
     );
 
     // GND SPLRS FAULT status
-    const sec1GroundSpoilerFault = fcdc1DiscreteWord5.getBitValue(14) || fcdc2DiscreteWord5.getBitValue(14);
-    const sec2GroundSpoilerFault = fcdc1DiscreteWord5.getBitValue(15) || fcdc2DiscreteWord5.getBitValue(15);
-    const sec3GroundSpoilerFault = fcdc1DiscreteWord5.getBitValue(16) || fcdc2DiscreteWord5.getBitValue(16);
-    const sec1SpeedbrakeLeverFault = fcdc1DiscreteWord5.getBitValue(11) || fcdc2DiscreteWord5.getBitValue(11);
-    const sec2SpeedbrakeLeverFault = fcdc1DiscreteWord5.getBitValue(12) || fcdc2DiscreteWord5.getBitValue(12);
-    const sec3SpeedbrakeLeverFault = fcdc1DiscreteWord5.getBitValue(13) || fcdc2DiscreteWord5.getBitValue(13);
+    const sec1GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(14) || fcdc2DiscreteWord5.bitValue(14);
+    const sec2GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(15) || fcdc2DiscreteWord5.bitValue(15);
+    const sec3GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(16) || fcdc2DiscreteWord5.bitValue(16);
+    const sec1SpeedbrakeLeverFault = fcdc1DiscreteWord5.bitValue(11) || fcdc2DiscreteWord5.bitValue(11);
+    const sec2SpeedbrakeLeverFault = fcdc1DiscreteWord5.bitValue(12) || fcdc2DiscreteWord5.bitValue(12);
+    const sec3SpeedbrakeLeverFault = fcdc1DiscreteWord5.bitValue(13) || fcdc2DiscreteWord5.bitValue(13);
     const allGroundSpoilersInop =
       (sec1GroundSpoilerFault || sec1SpeedbrakeLeverFault) &&
       (sec2GroundSpoilerFault || sec2SpeedbrakeLeverFault) &&
       (sec3GroundSpoilerFault || sec3SpeedbrakeLeverFault);
 
-    this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
-    this.speedBrakeCommand.set(
-      fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false),
-    );
+    this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
+    this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
@@ -1848,8 +1843,7 @@ export class PseudoFWC {
       (this.toConfigTestHeldMin1s5Pulse.get() && this.slatsNotTo.get()) || this.slatConfigSr.read(),
     );
 
-    const speedbrakesNotInToPos =
-      fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false);
+    const speedbrakesNotInToPos = fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false);
     this.speedbrakesConfigSr.write(
       this.flightPhase34.get() && speedbrakesNotInToPos,
       !speedbrakesNotInToPos || this.fwcFlightPhase.get() === 5,
@@ -2004,7 +1998,7 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    const speedBrakeDoNotUse = fcdc1DiscreteWord5.getBitValue(27) || fcdc2DiscreteWord5.getBitValue(27);
+    const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
@@ -2023,11 +2017,11 @@ export class PseudoFWC {
       (this.lgciu2DiscreteWord1.bitValueOr(29, false) && mainGearDownlocked);
     this.phase84s5Trigger.write(this.fwcFlightPhase.get() === 8, deltaTime);
     this.groundSpoiler5sDelayed.write(
-      fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false),
+      fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false),
       deltaTime,
     );
     this.speedBrake5sDelayed.write(
-      fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false),
+      fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false),
       deltaTime,
     );
 
@@ -2084,7 +2078,7 @@ export class PseudoFWC {
     this.lgLeverRedArrow.set(redArrow);
 
     // 32 - Surveillance Logic
-    const isNormalLaw = fcdc1DiscreteWord1.getBitValue(11) || fcdc2DiscreteWord1.getBitValue(11);
+    const isNormalLaw = fcdc1DiscreteWord1.bitValue(11) || fcdc2DiscreteWord1.bitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
       this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.valueOr(0) > 60 || this.adr3Cas.valueOr(0) > 60;
@@ -2503,21 +2497,21 @@ export class PseudoFWC {
     const w = Arinc429Word.fromSimVarValue('L:A32NX_ROW_ROP_WORD_1');
 
     // ROW
-    SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_RWY_TOO_SHORT', 'bool', w.getBitValueOr(15, false));
+    SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_RWY_TOO_SHORT', 'bool', w.bitValueOr(15, false));
 
     // ROP
     // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
     const maxBrakingSet =
       SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 ||
       SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
-    const maxBraking = w.getBitValueOr(13, false) && !maxBrakingSet;
+    const maxBraking = w.bitValueOr(13, false) && !maxBrakingSet;
     SimVar.SetSimVarValue('L:A32NX_AUDIO_ROP_MAX_BRAKING', 'bool', maxBraking);
 
     // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
     const maxReverseSet =
       SimVar.GetSimVarValue('L:XMLVAR_Throttle1Position', 'number') < 0.1 &&
       SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1;
-    const maxReverse = (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)) && !maxReverseSet;
+    const maxReverse = (w.bitValueOr(12, false) || w.bitValueOr(13, false)) && !maxReverseSet;
     SimVar.SetSimVarValue('L:A32NX_AUDIO_ROW_SET_MAX_REVERSE', 'bool', !maxBraking && maxReverse);
 
     // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
@@ -2525,7 +2519,7 @@ export class PseudoFWC {
     SimVar.SetSimVarValue(
       'L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE',
       'bool',
-      ias <= 80 && ias > 4 && (w.getBitValueOr(12, false) || w.getBitValueOr(13, false)),
+      ias <= 80 && ias > 4 && (w.bitValueOr(12, false) || w.bitValueOr(13, false)),
     );
   }
 

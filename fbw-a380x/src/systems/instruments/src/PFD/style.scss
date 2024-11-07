@@ -156,6 +156,9 @@ tspan.Magenta {
   fill: $display-magenta;
   stroke: none;
 }
+.Fill.Magenta {
+  fill: $display-magenta;
+}
 
 .Cyan {
   fill: none;
@@ -197,6 +200,27 @@ text.White {
 }
 tspan.White {
   fill: $display-white;
+  stroke: none;
+}
+
+.Black {
+  fill: none;
+  stroke: $display-background;
+}
+.Black.Fill {
+  fill: $display-background;
+  stroke: none;
+}
+.Black.Fill.Stroke {
+  fill: $display-background;
+  stroke: $display-background;
+}
+text.Black {
+  fill: $display-background;
+  stroke: none;
+}
+tspan.Black {
+  fill: $display-background;
   stroke: none;
 }
 

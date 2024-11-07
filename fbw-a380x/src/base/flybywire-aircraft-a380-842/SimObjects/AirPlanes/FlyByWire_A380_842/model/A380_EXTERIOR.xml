@@ -12,9 +12,11 @@
         <Include ModelBehaviorFile="A32NX\Exterior\A32NX_Exterior_Includes.xml" />
         <Include ModelBehaviorFile="Asobo\Common.xml" />
         <Include ModelBehaviorFile="Asobo\Exterior.xml" />
+        <Include ModelBehaviorFile="Asobo\Generic\Interactions.xml" />
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml" />
         <Include Path="A32NX\generated\A32NX_Exterior.xml" />
         <Include RelativeFile="behaviour\engines.xml" />
+        <Include RelativeFile="behaviour\door_animations.xml" />
 
         <Component ID="GEARS">
             <!-- Nose Landing Gear -->
@@ -116,14 +118,14 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>left_bws</NODE_ID>
                 <ANIM_NAME>left_bws</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
             <!-- rear right Steering -->
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>right_bws</NODE_ID>
                 <ANIM_NAME>right_bws</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
 
@@ -221,11 +223,6 @@
                 <ANIM_CODE>(L:A32NX_AFT_DOOR_CARGO_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
-            <!-- PAX DOORS -->
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>0</ID>
-                <ANIM_NAME>door_passenger</ANIM_NAME>
-            </UseTemplate>
         </Component>
 
         <Template Name="FBW_Control_Surface_Template">
@@ -256,10 +253,14 @@
                 <ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
-                <TRIM_ONLY>True</TRIM_ONLY>
-                <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
-            </UseTemplate>
+
+            <!-- THS -->
+            <Component ID="THS">
+                <UseTemplate Name="FBW_Control_Surface_Template">
+                    <ANIM_NAME>trimtab_elevator_key</ANIM_NAME>
+                    <DEFLECTION_CODE>(A:ELEVATOR TRIM PCT, percent over 100) -1 *</DEFLECTION_CODE>
+                </UseTemplate>
+            </Component>
 
             <!-- Ailerons left -->
             <Component ID="AILERONS_LEFT">
@@ -470,104 +471,8 @@
             </UseTemplate>
         </Component>
 
-        <!-- PAX DOOR M1L -->
-
-        <Component ID="ANIM_DOOR_M1L" Node="ANIM_DOOR_M1L_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M1L</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M1L) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M2L -->
-
-        <Component ID="ANIM_DOOR_M2L" Node="ANIM_DOOR_M2L_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M2L</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M2L) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M3L -->
-
-        <Component ID="ANIM_DOOR_M3L" Node="ANIM_DOOR_M3L_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M3L</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M3L) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M4L -->
-
-        <Component ID="ANIM_DOOR_M4L" Node="ANIM_DOOR_M4L_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M4L</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M4L) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M5L -->
-
-        <Component ID="ANIM_DOOR_M5L" Node="ANIM_DOOR_M5L_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M5L</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M5L) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M1R -->
-
-        <Component ID="ANIM_DOOR_M1R" Node="ANIM_DOOR_M1R_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M1R</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M1R) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M2R -->
-
-        <Component ID="ANIM_DOOR_M2R" Node="ANIM_DOOR_M2R_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M2R</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M2R) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M3R -->
-
-        <Component ID="ANIM_DOOR_M3R" Node="ANIM_DOOR_M3R_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M3R</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M3R) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M4R -->
-
-        <Component ID="ANIM_DOOR_M4R" Node="ANIM_DOOR_M4R_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M4R</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M4R) 100 *</ANIM_CODE>
-			</UseTemplate>
-        </Component>
-
-        <!-- PAX DOOR M5R -->
-
-        <Component ID="ANIM_DOOR_M5R" Node="ANIM_DOOR_M5R_CLICK">
-            <UseTemplate Name = "ASOBO_GT_Anim_Code">
-                <ANIM_NAME>ANIM_DOOR_M5R</ANIM_NAME>
-                <ANIM_LAG>20</ANIM_LAG>
-                <ANIM_CODE>(L:ANIM_DOOR_M5R) 100 *</ANIM_CODE>
-			</UseTemplate>
+        <Component ID="DOOR_ANIMATIONS_EXTERIOR">
+            <UseTemplate Name="FBW_A380X_Components_DoorAnimations" />
         </Component>
 
         <Component ID="Wingflex_Inboard_Left">

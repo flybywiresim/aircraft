@@ -2,6 +2,7 @@
 
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
+#include "FuelSystemData.h"
 
 struct SimData {
   double nz_g;
@@ -64,8 +65,12 @@ struct SimData {
   double longitude_deg;
   double throttle_lever_1_pos;
   double throttle_lever_2_pos;
+  double throttle_lever_3_pos;
+  double throttle_lever_4_pos;
   double engine_1_thrust_lbf;
   double engine_2_thrust_lbf;
+  double engine_3_thrust_lbf;
+  double engine_4_thrust_lbf;
   unsigned long long nav_valid;
   double nav_loc_deg;
   double nav_gs_deg;
@@ -102,24 +107,9 @@ struct SimData {
   unsigned long long speed_slot_index;
   unsigned long long engineAntiIce_1;
   unsigned long long engineAntiIce_2;
+  unsigned long long engineAntiIce_3;
+  unsigned long long engineAntiIce_4;
   unsigned long long simOnGround;
-  double generalEngineElapsedTime_1;
-  double generalEngineElapsedTime_2;
-  double standardAtmTemperature;
-  double turbineEngineCorrectedFuelFlow_1;
-  double turbineEngineCorrectedFuelFlow_2;
-  double fuelTankCapacityAuxLeft;
-  double fuelTankCapacityAuxRight;
-  double fuelTankCapacityMainLeft;
-  double fuelTankCapacityMainRight;
-  double fuelTankCapacityCenter;
-  double fuelTankQuantityAuxLeft;
-  double fuelTankQuantityAuxRight;
-  double fuelTankQuantityMainLeft;
-  double fuelTankQuantityMainRight;
-  double fuelTankQuantityCenter;
-  double fuelTankQuantityTotal;
-  double fuelWeightPerGallon;
   double kohlsmanSetting_0;
   double kohlsmanSetting_1;
   unsigned long long kohlsmanSettingStd_3;
@@ -140,6 +130,11 @@ struct SimData {
   double wheelRpmRightBlg;
   double wheelRpmLeftWlg;
   double wheelRpmRightWlg;
+  double contact_point_compression_0;
+  double contact_point_compression_1;
+  double contact_point_compression_2;
+  double contact_point_compression_3;
+  double contact_point_compression_4;
 };
 
 struct SimInput {
@@ -276,6 +271,15 @@ struct ClientDataAutothrust {
   double status;
   double mode;
   double mode_message;
+};
+
+struct ClientDataAutothrustA380 {
+  double N1_TLA_3_percent;
+  double N1_TLA_4_percent;
+  double is_in_reverse_3;
+  double is_in_reverse_4;
+  double N1_c_3_percent;
+  double N1_c_4_percent;
 };
 
 struct ClientDataFlyByWireInput {

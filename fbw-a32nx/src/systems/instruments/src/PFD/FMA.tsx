@@ -1431,16 +1431,16 @@ const getBC3Message = (
   let className: string;
   // All currently unused message are set to false
   if (
-    !fcdcWord1.getBitValue(11) &&
-    !fcdcWord1.getBitValue(12) &&
-    !fcdcWord1.getBitValue(13) &&
-    !fcdcWord1.getBitValue(15) &&
+    !fcdcWord1.bitValue(11) &&
+    !fcdcWord1.bitValue(12) &&
+    !fcdcWord1.bitValue(13) &&
+    !fcdcWord1.bitValue(15) &&
     !fcdcWord1.isFailureWarning() &&
     flightPhaseForWarning
   ) {
     text = 'MAN PITCH TRIM ONLY';
     className = 'FontSmall Red Blink9Seconds';
-  } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
+  } else if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     text = 'USE MAN PITCH TRIM';
     className = 'FontSmall PulseAmber9Seconds Amber';
   } else if (false) {

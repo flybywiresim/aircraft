@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PitchNormalLaw_h_
-#define RTW_HEADER_A380PitchNormalLaw_h_
+#ifndef A380PitchNormalLaw_h_
+#define A380PitchNormalLaw_h_
 #include "rtwtypes.h"
 #include "A380PitchNormalLaw_types.h"
 #include <cstring>
@@ -131,7 +131,7 @@ class A380PitchNormalLaw final
     real_T ScheduledGain_BreakpointsForDimension1_f[4];
     real_T ScheduledGain_BreakpointsForDimension1_b[4];
     real_T ScheduledGain1_BreakpointsForDimension1[5];
-    real_T ScheduledGain_BreakpointsForDimension1_d[5];
+    real_T ScheduledGain_BreakpointsForDimension1_d[6];
     real_T ScheduledGain1_BreakpointsForDimension1_h[5];
     real_T LagFilter_C1;
     real_T WashoutFilter_C1;
@@ -218,7 +218,7 @@ class A380PitchNormalLaw final
     real_T ScheduledGain_Table_h[4];
     real_T ScheduledGain_Table_e[4];
     real_T ScheduledGain1_Table[5];
-    real_T ScheduledGain_Table_hh[5];
+    real_T ScheduledGain_Table_hh[6];
     real_T ScheduledGain1_Table_c[5];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_p;

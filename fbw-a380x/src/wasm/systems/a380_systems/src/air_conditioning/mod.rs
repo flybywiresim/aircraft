@@ -1,3 +1,4 @@
+use cpiom_b::CpiomBInterfaceUnit;
 use systems::{
     accept_iterable,
     air_conditioning::{
@@ -5,11 +6,13 @@ use systems::{
         cabin_air::CabinAirSimulation,
         pressure_valve::{NegativeRelieveValveSignal, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
-        AirHeater, CabinFan, DuctTemperature, MixerUnit, OutletAir, OverheadFlowSelector, PackFlow,
-        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        VcmShared, ZoneType,
+        AirHeater, CabinFan, DuctTemperature, FdacId, MixerUnit, OcsmId, OutletAir,
+        OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
+        PressurizationOverheadShared, TrimAirSystem, VcmId, VcmShared, ZoneType,
     },
-    integrated_modular_avionics::AvionicsDataCommunicationNetwork,
+    integrated_modular_avionics::{
+        core_processing_input_output_module::CpiomId, AvionicsDataCommunicationNetwork,
+    },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         ValueKnob,
@@ -44,7 +47,7 @@ use self::{
         full_digital_agu_controller::FullDigitalAGUController,
         outflow_valve_control_module::{OcsmShared, OutflowValveControlModule},
         trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
-        ventilation_control_module::{VcmId, VentilationControlModule},
+        ventilation_control_module::VentilationControlModule,
     },
 };
 
@@ -56,7 +59,8 @@ pub(super) struct A380AirConditioning {
     a380_air_conditioning_system: A380AirConditioningSystem,
     a380_pressurization_system: A380PressurizationSystem,
 
-    cpiom_b: CoreProcessingInputOutputModuleB,
+    cpiom_b: [CoreProcessingInputOutputModuleB; 4],
+    cpiom_b_interface: [CpiomBInterfaceUnit; 4],
 
     pressurization_updater: MaxStepLoop,
 }
@@ -86,12 +90,17 @@ impl A380AirConditioning {
             ZoneType::Cargo(2),  // CARGO_BULK
         ];
 
+        let cpiom_b_id = [CpiomId::B1, CpiomId::B2, CpiomId::B3, CpiomId::B4];
+
         Self {
             a380_cabin: A380Cabin::new(context, &cabin_zones),
             a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
             a380_pressurization_system: A380PressurizationSystem::new(context),
 
-            cpiom_b: CoreProcessingInputOutputModuleB::new(context, &cabin_zones),
+            cpiom_b: cpiom_b_id
+                .map(|cpiom| CoreProcessingInputOutputModuleB::new(context, cpiom, &cabin_zones)),
+
+            cpiom_b_interface: cpiom_b_id.map(|cpiom| CpiomBInterfaceUnit::new(context, cpiom)),
 
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
         }
@@ -116,21 +125,28 @@ impl A380AirConditioning {
     ) {
         self.pressurization_updater.update(context);
 
-        let cpiom = ["B1", "B2", "B3", "B4"].map(|name| cpiom_b.get_cpiom(name));
+        self.cpiom_b.iter_mut().for_each(|cpiom| {
+            cpiom.update(
+                context,
+                adirs,
+                self.a380_air_conditioning_system
+                    .air_conditioning_overhead(),
+                &self.a380_cabin,
+                cargo_door_open,
+                cpiom_b,
+                &engines,
+                lgciu,
+                pneumatic,
+                &self.a380_air_conditioning_system,
+            )
+        });
 
-        self.cpiom_b.update(
-            context,
-            adirs,
-            self.a380_air_conditioning_system
-                .air_conditioning_overhead(),
-            &self.a380_cabin,
-            cargo_door_open,
-            cpiom,
-            &engines,
-            lgciu,
-            pneumatic,
-            &self.a380_air_conditioning_system,
-        );
+        self.cpiom_b_interface
+            .iter_mut()
+            .zip(&self.cpiom_b)
+            .for_each(|(interface, cpiom)| {
+                interface.update(cpiom, &self.a380_air_conditioning_system)
+            });
 
         self.a380_air_conditioning_system.update(
             context,
@@ -157,15 +173,17 @@ impl A380AirConditioning {
                 number_of_passengers,
                 &self.a380_pressurization_system,
             );
-            self.cpiom_b.update_cpcs(
-                &context.with_delta(cur_time_step),
-                adirs,
-                &engines,
-                lgciu,
-                self.a380_pressurization_system
-                    .outflow_valve_control_module(),
-                pressurization_overhead,
-            );
+            self.cpiom_b.iter_mut().for_each(|cpiom| {
+                cpiom.update_cpcs(
+                    &context.with_delta(cur_time_step),
+                    adirs,
+                    &engines,
+                    lgciu,
+                    self.a380_pressurization_system
+                        .outflow_valve_control_module(),
+                    pressurization_overhead,
+                )
+            });
             self.a380_pressurization_system.update(
                 &context.with_delta(cur_time_step),
                 &self.cpiom_b,
@@ -189,7 +207,9 @@ impl A380AirConditioning {
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
     ) {
-        self.cpiom_b.update_cpcs_ambient_conditions(context, adirs);
+        self.cpiom_b
+            .iter_mut()
+            .for_each(|cpiom| cpiom.update_cpcs_ambient_conditions(context, adirs));
     }
 
     pub(crate) fn fcv_to_pack_id(fcv_id: usize) -> usize {
@@ -216,7 +236,8 @@ impl SimulationElement for A380AirConditioning {
         self.a380_cabin.accept(visitor);
         self.a380_air_conditioning_system.accept(visitor);
         self.a380_pressurization_system.accept(visitor);
-        self.cpiom_b.accept(visitor);
+        accept_iterable!(self.cpiom_b, visitor);
+        accept_iterable!(self.cpiom_b_interface, visitor);
 
         visitor.visit(self);
     }
@@ -370,14 +391,16 @@ impl A380AirConditioningSystem {
         Self {
             fdac: [
                 FullDigitalAGUController::new(
-                    1,
+                    context,
+                    FdacId::One,
                     [
                         ElectricalBusType::AlternatingCurrentEssential, // 403XP
                         ElectricalBusType::AlternatingCurrent(2),       // 117XP
                     ],
                 ),
                 FullDigitalAGUController::new(
-                    2,
+                    context,
+                    FdacId::Two,
                     [
                         ElectricalBusType::AlternatingCurrentEssential, // 403XP
                         ElectricalBusType::AlternatingCurrent(4),       // 204XP
@@ -446,7 +469,7 @@ impl A380AirConditioningSystem {
         &mut self,
         context: &UpdateContext,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
@@ -477,14 +500,13 @@ impl A380AirConditioningSystem {
 
         self.update_cargo_heater(cabin_simulation, cpiom_b);
 
-        self.air_conditioning_overhead
-            .set_pack_pushbutton_fault(self.pack_fault_determination());
+        self.update_overhead();
     }
 
     fn update_local_controllers(
         &mut self,
         context: &UpdateContext,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
@@ -493,27 +515,46 @@ impl A380AirConditioningSystem {
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
     ) {
-        self.fdac.iter_mut().for_each(|controller| {
-            controller.update(
-                context,
-                &self.air_conditioning_overhead,
-                number_of_open_doors > 0,
-                engine_fire_push_buttons,
-                engines,
-                cpiom_b,
-                pneumatic,
-                pneumatic_overhead,
-                pressurization_overhead,
-            )
-        });
+        // CPIOM B1 and B3 calculate the LH AGU Flow Demand
+        // CPIOM B2 and B4 calculate the RH AGU Flow Demand
+        self.fdac
+            .iter_mut()
+            .enumerate()
+            .for_each(|(id, controller)| {
+                controller.update(
+                    context,
+                    &self.air_conditioning_overhead,
+                    number_of_open_doors > 0,
+                    engine_fire_push_buttons,
+                    engines,
+                    if !cpiom_b[id].ags_has_fault() {
+                        &cpiom_b[id]
+                    } else {
+                        &cpiom_b[id + 2]
+                    },
+                    pneumatic,
+                    pneumatic_overhead,
+                    pressurization_overhead,
+                );
+            });
+
+        let cpiom_to_use = if !cpiom_b[0].tcs_has_fault() {
+            &cpiom_b[0]
+        } else if !cpiom_b[1].tcs_has_fault() {
+            &cpiom_b[1]
+        } else if !cpiom_b[2].tcs_has_fault() {
+            &cpiom_b[2]
+        } else {
+            &cpiom_b[3]
+        };
 
         self.tadd.update(
             context,
             &self.air_conditioning_overhead,
-            cpiom_b,
+            cpiom_to_use,
             &self.trim_air_system,
             pneumatic,
-            cpiom_b.should_close_taprv(),
+            cpiom_to_use.should_close_taprv(),
             &self.trim_air_system,
         );
 
@@ -529,20 +570,21 @@ impl A380AirConditioningSystem {
     fn update_packs(
         &mut self,
         context: &UpdateContext,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
     ) {
-        for (pack, pack_flow) in self
+        for (id, (pack, pack_flow)) in self
             .packs
             .iter_mut()
             .zip(self.fdac.iter().map(|fdac| fdac.pack_flow()))
+            .enumerate()
         {
+            let duct_demand = if !cpiom_b[id].tcs_has_fault() {
+                cpiom_b[id].duct_demand_temperature()
+            } else {
+                cpiom_b[id + 2].duct_demand_temperature()
+            };
             // TODO: Failures
-            pack.update(
-                context,
-                pack_flow,
-                &cpiom_b.duct_demand_temperature(),
-                false,
-            )
+            pack.update(context, pack_flow, &duct_demand, false)
         }
     }
 
@@ -569,14 +611,32 @@ impl A380AirConditioningSystem {
     fn update_cargo_heater(
         &mut self,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
     ) {
         // For the bulk cargo, air flows from the LD and is warmed up by an electric heater
+        // The heater is controlled by CPIOM B1 and B3
         self.cargo_air_heater.update(
             cabin_simulation,
             &self.trim_air_system,
-            cpiom_b.bulk_heater_on_signal(),
+            if !cpiom_b[0].vcs_has_fault() {
+                cpiom_b[0].bulk_heater_on_signal()
+            } else {
+                cpiom_b[2].bulk_heater_on_signal()
+            },
         );
+    }
+
+    fn update_overhead(&mut self) {
+        self.air_conditioning_overhead
+            .set_pack_pushbutton_fault(self.pack_fault_determination());
+
+        self.air_conditioning_overhead.set_isol_valves_fault([
+            self.vcm[0].fwd_isolation_valve_has_failed(),
+            self.vcm[1].bulk_isolation_valve_has_failed(),
+        ]);
+
+        self.air_conditioning_overhead
+            .set_cargo_heater_fault(self.vcm[1].cargo_heater_has_failed());
     }
 
     fn pack_fault_determination(&self) -> [bool; 2] {
@@ -589,29 +649,38 @@ impl A380AirConditioningSystem {
     fn update_fans(
         &mut self,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
     ) {
         // The VCM FWD controls all LH recirculation fans and the VCM AFT controls all RH recirculation.
         // The signal to update the fans comes from the CPIOM when the selector is in AUTO and from the VCM in the other positions
+        // The signal for the LH fans coms from CPIOM B1 and 3, and RH from B2 and 4
         for (id, fan) in self.cabin_fans.iter_mut().enumerate() {
-            if cpiom_b.hp_recirculation_fans_signal().signal().is_some() {
-                fan.update(cabin_simulation, cpiom_b.hp_recirculation_fans_signal());
-            } else if id < 2 {
-                fan.update(
+            if id < 2 {
+                if cpiom_b[0].hp_recirculation_fans_signal().signal().is_some() {
+                    fan.update(cabin_simulation, cpiom_b[0].hp_recirculation_fans_signal());
+                } else if cpiom_b[2].hp_recirculation_fans_signal().signal().is_some() {
+                    fan.update(cabin_simulation, cpiom_b[2].hp_recirculation_fans_signal());
+                } else {
+                    fan.update(
                         cabin_simulation,
                         self.vcm
                             .iter()
                             .find(|module| matches!(module.id(), VcmId::Fwd))
                             .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
                     )
+                }
+            } else if cpiom_b[1].hp_recirculation_fans_signal().signal().is_some() {
+                fan.update(cabin_simulation, cpiom_b[1].hp_recirculation_fans_signal());
+            } else if cpiom_b[3].hp_recirculation_fans_signal().signal().is_some() {
+                fan.update(cabin_simulation, cpiom_b[3].hp_recirculation_fans_signal());
             } else {
                 fan.update(
-                        cabin_simulation,
-                        self.vcm
-                            .iter()
-                            .find(|module| matches!(module.id(), VcmId::Aft))
-                            .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
-                    )
+                     cabin_simulation,
+                     self.vcm
+                         .iter()
+                         .find(|module| matches!(module.id(), VcmId::Aft))
+                         .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
+                 )
             }
         }
     }
@@ -622,6 +691,26 @@ impl A380AirConditioningSystem {
 
     fn air_conditioning_overhead(&self) -> &A380AirConditioningSystemOverhead {
         &self.air_conditioning_overhead
+    }
+
+    fn cabin_fan_has_failed(&self, fan_id: usize) -> bool {
+        self.cabin_fans[fan_id - 1].has_fault()
+    }
+
+    fn cargo_heater_has_failed(&self) -> bool {
+        self.vcm[1].cargo_heater_has_failed()
+    }
+
+    fn hot_air_valve_disagrees(&self, hot_air_id: usize) -> bool {
+        self.tadd.taprv_disagree_status_monitor(hot_air_id)
+    }
+
+    fn fwd_isol_valve_has_fault(&self) -> bool {
+        self.vcm[0].fwd_isolation_valve_has_failed()
+    }
+
+    fn bulk_isol_valve_has_fault(&self) -> bool {
+        self.vcm[1].bulk_isolation_valve_has_failed()
     }
 }
 
@@ -773,6 +862,17 @@ impl A380AirConditioningSystemOverhead {
             .enumerate()
             .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
     }
+
+    fn set_isol_valves_fault(&mut self, isol_valves_fault: [bool; 2]) {
+        self.isol_valves_pbs
+            .iter_mut()
+            .zip(isol_valves_fault)
+            .for_each(|(pushbutton, fault)| pushbutton.set_fault(fault));
+    }
+
+    fn set_cargo_heater_fault(&mut self, cargo_heater_fault: bool) {
+        self.cargo_heater_pb.set_fault(cargo_heater_fault);
+    }
 }
 
 impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
@@ -876,7 +976,7 @@ impl A380PressurizationSystem {
             ocsm: [
                 OutflowValveControlModule::new(
                     context,
-                    1,
+                    OcsmId::One,
                     [
                         ElectricalBusType::DirectCurrent(1),       // 107PP
                         ElectricalBusType::DirectCurrentEssential, // 417PP
@@ -884,7 +984,7 @@ impl A380PressurizationSystem {
                 ),
                 OutflowValveControlModule::new(
                     context,
-                    2,
+                    OcsmId::Two,
                     [
                         ElectricalBusType::DirectCurrent(1),       // 107PP
                         ElectricalBusType::DirectCurrentEssential, // 417PP
@@ -892,7 +992,7 @@ impl A380PressurizationSystem {
                 ),
                 OutflowValveControlModule::new(
                     context,
-                    3,
+                    OcsmId::Three,
                     [
                         ElectricalBusType::DirectCurrent(2),       // 210PP
                         ElectricalBusType::DirectCurrentEssential, // 411PP
@@ -900,7 +1000,7 @@ impl A380PressurizationSystem {
                 ),
                 OutflowValveControlModule::new(
                     context,
-                    4,
+                    OcsmId::Four,
                     [
                         ElectricalBusType::DirectCurrent(2),       // 210PP
                         ElectricalBusType::DirectCurrentEssential, // 411PP
@@ -918,17 +1018,35 @@ impl A380PressurizationSystem {
     fn update(
         &mut self,
         context: &UpdateContext,
-        cpiom_b: &CoreProcessingInputOutputModuleB,
+        cpiom_b: &[CoreProcessingInputOutputModuleB; 4],
         adirs: &impl AdirsToAirCondInterface,
         press_overhead: &A380PressurizationOverheadPanel,
         cabin_simulation: &impl CabinSimulation,
     ) {
-        for controller in self.ocsm.iter_mut() {
+        let at_least_three_cpiom_failed =
+            cpiom_b.iter().filter(|cpcs| cpcs.cpcs_has_fault()).count() > 2;
+        // The OCSMs can cross-communicate via an RS-422 bus (here we just use data)
+        // This takes the first non-None auto vertical speed target (coming from a CPIOM B)
+        let first_not_failed_auto_vs = self.ocsm[0]
+            .auto_cabin_vertical_speed_demand()
+            .or(self.ocsm[1].auto_cabin_vertical_speed_demand())
+            .or(self.ocsm[2].auto_cabin_vertical_speed_demand())
+            .or(self.ocsm[3].auto_cabin_vertical_speed_demand());
+
+        let index_first_not_failed_ocsm = self
+            .ocsm
+            .iter()
+            .position(|controller| !controller.has_failed());
+
+        for (controller, cpiom_id) in self.ocsm.iter_mut().zip([2, 0, 3, 1].iter()) {
             controller.update(
                 context,
                 adirs,
                 cabin_simulation,
-                cpiom_b,
+                &cpiom_b[*cpiom_id as usize],
+                at_least_three_cpiom_failed,
+                index_first_not_failed_ocsm,
+                first_not_failed_auto_vs,
                 press_overhead,
                 self.negative_relief_valves.open_amount(),
             );
@@ -994,7 +1112,7 @@ impl PressurizationConstants for A380PressurizationConstants {
 
     const MAX_CLIMB_RATE: f64 = 1000.; // fpm
     const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
-    const MAX_DESCENT_RATE: f64 = -300.; // fpm
+    const MAX_DESCENT_RATE: f64 = -350.; // fpm
     const MAX_ABORT_DESCENT_RATE: f64 = -500.; //fpm
     const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
     const MAX_CLIMB_DELTA_P: f64 = 8.6; // PSI
@@ -1076,8 +1194,9 @@ mod tests {
     use fxhash::FxHashMap;
     use ntest::assert_about_eq;
     use systems::{
-        air_conditioning::PackFlow,
+        air_conditioning::{Channel, PackFlow},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        failures::FailureType,
         integrated_modular_avionics::{
             avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
             core_processing_input_output_module::CoreProcessingInputOutputModule,
@@ -1099,6 +1218,7 @@ mod tests {
             UpdateContext,
         },
     };
+
     use uom::si::{
         length::{foot, meter},
         mass_rate::kilogram_per_second,
@@ -2120,7 +2240,7 @@ mod tests {
         }
 
         fn memorize_outflow_valve_open_amount(mut self) -> Self {
-            self.stored_ofv_open_amount = Some(self.outflow_valve_open_amount());
+            self.stored_ofv_open_amount = Some(self.outflow_valve_open_amount(1));
             self
         }
 
@@ -2527,12 +2647,37 @@ mod tests {
             self
         }
 
+        fn command_ags_failure(mut self, cpiom_id: CpiomId) -> Self {
+            self.fail(FailureType::AgsApp(cpiom_id));
+            self
+        }
+
+        fn command_vcs_failure(mut self, cpiom_id: CpiomId) -> Self {
+            self.fail(FailureType::VcsApp(cpiom_id));
+            self
+        }
+
+        fn command_ocsm_auto_failure(mut self, ocsm_id: OcsmId) -> Self {
+            self.fail(FailureType::OcsmAutoPartition(ocsm_id));
+            self
+        }
+
+        fn command_ocsm_failure(mut self, ocsm_id: OcsmId, channel: Channel) -> Self {
+            self.fail(FailureType::Ocsm(ocsm_id, channel));
+            self
+        }
+
+        fn command_cpcs_failure(mut self, cpiom_id: CpiomId) -> Self {
+            self.fail(FailureType::CpcsApp(cpiom_id));
+            self
+        }
+
         fn initial_outflow_valve_open_amount(&self) -> Ratio {
             self.stored_ofv_open_amount.unwrap()
         }
 
         fn cabin_altitude(&self) -> Length {
-            self.query(|a| a.a380_cabin_air.cpiom_b.cabin_altitude())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].cabin_altitude())
         }
 
         fn cabin_pressure(&self) -> Pressure {
@@ -2554,7 +2699,7 @@ mod tests {
         }
 
         fn cabin_vs(&self) -> Velocity {
-            self.query(|a| a.a380_cabin_air.cpiom_b.cabin_vertical_speed())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].cabin_vertical_speed())
         }
 
         fn cabin_delta_p(&self) -> Pressure {
@@ -2563,9 +2708,10 @@ mod tests {
             })
         }
 
-        fn outflow_valve_open_amount(&self) -> Ratio {
+        fn outflow_valve_open_amount(&self, ofv: usize) -> Ratio {
             self.query(|a| {
-                a.a380_cabin_air.a380_pressurization_system.ocsm[0].outflow_valve_open_amount()
+                a.a380_cabin_air.a380_pressurization_system.ocsm[ofv - 1]
+                    .outflow_valve_open_amount()
             })
         }
 
@@ -2599,7 +2745,7 @@ mod tests {
         }
 
         fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
-            self.query(|a| a.a380_cabin_air.cpiom_b.duct_demand_temperature())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].duct_demand_temperature())
         }
 
         fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
@@ -2655,15 +2801,19 @@ mod tests {
         }
 
         fn cabin_target_altitude(&mut self) -> Length {
-            self.read_by_name("PRESS_CABIN_ALTITUDE_TARGET")
+            self.read_arinc429_by_name("PRESS_CABIN_ALTITUDE_TARGET_B1")
+                .value()
         }
 
         fn cabin_target_vertical_speed(&mut self) -> Velocity {
-            Velocity::new::<foot_per_minute>(self.read_by_name("PRESS_CABIN_VS_TARGET"))
+            Velocity::new::<foot_per_minute>(
+                self.read_arinc429_by_name("PRESS_CABIN_VS_TARGET_B1")
+                    .value(),
+            )
         }
 
         fn reference_pressure(&self) -> Pressure {
-            self.query(|a| a.a380_cabin_air.cpiom_b.reference_pressure())
+            self.query(|a| a.a380_cabin_air.cpiom_b[0].reference_pressure())
         }
 
         fn pack_1_has_fault(&mut self) -> bool {
@@ -2891,15 +3041,15 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(99.));
 
             test_bed = test_bed.iterate(10);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) > Ratio::new::<percent>(99.));
 
             test_bed = test_bed.iterate(11);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) > Ratio::new::<percent>(99.));
         }
 
         #[test]
@@ -2910,18 +3060,18 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(99.));
 
             test_bed = test_bed.iterate(10);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) > Ratio::new::<percent>(99.));
 
             test_bed.command_on_ground(false);
             test_bed = test_bed
                 .indicated_airspeed_of(Velocity::new::<knot>(101.))
                 .iterate(5);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(99.));
 
             test_bed = test_bed
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2929,22 +3079,22 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(99.));
 
             test_bed = test_bed.iterate(61);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) > Ratio::new::<percent>(99.));
         }
 
         #[test]
         fn outflow_valve_closes_when_ditching_pb_is_on() {
             let mut test_bed = test_bed().iterate(50);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(1.));
+            assert!(test_bed.outflow_valve_open_amount(1) > Ratio::new::<percent>(1.));
 
             test_bed = test_bed.command_ditching_pb_on().iterate(10);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(1.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(1.));
         }
 
         #[test]
@@ -2955,12 +3105,12 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(99.));
 
             test_bed = test_bed.command_ditching_pb_on().iterate(5);
 
-            assert!(test_bed.outflow_valve_open_amount() <= Ratio::new::<percent>(99.));
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(1.));
+            assert!(test_bed.outflow_valve_open_amount(1) <= Ratio::new::<percent>(99.));
+            assert!(test_bed.outflow_valve_open_amount(1) < Ratio::new::<percent>(1.));
         }
 
         #[test]
@@ -2991,7 +3141,7 @@ mod tests {
 
             assert!(
                 (test_bed.cabin_target_altitude() - Length::new::<foot>(5000.)).abs()
-                    < Length::new::<foot>(5.)
+                    < Length::new::<foot>(10.)
             );
         }
 
@@ -3138,14 +3288,14 @@ mod tests {
             let mut test_bed = test_bed().set_on_ground().iterate(10);
 
             assert_eq!(
-                test_bed.outflow_valve_open_amount(),
+                test_bed.outflow_valve_open_amount(1),
                 Ratio::new::<percent>(100.)
             );
 
             test_bed = test_bed.iterate(10);
 
             assert_eq!(
-                test_bed.outflow_valve_open_amount(),
+                test_bed.outflow_valve_open_amount(1),
                 Ratio::new::<percent>(100.)
             );
         }
@@ -3291,7 +3441,8 @@ mod tests {
                 .iterate(100);
 
             assert!(
-                test_bed.initial_outflow_valve_open_amount() > test_bed.outflow_valve_open_amount()
+                test_bed.initial_outflow_valve_open_amount()
+                    > test_bed.outflow_valve_open_amount(1)
             );
         }
 
@@ -3525,7 +3676,7 @@ mod tests {
             test_bed = test_bed.command_air_extract_pb_on_normal(true).iterate(100);
 
             assert!(test_bed.cabin_altitude() > Length::new::<foot>(22000.));
-            assert_eq!(test_bed.outflow_valve_open_amount(), Ratio::default());
+            assert_eq!(test_bed.outflow_valve_open_amount(1), Ratio::default());
         }
 
         mod cabin_pressure_controller_tests {
@@ -4052,7 +4203,7 @@ mod tests {
             }
 
             #[test]
-            fn pack_flow_valve_is_unresponsive_when_fdac_unpowered() {
+            fn pack_flow_valve_closes_when_fdac_unpowered() {
                 let mut test_bed = test_bed()
                     .with()
                     .command_packs_on_off(true)
@@ -4066,10 +4217,9 @@ mod tests {
                     .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
                     .unpowered_ac_4_bus()
-                    .command_ditching_pb_on()
                     .iterate(4);
 
-                assert!(test_bed.pack_flow() > MassRate::default());
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
             }
 
             #[test]
@@ -4086,20 +4236,19 @@ mod tests {
                 test_bed = test_bed
                     .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
-                    .command_ditching_pb_on()
                     .iterate(4);
 
                 assert!(test_bed.pack_flow() > MassRate::default());
                 assert!(!test_bed.all_pack_flow_valves_are_open());
                 assert!(
-                    test_bed.pack_flow_by_pack(1) > MassRate::default()
-                        && test_bed.pack_flow_by_pack(2) == MassRate::default()
+                    test_bed.pack_flow_by_pack(1) == MassRate::default()
+                        && test_bed.pack_flow_by_pack(2) > MassRate::default()
                 );
                 assert!(
-                    test_bed.pack_flow_valve_is_open(1)
-                        && test_bed.pack_flow_valve_is_open(2)
-                        && !test_bed.pack_flow_valve_is_open(3)
-                        && !test_bed.pack_flow_valve_is_open(4)
+                    !test_bed.pack_flow_valve_is_open(1)
+                        && !test_bed.pack_flow_valve_is_open(2)
+                        && test_bed.pack_flow_valve_is_open(3)
+                        && test_bed.pack_flow_valve_is_open(4)
                 );
             }
 
@@ -4136,17 +4285,16 @@ mod tests {
                     .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
                     .unpowered_ac_4_bus()
-                    .command_ditching_pb_on()
                     .iterate(4);
 
-                assert!(test_bed.pack_flow() > MassRate::default());
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
 
                 test_bed = test_bed
                     .powered_ac_ess_bus()
                     .powered_ac_2_bus()
                     .powered_ac_4_bus()
                     .iterate(4);
-                assert_eq!(test_bed.pack_flow(), MassRate::default());
+                assert!(test_bed.pack_flow() > MassRate::default());
             }
         }
 
@@ -4965,6 +5113,19 @@ mod tests {
             }
 
             #[test]
+            fn fwd_fans_are_off_when_no_power() {
+                let mut test_bed = test_bed()
+                    .command_fwd_isolation_valves_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.fwd_extraction_fan_is_on());
+
+                test_bed = test_bed.unpowered_ac_1_bus().iterate(5);
+
+                assert!(!test_bed.fwd_extraction_fan_is_on());
+            }
+
+            #[test]
             fn fwd_isolation_and_fans_are_off_when_conditions_not_met() {
                 let mut test_bed = test_bed()
                     .command_fwd_isolation_valves_pb_on(false)
@@ -4990,6 +5151,19 @@ mod tests {
 
                 assert!(test_bed.bulk_extraction_fan_is_on());
                 assert!(test_bed.bulk_isolation_valves_are_open());
+            }
+
+            #[test]
+            fn bulk_fans_are_off_when_no_power() {
+                let mut test_bed = test_bed()
+                    .command_bulk_isolation_valves_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.bulk_extraction_fan_is_on());
+
+                test_bed = test_bed.unpowered_ac_4_bus().iterate(5);
+
+                assert!(!test_bed.bulk_extraction_fan_is_on());
             }
 
             #[test]
@@ -5022,6 +5196,22 @@ mod tests {
                 test_bed = test_bed.command_bulk_heater_pb_on(false).iterate(5);
 
                 assert!(!test_bed.bulk_duct_heater_on_allowed());
+            }
+
+            #[test]
+            fn bulk_heater_is_off_when_no_power() {
+                let mut test_bed = test_bed()
+                    .and_run()
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        10.,
+                    ))
+                    .iterate(5);
+
+                assert!(test_bed.bulk_duct_heater_is_on());
+
+                test_bed = test_bed.unpowered_ac_2_bus().iterate(5);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
             }
 
             #[test]
@@ -5210,6 +5400,327 @@ mod tests {
                         .get::<degree_celsius>()
                         < 15.
                 );
+            }
+        }
+
+        mod cpiom_b_failures_tests {
+            use super::*;
+
+            #[test]
+            fn pack_temperature_demand_is_degraded_when_two_ags_apps_failed() {
+                let mut test_bed = test_bed()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_ags_failure(CpiomId::B1)
+                    .command_ags_failure(CpiomId::B3)
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 28.).abs() > 1.);
+            }
+
+            #[test]
+            fn pack_temperature_demand_is_not_degraded_when_two_ags_failed_different_pack() {
+                let mut test_bed = test_bed()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_ags_failure(CpiomId::B1)
+                    .command_ags_failure(CpiomId::B2)
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 28.).abs() < 1.);
+            }
+
+            #[test]
+            fn pack_temperature_demand_is_not_degraded_when_one_ags_app_failed() {
+                let mut test_bed = test_bed()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        28.,
+                    ))
+                    .command_ags_failure(CpiomId::B1)
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 28.).abs() < 1.);
+            }
+
+            #[test]
+            fn air_flow_remains_constant_with_changing_passengers() {
+                // The flow rate changes, and the recirculation demand adjusts to maintain a constant air flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_number_of_passengers(200);
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(200);
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                let initial_pack_flow = test_bed.pack_flow();
+
+                test_bed = test_bed.command_number_of_passengers(500).iterate(200);
+
+                assert!(
+                    (initial_flow - test_bed.mixer_unit_outlet_air().flow_rate())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+                assert!(
+                    (initial_pack_flow - test_bed.pack_flow())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        > 0.1
+                );
+            }
+
+            #[test]
+            fn air_flow_is_degraded_when_two_cpiom_b_fail() {
+                // The flow rate changes, and the recirculation demand adjusts to maintain a constant air flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_number_of_passengers(500);
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(200);
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                let initial_pack_flow = test_bed.pack_flow();
+
+                test_bed = test_bed
+                    .command_vcs_failure(CpiomId::B1)
+                    .command_vcs_failure(CpiomId::B3)
+                    .iterate(200);
+
+                assert!(
+                    (initial_flow - test_bed.mixer_unit_outlet_air().flow_rate())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        > 0.1
+                );
+                assert!(
+                    (initial_pack_flow - test_bed.pack_flow())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+            }
+
+            #[test]
+            fn air_flow_is_not_degraded_when_one_cpiom_b_fail() {
+                // The flow rate changes, and the recirculation demand adjusts to maintain a constant air flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_number_of_passengers(500);
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(200);
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                let initial_pack_flow = test_bed.pack_flow();
+
+                test_bed = test_bed.command_vcs_failure(CpiomId::B1).iterate(200);
+
+                assert!(
+                    (initial_flow - test_bed.mixer_unit_outlet_air().flow_rate())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+                assert!(
+                    (initial_pack_flow - test_bed.pack_flow())
+                        .get::<kilogram_per_second>()
+                        .abs()
+                        < 0.1
+                );
+            }
+
+            #[test]
+            fn cabin_climb_is_not_degraded_if_no_failures() {
+                let test_bed_1 = test_bed_in_cruise();
+                let auto_cabin_altitude = test_bed_1.cabin_altitude();
+
+                let mut test_bed_2 = test_bed()
+                    .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
+                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
+                test_bed_2.set_vertical_speed(Velocity::default());
+                test_bed_2 = test_bed_2.iterate(55);
+
+                assert!(
+                    (auto_cabin_altitude - test_bed_2.cabin_altitude())
+                        .abs()
+                        .get::<foot>()
+                        < 500.
+                );
+            }
+
+            #[test]
+            fn cabin_climb_is_degraded_when_all_auto_modes_fail() {
+                let test_bed_1 = test_bed_in_cruise();
+                let auto_cabin_altitude = test_bed_1.cabin_altitude();
+
+                let mut test_bed_2 = test_bed()
+                    .command_ocsm_auto_failure(OcsmId::One)
+                    .command_ocsm_auto_failure(OcsmId::Two)
+                    .command_ocsm_auto_failure(OcsmId::Three)
+                    .command_ocsm_auto_failure(OcsmId::Four)
+                    .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
+                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
+                test_bed_2.set_vertical_speed(Velocity::default());
+                test_bed_2 = test_bed_2.iterate(55);
+
+                assert!(
+                    (auto_cabin_altitude - test_bed_2.cabin_altitude())
+                        .abs()
+                        .get::<foot>()
+                        > 500.
+                );
+            }
+
+            #[test]
+            fn cabin_climb_is_not_degraded_with_individual_auto_mode_failures() {
+                let test_bed_1 = test_bed_in_cruise();
+                let auto_cabin_altitude = test_bed_1.cabin_altitude();
+
+                let mut test_bed_2 = test_bed()
+                    .command_ocsm_auto_failure(OcsmId::One)
+                    .command_ocsm_auto_failure(OcsmId::Four)
+                    .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
+                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
+                test_bed_2.set_vertical_speed(Velocity::default());
+                test_bed_2 = test_bed_2.iterate(55);
+
+                assert!(
+                    (auto_cabin_altitude - test_bed_2.cabin_altitude())
+                        .abs()
+                        .get::<foot>()
+                        < 500.
+                );
+            }
+
+            #[test]
+            fn cabin_climb_is_not_degraded_with_one_cpiom_failed() {
+                let test_bed_1 = test_bed_in_cruise();
+                let auto_cabin_altitude = test_bed_1.cabin_altitude();
+
+                let mut test_bed_2 = test_bed()
+                    .command_cpcs_failure(CpiomId::B1)
+                    .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
+                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
+                test_bed_2.set_vertical_speed(Velocity::default());
+                test_bed_2 = test_bed_2.iterate(55);
+
+                assert!(
+                    (auto_cabin_altitude - test_bed_2.cabin_altitude())
+                        .abs()
+                        .get::<foot>()
+                        < 500.
+                );
+            }
+
+            #[test]
+            fn cabin_climb_is_degraded_with_three_or_more_cpiom_failed() {
+                let test_bed_1 = test_bed_in_cruise();
+                let auto_cabin_altitude = test_bed_1.cabin_altitude();
+
+                let mut test_bed_2 = test_bed()
+                    .command_cpcs_failure(CpiomId::B1)
+                    .command_cpcs_failure(CpiomId::B2)
+                    .command_cpcs_failure(CpiomId::B4)
+                    .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
+                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
+                test_bed_2.set_vertical_speed(Velocity::default());
+                test_bed_2 = test_bed_2.iterate(55);
+
+                assert!(
+                    (auto_cabin_altitude - test_bed_2.cabin_altitude())
+                        .abs()
+                        .get::<foot>()
+                        > 500.
+                );
+            }
+
+            #[test]
+            fn ofv_closes_if_both_channels_of_ocsm_fail() {
+                let test_bed = test_bed_in_cruise()
+                    .command_ocsm_failure(OcsmId::One, Channel::ChannelOne)
+                    .command_ocsm_failure(OcsmId::One, Channel::ChannelTwo)
+                    .iterate(50);
+
+                assert_eq!(test_bed.outflow_valve_open_amount(1).get::<percent>(), 0.);
+            }
+
+            #[test]
+            fn when_one_ofv_is_closed_press_system_still_works() {
+                let mut test_bed = test_bed_in_cruise()
+                    .command_ocsm_failure(OcsmId::One, Channel::ChannelOne)
+                    .command_ocsm_failure(OcsmId::One, Channel::ChannelTwo)
+                    .iterate(50)
+                    .command_aircraft_climb(
+                        Length::new::<foot>(20000.),
+                        Length::new::<foot>(30000.),
+                    )
+                    .iterate(200);
+
+                assert!(
+                    (test_bed.cabin_altitude().get::<foot>()
+                        - test_bed.cabin_target_altitude().get::<foot>())
+                    .abs()
+                        < 50.
+                )
+            }
+
+            #[test]
+            fn when_two_ofv_are_closed_press_system_still_works() {
+                let mut test_bed = test_bed_in_cruise()
+                    .command_ocsm_failure(OcsmId::One, Channel::ChannelOne)
+                    .command_ocsm_failure(OcsmId::One, Channel::ChannelTwo)
+                    .command_ocsm_failure(OcsmId::Two, Channel::ChannelOne)
+                    .command_ocsm_failure(OcsmId::Two, Channel::ChannelTwo)
+                    .iterate(50)
+                    .command_aircraft_climb(
+                        Length::new::<foot>(20000.),
+                        Length::new::<foot>(30000.),
+                    )
+                    .iterate(200);
+
+                assert!(
+                    (test_bed.cabin_altitude().get::<foot>()
+                        - test_bed.cabin_target_altitude().get::<foot>())
+                    .abs()
+                        < 50.
+                )
             }
         }
     }

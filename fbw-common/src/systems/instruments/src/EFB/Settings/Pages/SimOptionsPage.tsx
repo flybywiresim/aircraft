@@ -2,8 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+/* eslint-disable max-len */
+import React, { useContext, useState } from 'react';
+import {
+  DefaultPilotSeatConfig,
+  PilotSeatConfig,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  useSimVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
@@ -14,8 +21,10 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
+import { AircraftContext } from '@flybywiresim/flypad';
 
 export const SimOptionsPage = () => {
+  const aircraftContext = useContext(AircraftContext);
   const [showThrottleSettings, setShowThrottleSettings] = useState(false);
 
   const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
@@ -27,8 +36,11 @@ export const SimOptionsPage = () => {
   const [simbridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
   const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
   const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
+  const [fdrEnabled, setFdrEnabled] = usePersistentProperty('FDR_ENABLED', '1');
+  const [, setFdrEnabledSimVar] = useSimVar('L:A32NX_FDR_ENABLED', 'number', 1);
   const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
   const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+  const [pilotSeat, setPilotSeat] = usePersistentProperty('CONFIG_PILOT_SEAT', DefaultPilotSeatConfig);
 
   const defaultBaroButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -40,6 +52,12 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.None'), setting: 'NONE' },
     { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
     { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
+  ];
+
+  const pilotSeatButtons: ButtonType[] = [
+    { name: t('Settings.SimOptions.Auto'), setting: PilotSeatConfig.Auto },
+    { name: t('Settings.SimOptions.Left'), setting: PilotSeatConfig.Left },
+    { name: t('Settings.SimOptions.Right'), setting: PilotSeatConfig.Right },
   ];
 
   return (
@@ -60,19 +78,21 @@ export const SimOptionsPage = () => {
             </SelectGroup>
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
-            <SelectGroup>
-              {fpSyncButtons.map((button) => (
-                <SelectItem
-                  key={button.setting}
-                  onSelect={() => setFpSync(button.setting)}
-                  selected={fpSync === button.setting}
-                >
-                  {button.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.msfsFplnSync && (
+            <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
+              <SelectGroup>
+                {fpSyncButtons.map((button) => (
+                  <SelectItem
+                    key={button.setting}
+                    onSelect={() => setFpSync(button.setting)}
+                    selected={fpSync === button.setting}
+                  >
+                    {button.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
             <SelectGroup>
@@ -142,13 +162,14 @@ export const SimOptionsPage = () => {
               }}
             />
           </SettingItem>
-
-          <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
-            <Toggle
-              value={dynamicRegistration === '1'}
-              onToggle={(value) => setDynamicRegistration(value ? '1' : '0')}
-            />
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.registrationDecal && (
+            <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
+              <Toggle
+                value={dynamicRegistration === '1'}
+                onToggle={(value) => setDynamicRegistration(value ? '1' : '0')}
+              />
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.UseCalculatedIlsSignals')}>
             <Toggle
@@ -160,23 +181,37 @@ export const SimOptionsPage = () => {
             />
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
+          <SettingItem name={t('Settings.SimOptions.FdrEnabled')}>
             <Toggle
-              value={wheelChocksEnabled === 1}
+              value={fdrEnabled === '1'}
               onToggle={(value) => {
-                setWheelChocksEnabled(value ? 1 : 0);
+                setFdrEnabled(value ? '1' : '0');
+                setFdrEnabledSimVar(value ? 1 : 0);
               }}
             />
           </SettingItem>
 
-          <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
-            <Toggle
-              value={conesEnabled === 1}
-              onToggle={(value) => {
-                setConesEnabled(value ? 1 : 0);
-              }}
-            />
-          </SettingItem>
+          {aircraftContext.settingsPages.sim.wheelChocks && (
+            <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
+              <Toggle
+                value={wheelChocksEnabled === 1}
+                onToggle={(value) => {
+                  setWheelChocksEnabled(value ? 1 : 0);
+                }}
+              />
+            </SettingItem>
+          )}
+
+          {aircraftContext.settingsPages.sim.cones && (
+            <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
+              <Toggle
+                value={conesEnabled === 1}
+                onToggle={(value) => {
+                  setConesEnabled(value ? 1 : 0);
+                }}
+              />
+            </SettingItem>
+          )}
 
           <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
             <button
@@ -188,6 +223,22 @@ export const SimOptionsPage = () => {
               {t('Settings.SimOptions.Calibrate')}
             </button>
           </SettingItem>
+
+          {aircraftContext.settingsPages.sim.pilotSeat && (
+            <SettingItem name={t('Settings.SimOptions.PilotSeat')}>
+              <SelectGroup>
+                {pilotSeatButtons.map((button) => (
+                  <SelectItem
+                    key={button.setting}
+                    onSelect={() => setPilotSeat(button.setting)}
+                    selected={pilotSeat === button.setting}
+                  >
+                    {button.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SettingItem>
+          )}
         </SettingsPage>
       )}
       <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
