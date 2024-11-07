@@ -228,11 +228,10 @@ export class MfdFmsFplnOffset extends FmsPage<MfdFmsFplnOffsetProps> {
                     label={Subject.create(
                       <div style="display: flex; flex-direction: row; justify-content: space-between;">
                         <span style="text-align: center; vertical-align: center; margin-right: 10px;">
-                          DELETE
+                          CACNEL
                           <br />
-                          ALT CSTR
+                          OFFSET*
                         </span>
-                        <span style="display: flex; align-items: center; justify-content: center;">*</span>
                       </div>,
                     )}
                     onClick={() => {
