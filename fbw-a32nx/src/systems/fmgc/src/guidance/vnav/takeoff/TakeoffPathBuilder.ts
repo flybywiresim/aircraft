@@ -94,11 +94,8 @@ export class TakeoffPathBuilder {
 
     const v2PlusTenMach = this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed);
     const estimatedTat = this.atmosphericConditions.totalAirTemperatureFromMach(midwayAltitude, v2PlusTenMach);
-    const predictedN1 = EngineModel.tableInterpolation(
-      EngineModel.maxClimbThrustTableLeap,
-      estimatedTat,
-      midwayAltitude,
-    );
+
+    const predictedN1 = EngineModel.getClimbThrustN1(config.engineModelParameters, midwayAltitude, estimatedTat);
 
     const { fuelBurned, distanceTraveled, timeElapsed } = Predictions.altitudeStep(
       config,
