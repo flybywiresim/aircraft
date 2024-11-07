@@ -340,7 +340,7 @@ jobs:
       - name: Count Standalone Download files
         run: |
           if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
-            echo "Standalone Download is split in 2 parts"
+            echo "Standalone Download is is not split"
           else
             ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
             echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
