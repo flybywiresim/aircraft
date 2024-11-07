@@ -47,6 +47,7 @@ export const PushbackPage = () => {
   const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Degrees', 100);
 
   const [useControllerInput, setUseControllerInput] = usePersistentNumberProperty('PUSHBACK_USE_CONTROLLER_INPUT', 1);
+  const [pushbackNoConflictWarning] = usePersistentNumberProperty('PUSHBACK_CONFLICTWARN_DISABLED', 0);
   const [rudderPosition] = useSimVar('L:A32NX_RUDDER_PEDAL_POSITION', 'number', 50);
   const [elevatorPosition] = useSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number', 50);
 
@@ -101,15 +102,19 @@ export const PushbackPage = () => {
       }
       return;
     }
-    showModal(
-      <PromptModal
-        title={t('Pushback.EnableSystemMessageTitle')}
-        bodyText={`${t('Pushback.EnableSystemMessageBody')}`}
-        onConfirm={() => {
-          setPushbackSystemEnabled(1);
-        }}
-      />,
-    );
+    if (pushbackNoConflictWarning) {
+      setPushbackSystemEnabled(1);
+    } else {
+      showModal(
+        <PromptModal
+          title={t('Pushback.EnableSystemMessageTitle')}
+          bodyText={`${t('Pushback.EnableSystemMessageBody')}`}
+          onConfirm={() => {
+            setPushbackSystemEnabled(1);
+          }}
+        />,
+      );
+    }
   };
 
   const handleCallTug = () => {
