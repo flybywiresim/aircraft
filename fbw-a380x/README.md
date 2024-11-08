@@ -27,6 +27,7 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - FLS
 - THR NOISE, DCLB
+- AFS CP ALT button (immediate level-off, and alt hold indication)
 
 ### ATA 22 Flight Management System (FMS)
 
@@ -59,7 +60,7 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - Refuel Driver/Refuel Application placeholder pseudo-FQMS implementation (pre-cursor for realistic FQMS implementation while supporting instant load)
   - CPIOM etc. not implemented yet.
-- Portions of the automatic fuel transfer system -- main transfers from the inner, mid, trim, and outer tanks are implemented with the correct scheduling as are CG control transfers from the trim tank to the appropriate inner, mid, or feed tanks. Not implemented yet are load alleviation transfers, transfers based on remaining time to destination, cold fuel transfers, and automatic transfers 
+- Portions of the automatic fuel transfer system -- main transfers from the inner, mid, trim, and outer tanks are implemented with the correct scheduling as are CG control transfers from the trim tank to the appropriate inner, mid, or feed tanks. Not implemented yet are load alleviation transfers, transfers based on remaining time to destination, cold fuel transfers, and automatic transfers
   that occur on the ground. The transfer pump pushbuttons work and can be used to interrupt an automatic transfer.
 - The crossfeed valves work, but fuel will not be taken from the correct tank until the FADEC WASM is modified
 - Manual fuel transfer
