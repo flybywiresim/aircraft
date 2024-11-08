@@ -29,7 +29,7 @@
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
 1. [A380X/FLIGHT MODEL] Fix for stall and auto-rotation issues- @donstim (donbikes)
 1. [A380X/MODEL] Optimized 4K textures - @Repsol
-1. [A380/WingFlex] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
+1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 
 ## 0.12.0
 
