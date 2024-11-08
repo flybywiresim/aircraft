@@ -39,98 +39,98 @@ pub(super) fn spoilers(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_1_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_1_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_2_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_2_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_3_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_3_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_4_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_4_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_5_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_5_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_6_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_6_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_7_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_7_LEFT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_8_LEFT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_8_LEFT_DEFLECTION_UNSMOOTH"),
     );
 
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_1_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_1_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_2_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_2_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_3_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_3_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_4_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_4_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_5_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_5_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_6_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_6_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_7_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_7_RIGHT_DEFLECTION_UNSMOOTH"),
     );
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("HYD_SPOILER_8_RIGHT_DEFLECTION"),
-        |value| unsmooth_spoiler_animation(value),
+        unsmooth_spoiler_animation,
         Variable::named("HYD_SPOILER_8_RIGHT_DEFLECTION_UNSMOOTH"),
     );
 
