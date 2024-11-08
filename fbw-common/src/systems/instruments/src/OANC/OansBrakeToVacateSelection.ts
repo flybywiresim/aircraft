@@ -202,7 +202,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.btvRunway.set(runway);
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', runway, true);
+    pub.pub('oansSelectedLandingRunway', runway);
     pub.pub('oansThresholdPositions', [this.btvThresholdPosition, this.btvOppositeThresholdPosition], true);
 
     this.runwayLengthArinc.setValue(lda);
@@ -301,7 +301,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.btvRunway.set(runway);
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', runway, true);
+    pub.pub('oansSelectedLandingRunway', runway);
     pub.pub('oansThresholdPositions', [this.btvThresholdPosition, this.btvOppositeThresholdPosition], true);
 
     this.runwayLengthArinc.setValue(lda);
@@ -376,7 +376,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.drawBtvLayer();
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', null, true);
+    pub.pub('oansSelectedLandingRunway', null);
     pub.pub('oansSelectedExit', null, true);
     pub.pub('oansThresholdPositions', [], true);
     pub.pub('oansExitPosition', [], true);

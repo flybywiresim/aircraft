@@ -148,7 +148,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   // Need to add touchdown zone distance to displayed value. BTV computes from TDZ internally,
   // but users enter LDA from threshold
   private readonly reqStoppingDistance = this.oansRequestedStoppingDistance.map((it) =>
-    it.isNormalOperation() ? Math.round(it.value + MIN_TOUCHDOWN_ZONE_DISTANCE) : 0,
+    it.isNormalOperation() ? Math.round(it.value + MIN_TOUCHDOWN_ZONE_DISTANCE) : null,
   );
 
   private readonly fmsLandingRunwayVisibility = this.fmsDataStore.landingRunway.map((rwy) =>
@@ -467,8 +467,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private async btvFallbackSetDistance(distance: number | null) {
     if (this.navigraphAvailable.get() === false) {
-      await this.setBtvRunwayFromFmsRunway();
-      if (distance && this.landingRunwayNavdata && this.arpCoordinates) {
+      if (distance && distance > MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
         const exitLocation = placeBearingDistance(
           this.landingRunwayNavdata.thresholdLocation,
           this.landingRunwayNavdata.bearing,
