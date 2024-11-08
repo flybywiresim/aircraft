@@ -3,11 +3,8 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
-#include "AdditionalData.h"
 #include "Arinc429.h"
 #include "CalculatedRadioReceiver.h"
-#include "EngineData.h"
-#include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
@@ -19,6 +16,8 @@
 #include "model/AutopilotLaws.h"
 #include "model/AutopilotStateMachine.h"
 #include "model/Autothrust.h"
+#include "recording/FlightDataRecorder.h"
+#include "recording/RecordingDataTypes.h"
 // #include "fcdc/Fcdc.h"
 #include "prim/Prim.h"
 #include "sec/Sec.h"
@@ -36,8 +35,8 @@ class FlyByWireInterface {
  private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
 
-  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.11;
-  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = 10;
+  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = (1.0 / 6.0);
+  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = (3 * 6);
   uint32_t lowPerformanceTimer = 0;
 
   double previousSimulationTime = 0;
@@ -317,7 +316,9 @@ class FlyByWireInterface {
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  AdditionalData additionalData = {};
+  BaseData baseData = {};
+  AircraftSpecificData aircraftSpecificData = {};
+
   std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
@@ -325,39 +326,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
   std::unique_ptr<LocalVariable> idMasterWarning;
   std::unique_ptr<LocalVariable> idMasterCaution;
-
-  EngineData engineData = {};
-  std::unique_ptr<LocalVariable> engineEngine1N2;
-  std::unique_ptr<LocalVariable> engineEngine2N2;
-  std::unique_ptr<LocalVariable> engineEngine1N1;
-  std::unique_ptr<LocalVariable> engineEngine2N1;
-  std::unique_ptr<LocalVariable> engineEngineIdleN1;
-  std::unique_ptr<LocalVariable> engineEngineIdleN2;
-  std::unique_ptr<LocalVariable> engineEngineIdleFF;
-  std::unique_ptr<LocalVariable> engineEngineIdleEGT;
-  std::unique_ptr<LocalVariable> engineEngine1EGT;
-  std::unique_ptr<LocalVariable> engineEngine2EGT;
-  std::unique_ptr<LocalVariable> engineEngine1Oil;
-  std::unique_ptr<LocalVariable> engineEngine2Oil;
-  std::unique_ptr<LocalVariable> engineEngine1TotalOil;
-  std::unique_ptr<LocalVariable> engineEngine2TotalOil;
-  std::unique_ptr<LocalVariable> engineEngine1FF;
-  std::unique_ptr<LocalVariable> engineEngine2FF;
-  std::unique_ptr<LocalVariable> engineEngine1PreFF;
-  std::unique_ptr<LocalVariable> engineEngine2PreFF;
-  std::unique_ptr<LocalVariable> engineEngineImbalance;
-  std::unique_ptr<LocalVariable> engineFuelUsedLeft;
-  std::unique_ptr<LocalVariable> engineFuelUsedRight;
-  std::unique_ptr<LocalVariable> engineFuelLeftPre;
-  std::unique_ptr<LocalVariable> engineFuelRightPre;
-  std::unique_ptr<LocalVariable> engineFuelAuxLeftPre;
-  std::unique_ptr<LocalVariable> engineFuelAuxRightPre;
-  std::unique_ptr<LocalVariable> engineFuelCenterPre;
-  std::unique_ptr<LocalVariable> engineEngineCycleTime;
-  std::unique_ptr<LocalVariable> engineEngine1State;
-  std::unique_ptr<LocalVariable> engineEngine2State;
-  std::unique_ptr<LocalVariable> engineEngine1Timer;
-  std::unique_ptr<LocalVariable> engineEngine2Timer;
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
@@ -599,8 +567,8 @@ class FlyByWireInterface {
 
   bool updateRadioReceiver(double sampleTime);
 
-  bool updateEngineData(double sampleTime);
-  bool updateAdditionalData(double sampleTime);
+  bool updateBaseData(double sampleTime);
+  bool updateAircraftSpecificData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);
