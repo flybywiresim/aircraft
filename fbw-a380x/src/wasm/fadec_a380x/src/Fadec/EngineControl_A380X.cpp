@@ -923,7 +923,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
 
   // transition between TO and GA limit -----------------------------------------------------------------------------
   const double machFactorLow = std::max(0.0, std::min(1.0, (mach - 0.04) / 0.04));
-  const double flex          = flex_to + (flex_ga - flex_to) * machFactorLow;
+  double       flex          = flex_to + (flex_ga - flex_to) * machFactorLow;
   double       toga          = to + (ga - to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
@@ -980,7 +980,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   }
 
   // METOTS overriding N1 for TOGA and FLEX-TO ----------------------------------------------------------------------
-  if (simOnGround && simData.simVarsDataPtr->data().surfaceRelativeGroundSpeed < 35) {
+  if (msfsHandlerPtr->getSimOnGround() && simData.simVarsDataPtr->data().surfaceRelativeGroundSpeed <= 35) {
     if (toga > 78.0) {
       toga = 78.0;
     }

@@ -152,7 +152,7 @@ class FadecSimData_A380X {
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",          0, UNITS.Seconds  }, //
       {"AIRSPEED MACH",                 0, UNITS.Mach     }, //
-      {"SURFACE RELATIVE GROUND SPEED", 0, UNITS.Knots    }, //
+      {"SURFACE RELATIVE GROUND SPEED", 0, UNITS.knots    }, //
       {"AMBIENT PRESSURE",              0, UNITS.Millibars}, //
       {"AMBIENT TEMPERATURE",           0, UNITS.Celsius  }, //
       {"PRESSURE ALTITUDE",             0, UNITS.Feet     }, //
