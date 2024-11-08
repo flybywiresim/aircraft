@@ -11,7 +11,7 @@
 1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
 1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
-1. [A380X/FLIGHT MODEL] Fix for stall and auto-rotation issues- @donstim (donbikes)
+1. [A380X/MODEL] Optimized 4K textures - @Repsol
 
 ## 0.12.1
 
