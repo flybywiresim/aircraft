@@ -9,7 +9,7 @@ import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/Fli
 import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -135,13 +135,19 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         temporaryPlan.activeLegIndex - 1,
         (tmpyFromLeg.flags &= ~FlightPlanLegFlags.PendingDirectToTurningPoint),
       );
+
+      const magneticCourse: number = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'Degrees');
+      const lat: number = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
+      const long: number = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+
       temporaryPlan.editLegDefinition(temporaryPlan.activeLegIndex - 1, {
+        magneticCourse,
         waypoint: {
           ...tmpyFromLeg.definition.waypoint,
           location: {
             // TODO fm pos
-            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
-            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
+            lat,
+            long,
           },
         },
       });
