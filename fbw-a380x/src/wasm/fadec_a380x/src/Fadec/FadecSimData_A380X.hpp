@@ -136,45 +136,47 @@ class FadecSimData_A380X {
 
   // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
-    FLOAT64 animationDeltaTime;      // in Seconds
-    FLOAT64 airSpeedMach;            // in Mach
-    FLOAT64 ambientPressure;         // in Millibars
-    FLOAT64 ambientTemperature;      // in Celsius
-    FLOAT64 pressureAltitude;        // in Feet
-    FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
-    FLOAT64 engineAntiIce[4];        // 0 or 1
-    FLOAT64 engineIgniter[4];        // 0 or 1
-    FLOAT64 engineStarter[4];        // 0 or 1
-    FLOAT64 simEngineN1[4];          // in Percent
-    FLOAT64 simEngineN2[4];          // in Percent
+    FLOAT64 animationDeltaTime;          // in Seconds
+    FLOAT64 airSpeedMach;                // in Mach
+    FLOAT64 surfaceRelativeGroundSpeed;  // in Knots
+    FLOAT64 ambientPressure;             // in Millibars
+    FLOAT64 ambientTemperature;          // in Celsius
+    FLOAT64 pressureAltitude;            // in Feet
+    FLOAT64 fuelWeightLbsPerGallon;      // in Pounds
+    FLOAT64 engineAntiIce[4];            // 0 or 1
+    FLOAT64 engineIgniter[4];            // 0 or 1
+    FLOAT64 engineStarter[4];            // 0 or 1
+    FLOAT64 simEngineN1[4];              // in Percent
+    FLOAT64 simEngineN2[4];              // in Percent
   };
   DataDefinitionVector simVarsDataDef = {
-      {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
-      {"AIRSPEED MACH",                0, UNITS.Mach     }, //
-      {"AMBIENT PRESSURE",             0, UNITS.Millibars}, //
-      {"AMBIENT TEMPERATURE",          0, UNITS.Celsius  }, //
-      {"PRESSURE ALTITUDE",            0, UNITS.Feet     }, //
-      {"FUEL WEIGHT PER GALLON",       0, UNITS.Pounds   }, //
-      {"ENG ANTI ICE",                 1, UNITS.Bool     }, //
-      {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
-      {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
-      {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Number   }, //
-      {"GENERAL ENG STARTER",          1, UNITS.Bool     }, //
-      {"GENERAL ENG STARTER",          2, UNITS.Bool     }, //
-      {"GENERAL ENG STARTER",          3, UNITS.Bool     }, //
-      {"GENERAL ENG STARTER",          4, UNITS.Bool     }, //
-      {"TURB ENG N1",                  1, UNITS.Percent  }, //
-      {"TURB ENG N1",                  2, UNITS.Percent  }, //
-      {"TURB ENG N1",                  3, UNITS.Percent  }, //
-      {"TURB ENG N1",                  4, UNITS.Percent  }, //
-      {"TURB ENG N2",                  1, UNITS.Percent  }, //
-      {"TURB ENG N2",                  2, UNITS.Percent  }, //
-      {"TURB ENG N2",                  3, UNITS.Percent  }, //
-      {"TURB ENG N2",                  4, UNITS.Percent  }, //
+      {"ANIMATION DELTA TIME",          0, UNITS.Seconds  }, //
+      {"AIRSPEED MACH",                 0, UNITS.Mach     }, //
+      {"SURFACE RELATIVE GROUND SPEED", 0, UNITS.Knots    }, //
+      {"AMBIENT PRESSURE",              0, UNITS.Millibars}, //
+      {"AMBIENT TEMPERATURE",           0, UNITS.Celsius  }, //
+      {"PRESSURE ALTITUDE",             0, UNITS.Feet     }, //
+      {"FUEL WEIGHT PER GALLON",        0, UNITS.Pounds   }, //
+      {"ENG ANTI ICE",                  1, UNITS.Bool     }, //
+      {"ENG ANTI ICE",                  2, UNITS.Bool     }, //
+      {"ENG ANTI ICE",                  3, UNITS.Bool     }, //
+      {"ENG ANTI ICE",                  4, UNITS.Bool     }, //
+      {"TURB ENG IGNITION SWITCH EX1",  1, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1",  2, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1",  3, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1",  4, UNITS.Number   }, //
+      {"GENERAL ENG STARTER",           1, UNITS.Bool     }, //
+      {"GENERAL ENG STARTER",           2, UNITS.Bool     }, //
+      {"GENERAL ENG STARTER",           3, UNITS.Bool     }, //
+      {"GENERAL ENG STARTER",           4, UNITS.Bool     }, //
+      {"TURB ENG N1",                   1, UNITS.Percent  }, //
+      {"TURB ENG N1",                   2, UNITS.Percent  }, //
+      {"TURB ENG N1",                   3, UNITS.Percent  }, //
+      {"TURB ENG N1",                   4, UNITS.Percent  }, //
+      {"TURB ENG N2",                   1, UNITS.Percent  }, //
+      {"TURB ENG N2",                   2, UNITS.Percent  }, //
+      {"TURB ENG N2",                   3, UNITS.Percent  }, //
+      {"TURB ENG N2",                   4, UNITS.Percent  }, //
   };
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 

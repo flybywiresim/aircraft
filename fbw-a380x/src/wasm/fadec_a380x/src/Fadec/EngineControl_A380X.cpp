@@ -979,6 +979,16 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
     }
   }
 
+  // METOTS overriding N1 for TOGA and FLEX-TO ----------------------------------------------------------------------
+  if (simOnGround && simData.simVarsDataPtr->data().surfaceRelativeGroundSpeed < 35) {
+    if (toga > 78.0) {
+      toga = 78.0;
+    }
+
+    if (flex > 78.0) {
+      flex = 78.0;
+    }
+  }
   // write limits ---------------------------------------------------------------------------------------------------
   simData.thrustLimitIdle->set(simData.engineIdleN1->get());
   simData.thrustLimitToga->set(toga);
