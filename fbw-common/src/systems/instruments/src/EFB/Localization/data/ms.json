@@ -740,6 +740,7 @@
       "Blue": "Blue",
       "Brightness": "Brightness",
       "Dark": "Dark",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Language",
       "Light": "Light",
       "Local": "Local",

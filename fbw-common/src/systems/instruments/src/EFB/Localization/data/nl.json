@@ -740,6 +740,7 @@
       "Blue": "Blauw",
       "Brightness": "Helderheid",
       "Dark": "Donker",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Taal",
       "Light": "Licht",
       "Local": "Lokaal",

@@ -740,6 +740,7 @@
       "Blue": "Albastru",
       "Brightness": "Luminozitate",
       "Dark": "Întuneric",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Limbă",
       "Light": "Lumină",
       "Local": "Local",

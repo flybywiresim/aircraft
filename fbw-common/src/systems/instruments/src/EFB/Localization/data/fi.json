@@ -740,6 +740,7 @@
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Kieli",
       "Light": "Vaalea",
       "Local": "Paikallinen",

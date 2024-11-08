@@ -740,6 +740,7 @@
       "Blue": "Xanh lam",
       "Brightness": "Độ sáng",
       "Dark": "Tối",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Ngôn ngữ",
       "Light": "Sáng",
       "Local": "Cục bộ",

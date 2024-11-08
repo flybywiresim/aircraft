@@ -740,6 +740,7 @@
       "Blue": "أزرق",
       "Brightness": "السطوع",
       "Dark": "داكن",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "اللغة",
       "Light": "فاتح",
       "Local": "محلي",

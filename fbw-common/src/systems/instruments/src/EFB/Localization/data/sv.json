@@ -740,6 +740,7 @@
       "Blue": "Blå",
       "Brightness": "Ljusstyrka",
       "Dark": "Mörk",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Språk",
       "Light": "Ljus",
       "Local": "Lokal",

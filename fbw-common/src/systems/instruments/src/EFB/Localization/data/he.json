@@ -740,6 +740,7 @@
       "Blue": "כחול",
       "Brightness": "בהירות",
       "Dark": "כהה",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "שפה",
       "Light": "מואר",
       "Local": "מקומי",

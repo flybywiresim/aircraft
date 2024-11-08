@@ -740,6 +740,7 @@
       "Blue": "蓝色",
       "Brightness": "亮度",
       "Dark": "深色",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "语言 (Language)",
       "Light": "浅色",
       "Local": "本地",

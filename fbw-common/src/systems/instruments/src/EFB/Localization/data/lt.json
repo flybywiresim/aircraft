@@ -740,6 +740,7 @@
       "Blue": "Mėlyna",
       "Brightness": "Ryškumas",
       "Dark": "Tamsi",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Kalba",
       "Light": "Šviesi",
       "Local": "Vietinis",

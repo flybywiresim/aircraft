@@ -740,6 +740,7 @@
       "Blue": "블루",
       "Brightness": "밝기",
       "Dark": "다크",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "언어",
       "Light": "라이트",
       "Local": "현지",

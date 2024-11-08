@@ -740,6 +740,7 @@
       "Blue": "Modro",
       "Brightness": "Svetlost",
       "Dark": "Temno",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Jezik",
       "Light": "Svetlo",
       "Local": "Lokalni čas",

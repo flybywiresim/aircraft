@@ -740,6 +740,7 @@
       "Blue": "Biru",
       "Brightness": "Kecerahan",
       "Dark": "Gelap",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Bahasa",
       "Light": "Terang",
       "Local": "Lokal",
