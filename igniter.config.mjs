@@ -139,6 +139,7 @@ export default new TaskOfTasks('all', [
                             'npm run build-a380x:link-base-files',
                             'npm run unchunkLargeFiles',
                             'npm run build-a380x:link-large-files',
+                            'npm run build-a380x:link-large-files-texture-8k',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
@@ -146,7 +147,7 @@ export default new TaskOfTasks('all', [
                             'npm run build-a380x:link-base-files',
                             'npm run unchunkLargeFiles',
                             'npm run build-a380x:link-large-files',
-                            'npm run build-a380x:copy-large-files-texture-4k',
+                            'npm run build-a380x:link-large-files-texture-4k',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
@@ -160,6 +161,7 @@ export default new TaskOfTasks('all', [
                             'npm run build-a380x:copy-base-files',
                             'npm run unchunkLargeFiles',
                             'npm run build-a380x:copy-large-files',
+                            'npm run build-a380x:copy-large-files-texture-8k',
                             'npm run chunkLargeFiles',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',

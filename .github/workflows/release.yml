@@ -366,6 +366,9 @@ jobs:
           cd ./fbw-a380x/out/
           rm -rf build-modules
           7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            mv ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}.001 ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} # Only applicable if split in 1 part!
+          fi
           cd ../../
           df -h
       - name: Upload release assets
@@ -377,11 +380,11 @@ jobs:
           assets_path: ./${{ env.BUILD_DIR_NAME }}/
       - name: Count Standalone Download files
         run: |
-          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 2 ]; then
-            echo "Standalone Download is split in 2 parts"
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            echo "Standalone Download is not split"
           else
             ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
-            echo "Error: The number of standalone download parts is not 2. Adjust all download references and workflows for the new number of parts!" >&2
+            echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
             exit 1
           fi
       - name: Delete old GitHub pre-release assets
