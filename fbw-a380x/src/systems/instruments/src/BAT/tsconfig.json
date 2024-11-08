@@ -13,5 +13,8 @@
     "jsxFactory": "FSComponent.buildComponent" /* Required for FSComponent framework JSX */,
     "jsxFragmentFactory": "FSComponent.Fragment" /* Required for FSComponent framework JSX */,
     "jsx": "react", /* Required for FSComponent framework JSX */
+    "paths": {
+      "@shared/battery/*": ["../../../fbw-common/src/systems/instruments/src/BAT/*"],
+    }
   }
 }

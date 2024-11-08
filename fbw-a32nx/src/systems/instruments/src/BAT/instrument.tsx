@@ -6,11 +6,12 @@ import {
   FSComponent,
   FsInstrument,
   InstrumentBackplane,
+  Subject,
 } from '@microsoft/msfs-sdk';
-import { BatteryDisplay } from '@shared/battery/BatDisplay';
+import { BatSelectorPositions, BatteryDisplay } from '@shared/battery/BatDisplay';
+import { BatSimVarPublisher, BatSimVars } from '@shared/battery/BatDisplaySimVarPublisher';
 
 import './style.scss';
-import { BatSimVarPublisher, BatSimVars } from '@shared/battery/BatDisplaySimVarPublisher';
 
 class BatInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -23,13 +24,8 @@ class BatInstrument implements FsInstrument {
 
   private readonly sub = this.bus.getSubscriber<BatSimVars>();
 
-  private readonly batteryPositionConsumer = ConsumerSubject.create<number>(
-    this.sub.on('A380X_ovhdBatSelectorSwitchPos'),
-    2,
-  );
-
   private readonly ovhdAnnLtSwitchPositionConsumer = ConsumerSubject.create<number>(
-    this.sub.on('A380X_ovhdAnnLtSwitchPos'),
+    this.sub.on('A32NX_ovhdAnnLtSwitchPos'),
     1,
   );
 
@@ -44,13 +40,22 @@ class BatInstrument implements FsInstrument {
     this.backplane.init();
 
     FSComponent.render(
-      <BatteryDisplay
-        bus={this.bus}
-        selectedBattery={this.batteryPositionConsumer}
-        annLtTestPosition={this.ovhdAnnLtSwitchPositionConsumer}
-        textX={196}
-        textY={48}
-      />,
+      <svg className="bat-svg" viewBox="0 0 200 100">
+        <BatteryDisplay
+          bus={this.bus}
+          selectedBattery={Subject.create<number>(BatSelectorPositions.BAT1)}
+          annLtTestPosition={this.ovhdAnnLtSwitchPositionConsumer}
+          textX={184}
+          textY={45}
+        />
+        <BatteryDisplay
+          bus={this.bus}
+          selectedBattery={Subject.create<number>(BatSelectorPositions.BAT2)}
+          annLtTestPosition={this.ovhdAnnLtSwitchPositionConsumer}
+          textX={184}
+          textY={95}
+        />
+      </svg>,
       document.getElementById('BAT_CONTENT'),
     );
 
@@ -86,7 +91,7 @@ class BatInstrument implements FsInstrument {
   }
 }
 
-export class A380X_BAT extends FsBaseInstrument<BatInstrument> {
+export class A32NX_BAT extends FsBaseInstrument<BatInstrument> {
   public constructInstrument(): BatInstrument {
     return new BatInstrument(this);
   }
@@ -96,8 +101,8 @@ export class A380X_BAT extends FsBaseInstrument<BatInstrument> {
   }
 
   get templateID(): string {
-    return 'A380X_BAT';
+    return 'A32NX_BAT';
   }
 }
 
-registerInstrument('a380x-bat', A380X_BAT);
+registerInstrument('a32nx-bat', A32NX_BAT);
