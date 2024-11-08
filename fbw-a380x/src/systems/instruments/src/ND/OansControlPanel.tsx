@@ -465,9 +465,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
   }
 
-  private btvFallbackSetDistance(distance: number | null) {
+  private async btvFallbackSetDistance(distance: number | null) {
     if (this.navigraphAvailable.get() === false) {
-      this.setBtvRunwayFromFmsRunway();
+      await this.setBtvRunwayFromFmsRunway();
       if (distance && this.landingRunwayNavdata && this.arpCoordinates) {
         const exitLocation = placeBearingDistance(
           this.landingRunwayNavdata.thresholdLocation,
