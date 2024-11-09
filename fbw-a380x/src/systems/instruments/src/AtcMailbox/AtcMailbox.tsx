@@ -30,7 +30,7 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
   }
 
   destroy(): void {
-    this.topRef.instance.removeEventListener('mousemove', this.onMouseMoveHandler);
+    this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
 
     super.destroy();
   }
