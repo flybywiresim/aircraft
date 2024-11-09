@@ -3,6 +3,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MutableSubscribable,
   Subject,
   Subscribable,
   SubscribableUtils,
@@ -14,8 +15,8 @@ import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryForma
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
 
-interface InputFieldProps<T> extends ComponentProps {
-  dataEntryFormat: DataEntryFormat<T>;
+interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
+  dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
   /** If inactive, will be rendered as static value (green text) */
@@ -26,9 +27,9 @@ interface InputFieldProps<T> extends ComponentProps {
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
   canOverflow?: boolean;
-  value: Subject<T | null> | Subscribable<T | null>;
+  modifyValue?: S;
   /** If defined, this component does not update the value prop, but rather calls this method. */
-  onModified?: (newValue: T | null) => void;
+  onModified?: (newValue: U | null) => void;
   /** Called for every character that is being typed */
   onInput?: (newValue: string) => void;
   /**
@@ -36,7 +37,7 @@ interface InputFieldProps<T> extends ComponentProps {
    * @param newValue to be validated
    * @returns whether validation was successful. If nothing is returned, success is assumed
    */
-  dataHandlerDuringValidation?: (newValue: T | null, oldValue?: T | null) => Promise<boolean | void>;
+  dataHandlerDuringValidation?: (newValue: U | null, oldValue?: T | null) => Promise<boolean | void>;
   errorHandler?: (errorType: FmsErrorType) => void;
   handleFocusBlurExternally?: boolean;
   containerStyle?: string;
@@ -46,13 +47,29 @@ interface InputFieldProps<T> extends ComponentProps {
   hEventConsumer: Consumer<string>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
+
+  /** Additional class */
+  class?: string;
+
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 }
+
+export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
+  ? InputFieldProps<T, U> & {
+      value: MutableSubscribable<T | null>;
+    }
+  : InputFieldProps<T, U> & {
+      readonlyValue: Subscribable<T | null>;
+    };
 
 /**
  * Input field for text or numbers
  */
-export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
+export class InputField<
+  T,
+  U = T,
+  S extends U extends T ? boolean : false = U extends T ? true : false,
+> extends DisplayComponent<ConditionalInputFieldProps<T, U, S>> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
@@ -67,6 +84,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   public textInputRef = FSComponent.createRef<HTMLSpanElement>();
 
   private caretRef = FSComponent.createRef<HTMLSpanElement>();
+
+  private readonly readValue = 'value' in this.props ? this.props.value : this.props.readonlyValue;
 
   private leadingUnit = Subject.create<string>('');
 
@@ -97,10 +116,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     if (this.modifiedFieldValue.get() !== null) {
       this.modifiedFieldValue.set(null);
     }
-    if (this.props.value.get() != null) {
+    if (this.readValue.get() != null) {
       if (this.props.canOverflow) {
         // If item was overflowing, check whether overflow is still needed
-        this.overflow((this.props.value.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
+        this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
       if (this.props.mandatory?.get()) {
@@ -113,10 +132,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   private updateDisplayElement() {
     // If input was not modified, render props' value
     if (this.modifiedFieldValue.get() == null) {
-      if (this.props.value.get() == null) {
+      if (this.readValue.get() == null) {
         this.populatePlaceholders();
       } else {
-        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
+        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.readValue.get());
         this.textInputRef.instance.innerText = formatted ?? '';
         this.leadingUnit.set(leadingUnit ?? '');
         this.trailingUnit.set(trailingUnit ?? '');
@@ -242,7 +261,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       !this.props.inactive?.get()
     ) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
-        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
+        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.readValue.get(), false);
       }
       this.isFocused.set(true);
 
@@ -274,10 +293,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.updateDisplayElement();
 
       if (validateAndUpdate) {
-        if (this.modifiedFieldValue.get() == null && this.props.value.get() != null) {
+        if (this.modifiedFieldValue.get() == null && this.readValue.get() != null) {
           console.log('Enter pressed after no modification');
           // Enter is pressed after no modification
-          const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
+          const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
           await this.validateAndUpdate(formatted ?? '');
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
@@ -285,7 +304,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (this.props.value.get() === null && this.props.mandatory?.get()) {
+      if (this.readValue.get() === null && this.props.mandatory?.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -323,7 +342,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
     if (this.props.dataHandlerDuringValidation) {
       try {
-        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.props.value.get());
+        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
         const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
         if (validation === false) {
@@ -340,8 +359,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     if (updateWasSuccessful) {
       if (this.props.onModified) {
         this.props.onModified(newValue);
-      } else if (this.props.value instanceof Subject) {
-        this.props.value.set(newValue);
+      } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
+        // If we have `value` in props, we know U extends T
+
+        this.props.value.set(newValue as T);
       } else if (!this.props.dataHandlerDuringValidation) {
         console.error(
           'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
@@ -392,7 +413,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.caretRef.instance.style.display = 'none';
     this.caretRef.instance.innerText = '';
 
-    this.subs.push(this.props.value.sub(() => this.onNewValue(), true));
+    // TODO sub leak!
+    this.subs.push(this.readValue.sub(() => this.onNewValue(), true));
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
       this.isValidating.sub((val) => {
@@ -406,7 +428,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.mandatory.sub((val) => {
-        if (val && this.props.value.get() === null) {
+        if (val && this.readValue.get() === null) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
@@ -442,7 +464,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
-            if (this.props.mandatory?.get() && this.props.value.get() === null) {
+            if (this.props.mandatory?.get() && this.readValue.get() === null) {
               this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
@@ -450,7 +472,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.remove('disabled');
             this.textInputRef.instance.classList.remove('disabled');
 
-            if (this.props.mandatory?.get() && this.props.value.get() === null) {
+            if (this.props.mandatory?.get() && this.readValue.get() === null) {
               this.textInputRef.instance.classList.add('mandatory');
             }
           }
@@ -546,7 +568,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       if (key === 'ESC' || key === 'ESC2') {
-        const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
+        const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
         this.modifiedFieldValue.set(formatted);
         this.handleEnter();
       }
@@ -570,7 +592,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
   render(): VNode {
     return (
-      <div ref={this.topRef} class="mfd-input-field-root">
+      <div ref={this.topRef} class={`mfd-input-field-root ${this.props.class ?? ''}`}>
         <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle ?? ''}`}>
           <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading mfd-input-field-unit">
             {this.leadingUnit}

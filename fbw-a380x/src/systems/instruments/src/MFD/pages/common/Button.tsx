@@ -4,6 +4,7 @@ import {
   FSComponent,
   Subject,
   Subscribable,
+  SubscribableUtils,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -20,7 +21,7 @@ export interface ButtonProps extends ComponentProps {
   menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
   showArrow?: boolean;
   idPrefix?: string;
-  disabled?: Subscribable<boolean>;
+  disabled?: boolean | Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
   buttonStyle?: string;
   onClick: () => void;
@@ -46,8 +47,10 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   private renderedMenuItems: ButtonMenuItem[] = [];
 
+  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(true), true);
+
   private clickHandler(): void {
-    if (!this.props.disabled?.get()) {
+    if (!this.disabled.get()) {
       this.props.onClick();
     }
   }
@@ -81,7 +84,7 @@ export class Button extends DisplayComponent<ButtonProps> {
     this.buttonRef.instance.addEventListener('click', () => this.clickHandler());
 
     this.subs.push(
-      this.props.disabled.sub((val) => {
+      this.disabled.sub((val) => {
         if (val) {
           this.buttonRef.getOrDefault()?.classList.add('disabled');
         } else {
@@ -176,9 +179,9 @@ export class Button extends DisplayComponent<ButtonProps> {
               <span class="mfd-fms-fpln-button-dropdown-label">{val}</span>
               <span class="mfd-fms-fpln-button-dropdown-arrow">
                 {this.menuOpensUpwards.get() ? (
-                  <TriangleUp color={this.props.disabled?.get() ? 'grey' : 'white'} />
+                  <TriangleUp color={this.disabled.get() ? 'grey' : 'white'} />
                 ) : (
-                  <TriangleDown color={this.props.disabled?.get() ? 'grey' : 'white'} />
+                  <TriangleDown color={this.disabled.get() ? 'grey' : 'white'} />
                 )}
               </span>
             </div>
@@ -198,7 +201,7 @@ export class Button extends DisplayComponent<ButtonProps> {
     });
 
     this.buttonRef.instance.addEventListener('click', () => {
-      if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled?.get()) {
+      if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.disabled.get()) {
         this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
       }
     });

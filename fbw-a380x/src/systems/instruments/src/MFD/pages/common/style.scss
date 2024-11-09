@@ -729,6 +729,10 @@
   flex-direction: row;
 }
 
+.grow {
+  flex-grow: 1;
+}
+
 .fc {
   display: flex;
   flex-direction: column;

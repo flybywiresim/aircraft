@@ -937,7 +937,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               componentIfFalse={<></>}
             />
             <Button
-              disabled={Subject.create(true)}
+              disabled={false}
               label="F-PLN INFO"
               onClick={() => {}}
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-infoBtn`}

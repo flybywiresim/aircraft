@@ -1,4 +1,13 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  DisplayComponent,
+  FSComponent,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface TopTabElementProps extends ComponentProps {
@@ -124,8 +133,8 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
 }
 
 interface TopTabNavigatorProps {
-  pageTitles: Subscribable<string[]>;
-  selectedPageIndex: Subject<number>;
+  pageTitles: string[] | Subscribable<string[]>;
+  selectedPageIndex: MutableSubscribable<number>;
   selectedTabTextColor?: string;
   /** in pixels */
   tabBarHeight?: number;
@@ -144,10 +153,12 @@ interface TopTabNavigatorProps {
 export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
   private navigatorBarRef = FSComponent.createRef<HTMLDivElement>();
 
+  private readonly pageTitles = SubscribableUtils.toSubscribable(this.props.pageTitles, true);
+
   constructor(props: TopTabNavigatorProps) {
     super(props);
 
-    if (this.props.pageTitles.get().length !== this.props.children?.length) {
+    if (this.pageTitles.get().length !== this.props.children?.length) {
       console.error('Number of TopTabNavigator children is not equal to number of elements in pageTitles array.');
     }
 
@@ -185,7 +196,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
     });
 
     // Re-populate top navigation bar
-    this.props.pageTitles.get().forEach((pageTitle, index) => {
+    this.pageTitles.get().forEach((pageTitle, index) => {
       FSComponent.render(
         <TopTabElement
           title={pageTitle}
@@ -229,7 +240,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
           ref={this.navigatorBarRef}
           style={`height: ${this.props.tabBarHeight || 36}px`}
         >
-          {this.props.pageTitles.get().map((pageTitle, index) => (
+          {this.pageTitles.get().map((pageTitle, index) => (
             <TopTabElement
               title={pageTitle}
               isSelected={this.props.selectedPageIndex.get() === index}

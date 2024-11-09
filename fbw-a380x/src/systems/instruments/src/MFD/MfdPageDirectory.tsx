@@ -27,6 +27,7 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
+import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 
 export function pageForUrl(
   url: string,
@@ -82,6 +83,8 @@ export function pageForUrl(
     case 'fms/sec2/f-pln-hold':
     case 'fms/sec3/f-pln-hold':
       return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/active/f-pln-fix-info':
+      return <MfdFmsFplnFixInfo pageTitle="F/PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
       return <MfdFmsPositionIrs pageTitle="IRS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/navaids':

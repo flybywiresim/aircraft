@@ -1,13 +1,17 @@
-import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
+
+import { AnyFix, Fix } from '@flybywiresim/fbw-sdk';
+
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
-export interface DataEntryFormat<T> {
+export interface DataEntryFormat<T, U = T> {
   placeholder: string;
   maxDigits: number;
   format(value: T | null): FieldFormatTuple;
-  parse(input: string): Promise<T | null>;
+  parse(input: string): Promise<U | null>;
   /**
    * If modified or notify()ed, triggers format() in the input field (i.e. when dependencies to value have changed)
    */
@@ -776,6 +780,30 @@ export class DescentRateFormat implements DataEntryFormat<number> {
   }
 }
 
+export class FixFormat implements DataEntryFormat<AnyFix, AnyFix[]> {
+  public readonly placeholder = '-------';
+
+  public readonly maxDigits = 7;
+
+  async parse(input: string): Promise<AnyFix[] | null> {
+    const results = await NavigationDatabaseService.activeDatabase.searchAllFix(input);
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    return results;
+  }
+
+  format(value: Fix | null): FieldFormatTuple {
+    if (!value) {
+      return [this.placeholder, null, null];
+    }
+
+    return [value.ident, null, null];
+  }
+}
+
 export class AirportFormat implements DataEntryFormat<string> {
   public placeholder = '----';
 
@@ -1421,6 +1449,82 @@ export class SquawkFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (!/^[0-7]{4}$/.test(input)) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
+/**
+ * FIX INFO radial
+ */
+export class RadialFormat implements DataEntryFormat<number> {
+  public readonly placeholder = '---';
+
+  public readonly maxDigits = 4;
+
+  private readonly minValue = 0;
+
+  private readonly maxValue = 360.0;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, '°'] as FieldFormatTuple;
+    }
+
+    return [value.toFixed(0), null, '°'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
+/**
+ * FIX INFO radius
+ */
+export class RadiusFormat implements DataEntryFormat<number> {
+  public readonly placeholder = '---';
+
+  public readonly maxDigits = 4;
+
+  private readonly minValue = 1;
+
+  private readonly maxValue = 9999;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, 'NM'] as FieldFormatTuple;
+    }
+
+    return [value.toFixed(0), null, 'NM'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+
+    if (nbr > this.maxValue || nbr < this.minValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw new FmsError(FmsErrorType.FormatError);

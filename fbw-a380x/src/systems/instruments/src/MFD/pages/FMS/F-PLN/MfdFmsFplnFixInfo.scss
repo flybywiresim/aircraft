@@ -1,0 +1,109 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fms-fpln-fix-info-header {
+  height: .90rem;
+}
+
+.mfd-fms-fpln-fix-info-ref-ident {
+  margin-top: 1.5em;
+  margin-left: 2.4em;
+
+  .mfd-fms-fpln-fix-info-ref-ident-label {
+    font-size: 20px;
+    margin-right: 0.95em;
+  }
+}
+
+.mfd-fms-fpln-fix-info-table {
+  width: 98%;
+
+  display: flex;
+  flex-direction: column;
+
+  margin-top: 2.75rem;
+
+  .mfd-fms-fpln-fix-info-table-row-1 {
+    height: 5.5rem;
+
+    border-bottom: 2px solid $display-dark-grey;
+  }
+
+  .mfd-fms-fpln-fix-info-table-row-2 {
+    height: 11.5rem;
+
+    border-bottom: 2px solid $display-dark-grey;
+  }
+
+  .mfd-fms-fpln-fix-info-table-row-3 {
+    height: 7rem;
+
+    border-bottom: 2px solid $display-dark-grey;
+  }
+
+  .mfd-fms-fpln-fix-info-table-row-4 {
+    height: 11.5rem;
+  }
+
+  .mfd-fms-fpln-fix-info-table-col-left {
+    width: 23%;
+
+    border-right: 2px solid $display-dark-grey;
+  }
+
+  .mfd-fms-fpln-fix-info-table-col-center {
+    width: 57%;
+  }
+
+  .mfd-fms-fpln-fix-info-table-col-right {
+    width: 20%;
+  }
+
+  /* Individual cells */
+
+  .mfd-fms-fpln-fix-info-fpl-intercept-header {
+    font-size: 20px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    justify-items: center;
+    align-content: center;
+    grid-column-gap: 2rem;
+
+    span:first-child {
+      grid-column: span 3;
+    }
+  }
+
+  .mfd-fms-fpln-fix-info-radial-header {
+    font-size: 20px;
+    margin-left: 1.45rem;
+    margin-top: .6rem;
+    margin-bottom: .9rem;
+  }
+
+  .mfd-fms-fpln-fix-info-radial-1 {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .mfd-fms-fpln-fix-info-radial-2 {
+    margin-left: 1.5rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.mfd-fms-fpln-fix-info-radius-header {
+  font-size: 20px;
+  margin-left: 1.45rem;
+  margin-top: .75rem;
+  margin-bottom: .9rem;
+}
+
+.mfd-fms-fpln-fix-info-radius-1 {
+  width: 6rem;
+
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}

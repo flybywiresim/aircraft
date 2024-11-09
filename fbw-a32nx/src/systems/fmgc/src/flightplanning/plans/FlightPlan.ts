@@ -311,7 +311,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
     const planFixInfo = this.fixInfos as FixInfoEntry[];
 
-    planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
+    planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo?.radii, fixInfo?.radials) : undefined;
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo });
@@ -330,7 +330,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     if (notify) {
-      this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo: res });
+      this.sendEvent('flightPlan.setFixInfoEntry', {
+        planIndex: this.index,
+        forAlternate: false,
+        index,
+        fixInfo: res.clone(),
+      });
     }
 
     this.incrementVersion();

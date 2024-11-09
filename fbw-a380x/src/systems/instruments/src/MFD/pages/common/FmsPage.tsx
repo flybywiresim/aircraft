@@ -8,7 +8,7 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
-export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayComponent<T> {
+export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected subs = [] as Subscription[];
 
