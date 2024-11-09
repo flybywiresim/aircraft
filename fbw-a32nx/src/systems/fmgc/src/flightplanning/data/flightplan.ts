@@ -87,6 +87,5 @@ export interface OffsetData {
 
 export enum offsetFlags {
   Start = 0,
-  Intermediate = 1,
-  End = 2,
+  End = 1,
 }
