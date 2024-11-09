@@ -28,6 +28,8 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
   const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
   const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
+  const [minRwyLength, setMinRwyLength] = usePersistentProperty('CONFIG_MIN_RWY_LENGTH', '3000');
+  const [minRwyLengthSetting, setMinRwyLengthSetting] = useState(minRwyLength);
 
   const [usingMetric, setUsingMetric] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
   const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
@@ -64,6 +66,16 @@ export const AircraftOptionsPinProgramsPage = () => {
 
     if (parsedValue >= 400 && parsedValue <= 10000) {
       setAccelerationOutHeight(value.trim());
+    }
+  };
+
+  const handleSetMinRwyLength = (value: string) => {
+    setMinRwyLengthSetting(value);
+
+    const parsedValue = parseInt(value);
+
+    if (parsedValue >= 1500 && parsedValue <= 4000) {
+      setMinRwyLength(value.trim());
     }
   };
 
@@ -124,6 +136,16 @@ export const AircraftOptionsPinProgramsPage = () => {
               min={400}
               max={10000}
               onChange={(event) => handleSetAccelerationOutAlt(event)}
+            />
+          </SettingItem>
+          <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.MinimumRunwayLength')}`}>
+            <SimpleInput
+              className="w-30 text-center"
+              placeholder={minRwyLength}
+              value={minRwyLengthSetting}
+              min={1500}
+              max={4000}
+              onChange={(event) => handleSetMinRwyLength(event)}
             />
           </SettingItem>
 

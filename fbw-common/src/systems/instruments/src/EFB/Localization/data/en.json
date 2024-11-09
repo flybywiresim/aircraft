@@ -573,6 +573,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Acceleration Height (ft)",
       "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "MinimumRunwayLength": "ND Display Airport Minimum Runway Length (meters)",
       "IsisBaroUnit": "ISIS Baro Unit",
       "IsisMetricAltitude": "ISIS Metric Altitude",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",

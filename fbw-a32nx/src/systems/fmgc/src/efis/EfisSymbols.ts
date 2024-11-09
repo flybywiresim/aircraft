@@ -18,6 +18,7 @@ import {
   EfisSide,
   Arinc429SignStatusMatrix,
   Arinc429OutputWord,
+  NXDataStore,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -187,8 +188,13 @@ export class EfisSymbols<T extends number> {
     const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
     this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
-    const hasSuitableRunway = (airport: Airport): boolean =>
-      airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
+    const hasSuitableRunway = (airport: Airport): boolean => {
+      const minRwyLengthDisplay = parseInt(NXDataStore.get('CONFIG_MIN_RWY_LENGTH', '1500'));
+      return (
+        airport.longestRunwayLength >= minRwyLengthDisplay &&
+        airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard
+      );
+    };
 
     for (const side of EfisSymbols.sides) {
       const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
