@@ -40,7 +40,7 @@ import {
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -2336,6 +2336,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           continue;
         }
 
+        // TODO sync
         if (element.definition.type === LegType.IF && element.ident !== 'T-P') {
           element.type = LegType.TF;
         } else {
@@ -2345,7 +2346,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       // XX -> IF if no element, or discontinuity before, or 0th leg
       if (element && element.isDiscontinuity === false && element.type !== LegType.IF) {
-        if (!prevElement || (prevElement && prevElement.isDiscontinuity === true) || i === 0) {
+        // T-P legs need to always be CF so they can create a direct-to-fix transition outbound of them
+        const isLegTurningPoint = BitFlags.isAny(element.flags, FlightPlanLegFlags.DirectToTurningPoint);
+
+        // TODO sync
+        if (!isLegTurningPoint && (!prevElement || (prevElement && prevElement.isDiscontinuity === true) || i === 0)) {
           element.type = LegType.IF;
         }
       }
