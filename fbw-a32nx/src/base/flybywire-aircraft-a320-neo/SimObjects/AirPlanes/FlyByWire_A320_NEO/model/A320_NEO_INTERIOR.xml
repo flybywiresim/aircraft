@@ -3634,6 +3634,7 @@
                                 <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
                                 <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
                                 <TOOLTIPID>Test CVR</TOOLTIPID>
+                                
                             </UseTemplate>
                         </Component>
 
@@ -3684,21 +3685,42 @@
                         </Component>
 
                         <Component ID="CALLS">
-                            <!-- CALLS MECH -->
-                            <UseTemplate Name="FBW_Anim_Interactions">
+                            <!-- CALLS MECH (PACEHOLDER WAITING FOR HUD CONTROL PANEL) -->
+                            <!-- <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_MECH</HOLD_SIMVAR>
-                            </UseTemplate>
-                            <!-- CALLS ALL -->
+                            </UseTemplate> -->
+
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                            <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
+                            <LEFT_SINGLE_CODE>1 (L:A32NX_HUD_DECLUTTER_MODE, Number) + 3 % (&gt;L:A32NX_HUD_DECLUTTER_MODE)</LEFT_SINGLE_CODE>
+                            <MOMENTARY/>
+                            <NO_SEQ1 />
+                            <NO_SEQ2 />
+                            <ROUND />
+                        </UseTemplate>
+     
+
+                            <!-- CALLS ALL (PACEHOLDER WAITING FOR HUD CONTROL PANEL) -->
                             <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                                <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
+                                <PART_ID>PUSH_OVHD_CALLS_ALL</PART_ID>
+                                <TOGGLE_SIMVAR>L:A32NX_HUD_CROSSWIND_MODE</TOGGLE_SIMVAR>
+                            </UseTemplate>
+
+                            <!-- <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
                                 <PART_ID>PUSH_OVHD_CALLS_ALL</PART_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_ALL</HOLD_SIMVAR>
-                            </UseTemplate>
+                            </UseTemplate> -->
                             <!-- CALLS FWD -->
                             <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>

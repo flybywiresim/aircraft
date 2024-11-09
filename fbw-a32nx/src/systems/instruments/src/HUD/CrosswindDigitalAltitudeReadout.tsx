@@ -221,29 +221,29 @@ import {
           </g>
           <path
             id="CrosswindAltReadoutReducedAccurMarks"
-            class="ScaledStroke Green"
+            class="NormalStroke Green"
             style="display: none"
             d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345"
           />
           <path
             id="CrosswindAltReadoutOutline"
-            class="ScaledStroke Green"
+            class="NormalStroke Green"
             d="m117.75 76.337 h 22 v 9 h -22 z"
           />
           <path id="cwTape" 
-            class="ScaledStroke  Green" 
+            class="NormalStroke  Green" 
             d="m128.75 76.337  v -6 " 
           />
           <path id="cwTape" 
-            class="ScaledStroke  Green" 
+            class="NormalStroke  Green" 
             d="m128.75 85.337  v 6 "
           />
           <path id="cwTape" 
-            class="ScaledStroke  Green" 
+            class="NormalStroke  Green" 
             d="m117.75 91.337  h 22 " 
           />
           <path id="cwTape" 
-            class="ScaledStroke  Green" 
+            class="NormalStroke  Green" 
             d="m117.75 70.337  h 22 "
           />
   

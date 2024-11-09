@@ -1482,7 +1482,7 @@ These variables are the interface between the 3D model and the systems/code.
     - Indicates the speed for the lower speed margin limit in DES mode
 
 - A32NX_HUD_DECLUTTER_MODE
-    - Enum
+    - Number
     - Provides selected declutter mode for HUD
       Value | Meaning
       --- | ---

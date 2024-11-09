@@ -236,9 +236,11 @@ interface AltitudeIndicatorProps {
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
-  private isVisibleS = Subject.create('hidden');
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sCrosswindModeOn = Subject.create<String>('');
+  private sCrosswindModeOff = Subject.create<String>('');
 
   private subscribable = Subject.create<number>(0);
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
@@ -247,14 +249,73 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
-
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_HUD_BTN_LS_${getDisplayIndex()}`) {
-          SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = fp;
+      
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+        if(this.declutterMode > 0 ){
+            this.sCrosswindModeOn.set("none");
+            this.sCrosswindModeOff.set("none");
+        }
+        if(this.declutterMode == 0 ){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
       }
+      //todo use fmgcFlightphase for approch and landing declutter
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      }
+
+
     });
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-    this.isVisibleS.set(this.lsVisible ? 'visible' : 'hidden');
+  
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.declutterMode = value;
+        
+        if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
+        }
+        //todo use fmgcFlightphase for approch and landing declutter
+        if(this.flightPhase > 2 && this.flightPhase <= 8){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+    }); 
+    
+    sub.on('crosswindMode').whenChanged().handle((value) => {
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.crosswindMode = value;
+
+        if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
+        }
+        //todo use fmgcFlightphase for approch and landing declutter
+        if(this.flightPhase > 2 && this.flightPhase <= 8){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+    });
 
     const pf = this.props.bus.getSubscriber<Arinc429Values>();
 
@@ -266,11 +327,12 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         this.tapeRef.instance.style.display = 'none';
       }
     });
-  }
+}
 
   render(): VNode {
+
     return (
-      <g id="AltitudeTape" transform="scale(4.25 4.25) translate(131 38)"  class={{ HiddenElement: this.lsVisible }}>
+      <g id="AltitudeTape" transform="scale(4.25 4.25) translate(131 38)" display={this.sCrosswindModeOff} >
         {/* <AltTapeBackground /> */}
         {/* <LandingElevationIndicator bus={this.props.bus} /> */}
         <g ref={this.tapeRef}>
@@ -307,10 +369,11 @@ enum TargetAltitudeColor {
 }
 
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps> {
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
-  
-  private isVisibleS = Subject.create('hidden');
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sCrosswindModeOn = Subject.create<String>('');
+  private sCrosswindModeOff = Subject.create<String>('');
 
   private abnormal = FSComponent.createRef<SVGGElement>();
 
@@ -335,24 +398,72 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_HUD_BTN_LS_${getDisplayIndex()}`) {
-          SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = fp;
+      
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+        if(this.declutterMode > 0 ){
+            this.sCrosswindModeOn.set("none");
+            this.sCrosswindModeOff.set("none");
+        }
+        if(this.declutterMode == 0 ){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+      }
+      //todo use fmgcFlightphase for approch and landing declutter
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
       }
     });
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-    this.isVisibleS.set(this.lsVisible ? 'visible' : 'hidden');
+  
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.declutterMode = value;
 
-    sub.on('altitudeAr').handle((altitude) => {
-      if (!altitude.isNormalOperation()) {
-        this.normal.instance.style.display = 'none';
-        this.abnormal.instance.removeAttribute('style');
-      } else {
-        this.altitude.set(altitude.value);
-        this.abnormal.instance.style.display = 'none';
-        this.normal.instance.removeAttribute('style');
-      }
+        if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
+        }
+        //todo use fmgcFlightphase for approch and landing declutter
+        if(this.flightPhase > 2 && this.flightPhase <= 8){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+    }); 
+    
+    sub.on('crosswindMode').whenChanged().handle((value) => {
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.crosswindMode = value;
+
+        if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
+        }
+        //todo use fmgcFlightphase for approch and landing declutter
+        if(this.flightPhase > 2 && this.flightPhase <= 8){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
     });
+    
 
     sub
       .on('tcasFail')
@@ -393,7 +504,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   render(): VNode {
     return (
       <>
-        <g ref={this.abnormal} id="altGroup" style="display: none"  transform="scale(4.25 4.25) translate(131 38)" class={{ HiddenElement: this.lsVisible }}>
+        <g ref={this.abnormal} id="altGroup" style="display: none"  transform="scale(4.25 4.25) translate(131 38)" >
           <path id="AltTapeOutline" class="NormalStroke Green" d="m117.75 123.56h13.096v-85.473h-13.096" />
           <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
           <path id="CrosswindAltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
@@ -415,8 +526,8 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             S
           </text>
         </g>
-        <g ref={this.normal} id="AltTapes" style="display: none" transform="scale(4.25 4.25) translate(131 38)">
-          <g id="normalAltTape" class={{ HiddenElement: this.lsVisible }}>
+        <g ref={this.normal} id="AltTapes" transform="scale(4.25 4.25) translate(131 38)">
+          <g id="normalAltTape"  display={this.sCrosswindModeOff} >
             <path
               id="AltTapeOutline"
               class="NormalStroke Green"
@@ -447,7 +558,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
 
 
-          <g id="CrosswindAltTape" transform="translate( 0 -66.5)" class={{ HiddenElement: this.lsHidden }}>
+          <g id="CrosswindAltTape" transform="translate( 0 -66.5)"  display={this.sCrosswindModeOn} >
               <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
               
 
@@ -699,6 +810,10 @@ interface AltimeterIndicatorProps {
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sVisibility = Subject.create<String>('');
   private mode = Subject.create('');
 
   private text = Subject.create('');
@@ -710,8 +825,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private transAltAr = Arinc429Register.empty();
 
   private transLvlAr = Arinc429Register.empty();
-
-  private flightPhase = 0;
 
   private stdGroup = FSComponent.createRef<SVGGElement>();
 
@@ -757,10 +870,18 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       .whenChanged()
       .handle((fp) => {
         this.flightPhase = fp;
-
+        if(fp < 5 || fp >= 9){
+          this.sVisibility.set("none");
+        }
+        if(fp > 4 && fp < 9){
+          this.sVisibility.set("block");
+        }
         this.handleBlink();
       });
-
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.declutterMode = value;
+      }); 
     sub
       .on('fmTransAltRaw')
       .whenChanged()
@@ -846,7 +967,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
           </text>
         </g>
         <g id="AltimeterGroup">
-          <g ref={this.qfeGroup} id="QFEGroup">
+          <g ref={this.qfeGroup} id="QFEGroup" display={this.sVisibility}>
             <path
               ref={this.qfeBorder}
               class="NormalStroke Green"

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, NodeReference, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, NodeReference, VNode, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
@@ -87,7 +87,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
         return (
             <>
                 <g ref={this.bird} id="bird">
-                    <g>
+                    <g id="FlightPathVector">
                         <circle
                             class="SmallStroke Green"
                             cx="640"
@@ -168,6 +168,11 @@ interface FlightPathDirectorData {
 }
 
 export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus}> {
+    private flightPhase = -1;
+    private declutterMode = 0;
+    private crosswindMode = false;
+    private sVisibility = Subject.create<String>('');
+
     private data: FlightPathDirectorData = {
         roll: new Arinc429Word(0),
         pitch: new Arinc429Word(0),
@@ -194,6 +199,22 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus}> {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.flightPhase = fp;
+            if(fp < 5 || fp >= 9){
+              this.sVisibility.set("none");
+            }
+            if(fp > 4 && fp < 9){
+              this.sVisibility.set("block");
+            }
+          });
+        
+          sub.on('declutterMode').whenChanged().handle((value) => {
+              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+              this.declutterMode = value;
+          });
+
 
         sub.on('fd1Active').whenChanged().handle((fd) => {
             if (getDisplayIndex() === 1) {
@@ -295,7 +316,7 @@ export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus}> {
     render(): VNode {
         return (
 
-            <g ref={this.birdPath}>
+            <g ref={this.birdPath} id="FlighPathDirector" display={this.sVisibility}>
                 <circle
                     class="SmallStroke Green"
                     cx="640"
@@ -412,6 +433,10 @@ interface SpeedStateInfo {
 }
 
 class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
+    private flightPhase = -1;
+    private declutterMode = 0;
+    private crosswindMode = false;
+    private sVisibility = Subject.create<String>('');
     private speedRefs : NodeReference<SVGElement>[] = [];
 
     private needsUpdate = true;
@@ -430,7 +455,21 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
         this.needsUpdate = true;
 
         const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
-
+        
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.flightPhase = fp;
+            // preflight, taxi
+            if(fp < 5 || fp >= 8){
+                this.sVisibility.set("none");
+            }else{
+                this.sVisibility.set("block");
+            }
+            
+            // TODO use fmgc flighphase to all declutter in approach and landing mode 
+            if(fp > 2 && fp < 9){
+              this.sVisibility.set("block");
+            }
+          });
         sub.on('isSelectedSpeed').whenChanged().handle((s) => {
             this.speedState.isSelectedSpeed = s;
             this.needsUpdate = true;
@@ -510,6 +549,7 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
         }
         return (
             <>
+            <g id="DeltaSpeedGroup" display={this.sVisibility}>
                 <path ref={this.speedRefs[0]} class="ScaledStroke CornerRound Green" d="m 595,507.4 h 12 v 9.2 h -12 z" style="visibility:hidden" />
                 <path ref={this.speedRefs[1]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
                 <path ref={this.speedRefs[2]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
@@ -520,6 +560,7 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
                     <path d="m 601,466 v 92" />
                     <path d="m 607,466 v 92" />
                 </g>
+            </g>
             </>
         );
     }

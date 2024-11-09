@@ -13,8 +13,9 @@ import {
   SubscribableMapFunctions,
   ConsumerSubject,
   HEvent,
+  EventBus
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
@@ -24,6 +25,10 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+
+import { GenericAdirsEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericAdirsEvents';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
+
 
 
 const ValueSpacing = 10;
@@ -153,9 +158,12 @@ interface AirspeedIndicatorProps {
 }
 
 export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> {
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
-  private isVisibleS = Subject.create('hidden');
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sCrosswindModeOn = Subject.create<String>('');
+  private sCrosswindModeOff = Subject.create<String>('');
+  private groundSpeedRef = FSComponent.createRef<SVGGElement>();
 
   private speedSub = Subject.create<number>(0);
 
@@ -164,6 +172,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
 
   private showBarsRef = FSComponent.createRef<SVGGElement>();
+  private GSText  = Subject.create<String>('');
 
   private vfeNext = FSComponent.createRef<SVGPathElement>();
 
@@ -207,21 +216,79 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     super.onAfterRender(node);
 
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HEvent >();
-        
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_HUD_BTN_LS_${getDisplayIndex()}`) {
-          SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents & HEvent >();
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = fp;
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+        this.GSText.set("block");
+      }else{
+          this.GSText.set("none");
+      }
+
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+        if(this.declutterMode > 0 ){
+            this.sCrosswindModeOn.set("none");
+            this.sCrosswindModeOff.set("none");
+        }
+        if(this.declutterMode == 0 ){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+      }
+      //todo use fmgcFlightphase for approch and landing declutter
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
       }
     });
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-    this.isVisibleS.set(this.lsVisible ? 'visible' : 'hidden');
+  
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.declutterMode = value;
 
+        if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
+        }
+        //todo use fmgcFlightphase for approch and landing declutter
+        if(this.flightPhase > 2 && this.flightPhase <= 8){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+    }); 
+    
+    sub.on('crosswindMode').whenChanged().handle((value) => {
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.crosswindMode = value;
 
+        if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
+        }
+        //todo use fmgcFlightphase for approch and landing declutter
+        if(this.flightPhase > 2 && this.flightPhase <= 8){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+    });
 
-    const pf = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
-
-    pf.on('vFeNext')
+    sub.on('vFeNext')
       .withArinc429Precision(2)
       .handle((vfe) => {
         if (vfe.isNormalOperation()) {
@@ -233,14 +300,14 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         }
       });
 
-    pf.on('speedAr')
+      sub.on('speedAr')
       .withArinc429Precision(3)
       .handle((airSpeed) => {
         this.airSpeed = airSpeed;
         this.setOutline();
       });
 
-    pf.on('leftMainGearCompressed')
+      sub.on('leftMainGearCompressed')
       .whenChanged()
       .handle((g) => {
         this.leftMainGearCompressed = g;
@@ -248,7 +315,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         this.setOutline();
       });
 
-    pf.on('rightMainGearCompressed')
+      sub.on('rightMainGearCompressed')
       .whenChanged()
       .handle((g) => {
         this.rightMainGearCompressed = g;
@@ -278,21 +345,20 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
           <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">
             SPD
           </text>
-          <path id="SpeedTapeOutlineRight" class="ScaledStroke Red" d={this.pathSub} />
+          <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
         </g>
 
         <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements} transform="scale(4.25 4.25) translate(15 38)">
           
-        <g id="CrosswindSpeedTape" transform="translate( -120 -66.5)" class={{ HiddenElement: this.lsHidden }}>
-              <CrosswindDigitalSpeedReadout bus={this.props.bus} />
-              
-
+          <g id="CrosswindSpeedTape" transform="translate( -120 -66.5)" display={this.sCrosswindModeOn}>
+            <CrosswindDigitalSpeedReadout bus={this.props.bus} />
           </g>
-          <g id="NormalSpeedTape" class={{ HiddenElement: this.lsVisible }}>
+
+          <g id="NormalSpeedTape" display={this.sCrosswindModeOff}>
               
             {/* <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" /> */}
             {/* Outline */}
-            <path id="SpeedTapeOutlineRight" class="ScaledStroke Green" d={this.pathSub} />
+            <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
             <VerticalTape
               tapeValue={this.speedSub}
               lowerLimit={30}
@@ -328,6 +394,10 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
           </g> 
           
+          <g ref={this.groundSpeedRef} id="SpeedIndicator" display={this.GSText} transform="translate(32 35) ">
+            <SpeedIndicator bus={this.props.bus} />
+          </g>
+
         </g>
       </>
     );
@@ -408,9 +478,11 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 const getSpeedTapeOffset = (speed: number): number => (-speed * DistanceSpacing) / ValueSpacing;
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
-  private isVisibleS = Subject.create('hidden');
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sCrosswindModeOn = Subject.create<String>('');
+  private sCrosswindModeOff = Subject.create<String>('');
 
   private lowerRef = FSComponent.createRef<SVGGElement>();
 
@@ -462,13 +534,68 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_HUD_BTN_LS_${getDisplayIndex()}`) {
-          SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.flightPhase = fp;
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode > 0 ){
+              this.sCrosswindModeOn.set("none");
+              this.sCrosswindModeOff.set("none");
+          }
+          if(this.declutterMode == 0 ){
+              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          }
       }
-    });
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-    this.isVisibleS.set(this.lsVisible ? 'visible' : 'hidden');
+      //todo use fmgcFlightphase for approch and landing declutter
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      }
+  });
+  
+  sub.on('declutterMode').whenChanged().handle((value) => {
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.declutterMode = value;
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+        if(this.declutterMode > 0 ){
+            this.sCrosswindModeOn.set("none");
+            this.sCrosswindModeOff.set("none");
+        }
+        if(this.declutterMode == 0 ){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+      }
+      //todo use fmgcFlightphase for approch and landing declutter
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      }
+  }); 
+  
+  sub.on('crosswindMode').whenChanged().handle((value) => {
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.crosswindMode = value;
+
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+        if(this.declutterMode > 0 ){
+            this.sCrosswindModeOn.set("none");
+            this.sCrosswindModeOff.set("none");
+        }
+        if(this.declutterMode == 0 ){
+            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+        }
+      }
+      //todo use fmgcFlightphase for approch and landing declutter
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      }
+  });
+
     sub
       .on('leftMainGearCompressed')
       .whenChanged()
@@ -522,11 +649,11 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     return (
       <>
         <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef} transform="scale(4.25 4.25) translate(15 38)">
-          <path id="SpeedTapeOutlineUpper" class="ScaledStroke Red" d="m1.9058 38.086h21.859" />
-          <path id="SpeedTapeOutlineLower" class="ScaledStroke Red" d="m1.9058 123.56h21.859" />
+          <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
+          <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
         </g>
-        <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  class={{ HiddenElement: this.lsVisible }}  >
-          <path id="SpeedTapeOutlineUpper" class="ScaledStroke Green" d="m1.9058 38.086h21.859" />
+        <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  display={this.sCrosswindModeOff}  >
+          <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m1.9058 38.086h21.859" />
           <SpeedTarget bus={this.props.bus} />
           <text id="AutoBrkDecel" ref={this.decelRef} class="FontMediumSmaller  EndAlign Green" x="20.53927" y="129.06996">
             DECEL
@@ -536,7 +663,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
             d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z"
           />
           <path class="Fill Green SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-          <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="ScaledStroke Green" d="m1.9058 123.56h21.859" />
+          <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke Green" d="m1.9058 123.56h21.859" />
           <g ref={this.spdLimFlagRef}>
             <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMediumSmaller EndAlign Green Blink9Seconds">
               SPD
@@ -1445,6 +1572,48 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
         <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
         <path class="ScaledStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
       </g>
+    );
+  }
+}
+
+//GroundSpeed indicator
+class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private readonly groundSpeedRef = FSComponent.createRef<SVGTextElement>();
+
+  private readonly trueAirSpeedRef = FSComponent.createRef<SVGTextElement>();
+
+  private readonly groundSpeedRegister = Arinc429RegisterSubject.createEmpty();
+
+  private readonly trueAirSpeedRegister = Arinc429RegisterSubject.createEmpty();
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<GenericAdirsEvents>();
+
+    sub
+      .on('groundSpeed')
+      .atFrequency(2)
+      .handle((value) => this.groundSpeedRegister.setWord(value));
+
+      this.groundSpeedRegister.sub((data) => {
+      const element = this.groundSpeedRef.instance;
+
+      element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
+      
+      (data.value <= 40) ? this.groundSpeedRef.instance.style.display = "block" : this.groundSpeedRef.instance.style.display = "none";
+    }, true);
+
+  }
+
+  render(): VNode | null {
+    return (
+      <Layer x={2} y={25}>
+        <text x={0} y={0} class="Green FontMediumSmaller">
+          GS
+        </text>
+        <text ref={this.groundSpeedRef} x={18} y={0} class="Green FontMediumSmaller EndAlign" />
+        </Layer>
     );
   }
 }

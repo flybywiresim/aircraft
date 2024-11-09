@@ -46,10 +46,6 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         sub.on('hEvent').handle((eventName) => {
             if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
                 SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-                SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
-            }
-            if (eventName === `A320_Neo_HUD_XWINDMODE`) {
-                // SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
             }
           });
           this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));

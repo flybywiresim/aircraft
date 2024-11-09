@@ -16,12 +16,17 @@ interface AttitudeIndicatorFixedUpperProps {
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
-  private roll = new Arinc429Word(0);
-
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sVisibility = Subject.create<String>('');
+  private radioAlt = -1;
   private pitch: Arinc429WordData = Arinc429Register.empty();
+  private roll = new Arinc429Word(0);
 
   private visibilitySub = Subject.create('hidden');
 
+  private attInfoGroup = FSComponent.createRef<SVGGElement>();
   private rollProtSymbol = FSComponent.createRef<SVGGElement>();
 
   private rollProtLostSymbol = FSComponent.createRef<SVGGElement>();
@@ -29,11 +34,35 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
+    
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.flightPhase = fp;
+      if(fp < 5 || fp >= 9){
+        this.sVisibility.set("none");
+      }
+      if(fp > 4 && fp < 9){
+        this.sVisibility.set("block");
+      }
+    });
+  
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.declutterMode = value;
+    }); 
+  
+
+
+    sub.on('radioAltitude1').whenChanged().handle((ra) => {
+      this.radioAlt = ra;
+   
+  });
+
+
 
     sub.on('rollAr').handle((roll) => {
       this.roll = roll;
-      if (!this.roll.isNormalOperation()) {
+      if (!this.roll.isNormalOperation() || this.radioAlt < 50) {
         this.visibilitySub.set('hidden');
       } else {
         this.visibilitySub.set('visible');
@@ -42,7 +71,7 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
     sub.on('pitchAr').handle((pitch) => {
       this.pitch = pitch;
-      if (!this.pitch.isNormalOperation()) {
+      if (!this.pitch.isNormalOperation() || this.radioAlt < 50) {
         this.visibilitySub.set('hidden');
       } else {
         this.visibilitySub.set('visible');
@@ -60,7 +89,8 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
   render(): VNode {
     return (
-      <g id="AttitudeUpperInfoGroup" visibility={this.visibilitySub} transform="scale(5 5) translate(59 -8)">
+      // visibility={this.visibilitySub}
+      <g id="AttitudeUpperInfoGroup" ref={this.attInfoGroup} display={this.sVisibility} transform="scale(5 5) translate(59 -8)">
         <g id="RollProtGroup" ref={this.rollProtSymbol} style="display: none" class="ScaledStrokeThin Green">
           <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
           <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
@@ -199,7 +229,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         >
           ATT
         </text>
-        <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
+        <g id="AttitudeSymbolsGroup" transform="translate(0 0)" style={this.visibilitySub}>
           <FDYawBar bus={this.props.bus} />
           <AircraftReference bus={this.props.bus} />
           <FlightPathVector bus={this.props.bus} />
@@ -211,6 +241,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
 class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
   private declutterMode = 0;
+  private flightPhase = 0;
 
   private fdActive = false;
 
@@ -226,6 +257,10 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.flightPhase = fp;
+  });
 
     sub
       .on('pitchAr')
@@ -295,7 +330,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
           <path d="m 636.25,332.89 h 7.5 v -7.5 h -7.5 z" />
           <path d="m 680,336.52 v -7.38 h 41.63" />
         </g>
-        <g id="AircraftReferenceOnGround" class="SmallStroke Green" style={this.visibilityGroundSub}>
+        <g id="AircraftReferenceOnGround" class="SmallStroke Green" transform="translate(0 0)" style={this.visibilityGroundSub}>
           <path d="m 630,391.28 h 20 L 640,410 Z" />
         </g>
       </>
@@ -323,7 +358,7 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
     const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
     if (this.isActive()) {
       this.yawRef.instance.style.visibility = 'visible';
-      this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+      this.yawRef.instance.style.transform = `translate3d(${offset}px, 113px, 0px)`;
     }
   }
 
@@ -392,8 +427,8 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
       <path
         ref={this.yawRef}
         id="GroundYawSymbol"
-        class="NormalStroke Green"
-        d="m 512.5,299.5 -3,8.5 v 25 h 6 v -25 z"
+        class="SmallStroke Green"
+        d="m 640,299.5 -3,8.5 v 25 h 6 v -25 z"
       />
     );
   }

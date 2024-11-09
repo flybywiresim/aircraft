@@ -187,12 +187,16 @@ interface GroundTrackBugProps {
 }
 
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
+    private flightPhase = -1;
+    private declutterMode = 0;
+    private crosswindMode = false;
+    private bVisibility = Subject.create<boolean>(false);
     private groundTrack = Arinc429ConsumerSubject.create(null);
 
     private isVisibleSub = MappedSubject.create(([groundTrack, heading]) => {
         const delta = getSmallestAngle(groundTrack.value, heading);
         // TODO should also be hidden if heading is invalid
-        return groundTrack.isNormalOperation() && Math.abs(delta) < DisplayRange;
+        return groundTrack.isNormalOperation() && Math.abs(delta) < DisplayRange && this.bVisibility;
     }, this.groundTrack, this.props.heading);
 
     private transformSub = MappedSubject.create(([groundTrack, heading]) => {
@@ -203,8 +207,19 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents>();
+        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars>();
         this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.flightPhase = fp;
+            if(fp < 5 || fp >= 9){
+              this.bVisibility.set(false);
+            }
+            if(fp > 4 && fp < 9){
+              this.bVisibility.set(true);
+            }
+          });
+
     }
 
     render(): VNode {

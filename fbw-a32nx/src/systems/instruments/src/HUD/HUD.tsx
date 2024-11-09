@@ -4,7 +4,9 @@
 
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode,  
     SubscribableMapFunctions,
-    ConsumerSubject,
+    MappedSubject,
+    Subscribable,
+    ConsumerSubject,ConsumerValue, EventBus,
     HEvent, } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
@@ -25,6 +27,25 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+
+
+import { GenericAdirsEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericAdirsEvents';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
+// L:A32NX_FWC_FLIGHT_PHASE
+// | 0      |                  |
+// | 1      | ELEC PWR         | taxi
+// | 2      | 1ST ENG STARTED  | taxi
+// | 3      | 1ST ENG TO PWR   | takeoff
+// | 4      | 80 kt            | takeoff
+// | 5      | LIFTOFF          | clb
+// | 6      | 1500ft (in clb)  |
+// | 7      | 800 ft (in desc) |
+// | 8      | TOUCHDOWN        | rollout
+// | 9      | 80 kt            | taxi
+// | 10     | 2nd ENG SHUTDOWN |
+// | &gt; 1 | 5 MIN AFTER      |
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
@@ -33,14 +54,16 @@ export const getDisplayIndex = () => {
 
 interface HUDProps extends ComponentProps {
     bus: ArincEventBus;
+    //flightPhase: FmgcFlightPhase;
     instrument: BaseInstrument;
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
-    private readonly lsVisible = ConsumerSubject.create(null, false);
-    private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
-    
-
+    private flightPhase = -1;
+    private declutterMode = 0;
+    private crosswindMode = false;
+    private sCrosswindModeOn = Subject.create<String>('');
+    private sCrosswindModeOff = Subject.create<String>('');
     private headingFailed = Subject.create(true);
 
     private displayBrightness = Subject.create(0);
@@ -66,27 +89,87 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     constructor(props: HUDProps) {
         super(props);
         this.failuresConsumer = new FailuresConsumer('A32NX');
-    }
 
+    }
+    
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
-        const isCaptainSide = getDisplayIndex() === 1;
-
-        this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
-
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent>();
         
-        sub.on('hEvent').handle((eventName) => {
-            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-                SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
-            }
-            if (eventName === `A320_Neo_HUD_XWINDMODE`) {
-                // SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
-            }
+        const isCaptainSide = getDisplayIndex() === 1;
+        
+        this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
+        
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent>();
+
+        
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+            this.flightPhase = fp;
+            
+            if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                if(this.declutterMode > 0 ){
+                    this.sCrosswindModeOn.set("none");
+                    this.sCrosswindModeOff.set("none");
+                }
+                if(this.declutterMode == 0 ){
+                    this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+                    this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+                }
+              }
+              //todo use fmgcFlightphase for approch and landing declutter
+              if(this.flightPhase > 2 && this.flightPhase <= 8){
+                  this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+                  this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+              }
+            console.log("flighphase: " + this.flightPhase );
           });
-          this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
+        
+          sub.on('declutterMode').whenChanged().handle((value) => {
+              this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+              this.declutterMode = value;
+      
+              if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                if(this.declutterMode > 0 ){
+                    this.sCrosswindModeOn.set("none");
+                    this.sCrosswindModeOff.set("none");
+                }
+                if(this.declutterMode == 0 ){
+                    this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+                    this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+                }
+              }
+              //todo use fmgcFlightphase for approch and landing declutter
+              if(this.flightPhase > 2 && this.flightPhase <= 8){
+                  this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+                  this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+              }
+              console.log("decVal: " + this.declutterMode );
+          }); 
+          
+          sub.on('crosswindMode').whenChanged().handle((value) => {
+              this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+              this.crosswindMode = value;
+      
+              if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                if(this.declutterMode > 0 ){
+                    this.sCrosswindModeOn.set("none");
+                    this.sCrosswindModeOff.set("none");
+                }
+                if(this.declutterMode == 0 ){
+                    this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+                    this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+                }
+              }
+              //todo use fmgcFlightphase for approch and landing declutter
+              if(this.flightPhase > 2 && this.flightPhase <= 8){
+                  this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
+                  this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+              }
+                console.log("xwindVal: " + this.crosswindMode);
+          });
           
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
@@ -151,7 +234,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                     <path id="PitchScaleMask"  class= "BackgroundFill"  
                         d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278 v 800 h -1278 Z"/> 
 
-                    <g id="TapesMasks" class={{ HiddenElement: this.lsVisible }} >
+                    <g id="TapesMasks" display={this.sCrosswindModeOff} >
                     
                         <path id="AltTapeMask" class="BlackFill" d="m1045 322 h 114 v 365 h-114z"></path>
                         <path id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
@@ -162,16 +245,18 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                     <g id="WindIndicator" class="Wind" transform="translate(250 200) ">
                         <WindIndicator bus={this.props.bus} />
                     </g>
+
+
                     <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
 
                     <AltitudeIndicator bus={this.props.bus} />
                     <AirspeedIndicator
                         bus={this.props.bus}
                         instrument={this.props.instrument}
-                    />
+                    /> 
 
                     {/* mask2 speedtape draw limits | mask3 altTape draw limits */}
-                    <g id="TapesMasks2" class={{ HiddenElement: this.lsVisible }} >
+                    <g id="TapesMasks2" display={this.sCrosswindModeOff} >
                         <path
                         id="Mask2"
                         class="BackgroundFill"
@@ -186,8 +271,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         />
                     </g>
                     
-                    <AirspeedIndicatorOfftape bus={this.props.bus} />
-
+                     <AirspeedIndicatorOfftape bus={this.props.bus} /> 
                     <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
                     <AttitudeIndicatorFixedUpper bus={this.props.bus} />
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />

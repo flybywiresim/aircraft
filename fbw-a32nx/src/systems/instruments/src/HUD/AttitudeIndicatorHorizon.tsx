@@ -217,7 +217,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     return (
       <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
         <g id="PitchGroup" ref={this.pitchGroupRef} class="ScaledStroke Green">
-          <SyntheticRunway bus={this.props.bus} />
+          {/* <SyntheticRunway bus={this.props.bus} /> */}
 
           <TailstrikeIndicator bus={this.props.bus} />
 
@@ -496,7 +496,11 @@ interface SideslipIndicatorProps {
   instrument: BaseInstrument;
 }
 
-class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
+class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {  
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sVisibility = Subject.create<String>('');
   private latAccFilter = new LagFilter(0.5);
 
   private estimatedBetaFilter = new LagFilter(2);
@@ -531,6 +535,27 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.flightPhase = fp;
+      if(fp < 5 || fp >= 9){
+        this.sVisibility.set("none");
+      }
+      if(fp > 4 && fp < 9){
+        this.sVisibility.set("block");
+      }
+    });
+  
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number')
+        this.declutterMode = value;
+        if(this.declutterMode == 2 ){
+          this.sVisibility.set("none");
+        }
+        if(this.declutterMode < 2 && (this.flightPhase > 4 && this.flightPhase < 9)){
+          this.sVisibility.set("block");
+          }
+    }); 
 
     sub
       .on('leftMainGearCompressed')
@@ -630,7 +655,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   render(): VNode {
     return (
-      <g id="RollTriangleGroup" ref={this.rollTriangle} class="SmallStroke Green CornerRound">
+      <g id="RollTriangleGroup" ref={this.rollTriangle} display='none' class="SmallStroke Green CornerRound">
         <path d="M 640.18,154.11 l -10,21.89 h 20z" />
         <path
           id="SideSlipIndicator"
@@ -653,6 +678,10 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 }
 
 class PitchScale extends DisplayComponent<{ bus: ArincEventBus} >   {
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sVisibility = Subject.create<String>('');
 
   private readonly lsVisible = ConsumerSubject.create(null, false);
   private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
@@ -669,14 +698,38 @@ class PitchScale extends DisplayComponent<{ bus: ArincEventBus} >   {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent>();
+    
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = fp;
+      // preflight, taxi
+      if(fp < 3 || fp >= 9){
+        if(this.declutterMode == 0){
+        this.sVisibility.set("block");
+        }else{
+          this.sVisibility.set("none");
+        }
+      }
+      // TODO use fmgc flighphase to all declutter in approach and landing mode 
+      if(fp > 2 && fp < 9){
+        this.sVisibility.set("block");
+      }
+    });
+  
+    sub.on('declutterMode').whenChanged().handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+        this.declutterMode = value;
+        if(this.declutterMode == 0){
+          this.sVisibility.set("block");
+        }else{
+          this.sVisibility.set("none");
+        }
+    }); 
+
 
     sub.on('hEvent').handle((eventName) => {
       if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
           SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-          SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
-      }
-      if (eventName === `A320_Neo_HUD_XWINDMODE`) {
-          // SimVar.SetSimVarValue(`L:A32NX_HUD_CROSSWIND_MODE`, 'Bool', !this.lsVisible.get());
       }
     });
     this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
@@ -782,6 +835,6 @@ class PitchScale extends DisplayComponent<{ bus: ArincEventBus} >   {
       );
     }
 
-    return <g class="ScaledStroke">{result}</g>;
+    return <g class="ScaledStroke" display={this.sVisibility} >{result}</g>;
   }
 }
