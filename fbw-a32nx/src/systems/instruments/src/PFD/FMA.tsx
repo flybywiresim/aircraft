@@ -1599,16 +1599,16 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     let text2: string | undefined;
     this.isShown = true;
     if (land2Capacity) {
-      text1 = 'CAT 2';
+      text1 = 'CAT2';
       text2 = '';
     } else if (land3FailPassiveCapacity) {
-      text1 = 'CAT 3';
+      text1 = 'CAT3';
       text2 = 'SINGLE';
     } else if (land3FailOperationalCapacity) {
-      text1 = 'CAT 3';
+      text1 = 'CAT3';
       text2 = 'DUAL';
     } else if (landModeArmed || landModeActive) {
-      text1 = 'CAT 1';
+      text1 = 'CAT1';
       text2 = '';
     } else if (false) {
       text1 = 'AUTO';
