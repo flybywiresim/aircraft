@@ -330,7 +330,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   }
 
   destroy(): void {
-    this.topRef.instance.removeEventListener('mousemove', this.onMouseMoveHandler);
+    this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
 
     super.destroy();
   }

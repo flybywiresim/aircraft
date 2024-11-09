@@ -67,7 +67,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.spanRef.instance.removeEventListener('click', this.onClickHandler);
+    this.spanRef.getOrDefault()?.removeEventListener('click', this.onClickHandler);
 
     super.destroy();
   }

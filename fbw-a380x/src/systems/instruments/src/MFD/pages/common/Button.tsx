@@ -249,9 +249,9 @@ export class Button extends DisplayComponent<ButtonProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.buttonRef.instance.removeEventListener('click', this.onClickHandler);
+    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onClickHandler);
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onCloseDropdownHandler);
-    this.buttonRef.instance.removeEventListener('click', this.onButtonClickHandler);
+    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onButtonClickHandler);
 
     super.destroy();
   }

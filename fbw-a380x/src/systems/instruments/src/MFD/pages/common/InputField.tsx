@@ -576,15 +576,15 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.textInputRef.instance.removeEventListener('keypress', this.onKeyPressHandler);
-    this.textInputRef.instance.removeEventListener('keydown', this.onKeyDownHandler);
+    this.textInputRef.getOrDefault()?.removeEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.getOrDefault()?.removeEventListener('keydown', this.onKeyDownHandler);
 
     if (!this.props.handleFocusBlurExternally) {
-      this.textInputRef.instance.removeEventListener('focus', this.onFocusHandler);
-      this.textInputRef.instance.removeEventListener('blur', this.onBlur.bind(this, true));
-      this.spanningDivRef.instance.removeEventListener('click', this.onFocusTextInputHandler);
-      this.leadingUnitRef.instance.removeEventListener('click', this.onFocusTextInputHandler);
-      this.trailingUnitRef.instance.removeEventListener('click', this.onFocusTextInputHandler);
+      this.textInputRef.getOrDefault()?.removeEventListener('focus', this.onFocusHandler);
+      this.textInputRef.getOrDefault()?.removeEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
     }
 
     super.destroy();

@@ -98,7 +98,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         ?.removeEventListener('click', this.onMenuItemClick.bind(this, val));
     });
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
-    this.dropdownSelectorRef.instance.removeEventListener('click', this.onOpenCloseDropdownHandler);
+    this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseDropdownHandler);
 
     super.destroy();
   }

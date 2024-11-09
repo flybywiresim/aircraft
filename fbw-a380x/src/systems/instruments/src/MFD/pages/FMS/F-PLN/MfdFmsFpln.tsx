@@ -1238,10 +1238,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     this.timeRef.getOrDefault()?.parentElement?.removeEventListener('click', this.props.callbacks.rta);
 
     if (this.props.displayEfobAndWind.get()) {
-      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.wind);
+      this.altRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.wind);
     } else {
-      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.altitude);
-      this.speedRef.instance.parentElement?.addEventListener('click', this.props.callbacks.speed);
+      this.altRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.altitude);
+      this.speedRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.speed);
     }
 
     super.destroy();

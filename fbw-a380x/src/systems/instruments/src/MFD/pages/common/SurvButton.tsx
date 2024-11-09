@@ -86,7 +86,7 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.topRef.instance.removeEventListener('click', this.onClickHandler);
+    this.topRef.getOrDefault()?.removeEventListener('click', this.onClickHandler);
 
     super.destroy();
   }

@@ -258,7 +258,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.dropdownSelectorRef.instance.removeEventListener('click', this.onOpenCloseClickHandler);
+    this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseClickHandler);
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
 
     super.destroy();
