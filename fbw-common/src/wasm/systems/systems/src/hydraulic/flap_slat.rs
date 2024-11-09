@@ -543,7 +543,6 @@ impl SimulationElement for FlapSlatAssembly {
             &self.animation_left_id,
             (self.position_feedback() / self.max_synchro_gear_position).get::<percent>(),
         );
-
         writer.write(
             &self.animation_right_id,
             (self.position_feedback() / self.max_synchro_gear_position).get::<percent>(),
