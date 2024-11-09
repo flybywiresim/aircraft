@@ -1,4 +1,4 @@
-use nalgebra::{SimdBool, Vector3};
+use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
@@ -8936,6 +8936,9 @@ mod tests {
                 )
                 .run_waiting_for(Duration::from_secs(1));
 
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
+
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
@@ -8984,6 +8987,9 @@ mod tests {
                     AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -9148,6 +9154,9 @@ mod tests {
                     < 0.1
             );
 
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
+
             test_bed = test_bed
                 .reset_all_aileron_commands()
                 .ac_eha_active()
@@ -9186,6 +9195,9 @@ mod tests {
                     AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -9374,6 +9386,9 @@ mod tests {
                 .set_left_spoilers_out()
                 .set_right_spoilers_out()
                 .run_waiting_for(Duration::from_secs(5));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
