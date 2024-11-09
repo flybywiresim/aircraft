@@ -53,6 +53,11 @@ export class LightSync implements Instrument {
   public initLighting(): void {
     console.log('[LightSync] initializing lighting to defaults');
 
+    const msfsCabinCircuitVar = SimVar.GetSimVarValue('A:CIRCUIT SWITCH ON:146', 'bool');
+    if (!msfsCabinCircuitVar) {
+      SimVar.SetSimVarValue('K:ELECTRICAL_CIRCUIT_TOGGLE', 'number', 146);
+    }
+
     const autoBrightness = this.getAutoBrightness();
 
     // OVHD Reading Lights
