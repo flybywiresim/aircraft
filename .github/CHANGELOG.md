@@ -28,7 +28,6 @@
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
 1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
-1. [A380X/FLIGHT MODEL] Fix for stall and auto-rotation issues- @donstim (donbikes)
 1. [A380X/MODEL] Optimized 4K textures - @Repsol
 1. [A380X/EFB] Moved cabin lighting from ambient light knob to EFB Quick Settings - @2hwk (2cas)
 1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
