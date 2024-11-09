@@ -64,7 +64,7 @@ export class FwsNormalChecklists {
       const proc = EcamNormalProcedures[k] as NormalProcedure;
       this.checklistState.setValue(k, {
         id: k,
-        checklistCompleted: false,
+        checklistCompleted: proc.deferred ? true : false,
         itemsCompleted: Array(proc.items.length).fill(false),
       });
     });
@@ -176,7 +176,6 @@ export class FwsNormalChecklists {
       this.moveDown();
     } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
       // C/L complete
-      console.log('COMPLETE');
       clState.checklistCompleted = true;
       const proc = EcamNormalProcedures[this.checklistId.get()];
       clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
@@ -199,7 +198,7 @@ export class FwsNormalChecklists {
           const procFollowing = EcamNormalProcedures[idFollowing];
           const clStateFollowing: ChecklistState = {
             id: idFollowing,
-            checklistCompleted: false,
+            checklistCompleted: procFollowing.deferred ? true : false,
             itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
               procFollowing.items[index].sensed ? val : false,
             ),

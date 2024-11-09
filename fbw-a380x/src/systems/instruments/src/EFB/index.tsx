@@ -47,6 +47,7 @@ render(
           mcduKeyboard: false,
           pauseOnTod: true,
           pilotAvatars: false,
+          eclSoftKeys: true,
         },
         sim: {
           cones: false,
