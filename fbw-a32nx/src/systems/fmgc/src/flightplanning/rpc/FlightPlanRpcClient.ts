@@ -7,7 +7,7 @@ import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { EventBus, EventSubscriber, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
-import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, OffsetData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
@@ -291,6 +291,16 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   enableAltn(atIndexInAlternate: number, cruiseLevel: number, planIndex: number): Promise<void> {
     return this.callFunctionViaRpc('enableAltn', atIndexInAlternate, cruiseLevel, planIndex);
+  }
+
+  setOffsetParams(
+    startIndex: number,
+    endIndex: number,
+    desiredOffset: OffsetData,
+    planIndex: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<void> {
+    return this.callFunctionViaRpc('setOffsetParams', startIndex, endIndex, desiredOffset, planIndex, alternate);
   }
 
   setPilotEnteredAltitudeConstraintAt(
