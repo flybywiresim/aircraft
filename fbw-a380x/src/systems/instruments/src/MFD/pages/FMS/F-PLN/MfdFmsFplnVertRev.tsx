@@ -54,6 +54,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private spdConstraintDisabled = Subject.create(true);
 
+  private cannotDeleteSpeedConstraint = Subject.create(false);
+
   // CMS page
 
   // ALT page
@@ -65,6 +67,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private altitudeConstraintType = Subject.create<'CLB' | 'DES' | null>(null);
 
   private altConstraintDisabled = Subject.create(true);
+
+  private cannotDeleteAltConstraint = Subject.create(false);
 
   private selectedAltitudeConstraintOption = Subject.create<number | null>(null);
 
@@ -176,6 +180,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       // Load speed constraints
       this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
       this.speedConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
+
+      this.cannotDeleteAltConstraint.set(
+        !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
+      );
+      this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
 
       // Load altitude constraints
       switch (leg.altitudeConstraint?.altitudeDescriptor) {
@@ -450,17 +459,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                           const leg = fpln.legElementAt(index);
-
-                          this.props.fmcService.master.flightPlanService.setPilotEnteredSpeedConstraintAt(
-                            index,
-                            leg.segment.class === SegmentClass.Arrival,
-                            undefined,
-                            this.loadedFlightPlanIndex.get(),
-                            false,
-                          );
+                          leg.clearSpeedConstraints();
+                          this.updateConstraints();
                         }
                       }}
-                      disabled={this.spdConstraintDisabled}
+                      disabled={this.cannotDeleteSpeedConstraint}
                       buttonStyle="adding-right: 2px;"
                     />
                   </div>
@@ -556,10 +559,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           );
 
                           const leg = fpln.legElementAt(index);
-                          leg.clearConstraints();
+                          leg.clearAltitudeConstraints();
+                          this.updateConstraints();
                         }
                       }}
-                      disabled={this.altConstraintDisabled}
+                      disabled={this.cannotDeleteAltConstraint}
                       buttonStyle="adding-right: 2px;"
                     />
                   </div>
