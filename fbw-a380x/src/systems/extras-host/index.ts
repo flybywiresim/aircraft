@@ -10,6 +10,8 @@ import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
 import { TelexCheck } from 'extras-host/modules/telex_check/TelexCheck';
+import { GsxSimVarPublisher } from 'extras-host/modules/common/GsxSimVarPublisher';
+import { GsxSync } from 'extras-host/modules/gsx_sync/GsxSync';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -53,6 +55,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly simVarPublisher: ExtrasSimVarPublisher;
 
+  private readonly gsxVarPublisher: GsxSimVarPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
@@ -67,6 +71,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
 
+  private readonly gsxSync: GsxSync;
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -80,6 +86,7 @@ class ExtrasHost extends BaseInstrument {
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
+    this.gsxVarPublisher = new GsxSimVarPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
@@ -87,6 +94,7 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+    this.gsxSync = new GsxSync(this.bus);
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
@@ -112,6 +120,7 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck.connectedCallback();
     this.aircraftSync.connectedCallback();
+    this.gsxSync.connectedCallback();
 
     this.backplane.init();
   }
@@ -132,6 +141,7 @@ class ExtrasHost extends BaseInstrument {
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
         this.simVarPublisher.startPublish();
+        this.gsxVarPublisher.startPublish();
         this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
 
@@ -142,6 +152,7 @@ class ExtrasHost extends BaseInstrument {
       this.gameState = gs;
     } else {
       this.simVarPublisher.onUpdate();
+      this.gsxVarPublisher.onUpdate();
     }
 
     this.backplane.onUpdate();
