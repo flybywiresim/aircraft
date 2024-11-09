@@ -165,6 +165,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_hdx;
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_hd1;
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_ppo;
+    rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_dln;
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_ppu;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_k4v;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_k0;
@@ -531,6 +532,7 @@ class FmgcComputer final
     real_T MTrigNode2_isRisingEdge_p;
     real_T MTrigNode_isRisingEdge_jn;
     real_T MTrigNode1_isRisingEdge_g;
+    real_T MTrigNode1_isRisingEdge_p;
     real_T MTrigNode_isRisingEdge_l;
     real_T RateLimiterVariableTs_lo;
     real_T MTrigNode_retriggerable;
@@ -546,6 +548,7 @@ class FmgcComputer final
     real_T MTrigNode2_retriggerable_i;
     real_T MTrigNode_retriggerable_n;
     real_T MTrigNode1_retriggerable_h;
+    real_T MTrigNode1_retriggerable_o;
     real_T MTrigNode_retriggerable_e;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode1_timeDelay_e;
@@ -618,6 +621,7 @@ class FmgcComputer final
     real_T MTrigNode2_triggerDuration_f;
     real_T MTrigNode_triggerDuration_c;
     real_T MTrigNode1_triggerDuration_m;
+    real_T MTrigNode1_triggerDuration_g;
     real_T MTrigNode_triggerDuration_c0;
     real_T RateLimiterVariableTs_up;
     real_T DetectChange_vinit;
