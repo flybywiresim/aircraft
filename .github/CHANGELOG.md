@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.12.3
+
+1. [A380X/MFD] Fix revision of discontinuities - @Benjozork (Benjamin Dupont)
+
 ## 0.12.2
 
 1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
