@@ -39,6 +39,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   /** in feet */
   private transitionAltitude = Subject.create<number | null>(null);
+  /** in feet */
+  private transitionLevel = Subject.create<number | null>(null);
 
   // RTA page
 
@@ -86,6 +88,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     if (pd?.transitionAltitude) {
       this.transitionAltitude.set(pd.transitionAltitude);
+    } else {
+      this.transitionAltitude.set(null);
+    }
+    if (pd?.transitionLevel) {
+      this.transitionLevel.set(pd.transitionLevel * 100);
+    } else {
+      this.transitionLevel.set(null);
     }
 
     const activeLegIndex = this.props.fmcService.master?.flightPlanService.get(
@@ -194,10 +203,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         if (ac.altitude1 && transAlt && ac.altitude1 > transAlt) {
           // FL
           this.altWindowUnitLeading.set('FL');
-          this.altWindowUnitTrailing.set('');
-          this.altWindowUnitValue.set(
-            `${(ac.altitude1 / 100).toFixed(0)}-${((ac.altitude2 ?? ac.altitude1) / 100).toFixed(0)}`,
-          );
+        const transAlt =
+          leg.constraintType === WaypointConstraintType.DES
+            ? this.transitionLevel.get()
+            : this.transitionAltitude.get();
         } else if (ac.altitude1) {
           // altitude
           this.altWindowUnitLeading.set('');
