@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
   FlightDeckBounds,
   NotificationManager,
@@ -9,11 +9,11 @@ import {
   ExtrasSimVarPublisher,
   GPUManagement,
 } from '@flybywiresim/fbw-sdk';
-
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
+import { LightSync } from 'extras-host/modules/light_sync/LightSync';
 import { TelexCheck } from 'extras-host/modules/telex_check/TelexCheck';
 
 /**
@@ -47,7 +47,10 @@ class ExtrasHost extends BaseInstrument {
   };
 
   private readonly bus = new EventBus();
+
   private readonly backplane = new InstrumentBackplane();
+
+  private readonly clock = new Clock(this.bus);
 
   private readonly notificationManager: NotificationManager;
 
@@ -68,6 +71,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly telexCheck = new TelexCheck();
   /**interactionpoint 19 is GPU connection and 4 GPUs in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 19, 4);
+
+  private readonly lightSync: LightSync = new LightSync(this.bus);
 
   /**
    * "mainmenu" = 0
@@ -93,6 +98,8 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
+    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addInstrument('LightSync', this.lightSync);
 
     console.log('A380X_EXTRASHOST: Created');
   }
