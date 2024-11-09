@@ -10,7 +10,7 @@ import {
   SimVarValueType,
   Wait,
 } from '@microsoft/msfs-sdk';
-import { ExtrasSimVarEvents } from 'index-no-react';
+import { ExtrasSimVarEvents } from '@flybywiresim/fbw-sdk';
 
 export class GPUManagement implements Instrument {
   private readonly sub = this.bus.getSubscriber<ExtrasSimVarEvents & GPUControlEvents>();
@@ -52,6 +52,7 @@ export class GPUManagement implements Instrument {
       this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
       this.gpuHookedUp.sub((v) => this.setEXTpower(v));
       this.groundVelocity.sub((v) => {
+        // disable ext power when aircraft starts moving
         if (v > 0.3 && this.anyGPUAvail()) {
           this.toggleGPU();
         }
@@ -72,9 +73,10 @@ export class GPUManagement implements Instrument {
   private toggleGPU(): void {
     if (!this.anyGPUAvail()) {
       if (this.anyMSFSGPUAvail()) {
+        // if msfs ground power is avail we are at a powered stand
         this.setEXTpower(true);
       } else {
-        this.toggleMSFSGpu();
+        this.toggleMSFSGpu(); // if msfs ground power is not avail we call for gpu cart
       }
     } else {
       if (this.gpuHookedUp.get()) {
@@ -94,6 +96,7 @@ export class GPUManagement implements Instrument {
       SimVar.SetSimVarValue(`L:A32NX_EXT_PWR_AVAIL:${index}`, SimVarValueType.Bool, connect);
       if (!connect) {
         if (this.numberOfGPUs === 1) {
+          // provision for the a32nx
           SimVar.SetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON`, SimVarValueType.Bool, false);
         } else {
           SimVar.SetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_${index}_PB_IS_ON`, SimVarValueType.Bool, false);

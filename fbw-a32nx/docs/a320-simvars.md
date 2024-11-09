@@ -4111,3 +4111,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     |-------|-------------|
     | 0     | Left Seat   |
     | 1     | Right Seat  |
+
+- `L:A32NX_EXT_PWR_AVAIL:{number}`
+  - Bool
+  - If ground power is avail or not
+  - {number}
+        - 1
