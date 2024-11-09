@@ -6,6 +6,7 @@
 ├───.github                                                         <GitHub configuration and workflow files>
 │   ├───ISSUE_TEMPLATE                                              <templates for issues and pull requests>
 │   └───workflows                                                   <GitHub Actions workflow definitions>
+|   └───CHANGELOG.md                                                <changelog for the repository to be updated by PRs>
 ├───docs                                                            <general documentation for the repository>
 ├───fbw-a32nx                                                       <A32NX aircraft project files>
 │   ├───docs                                                        <A32NX project-specific documentation>
@@ -48,7 +49,7 @@
 │           ├───extra-backend-a32nx                                 <extra backend logic for A32NX in C++>
 │           ├───fadec_a32nx                                         <Full Authority Digital Engine Control (FADEC) for A32NX in C++>
 │           ├───fbw_a320                                            <fly-by-wire systems for the A32NX in C++>
-│           └───systems                                             <aircraft systems in Rust >
+│           └───systems                                             <aircraft systems in Rust>
 ├───fbw-a380x                                                       <A380X aircraft project files>
 │   ├───docs                                                        <A380X project-specific documentation>
 │   ├───out                                                         <directory for the final build of the A380X aircraft package>
