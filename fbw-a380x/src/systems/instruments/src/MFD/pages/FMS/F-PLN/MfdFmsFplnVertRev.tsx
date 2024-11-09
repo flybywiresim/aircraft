@@ -141,6 +141,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       ? flightPlan.findLegIndexByFixIdent(lastEnrouteFix.definition.waypoint.ident)
       : 0;
 
+    // FIXME enroute legs are eligible, but we need to implement the CLB/DES prompt for their constraints first
     if (
       leg.isRunway() ||
       legIndex <= flightPlan.activeLegIndex ||
@@ -187,6 +188,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
 
       // Load altitude constraints
+      // FIXME missing a lot of cases here
       switch (leg.altitudeConstraint?.altitudeDescriptor) {
         case AltitudeDescriptor.AtAlt1:
           this.selectedAltitudeConstraintOption.set(0);
