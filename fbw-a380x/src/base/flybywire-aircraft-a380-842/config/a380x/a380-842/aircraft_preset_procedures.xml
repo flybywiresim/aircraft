@@ -68,19 +68,19 @@ The StepType also defines if the step is executed in normal mode, expedited mode
 
         <Step Name="EXT PWR 2 On" Type="STEP" Delay="1000">
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
-            <Action>(A:EXTERNAL POWER ON:2, BOOL) ! if{ 2 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 3 On" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:3, BOOL) ! if{ 3 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 1 On" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:1, BOOL) ! if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 4 On" Type="STEP" Delay="3000">
-            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:4, BOOL) ! if{ 4 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
         </Step>
 
         <!-- ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test) -->
@@ -210,20 +210,20 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
         </Step>
         <Step Name="EXT PWR 4 Off" Type="STEP" Delay="3000">
-            <Condition>(A:EXTERNAL POWER ON:4, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:4, BOOL) if{ 4 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:3, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:3, BOOL) if{ 3 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
-            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:2, BOOL) if{ 2 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="BAT APU Off" Type="STEP" Delay="1000">
             <Condition>(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==</Condition>
@@ -260,20 +260,20 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <Procedure Name="PUSHBACK_CONFIG_ON">
         <!-- SOP: BEFORE PUSHBACK OR START-->
         <Step Name="EXT PWR 4 Off" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:4, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:4, BOOL) if{ 4 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) if{ 4 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
-            <Condition>(A:EXTERNAL POWER ON:3, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:3, BOOL) if{ 3 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) if{ 3 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOLR) }</Action>
         </Step>
         <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
-            <Condition>(A:EXTERNAL POWER ON:2, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:2, BOOL) if{ 2 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) if{ 2 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
         </Step>
 
         <Step Name="Beacon On" Type="STEP" Delay="1000">
@@ -764,4 +764,3 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         </Step>
     </Procedure>
 </AircraftPresetProcedures>
-

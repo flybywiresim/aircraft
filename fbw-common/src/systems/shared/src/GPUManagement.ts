@@ -1,0 +1,125 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import {
+  ConsumerSubject,
+  EventBus,
+  GameStateProvider,
+  Instrument,
+  MappedSubject,
+  SimVarValueType,
+  Wait,
+} from '@microsoft/msfs-sdk';
+import { ExtrasSimVarEvents } from 'index-no-react';
+
+export class GPUManagement implements Instrument {
+  private readonly sub = this.bus.getSubscriber<ExtrasSimVarEvents & GPUControlEvents>();
+
+  private readonly gpuDoorOpenPercent = ConsumerSubject.create(
+    this.sub.on(`interactive_point_open_${this.gpuDoorIndex}`),
+    0,
+  );
+  private readonly gpuHookedUp = MappedSubject.create(
+    ([gpuDoorOpenPercent]) => gpuDoorOpenPercent >= 1,
+    this.gpuDoorOpenPercent,
+  );
+
+  private readonly groundVelocity = ConsumerSubject.create(this.sub.on('ground_velocity'), 0);
+
+  private readonly msfsExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
+
+  private readonly ExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
+
+  private initialIngameFrame: boolean;
+  constructor(
+    private readonly bus: EventBus,
+    private readonly gpuDoorIndex: number,
+    private readonly numberOfGPUs: number,
+  ) {
+    for (let index = 1; index <= numberOfGPUs; index++) {
+      const element = ConsumerSubject.create(this.sub.on(`msfs_ext_power_available_${index}`), false);
+      this.msfsExtPowerAvailStates.set(index, element);
+    }
+
+    for (let index = 1; index <= numberOfGPUs; index++) {
+      const element = ConsumerSubject.create(this.sub.on(`ext_power_available_${index}`), false);
+      this.ExtPowerAvailStates.set(index, element);
+    }
+  }
+
+  public init(): void {
+    Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true).then(() => {
+      this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
+      this.gpuHookedUp.sub((v) => this.setEXTpower(v));
+      this.groundVelocity.sub((v) => {
+        if (v > 0.3 && this.anyGPUAvail()) {
+          this.toggleGPU();
+        }
+      });
+      this.initialIngameFrame = true;
+    });
+  }
+
+  public onUpdate(): void {
+    if (this.initialIngameFrame) {
+      if (this.anyMSFSGPUAvail()) {
+        this.setEXTpower(true);
+      }
+      this.initialIngameFrame = false;
+    }
+  }
+
+  private toggleGPU(): void {
+    if (!this.anyGPUAvail()) {
+      if (this.anyMSFSGPUAvail()) {
+        this.setEXTpower(true);
+      } else {
+        this.toggleMSFSGpu();
+      }
+    } else {
+      if (this.gpuHookedUp.get()) {
+        this.toggleMSFSGpu();
+      } else {
+        this.setEXTpower(false);
+      }
+    }
+  }
+
+  private toggleMSFSGpu(): void {
+    SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'Bool', true);
+  }
+
+  private setEXTpower(connect: boolean): void {
+    for (let index = 1; index <= this.numberOfGPUs; index++) {
+      SimVar.SetSimVarValue(`L:A32NX_EXT_PWR_AVAIL:${index}`, SimVarValueType.Bool, connect);
+      if (!connect) {
+        if (this.numberOfGPUs === 1) {
+          SimVar.SetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON`, SimVarValueType.Bool, false);
+        } else {
+          SimVar.SetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_${index}_PB_IS_ON`, SimVarValueType.Bool, false);
+        }
+      }
+    }
+  }
+
+  private anyMSFSGPUAvail(): boolean {
+    let state = false;
+    for (let index = 1; index <= this.numberOfGPUs; index++) {
+      state ||= this.msfsExtPowerAvailStates.get(index).get();
+    }
+    return state;
+  }
+
+  private anyGPUAvail(): boolean {
+    let state = false;
+    for (let index = 1; index <= this.numberOfGPUs; index++) {
+      state ||= this.ExtPowerAvailStates.get(index).get();
+    }
+    return state;
+  }
+}
+
+export interface GPUControlEvents {
+  /** event to toggle the GPU*/
+  gpu_toggle: unknown;
+}

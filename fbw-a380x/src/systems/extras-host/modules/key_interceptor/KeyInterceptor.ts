@@ -9,6 +9,7 @@ import {
   NotificationType,
   PopUpDialog,
   RadioUtils,
+  GPUControlEvents,
 } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
@@ -80,9 +81,11 @@ export class KeyInterceptor {
     // --- RADIO NAVIGATION MISC events ---
     COPILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
     PILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
+    // --- EXTERNAL POWER events ---
+    'FBW.EXT_PWR_TOGGLE': { handler: this.onExtPwrToggle.bind(this) },
   };
 
-  private publisher = this.bus.getPublisher<InterRmpBusEvents>();
+  private publisher = this.bus.getPublisher<InterRmpBusEvents & GPUControlEvents>();
 
   private keyInterceptManager: KeyEventManager;
 
@@ -242,5 +245,10 @@ export class KeyInterceptor {
 
   private onComReceiveAll(_toggle: boolean): void {
     // FIXME implement, inop for now
+  }
+
+  private onExtPwrToggle(): void {
+    const gpuToggleEvent: keyof GPUControlEvents = 'gpu_toggle';
+    this.publisher.pub(gpuToggleEvent, undefined, false, false);
   }
 }

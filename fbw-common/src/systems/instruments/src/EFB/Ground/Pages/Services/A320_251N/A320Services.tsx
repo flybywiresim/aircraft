@@ -3,7 +3,7 @@
 
 /* eslint-disable no-console */
 import React, { FC, useEffect, useRef } from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { GPUControlEvents, useSimVar } from '@flybywiresim/fbw-sdk';
 import {
   ArchiveFill,
   ConeStriped,
@@ -33,6 +33,7 @@ import {
   setGpuButtonState,
   setJetWayButtonState,
   setAsuButtonState,
+  useEventBus,
 } from '@flybywiresim/flypad';
 
 interface ServiceButtonWrapperProps {
@@ -114,6 +115,9 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
 export const A320Services: React.FC = () => {
   const dispatch = useAppDispatch();
 
+  const eventBus = useEventBus();
+  const pub = eventBus.getPublisher<GPUControlEvents>();
+
   // Flight state
   const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
   const [aircraftIsStationary] = useSimVar('L:A32NX_IS_STATIONARY', 'bool', 250);
@@ -126,7 +130,7 @@ export const A320Services: React.FC = () => {
   const [aftLeftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:2', 'Percent over 100', 100);
   const [aftRightDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 100);
   const [cargoDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 100);
-  const [gpuActive] = useSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 100);
+  const [gpuAvail] = useSimVar('L:A32NX_EXT_PWR_AVAIL:1', 'bool', 200);
   const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 100);
   const [asuActive, setAsuActive] = useSimVar('L:A32NX_ASU_TURNED_ON', 'Bool', 100);
 
@@ -150,7 +154,7 @@ export const A320Services: React.FC = () => {
   const toggleAftRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
   const toggleCateringTruck = () => SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
   const toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
-  const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
+  const toggleGpu = () => pub.pub('gpu_toggle', true, true);
   const toggleAsu = () => setAsuActive(!asuActive);
 
   // Button states
@@ -444,8 +448,8 @@ export const A320Services: React.FC = () => {
 
   // Gpu
   useEffect(() => {
-    simpleServiceListenerHandling(gpuButtonState, setGpuButtonState, gpuActive);
-  }, [gpuActive]);
+    simpleServiceListenerHandling(gpuButtonState, setGpuButtonState, gpuAvail ? 1 : 0);
+  }, [gpuAvail]);
 
   // Cabin Door listener for JetBridge Button
   useEffect(() => {
@@ -722,7 +726,7 @@ export const A320Services: React.FC = () => {
           CARGO
         </div>
       )}
-      {!!gpuActive && (
+      {!!gpuAvail && (
         <div className={serviceIndicationCss} style={{ position: 'absolute', left: 700, right: 0, top: 60 }}>
           GPU
         </div>

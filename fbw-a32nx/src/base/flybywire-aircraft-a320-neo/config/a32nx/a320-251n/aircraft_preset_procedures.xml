@@ -62,11 +62,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
                 (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) &amp;&amp;
                 (L:A32NX_ENGINE_STATE:1) 1 == ||
                 (L:A32NX_ENGINE_STATE:2) 1 == ||
-                (A:EXTERNAL POWER ON:1, BOOL) ||
+                (L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) ||
             </Condition>
             <Action>
-                (A:EXTERNAL POWER ON:1, BOOL) ! if{
-                1 (>K:TOGGLE_EXTERNAL_POWER)
+                (L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) ! if{
+                1 (>L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON)
                 }
             </Action>
         </Step>
@@ -266,8 +266,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
         </Step>
         <Step Name="EXT PWR Off" Type="STEP" Delay="3000">
-            <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) }</Action>
         </Step>
         <Step Name="BAT2 Off" Type="STEP" Delay="100">
             <Condition>(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==</Condition>
@@ -304,8 +304,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <Procedure Name="PUSHBACK_CONFIG_ON">
         <!-- SOP: BEFORE PUSHBACK AND START -->
         <Step Name="EXT PWR Off" Type="STEP" Delay="3000">
-            <Condition>(A:EXTERNAL POWER ON:1, BOOL) !</Condition>
-            <Action>(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (&gt;K:TOGGLE_EXTERNAL_POWER) }</Action>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) if{ 0 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) }</Action>
         </Step>
 
         <Step Name="Beacon On" Type="STEP" Delay="2000">

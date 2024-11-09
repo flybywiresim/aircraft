@@ -75,7 +75,7 @@ export class AircraftGithubVersionChecker {
     }
 
     try {
-      const versionInfo = this.getVersionInfo(this.buildInfo.version);
+      const versionInfo = this.getVersionInfo(aircraft, this.buildInfo.version);
       if (this.checkOutdated(versionInfo)) {
         this.setOutdatedVersionFlag(true);
         console.log(`Aircraft ${aircraft} - version outdated`);
@@ -129,8 +129,8 @@ export class AircraftGithubVersionChecker {
    * @param versionString as provided by the ${aircraft}_build_info.json file.
    * @throws Error if the version string is not in the correct format.
    */
-  public static getVersionInfo(versionString: string): VersionInfoData {
-    const matchBuildInfo = versionString.match(/^v?((\d+)\.(\d+)\.(\d+))-(.*)\.(.{7})$/);
+  public static getVersionInfo(aircraft: string, versionString: string): VersionInfoData {
+    const matchBuildInfo = versionString.match(new RegExp(`^${aircraft}-v?((\\d+)\\.(\\d+)\\.(\\d+))-(.*)\\.(.{7})$`));
     if (matchBuildInfo) {
       return {
         version: matchBuildInfo[1],

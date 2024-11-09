@@ -42,21 +42,17 @@
 
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>
-                (A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and if{
-                    #ID# (&gt;K:TOGGLE_EXTERNAL_POWER)
-                } els{
-                    (A:EXTERNAL POWER ON:#ID#, Bool) if{
-                        #ID# (&gt;K:TOGGLE_EXTERNAL_POWER)
-                    }
+                (L:A32NX_EXT_PWR_AVAIL:#ID#, Bool) if{
+                    (L:A32NX_OVHD_ELEC_EXT_PWR_#ID#_PB_IS_ON, Bool) ! (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_#ID#_PB_IS_ON, Bool)
                 }
             </LEFT_SINGLE_CODE>
 
             <MOMENTARY/>
 
-            <SEQ1_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and</SEQ1_CODE>
-            <SEQ2_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) and</SEQ2_CODE>
+            <SEQ1_CODE>(L:A32NX_EXT_PWR_AVAIL:#ID#, Bool) (L:A32NX_OVHD_ELEC_EXT_PWR_#ID#_PB_IS_ON, Bool) ! and</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_EXT_PWR_AVAIL:#ID#, Bool) (L:A32NX_OVHD_ELEC_EXT_PWR_#ID#_PB_IS_ON, Bool) and</SEQ2_CODE>
 
-            <TOOLTIPID>%((A:EXTERNAL POWER AVAILABLE:1, Bool) 0 == )%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.EXT_PWR_OFF%{else}TT:COCKPIT.TOOLTIPS.EXT_PWR_ON%{end}</TOOLTIPID>
+            <TOOLTIPID>%((L:A32NX_EXT_PWR_AVAIL:#ID#, Bool) 0 == )%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((L:A32NX_EXT_PWR_AVAIL:#ID#, Bool) (L:A32NX_OVHD_ELEC_EXT_PWR_#ID#_PB_IS_ON, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.EXT_PWR_OFF%{else}TT:COCKPIT.TOOLTIPS.EXT_PWR_ON%{end}</TOOLTIPID>
         </UseTemplate>
     </Template>
 

@@ -22,7 +22,7 @@ export const ElecPage = () => {
   const [ac2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool', maxStaleness);
   const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', maxStaleness);
   const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
-  const [externalPowerAvailable] = useSimVar('EXTERNAL POWER AVAILABLE:1', 'Bool', maxStaleness);
+  const [externalPowerAvailable] = useSimVar('L:A32NX_EXT_PWR_AVAIL:1', 'Bool', maxStaleness);
   const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
   const [galleyIsShed] = useSimVar('L:A32NX_ELEC_GALLEY_IS_SHED', 'Bool', maxStaleness);
   const [tr1SuppliesDc1] = useSimVar('L:A32NX_ELEC_CONTACTOR_5PU1_IS_CLOSED', 'Bool', maxStaleness);

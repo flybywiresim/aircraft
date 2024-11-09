@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   ChecklistJsonDefinition,
   FailureDefinition,
@@ -62,13 +62,15 @@ import './Assets/Slider.scss';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
 import { NavigraphAuthProvider } from '../react/navigraph';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
   aircraftSetup?: () => void;
+  eventBus: EventBus;
 }
 
-export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup }) => {
+export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup, eventBus }) => {
   const setSessionId = () => {
     const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const SESSION_ID_LENGTH = 14;
@@ -128,7 +130,7 @@ export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup 
 
   return (
     <Provider store={store}>
-      <EfbInstrument failures={failures} aircraftChecklists={aircraftChecklists} />
+      <EfbInstrument failures={failures} aircraftChecklists={aircraftChecklists} eventBus={eventBus} />
     </Provider>
   );
 };
@@ -495,12 +497,25 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
   );
 };
 
+const Context = React.createContext<EventBus>(undefined as any);
+
+interface EventBusContextProps {
+  eventBus: EventBus;
+}
+
+export const EventBusContextProvider: React.FC<EventBusContextProps> = ({ eventBus, children }) => (
+  <Context.Provider value={eventBus}>{children}</Context.Provider>
+);
+
+export const useEventBus = () => useContext(Context);
+
 interface EfbInstrumentProps {
   failures: FailureDefinition[];
   aircraftChecklists: ChecklistJsonDefinition[];
+  eventBus: EventBus;
 }
 
-export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraftChecklists }) => {
+export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraftChecklists, eventBus }) => {
   const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
   useEffect(() => () => setSessionId(''), []);
@@ -512,7 +527,9 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
       <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
         <Router>
           <ModalProvider>
-            <Efb aircraftChecklistsProp={aircraftChecklists} />
+            <EventBusContextProvider eventBus={eventBus}>
+              <Efb aircraftChecklistsProp={aircraftChecklists} />
+            </EventBusContextProvider>
           </ModalProvider>
         </Router>
       </ErrorBoundary>
