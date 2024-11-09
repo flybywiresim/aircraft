@@ -195,32 +195,40 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
       this.altitudeConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
 
-      if (leg.altitudeConstraint?.altitude2 !== undefined) {
-        const ac = leg.altitudeConstraint;
-        this.altConstraintDisabled.set(true);
-        // ALT window
-        const transAlt = this.transitionAltitude.get();
-        if (ac.altitude1 && transAlt && ac.altitude1 > transAlt) {
-          // FL
-          this.altWindowUnitLeading.set('FL');
+      const ac = leg.altitudeConstraint;
+      if (
+        ac &&
+        ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
+        ac.altitude1 !== undefined &&
+        ac.altitude2 !== undefined
+      ) {
+        // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
         const transAlt =
           leg.constraintType === WaypointConstraintType.DES
             ? this.transitionLevel.get()
             : this.transitionAltitude.get();
-        } else if (ac.altitude1) {
-          // altitude
-          this.altWindowUnitLeading.set('');
-          this.altWindowUnitTrailing.set('FT');
-          this.altWindowUnitValue.set(`${ac.altitude1.toFixed(0)}-${(ac.altitude2 ?? ac.altitude1).toFixed(0)}`);
-        } else {
-          this.altWindowUnitLeading.set('');
-          this.altWindowUnitTrailing.set('');
-          this.altWindowUnitValue.set('');
-        }
+
+        // FIXME check format when only the higher altitude is above TA/TL
+        const alt1IsFl = transAlt !== null && ac.altitude1 > transAlt;
+        const alt2IsFl = transAlt !== null && ac.altitude2 > transAlt;
+        this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
+        this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
+        this.altWindowUnitValue.set(
+          `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
+        );
+
         this.altWindowLabelRef.instance.style.visibility = 'visible';
         this.altWindowValueRef.instance.style.visibility = 'visible';
       } else {
-        this.altConstraintDisabled.set(false);
+        if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
+          console.error(
+            'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
+            leg.ident,
+            leg.definition.procedureIdent,
+            ac?.altitude1,
+            ac?.altitude2,
+          );
+        }
         this.altWindowLabelRef.instance.style.visibility = 'hidden';
         this.altWindowValueRef.instance.style.visibility = 'hidden';
       }
@@ -505,17 +513,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       </div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-self: flex-end; justify-content: center; align-items: center; padding-bottom: 20px;">
-                      <InputField<number>
-                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
-                        dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val ?? undefined)}
-                        mandatory={Subject.create(false)}
-                        disabled={this.altConstraintDisabled}
-                        value={this.altitudeConstraintInput}
-                        alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                        hEventConsumer={this.props.mfd.hEventConsumer}
-                        interactionMode={this.props.mfd.interactionMode}
-                      />
+                      <div class={{ invisible: this.selectedAltitudeConstraintOption.map((v) => v === null) }}>
+                        <InputField<number>
+                          dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                          dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val ?? undefined)}
+                          mandatory={Subject.create(false)}
+                          disabled={this.altConstraintDisabled}
+                          value={this.altitudeConstraintInput}
+                          alignText="flex-end"
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          hEventConsumer={this.props.mfd.hEventConsumer}
+                          interactionMode={this.props.mfd.interactionMode}
+                        />
+                      </div>
                       <div ref={this.altWindowValueRef} class="mfd-vert-rev-alt-window-value">
                         <span class="mfd-label-unit bigger mfd-unit-leading">{this.altWindowUnitLeading}</span>
                         <span class="mfd-label green bigger">{this.altWindowUnitValue}</span>
