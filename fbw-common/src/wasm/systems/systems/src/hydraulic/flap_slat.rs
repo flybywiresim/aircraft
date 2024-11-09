@@ -539,14 +539,10 @@ impl SimulationElement for FlapSlatAssembly {
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
 
-        writer.write(
-            &self.animation_left_id,
-            (self.position_feedback() / self.max_synchro_gear_position).get::<percent>(),
-        );
-        writer.write(
-            &self.animation_right_id,
-            (self.position_feedback() / self.max_synchro_gear_position).get::<percent>(),
-        );
+        let flaps_fppu_percent =
+            (self.position_feedback() / self.max_synchro_gear_position).get::<percent>();
+        writer.write(&self.animation_left_id, flaps_fppu_percent);
+        writer.write(&self.animation_right_id, flaps_fppu_percent);
 
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
