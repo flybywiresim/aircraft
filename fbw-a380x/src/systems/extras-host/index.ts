@@ -1,13 +1,14 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { FlightDeckBounds, NotificationManager, PilotSeatManager } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
+import { LightSync } from 'extras-host/modules/light_sync/LightSync';
 import { TelexCheck } from 'extras-host/modules/telex_check/TelexCheck';
 
 /**
@@ -41,7 +42,10 @@ class ExtrasHost extends BaseInstrument {
   };
 
   private readonly bus = new EventBus();
+
   private readonly backplane = new InstrumentBackplane();
+
+  private readonly clock = new Clock(this.bus);
 
   private readonly notificationManager: NotificationManager;
 
@@ -60,6 +64,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   private readonly telexCheck = new TelexCheck();
+
+  private readonly lightSync: LightSync = new LightSync(this.bus);
 
   /**
    * "mainmenu" = 0
@@ -82,7 +88,9 @@ class ExtrasHost extends BaseInstrument {
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
+    this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
+    this.backplane.addInstrument('LightSync', this.lightSync);
 
     console.log('A380X_EXTRASHOST: Created');
   }
