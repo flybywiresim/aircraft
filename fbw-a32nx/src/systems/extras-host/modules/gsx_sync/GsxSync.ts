@@ -7,7 +7,7 @@ import { GsxSimVarEvents } from 'extras-host/modules/common/GsxSimVarPublisher';
 export class GsxSync {
   private readonly sub = this.bus.getSubscriber<GsxSimVarEvents>();
 
-  private readonly DEFUEL_DIFF_TARGET = 500;
+  private readonly DEFUEL_DIFF_TARGET = 125;
 
   private isDefuel = false;
 
@@ -40,7 +40,17 @@ export class GsxSync {
         SimVar.GetSimVarValueFast('A:FUEL TOTAL QUANTITY WEIGHT', 'kilograms') >
         SimVar.GetSimVarValueFast('L:A32NX_FUEL_DESIRED', 'kilograms');
       if (this.isDefuel) {
-        SimVar.SetSimVarValue('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'number', this.desiredFuel - this.DEFUEL_DIFF_TARGET);
+        if (this.desiredFuel >= this.DEFUEL_DIFF_TARGET) {
+          SimVar.SetSimVarValue('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'number', this.desiredFuel - this.DEFUEL_DIFF_TARGET);
+          SimVar.SetSimVarValue(
+            'L:A32NX_FUEL_RIGHT_MAIN_DESIRED',
+            'number',
+            this.desiredFuel - this.DEFUEL_DIFF_TARGET,
+          );
+        } else {
+          SimVar.SetSimVarValue('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'number', 0);
+          SimVar.SetSimVarValue('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', 'number', 0);
+        }
       }
       SimVar.SetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool', true);
     }
@@ -49,6 +59,7 @@ export class GsxSync {
   private onRefuelStarted(refuel: boolean): void {
     if (!refuel && this.fuelHose.get() == 1 && this.isDefuel) {
       SimVar.SetSimVarValue('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'number', this.desiredFuel);
+      SimVar.SetSimVarValue('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', 'number', this.desiredFuel);
       const refuelRate = SimVar.GetGameVarValueFast('L:A32NX_EFB_REFUEL_RATE_SETTING', 'number');
       SimVar.SetSimVarValue('L:A32NX_EFB_REFUEL_RATE_SETTING', 'number', 2);
 
