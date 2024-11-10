@@ -34,6 +34,7 @@
 1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
 1. [A380X/MFD] MFD/SURV: Fixed TCAS not switching status when using DEFAULT SETTINGS button - @flogross89 (floridude)
 1. [A380/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
+1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 
 ## 0.12.0
