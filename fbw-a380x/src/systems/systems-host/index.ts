@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  EventBus,
   HEventPublisher,
   InstrumentBackplane,
   Clock,
@@ -19,7 +18,13 @@ import { LegacyFuel } from 'systems-host/systems/LegacyFuel';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
-import { FailuresConsumer, PilotSeatPublisher, VhfComIndices } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  BtvSimvarPublisher,
+  FailuresConsumer,
+  PilotSeatPublisher,
+  VhfComIndices,
+} from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
 import { Transponder } from 'systems-host/systems/Communications/Transponder';
@@ -28,9 +33,10 @@ import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioMan
 import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
+import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 
 class SystemsHost extends BaseInstrument {
-  private readonly bus = new EventBus();
+  private readonly bus = new ArincEventBus();
 
   private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes>();
 
@@ -77,15 +83,19 @@ class SystemsHost extends BaseInstrument {
 
   private readonly atsu = new AtsuSystem(this.bus);
 
+  private readonly btvDistanceUpdater = new BrakeToVacateDistanceUpdater(this.bus);
+
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
   private readonly pilotSeatPublisher = new PilotSeatPublisher(this.bus);
 
   private readonly powerPublisher = new PowerSupplyBusses(this.bus);
 
+  private readonly btvPublisher = new BtvSimvarPublisher(this.bus);
+
   private readonly weightAndBalancePublisher = new WeightBalanceSimvarPublisher(this.bus);
 
-  private readonly fuelssystemPublisher = new FuelSystemPublisher(this.bus);
+  private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
   private readonly fwsCore = new FwsCore(1, this.bus);
 
@@ -112,11 +122,13 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('BtvDistanceUpdater', this.btvDistanceUpdater);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
+    this.backplane.addPublisher('BtvPublisher', this.btvPublisher);
     this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
-    this.backplane.addPublisher('FuelPublisher', this.fuelssystemPublisher);
+    this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
