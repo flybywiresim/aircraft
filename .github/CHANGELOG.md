@@ -37,6 +37,7 @@
 1. [A380/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
 1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 
 ## 0.12.0
 
