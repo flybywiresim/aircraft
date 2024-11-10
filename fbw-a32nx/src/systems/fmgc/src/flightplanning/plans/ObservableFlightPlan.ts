@@ -6,6 +6,11 @@ import { FixInfoData } from './FixInfo';
 import { FlightPlan } from './FlightPlan';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
+/**
+ * A flight plan wrapper which exposes subcribable elements and properties.
+ *
+ * **Note:** Add flight plan elements here as you need them reactively in MFD/ND UI.
+ */
 export class ObservableFlightPlan {
   private readonly subscriptions: Subscription[] = [];
 

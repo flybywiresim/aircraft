@@ -102,11 +102,15 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                             fixInfo.radials = [];
                           }
 
-                          fixInfo.radials[0] = { magneticBearing: radial, trueBearing: radial };
+                          fixInfo.radials[0] = {
+                            magneticBearing: radial,
+                            trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                          };
 
                           return fixInfo;
                         });
                       }}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                       dataEntryFormat={new RadialFormat()}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
@@ -127,11 +131,15 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                             fixInfo.radials = [];
                           }
 
-                          fixInfo.radials[1] = { magneticBearing: radial, trueBearing: radial };
+                          fixInfo.radials[1] = {
+                            magneticBearing: radial,
+                            trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                          };
 
                           return fixInfo;
                         });
                       }}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                       dataEntryFormat={new RadialFormat()}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
@@ -162,6 +170,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           return fixInfo;
                         });
                       }}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                       dataEntryFormat={new RadiusFormat()}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
