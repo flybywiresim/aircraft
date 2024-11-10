@@ -358,7 +358,13 @@ export class InputField<
 
     if (updateWasSuccessful) {
       if (this.props.onModified) {
-        this.props.onModified(newValue);
+        try {
+          this.props.onModified(newValue);
+        } catch (msg: unknown) {
+          if (msg instanceof FmsError && this.props.errorHandler) {
+            this.props.errorHandler(msg.type);
+          }
+        }
       } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
         // If we have `value` in props, we know U extends T
 

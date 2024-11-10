@@ -1,10 +1,10 @@
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 
-import { AnyFix, Fix } from '@flybywiresim/fbw-sdk';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
 export interface DataEntryFormat<T, U = T> {
@@ -780,19 +780,17 @@ export class DescentRateFormat implements DataEntryFormat<number> {
   }
 }
 
-export class FixFormat implements DataEntryFormat<AnyFix, AnyFix[]> {
+export class FixFormat implements DataEntryFormat<Fix, string> {
   public readonly placeholder = '-------';
 
   public readonly maxDigits = 7;
 
-  async parse(input: string): Promise<AnyFix[] | null> {
-    const results = await NavigationDatabaseService.activeDatabase.searchAllFix(input);
-
-    if (results.length === 0) {
-      return null;
+  async parse(input: string): Promise<string | null> {
+    if (WaypointEntryUtils.isPlaceFormat(input) || WaypointEntryUtils.isRunwayFormat(input)) {
+      return input;
     }
 
-    return results;
+    throw new FmsError(FmsErrorType.FormatError);
   }
 
   format(value: Fix | null): FieldFormatTuple {
@@ -1473,7 +1471,7 @@ export class RadialFormat implements DataEntryFormat<number> {
       return [this.placeholder, null, '°'] as FieldFormatTuple;
     }
 
-    return [value.toFixed(0), null, '°'] as FieldFormatTuple;
+    return [value.toFixed(0).padStart(3, '0'), null, '°'] as FieldFormatTuple;
   }
 
   public async parse(input: string) {

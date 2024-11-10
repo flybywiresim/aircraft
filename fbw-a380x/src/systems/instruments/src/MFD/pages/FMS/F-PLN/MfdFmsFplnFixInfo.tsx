@@ -8,11 +8,12 @@ import { Footer } from '../../common/Footer';
 import { TopTabNavigator, TopTabNavigatorPage } from '../../common/TopTabNavigator';
 import { InputField } from '../../common/InputField';
 import { FixFormat, RadialFormat, RadiusFormat } from '../../common/DataEntryFormats';
-
-import './MfdFmsFplnFixInfo.scss';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { Button } from '../../common/Button';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+
+import './MfdFmsFplnFixInfo.scss';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private flightPlan = new ObservableFlightPlan(
@@ -27,6 +28,12 @@ export class MfdFmsFplnFixInfo extends FmsPage {
     // noop
   }
 
+  destroy() {
+    super.destroy();
+
+    this.flightPlan.destroy();
+  }
+
   render(): VNode {
     return (
       <>
@@ -39,22 +46,25 @@ export class MfdFmsFplnFixInfo extends FmsPage {
               <div class="fr aic mfd-fms-fpln-fix-info-ref-ident">
                 <span class="mfd-fms-fpln-fix-info-ref-ident-label">REF IDENT</span>
 
-                <InputField<AnyFix, AnyFix[]>
+                <InputField<AnyFix, string, false>
                   readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.fix ?? null)}
-                  onModified={async (fixes) => {
-                    if (!fixes) {
+                  onModified={async (text) => {
+                    if (!text) {
+                      return null;
+                    }
+
+                    const fix = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master!, text, true);
+
+                    if (!fix) {
                       throw new FmsError(FmsErrorType.NotInDatabase);
                     }
 
-                    const fix = await this.props.mfd.deduplicateFacilities(fixes);
-
-                    if (fix) {
-                      void this.props.fmcService.master!.flightPlanService.setFixInfoEntry(
-                        value,
-                        new FixInfoEntry(fix, [], []),
-                      );
-                    }
+                    void this.props.fmcService.master!.flightPlanService.setFixInfoEntry(
+                      value,
+                      new FixInfoEntry(fix, [], []),
+                    );
                   }}
+                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                   dataEntryFormat={new FixFormat()}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
@@ -170,7 +180,13 @@ export class MfdFmsFplnFixInfo extends FmsPage {
           ))}
         </TopTabNavigator>
 
-        <Button label="RETRUN" onClick={() => {}} buttonStyle="width: 130px; margin-left: 12px;" />
+        <Button
+          label="RETURN"
+          onClick={() => {
+            this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
+          }}
+          buttonStyle="width: 130px; margin-left: 12px;"
+        />
 
         {/* end page content */}
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />

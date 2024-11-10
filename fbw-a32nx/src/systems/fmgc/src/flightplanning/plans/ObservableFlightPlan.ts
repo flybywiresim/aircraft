@@ -29,10 +29,10 @@ export class ObservableFlightPlan {
 
   private initializeFromPlan(plan: BaseFlightPlan): void {
     if (plan instanceof FlightPlan) {
-      for (let i = 0; i < plan.fixInfos.length; i++) {
-        const fix = plan.fixInfos[i];
+      for (let i = 1; i < plan.fixInfos.length; i++) {
+        const fix = plan.fixInfos[i] ?? null;
 
-        this._fixInfos[i + 1].set(fix);
+        this._fixInfos[i].set(fix);
       }
     }
 
@@ -44,7 +44,7 @@ export class ObservableFlightPlan {
 
         const subject = this._fixInfos[event.index];
 
-        subject.set(event.fixInfo);
+        subject.set(event.fixInfo ?? null);
       }),
     );
   }
@@ -63,22 +63,22 @@ export class ObservableFlightPlan {
         return false;
       }
 
-      if (a.fix.databaseId !== b.fix.databaseId) {
+      if (a?.fix.databaseId !== b?.fix.databaseId) {
         return false;
       }
 
-      for (let i = 0; i < a.radials.length; i++) {
-        const aRadial = a.radials[i];
-        const bRadial = b.radials[i];
+      for (let i = 0; i < a?.radials.length; i++) {
+        const aRadial = a?.radials[i];
+        const bRadial = b?.radials[i];
 
         if (aRadial !== bRadial) {
           return false;
         }
       }
 
-      for (let i = 0; i < a.radii.length; i++) {
-        const aRadius = a.radii[i];
-        const bRadius = b.radii[i];
+      for (let i = 0; i < a?.radii.length; i++) {
+        const aRadius = a?.radii[i];
+        const bRadius = b?.radii[i];
 
         if (aRadius !== bRadius) {
           return false;
