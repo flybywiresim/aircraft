@@ -3,5 +3,5 @@
 // references or go to definitions.
 
 {
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "A32NX_Refuel.js"]
 }

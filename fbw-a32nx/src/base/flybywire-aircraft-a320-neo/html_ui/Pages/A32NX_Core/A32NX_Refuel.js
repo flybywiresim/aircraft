@@ -38,12 +38,7 @@ class A32NX_Refuel {
 
     update(_deltaTime) {
         const refuelStartedByUser = SimVar.GetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool");
-        const gsxFuelHose = SimVar.GetSimVarValue("L:FSDT_GSX_FUELHOSE_CONNECTED", "Number");
-        if (!refuelStartedByUser && gsxFuelHose == 0) {
-            return;
-        }
-        if (!refuelStartedByUser && gsxFuelHose == 1) {
-            SimVar.SetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool", true);
+        if (!refuelStartedByUser) {
             return;
         }
         const busDC2 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool");
@@ -172,7 +167,6 @@ class A32NX_Refuel {
         if (centerCurrent == centerTarget && LInnCurrent == LInnTarget && LOutCurrent == LOutTarget && RInnCurrent == RInnTarget && ROutCurrent == ROutTarget) {
             // DONE FUELING
             SimVar.SetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool", false);
-            SimVar.SetSimVarValue("L:FSDT_GSX_FUELHOSE_CONNECTED", "Number", 0);
         }
     }
 }

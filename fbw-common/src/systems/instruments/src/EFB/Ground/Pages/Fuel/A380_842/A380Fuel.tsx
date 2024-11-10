@@ -55,10 +55,11 @@ const ValueSimbriefInput: React.FC<ValueSimbriefInputProps> = ({
           max={max}
           value={value.toFixed(0)}
           onBlur={onBlur}
+          disabled={disabled}
         />
         <div className="absolute right-3 top-0 flex h-full items-center font-mono text-2xl text-gray-400">{unit}</div>
       </div>
-      {showSimbriefButton && (
+      {showSimbriefButton && !disabled && (
         <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
           <div
             className={`my-2 flex h-auto items-center justify-center rounded-md rounded-l-none
@@ -160,6 +161,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
   // GSX
   const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
   const [gsxFuelHoseConnected] = useSimVar('L:FSDT_GSX_FUELHOSE_CONNECTED', 'Number');
+  const [gsxRefuelState] = useSimVar('L:FSDT_GSX_REFUELING_STATE', 'Number');
 
   const dispatch = useAppDispatch();
   const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
@@ -172,25 +174,17 @@ export const A380Fuel: React.FC<FuelProps> = ({
   }, []);
 
   useEffect(() => {
-    // GSX
-    if (gsxFuelSyncEnabled === 1) {
-      /*
-            TODO: Uncomment?
-            if (boardingStarted) {
-                setShowSimbriefButton(false);
-                return;
-            }
-            */
-      setShowSimbriefButton(simbriefDataLoaded);
-      return;
-    }
     // EFB
     if (Math.abs(Math.round(fuelDesiredKg) - roundUpNearest100(simbriefPlanRamp)) < 10) {
       setShowSimbriefButton(false);
       return;
     }
     setShowSimbriefButton(simbriefDataLoaded);
-  }, [fuelDesiredKg, simbriefDataLoaded, gsxFuelSyncEnabled]);
+  }, [fuelDesiredKg, simbriefDataLoaded]);
+
+  const gsxRefuelActive = () => gsxRefuelState === 4 || gsxRefuelState === 5;
+
+  const gsxRefuelCallable = () => gsxRefuelState !== 2 && gsxRefuelState !== 3;
 
   const canRefuel = useCallback(
     () => !(eng1Running || eng2Running || eng3Running || eng4Running || !isOnGround),
@@ -205,12 +199,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
     }
 
     if (gsxFuelSyncEnabled === 1) {
-      if (gsxFuelHoseConnected === 1) {
+      if (gsxFuelHoseConnected === 1 || refuelRate === '2') {
         return true;
       }
 
       // In-flight refueling with GSX Sync enabled
-      return (eng1Running || eng2Running || eng3Running || eng4Running || !isOnGround) && refuelRate === '2';
+      return !canRefuel() && refuelRate === '2';
     }
     return true;
   }, [
@@ -276,11 +270,11 @@ export const A380Fuel: React.FC<FuelProps> = ({
 
   const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
-  const switchRefuelState = useCallback(() => {
+  const switchRefuelState = () => {
     if (airplaneCanRefuel()) {
       setRefuelStartedByUser(!refuelStartedByUser);
     }
-  }, [refuelStartedByUser]);
+  };
 
   const formatRefuelStatusLabel = () => {
     if (airplaneCanRefuel()) {
@@ -294,21 +288,25 @@ export const A380Fuel: React.FC<FuelProps> = ({
       }
       return `(${t('Ground.Fuel.ReadyToStart')})`;
     }
-    if (refuelStartedByUser) {
-      setRefuelStartedByUser(false);
+    if (gsxFuelSyncEnabled === 1 && gsxRefuelCallable()) {
+      if (!gsxRefuelActive()) {
+        return `(${t('Ground.Fuel.GSXFuelSyncEnabled')})`;
+      } else {
+        return `(${t('Ground.Fuel.GSXFuelRequested')})`;
+      }
     }
-    return gsxFuelSyncEnabled === 1 ? `(${t('Ground.Fuel.GSXFuelSyncEnabled')})` : `(${t('Ground.Fuel.Unavailable')})`;
+    return `(${t('Ground.Fuel.Unavailable')})`;
   };
 
   const formatRefuelStatusClass = useCallback(() => {
     if (airplaneCanRefuel()) {
       if (round(fuelDesiredKg) === totalFuelWeightKg || !refuelStartedByUser) {
-        if (refuelStartedByUser) {
-          setRefuelStartedByUser(false);
-        }
         return 'text-theme-highlight';
       }
       return fuelDesiredKg > totalFuelWeightKg ? 'text-green-500' : 'text-yellow-500';
+    }
+    if (gsxFuelSyncEnabled && !gsxRefuelActive()) {
+      return 'text-theme-highlight';
     }
     return 'text-theme-accent';
   }, [fuelDesiredKg, totalFuelWeightKg, refuelStartedByUser]);
@@ -606,6 +604,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
             </div>
             <div className="flex flex-row items-center space-x-32">
               <Slider
+                disabled={refuelStartedByUser}
                 style={{ width: '28rem' }}
                 value={(fuelDesiredKg / TOTAL_UI_MAX_FUEL_KG) * 100}
                 onChange={updateDesiredFuelPercent}
@@ -623,20 +622,22 @@ export const A380Fuel: React.FC<FuelProps> = ({
                   unit={massUnitForDisplay}
                   showSimbriefButton={showSimbriefButton}
                   onClickSync={handleSimbriefFuelSync}
-                  disabled={gsxFuelSyncEnabled === 1}
+                  disabled={refuelStartedByUser}
                 />
               </div>
             </div>
           </div>
-          <div
-            className={`flex w-48 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
-            onClick={() => switchRefuelState()}
-          >
-            <div className={`${airplaneCanRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
-              <PlayFill size={50} className={refuelStartedByUser ? 'hidden' : ''} />
-              <StopCircleFill size={50} className={refuelStartedByUser ? '' : 'hidden'} />
+          {(!gsxFuelSyncEnabled || refuelRate === '2') && (
+            <div
+              className={`flex w-48 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
+              onClick={() => switchRefuelState()}
+            >
+              <div className={`${airplaneCanRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
+                <PlayFill size={50} className={refuelStartedByUser ? 'hidden' : ''} />
+                <StopCircleFill size={50} className={refuelStartedByUser ? '' : 'hidden'} />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

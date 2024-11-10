@@ -131,6 +131,8 @@ export const A320Fuel: React.FC<FuelProps> = ({
 
   const gsxRefuelActive = () => gsxRefuelState === 4 || gsxRefuelState === 5;
 
+  const gsxRefuelCallable = () => gsxRefuelState !== 2 && gsxRefuelState !== 3;
+
   const canRefuel = () => !(eng1Running || eng2Running || !isOnGround);
 
   const airplaneCanRefuel = () => {
@@ -180,12 +182,12 @@ export const A320Fuel: React.FC<FuelProps> = ({
       }
       return `(${t('Ground.Fuel.ReadyToStart')})`;
     }
-    if (gsxFuelSyncEnabled === 1) {
+    if (gsxFuelSyncEnabled === 1 && gsxRefuelCallable()) {
       if (!gsxRefuelActive()) {
         return `(${t('Ground.Fuel.GSXFuelSyncEnabled')})`;
+      } else {
+        return `(${t('Ground.Fuel.GSXFuelRequested')})`;
       }
-
-      return '';
     }
     return `(${t('Ground.Fuel.Unavailable')})`;
   };
@@ -193,9 +195,6 @@ export const A320Fuel: React.FC<FuelProps> = ({
   const formatRefuelStatusClass = () => {
     if (airplaneCanRefuel()) {
       if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
-        if (refuelStartedByUser) {
-          setRefuelStartedByUser(false);
-        }
         return 'text-theme-highlight';
       }
       return totalTarget > totalCurrentGallon() ? 'text-green-500' : 'text-yellow-500';
@@ -505,7 +504,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
                   />
                   <div className="absolute right-4 top-2 text-lg text-gray-400">{massUnitForDisplay}</div>
                 </div>
-                {simbriefDataLoaded && (
+                {!refuelStartedByUser && (
                   <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
                     <div
                       className={`${refuelStartedByUser && 'invisible'} flex h-auto items-center justify-center rounded-md rounded-l-none border-2 border-theme-highlight bg-theme-highlight px-2 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight`}

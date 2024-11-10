@@ -134,6 +134,7 @@
       "EstimatedDuration": "Estimated duration (minutes)",
       "EstimatedTime": "Estimated Time",
       "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "GSXFuelRequested": "GSX Refuel requested",
       "LeftInnerTank": "Left Inner Tank",
       "LeftOuterTank": "Left Outer Tank",
       "ReadyToStart": "Ready to Start",
