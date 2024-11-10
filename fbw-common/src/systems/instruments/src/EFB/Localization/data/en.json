@@ -554,7 +554,9 @@
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PowerButton": "Power Off",
@@ -647,6 +649,8 @@
       "Active": "Active",
       "Auto": "Auto",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrate",
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
