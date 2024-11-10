@@ -5,7 +5,7 @@ use crate::{
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
-use std::{f64::consts::PI, time::Duration};
+use std::f64::consts::PI;
 use uom::si::{
     angular_velocity::revolution_per_minute,
     area::square_meter,
@@ -14,6 +14,8 @@ use uom::si::{
         AngularVelocity, Area, Energy, HeatCapacity, Length, Mass, Power, Pressure,
         SpecificHeatCapacity, TemperatureInterval, ThermodynamicTemperature,
     },
+    length::meter,
+    mass_density::kilogram_per_cubic_meter,
     power::watt,
     specific_heat_capacity::joule_per_kilogram_kelvin,
     temperature_interval::kelvin,
@@ -169,12 +171,16 @@ impl Brake {
     // https://www.researchgate.net/figure/Mechanical-and-thermal-properties-of-different-brake-disc-materials-4_tbl1_337482105
     // https://www.researchgate.net/figure/Properties-of-three-disc-rotor-materials_tbl1_312116210
 
-    const BRAKE_ACTUATOR_AREA: f64 = 0.0056; // m^2
-    const HEAT_DISIPATION: f64 = 20.; // W/K
-    const BRAKE_FAN_COOLDOWN_FACTOR: f64 = 4.;
-    const GEAR_COOLDOWN_FACTOR: f64 = 0.0055;
+    /// Area for brake actuator, m^2
+    const BRAKE_ACTUATOR_AREA: f64 = 0.0056;
+    /// Natural convective heat transfer coefficient, W/(m^2*K)
+    const HEAT_TRANSFER_COEFFICIENT: f64 = 20.;
+    /// Additional heat transfer coefficient due to brake fan, W/(m^2*K)
+    const BRAKE_FAN_CONVECTIVE_COEFFICIENT: f64 = 80.;
+    /// Emissivity of the brake disk
     const BRAKE_EMISSIVITY: f64 = 0.71;
-    const BOLTZMANN_CONSTANT: f64 = 5.670374419e-8; // W*m^−2*K^-4
+    /// Stefan-Boltzmann constant, W/(m^2*K^4)
+    const BOLTZMANN_CONSTANT: f64 = 5.670374419e-8;
 
     fn new(context: &mut InitContext, index: usize) -> Self {
         Self {
@@ -206,50 +212,70 @@ impl Brake {
         self.temperature += delta;
 
         // Cool down process
-        let radiated_energy =
-            Self::calculate_radiated_energy(context.delta(), brake_properties, self.temperature)
-                - Self::calculate_radiated_energy(
-                    context.delta(),
-                    brake_properties,
-                    context.ambient_temperature(),
-                );
-        let brake_fan_factor = if brake_fan_on {
-            Self::BRAKE_FAN_COOLDOWN_FACTOR
+        let radiated_energy = self.calculate_radiated_energy(context, brake_properties);
+        let brake_fan_coefficient = if brake_fan_on {
+            Self::BRAKE_FAN_CONVECTIVE_COEFFICIENT
         } else {
-            1.
+            0.
         };
-        let gear_factor = if gear_extended_phys {
-            context.indicated_airspeed().get::<meter_per_second>() * Self::GEAR_COOLDOWN_FACTOR
+        let convection_coefficient = if gear_extended_phys {
+            // We halve the gear heat coefficient because the brake disk is not directly exposed to the air
+            0.5 * Self::calculate_gear_convection_coefficient(
+                context,
+                brake_properties.brake_radius * 2.,
+            )
         } else {
-            1.
+            Self::HEAT_TRANSFER_COEFFICIENT
         };
         let delta_ambient = self.temperature.get::<degree_celsius>()
             - context.ambient_temperature().get::<degree_celsius>();
         let energy = radiated_energy
             + Energy::new::<joule>(
-                Self::HEAT_DISIPATION
-                    * brake_fan_factor
-                    * gear_factor
+                (convection_coefficient + brake_fan_coefficient)
+                    * brake_properties.surface_area().get::<square_meter>()
                     * (delta_ambient * context.delta_as_secs_f64()),
             );
         self.temperature -= energy / brake_properties.heat_capacity();
     }
 
     fn calculate_radiated_energy(
-        dt: Duration,
+        &self,
+        context: &UpdateContext,
         brake_properties: &BrakeProperties,
-        temperature: ThermodynamicTemperature,
     ) -> Energy {
         // We are using the Stefan-Boltzmann law to calculate the energy radiated
         Energy::new::<joule>(
             Self::BRAKE_EMISSIVITY
                 * Self::BOLTZMANN_CONSTANT
-                * dt.as_secs_f64()
+                * context.delta_as_secs_f64()
                 * brake_properties.surface_area().get::<square_meter>()
-                * temperature
+                * (self
+                    .temperature
                     .get::<thermodynamic_temperature::kelvin>()
-                    .powi(4),
+                    .powi(4)
+                    - context
+                        .ambient_temperature()
+                        .get::<thermodynamic_temperature::kelvin>()
+                        .powi(4)),
         )
+    }
+
+    fn calculate_gear_convection_coefficient(
+        context: &UpdateContext,
+        characteristic_length: Length,
+    ) -> f64 {
+        const K: f64 = 0.022991;
+        const PRANDT_NUMBER: f64 = 0.677725; // Approximate value for air
+
+        // Calculate Reynolds number
+        let reynold_number = context
+            .ambient_air_density()
+            .get::<kilogram_per_cubic_meter>()
+            * context.true_airspeed().get::<meter_per_second>()
+            * characteristic_length.get::<meter>();
+        // Nusselt number calculation for turbulent flow
+        let nusselt = 0.037 * PRANDT_NUMBER.powf(1. / 3.) * reynold_number.powf(0.8);
+        nusselt * K / characteristic_length.get::<meter>()
     }
 }
 impl SimulationElement for Brake {
