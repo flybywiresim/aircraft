@@ -58,6 +58,7 @@ render(
           pilotSeat: false,
           registrationDecal: true,
           wheelChocks: true,
+          cabinLighting: false,
         },
         throttle: {
           numberOfAircraftThrottles: 2,
