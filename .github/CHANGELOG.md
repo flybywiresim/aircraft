@@ -26,11 +26,15 @@
 1. [A380/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [GENERAL] Mitigated issue with pop-ups (i.e. pause on TOD notification) being unable to be dismissed while camera is in freelook + ALT-TAB - @2hwk (2cas)
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
+1. [A380/FLIGHTMODEL] Tweaked jetway connect position - @C-Schaffhausen (Cedric)
 1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
-1. [A380X/FLIGHT MODEL] Fix for stall and auto-rotation issues- @donstim (donbikes)
 1. [A380X/MODEL] Optimized 4K textures - @Repsol
 1. [A380X/EFB] Moved cabin lighting from ambient light knob to EFB Quick Settings - @2hwk (2cas)
+1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
+1. [A380X/MFD] MFD/SURV: Fixed TCAS not switching status when using DEFAULT SETTINGS button - @flogross89 (floridude)
+1. [A380/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
+1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
 
 ## 0.12.0
