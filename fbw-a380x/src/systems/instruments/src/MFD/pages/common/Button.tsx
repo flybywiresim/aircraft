@@ -47,7 +47,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   private renderedMenuItems: ButtonMenuItem[] = [];
 
-  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(true), true);
+  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(false), true);
 
   private clickHandler(): void {
     if (!this.disabled.get()) {
