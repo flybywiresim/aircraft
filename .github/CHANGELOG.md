@@ -26,6 +26,7 @@
 1. [A380/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
 1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
+1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 
 ## 0.12.0
 
