@@ -516,6 +516,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.positionVisible.sub(
       (visible) => (this.positionTextRef.instance.style.visibility = visible ? 'inherit' : 'hidden'),
+      true,
     );
   }
 
