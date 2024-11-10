@@ -24,6 +24,7 @@
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
 1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
 1. [A380X/SURV] Fixed BTV setup from F/O side, and ROW issues at G/A with early THR RED - @flogross89 (floridude)
+1. [A380/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [A380X/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [GENERAL] Mitigated issue with pop-ups (i.e. pause on TOD notification) being unable to be dismissed while camera is in freelook + ALT-TAB - @2hwk (2cas)
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
@@ -37,6 +38,8 @@
 1. [A380X/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
 1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
+1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 1. [A380X/FADEC] Add N1 fan protection measures (METOTS, KOZ) - @flogross89 (floridude)
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
@@ -78,6 +81,8 @@
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
+1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENGINES] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
