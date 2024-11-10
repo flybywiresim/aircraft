@@ -44,31 +44,11 @@ export class FlightModel {
     gearExtended = false,
     flapConf = FlapConf.CLEAN,
   ): number {
-    // Values taken at mach 0
-    let baseDrag: number;
-    switch (flapConf) {
-      case FlapConf.CLEAN:
-        baseDrag = 0.0211 * Cl ** 3 + 0.0412 * Cl ** 2 - 0.015 * Cl + 0.0215;
-        break;
-      case FlapConf.CONF_1:
-        baseDrag = 0.0303 * Cl ** 4 - 0.064 * Cl ** 3 + 0.1166 * Cl ** 2 - 0.0538 * Cl + 0.0398;
-        break;
-      case FlapConf.CONF_2:
-        baseDrag = 0.0168 * Cl ** 3 - 0.0018 * Cl ** 2 - 0.0037 * Cl + 0.0729;
-        break;
-      case FlapConf.CONF_3:
-        baseDrag = 0.013 * Cl ** 3 - 0.0056 * Cl ** 2 + 0.0005 * Cl + 0.0902;
-        break;
-      case FlapConf.CONF_FULL:
-        baseDrag = 0.0077 * Cl ** 3 - 0.0056 * Cl ** 2 - 0.001 * Cl + 0.1405;
-        break;
-      default:
-        break;
-    }
+    const baseDrag = config.dragPolarCoefficients[flapConf].reduce((acc, curr, index) => acc + curr * Cl ** index, 0);
 
     const spdBrkIncrement = spdBrkDeflected ? config.speedBrakeDrag : 0;
     const gearIncrement = gearExtended ? config.gearDrag : 0;
-    return config.dragCoeffFactor * (baseDrag + spdBrkIncrement + gearIncrement);
+    return baseDrag + spdBrkIncrement + gearIncrement;
   }
 
   /**

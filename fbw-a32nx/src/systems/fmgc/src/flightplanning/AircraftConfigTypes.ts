@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { FlapConf } from '@fmgc/guidance/vnav/common';
+
 export enum VnavDescentMode {
   NORMAL,
   CDA,
@@ -170,8 +172,11 @@ export interface FlightModelParameters {
   /** Drag coefficient increase due to extended speed brake */
   gearDrag: number;
 
-  /** Drag coefficient factor for tuning */
-  dragCoeffFactor: number;
+  /**
+   * Coefficents for the drag polar polynomial. The drag polar polynomial maps Cl to Cd.
+   * The coefficients are ordered in increasing powers of Cl.
+   */
+  dragPolarCoefficients: Record<FlapConf, number[]>;
 }
 
 export interface FMSymbolsConfig {

@@ -11,6 +11,7 @@ import {
   VnavConfig,
   VnavDescentMode,
 } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
@@ -41,7 +42,13 @@ const flightModelParams: FlightModelParameters = {
   dragCoefficientCorrections: [0, 0, 0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0013, 0.002, 0.005, 0.016, 0.1],
   speedBrakeDrag: 0.0201,
   gearDrag: 0.00872,
-  dragCoeffFactor: 1.0,
+  dragPolarCoefficients: {
+    [FlapConf.CLEAN]: [0.025, -5.48e-3, -0.0192, 0.0582],
+    [FlapConf.CONF_1]: [0.0398, -0.0538, 0.1166, -0.064, 0.0303],
+    [FlapConf.CONF_2]: [0.0729, -0.0037, -0.0018, 0.0168],
+    [FlapConf.CONF_3]: [0.0902, 0.0005, -0.0056, 0.013],
+    [FlapConf.CONF_FULL]: [0.1405, -0.001, -0.0056, 0.0077],
+  },
 };
 
 const engineModelParams: EngineModelParameters = {
