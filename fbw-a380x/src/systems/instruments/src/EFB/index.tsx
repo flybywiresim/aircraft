@@ -55,6 +55,7 @@ render(
           pilotSeat: true,
           registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
           wheelChocks: false,
+          cabinLighting: true,
         },
         throttle: {
           numberOfAircraftThrottles: 4,
