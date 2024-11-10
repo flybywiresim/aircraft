@@ -366,10 +366,10 @@ jobs:
           cd ./fbw-a380x/out/
           rm -rf build-modules
           7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          cd ../../
           if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
             mv ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}.001 ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} # Only applicable if split in 1 part!
           fi
-          cd ../../
           df -h
       - name: Upload release assets
         uses: dwenegar/upload-release-assets@v1
