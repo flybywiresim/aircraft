@@ -4,7 +4,8 @@
 /* eslint-disable max-len */
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { ZoomIn, ZoomOut, List } from 'react-bootstrap-icons';
+import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
+import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 
 import {
   t,
@@ -41,10 +42,6 @@ export const LoadSheetWidget = () => {
   const [imageSize, setImageSize] = useState(60);
 
   const dispatch = useAppDispatch();
-
-  const [isLoadsheetNavVisible, setLoadsheetNavVisible] = useState(false);
-
-  const loadsheetNavRef = useRef(null);
 
   const [currentLoadsheetSection, setCurrentLoadsheetSection] = usePersistentProperty(
     'LOADSHEET_ACTIVE_SECTION',
@@ -99,17 +96,6 @@ export const LoadSheetWidget = () => {
     setImageSize(cImageSize);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (loadsheetNavRef.current && !loadsheetNavRef.current.contains(event.target)) {
-      setLoadsheetNavVisible(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [handleClickOutside]);
-
   const filterLoadsheetSection = useCallback(
     (section) => {
       if (section != 'All') {
@@ -136,30 +122,18 @@ export const LoadSheetWidget = () => {
     <div className="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
       {isSimbriefDataLoaded() ? (
         <>
-          <button
-            onClick={() => setLoadsheetNavVisible((prev) => !prev)}
-            className="relative rounded-lg bg-theme-secondary px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-            ref={loadsheetNavRef}
-          >
-            <List size={30} />
-            <div
-              className={`absolute left-0 top-full mt-2 w-60 rounded-lg bg-theme-secondary p-4 transition-all duration-75 ${
-                isLoadsheetNavVisible
-                  ? 'pointer-events-auto translate-y-0 opacity-100'
-                  : 'pointer-events-none translate-y-[-40px] opacity-0'
-              }`}
-            >
-              {loadsheetSections.map((section) => (
-                <button
-                  key={section}
-                  className="block w-full rounded-md px-3 py-2 text-left transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-                  onClick={() => setCurrentLoadsheetSection(section)}
-                >
-                  {section}
-                </button>
-              ))}
-            </div>
-          </button>
+          <div className="relative w-60">
+            <SelectInput
+              className="w-60"
+              value={currentLoadsheetSection}
+              onChange={(value) => setCurrentLoadsheetSection(value as string)}
+              options={loadsheetSections.map((section) => ({
+                value: section,
+                displayValue: `${section}`,
+              }))}
+              maxHeight={32}
+            />
+          </div>
           <div className="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary">
             <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
               <button
