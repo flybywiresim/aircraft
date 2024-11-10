@@ -22,7 +22,7 @@ import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
 import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
@@ -36,7 +36,7 @@ export const getDisplayIndex = () => {
 export interface AbstractMfdPageProps extends ComponentProps {
   pageTitle?: string;
   bus: EventBus;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   fmcService: FmcServiceInterface;
 }
 
@@ -62,7 +62,10 @@ export enum InteractionMode {
   Kccu,
 }
 
-export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
+export class MfdComponent
+  extends DisplayComponent<MfdComponentProps>
+  implements FmsDisplayInterface, MfdDisplayInterface
+{
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
   #uiService = new MfdUiService(this.props.captOrFo);

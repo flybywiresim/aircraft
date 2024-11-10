@@ -1,5 +1,5 @@
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { ConsumerSubject, EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { FlightManagementComputer } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
@@ -25,7 +25,7 @@ export class FmcService implements FmcServiceInterface {
 
   constructor(
     private bus: EventBus,
-    mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
+    mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
     private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.createFmc(mfdReference);
@@ -43,7 +43,7 @@ export class FmcService implements FmcServiceInterface {
     return this.fmc.find((it) => it.operatingMode === FmcOperatingModes.Standby) ?? null;
   }
 
-  createFmc(mfdReference: (DisplayInterface & MfdDisplayInterface) | null): void {
+  createFmc(mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null): void {
     // Only FMC-A is operative for now, this takes up enough resources already
     // Before more FMC can be added, they have to be synced
     this.fmc.push(
@@ -91,7 +91,7 @@ export class FmcService implements FmcServiceInterface {
     return this.fmc[forFmcIndex];
   }
 
-  setMfdReference(forFmcIndex: FmcIndex, mfd: DisplayInterface & MfdDisplayInterface) {
+  setMfdReference(forFmcIndex: FmcIndex, mfd: FmsDisplayInterface & MfdDisplayInterface) {
     if (this.fmc[forFmcIndex] === undefined) {
       return;
     }
