@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.12.4
+
+1. [A380X/MFD] MFD/SURV: Fixed TCAS not switching status when using DEFAULT SETTINGS button - @flogross89 (floridude)
+
 ## 0.12.3
 
 1. [A380X/MFD] Fix revision of discontinuities - @Benjozork (Benjamin Dupont)
