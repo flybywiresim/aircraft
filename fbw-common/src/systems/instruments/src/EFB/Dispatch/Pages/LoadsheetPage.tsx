@@ -42,11 +42,14 @@ export const LoadSheetWidget = () => {
 
   const dispatch = useAppDispatch();
 
-  const [isLoadsheetNavVisible, setIsLoadsheetNavVisible] = useState(false);
+  const [isLoadsheetNavVisible, setLoadsheetNavVisible] = useState(false);
 
   const loadsheetNavRef = useRef(null);
 
-  const [activeLoadsheetSection, setCurrentLoadsheetSection] = usePersistentProperty('LOADSHEET_ACTIVE_SECTION', 'All');
+  const [currentLoadsheetSection, setCurrentLoadsheetSection] = usePersistentProperty(
+    'LOADSHEET_ACTIVE_SECTION',
+    'All',
+  );
 
   useEffect(() => {
     const pImages = ref.current?.getElementsByTagName('img');
@@ -98,7 +101,7 @@ export const LoadSheetWidget = () => {
 
   const handleClickOutside = (event: MouseEvent) => {
     if (loadsheetNavRef.current && !loadsheetNavRef.current.contains(event.target)) {
-      setIsLoadsheetNavVisible(false);
+      setLoadsheetNavVisible(false);
     }
   };
 
@@ -134,7 +137,7 @@ export const LoadSheetWidget = () => {
       {isSimbriefDataLoaded() ? (
         <>
           <button
-            onClick={() => setIsLoadsheetNavVisible((prev) => !prev)}
+            onClick={() => setLoadsheetNavVisible((prev) => !prev)}
             className="relative rounded-lg bg-theme-secondary px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
             ref={loadsheetNavRef}
           >
@@ -188,7 +191,7 @@ export const LoadSheetWidget = () => {
               className="image-theme"
               style={loadSheetStyle}
               dangerouslySetInnerHTML={{
-                __html: `<pre>\n\n${filterLoadsheetSection(activeLoadsheetSection)}\n</pre>`,
+                __html: `<pre>\n\n${filterLoadsheetSection(currentLoadsheetSection)}\n</pre>`,
               }}
             />
           </ScrollableContainer>
