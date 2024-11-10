@@ -2288,7 +2288,7 @@ export class FwsCore {
     this.trueNorthRef.set(SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'number'));
 
     /* V1 callout */
-    const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
+    const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', SimVarValueType.Knots);
     const v1Threshold = v1 - 4;
     this.v1SpeedConfirmNode.write(
       v1 &&
@@ -2298,7 +2298,9 @@ export class FwsCore {
       deltaTime,
     );
     const v1CalloutCondition = this.fwcFlightPhase.get() === 4 && this.v1SpeedConfirmNode.read();
-    SimVar.SetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool, v1CalloutCondition);
+    if (!!SimVar.GetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool) !== v1CalloutCondition) {
+      SimVar.SetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool, v1CalloutCondition);
+    }
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
