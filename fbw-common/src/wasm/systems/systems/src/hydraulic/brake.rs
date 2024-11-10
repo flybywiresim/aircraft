@@ -251,30 +251,6 @@ impl Brake {
                     .powi(4),
         )
     }
-
-    //// Wizardry that computes how much does the air flow cools down the brake.
-    ////
-    //// * `deltaTemp` - Temperature difference between brake temperature and ambient temperature
-    //// * `speed` - Current air speed
-    //// * `deltaTempFactor` - Some wizardry
-    // fn calculate_delta_cool_down(
-    //     delta_temp: TemperatureInterval,
-    //     airspeed: Velocity,
-    //     delta_temp_factor: f64,
-    //     gear_position: Ratio,
-    //     brake_fan: &BrakeFan,
-    // ) -> TemperatureInterval {
-    //     delta_temp
-    //         * Self::BASE_COOL_DOWN_FACTOR
-    //         * (Self::BASE_SPEED
-    //             + if gear_position.get::<ratio>() > 0.25 {
-    //                 Self::SPEED_COOLDOWN_FACTOR * airspeed.get::<meter_per_second>()
-    //             } else {
-    //                 0.
-    //             })
-    //         * delta_temp_factor
-    //         * if brake_fan.is_on() { 4.35 } else { 1. }
-    // }
 }
 impl SimulationElement for Brake {
     fn read(&mut self, reader: &mut crate::simulation::SimulatorReader) {
