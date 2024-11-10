@@ -31,6 +31,7 @@
 1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
 1. [A380X/MODEL] Optimized 4K textures - @Repsol
 1. [A380X/EFB] Moved cabin lighting from ambient light knob to EFB Quick Settings - @2hwk (2cas)
+1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
 
 ## 0.12.0
 
