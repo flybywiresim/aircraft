@@ -123,15 +123,21 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly thrustPercent = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
-      Math.min(
-        1,
-        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
-      ) * 100,
+      this.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
     this.n1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
     this.thrIdleOffset,
   );
+
+  private thrustPercentFromN1(n1: number, thrustLimitIdle: number, thrustLimitMax: number, thrIdleOffset: number) {
+    return (
+      Math.min(
+        1,
+        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
+      ) * 100
+    );
+  }
 
   private readonly thrustPercentReverse = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitRev]) =>
@@ -159,6 +165,18 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly availRevText = this.availVisible.map((it) => (it ? 'AVAIL' : 'REV'));
+
+  private readonly cas1 = ConsumerSubject.create(this.sub.on('cas_1'), 0);
+
+  // FIXME replace with actual available thrust when ACUTE is implemented
+  private readonly maxThrustAvail = MappedSubject.create(
+    ([cas, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      this.thrustPercentFromN1(cas < 35 ? 0.78 : 1.0, thrustLimitIdle, thrustLimitMax, thrIdleOffset) * 10,
+    this.cas1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
 
   private radius = 64;
   private startAngle = 230;
@@ -223,8 +241,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               <GaugeThrustComponent
                 x={this.props.x}
                 y={this.props.y}
-                valueIdle={0.3}
-                valueMax={10}
+                valueIdle={Subject.create(0.42)}
+                valueMax={this.maxThrustAvail}
                 radius={this.radius}
                 startAngle={this.startAngle}
                 endAngle={this.endAngle}
@@ -394,8 +412,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
             <GaugeThrustComponent
               x={this.props.x}
               y={this.props.y}
-              valueIdle={0.04}
-              valueMax={2.6}
+              valueIdle={Subject.create(0.04)}
+              valueMax={Subject.create(2.6)}
               radius={this.revRadius}
               startAngle={this.revStartAngle}
               endAngle={this.revEndAngle}

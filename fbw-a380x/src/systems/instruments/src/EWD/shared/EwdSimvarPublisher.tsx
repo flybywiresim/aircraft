@@ -42,6 +42,7 @@ export interface BaseEwdSimvars {
   memo_right: number;
   abnormal_debug_line: number;
   nose_gear_compressed: boolean;
+  cas: number;
 }
 
 type IndexedTopics =
@@ -59,7 +60,8 @@ type IndexedTopics =
   | 'limitations_all'
   | 'memo_left'
   | 'memo_right'
-  | 'nose_gear_compressed';
+  | 'nose_gear_compressed'
+  | 'cas';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
@@ -120,6 +122,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         'nose_gear_compressed',
         { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
       ],
+      ['cas', { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true }],
     ];
 
     super(new Map(simvars), bus, pacer);
