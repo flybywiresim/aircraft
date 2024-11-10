@@ -1057,6 +1057,8 @@ export class FwsCore {
   /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
   public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
 
+  public readonly v1CalloutOutput = Subject.create(false);
+
   /* LANDING GEAR AND LIGHTS */
 
   public readonly aircraftOnGround = Subject.create(false);
@@ -1572,6 +1574,8 @@ export class FwsCore {
       // Inhibit master warning/cautions until FWC startup has been completed
       SimVar.SetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum, volume);
     }, true);
+
+    this.v1CalloutOutput.sub((c) => SimVar.SetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool, c), true);
 
     // L/G lever red arrow sinking outputs
     this.lgLeverRedArrow.sub((on) => {
@@ -2297,10 +2301,7 @@ export class FwsCore {
           this.adr3Cas.get().valueOr(0) > v1Threshold),
       deltaTime,
     );
-    const v1CalloutCondition = this.fwcFlightPhase.get() === 4 && this.v1SpeedConfirmNode.read();
-    if (!!SimVar.GetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool) !== v1CalloutCondition) {
-      SimVar.SetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool, v1CalloutCondition);
-    }
+    this.v1CalloutOutput.set(this.fwcFlightPhase.get() === 4 && this.v1SpeedConfirmNode.read());
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
