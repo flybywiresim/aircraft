@@ -161,6 +161,7 @@ struct SimInputAutopilot {
   double HDG_pull;
   double ALT_push;
   double ALT_pull;
+  // FIXME remove VS_push
   double VS_push;
   double VS_pull;
   double LOC_push;
