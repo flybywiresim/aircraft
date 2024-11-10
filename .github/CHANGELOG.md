@@ -32,6 +32,7 @@
 1. [A380X/MODEL] Optimized 4K textures - @Repsol
 1. [A380X/EFB] Moved cabin lighting from ambient light knob to EFB Quick Settings - @2hwk (2cas)
 1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
+1. [A380X/MFD] MFD/SURV: Fixed TCAS not switching status when using DEFAULT SETTINGS button - @flogross89 (floridude)
 
 ## 0.12.0
 
