@@ -26,11 +26,6 @@
   border: 1px solid $display-amber;
 }
 
-.sys-status-item {
-  font-size: 24px;
-  color: green;
-}
-
 .sys-status-item.failed {
   color: $display-amber;
 }

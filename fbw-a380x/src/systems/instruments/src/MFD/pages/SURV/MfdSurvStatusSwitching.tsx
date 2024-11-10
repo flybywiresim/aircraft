@@ -1,12 +1,4 @@
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  Subscription,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdSurvStatusSwitching.scss';
 
@@ -16,8 +8,15 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { SurvStatusButton } from 'instruments/src/MFD/pages/common/SurvStatusButton';
+import { SurvStatusItem } from 'instruments/src/MFD/pages/common/SurvStatusItem';
 
 interface MfdSurvStatusSwitchingProps extends AbstractMfdPageProps {}
+
+export enum StatusItemState {
+  Off = 0,
+  On = 1,
+  Failed = 2,
+}
 
 export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitchingProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -27,17 +26,37 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
 
   private readonly tcas1Failed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
-  private readonly activeSystemGroupWxrTaws = Subject.create<number>(1);
+  private readonly wxr1Failed = Subject.create<boolean>(false);
+
+  private readonly turb1Failed = Subject.create<boolean>(false);
+
+  private readonly predWs1Failed = Subject.create<boolean>(false);
+
+  private readonly xpdr1Failed = Subject.create<boolean>(false);
+
+  private readonly terr1Failed = Subject.create<boolean>(false);
+
+  private readonly gpws1Failed = Subject.create<boolean>(false);
+
+  private readonly wxr2Failed = Subject.create<boolean>(false);
+
+  private readonly turb2Failed = Subject.create<boolean>(false);
+
+  private readonly predWs2Failed = Subject.create<boolean>(false);
+
+  private readonly terr2Failed = Subject.create<boolean>(false);
+
+  private readonly gpws2Failed = Subject.create<boolean>(false);
+
+  private readonly xpdr2Failed = Subject.create<boolean>(false);
+
+  private readonly tcas2Failed = Subject.create<boolean>(false);
 
   private readonly activeSystemGroupXpdrTcas = Subject.create<number>(1);
 
-  private readonly activeSystemWxr = Subject.create<number>(1);
+  private readonly activeSystemGroupXpdr = Subject.create<number>(1);
 
-  private readonly activeSystemTaws = Subject.create<number>(1);
-
-  private readonly activeSystemXpdr = Subject.create<number>(1);
-
-  private readonly activeSystemTcas = Subject.create<number>(1);
+  private readonly activeSystemGroupTcas = Subject.create<number>(1);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -66,29 +85,41 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
             <div class="sys-box">
               <SurvStatusButton
                 label={'SYS 1'}
-                active={MappedSubject.create(() => true)}
+                active={Subject.create(true)}
                 onClick={() => console.log('button clicked')}
               />
               <div
                 class={{
                   'sys-group': true,
-                  active: this.activeSystemWxr.get() === 1,
+                  active: Subject.create(true),
                 }}
                 style="margin-bottom: 10px;"
               >
-                <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px;">
-                  WX DISPLAY 1
-                </div>
-                <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px">
-                  TURB 1
-                </div>
-                <div class={{ 'sys-status-item': true }}>PRED W/S 1</div>
+                <SurvStatusItem
+                  label={'WXR DISPLAY'}
+                  sys={'1'}
+                  active={true}
+                  failed={this.wxr1Failed}
+                  style={'margin-bottom: 10px;'}
+                />
+                <SurvStatusItem
+                  label={'TURB'}
+                  sys={'1'}
+                  active={true}
+                  failed={this.turb1Failed}
+                  style={'margin-bottom: 10px;'}
+                />
+                <SurvStatusItem label={'PRED W/S'} sys={'1'} active={true} failed={this.predWs1Failed} />
               </div>
-              <div class={{ 'sys-group': true, active: this.activeSystemTaws.get() === 1 }}>
-                <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px">
-                  TERR SYS 1
-                </div>
-                <div class={{ 'sys-status-item': true }}>GPWS 1</div>
+              <div class={{ 'sys-group': true, active: Subject.create(true) }}>
+                <SurvStatusItem
+                  label={'TERR SYS'}
+                  sys={'1'}
+                  active={true}
+                  failed={this.terr1Failed}
+                  style={'margin-bottom: 10px;'}
+                />
+                <SurvStatusItem label={'GPWS'} sys={'1'} active={true} failed={this.gpws1Failed} />
               </div>
             </div>
             {/* upper middle text */}
@@ -104,23 +135,41 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
             <div class="sys-box">
               <SurvStatusButton
                 label={'SYS 2'}
-                active={MappedSubject.create(([value]) => value === 2, this.activeSystemGroupWxrTaws)}
+                active={Subject.create(false)}
                 onClick={() => console.log('button clicked')}
               />
-              <div class={{ 'sys-group': true, active: this.activeSystemWxr.get() === 2 }} style="margin-bottom: 10px;">
-                <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px;">
-                  WX DISPLAY 2
-                </div>
-                <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px">
-                  TURB 2
-                </div>
-                <div class={{ 'sys-status-item': true }}>PRED W/S 2</div>
+              <div
+                class={{
+                  'sys-group': true,
+                  active: Subject.create(false),
+                }}
+                style="margin-bottom: 10px;"
+              >
+                <SurvStatusItem
+                  label={'WXR DISPLAY'}
+                  sys={'2'}
+                  active={false}
+                  failed={this.wxr2Failed}
+                  style={'margin-bottom: 10px;'}
+                />
+                <SurvStatusItem
+                  label={'TURB'}
+                  sys={'2'}
+                  active={false}
+                  failed={this.turb2Failed}
+                  style={'margin-bottom: 10px;'}
+                />
+                <SurvStatusItem label={'PRED W/S'} sys={'2'} active={false} failed={this.predWs2Failed} />
               </div>
-              <div class={{ 'sys-group': true, active: this.activeSystemTaws.get() === 2 }}>
-                <div class={{ 'sys-status-item': true }} style="margin-bottom: 10px">
-                  TERR SYS 2
-                </div>
-                <div class={{ 'sys-status-item': true }}>GPWS 2</div>
+              <div class={{ 'sys-group': true, active: Subject.create(false) }}>
+                <SurvStatusItem
+                  label={'TERR SYS'}
+                  sys={'2'}
+                  active={false}
+                  failed={this.terr2Failed}
+                  style={'margin-bottom: 10px;'}
+                />
+                <SurvStatusItem label={'GPWS'} sys={'2'} active={false} failed={this.gpws2Failed} />
               </div>
             </div>
           </div>
@@ -128,16 +177,15 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
           <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 50px;">
             {/* lower left sys box */}
             <div class="sys-box">
-              <SurvStatusButton
-                label={'SYS 1'}
-                active={MappedSubject.create(([value]) => value === 1, this.activeSystemGroupWxrTaws)}
-                onClick={() => console.log('button clicked')}
-              />
-              <div class={{ 'sys-group': true, active: this.activeSystemXpdr.get() === 1 }} style="margin-bottom: 5px;">
-                <div class={{ 'sys-status-item': true, active: this.activeSystemXpdr.get() === 1 }}>XPDR 1</div>
+              <SurvStatusButton label={'SYS 1'} active={Subject.create(this.activeSystemGroupXpdrTcas.get() === 1)} />
+              <div
+                class={{ 'sys-group': true, active: Subject.create(this.activeSystemGroupXpdr.get() === 1) }}
+                style="margin-bottom: 5px;"
+              >
+                <SurvStatusItem label={'XPDR'} sys={'1'} active={true} failed={this.xpdr1Failed} />
               </div>
-              <div class={{ 'sys-group': true, active: this.activeSystemTcas.get() === 1, failed: this.tcas1Failed }}>
-                <div class={{ 'sys-status-item': true, failed: this.tcas1Failed }}>TCAS 1</div>
+              <div class={{ 'sys-group': true, active: Subject.create(this.activeSystemGroupTcas.get() === 1) }}>
+                <SurvStatusItem label={'TCAS'} sys={'1'} active={true} failed={this.tcas1Failed} />
               </div>
             </div>
             {/* lower middle text */}
@@ -153,16 +201,17 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
             <div class="sys-box">
               <SurvStatusButton
                 label={'SYS 2'}
-                active={MappedSubject.create(([value]) => value === 2, this.activeSystemGroupWxrTaws)}
+                active={Subject.create(false)}
                 onClick={() => console.log('button clicked')}
               />
-              <div class={{ 'sys-group': true, active: this.activeSystemXpdr.get() === 2 }} style="margin-bottom: 5px;">
-                <div class={{ 'sys-status-item': true }}>XPDR 2</div>
+              <div
+                class={{ 'sys-group': true, active: Subject.create(this.activeSystemGroupXpdr.get() === 2) }}
+                style="margin-bottom: 5px;"
+              >
+                <SurvStatusItem label={'XPDR'} sys={'2'} active={false} failed={this.xpdr2Failed} />
               </div>
-              <div class={{ 'sys-group': true, active: this.activeSystemTcas.get() === 2 }}>
-                <div onClick={() => console.log('button clicked')} class={{ 'sys-status-item': true }}>
-                  TCAS 2
-                </div>
+              <div class={{ 'sys-group': true, active: Subject.create(this.activeSystemGroupTcas.get() === 2) }}>
+                <SurvStatusItem label={'TCAS'} sys={'2'} active={false} failed={this.tcas2Failed} />
               </div>
             </div>
           </div>

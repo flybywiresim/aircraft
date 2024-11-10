@@ -5,7 +5,7 @@ export interface SurvStatusButtonProps extends ComponentProps {
   label: string;
   active: Subscribable<boolean>;
   onChanged?(val: boolean): void;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 /*
