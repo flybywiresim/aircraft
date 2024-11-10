@@ -567,6 +567,8 @@
     },
     "Title": "קיצורי דרך"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "אודות"
@@ -757,6 +759,8 @@
       "UtcAndLocal": "UTC ומקומי"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "אפריל",
     "Aug": "אוגוסט",

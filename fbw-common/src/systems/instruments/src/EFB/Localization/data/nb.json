@@ -567,6 +567,8 @@
     },
     "Title": "Hurtigkontroller"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Om"
@@ -757,6 +759,8 @@
       "UtcAndLocal": "UTC og lokal"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "apr.",
     "Aug": "aug.",
