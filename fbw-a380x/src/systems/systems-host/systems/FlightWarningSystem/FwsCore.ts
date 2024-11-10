@@ -1054,6 +1054,9 @@ export class FwsCore {
 
   public readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
 
+  /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
+  public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
+
   /* LANDING GEAR AND LIGHTS */
 
   public readonly aircraftOnGround = Subject.create(false);
@@ -2283,6 +2286,19 @@ export class FwsCore {
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
 
     this.trueNorthRef.set(SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'number'));
+
+    /* V1 callout */
+    const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
+    const v1Threshold = v1 - 4;
+    this.v1SpeedConfirmNode.write(
+      v1 &&
+        (this.adr1Cas.get().valueOr(0) > v1Threshold ||
+          this.adr2Cas.get().valueOr(0) > v1Threshold ||
+          this.adr3Cas.get().valueOr(0) > v1Threshold),
+      deltaTime,
+    );
+    const v1CalloutCondition = this.fwcFlightPhase.get() === 4 && this.v1SpeedConfirmNode.read();
+    SimVar.SetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool, v1CalloutCondition);
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
