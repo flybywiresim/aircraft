@@ -141,7 +141,9 @@ export const LoadSheetWidget = () => {
             <List size={30} />
             <div
               className={`absolute left-0 top-full mt-2 w-60 rounded-lg bg-theme-secondary p-4 transition-all duration-75 ${
-                isLoadsheetNavVisible ? 'translate-y-0 opacity-100' : 'translate-y-[-40px] opacity-0'
+                isLoadsheetNavVisible
+                  ? 'pointer-events-auto translate-y-0 opacity-100'
+                  : 'pointer-events-none translate-y-[-40px] opacity-0'
               }`}
             >
               {loadsheetSections.map((section) => (
