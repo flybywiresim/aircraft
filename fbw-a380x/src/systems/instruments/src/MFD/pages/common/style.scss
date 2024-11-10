@@ -810,6 +810,18 @@
   background-color: $display-green;
 }
 
+.mfd-surv-status-item {
+  font-size: 24px;
+}
+
+.mfd-surv-status-item.active {
+  color: $display-green;
+}
+
+.mfd-surv-status-item.failed {
+  color: $display-amber;
+}
+
 .hidden {
   display: none;
 }
