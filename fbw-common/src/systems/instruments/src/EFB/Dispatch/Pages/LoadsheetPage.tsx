@@ -17,23 +17,14 @@ import {
   setOfpScroll,
 } from '@flybywiresim/flypad';
 
-const loadsheetSections = [
-  'All',
-  'Summary and Fuel',
-  'Routing and Impacts',
-  'Times and Weights',
-  'Flight Log',
-  'Wind Information',
-  'ATC Flight Plan',
-  'Additional Info',
-  'Runway Analysis',
-  'Airport WX List',
-  'NOTAM',
-  'Company NOTAM',
-];
+import supportedOFPLayouts from '../../Apis/Simbrief/ofpLayouts.json';
 
 export const LoadSheetWidget = () => {
   const loadsheet = useAppSelector((state) => state.simbrief.data.loadsheet);
+
+  const ofpLayout = useAppSelector((state) => state.simbrief.data.ofpLayout);
+
+  const loadsheetSections = supportedOFPLayouts[ofpLayout] || null;
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -98,22 +89,42 @@ export const LoadSheetWidget = () => {
 
   const filterLoadsheetSection = useCallback(
     (section) => {
-      if (section != 'All') {
+      if (section !== 'All') {
+        const currentIndex = loadsheetSections.indexOf(section);
+
+        const nextSection =
+          currentIndex !== -1 && currentIndex + 1 < loadsheetSections.length
+            ? loadsheetSections[currentIndex + 1]
+            : null;
+
         const sectionMarkerPattern = new RegExp(
-          `<!--BKMK///${section}///\\d-->[\\s\\S]*?(?=<!--BKMK///(?!${section})[^/]+///\\d-->|$)`,
+          `<!--BKMK///${section}///\\d-->[\\s\\S]*?(?=<!--BKMK///${nextSection || ''}///\\d-->|$)`,
           'g',
         );
 
-        const match = loadsheet.match(sectionMarkerPattern);
+        const filteredLoadsheet = loadsheet.match(sectionMarkerPattern);
 
-        if (match && match.length > 0) {
-          return match
-            ? match[0].replace(new RegExp(`<!--BKMK///${section}///\\d-->`), '').trim()
-            : '<pre>Section not found or FPL Layout not supported.</pre>';
+        if (filteredLoadsheet && filteredLoadsheet.length > 0) {
+          return `
+            \n<pre>${filteredLoadsheet[0]
+              .replace(/^<div [^>]+>/, '')
+              .replace(/<\/div>$/, '')
+              .replace(/font-size:\s*\d+px;?/g, '')
+              .replace(/font-family:\s*[^;]+;/g, '')
+              .replace(/font-size:\s*\d+px;?/g, '')
+              .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')}
+            </pre>\n`;
         }
-      } else {
-        return loadsheet;
-      }
+      } else
+        return `
+          \n${loadsheet
+            .replace(/^<div [^>]+>/, '')
+            .replace(/<\/div>$/, '')
+            .replace(/font-size:\s*\d+px;?/g, '')
+            .replace(/font-family:\s*[^;]+;/g, '')
+            .replace(/font-size:\s*\d+px;?/g, '')
+            .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')}
+          \n`;
     },
     [loadsheet],
   );
@@ -124,18 +135,21 @@ export const LoadSheetWidget = () => {
     <div className="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
       {isSimbriefDataLoaded() ? (
         <>
-          <div className="relative w-60">
-            <SelectInput
-              className="w-60"
-              value={currentLoadsheetSection}
-              onChange={(value) => setCurrentLoadsheetSection(value as string)}
-              options={loadsheetSections.map((section) => ({
-                value: section,
-                displayValue: `${section}`,
-              }))}
-              maxHeight={32}
-            />
-          </div>
+          {loadsheetSections && (
+            <div className="relative w-60">
+              <SelectInput
+                className="w-60"
+                value={currentLoadsheetSection}
+                onChange={(value) => setCurrentLoadsheetSection(value as string)}
+                options={loadsheetSections.map((section) => ({
+                  value: section,
+                  displayValue: `${section}`,
+                  borderColor: 'text-theme-body',
+                }))}
+                maxHeight={32}
+              />
+            </div>
+          )}
           <div className="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary">
             <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
               <button
@@ -167,7 +181,7 @@ export const LoadSheetWidget = () => {
               className="image-theme"
               style={loadSheetStyle}
               dangerouslySetInnerHTML={{
-                __html: `<pre>\n\n${filterLoadsheetSection(currentLoadsheetSection)}\n</pre>`,
+                __html: filterLoadsheetSection(currentLoadsheetSection),
               }}
             />
           </ScrollableContainer>
