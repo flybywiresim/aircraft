@@ -20,7 +20,7 @@ import {
   ThrottlePositionDonutComponent,
   ThrustTransientComponent,
 } from 'instruments/src/MsfsAvionicsCommon/gauges';
-import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface ThrustGaugeProps {
   bus: EventBus;
@@ -166,12 +166,14 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly availRevText = this.availVisible.map((it) => (it ? 'AVAIL' : 'REV'));
 
-  private readonly cas1 = ConsumerSubject.create(this.sub.on('cas_1'), 0);
+  private readonly cas1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_1'));
 
   // FIXME replace with actual available thrust when ACUTE is implemented
   private readonly maxThrustAvail = MappedSubject.create(
     ([cas, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
-      this.thrustPercentFromN1(cas < 35 ? 0.78 : 1.0, thrustLimitIdle, thrustLimitMax, thrIdleOffset) * 10,
+      cas.isNoComputedData() || cas.valueOr(100) < 35
+        ? this.thrustPercentFromN1(0.78, thrustLimitIdle, thrustLimitMax, thrIdleOffset) * 10
+        : 10,
     this.cas1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
