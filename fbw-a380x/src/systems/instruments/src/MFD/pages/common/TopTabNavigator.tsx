@@ -32,6 +32,12 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
     }
   }
 
+  destroy(): void {
+    this.divRef.instance.removeEventListener('click', this.props.onClick);
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <div ref={this.divRef} class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected ? ' active' : ''}`}>
