@@ -123,16 +123,23 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private manualAirportSelection = false;
 
+  // TODO: Should be using GPS position interpolated with IRS velocity data
   private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
 
-  private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
+  private readonly pposLongWord = Arinc429RegisterSubject.createEmpty();
 
   private presentPos = MappedSubject.create(
     ([lat, lon]) => {
       return { lat: lat.value, long: lon.value } as Coordinates;
     },
     this.pposLatWord,
-    this.pposLonWord,
+    this.pposLongWord,
+  );
+
+  private presentPosNotAvailable = MappedSubject.create(
+    ([lat, long]) => !lat.isNormalOperation() || !long.isNormalOperation(),
+    this.pposLatWord,
+    this.pposLongWord,
   );
 
   private readonly fmsDataStore = new FmsDataStore(this.props.bus);
@@ -214,7 +221,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
 
     this.subs.push(
-      this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
+      this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'inherit' : 'hidden'), true),
     );
 
     this.subs.push(
@@ -257,7 +264,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       .on('longitude')
       .whenChanged()
       .handle((value) => {
-        this.pposLonWord.setWord(value);
+        this.pposLongWord.setWord(value);
       });
 
     this.fmsDataStore.landingRunway.sub(async (it) => {
@@ -301,12 +308,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       .on('realTime')
       .atFrequency(5)
       .handle((_) => {
-        const ppos: Coordinates = { lat: 0, long: 0 };
-        ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-        ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
-
-        if (this.arpCoordinates && ppos.lat && this.navigraphAvailable.get() === false) {
-          globalToAirportCoordinates(this.arpCoordinates, ppos, this.localPpos);
+        if (this.arpCoordinates && this.navigraphAvailable.get() === false) {
+          globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
           this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
         }
       });
@@ -411,6 +414,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   };
 
   private autoLoadAirport() {
+    // If we don't have ppos, do not try to auto load
+    if (this.presentPosNotAvailable.get()) {
+      return;
+    }
+
     // If airport has been manually selected, do not auto load.
     if (
       this.manualAirportSelection === true ||

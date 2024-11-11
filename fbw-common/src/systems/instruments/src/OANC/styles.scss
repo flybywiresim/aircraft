@@ -15,13 +15,14 @@
 .oanc-container {
   width: 768px;
   height: 768px;
+  overflow: hidden;
 
   background-color: $display-background;
 
   font-family: "Ecam", monospace !important;
 }
 
-.oanc-message-screen {
+.oanc-flag-container {
   position: absolute;
 
   width: 768px;
@@ -31,12 +32,11 @@
   justify-content: center;
   align-items: center;
 
-  font-size: 24px;
+  color: $display-white;
+}
 
-  background-color: $display-background;
-  color: white;
-
-  z-index: 9999;
+.oanc-flag-container.amber {
+  color: $display-amber;
 }
 
 .oanc-label {
@@ -230,6 +230,12 @@
   border: solid 1.5px $display-yellow;
   color: $display-yellow;
   font-size: 24px;
+}
+
+.oanc-bottom-flag {
+  padding: 1px;
+  padding-left: 2px;
+  color: $display-amber;
 }
 
 .oanc-speed-info {
