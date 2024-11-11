@@ -39,6 +39,8 @@
 1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
+1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
+1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 
 ## 0.12.0
 
