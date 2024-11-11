@@ -165,8 +165,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     }
 
     if (!this.tcasFailed.get()) {
-      this.tcasTaraSelectedIndex.set(0);
-      this.tcasNormAbvBlwSelectedIndex.set(0);
+      this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alert_level', 2, true); // TA/RA
+      this.props.bus.getPublisher<MfdSurvEvents>().pub('mfd_tcas_alt_select', 0, true); // NORM
     }
 
     if (!this.wxrFailed.get()) {
