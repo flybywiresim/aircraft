@@ -57,7 +57,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly athrEngaged = ConsumerSubject.create(
     this.sub.on('autothrustStatus').withPrecision(2).whenChanged(),
     0,
-  ).map((it) => it !== 0);
+  ).map((it) => it == 2);
 
   private readonly thrustLimitIdle = ConsumerSubject.create(this.sub.on('thrust_limit_idle').whenChanged(), 0);
   private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
