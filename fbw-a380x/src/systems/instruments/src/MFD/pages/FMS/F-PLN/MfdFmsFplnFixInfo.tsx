@@ -188,7 +188,14 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                   <span class="mfd-fms-fpln-fix-info-table-col-right"></span>
                 </div>
                 <div class="fr mfd-fms-fpln-fix-info-table-row-4">
-                  <span class="mfd-fms-fpln-fix-info-table-col-left"></span>
+                  <span class="mfd-fms-fpln-fix-info-table-col-left">
+                    <Button
+                      disabled
+                      label="ABEAM"
+                      buttonStyle="width: 127px; margin-top: 1rem; margin-left: 1.35rem;"
+                      onClick={() => {}}
+                    />
+                  </span>
                   <span class="mfd-fms-fpln-fix-info-table-col-right"></span>
                 </div>
               </div>
