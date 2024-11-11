@@ -88,7 +88,11 @@ void Autothrust::Autothrust_N1fanprotectioneng1(real_T rtu_cas, real_T rtu_n1_c,
 {
   *rty_n1_c_protected = rtu_n1_c;
   if ((rtu_cas < 60.0) && (rtu_n1_c > 64.0) && (rtu_n1_c < 72.0)) {
-    *rty_n1_c_protected = 63.5;
+    if (rtu_n1_c < 68.0) {
+      *rty_n1_c_protected = 62.5;
+    } else {
+      *rty_n1_c_protected = 73.5;
+    }
   } else if ((rtu_cas < 35.0) && (rtu_n1_c >= 78.0)) {
     *rty_n1_c_protected = 76.5;
   }
