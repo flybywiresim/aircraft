@@ -29,7 +29,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   canOverflow?: boolean;
   modifyValue?: S;
   /** If defined, this component does not update the value prop, but rather calls this method. */
-  onModified?: (newValue: U | null) => void;
+  onModified?: (newValue: U | null) => void | Promise<void>;
   /** Called for every character that is being typed */
   onInput?: (newValue: string) => void;
   /**
@@ -359,7 +359,7 @@ export class InputField<
     if (updateWasSuccessful) {
       if (this.props.onModified) {
         try {
-          this.props.onModified(newValue);
+          await this.props.onModified(newValue);
         } catch (msg: unknown) {
           if (msg instanceof FmsError && this.props.errorHandler) {
             this.props.errorHandler(msg.type);
