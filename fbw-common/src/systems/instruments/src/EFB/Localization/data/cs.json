@@ -567,8 +567,8 @@
     },
     "Title": "Rychlé ovládání"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
+  "QuickControls.TT.CabinAutoBrightness": "Zapnutí/vypnutí automatického osvětlení kabiny",
+  "QuickControls.TT.CabinLighting": "Nastavení osvětlení kabiny",
   "Settings": {
     "About": {
       "Title": "O zařízení"
@@ -759,8 +759,8 @@
       "UtcAndLocal": "UTC a místní"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
+  "Settings.SimOptions.CabinAutoBrightness": "Automatické osvětlení kabiny",
+  "Settings.SimOptions.CabinManualBrightness": "Jas osvětlení kabiny",
   "StatusBar": {
     "Apr": "Dub",
     "Aug": "Srp",
