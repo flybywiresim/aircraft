@@ -295,7 +295,7 @@ export const SystemDisplay = () => {
   };
 
   return (
-    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
+    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd} hideBootTestScreens={true}>
       <g>
         {PAGES[currentPage]}
         <StatusArea />
