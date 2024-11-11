@@ -122,7 +122,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly thrustPercent = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
-      this.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
+      this.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset) * 100,
     this.n1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
@@ -130,18 +130,15 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private thrustPercentFromN1(n1: number, thrustLimitIdle: number, thrustLimitMax: number, thrIdleOffset: number) {
-    return (
-      Math.min(
-        1,
-        Math.pow(Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)), 2) * (1 - thrIdleOffset) +
-          thrIdleOffset,
-      ) * 100
+    return Math.min(
+      1,
+      Math.pow(Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)), 2) * (1 - thrIdleOffset) +
+        thrIdleOffset,
     );
   }
 
   private readonly thrustPercentReverse = MappedSubject.create(
-    ([n1, thrustLimitIdle, thrustLimitRev]) =>
-      Math.min(1, Math.pow(Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitRev - thrustLimitIdle)), 2)) * 100,
+    ([n1, thrustLimitIdle, thrustLimitRev]) => this.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitRev, 0) * 100,
     this.n1,
     this.thrustLimitIdle,
     this.thrustLimitRev,
