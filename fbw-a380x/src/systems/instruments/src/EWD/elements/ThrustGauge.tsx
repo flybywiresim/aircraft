@@ -31,7 +31,7 @@ interface ThrustGaugeProps {
   n1Degraded: Subscribable<boolean>;
 }
 
-const METOTS_N1_LIMIT = 0.765;
+const METOTS_N1_LIMIT = 76.5;
 
 export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & EwdSimvars>();
@@ -132,6 +132,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
     this.thrIdleOffset,
   );
 
+  /** Expects values in percent 0-100, returns 0-100 */
   private thrustPercentFromN1(n1: number, thrustLimitIdle: number, thrustLimitMax: number, thrIdleOffset: number) {
     return (
       Math.min(
@@ -174,7 +175,10 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly maxThrustAvail = MappedSubject.create(
     ([cas, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
       cas.isNoComputedData() || cas.valueOr(100) < 35
-        ? this.thrustPercentFromN1(METOTS_N1_LIMIT, thrustLimitIdle, thrustLimitMax, thrIdleOffset) * 10
+        ? Math.max(
+            thrIdleOffset * 100,
+            this.thrustPercentFromN1(METOTS_N1_LIMIT, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
+          ) / 10
         : 10,
     this.cas1,
     this.thrustLimitIdle,
