@@ -13,6 +13,7 @@ import { TriangleDown, TriangleUp } from 'instruments/src/MFD/pages/common/shape
 
 export type ButtonMenuItem = {
   label: string;
+  disabled?: boolean;
   action(): void;
 };
 
@@ -128,7 +129,13 @@ export class Button extends DisplayComponent<ButtonProps> {
             <div>
               {items?.map<VNode>(
                 (el, idx) => (
-                  <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
+                  <span
+                    id={`${this.props.idPrefix}_${idx}`}
+                    class={{
+                      'mfd-dropdown-menu-element': true,
+                      disabled: el.disabled === true,
+                    }}
+                  >
                     {el.label}
                   </span>
                 ),
@@ -139,12 +146,17 @@ export class Button extends DisplayComponent<ButtonProps> {
           FSComponent.render(itemNodes, this.dropdownMenuRef.instance);
 
           // Add click event listener
-          items?.forEach((val, i) => {
+          for (const val of items) {
+            if (val.disabled === true) {
+              continue;
+            }
+
+            const i = items.indexOf(val);
             document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
               val.action();
               this.dropdownIsOpened.set(false);
             });
-          });
+          }
 
           // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
           // Open menu for a split second to measure size

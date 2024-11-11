@@ -84,7 +84,7 @@ export function pageForUrl(
     case 'fms/sec3/f-pln-hold':
       return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-fix-info':
-      return <MfdFmsFplnFixInfo pageTitle="F/PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
       return <MfdFmsPositionIrs pageTitle="IRS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/navaids':
