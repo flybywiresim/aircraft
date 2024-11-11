@@ -22,7 +22,7 @@ enum PitchTrimStatus {
   NotAtTarget,
 }
 
-export class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus; visible: Subscribable<boolean> }> {
+export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible: Subscribable<boolean> }> {
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
   private readonly cgGroup = FSComponent.createRef<SVGGElement>();

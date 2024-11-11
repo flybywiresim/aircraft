@@ -27,7 +27,7 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
 import './style.scss';
-import { PitchTrimIndicator } from 'instruments/src/PFD/PitchTrimIndicator';
+import { PitchTrimDisplay } from 'instruments/src/PFD/PitchTrimDisplay';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -228,7 +228,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
           <LowerArea bus={this.props.bus} pitchTrimIndicatorVisible={this.pitchTrimIndicatorVisible} />
         </svg>
-        <PitchTrimIndicator bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
+        <PitchTrimDisplay bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
       </CdsDisplayUnit>
     );
   }

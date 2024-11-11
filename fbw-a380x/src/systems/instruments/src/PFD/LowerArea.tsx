@@ -27,7 +27,7 @@ export class LowerArea extends DisplayComponent<{
         <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
         <Memos bus={this.props.bus} />
-        <FlapsIndicator bus={this.props.bus} />
+        <SlatsFlapsDisplay bus={this.props.bus} />
 
         <Limitations bus={this.props.bus} visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
       </g>
@@ -38,7 +38,7 @@ export class LowerArea extends DisplayComponent<{
 const circlePath = (r: number, cx: number, cy: number) =>
   `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
-class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars>();
 
   private targetClass = Subject.create('');
