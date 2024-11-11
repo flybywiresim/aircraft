@@ -1344,8 +1344,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         >
           ARPT NAV POS LOST
         </div>
-        {/*         <div style={{ visibility: this.anyFlagVisible.map((v) => (v ? 'hidden' : 'inherit')) }}>
-         */}{' '}
+
         <div style={{ display: this.anyFlagVisible.map((v) => (v ? 'none' : 'block')) }}>
           <svg viewBox="0 0 768 768" style="position: absolute;">
             <defs>

@@ -268,7 +268,7 @@ class NDInstrument implements FsInstrument {
 
             <div
               style={{
-                visibility: this.oansNotAvailable.map((v) => (v ? 'hidden' : 'inherit')),
+                display: this.oansNotAvailable.map((v) => (v ? 'none' : 'block')),
               }}
             >
               <Oanc
