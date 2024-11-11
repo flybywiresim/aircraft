@@ -22,8 +22,9 @@ export interface ButtonProps extends ComponentProps {
   showArrow?: boolean;
   idPrefix?: string;
   disabled?: boolean | Subscribable<boolean>;
+  visible?: boolean | Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
-  buttonStyle?: string;
+  buttonStyle?: string | Subscribable<string>;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
 }
@@ -48,6 +49,8 @@ export class Button extends DisplayComponent<ButtonProps> {
   private renderedMenuItems: ButtonMenuItem[] = [];
 
   private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(false), true);
+
+  private readonly visible = SubscribableUtils.toSubscribable(this.props.visible ?? Subject.create(true), true);
 
   private clickHandler(): void {
     if (!this.disabled.get()) {
@@ -85,21 +88,19 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     this.subs.push(
       this.disabled.sub((val) => {
-        if (val) {
-          this.buttonRef.getOrDefault()?.classList.add('disabled');
-        } else {
-          this.buttonRef.getOrDefault()?.classList.remove('disabled');
-        }
+        this.buttonRef.getOrDefault()?.classList.toggle('disabled', val);
+      }, true),
+    );
+
+    this.subs.push(
+      this.visible.sub((val) => {
+        this.topRef.instance.style.visibility = val ? 'visible' : 'hidden';
       }, true),
     );
 
     this.subs.push(
       this.props.selected.sub((val) => {
-        if (val) {
-          this.buttonRef.getOrDefault()?.classList.add('selected');
-        } else {
-          this.buttonRef.getOrDefault()?.classList.remove('selected');
-        }
+        this.buttonRef.getOrDefault()?.classList.toggle('selected', val);
       }, true),
     );
 

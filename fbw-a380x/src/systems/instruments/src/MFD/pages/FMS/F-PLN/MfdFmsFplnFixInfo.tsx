@@ -3,7 +3,15 @@ import { AnyFix } from '@flybywiresim/fbw-sdk';
 import { FmsPage } from '../../common/FmsPage';
 import { ObservableFlightPlan } from '@fmgc/flightplanning/plans/ObservableFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  DateTimeFormatter,
+  DisplayComponent,
+  FSComponent,
+  NumberFormatter,
+  Subject,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { Footer } from '../../common/Footer';
 import { TopTabNavigator, TopTabNavigatorPage } from '../../common/TopTabNavigator';
 import { InputField } from '../../common/InputField';
@@ -74,13 +82,12 @@ export class MfdFmsFplnFixInfo extends FmsPage {
               <div class="mfd-fms-fpln-fix-info-table">
                 <div class="fr mfd-fms-fpln-fix-info-table-row-1">
                   <span class="mfd-fms-fpln-fix-info-table-col-left"></span>
-                  <span class="fc jcc aic mfd-fms-fpln-fix-info-table-col-center mfd-fms-fpln-fix-info-fpl-intercept-header">
+                  <span class="fc jcc aic mfd-fms-fpln-fix-info-table-col-right mfd-fms-fpln-fix-info-fpl-intercept-header">
                     <span>F-PLN INTERCEPT</span>
                     <span>UTC</span>
                     <span>DIST</span>
                     <span>ALT</span>
                   </span>
-                  <span class="mfd-fms-fpln-fix-info-table-col-right"></span>
                 </div>
 
                 <div class="fr mfd-fms-fpln-fix-info-table-row-2">
@@ -145,8 +152,10 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       interactionMode={this.props.mfd.interactionMode}
                     />
                   </span>
-                  <span class="mfd-fms-fpln-fix-info-table-col-center"></span>
-                  <span class="mfd-fms-fpln-fix-info-table-col-right"></span>
+                  <span class="fc mfd-fms-fpln-fix-info-table-col-right">
+                    <FixInfoPredictionRow />
+                    <FixInfoPredictionRow />
+                  </span>
                 </div>
                 <div class="fr mfd-fms-fpln-fix-info-table-row-3">
                   <span class="fc mfd-fms-fpln-fix-info-table-col-left">
@@ -176,12 +185,10 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       interactionMode={this.props.mfd.interactionMode}
                     />
                   </span>
-                  <span class="mfd-fms-fpln-fix-info-table-col-center"></span>
                   <span class="mfd-fms-fpln-fix-info-table-col-right"></span>
                 </div>
                 <div class="fr mfd-fms-fpln-fix-info-table-row-4">
                   <span class="mfd-fms-fpln-fix-info-table-col-left"></span>
-                  <span class="mfd-fms-fpln-fix-info-table-col-center"></span>
                   <span class="mfd-fms-fpln-fix-info-table-col-right"></span>
                 </div>
               </div>
@@ -200,6 +207,76 @@ export class MfdFmsFplnFixInfo extends FmsPage {
         {/* end page content */}
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
+    );
+  }
+}
+
+class FixInfoPredictionRow extends DisplayComponent<any> {
+  private readonly subscriptions: Subscription[] = [];
+
+  private readonly buttonRef = FSComponent.createRef<Button>();
+
+  private readonly ete = Subject.create(NaN);
+
+  private readonly eteFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });
+
+  private readonly eteText = Subject.create('');
+
+  private readonly distance = Subject.create(NaN);
+
+  private readonly distanceFormatter = NumberFormatter.create({ precision: 1, maxDigits: 4, nanString: '----' });
+
+  private readonly distanceText = Subject.create('');
+
+  private readonly distanceUnitVisible = Subject.create(false);
+
+  private readonly altitude = Subject.create(NaN);
+
+  private readonly altitudeFormatter = NumberFormatter.create({ precision: 1, pad: 3, maxDigits: 4, nanString: '---' });
+
+  private readonly altitudeText = Subject.create('');
+
+  private readonly altitudeUnitVisible = Subject.create(false);
+
+  private readonly insertAsWaypointButtonVisible = Subject.create(false);
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(this.ete.pipe(this.eteText, this.eteFormatter));
+    this.subscriptions.push(this.distance.pipe(this.distanceText, this.distanceFormatter));
+    this.subscriptions.push(this.distance.pipe(this.distanceUnitVisible, (distance) => Number.isFinite(distance)));
+    this.subscriptions.push(this.altitude.pipe(this.altitudeText, this.altitudeFormatter));
+    this.subscriptions.push(this.altitude.pipe(this.altitudeUnitVisible, (altitude) => Number.isFinite(altitude)));
+  }
+
+  public render(): VNode | null {
+    return (
+      <span class="fr aic mfd-fms-fpln-fix-info-intercept-row">
+        <span class="fr aic mfd-fms-fpln-fix-info-eta">
+          <span class="mfd-value bigger">{this.eteText}</span>
+        </span>
+        <span class="fr aic mfd-fms-fpln-fix-info-dist">
+          <span class="mfd-value bigger">{this.distanceText}</span>
+          <span
+            class="mfd-label-unit"
+            style={{ visibility: this.distanceUnitVisible.map((it) => (it ? 'visible' : 'hidden')) }}
+          >
+            NM
+          </span>
+        </span>
+        <span class="fr aic mfd-fms-fpln-fix-info-alt">
+          <span
+            class="mfd-label-unit"
+            style={{ visibility: this.altitudeUnitVisible.map((it) => (it ? 'visible' : 'hidden')) }}
+          >
+            FL
+          </span>
+          <span class="mfd-value bigger">{this.altitudeText}</span>
+        </span>
+
+        <Button disabled visible={this.insertAsWaypointButtonVisible} label={'INSERT\nAS WPT*'} onClick={() => {}} />
+      </span>
     );
   }
 }
