@@ -107,7 +107,9 @@ export const LoadSheetWidget = () => {
         const match = loadsheet.match(sectionMarkerPattern);
 
         if (match && match.length > 0) {
-          return match[0].replace(new RegExp(`<!--BKMK///${section}///\\d-->`), '').trim();
+          return match
+            ? match[0].replace(new RegExp(`<!--BKMK///${section}///\\d-->`), '').trim()
+            : '<pre>Section not found or FPL Layout not supported.</pre>';
         }
       } else {
         return loadsheet;
