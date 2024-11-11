@@ -79,6 +79,8 @@ export class EfisSymbols<T extends number> {
 
   private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
 
+  private minRwyLengthDisplay: number = parseInt(NXDataStore.get('CONFIG_MIN_RWY_LENGTH', '1500'));
+
   private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = {
     L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LAT'),
     R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LAT'),
@@ -104,6 +106,18 @@ export class EfisSymbols<T extends number> {
   ) {
     this.guidanceController = guidanceController;
     this.nearby = NearbyFacilities.getInstance();
+
+    NXDataStore.getAndSubscribe(
+      'CONFIG_MIN_RWY_LENGTH',
+      (_, value: string) => {
+        const intValue = parseInt(value);
+        if (this.minRwyLengthDisplay !== intValue) {
+          console.log('Changed value');
+          this.minRwyLengthDisplay = intValue;
+        }
+      },
+      '1500',
+    );
   }
 
   init(): void {
@@ -188,13 +202,9 @@ export class EfisSymbols<T extends number> {
     const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
     this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
-    const hasSuitableRunway = (airport: Airport): boolean => {
-      const minRwyLengthDisplay = parseInt(NXDataStore.get('CONFIG_MIN_RWY_LENGTH', '1500'));
-      return (
-        airport.longestRunwayLength >= minRwyLengthDisplay &&
-        airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard
-      );
-    };
+    const hasSuitableRunway = (airport: Airport): boolean =>
+      airport.longestRunwayLength >= this.minRwyLengthDisplay &&
+      airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
     for (const side of EfisSymbols.sides) {
       const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
