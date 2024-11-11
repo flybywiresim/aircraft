@@ -46,11 +46,20 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   private renderedMenuItems: ButtonMenuItem[] = [];
 
-  private clickHandler(): void {
+  private onClick() {
     if (!this.props.disabled?.get()) {
       this.props.onClick();
     }
   }
+
+  private onClickHandler = this.onClick.bind(this);
+
+  onDropdownMenuElementClick(val: ButtonMenuItem) {
+    val.action();
+    this.dropdownIsOpened.set(false);
+  }
+
+  private onDropdownMenuElementClickHandler = this.onDropdownMenuElementClick.bind(this);
 
   private scrollMenuTo(elementIndex: number) {
     // Assume 36px height for each menu item div
@@ -78,7 +87,7 @@ export class Button extends DisplayComponent<ButtonProps> {
     if (this.props.showArrow === undefined) {
       this.props.showArrow = true;
     }
-    this.buttonRef.instance.addEventListener('click', () => this.clickHandler());
+    this.buttonRef.instance.addEventListener('click', this.onClickHandler);
 
     this.subs.push(
       this.props.disabled.sub((val) => {
@@ -106,10 +115,9 @@ export class Button extends DisplayComponent<ButtonProps> {
         this.props.menuItems.sub((items) => {
           // Delete click handler, delete dropdownMenuRef children, render dropdownMenuRef children,
           this.renderedMenuItems?.forEach((val, i) => {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.removeEventListener('click', () => {
-              val.action();
-              this.dropdownIsOpened.set(false);
-            });
+            document
+              .getElementById(`${this.props.idPrefix}_${i}`)
+              ?.removeEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
           });
 
           // Delete dropdownMenuRef's children
@@ -136,10 +144,9 @@ export class Button extends DisplayComponent<ButtonProps> {
 
           // Add click event listener
           items?.forEach((val, i) => {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
-              val.action();
-              this.dropdownIsOpened.set(false);
-            });
+            document
+              .getElementById(`${this.props.idPrefix}_${i}`)
+              ?.addEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
           });
 
           // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
@@ -191,17 +198,9 @@ export class Button extends DisplayComponent<ButtonProps> {
     );
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
-        this.dropdownIsOpened.set(false);
-      }
-    });
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onCloseDropdownHandler);
 
-    this.buttonRef.instance.addEventListener('click', () => {
-      if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled?.get()) {
-        this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
-      }
-    });
+    this.buttonRef.instance.addEventListener('click', this.onButtonClickHandler);
 
     this.subs.push(
       this.dropdownIsOpened.sub((val) => {
@@ -230,9 +229,29 @@ export class Button extends DisplayComponent<ButtonProps> {
     }
   }
 
+  private onCloseDropdown(e: MouseEvent) {
+    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
+      this.dropdownIsOpened.set(false);
+    }
+  }
+
+  private onCloseDropdownHandler = this.onCloseDropdown.bind(this);
+
+  private onButtonClick() {
+    if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled?.get()) {
+      this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+    }
+  }
+
+  private onButtonClickHandler = this.onButtonClick.bind(this);
+
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onClickHandler);
+    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onCloseDropdownHandler);
+    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onButtonClickHandler);
 
     super.destroy();
   }
