@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, Subscribable, VNode, NodeReference } from '@microsoft/msfs-sdk';
+import {Subject, ClockEvents, DisplayComponent, FSComponent, Subscribable, VNode, NodeReference } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from './HUD';
@@ -12,17 +12,19 @@ import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
 
 export class SyntheticRunway extends DisplayComponent<{bus: ArincEventBus}> {
     private flightPhase = -1;
+    private declutterMode = 0;
+    private crosswindMode = false;
+    private sVisibility = Subject.create<String>('');
     private data : HUDSyntheticRunway;
     private validData = false;
     private alt : number;
-
+    private logOnce = 0;
     private lat : number;
 
     private long: number;
 
     private heading : number;
 
-    private rollGroupRef = FSComponent.createRef<SVGGElement>();
     private centerlineGroupRef = FSComponent.createRef<SVGGElement>();
 
     private pathRefs: NodeReference<SVGTextElement>[] = [];
@@ -34,28 +36,39 @@ export class SyntheticRunway extends DisplayComponent<{bus: ArincEventBus}> {
         const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData>();
 
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
             this.flightPhase = fp;
-          });
+            //onGround
+            if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                (this.declutterMode == 0 ) ? this.sVisibility.set("block") : this.sVisibility.set("none"); 
+            }
+            //inFlight
+            if(this.flightPhase > 2 && this.flightPhase <= 8){
+                (this.declutterMode > 0 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
+            }
+        });
+        
+        sub.on('declutterMode').whenChanged().handle((value) => { 
+            (value > 0 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
+        }); 
+
+
         sub.on('realTime').atFrequency(8).handle((_t) => {
             this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
             this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
             this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-            if(this.flightPhase >= 4 && this.flightPhase <= 7){
+            if(this.data.cornerCoordinates !== undefined){
+                //console.log("defined data");
                 this.updateSyntheticRunway();
+            }else{
+                //console.log("undefined data");
+
             }
         });
-        //try other event to reload after flight load.
+        
+        
         sub.on('symbol').handle((data) => {
-            //     if(this.data.cornerCoordinates === undefined){       
-                //         this.validData = false;
-                //     }else
-                //    {
-                    //         this.validData = true;
-                    //         this.data = data;
-                    //     }
-                    this.data = data;
-            
-            
+                    this.data = data;  
         });
 
         sub.on('trueHeading').handle((heading) => {
@@ -90,7 +103,7 @@ export class SyntheticRunway extends DisplayComponent<{bus: ArincEventBus}> {
     }
 
         updateSyntheticRunway() {
-        if(this.validData){
+        
 
             const distToDestination = Avionics.Utils.computeGreatCircleDistance({ lat: this.lat, long: this.long }, this.data.cornerCoordinates[3]);
             const JKCoords: LatLongAlt[] = [];
@@ -132,100 +145,97 @@ export class SyntheticRunway extends DisplayComponent<{bus: ArincEventBus}> {
                 const p6 = this.DestFromPointCoordsBearingDistance((this.data.direction+180) % 360, 30000, p5.lat, p5.long);
                 p6.alt = this.data.thresholdCrossingHeight - 50; //in feet
                 centerLineCoords.push(p6);
-                
-                console.log(
-                    "location lat: " +
-                    this.data.location.lat,
-                    "location lon: "+
-                    this.data.location.long,
-                    
-                    "thresholdLocation lat: " +
-                    this.data.thresholdLocation.lat,
-                    "thresholdLocation lon: "+
-                    this.data.thresholdLocation.long,
-                    
-                    "startLocation lat: " +
-                    this.data.startLocation.lat,
-                    "startLocation lon: "+
-                    this.data.startLocation.long,
-                    
-                    "runway bearing: " +
-                    this.data.direction,
-                    "runway magnetic bearing: " +
-                    this.data.direction,
-                    
-                    "runway length: " +
-                    this.data.length,
-                    
-                    "threshold elev: " +
-                    this.data.elevation,
-                    
-                    "runway gradient: " +
-                    this.data.gradient,
-                    
-                    "threshold crossing height: " +
-                    this.data.thresholdCrossingHeight,
-                    
-                    
-                    "\np1 lat: " +
-                    JKCoords[0].lat,
-                    "p1 long: " +
-                    JKCoords[0].long,
-                    "p1 alt: " +
-                    JKCoords[0].alt,
-                    
-                    
-                    
-                    "p2 lat: " +
-                    JKCoords[1].lat,
-                    "p2 lon: "+
-                    JKCoords[1].long,
-                    "p2 alt: "+
-                    JKCoords[1].alt,
-                    
-                    "p3 lat: " +
-                    this.data.cornerCoordinates[2].lat,
-                    "p3 lon: "+
-                    this.data.cornerCoordinates[2].long,
-                    "p3 alt: "+
-                    this.data.cornerCoordinates[2].alt,
-                    
-                    "p4 lat: " +
-                    this.data.cornerCoordinates[3].lat,
-                    "p4 lon: "+
-                    this.data.cornerCoordinates[3].long,
-                    "p4 alt: "+
-                    this.data.cornerCoordinates[3].alt,
-                    
-                    "p5 lat: " +
-                    centerLineCoords[0].lat,
-                    "p5 lon: "+
-                    centerLineCoords[0].long,
-                    "p5 alt: "+
-                    centerLineCoords[0].alt,
-                    
-                    "p6 lat: " +
-                    centerLineCoords[1].lat,
-                    "p6 lon: "+
-                    centerLineCoords[1].long,
-                    "p6 alt: "+
-                    centerLineCoords[1].alt
-                );
+                if(this.logOnce == 0){
+                    this.logOnce += 1;
+                    console.log(
+                        "location lat: " +
+                        this.data.location.lat,
+                        "location lon: "+
+                        this.data.location.long,
+                        
+                        "thresholdLocation lat: " +
+                        this.data.thresholdLocation.lat,
+                        "thresholdLocation lon: "+
+                        this.data.thresholdLocation.long,
+                        
+                        "startLocation lat: " +
+                        this.data.startLocation.lat,
+                        "startLocation lon: "+
+                        this.data.startLocation.long,
+                        
+                        "runway bearing: " +
+                        this.data.direction,
+                        "runway magnetic bearing: " +
+                        this.data.direction,
+                        
+                        "runway length: " +
+                        this.data.length,
+                        
+                        "threshold elev: " +
+                        this.data.elevation,
+                        
+                        "runway gradient: " +
+                        this.data.gradient,
+                        
+                        "threshold crossing height: " +
+                        this.data.thresholdCrossingHeight,
+                        
+                        
+                        "\np1 lat: " +
+                        JKCoords[0].lat,
+                        "p1 long: " +
+                        JKCoords[0].long,
+                        "p1 alt: " +
+                        JKCoords[0].alt,
+                        
+                        
+                        
+                        "p2 lat: " +
+                        JKCoords[1].lat,
+                        "p2 lon: "+
+                        JKCoords[1].long,
+                        "p2 alt: "+
+                        JKCoords[1].alt,
+                        
+                        "p3 lat: " +
+                        this.data.cornerCoordinates[2].lat,
+                        "p3 lon: "+
+                        this.data.cornerCoordinates[2].long,
+                        "p3 alt: "+
+                        this.data.cornerCoordinates[2].alt,
+                        
+                        "p4 lat: " +
+                        this.data.cornerCoordinates[3].lat,
+                        "p4 lon: "+
+                        this.data.cornerCoordinates[3].long,
+                        "p4 alt: "+
+                        this.data.cornerCoordinates[3].alt,
+                        
+                        "p5 lat: " +
+                        centerLineCoords[0].lat,
+                        "p5 lon: "+
+                        centerLineCoords[0].long,
+                        "p5 alt: "+
+                        centerLineCoords[0].alt,
+                        
+                        "p6 lat: " +
+                        centerLineCoords[1].lat,
+                        "p6 lon: "+
+                        centerLineCoords[1].long,
+                        "p6 alt: "+
+                        centerLineCoords[1].alt
+                    );
+                }
             }
         
             if (this.data && JKCoords.length === 4) {
-                this.rollGroupRef.instance.style.display = 'block';
                 for (let i = 0; i < 4; i++) {
                     this.pathRefs[i].instance.setAttribute('d', this.drawPath(JKCoords[i], JKCoords[(i + 1) % 4]));
                 }
-                
                 this.centerlineGroupRef.instance.setAttribute('d', this.drawPath(centerLineCoords[0], centerLineCoords[1]));
-                
-            } else {
-                this.rollGroupRef.instance.style.display = 'block';
-                // this.rollGroupRef.instance.style.display = 'none';
-            }
-        }
+            }   
+        
+        
     }
     
     drawPath(p1: LatLongAlt, p2:LatLongAlt) {
@@ -287,7 +297,7 @@ export class SyntheticRunway extends DisplayComponent<{bus: ArincEventBus}> {
         res.push(<path class="SmallStroke Green" ref={this.centerlineGroupRef} d="" />);
         
         return (
-            <g id="SyntheticRunway" ref={this.rollGroupRef} style="display:block">
+            <g id="SyntheticRunway" display={this.sVisibility}>
                 {res}
             </g>
         );

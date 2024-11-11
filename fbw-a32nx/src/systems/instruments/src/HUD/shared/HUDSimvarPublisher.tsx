@@ -493,7 +493,7 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
 }
 
 export interface HUDSymbolData {
-    symbol: HUDSyntheticRunway,
+    symbol: HUDSyntheticRunway;
 }
 
 export class HUDSymbolsPublisher extends BasePublisher<HUDSymbolData> {

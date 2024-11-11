@@ -44,10 +44,17 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
         this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
       }, this.displayTimeInSeconds * 1000) as unknown as number;
     }
+    
+
   };
+  
 }
 
 export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean> }> {
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private sFMAref = Subject.create<String>('');
+
   private activeLateralMode: number = 0;
 
   private activeVerticalMode: number = 0;
@@ -131,6 +138,38 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
     });
+
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = fp;
+      //onGround
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode == 2 ){
+            this.sFMAref.set("none");
+          }
+          if(this.declutterMode < 2 ){
+            this.sFMAref.set("block");
+          }
+      }
+      //inFlight
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+        if(this.declutterMode == 2 ){
+          this.sFMAref.set("none");
+        }else{
+          this.sFMAref.set("block");
+        }   
+      }
+    });
+
+    sub.on('declutterMode').whenChanged().handle((value) => {
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.declutterMode = value;    
+      if(this.declutterMode > 1 ){
+          this.sFMAref.set("none");
+      }else{
+        this.sFMAref.set("block");
+      }    
+    }); 
 
     sub
       .on('fmaVerticalArmed')
@@ -229,7 +268,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   render(): VNode {
     return (
-      <g id="FMA" transform="scale(5 5) translate(40 0)">
+      <g display={this.sFMAref} id="FMA" transform="scale(5 5) translate(40 0)">
         {/* <g class="NormalStroke Grey">
           <path d={this.firstBorderSub} />
           <path d={this.secondBorderSub} />

@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils, NodeReference, Subject, Subscribable, SubscribableMapFunctions, Subscription, Value, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils,
+     NodeReference, Subject, Subscribable, SubscribableMapFunctions, Subscription, Value, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
@@ -20,13 +21,12 @@ const ValueSpacing = 5;
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
     private readonly lsVisible = ConsumerSubject.create(null, false);
-    private sVisible = "none";
+    private LSGroupVisibility = Subject.create('none');
     private bVisible = 0;
-    private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
+    //private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
     private flightPhase = -1;
     private crosswindMode = false;
     private declutterMode = 0;
-    
 
 
     private readonly xtk = ConsumerSubject.create(null, 0);
@@ -61,10 +61,34 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
 
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
+            //onGround
+            if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                if(this.declutterMode == 2 ){
+                  this.LSGroupVisibility.set("none");
+                }
+                if(this.declutterMode < 2 ){
+                  this.LSGroupVisibility.set("block");
+                }
+            }
+            //inFlight
+            if(this.flightPhase > 2 && this.flightPhase <= 8){
+              this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+              if(this.declutterMode == 2 ){
+                this.LSGroupVisibility.set("none");
+              }else{
+                this.LSGroupVisibility.set("block");
+              }   
+            }
         });
 
         sub.on('declutterMode').whenChanged().handle((value) => {
-            this.declutterMode = value; 
+            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+            this.declutterMode = value;    
+            if(this.declutterMode > 1 ){
+                this.LSGroupVisibility.set("none");
+            }else{
+              this.LSGroupVisibility.set("block");
+            }   
         });
 
         sub.on('crosswindMode').whenChanged().handle((value) => {
@@ -93,9 +117,8 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
         render(): VNode {
             return (
             <>
-                <g id="LSGroup" transform="scale(2.5 2.5) translate(185 51)" >
+                <g id="LSGroup" transform="scale(2.5 2.5) translate(185 51) " display={this.LSGroupVisibility} >
                    
-
                     <g id="LSGroup" >
                         <LandingSystemInfo  bus={this.props.bus} isVisible={this.lsVisible} /> 
                         <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -103,23 +126,14 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
                         <MarkerBeaconIndicator bus={this.props.bus} /> 
 
                     </g>
-                </g>
-                <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
-                    <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
-                        <LDevIndicator bus={this.props.bus} />
+                    <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
+                        <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
+                            <LDevIndicator bus={this.props.bus} />
+                        </g>
+                        <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
+                            <VDevIndicator bus={this.props.bus} />
+                        </g>
                     </g>
-                    <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
-                        <VDevIndicator bus={this.props.bus} />
-                    </g>
-                    <path
-                        transform="translate(110 -20)"
-                        class={{
-                            Green: true,
-                            Fill: true,
-                            HiddenElement: this.isGsReferenceLineHidden,
-                        }}
-                        d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
-                    />
                 </g>
             </>
         );
@@ -263,7 +277,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
         return (
             <g
                 id="LSInfoGroup"
-                 transform=" translate(-160 60)"
+                 transform=" translate(-110 125)"
                 class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}
             >
                 <text
@@ -327,7 +341,6 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
     private flightPhase = -1;
     private readonly lsVisible = ConsumerSubject.create(null, false);
     private LSLocRef = new NodeReference<SVGGElement>;
-
     private lagFilter = new LagFilter(1.5);
 
     private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -365,10 +378,26 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
 
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
-            if(this.flightPhase < 2){
+            if(this.flightPhase < 5 || this.flightPhase >= 8){
                 this.LSLocRef.instance.style.visibility = 'visible';
+                this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+            }
+            if(this.flightPhase >= 5 && this.flightPhase < 8){
+                this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+                this.LSLocRef.instance.style.visibility = 'hidden';
             }
         });
+
+        sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+           if(value == false){
+            if(this.flightPhase >= 4 && this.flightPhase <= 6){
+                this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+                this.LSLocRef.instance.style.visibility = 'hidden';
+            }
+           }
+   
+        });
+
 
         sub.on('hasLoc').whenChanged().handle((hasLoc) => {
             if (hasLoc) {
@@ -382,9 +411,18 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
         });
         sub.on('ls1Button').whenChanged().handle((value) =>{
             if(value){
-                this.LSLocRef.instance.style.visibility = 'visible';
+                if(this.flightPhase >= 5 && this.flightPhase < 8){
+                    this.LSLocRef.instance.style.visibility = 'visible';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+                }
             }else{
-                this.LSLocRef.instance.style.visibility = 'hidden';
+                if(this.flightPhase < 5 || this.flightPhase >= 8){
+                    this.LSLocRef.instance.style.visibility = 'visible';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+                }else{
+                    this.LSLocRef.instance.style.visibility = 'hidden';
+                }
+
             }
         })
         
@@ -394,7 +432,7 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
 
     render(): VNode {
         return (
-            <g ref={this.LSLocRef} id="LocalizerSymbolsGroup" transform="scale(1 1) translate(0 60)">
+            <g ref={this.LSLocRef} id="LocalizerSymbolsGroup" >
                 <path class="NormalStroke Green" d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
                 <path class="NormalStroke Green" d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
                 <path class="NormalStroke Green" d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
@@ -567,7 +605,12 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrume
     }
 }
 
-//toDo: RNAV postioning
+interface LDevPath {
+    roll: Arinc429WordData;
+    pitch: Arinc429WordData;
+    fpa: Arinc429WordData;
+    da: Arinc429WordData;
+}
 
 class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
@@ -575,9 +618,18 @@ class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
 
     private VDevSymbol = FSComponent.createRef<SVGPathElement>();
+    private needsUpdate = false;
+    private VDevRef = new NodeReference<SVGGElement>;
 
+    private data: LDevPath = {
+        roll: new Arinc429Word(0),
+        pitch: new Arinc429Word(0),
+        fpa: new Arinc429Word(0),
+        da: new Arinc429Word(0),
+      }
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+        const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
 
         // TODO use correct simvar once RNAV is implemented
         const deviation = 0;
@@ -597,11 +649,40 @@ class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
             this.VDevSymbol.instance.style.visibility = 'visible';
             this.VDevSymbol.instance.style.transform = `translate3d(0px, ${dots * 30.238 / 2}px, 0px)`;
         }
+
+        sub.on('realTime').handle((_t) => {
+            if (this.needsUpdate) {
+                this.needsUpdate = false;
+                const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+                if (daAndFpaValid) {
+                    // this.threeDegRef.instance.classList.remove('HiddenElement');
+                    this.MoveGlideSlopeGroup();
+                } else {
+                    // this.threeDegRef.instance.classList.add('HiddenElement');
+                }
+            }
+          });
     }
 
+    private MoveGlideSlopeGroup() {
+        const daLimConv = this.data.da.value * DistanceSpacing / ValueSpacing;
+        const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
+        const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
+        const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
+    
+        const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+        const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin ;
+        //this.glideGroupOffest.instance.style.transform = `translate3d(0px, ${yOffset/2.5}px, 0px)`;
+        this.VDevRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + 3 * DistanceSpacing / ValueSpacing )/2.5}px, 0px)`;
+        //DistanceSpacing
+    }
     render(): VNode {
         return (
-            <g id="VertDevSymbolsGroup" transform="scale(2.5 2.5) translate(295 120)">
+            <g id="VertDevSymbolsGroup" ref={this.VDevRef}>
+                <path transform="translate(-1 0)"
+                        class={{Green: true,Fill: true,}}
+                        d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
+                />
                 <text class="FontMediumSmaller AlignRight Green" x="96.410" y="46.145">V/DEV</text>
                 <path class="NormalStroke Green" d="m108.7 65.704h2.0147" />
                 <path class="NormalStroke Green" d="m108.7 50.585h2.0147" />
@@ -621,6 +702,8 @@ class LDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private LDevSymbolRight = FSComponent.createRef<SVGPathElement>();
 
     private LDevSymbol = FSComponent.createRef<SVGPathElement>();
+    private flightPhase = -1;
+    private LDevRef = new NodeReference<SVGGElement>;
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -649,7 +732,7 @@ class LDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
 
     render(): VNode {
         return (
-            <g id="LatDeviationSymbolsGroup" transform="scale(2.5 2.5) translate(185 140)">
+            <g id="LatDeviationSymbolsGroup" transform="translate(0 120)">
                 <text class="FontMediumSmaller  AlignRight Green" x="31.578" y="125.392">L/DEV</text>
                 <path class="NormalStroke Green" d="m38.686 129.51v2.0158" />
                 <path class="NormalStroke Green" d="m53.796 129.51v2.0158" />

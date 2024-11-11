@@ -74,7 +74,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
           });
         
           sub.on('declutterMode').whenChanged().handle((value) => {
-              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number')
+              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
               this.declutterMode = value;
               if(this.declutterMode == 2 ){
                 this.sVisibility.set("none");
@@ -111,6 +111,9 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         });
 
         sub.on('vs').withArinc429Precision(3).handle((vs) => {
+            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
             const absVSpeed = Math.abs(filteredVS);
@@ -134,6 +137,22 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             } else {
                 this.yOffsetSub.set(sign * -47.37);
             }
+
+            if(this.flightPhase > 4 && this.flightPhase < 9){
+                if(this.declutterMode == 2 ){
+                    this.sVisibility.set("none");
+                }
+                if(this.declutterMode < 2 ){
+                    if(absVSpeed > 10){
+                        this.sVisibility.set("block");
+                    }else{
+                        this.sVisibility.set("none");
+                    }
+                }
+            }else{
+                this.sVisibility.set("none");
+            }
+
         });
 
         sub.on('chosenRa').handle((ra) => {
@@ -147,7 +166,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
     render(): VNode {
         return (
-            <g id="VerticalSpeedIndicator" transform="scale(5 5) translate(90 10)">
+            <g id="VerticalSpeedIndicator" transform="scale(5 5) translate(90 20)">
                 {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
                 <g id="VSpeedFailText" ref={this.vsFailed}>

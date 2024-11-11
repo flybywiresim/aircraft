@@ -63,7 +63,6 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
 
     private lsPressed = ConsumerSubject.create(null, false);
 
-
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -97,8 +96,8 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
                 </g>
                 <g id="HeadingOfftapeGroup" ref={this.normalRef} transform="translate(571 367)">
                     <SelectedHeading heading={this.heading} bus={this.props.bus} />
-                    <QFUIndicator heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />
-                    <path class="Fill Green" d="m69.61 155h-1.5119v-18h1.5119z" /> 
+                    <QFUIndicator  bus={this.props.bus} heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />
+                    {/* <path class="Fill Green" d="m69.61 155h-1.5119v-18h1.5119z" />  */}
                     <GroundTrackBug bus={this.props.bus} heading={this.heading} />
                     <TrueFlag bus={this.props.bus} />
                 </g> 
@@ -190,13 +189,14 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     private flightPhase = -1;
     private declutterMode = 0;
     private crosswindMode = false;
-    private bVisibility = Subject.create<boolean>(false);
+    private bVisibility = false;
+    private sVisibility = Subject.create('none');
     private groundTrack = Arinc429ConsumerSubject.create(null);
 
     private isVisibleSub = MappedSubject.create(([groundTrack, heading]) => {
         const delta = getSmallestAngle(groundTrack.value, heading);
         // TODO should also be hidden if heading is invalid
-        return groundTrack.isNormalOperation() && Math.abs(delta) < DisplayRange && this.bVisibility;
+       return groundTrack.isNormalOperation() && Math.abs(delta) < DisplayRange;
     }, this.groundTrack, this.props.heading);
 
     private transformSub = MappedSubject.create(([groundTrack, heading]) => {
@@ -213,26 +213,41 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
             if(fp < 5 || fp >= 9){
-              this.bVisibility.set(false);
+                this.sVisibility.set('none')
             }
             if(fp > 4 && fp < 9){
-              this.bVisibility.set(true);
+                (this.declutterMode == 2 ) ? this.sVisibility.set('none') : this.sVisibility.set('block'); 
             }
           });
+
+        
+        sub.on('declutterMode').whenChanged().handle((value) => { 
+            (value == 2 ) ? this.sVisibility.set('none') : this.sVisibility.set('block'); 
+            console.log("value groundTrack: "+ this.sVisibility );
+
+        }); 
+
 
     }
 
     render(): VNode {
         return (
             <g style={{ transform: this.transformSub, display: this.isVisibleSub.map((v) => (v ? '' : 'none')) }} id="ActualTrackIndicator">
-                <path class="ThickOutline CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" />
-                <path class="ThickStroke Green CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" />
+                <path class="ThickOutline CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" display={this.sVisibility}/>
+                <path class="ThickStroke Green CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" display={this.sVisibility}/>
             </g>
         );
     }
 }
 
-class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, heading: Subscribable<number>, lsPressed: Subscribable<boolean> }> {
+class QFUIndicator extends DisplayComponent<{bus: ArincEventBus, ILSCourse: Subscribable<number>, heading: Subscribable<number>, lsPressed: Subscribable<boolean> }> {
+   
+    private flightPhase = -1;
+    private declutterMode = 0;
+    private sVisibility = Subject.create<String>('none');
+    
+    
+    
     private qfuContainer = FSComponent.createRef<SVGGElement>();
 
     private ilsCourseRight = FSComponent.createRef<SVGGElement>();
@@ -248,6 +263,7 @@ class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, h
     private lsPressed = false;
 
     private text = Subject.create('');
+
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -321,12 +337,44 @@ class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, h
                 this.qfuContainer.instance.classList.add('HiddenElement');
             }
         });
+        const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+        
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+            this.flightPhase = fp;
+            if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                if(this.declutterMode == 0){
+                    this.sVisibility.set("block");
+                }else{
+                    this.sVisibility.set("none"); 
+                }
+            }
+            if(this.flightPhase > 2 && this.flightPhase <= 8){    
+                if(this.declutterMode == 2){
+                    this.sVisibility.set("none");
+                }else{
+                    this.sVisibility.set("block"); 
+                }
+            }
+        });
+        
+        sub.on('declutterMode').whenChanged().handle((value) => { 
+            this.declutterMode = value;
+            if(this.declutterMode == 2){
+                this.sVisibility.set("none");
+            }else{
+                this.sVisibility.set("block"); 
+            }
+           
+        }); 
+
+
     }
 
     render(): VNode {
         return (
-            <g ref={this.qfuContainer}>
-                <g id="ILSCoursePointer" class="HiddenElement" ref={this.ilsCoursePointer}>
+            <g ref={this.qfuContainer} display={this.sVisibility}>
+                <g id="ILSCoursePointer" ref={this.ilsCoursePointer} >
                     <path class="ThickOutline" d="m58.9 135 h 20 m -10 -22 v30" />
                     <path class="ThickStroke Green" d="m58.9 135 h 20 m -10 -22 v30" />
                 </g>

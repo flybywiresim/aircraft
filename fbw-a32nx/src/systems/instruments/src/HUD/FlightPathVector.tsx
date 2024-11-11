@@ -2,16 +2,20 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, NodeReference, VNode, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, NodeReference, VNode, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429Register, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
-import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-
+import {
+    calculateHorizonOffsetFromPitch,
+    calculateVerticalOffsetFromRoll,
+    LagFilter,
+    getSmallestAngle,
+  } from './HUDUtils';
 const DistanceSpacing = 1024 / 28 * 5;
 const ValueSpacing = 5;
 
@@ -22,7 +26,10 @@ interface FlightPathVectorData {
     da: Arinc429WordData;
 }
 
-export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
+
+
+export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean>;
+    filteredRadioAlt: Subscribable<number>  }> {
 
     private bird = FSComponent.createRef<SVGGElement>();
     private isTrkFpaActive = false;
@@ -114,6 +121,11 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
                     <FlightPathDirector bus={this.props.bus} />
                     <SelectedFlightPathAngle bus={this.props.bus} />
                     <DeltaSpeed bus={this.props.bus} />
+                    <RadioAltAndDH
+                        bus={this.props.bus}
+                        filteredRadioAltitude={this.props.filteredRadioAlt}
+                        attExcessive={this.props.isAttExcessive}
+                    /> 
                 </g>
             </>
         );
@@ -565,3 +577,160 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
         );
     }
 }
+
+class RadioAltAndDH extends DisplayComponent<{
+    bus: ArincEventBus;
+    filteredRadioAltitude: Subscribable<number>;
+    attExcessive: Subscribable<boolean>;
+  }> {
+    private sVisibility = Subject.create('none');
+    private daRaGroup = FSComponent.createRef<SVGGElement>();
+  
+    private roll = new Arinc429Word(0);
+  
+    private readonly dh = Arinc429RegisterSubject.createEmpty();
+  
+    private filteredRadioAltitude = 0;
+  
+    private radioAltitude = new Arinc429Word(0);
+  
+    private transAltAr = Arinc429Register.empty();
+  
+    private transLvlAr = Arinc429Register.empty();
+  
+    private fmgcFlightPhase = 0;
+  
+    private altitude = new Arinc429Word(0);
+  
+    private attDhText = FSComponent.createRef<SVGTextElement>();
+  
+    private radioAltText = Subject.create('0');
+  
+    private radioAlt = FSComponent.createRef<SVGTextElement>();
+  
+    private classSub = Subject.create('');
+  
+    onAfterRender(node: VNode): void {
+      super.onAfterRender(node);
+  
+      const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+  
+      sub.on('rollAr').handle((roll) => {
+        this.roll = roll;
+      });
+  
+      sub
+        .on('fmTransAltRaw')
+        .whenChanged()
+        .handle((ta) => {
+          this.transAltAr.set(ta);
+        });
+  
+      sub
+        .on('fmTransLvlRaw')
+        .whenChanged()
+        .handle((tl) => {
+          this.transLvlAr.set(tl);
+        });
+  
+      sub
+        .on('fmgcFlightPhase')
+        .whenChanged()
+        .handle((fp) => {
+          this.fmgcFlightPhase = fp;
+          (fp == 5 || fp == 6) ? this.sVisibility.set("block") : this.sVisibility.set('none');
+        });
+  
+      sub.on('altitudeAr').handle((a) => {
+        this.altitude = a;
+      });
+  
+      sub.on('chosenRa').handle((ra) => {
+        if (!this.props.attExcessive.get()) {
+          this.radioAltitude = ra;
+          const raFailed = !this.radioAltitude.isFailureWarning();
+          const raHasData = !this.radioAltitude.isNoComputedData();
+          const raValue = this.filteredRadioAltitude;
+          const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
+          const useTransAltVsLvl = this.fmgcFlightPhase <= 3;
+          const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
+          const belowTransitionAltitude =
+            chosenTransalt.isNormalOperation() &&
+            !this.altitude.isNoComputedData() &&
+            this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
+          let size = 'FontMedium';
+          const dh = this.dh.get();
+          const DHValid = dh.value >= 0 && !dh.isNoComputedData() && !dh.isFailureWarning();
+  
+          let text = '';
+          let color = 'Amber';
+  
+          if (raHasData) {
+            if (raFailed) {
+              if (raValue < 2500) {
+                if (raValue > 400 || (raValue > dh.value + 100 && DHValid)) {
+                  color = 'Green';
+                }
+                if (raValue < 400) {
+                  size = 'FontMedium';
+                }
+                if (raValue < 5) {
+                  text = Math.round(raValue).toString();
+                } else if (raValue <= 50) {
+                  text = (Math.round(raValue / 5) * 5).toString();
+                } else if (raValue > 50 || (raValue > dh.value + 100 && DHValid)) {
+                  text = (Math.round(raValue / 10) * 10).toString();
+                }
+              }
+            } else {
+              color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
+              text = 'RA';
+            }
+          }
+  
+          this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
+          if (raFailed && DHValid && raValue <= dh.value) {
+            this.attDhText.instance.style.visibility = 'visible';
+          } else {
+            this.attDhText.instance.style.visibility = 'hidden';
+          }
+          this.radioAltText.set(text);
+          this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
+        }
+      });
+  
+      this.props.filteredRadioAltitude.sub((fra) => {
+        this.filteredRadioAltitude = fra;
+      }, true);
+  
+      this.props.attExcessive.sub((ae) => {
+        if (ae) {
+          this.radioAlt.instance.style.visibility = 'hidden';
+        } else {
+          this.radioAlt.instance.style.visibility = 'visible';
+        }
+      });
+  
+      sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
+    }
+  
+    render(): VNode {
+      return (
+        <g ref={this.daRaGroup} id="DHAndRAGroup" display={this.sVisibility}>
+          <text
+            ref={this.attDhText}
+            id="AttDHText"
+            x="0"
+            y="0"
+            class="FontMedium Amber MiddleAlign Blink9Seconds TextOutline"
+            transform="translate(640 600)"
+          >
+            DH
+          </text>
+          <text ref={this.radioAlt} id="RadioAlt" x="0" y="0" transform="translate(640 600)" class={this.classSub}>
+            {this.radioAltText}
+          </text>
+        </g>
+      );
+    }
+  }

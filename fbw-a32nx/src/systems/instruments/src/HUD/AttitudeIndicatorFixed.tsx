@@ -49,6 +49,13 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
     sub.on('declutterMode').whenChanged().handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
         this.declutterMode = value;
+        if((this.flightPhase > 4) && (this.flightPhase < 9)){
+          if(this.declutterMode == 2 ){
+            this.sVisibility.set("none");
+          }else{
+            this.sVisibility.set("block");
+          }
+        }
     }); 
   
 
@@ -159,6 +166,7 @@ export class Grid extends DisplayComponent<GridProps>{
 interface AttitudeIndicatorFixedCenterProps {
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
+  filteredRadioAlt: Subscribable<number> 
 }
 
 export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndicatorFixedCenterProps> {
@@ -232,7 +240,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         <g id="AttitudeSymbolsGroup" transform="translate(0 0)" style={this.visibilitySub}>
           <FDYawBar bus={this.props.bus} />
           <AircraftReference bus={this.props.bus} />
-          <FlightPathVector bus={this.props.bus} />
+          <FlightPathVector 
+          bus={this.props.bus} 
+          isAttExcessive={this.props.isAttExcessive}
+          filteredRadioAlt={this.props.filteredRadioAlt}
+          />
         </g>
       </>
     );
@@ -242,6 +254,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
   private declutterMode = 0;
   private flightPhase = 0;
+  private aircraftRefVisibility = Subject.create<String>('');
 
   private fdActive = false;
 
@@ -259,8 +272,37 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
 
     sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
       this.flightPhase = fp;
-  });
+      //onGround
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode == 2 ){
+            this.aircraftRefVisibility.set("none");
+          }
+          if(this.declutterMode < 2 ){
+            this.aircraftRefVisibility.set("block");
+          }
+      }
+      //inFlight
+      if(this.flightPhase > 2 && this.flightPhase <= 8){
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+        if(this.declutterMode == 2 ){
+          this.aircraftRefVisibility.set("none");
+        }else{
+          this.aircraftRefVisibility.set("block");
+        }   
+      }
+    });
+
+    sub.on('declutterMode').whenChanged().handle((value) => {
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.declutterMode = value;    
+      if(this.declutterMode > 1 ){
+          this.aircraftRefVisibility.set("none");
+      }else{
+        this.aircraftRefVisibility.set("block");
+      }    
+  }); 
 
     sub
       .on('pitchAr')
@@ -325,14 +367,20 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <>
-        <g id="AircraftReference" class="SmallStroke Green" style={this.visibilityAirSub}>
+      <g id="AircraftReferences" display={this.aircraftRefVisibility} >
+        <g id="AircraftReference" class="SmallStroke Green"
+          style={this.visibilityAirSub}>
           <path d="m 600,336.52  v -7.38 h -41.63" />
           <path d="m 636.25,332.89 h 7.5 v -7.5 h -7.5 z" />
           <path d="m 680,336.52 v -7.38 h 41.63" />
         </g>
-        <g id="AircraftReferenceOnGround" class="SmallStroke Green" transform="translate(0 0)" style={this.visibilityGroundSub}>
-          <path d="m 630,391.28 h 20 L 640,410 Z" />
-        </g>
+      </g>
+      <g id="AircraftReferenceOnGround" class="SmallStroke Green" 
+          transform="translate(0 0)" 
+          style={this.visibilityGroundSub}>
+        <path d="m 630,391.28 h 20 L 640,410 Z" />
+      </g>
+
       </>
     );
   }

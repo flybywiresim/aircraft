@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { HUDSimvars } from './shared/HUDSimvarPublisher';
 
 
 
@@ -20,6 +21,10 @@ interface HorizontalTapeProps {
     yOffset?: Subscribable<number>;
 }
 export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
+    private declutterMode = 0;
+    private flightPhase = 0;
+    private headingTicksVisibility = Subject.create('none');
+
     private refElement = FSComponent.createRef<SVGGElement>();
 
     private tapeOffset=0;
@@ -130,14 +135,43 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const pf = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars>();
 
         this.props.yOffset?.sub((yOffset) => {
             this.yOffset = yOffset;
             this.refElement.instance.style.transform = `translate3d(${this.tapeOffset}px, ${yOffset}px, 0px)`;
         });
+        
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+            this.flightPhase = fp;
+            //onGround
+            if(this.flightPhase <= 2 || this.flightPhase >= 9){
+                if(this.declutterMode == 2 ){
+                    this.headingTicksVisibility.set("none");
+                }
+                if(this.declutterMode < 2 ){
+                    this.headingTicksVisibility.set("block");
+                }
+            }
+            //inFlight
+            if(this.flightPhase > 2 && this.flightPhase <= 8){
+                this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+                this.headingTicksVisibility.set("block");    
+            }
+        });
 
-        pf.on('heading').withArinc429Precision(2).handle((newVal) => {
+        sub.on('declutterMode').whenChanged().handle((value) => {
+            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+            this.declutterMode = value;    
+            if(this.declutterMode > 1 ){
+                this.headingTicksVisibility.set("none");
+            }else{
+                this.headingTicksVisibility.set("block");
+            }    
+        }); 
+
+        sub.on('heading').withArinc429Precision(2).handle((newVal) => {
             const tapeOffset = -newVal.value % 10 * this.props.distanceSpacing / this.props.valueSpacing;
 
             if (newVal.value / 10 >= this.currentDrawnHeading + 1 || newVal.value / 10 <= this.currentDrawnHeading) {
@@ -178,7 +212,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
 
         return (
  
-            <g id="HeadingTick" ref={this.refElement}>
+            <g id="HeadingTick" ref={this.refElement} display={this.headingTicksVisibility}>
                 {tapeContent.ticks}
                 {this.props.type === 'headingTape' && tapeContent.labels}
             </g>

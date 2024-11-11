@@ -241,7 +241,8 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   private crosswindMode = false;
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
-
+  private lgLeftCompressed = false;
+  private lgRightCompressed = false;
   private subscribable = Subject.create<number>(0);
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -252,69 +253,114 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
       this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
       this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.lgRightCompressed = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED','Bool');
       this.flightPhase = fp;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
+    });
       
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-        if(this.declutterMode > 0 ){
-            this.sCrosswindModeOn.set("none");
-            this.sCrosswindModeOff.set("none");
-        }
-        if(this.declutterMode == 0 ){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+    // remove alt tape on rollout
+    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.lgRightCompressed = value;
+      console.log('lgleftComp: '+ this.lgRightCompressed);
+      if(this.lgRightCompressed == true){
+        if(this.flightPhase >= 7){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+
         }
       }
-      //todo use fmgcFlightphase for approch and landing declutter
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-      }
-
-
     });
   
     sub.on('declutterMode').whenChanged().handle((value) => {
-        this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.declutterMode = value;
-        
-        if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
-        }
-        //todo use fmgcFlightphase for approch and landing declutter
-        if(this.flightPhase > 2 && this.flightPhase <= 8){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.declutterMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
     }); 
     
     sub.on('crosswindMode').whenChanged().handle((value) => {
-        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.crosswindMode = value;
-
-        if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
-        }
-        //todo use fmgcFlightphase for approch and landing declutter
-        if(this.flightPhase > 2 && this.flightPhase <= 8){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.crosswindMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
     });
 
     const pf = this.props.bus.getSubscriber<Arinc429Values>();
@@ -374,6 +420,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   private crosswindMode = false;
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
+  private lgRightCompressed = false;
 
   private abnormal = FSComponent.createRef<SVGGElement>();
 
@@ -399,69 +446,117 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
 
     sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;
-      
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-        if(this.declutterMode > 0 ){
-            this.sCrosswindModeOn.set("none");
-            this.sCrosswindModeOff.set("none");
-        }
-        if(this.declutterMode == 0 ){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+    this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+    this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+    this.flightPhase = fp;
+    this.lgRightCompressed = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED','Bool');
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
       }
-      //todo use fmgcFlightphase for approch and landing declutter
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
       }
     });
-  
-    sub.on('declutterMode').whenChanged().handle((value) => {
-        this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.declutterMode = value;
+      
+    // remove alt tape on rollout
+    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.lgRightCompressed = value;
+      //console.log('lgleftComp: '+ this.lgRightCompressed);
+      if(this.lgRightCompressed == true){
+        if(this.flightPhase >= 7 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+          console.log('lgleftComp2: ' + this.lgRightCompressed);
+        }
+      }
+    });
 
-        if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
-        }
-        //todo use fmgcFlightphase for approch and landing declutter
-        if(this.flightPhase > 2 && this.flightPhase <= 8){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+
+    sub.on('declutterMode').whenChanged().handle((value) => {
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.declutterMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
     }); 
     
     sub.on('crosswindMode').whenChanged().handle((value) => {
-        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.crosswindMode = value;
-
-        if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
-        }
-        //todo use fmgcFlightphase for approch and landing declutter
-        if(this.flightPhase > 2 && this.flightPhase <= 8){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.crosswindMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
     });
     
 
@@ -960,13 +1055,13 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   render(): VNode {
     return (
       <>
-        <g ref={this.stdGroup} id="STDAltimeterModeGroup">
+        <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
           <path class="NormalStroke Green" d="m124.79 131.74h13.096v7.0556h-13.096z" />
           <text class="FontMediumSmaller Green AlignLeft" x="125.75785" y="137.36">
             STD
           </text>
         </g>
-        <g id="AltimeterGroup">
+        <g id="AltimeterGroup" transform="translate(0 10)">
           <g ref={this.qfeGroup} id="QFEGroup" display={this.sVisibility}>
             <path
               ref={this.qfeBorder}

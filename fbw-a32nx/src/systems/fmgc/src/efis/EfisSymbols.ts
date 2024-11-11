@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -216,8 +217,10 @@ export class EfisSymbols<T extends number> {
 
     const activeFp = this.flightPlanService.active;
     // FIXME dirty hack on type check
-    if (activeFp.destinationAirport) {
-      const runway = activeFp.destinationRunway;
+    const runway = activeFp.destinationRunway;
+    if (activeFp.destinationRunway !== undefined) {
+
+
 
       const endCoordinates = DestFromPointCoordsBearingDistance(
         runway.bearing,

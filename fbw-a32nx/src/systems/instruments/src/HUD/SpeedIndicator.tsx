@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ComponentProps,
   ClockEvents,
   DisplayComponent,
   FSComponent,
@@ -34,6 +35,9 @@ import { Layer } from '../MsfsAvionicsCommon/Layer';
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
 const DisplayRange = 42;
+
+const decelValueSpacing = 10;
+const decelDistanceSpacing = 5;
 
 class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   private offsetSub = Subject.create('translate3d(0px, 0px, 0px)');
@@ -161,9 +165,11 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+  private sDecelVis = Subject.create<String>('none');
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
   private groundSpeedRef = FSComponent.createRef<SVGGElement>();
+  private lgRightCompressed = true;
 
   private speedSub = Subject.create<number>(0);
 
@@ -226,66 +232,165 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
       }else{
           this.GSText.set("none");
       }
-
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-        if(this.declutterMode > 0 ){
-            this.sCrosswindModeOn.set("none");
-            this.sCrosswindModeOff.set("none");
-        }
-        if(this.declutterMode == 0 ){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+        this.sDecelVis.set('none');
       }
-      //todo use fmgcFlightphase for approch and landing declutter
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
+      //touchdown rollout
+      if( this.flightPhase == 8) {
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      } 
+      //taxi
+      if( this.flightPhase >= 9){    
+        if(this.declutterMode == 2 ) {
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        } 
+       
+      }  
+    });
+
+    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.lgRightCompressed = value;
+      //console.log('lgleftComp: '+ this.lgRightCompressed);
+      if(this.lgRightCompressed == true){
+        if(this.flightPhase == 7 || this.flightPhase == 8){
           this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
           this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+          
+        }
       }
     });
   
-    sub.on('declutterMode').whenChanged().handle((value) => {
-        this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.declutterMode = value;
+    sub.on('autoBrakeDecel').whenChanged().handle((value) => {
+      value ? this.sDecelVis.set('block') : this.sDecelVis.set('none');
+    })
 
-        if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
-        }
-        //todo use fmgcFlightphase for approch and landing declutter
-        if(this.flightPhase > 2 && this.flightPhase <= 8){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+    sub.on('declutterMode').whenChanged().handle((value) => {
+      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.declutterMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
+      //touchdown rollout
+      if( this.flightPhase == 8) {
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      } 
+      //taxi
+      if( this.flightPhase >= 9){    
+        if(this.declutterMode == 2 ) {
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        } 
+      }  
     }); 
     
     sub.on('crosswindMode').whenChanged().handle((value) => {
-        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.crosswindMode = value;
-
-        if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
-        }
-        //todo use fmgcFlightphase for approch and landing declutter
-        if(this.flightPhase > 2 && this.flightPhase <= 8){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.crosswindMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
+      }
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
+      }
+      //touchdown rollout
+      if( this.flightPhase == 8) {
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      } 
+      //taxi
+      if( this.flightPhase >= 9){    
+        if(this.declutterMode == 2 ) {
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        } 
+      }  
     });
 
     sub.on('vFeNext')
@@ -342,7 +447,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
       <>
         <g id="FailedGroup" ref={this.failedGroup} class="HiddenElement" transform="scale(4.25 4.25) translate(15 38)">
           {/* <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" /> */}
-          <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">
+          <text id="SpeedFailText" class="Blink9Seconds FontLarge EndAlign Red" x="17.756115" y="83.386398">
             SPD
           </text>
           <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
@@ -387,12 +492,21 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
               <VLsBar bus={this.props.bus} />
             </g>
             <VAlphaLimBar bus={this.props.bus} />
-            <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} />
+            <SpeedTrendArrow mode={'normal'} airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing}/>
+
 
             <V1Offtape bus={this.props.bus} />
               
 
           </g> 
+
+          <g id="decelSpeedTrend" transform="translate(50 0)" display={this.sDecelVis}>
+            <SpeedTrendArrow mode={'decel'}  airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} distanceSpacing={decelDistanceSpacing} valueSpacing={decelValueSpacing}/>
+            <DecelMode bus={this.props.bus}/>
+            <text class="ScaledStroke Green FontMediumSmaller" transform="translate(20 103)">MIN</text>
+            <text class="ScaledStroke Green FontMediumSmaller" transform="translate(20 115)">MED</text>
+            <text class="ScaledStroke Green FontMediumSmaller" transform="translate(20 123)">MAX</text>
+          </g>
           
           <g ref={this.groundSpeedRef} id="SpeedIndicator" display={this.GSText} transform="translate(32 35) ">
             <SpeedIndicator bus={this.props.bus} />
@@ -535,65 +649,150 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
 
     sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.flightPhase = fp;
       this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
       this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode > 0 ){
-              this.sCrosswindModeOn.set("none");
-              this.sCrosswindModeOff.set("none");
-          }
-          if(this.declutterMode == 0 ){
-              this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-              this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          }
+      this.flightPhase = fp;  
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
       }
-      //todo use fmgcFlightphase for approch and landing declutter
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
       }
+      //touchdown rollout
+      if( this.flightPhase == 8) {
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      } 
+      //taxi
+      if( this.flightPhase >= 9){    
+        if(this.declutterMode == 2 ) {
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        } 
+      }  
   });
   
   sub.on('declutterMode').whenChanged().handle((value) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.declutterMode = value;
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-        if(this.declutterMode > 0 ){
-            this.sCrosswindModeOn.set("none");
-            this.sCrosswindModeOff.set("none");
-        }
-        if(this.declutterMode == 0 ){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+    this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
+    this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+    this.declutterMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
       }
-      //todo use fmgcFlightphase for approch and landing declutter
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
       }
+      //touchdown rollout
+      if( this.flightPhase == 8) {
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      } 
+      //taxi
+      if( this.flightPhase >= 9){    
+        if(this.declutterMode == 2 ) {
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        } 
+      }  
   }); 
   
   sub.on('crosswindMode').whenChanged().handle((value) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.crosswindMode = value;
-
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-        if(this.declutterMode > 0 ){
-            this.sCrosswindModeOn.set("none");
-            this.sCrosswindModeOff.set("none");
-        }
-        if(this.declutterMode == 0 ){
-            this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-            this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-        }
+    this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+    this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+    this.crosswindMode = value;
+      //preflight / taxi
+      if(this.flightPhase <= 2 ){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }  
       }
-      //todo use fmgcFlightphase for approch and landing declutter
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
+      //takeoff
+      if(this.flightPhase >= 3 && this.flightPhase <= 5){
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      }  
+      //clb crz des
+      if( this.flightPhase == 6 || this.flightPhase == 7){
+        if(this.declutterMode == 2 ){
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        }  
+        if(this.declutterMode < 2 ) {   
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        }   
       }
+      //touchdown rollout
+      if( this.flightPhase == 8) {
+        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+      } 
+      //taxi
+      if( this.flightPhase >= 9){    
+        if(this.declutterMode == 2 ) {
+          this.sCrosswindModeOn.set("none");
+          this.sCrosswindModeOff.set("none");
+        } 
+        if(this.declutterMode < 2 ) {
+          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
+          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
+        } 
+      }  
   });
 
     sub
@@ -678,11 +877,197 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   }
 }
 
+
+class DecelMode extends DisplayComponent<{
+bus: ArincEventBus;
+}> 
+{
+  private decelRef = FSComponent.createRef<SVGGElement>();
+  private yOffset = Subject.create(0);
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values >();
+    
+
+      sub.on('autoBrakeMode')
+      .whenChanged()
+      .handle((am) => {
+        switch (am) {
+          case 0:
+            //none
+            this.yOffset.set(0);
+
+            break;
+          case 1:
+            //MIN
+            this.yOffset.set(0);
+            this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
+
+            break;
+          case 2:
+            //MED
+            this.yOffset.set(12);
+            this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
+
+            break;
+          case 3:
+            // MAX
+            this.yOffset.set(20);
+            this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
+            break;
+          default:
+            break;
+        }
+        console.log("abMode: " + am);
+      });
+
+    sub
+      .on('autoBrakeActive')
+      .whenChanged()
+      .handle((am) => {
+
+        console.log("abActive: "+am);
+
+      });
+
+      sub
+      .on('autoBrakeDecel')
+      .whenChanged()
+      .handle((ad) => { 
+      if (ad) {
+        this.decelRef.instance.style.visibility = 'visible';
+        setTimeout(() => {
+          this.decelRef.instance.style.visibility = 'hidden';
+        }, 3000);
+      } 
+        console.log("abDECEL "+ad);
+
+      });
+  }
+
+
+  render(): VNode {
+    return (
+      <g id='decelModeChanged' >
+        <path
+          ref={this.decelRef}
+          class="NormalStroke Green"
+          visibility="hidden"
+          d=""
+        />
+            {/* <text ref={this.decelTxt1} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 103)">MIN</text>
+            <text ref={this.decelTxt2} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 115)">MED</text>
+            <text ref={this.decelTxt3} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 123)">MAX</text> */}
+      </g>
+    );
+  }
+
+}
+
+// interface CellProps extends ComponentProps {
+//   bus: ArincEventBus;
+// }
+// class DecelCell extends ShowForSecondsComponent<CellProps>{
+//   private DecelCell = FSComponent.createRef<DecelCell>();
+//   private decelRef = FSComponent.createRef<SVGGElement>();
+//   private decelTxt1 = FSComponent.createRef<SVGTextElement>();
+//   private decelTxt2 = FSComponent.createRef<SVGTextElement>();
+//   private decelTxt3 = FSComponent.createRef<SVGTextElement>();
+//   private decelTxt = FSComponent.createRef<SVGTextElement>();
+//   private yOffset = Subject.create(0);
+//   private box = FSComponent.createRef<SVGGElement>();
+  
+//   onAfterRender(node: VNode): void {
+//     super.onAfterRender(node);
+//     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values >();
+    
+
+//       sub.on('autoBrakeMode')
+//       .whenChanged()
+//       .handle((am) => {
+//         switch (am) {
+//           case 0:
+//             //none
+//             this.yOffset.set(0);
+
+//             break;
+//           case 1:
+//             //MIN
+//             this.yOffset.set(0);
+//             this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
+
+//             break;
+//           case 2:
+//             //MED
+//             this.yOffset.set(12);
+//             this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
+
+//             break;
+//           case 3:
+//             // MAX
+//             this.yOffset.set(20);
+//             this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
+//             break;
+//           default:
+//             break;
+//         }
+//         console.log("abMode: " + am);
+//       });
+
+//     sub
+//       .on('autoBrakeActive')
+//       .whenChanged()
+//       .handle((am) => {
+
+//         console.log("abActive: "+am);
+
+//       });
+
+//       sub
+//       .on('autoBrakeDecel')
+//       .whenChanged()
+//       .handle((ad) => { 
+//       if (ad) {
+//         this.decelRef.instance.style.visibility = 'visible';
+//         setTimeout(() => {
+//           this.decelRef.instance.style.visibility = 'hidden';
+//         }, 3000);
+//       } 
+//         console.log("abDECEL "+ad);
+
+//       });
+//   }
+
+
+//   render(): VNode {
+//     return (
+//       <g id='decelModeChanged' >
+//         <path
+//           ref={this.decelRef}
+//           class="NormalStroke Green"
+//           visibility="hidden"
+//           d=""
+//         />
+//             {/* <text ref={this.decelTxt1} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 103)">MIN</text>
+//             <text ref={this.decelTxt2} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 115)">MED</text>
+//             <text ref={this.decelTxt3} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 123)">MAX</text> */}
+//       </g>
+//     );
+//   }
+// }
+
 class SpeedTrendArrow extends DisplayComponent<{
   airspeed: Subscribable<number>;
   instrument: BaseInstrument;
   bus: ArincEventBus;
+  valueSpacing: number;
+  distanceSpacing: number;
+  mode: string;
 }> {
+  private decelArrowBase = Subject.create<string>('');
+  private decelArrowRange = Subject.create<string>('');
+  private decelRefElement = FSComponent.createRef<SVGGElement>();
+
   private refElement = FSComponent.createRef<SVGGElement>();
 
   private arrowBaseRef = FSComponent.createRef<SVGPathElement>();
@@ -709,9 +1094,13 @@ class SpeedTrendArrow extends DisplayComponent<{
     } else {
       this.refElement.instance.style.visibility = 'visible';
       let pathString;
+      let decelArrowBase;
+      let decelArrowRange;
       const sign = Math.sign(this.vCTrend.value);
 
-      const offset = (-this.vCTrend.value * DistanceSpacing) / ValueSpacing;
+      const offset = (-this.vCTrend.value * this.props.distanceSpacing) / this.props.valueSpacing;
+      
+
       const neutralPos = 80.823;
       if (sign > 0) {
         pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
@@ -722,6 +1111,14 @@ class SpeedTrendArrow extends DisplayComponent<{
       this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
 
       this.pathString.set(pathString);
+
+      if(this.props.mode === 'decel'){
+        decelArrowBase = `m13.455 80.823 h 4`;
+        decelArrowRange = `m13.455 121 h 4`;
+        this.decelArrowBase.set(decelArrowBase);
+        this.decelArrowRange.set(decelArrowRange);
+
+      }
     }
   }
 
@@ -745,6 +1142,9 @@ class SpeedTrendArrow extends DisplayComponent<{
       <g id="SpeedTrendArrow" ref={this.refElement}>
         <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="ScaledStroke Green" d={this.offset} />
         <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="ScaledStroke Green" d={this.pathString} />
+
+        <path id="SpeedTrendArrowBase" ref={this.decelRefElement} class="ScaledStroke Green" d={this.decelArrowBase} />
+        <path id="SpeedTrendArrowHead" ref={this.decelRefElement} class="ScaledStroke Green" d={this.decelArrowRange} />
       </g>
     );
   }
@@ -1168,6 +1568,7 @@ interface SpeedStateInfo {
 
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
   private upperBoundRef = FSComponent.createRef<SVGTextElement>();
+  private upperBoundbGRef = FSComponent.createRef<SVGPathElement>();
 
   private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1313,21 +1714,25 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.currentVisible = this.upperBoundRef;
     } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
+      this.upperBoundbGRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.currentVisible = this.lowerBoundRef;
     } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'visible';
       this.currentVisible = this.speedTargetRef;
       inRange = true;
     } else {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
     }
@@ -1346,15 +1751,25 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         >
           {this.textSub}
         </text>
-        <text
-          ref={this.lowerBoundRef}
-          id="SelectedSpeedUpperText"
-          class="FontTiny EndAlign Green"
-          x="24.113895"
-          y="36.670692"
-        >
-          {this.textSub}
-        </text>
+        <g>
+          <path 
+          ref={this.upperBoundbGRef}
+          id="UpperSpeedTargetBackground" 
+          class="GreenFill"
+          style="transform: translate3d(0px, -100px, 0px)"
+          d="m 15.3 132.65 h 9 v 5 h -9z"
+          >
+          </path>
+          <text
+            ref={this.lowerBoundRef}
+            id="SelectedSpeedUpperText"
+            class="FontTiny EndAlign InverseGreen "
+            x="24.113895"
+            y="36.670692"
+          >
+            {this.textSub}
+          </text>
+        </g>
         <path
           ref={this.speedTargetRef}
           class="ScaledStroke CornerRound Green"
