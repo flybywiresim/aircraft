@@ -706,6 +706,7 @@
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxPowerEnabled": "GSX External Power Synchronization",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {

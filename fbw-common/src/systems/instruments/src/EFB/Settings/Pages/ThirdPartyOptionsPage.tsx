@@ -22,6 +22,7 @@ export const ThirdPartyOptionsPage = () => {
 
   const [gsxFuelSyncEnabled, setGsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
   const [gsxPayloadSyncEnabled, setGsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
+  const [gsxPowerSyncEnabled, setGsxPowerSyncEnabled] = usePersistentNumberProperty('GSX_POWER_SYNC', 0);
 
   const [overrideSimbriefUserID, setOverrideSimbriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
   const [overrideSimbriefDisplay, setOverrideSimbriefDisplay] = useState(overrideSimbriefUserID);
@@ -181,6 +182,15 @@ export const ThirdPartyOptionsPage = () => {
               value={gsxPayloadSyncEnabled === 1}
               onToggle={(value) => {
                 setGsxPayloadSyncEnabled(value ? 1 : 0);
+              }}
+            />
+          </SettingItem>
+
+          <SettingItem name={t('Settings.ThirdPartyOptions.GsxPowerEnabled')}>
+            <Toggle
+              value={gsxPowerSyncEnabled === 1}
+              onToggle={(value) => {
+                setGsxPowerSyncEnabled(value ? 1 : 0);
               }}
             />
           </SettingItem>

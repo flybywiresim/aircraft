@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { FlightDeckBounds, NotificationManager, PilotSeatManager } from '@flybywiresim/fbw-sdk';
-import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
+import {
+  FlightDeckBounds,
+  NotificationManager,
+  PilotSeatManager,
+  ExtrasSimVarPublisher,
+  GsxSimVarPublisher,
+} from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
 import { TelexCheck } from 'extras-host/modules/telex_check/TelexCheck';
-import { GsxSimVarPublisher } from 'extras-host/modules/common/GsxSimVarPublisher';
 import { GsxSync } from 'extras-host/modules/gsx_sync/GsxSync';
 
 /**
