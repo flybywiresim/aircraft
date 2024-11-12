@@ -88,6 +88,7 @@ export class AtccomHeader extends AbstractHeader {
             menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/emer') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorEmer`}
             containerStyle="flex: 1"
+            labelStyle="color: #000; background-color: #ff9601; background-clip: content-box"
           />
         </div>
       </>
