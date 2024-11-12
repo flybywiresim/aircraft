@@ -34,7 +34,6 @@ import {
 import {
   AmdbAirportSearchResult,
   Arinc429LocalVarConsumerSubject,
-  Arinc429RegisterSubject,
   BtvData,
   EfisSide,
   FeatureType,
@@ -124,9 +123,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private manualAirportSelection = false;
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
-  private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
+  private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
 
-  private readonly pposLongWord = Arinc429RegisterSubject.createEmpty();
+  private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
 
   private presentPos = MappedSubject.create(
     ([lat, lon]) => {
@@ -252,20 +251,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.props.bus.getPublisher<OansControlEvents>().pub('oansNotAvail', !v, true);
       }, true),
     );
-
-    this.sub
-      .on('latitude')
-      .whenChanged()
-      .handle((value) => {
-        this.pposLatWord.setWord(value);
-      });
-
-    this.sub
-      .on('longitude')
-      .whenChanged()
-      .handle((value) => {
-        this.pposLongWord.setWord(value);
-      });
 
     this.fmsDataStore.landingRunway.sub(async (it) => {
       // Set control panel display

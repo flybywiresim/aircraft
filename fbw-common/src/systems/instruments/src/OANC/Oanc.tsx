@@ -31,8 +31,8 @@ import {
   EfisSide,
   FmsOansData,
   FcuSimVars,
-  Arinc429RegisterSubject,
   GenericAdirsEvents,
+  Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -271,9 +271,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   private canvasCentreY = Subject.create(0);
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
-  private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
+  private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
 
-  private readonly pposLongWord = Arinc429RegisterSubject.createEmpty();
+  private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
 
   public readonly ppos = MappedSubject.create(
     ([latWord, longWord]) => ({ lat: latWord.value, long: longWord.value }) as Coordinates,
@@ -281,7 +281,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.pposLongWord,
   );
 
-  private readonly trueHeadingWord = Arinc429RegisterSubject.createEmpty();
+  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
 
   public referencePos: Coordinates = { lat: 0, long: 0 };
 
@@ -437,21 +437,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       .handle((airport) => {
         this.loadAirportMap(airport);
       });
-
-    this.sub
-      .on('latitude')
-      .whenChanged()
-      .handle((v) => this.pposLatWord.setWord(v));
-
-    this.sub
-      .on('longitude')
-      .whenChanged()
-      .handle((v) => this.pposLongWord.setWord(v));
-
-    this.sub
-      .on('trueHeadingRaw')
-      .whenChanged()
-      .handle((v) => this.trueHeadingWord.setWord(v));
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
