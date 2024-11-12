@@ -9,7 +9,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
@@ -784,9 +784,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       case VerticalMode.TCAS:
         text = 'TCAS';
         break;
-      /*  case 9:
-            text = 'FINAL';
-            break; */
       case VerticalMode.DES:
         text = 'DES';
         break;
@@ -1010,11 +1007,14 @@ class B2Cell extends DisplayComponent<CellProps> {
         const clbArmed = (fmv >> 2) & 1;
         const desArmed = (fmv >> 3) & 1;
         const gsArmed = (fmv >> 4) & 1;
+        const openClimbArmed = false;
 
         let text1: string;
         let color1 = 'Cyan';
         let vertModeActive = true;
-        if (clbArmed) {
+        if (openClimbArmed) {
+          text1 = '      OP CLB';
+        } else if (clbArmed) {
           text1 = '      CLB';
         } else if (desArmed) {
           text1 = gsArmed ? 'DES ' : '      DES';
@@ -1067,10 +1067,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
   private activeLateralMode = 0;
 
-  private activeVerticalMode = 0;
-
-  private armedVerticalMode = 0;
-
   constructor(props: CellProps) {
     super(props, 10);
   }
@@ -1094,41 +1090,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           this.displayModeChangedPath(true);
         }
       });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.activeVerticalMode = lm;
-
-        const isShown = this.updateText();
-
-        if (isShown) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((va) => {
-        this.armedVerticalMode = va;
-
-        const hasChanged = this.updateText();
-
-        if (hasChanged) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
   }
 
   private updateText(): boolean {
-    const finalArmed = (this.armedVerticalMode >> 5) & 1;
-
     let text: string;
     this.isShown = true;
     if (this.activeLateralMode === LateralMode.GA_TRACK) {
@@ -1145,18 +1109,8 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'TRACK';
     } else if (this.activeLateralMode === LateralMode.LOC_TRACK) {
       text = 'LOC';
-    } else if (
-      this.activeLateralMode === LateralMode.NAV &&
-      !finalArmed &&
-      this.activeVerticalMode !== VerticalMode.FINAL
-    ) {
+    } else if (this.activeLateralMode === LateralMode.NAV) {
       text = 'NAV';
-    } else if (
-      this.activeLateralMode === LateralMode.NAV &&
-      finalArmed &&
-      this.activeVerticalMode !== VerticalMode.FINAL
-    ) {
-      text = 'APP NAV';
     } else {
       text = '';
       this.isShown = false;
@@ -1220,8 +1174,7 @@ class C2Cell extends DisplayComponent<CellProps> {
   private getText() {
     const navArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.NAV);
     const locArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LOC);
-
-    const finalArmed = isArmed(this.fmaVerticalArmed, ArmedVerticalMode.FINAL);
+    const runwayArmed = false;
 
     let text: string = '';
     if (locArmed) {
@@ -1232,10 +1185,10 @@ class C2Cell extends DisplayComponent<CellProps> {
       // case 3:
       //     text = 'F-LOC';
       //     break;
-    } else if (navArmed && (finalArmed || this.activeVerticalMode === VerticalMode.FINAL)) {
-      text = 'APP NAV';
+    } else if (runwayArmed) {
+      text = 'RWY' + (navArmed ? '  NAV' : '');
     } else if (navArmed) {
-      text = 'NAV';
+      text = 'RWY';
     }
     this.textSub.set(text);
   }
@@ -1272,7 +1225,7 @@ class C2Cell extends DisplayComponent<CellProps> {
 
   render(): VNode {
     return (
-      <text class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
+      <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
         {this.textSub}
       </text>
     );
@@ -1299,8 +1252,6 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'FLARE';
     } else if (this.lastVerticalMode === VerticalMode.LAND) {
       text = 'LAND';
-    } else if (this.lastVerticalMode === VerticalMode.FINAL && this.lastLateralMode === LateralMode.NAV) {
-      text = 'FINAL APP';
     } else {
       text = '';
     }
