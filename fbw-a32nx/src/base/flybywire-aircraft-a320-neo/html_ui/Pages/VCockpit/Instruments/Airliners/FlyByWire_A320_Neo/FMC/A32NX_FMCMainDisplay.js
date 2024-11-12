@@ -2555,11 +2555,16 @@ class FMCMainDisplay extends BaseAirliners {
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             const oldCostIndex = this.costIndex;
-            const oldDestination = this.currFlightPlanService.active.destinationAirport.ident;
+            const oldDestination = this.currFlightPlanService.active.destinationAirport
+                ? this.currFlightPlanService.active.destinationAirport.ident
+                : undefined;
             const oldCruiseLevel = this.cruiseLevel;
             this.flightPlanService.temporaryInsert();
             this.checkCostIndex(oldCostIndex);
-            this.checkDestination(oldDestination);
+            // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+            if (oldDestination !== undefined) {
+                this.checkDestination(oldDestination);
+            }
             this.checkCruiseLevel(oldCruiseLevel);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
