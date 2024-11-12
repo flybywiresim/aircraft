@@ -257,6 +257,14 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   23.0,
 
+  13.0,
+
+  14.0,
+
+  13.0,
+
+  14.0,
+
   12.0,
 
   15.0,
@@ -496,8 +504,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   26.0,
 
   21.0,
-
-  20.0,
 
   5.0,
 
@@ -1529,6 +1535,50 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
             0.0F
           },
 
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          }
+        },
+
+        {
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          }
+        },
+
+        {
           {
             0U,
             0.0F
