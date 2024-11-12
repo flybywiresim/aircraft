@@ -7,7 +7,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-// import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { AdscButton } from 'instruments/src/MFD/pages/common/AdscButton';
 // import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 // import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
 
@@ -20,6 +20,9 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
 
   private availableAtcCenters = ArraySubject.create<string>([]);
   private selectedAtcCenterIndex = Subject.create<number | null>(null);
+
+  private readonly adscButtonOn = Subject.create<boolean>(false);
+  private readonly adscEmerButtonOn = Subject.create<boolean>(false);
 
   protected onNewData() {}
 
@@ -35,56 +38,61 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
         <div class="mfd-page-container">
           <div class="mfd-atccom-connect-row">
             <div class="mfd-atccom-connect-col-1">
-              <div class="mfd-label">NOTIFY TO ATC :</div>
+              <div class="mfd-atccom-connect mfd-label">NOTIFY TO ATC :</div>
             </div>
             <div class="mfd-atccom-connect-col-2">
-              <div class="mfd-fms-direct-to-dropdown-div">
-                <DropdownMenu
-                  ref={this.dropdownMenuRef}
-                  idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_directToDropdown`}
-                  selectedIndex={this.selectedAtcCenterIndex}
-                  values={this.availableAtcCenters}
-                  freeTextAllowed
-                  containerStyle="width: 150px;"
-                  alignLabels="center"
-                  // onModified={(i, text) => {
-                  //   if (i !== null) {
-                  //     this.onDropdownModified(i, text);
-                  //   }
-                  // }}
-                  numberOfDigitsForInputField={4}
-                  tmpyActive={this.tmpyActive}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
+              <DropdownMenu
+                ref={this.dropdownMenuRef}
+                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_notifyToAtcDropdown`}
+                selectedIndex={this.selectedAtcCenterIndex}
+                values={this.availableAtcCenters}
+                freeTextAllowed={false}
+                containerStyle="width: 150px;"
+                alignLabels="center"
+                // onModified={(i, text) => {
+                //   if (i !== null) {
+                //     this.onDropdownModified(i, text);
+                //   }
+                // }}
+                numberOfDigitsForInputField={4}
+                tmpyActive={this.tmpyActive}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
+              />
             </div>
             <div class="mfd-atccom-connect-col-3">
               <div style="display: flex; justify-content: center">
                 <Button
                   label="NOTIFY"
+                  disabled={Subject.create(true)}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="margin-right: 10px; width: 120px;"
                 />
               </div>
             </div>
           </div>
+          <div class="mfd-atccom-connect-row" style="margin-top: 10px">
+            <div class="mfd-atccom-connect-col-1"></div>
+            <div class="mfd-atccom-connect-col-2">
+              <div class="mfd-atccom-connect mfd-label">NOTIFYING</div>
+            </div>
+          </div>
           <div class="mfd-atccom-connect-row mfd-atccom-connect-section-1">
             <div style="width: 500px">
               <div class="mfd-atccom-connect-atc-row">
                 <div class="mfd-atccom-connect-col-1">
-                  <div class="mfd-label">ACTIVE ATC :</div>
+                  <div class="mfd-atccom-connect mfd-label">ACTIVE ATC :</div>
                 </div>
                 <div class="mfd-atccom-connect-col-2">
-                  <span class="mfd-value">WSSS</span>
+                  <span class="mfd-atccom-connect mfd-value">XXXX</span>
                 </div>
               </div>
               <div class="mfd-atccom-connect-atc-row">
                 <div class="mfd-atccom-connect-col-1">
-                  <div class="mfd-label">NEXT ATC :</div>
+                  <div class="mfd-atccom-connect mfd-label">NEXT ATC :</div>
                 </div>
                 <div class="mfd-atccom-connect-col-2">
-                  <span class="mfd-value">WMKK</span>
+                  <span class="mfd-atccom-connect mfd-value">XXXX</span>
                 </div>
               </div>
             </div>
@@ -92,6 +100,7 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
               <div>
                 <Button
                   label="DISCONNECT ALL"
+                  disabled={Subject.create(true)}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="width: 260px; margin-top: 20px"
                 />
@@ -99,6 +108,7 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
               <div>
                 <Button
                   label="MODIFY<br /> MAX UPLINK DELAY"
+                  disabled={Subject.create(true)}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="width: 260px; margin-top: 30px"
                 />
@@ -107,29 +117,39 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
           </div>
           <div class="mfd-atccom-connect-row adsc">
             <div class="mfd-atccom-connect-adsc-block">
-              <div class="mfd-label">ADS-C</div>
-              <div>
-                <Button
-                  label="CONNECTED<br />OFF"
-                  onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
-                  buttonStyle="width: 180px; margin-top: 10px"
+              <div class="mfd-atccom-connect mfd-label">ADS-C</div>
+              <div class="mfd-atccom-connect-adscbutton">
+                <AdscButton
+                  state={this.adscButtonOn}
+                  labelFalse={'OFF'}
+                  labelTrue={'ARMED'}
+                  onChanged={() => {
+                    this.adscButtonOn.set(!this.adscButtonOn.get());
+                  }}
                 />
               </div>
             </div>
             <div class="mfd-atccom-connect-adsc-block">
-              <div class="mfd-label">ADS-C EMERGENCY</div>
-              <div>
-                <Button
-                  label="ARMED<br />OFF"
-                  onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
-                  buttonStyle="width: 100px; margin-top: 10px"
+              <div class="mfd-atccom-connect mfd-label">ADS-C EMERGENCY</div>
+              <div class="mfd-atccom-connect-adscEmerbutton">
+                <AdscButton
+                  state={this.adscEmerButtonOn}
+                  labelFalse={'OFF'}
+                  labelTrue={'ARMED'}
+                  onChanged={() => {
+                    this.adscEmerButtonOn.set(!this.adscEmerButtonOn.get());
+                  }}
                 />
               </div>
             </div>
           </div>
-          <div class="mfd-atccom-connect-row" style="justify-content: center">
-            <div class="mfd-label">ADS-C CONNECTED GROUND STATIONS :</div>
-            <div class="mfd-label">NONE</div>
+          <div class="mfd-atccom-connect-row">
+            <div class="mfd-atccom-connect mfd-label" style="margin-left: 110px">
+              ADS-C CONNECTED GROUND STATIONS :
+            </div>
+            <div class="mfd-label" style="margin-left: 23px">
+              NONE
+            </div>
           </div>
           <div class="mfd-atccom-connect-row" style="justify-content: center; margin-top: 10px">
             <div class="mfd-atccom-connect-connected-centers-list"></div>
