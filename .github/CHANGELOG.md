@@ -40,6 +40,7 @@
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
+1. [A380X/MFD] Add ATCCOM connect page - @heclak (heclak)
 
 ## 0.12.0
 
