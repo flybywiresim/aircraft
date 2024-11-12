@@ -3,6 +3,7 @@
 
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { SimVarPublisher, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
+import { Position } from '@turf/turf';
 
 /**
  * Transmitted from FMS to OANS
@@ -34,6 +35,14 @@ export interface FmsOansData {
   oansRemainingDistToRwyEnd: number;
   /** (OANS -> BTV) Arinc429: Distance to requested stopping distance, in meters. */
   oansRemainingDistToExit: number;
+
+  /** (OANS -> BTV) Projected position, i.e. aircraft position in airport local coordinates */
+  oansAirportLocalCoordinates: Position;
+  /** (OANS -> BTV) Positions of threshold and opposite threshold after selection of runway. WGS-84. */
+  oansThresholdPositions: Position[];
+  /** (OANS -> BTV) Position of exit after selection of exit. WGS-84. */
+  oansExitPosition: Position;
+
   /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */
   btvRot: number;
   /** (BTV -> OANS) Arinc429: Estimated turnaround time, when using idle reverse during deceleration, in minutes. */

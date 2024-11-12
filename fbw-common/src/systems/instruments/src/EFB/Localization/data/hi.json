@@ -567,6 +567,8 @@
     },
     "Title": "Quick Controls"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "बारे में"
@@ -740,6 +742,7 @@
       "Blue": "नीला",
       "Brightness": "ब्राइटनेस",
       "Dark": "डार्क",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "भाषा",
       "Light": "हल्का",
       "Local": "स्थानीय",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "यूटीसी और लोकल"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "अप्रैल",
     "Aug": "अगस्त",

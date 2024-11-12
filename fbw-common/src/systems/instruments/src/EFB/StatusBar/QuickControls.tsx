@@ -11,6 +11,7 @@ import {
   Compass,
   Gear,
   Keyboard,
+  LightbulbFill,
   MoonFill,
   PersonCheck,
   Power,
@@ -176,6 +177,12 @@ export const QuickControlsPane = ({
   const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
   const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
   const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
+  const [cabinAutoBrightness] = useSimVar('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 500);
+  const [cabinManualBrightness, setCabinManualBrightness] = usePersistentNumberProperty('CABIN_MANUAL_BRIGHTNESS', 0);
+  const [usingCabinAutobrightness, setUsingCabinAutobrightness] = usePersistentNumberProperty(
+    'CABIN_USING_AUTOBRIGHTNESS',
+    1,
+  );
   const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
   const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
   const [todArmed] = useSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool', 500);
@@ -203,8 +210,14 @@ export const QuickControlsPane = ({
   // in the Slider component props.
   const brightnessSliderRef = useRef<any>(null);
 
+  const cabinBrightnessSliderRef = useRef<any>(null);
+
   const handleAutoBrightness = () => {
     setUsingAutobrightness(usingAutobrightness ? 0 : 1);
+  };
+
+  const handleCabinAutoBrightness = () => {
+    setUsingCabinAutobrightness(usingCabinAutobrightness ? 0 : 1);
   };
 
   const handleSettings = () => {
@@ -349,7 +362,7 @@ export const QuickControlsPane = ({
             </QuickSettingsButton>
           </TooltipWrapper>
         </div>
-        <div className="mb-8 flex flex-row items-center justify-between">
+        <div className="mb-5 flex flex-row items-center justify-between">
           <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
             <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
               <div className="mr-4 flex w-[80px] flex-row items-center text-theme-text">
@@ -389,6 +402,49 @@ export const QuickControlsPane = ({
             </button>
           </TooltipWrapper>
         </div>
+        {/* Cabin Lighting */}
+        {aircraftContext.settingsPages.sim.cabinLighting && (
+          <div className="mb-5 flex flex-row items-center justify-between">
+            <div className={`flex flex-row items-center ${usingCabinAutobrightness && 'opacity-30'}`}>
+              <TooltipWrapper text={t('QuickControls.TT.CabinLighting')}>
+                <div className="mr-4 flex w-[80px] flex-row items-center text-theme-text">
+                  <LightbulbFill size={24} />
+                  <span className="pointer-events-none ml-2 text-inherit">
+                    {`${usingCabinAutobrightness ? cabinAutoBrightness.toFixed(0) : cabinManualBrightness}%`}
+                  </span>
+                </div>
+                <div>
+                  <Slider
+                    disabled={usingCabinAutobrightness === 1}
+                    ref={cabinBrightnessSliderRef}
+                    value={usingCabinAutobrightness ? cabinAutoBrightness : cabinManualBrightness}
+                    min={0}
+                    max={100}
+                    onChange={setCabinManualBrightness}
+                    onAfterChange={() => cabinBrightnessSliderRef.current && cabinBrightnessSliderRef.current.blur()}
+                    className="rounded-md"
+                    style={{ width: '380px', height: '50px', padding: '0' }}
+                    trackStyle={{ backgroundColor: 'var(--color-highlight)', height: '50px' }}
+                    railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
+                    handleStyle={{ top: '13px', height: '0px', width: '0px' }}
+                  />
+                </div>
+              </TooltipWrapper>
+            </div>
+            <TooltipWrapper text={t('QuickControls.TT.CabinAutoBrightness')}>
+              <button
+                type="button"
+                onClick={handleCabinAutoBrightness}
+                className={`ml-4 flex items-center justify-center rounded-md
+                                                    bg-theme-body text-theme-text transition duration-100
+                                                    hover:border-4 hover:border-theme-highlight ${usingCabinAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
+                style={{ width: '80px', height: '50px' }}
+              >
+                <LightbulbFill size={24} />
+              </button>
+            </TooltipWrapper>
+          </div>
+        )}
         {/* Quick Settings Button */}
         {/* First Row */}
         <div className="mb-5 flex flex-row items-center justify-between">
