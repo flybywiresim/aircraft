@@ -1,47 +1,42 @@
-import { EventBus, FSComponent, Subject } from '@microsoft/msfs-sdk';
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { ConsumerSubject, EventBus, FSComponent, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { FCUSimvarPublisher } from './shared/FcuSimvarPublisher';
 import { FCUComponent } from './FCU';
 import { calculateSunAzimuthElevation, lerp, calculateAmbientBrightness } from './SunAngle';
+import { MsfsAircraftSystemEvents, MsfsAircraftSystemPublisher } from '@flybywiresim/fbw-sdk';
 
 // eslint-disable-next-line camelcase
 class A32NX_FCU extends BaseInstrument {
-  private bus: EventBus;
+  private readonly bus = new EventBus();
+  private readonly backplane = new InstrumentBackplane();
 
-  private simVarPublisher: FCUSimvarPublisher;
+  private sub = this.bus.getSubscriber<MsfsAircraftSystemEvents>();
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
+  private readonly simVarPublisher = new FCUSimvarPublisher(this.bus);
+  private readonly msfsAircraftSystemPublisher = new MsfsAircraftSystemPublisher(this.bus);
 
   private simTime = new Date();
 
   private solarParams = calculateSunAzimuthElevation(this.simTime, 0, 0);
 
-  private ambientBrightness = Subject.create(0, (a, b) => Math.abs(a - b) < 0.01);
+  private readonly ambientBrightness = Subject.create(0, (a, b) => Math.abs(a - b) < 0.01);
 
-  private screenBrightess = Subject.create(0, (a, b) => Math.abs(a - b) < 0.01);
+  private readonly screenBrightness = ConsumerSubject.create(this.sub.on('msfs_light_potentiometer_87'), 0);
 
   constructor() {
     super();
-    this.bus = new EventBus();
-    this.simVarPublisher = new FCUSimvarPublisher(this.bus);
+
+    this.backplane.addPublisher('SimVarPublisher', this.simVarPublisher);
+    this.backplane.addPublisher('MsfsAircraftSystem', this.msfsAircraftSystemPublisher);
 
     this.ambientBrightness.sub((ambientBrightness) => {
       SimVar.SetSimVarValue('L:A32NX_AMBIENT_BRIGHTNESS', 'number', ambientBrightness);
       this.updateDisplayBrightness();
     });
 
-    this.screenBrightess.sub(this.updateDisplayBrightness.bind(this), true);
-
-    // need to run this at high speed to avoid jumps when the knob is rotated
-    setInterval(() => {
-      const screenBrightess = SimVar.GetSimVarValue('A:LIGHT POTENTIOMETER:87', 'percent over 100');
-      this.screenBrightess.set(screenBrightess);
-    });
+    this.screenBrightness.sub(this.updateDisplayBrightness.bind(this), true);
   }
 
   get templateID(): string {
@@ -50,9 +45,9 @@ class A32NX_FCU extends BaseInstrument {
 
   private updateDisplayBrightness() {
     const ambientBrightness = this.ambientBrightness.get();
-    const screenBrightess = this.screenBrightess.get();
+    const screenBrightess = this.screenBrightness.get();
 
-    const saturation = lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.6, 10, 100);
+    const saturation = screenBrightess > 0 ? lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.6, 0, 100) : 0;
     const luminosity = lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.6, 80, 55);
     const colour = `hsl(31, ${saturation.toFixed(1)}%, ${luminosity.toFixed(1)}%)`;
     document.documentElement.style.setProperty('--main-display-colour', colour);
@@ -72,20 +67,14 @@ class A32NX_FCU extends BaseInstrument {
 
     // Remove "instrument didn't load" text
     document.getElementById('FCU_CONTENT').querySelector(':scope > h1').remove();
+
+    this.backplane.init();
   }
 
   public Update(): void {
     super.Update();
 
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.simVarPublisher.startPublish();
-      }
-      this.gameState = gamestate;
-    } else {
-      this.simVarPublisher.onUpdate();
-    }
+    this.backplane.onUpdate();
 
     const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degrees');
     const lon = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degrees');
