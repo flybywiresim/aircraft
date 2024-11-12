@@ -12,14 +12,13 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429WordData, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, MathUtils, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
 import { IlsInfoIndicator } from './IlsInfoIndicator';
 import { GlideSlope } from './Glideslope';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 import { GenericFlightManagementBusEvents } from '../../types/GenericFlightManagementBusEvents';

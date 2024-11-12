@@ -32,6 +32,7 @@ import {
   FmsOansData,
   FcuSimVars,
   Arinc429RegisterSubject,
+  GenericAdirsEvents,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -61,7 +62,6 @@ import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
-import { GenericAdirsEvents } from 'instruments/src/ND/types/GenericAdirsEvents';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;

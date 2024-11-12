@@ -12,11 +12,10 @@ import {
   MappedSubject,
   ClockEvents,
 } from '@microsoft/msfs-sdk';
-import { EfisNdMode, MathUtils, NavAidMode, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, MathUtils, NavAidMode, Arinc429WordData, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { diffAngle } from 'msfs-geo';
 import { GenericFcuEvents } from '../types/GenericFcuEvents';
-import { GenericAdirsEvents } from '../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../types/GenericVorEvents';
 

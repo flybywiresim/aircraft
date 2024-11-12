@@ -12,14 +12,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, Arinc429ConsumerSubject, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { Flag } from '../../shared/Flag';
 import { NDControlEvents } from '../../NDControlEvents';
 import { VorInfoIndicator } from './VorInfoIndicator';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 

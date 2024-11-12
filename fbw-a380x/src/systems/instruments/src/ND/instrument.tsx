@@ -30,8 +30,6 @@ import {
   a380EfisZoomRangeSettings,
   A380EfisZoomRangeValue,
   Oanc,
-  OANC_RENDER_HEIGHT,
-  OANC_RENDER_WIDTH,
   OansControlEvents,
   ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';

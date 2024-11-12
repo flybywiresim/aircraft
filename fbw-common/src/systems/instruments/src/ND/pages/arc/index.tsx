@@ -12,7 +12,14 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429WordData,
+  Arinc429RegisterSubject,
+  EfisNdMode,
+  MathUtils,
+  GenericAdirsEvents,
+} from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from './LsCourseBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
@@ -20,7 +27,6 @@ import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 
 export interface ArcModePageProps<T extends number> extends ComponentProps {
   bus: ArincEventBus;

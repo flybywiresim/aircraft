@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
-import { GenericAdirsEvents } from '../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 

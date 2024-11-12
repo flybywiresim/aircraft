@@ -4,7 +4,7 @@
 
 import { FSComponent, ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429RegisterSubject, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, EfisNdMode, MathUtils, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from '../arc/LsCourseBug';
 import { Flag } from '../../shared/Flag';
@@ -12,7 +12,6 @@ import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 
 export class RoseNavPage<T extends number> extends RoseMode<T> {
   private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
