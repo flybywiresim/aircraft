@@ -358,21 +358,21 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
 
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPEED_SLOT_INDEX_SET, "SPEED_SLOT_INDEX_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPEED_SLOT_INDEX_SET, "SPEED_SLOT_INDEX_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_INC, "AP_SPD_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_DEC, "AP_SPD_VAR_DEC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_SET, "AP_SPD_VAR_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_VAR_INC, "AP_MACH_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_VAR_DEC, "AP_MACH_VAR_DEC", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_HEADING_SLOT_INDEX_SET, "HEADING_SLOT_INDEX_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_HEADING_SLOT_INDEX_SET, "HEADING_SLOT_INDEX_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_INC, "HEADING_BUG_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_DEC, "HEADING_BUG_DEC", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_SET, "HEADING_BUG_SET", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALTITUDE_SLOT_INDEX_SET, "ALTITUDE_SLOT_INDEX_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::HEADING_BUG_SET, "HEADING_BUG_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALTITUDE_SLOT_INDEX_SET, "ALTITUDE_SLOT_INDEX_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_INC, "AP_ALT_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_DEC, "AP_ALT_VAR_DEC", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_SET, "AP_ALT_VAR_SET_ENGLISH", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_SLOT_INDEX_SET, "VS_SLOT_INDEX_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_VAR_SET, "AP_ALT_VAR_SET_ENGLISH", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_SLOT_INDEX_SET, "VS_SLOT_INDEX_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_VAR_INC, "AP_VS_VAR_INC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_VAR_DEC, "AP_VS_VAR_DEC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_APR_HOLD, "AP_APR_HOLD", true);
@@ -1870,7 +1870,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_SPD_SET: {
-      simInputAutopilot.SPD_MACH_set = data0;
+      simInputAutopilot.SPD_MACH_set = static_cast<long>(data0);
       std::cout << "WASM: event triggered: A32NX_FCU_SPD_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
@@ -1909,7 +1909,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_HDG_SET: {
-      simInputAutopilot.HDG_TRK_set = data0;
+      simInputAutopilot.HDG_TRK_set = static_cast<long>(data0);
       std::cout << "WASM: event triggered: A32NX_FCU_HDG_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
@@ -1950,7 +1950,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_ALT_SET: {
-      simInputAutopilot.ALT_set = data0;
+      simInputAutopilot.ALT_set = static_cast<long>(data0);
       std::cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
@@ -2008,7 +2008,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_VS_SET: {
-      simInputAutopilot.VS_FPA_set = data0;
+      simInputAutopilot.VS_FPA_set = static_cast<long>(data0);
       std::cout << "WASM: event triggered: A32NX_FCU_VS_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
@@ -2114,9 +2114,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_SET: {
-      simInputAutopilot.baro_left_set = data0;
-      simInputAutopilot.baro_right_set = data0;
-      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET" << std::endl;
+      simInputAutopilot.baro_left_set = static_cast<long>(data0);
+      simInputAutopilot.baro_right_set = static_cast<long>(data0);
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
@@ -2210,9 +2210,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_SET: {
-      simInputAutopilot.baro_left_set = data0;
-      simInputAutopilot.baro_right_set = data0;
-      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_SET" << std::endl;
+      simInputAutopilot.baro_left_set = static_cast<long>(data0);
+      simInputAutopilot.baro_right_set = static_cast<long>(data0);
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
@@ -2374,6 +2374,12 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     case Events::AP_ALT_VAR_DEC: {
       fcuAfsPanelInputs.alt_knob.turns = -1;
       std::cout << "WASM: event triggered: AP_ALT_VAR_DEC" << std::endl;
+      break;
+    }
+
+    case Events::AP_ALT_VAR_SET: {
+      simInputAutopilot.ALT_set = static_cast<long>(data0);
+      std::cout << "WASM: event triggered: AP_ALT_VAR_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 

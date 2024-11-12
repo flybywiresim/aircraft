@@ -292,6 +292,9 @@ class FcuComputer final
     efis_range_selection EnumeratedConstant3_Value_e;
     efis_range_selection EnumeratedConstant4_Value_i;
     efis_range_selection EnumeratedConstant5_Value_k;
+    real32_T CompareToConstant1_const;
+    real32_T CompareToConstant1_const_o;
+    real32_T CompareToConstant1_const_j;
     real32_T A429ValueOrDefault_defaultValue;
     real32_T A429ValueOrDefault1_defaultValue;
     real32_T A429ValueOrDefault2_defaultValue;

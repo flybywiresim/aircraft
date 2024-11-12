@@ -310,6 +310,12 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
 
   efis_range_selection::RANGE_160,
 
+  -1.0F,
+
+  -1.0F,
+
+  -1.0F,
+
   0.0F,
 
   0.0F,
