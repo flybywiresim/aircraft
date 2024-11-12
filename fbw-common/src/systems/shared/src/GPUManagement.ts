@@ -10,13 +10,15 @@ import {
   SimVarValueType,
   Wait,
 } from '@microsoft/msfs-sdk';
-import { ExtrasSimVarEvents } from '@flybywiresim/fbw-sdk';
+import { GroundSupportEvents, MsfsElectricsEvents, MsfsFlightModelEvents, MsfsMiscEvents } from '@flybywiresim/fbw-sdk';
 
 export class GPUManagement implements Instrument {
-  private readonly sub = this.bus.getSubscriber<ExtrasSimVarEvents & GPUControlEvents>();
+  private readonly sub = this.bus.getSubscriber<
+    MsfsElectricsEvents & MsfsFlightModelEvents & MsfsMiscEvents & GroundSupportEvents & GPUControlEvents
+  >();
 
   private readonly gpuDoorOpenPercent = ConsumerSubject.create(
-    this.sub.on(`interactive_point_open_${this.gpuDoorIndex}`),
+    this.sub.on(`msfs_interactive_point_open_${this.gpuDoorIndex}`),
     0,
   );
   private readonly gpuHookedUp = MappedSubject.create(
@@ -24,7 +26,7 @@ export class GPUManagement implements Instrument {
     this.gpuDoorOpenPercent,
   );
 
-  private readonly groundVelocity = ConsumerSubject.create(this.sub.on('ground_velocity'), 0);
+  private readonly groundVelocity = ConsumerSubject.create(this.sub.on('msfs_ground_velocity'), 0);
 
   private readonly msfsExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
@@ -37,12 +39,12 @@ export class GPUManagement implements Instrument {
     private readonly numberOfGPUs: number,
   ) {
     for (let index = 1; index <= numberOfGPUs; index++) {
-      const element = ConsumerSubject.create(this.sub.on(`msfs_ext_power_available_${index}`), false);
+      const element = ConsumerSubject.create(this.sub.on(`msfs_external_power_available_${index}`), false);
       this.msfsExtPowerAvailStates.set(index, element);
     }
 
     for (let index = 1; index <= numberOfGPUs; index++) {
-      const element = ConsumerSubject.create(this.sub.on(`ext_power_available_${index}`), false);
+      const element = ConsumerSubject.create(this.sub.on(`ext_pwr_avail_${index}`), false);
       this.ExtPowerAvailStates.set(index, element);
     }
   }
