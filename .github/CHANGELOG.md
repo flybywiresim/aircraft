@@ -41,6 +41,7 @@
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
 
 ## 0.12.0
 
