@@ -547,7 +547,7 @@ void A380PrimComputer::step()
   uint32_T rtb_y_k;
   uint32_T rtb_y_ot;
   boolean_T rtb_VectorConcatenate[19];
-  boolean_T rtb_VectorConcatenate_b[19];
+  boolean_T rtb_VectorConcatenate_ep[19];
   boolean_T b_x[6];
   boolean_T elevator1Avail;
   boolean_T elevator2Avail;
@@ -3442,67 +3442,87 @@ void A380PrimComputer::step()
     rtb_VectorConcatenate[17] = A380PrimComputer_P.Constant19_Value;
     rtb_VectorConcatenate[18] = A380PrimComputer_P.Constant19_Value;
     A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate, &A380PrimComputer_Y.out.bus_outputs.rudder_status_word.Data);
-    A380PrimComputer_Y.out.bus_outputs.fe_status_word.Data = static_cast<real32_T>
+    A380PrimComputer_Y.out.bus_outputs.fg_status_word.Data = static_cast<real32_T>
       (A380PrimComputer_U.in.analog_inputs.rudder_2_pos_deg);
-    A380PrimComputer_MATLABFunction_b(rtb_pitchLawCapability, &rtb_VectorConcatenate_b[0], &rtb_VectorConcatenate_b[1],
-      &rtb_VectorConcatenate_b[2]);
-    A380PrimComputer_MATLABFunction2(a380_lateral_efcs_law::NormalLaw, &rtb_VectorConcatenate_b[3],
-      &rtb_VectorConcatenate_b[4]);
-    A380PrimComputer_MATLABFunction_b(rtb_law_k, &rtb_VectorConcatenate_b[5], &rtb_VectorConcatenate_b[6],
-      &rtb_VectorConcatenate_b[7]);
-    A380PrimComputer_MATLABFunction2(rtb_activeLateralLaw, &rtb_VectorConcatenate_b[8], &rtb_VectorConcatenate_b[9]);
-    rtb_VectorConcatenate_b[10] = rtb_AND20;
-    rtb_VectorConcatenate_b[11] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[12] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[13] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[14] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[15] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[16] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[17] = A380PrimComputer_P.Constant21_Value;
-    rtb_VectorConcatenate_b[18] = A380PrimComputer_P.Constant21_Value;
-    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_b,
+    A380PrimComputer_MATLABFunction_b(rtb_pitchLawCapability, &rtb_VectorConcatenate_ep[0], &rtb_VectorConcatenate_ep[1],
+      &rtb_VectorConcatenate_ep[2]);
+    A380PrimComputer_MATLABFunction2(a380_lateral_efcs_law::NormalLaw, &rtb_VectorConcatenate_ep[3],
+      &rtb_VectorConcatenate_ep[4]);
+    A380PrimComputer_MATLABFunction_b(rtb_law_k, &rtb_VectorConcatenate_ep[5], &rtb_VectorConcatenate_ep[6],
+      &rtb_VectorConcatenate_ep[7]);
+    A380PrimComputer_MATLABFunction2(rtb_activeLateralLaw, &rtb_VectorConcatenate_ep[8], &rtb_VectorConcatenate_ep[9]);
+    rtb_VectorConcatenate_ep[10] = rtb_AND20;
+    rtb_VectorConcatenate_ep[11] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[12] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[13] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[14] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[15] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[16] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[17] = A380PrimComputer_P.Constant21_Value;
+    rtb_VectorConcatenate_ep[18] = A380PrimComputer_P.Constant21_Value;
+    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_ep,
       &A380PrimComputer_Y.out.bus_outputs.fctl_law_status_word.Data);
-    rtb_VectorConcatenate_b[0] = rtb_AND1_ci;
-    rtb_VectorConcatenate_b[1] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[2] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[3] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[4] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[5] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[6] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[7] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[8] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[9] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[10] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[11] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[12] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[13] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[14] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[15] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[16] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[17] = A380PrimComputer_P.Constant22_Value;
-    rtb_VectorConcatenate_b[18] = A380PrimComputer_P.Constant22_Value;
-    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_b,
+    rtb_VectorConcatenate_ep[0] = rtb_AND1_ci;
+    rtb_VectorConcatenate_ep[1] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[2] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[3] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[4] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[5] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[6] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[7] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[8] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[9] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[10] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[11] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[12] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[13] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[14] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[15] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[16] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[17] = A380PrimComputer_P.Constant22_Value;
+    rtb_VectorConcatenate_ep[18] = A380PrimComputer_P.Constant22_Value;
+    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_ep,
       &A380PrimComputer_Y.out.bus_outputs.discrete_status_word_1.Data);
-    rtb_VectorConcatenate_b[0] = rtb_AND18_c;
-    rtb_VectorConcatenate_b[1] = leftInboardElevEngaged;
-    rtb_VectorConcatenate_b[2] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[3] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[4] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[5] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[6] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[7] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[8] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[9] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[10] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[11] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[12] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[13] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[14] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[15] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[16] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[17] = A380PrimComputer_P.Constant36_Value;
-    rtb_VectorConcatenate_b[18] = A380PrimComputer_P.Constant36_Value;
-    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_b, &A380PrimComputer_Y.out.bus_outputs.fe_status_word.Data);
+    rtb_VectorConcatenate_ep[0] = rtb_AND18_c;
+    rtb_VectorConcatenate_ep[1] = leftInboardElevEngaged;
+    rtb_VectorConcatenate_ep[2] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[3] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[4] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[5] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[6] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[7] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[8] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[9] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[10] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[11] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[12] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[13] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[14] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[15] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[16] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[17] = A380PrimComputer_P.Constant36_Value;
+    rtb_VectorConcatenate_ep[18] = A380PrimComputer_P.Constant36_Value;
+    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_ep, &A380PrimComputer_Y.out.bus_outputs.fe_status_word.Data);
+    rtb_VectorConcatenate_ep[0] = A380PrimComputer_U.in.temporary_ap_input.ap_engaged;
+    rtb_VectorConcatenate_ep[1] = A380PrimComputer_U.in.temporary_ap_input.ap_engaged;
+    rtb_VectorConcatenate_ep[2] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[3] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[4] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[5] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[6] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[7] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[8] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[9] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[10] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[11] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[12] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[13] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[14] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[15] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[16] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[17] = A380PrimComputer_P.Constant37_Value;
+    rtb_VectorConcatenate_ep[18] = A380PrimComputer_P.Constant37_Value;
+    A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_ep, &A380PrimComputer_Y.out.bus_outputs.fg_status_word.Data);
     A380PrimComputer_Y.out.data = A380PrimComputer_U.in;
     A380PrimComputer_Y.out.laws.lateral_law_outputs.left_inboard_aileron_deg = rtb_left_inboard_aileron_deg;
     A380PrimComputer_Y.out.laws.lateral_law_outputs.right_inboard_aileron_deg = rtb_right_inboard_aileron_deg;
@@ -3912,6 +3932,8 @@ void A380PrimComputer::step()
     A380PrimComputer_Y.out.bus_outputs.discrete_status_word_1.SSM = static_cast<uint32_T>
       (A380PrimComputer_P.EnumeratedConstant1_Value);
     A380PrimComputer_Y.out.bus_outputs.fe_status_word.SSM = static_cast<uint32_T>
+      (A380PrimComputer_P.EnumeratedConstant1_Value);
+    A380PrimComputer_Y.out.bus_outputs.fg_status_word.SSM = static_cast<uint32_T>
       (A380PrimComputer_P.EnumeratedConstant1_Value);
     A380PrimComputer_DWork.Delay_DSTATE_cc = rtb_AND7_d;
     A380PrimComputer_DWork.Delay1_DSTATE = rtb_AND10_b;

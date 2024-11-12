@@ -578,6 +578,7 @@ class A380PrimComputer final
     boolean_T Constant21_Value;
     boolean_T Constant22_Value;
     boolean_T Constant36_Value;
+    boolean_T Constant37_Value;
   };
 
   A380PrimComputer(A380PrimComputer const&) = delete;
