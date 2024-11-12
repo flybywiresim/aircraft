@@ -1172,10 +1172,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 class C2Cell extends DisplayComponent<CellProps> {
   private fmaLateralArmed: number = 0;
 
-  private fmaVerticalArmed: number = 0;
-
-  private activeVerticalMode: number = 0;
-
   private textSub = Subject.create('');
 
   private getText() {
@@ -1195,7 +1191,7 @@ class C2Cell extends DisplayComponent<CellProps> {
     } else if (runwayArmed) {
       text = 'RWY' + (navArmed ? '  NAV' : '');
     } else if (navArmed) {
-      text = 'RWY';
+      text = 'NAV';
     }
     this.textSub.set(text);
   }
@@ -1212,22 +1208,6 @@ class C2Cell extends DisplayComponent<CellProps> {
         this.fmaLateralArmed = fla;
         this.getText();
       });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((fva) => {
-        this.fmaVerticalArmed = fva;
-        this.getText();
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((avm) => {
-        this.activeVerticalMode = avm;
-        this.getText();
-      });
   }
 
   render(): VNode {
@@ -1240,8 +1220,6 @@ class C2Cell extends DisplayComponent<CellProps> {
 }
 
 class BC1Cell extends ShowForSecondsComponent<CellProps> {
-  private lastLateralMode = 0;
-
   private lastVerticalMode = 0;
 
   private textSub = Subject.create('');
@@ -1281,14 +1259,6 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((v) => {
         this.lastVerticalMode = v;
-        this.setText();
-      });
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((l) => {
-        this.lastLateralMode = l;
         this.setText();
       });
   }
