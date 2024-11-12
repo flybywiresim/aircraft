@@ -16,6 +16,7 @@
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
 1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
 
 ## 0.12.0
 
