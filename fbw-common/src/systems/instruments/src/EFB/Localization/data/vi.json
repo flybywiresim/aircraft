@@ -352,7 +352,7 @@
       "CrosswindAboveLimitMessage": "Bạn có muốn thực hiện tính toán với {actual_crosswind} knot không?",
       "CrosswindAboveLimitTitle": "Gió giật ngang tối đa là {max_crosswind} knot",
       "EnterManually": "Nhập thủ công",
-      "EntryAngle": "Entry Angle",
+      "EntryAngle": "Góc vào",
       "EntryAngles": {
         "0": "0°",
         "90": "90°",
@@ -368,8 +368,8 @@
         "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
         "MaximumTemperature": "Above Maximum OAT ({tmax}°C)",
         "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
-        "OperatingEmptyWeight": "Below Operating Empty Weight ({oew} {weight_unit})",
-        "StructuralMtow": "Above Structural MTOW ({structural_mtow} {weight_unit})",
+        "OperatingEmptyWeight": "Dưới trọng lượng rỗng hoạt động ({oew} {weight_unit})",
+        "StructuralMtow": "Trên MTOW Cấu trúc ({structural_mtow} {weight_unit})",
         "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
         "TooLight": "Below Minimum Takeoff Weight",
         "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
@@ -567,6 +567,8 @@
     },
     "Title": "Bảng điều khiển nhanh"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Giới thiệu"
@@ -740,6 +742,7 @@
       "Blue": "Xanh lam",
       "Brightness": "Độ sáng",
       "Dark": "Tối",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Ngôn ngữ",
       "Light": "Sáng",
       "Local": "Cục bộ",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC và địa phương"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Thg 4",
     "Aug": "Thg 8",

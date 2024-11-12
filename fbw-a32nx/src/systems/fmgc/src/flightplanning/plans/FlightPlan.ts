@@ -19,6 +19,7 @@ import {
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -148,6 +149,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
 
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
+    if (this.index === FlightPlanIndex.Temporary) {
+      turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
+    }
     turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
     // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
     turnEnd.ident = targetLeg.ident;
@@ -186,6 +190,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);
 
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
+    if (this.index === FlightPlanIndex.Temporary) {
+      turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
+    }
 
     // Move all legs before active one to the enroute segment
     let indexInEnrouteSegment = 0;
