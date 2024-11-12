@@ -112,7 +112,6 @@ export class EfisSymbols<T extends number> {
       (_, value: string) => {
         const intValue = parseInt(value);
         if (this.minRwyLengthDisplay !== intValue) {
-          console.log('Changed value');
           this.minRwyLengthDisplay = intValue;
         }
       },
