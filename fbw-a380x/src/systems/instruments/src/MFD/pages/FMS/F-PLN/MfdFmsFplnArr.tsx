@@ -91,9 +91,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
   private apprButtonScrollTo = Subject.create<number>(0);
 
-  private unit = Subject.create<Unit<UnitFamily.Distance>>(
-    NXDataStore.get('CONFIG_USING_METRIC_UNIT') === '1' ? UnitType.METER : UnitType.FOOT,
-  );
+  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
 
   protected onNewData(): void {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -379,7 +377,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
       sortedRunways.forEach((rw) => {
         runways.push({
-          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.unit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.unit.get())}`,
+          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
               rw.ident,
@@ -424,9 +422,15 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }, true),
     );
 
-    NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
-      value === '1' ? this.unit.set(UnitType.METER) : this.unit.set(UnitType.FOOT);
+    NXDataStore.getAndSubscribe(
+      'CONFIG_USING_METRIC_UNIT',
+      (key, value) => {
+        this.lengthUnit.set(value === '0' ? UnitType.FOOT : UnitType.METER);
+      },
+      '1',
+    );
 
+    this.lengthUnit.sub(() => {
       if (!this.props.fmcService.master || !this.loadedFlightPlan) {
         return;
       }
@@ -503,10 +507,10 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {this.rwyLength.asUnit(this.unit).map((v) => this.lengthNumberFormatter(v))}
+                  {this.rwyLength.asUnit(this.lengthUnit).map((v) => this.lengthNumberFormatter(v))}
                 </span>
                 <span class="mfd-label-unit mfd-unit-trailing">
-                  {this.unit.map((v) => this.distanceUnitFormatter(v))}
+                  {this.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
                 </span>
               </div>
             </div>

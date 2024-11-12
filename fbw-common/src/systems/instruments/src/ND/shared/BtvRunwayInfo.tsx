@@ -18,7 +18,7 @@ import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{
   bus: ArincEventBus;
-  unit: Subscribable<Unit<UnitFamily.Distance>>;
+  lengthUnit: Subscribable<Unit<UnitFamily.Distance>>;
 }> {
   private readonly sub = this.props.bus.getArincSubscriber<FmsOansData & BtvData>();
 
@@ -37,7 +37,7 @@ export class BtvRunwayInfo extends DisplayComponent<{
   private readonly runwayInfoString = MappedSubject.create(
     ([ident, length]) =>
       ident && length.isNormalOperation()
-        ? `${ident.substring(4).padStart(5, '\xa0')}${this.props.unit.get().convertFrom(length.value, UnitType.METER).toFixed(0).padStart(6, '\xa0')}`
+        ? `${ident.substring(4).padStart(5, '\xa0')}${this.props.lengthUnit.get().convertFrom(length.value, UnitType.METER).toFixed(0).padStart(6, '\xa0')}`
         : '',
     this.runwayIdent,
     this.runwayLength,
@@ -57,7 +57,7 @@ export class BtvRunwayInfo extends DisplayComponent<{
   private readonly exitInfoString = MappedSubject.create(
     ([ident, dist]) =>
       ident && dist.isNormalOperation()
-        ? `${ident.padStart(4, '\xa0')}${this.props.unit.get().convertFrom(dist.value, UnitType.METER).toFixed(0).padStart(6, '\xa0')}`
+        ? `${ident.padStart(4, '\xa0')}${this.props.lengthUnit.get().convertFrom(dist.value, UnitType.METER).toFixed(0).padStart(6, '\xa0')}`
         : '',
     this.exitIdent,
     this.exitDistance,
@@ -93,7 +93,7 @@ export class BtvRunwayInfo extends DisplayComponent<{
               {this.runwayInfoString}
             </text>
             <text x={205} y={0} class="Cyan FontSmallest">
-              {this.props.unit.map((v) => this.distanceUnitFormatter(v))}
+              {this.props.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
             </text>
             <text x={225} y={0} class="White FontSmallest">
               -
@@ -139,7 +139,7 @@ export class BtvRunwayInfo extends DisplayComponent<{
               {this.exitInfoString}
             </text>
             <text x={205} y={0} class="Cyan FontSmallest">
-              {this.props.unit.map((v) => this.distanceUnitFormatter(v))}
+              {this.props.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
             </text>
           </Layer>
         </g>
