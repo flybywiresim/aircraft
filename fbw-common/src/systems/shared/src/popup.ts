@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 /**
  * NotificationParams container for popups to package popup metadata
  */
@@ -15,12 +16,12 @@ export type NotificationParams = {
 };
 
 /**
- * PopUp utility class to create a pop-up UI element
+ * PopUpDialog utility class to create a pop-up UI element
  *
  * Usage:
- * import { PopUp } from '@flybywiresim/fbw-sdk';
+ * import { PopUpDialog } from '@flybywiresim/fbw-sdk';
  * ...
- * const popup = new PopUp();
+ * const popup = new PopUpDialog();
  * popup.showPopUp("CRITICAL SETTING CHANGED", "Your message here", "small", yesFunc, noFunc);
  * popup.showInformation("CRITICAL MESSAGE", "Your message here", "small", yesFunc);
  */
@@ -33,14 +34,14 @@ export class PopUpDialog {
    * Creates a Popup
    */
   constructor() {
-    const title = 'A32NX POPUP';
+    const title = 'FBW POPUP';
     const time = new Date().getTime();
     this.popupListener = undefined;
     this.params = {
       __Type: 'SNotificationParams',
       buttons: [
-        new NotificationButton('TT:MENU.YES', `A32NX_POP_${title}_${time}_YES`),
-        new NotificationButton('TT:MENU.NO', `A32NX_POP_${title}_${time}_NO`),
+        new NotificationButton('TT:MENU.YES', `FBW_POP_${title}_${time}_YES`),
+        new NotificationButton('TT:MENU.NO', `FBW_POP_${title}_${time}_NO`),
       ],
       style: 'normal',
       displayGlobalPopup: true,
@@ -59,6 +60,8 @@ export class PopUpDialog {
    */
   /* eslint-disable no-underscore-dangle */
   _showPopUp(params: any = {}): void {
+    Coherent.trigger('UNFOCUS_INPUT_FIELD', uuidv4()); // Needed to mitigate an issue when ALT-TAB or using toggle free look
+    SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
     Coherent.trigger('SHOW_POP_UP', params);
   }
 

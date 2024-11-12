@@ -15,18 +15,26 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      MASTER_PRE_RELEASE_ID: 66067756
-      MASTER_PRE_RELEASE_TAG: assets/master
-      MASTER_ZIP_NAME: A32NX-master.7z
-      VMASTER_PRE_RELEASE_ID: 32243965
-      VMASTER_PRE_RELEASE_TAG: vmaster
+      PRE_RELEASE_TAG: assets/master
+      PRE_RELEASE_ID: 66067756
+      STANDALONE_ZIP_NAME: A32NX-master.7z
       BUILD_DIR_NAME: master-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
       AIRCRAFT_VARIANT: a320-251n
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -36,7 +44,7 @@ jobs:
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
-          echo AIRCRAFT_PROJECT_PREFIX=\"${{ env.AIRCRAFT_PROJECT_PREFIX }}\" >> fbw-a32nx/.env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a32nx/.env
           echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a32nx/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
@@ -49,66 +57,117 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
           docker system prune -af
-      - name: Build ZIP files
+      - name: Remove A380X source files
+        run: |
+          rm -rf ./fbw-a380x/
+          rm -rf ./large-files/fbw-a380x/
+      - name: Build Fragmenter modules
         run: |
           df -h
           node ./scripts/fragment_a32nx.js
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           node ./scripts/install-source_a32nx.js
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          cd ./fbw-a32nx/out/
-          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
-          cd ../../
-      - name: Upload to CloudFlare CDN
+          df -h
+      - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
           CDN_BUCKET_DESTINATION: addons/a32nx/master
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
+      - name: Build Standalone Download files
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cd ./fbw-a32nx/out/
+          rm -rf build-modules
+          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          cd ../../
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            mv ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}.001 ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} # Only applicable if split in 1 part!
+          fi
+          df -h
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            echo "Standalone Download is is not split"
+          else
+            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+            echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
       - name: Delete old GitHub Pre-Release assets
         uses: mknejp/delete-release-assets@v1
         with:
           token: ${{ github.token }}
-          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
-          assets: "${{ env.MASTER_ZIP_NAME }}"
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "${{ env.STANDALONE_ZIP_NAME }}"
           fail-if-no-assets: false
       - name: Upload aircraft package to GitHub Pre-Release Assets
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
-          asset_name: ${{ env.MASTER_ZIP_NAME }}
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.PRE_RELEASE_ID }}/assets{?name,label}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}
+          asset_name: ${{ env.STANDALONE_ZIP_NAME }}
           asset_content_type: application/zip
       - name: Update GitHub Pre-Release Body
         run: |
           curl --request PATCH \
-            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
+            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.PRE_RELEASE_ID }}' \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'Content-Type: application/json' \
             --data-raw '{
-              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
+              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.PRE_RELEASE_TAG }}/${{ env.STANDALONE_ZIP_NAME }}"
             }'
 
-  build_a380x:
-    name: Build and deploy A380X
+  build_a380x_8k:
+    name: Build and deploy A380X (8K)
     # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
     runs-on: ubuntu-latest
     env:
       FBW_PRODUCTION_BUILD: 1
-      MASTER_PRE_RELEASE_ID: 66067756
-      MASTER_PRE_RELEASE_TAG: assets/master
-      MASTER_ZIP_NAME: A380X-master.7z
-      VMASTER_PRE_RELEASE_ID: 32243965
-      VMASTER_PRE_RELEASE_TAG: vmaster
+      PRE_RELEASE_TAG: assets/master
+      PRE_RELEASE_ID: 66067756
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
+      STANDALONE_ZIP_NAME: A380X-master-8K.7z
       AIRCRAFT_VARIANT: a380-842
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+      - name: Force even more disk space
+        run: |
+          sudo rm -rf /usr/local/julia1.11.0
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /opt/microsoft/msedge
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /opt/pipx
+          sudo rm -rf /usr/lib/heroku
+          sudo rm -rf /usr/share/kotlinc
+          sudo rm -rf /usr/local/aws-cli
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /usr/local/sqlpackage
+          sudo rm -rf /usr/share/gradle-8.10.2
+          sudo rm -rf /usr/lib/python3
+          sudo rm -rf /usr/lib/python3.10
+          sudo rm -rf /usr/lib/mono
+          sudo npm uninstall -g netlify-cli --save
+          sudo npm uninstall -g parcel --save
+          df -h
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -118,8 +177,8 @@ jobs:
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
           echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
-          echo AIRCRAFT_PROJECT_PREFIX=\"${{ env.AIRCRAFT_PROJECT_PREFIX }}\" >> fbw-a380x/.env
-          echo AIRCRAFT_VARIANT=\"${{ env.AIRCRAFT_VARIANT }}\" >> fbw-a380x/.env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
+          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
@@ -131,44 +190,176 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
           rm -rf fbw-a380x/src
           docker system prune -af
-      - name: Build ZIP files
+      - name: Remove A32NX source files
+        run: |
+          rm -rf ./fbw-a32nx/
+          rm -rf ./large-files/fbw-a32nx/
+      - name: Remove A380X 4K textures
+        run: |
+          rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
+      - name: Build Fragmenter modules
         run: |
           df -h
           node ./scripts/fragment_a380x.js
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          cd ./fbw-a380x/out/
-          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a380-842/
-          cd ../../
-      - name: Upload to CloudFlare CDN
+          df -h
+      - name: Upload to CloudFlare CDN (Installer)
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a380x/master
+          CDN_BUCKET_DESTINATION: addons/a380x/master-8k
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
-      - name: Delete old GitHub Pre-Release assets
+      - name: Build Standalone Download files
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cd ./fbw-a380x/out/
+          rm -rf build-modules
+          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          cd ../../
+          df -h
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 3 ]; then
+            echo "Standalone Download is split in 3 parts"
+          else
+            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+            echo "Error: The number of standalone download parts is not 3. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
+      - name: Delete old GitHub pre-release assets
         uses: mknejp/delete-release-assets@v1
         with:
           token: ${{ github.token }}
-          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
-          assets: "${{ env.MASTER_ZIP_NAME }}"
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "*A380X-master-8K*"
           fail-if-no-assets: false
-      - name: Upload aircraft package to GitHub Pre-Release Assets
-        uses: actions/upload-release-asset@v1.0.2
+      - name: Upload pre-release assets
+        uses: dwenegar/upload-release-assets@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
-          asset_name: ${{ env.MASTER_ZIP_NAME }}
-          asset_content_type: application/zip
-      - name: Update GitHub Pre-Release Body
+          release_id: ${{ env.PRE_RELEASE_ID }}
+          assets_path: ./${{ env.BUILD_DIR_NAME }}/
+
+  build_a380x_4k:
+    name: Build and deploy A380X (4K)
+    # Prevent running this on forks
+    if: github.repository_owner == 'flybywiresim'
+    runs-on: ubuntu-latest
+    env:
+      FBW_PRODUCTION_BUILD: 1
+      PRE_RELEASE_TAG: assets/master
+      PRE_RELEASE_ID: 66067756
+      BUILD_DIR_NAME: master-a380x
+      AIRCRAFT_PROJECT_PREFIX: a380x
+      STANDALONE_ZIP_NAME: A380X-master-4K.7z
+      AIRCRAFT_VARIANT: a380-842
+    steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+      - name: Force even more disk space
         run: |
-          curl --request PATCH \
-            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
-            }'
+          sudo rm -rf /usr/local/julia1.11.0
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /opt/microsoft/msedge
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /opt/pipx
+          sudo rm -rf /usr/lib/heroku
+          sudo rm -rf /usr/share/kotlinc
+          sudo rm -rf /usr/local/aws-cli
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /usr/local/sqlpackage
+          sudo rm -rf /usr/share/gradle-8.10.2
+          sudo rm -rf /usr/lib/python3
+          sudo rm -rf /usr/lib/python3.10
+          sudo rm -rf /usr/lib/mono
+          sudo npm uninstall -g netlify-cli --save
+          sudo npm uninstall -g parcel --save
+          df -h
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Set BUILT_DATE_TIME
+        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
+      - name: Create .env file
+        run: |
+          echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
+          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
+          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
+          echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo VITE_BUILD=false >> .env
+      - name: Install dependencies
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - name: Build A380X
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4 -4k
+          rm -rf fbw-a380x/src
+          docker system prune -af
+      - name: Remove A32NX source files
+        run: |
+          rm -rf ./fbw-a32nx/
+          rm -rf ./large-files/fbw-a32nx/
+      - name: Build Fragmenter modules
+        run: |
+          df -h
+          node ./scripts/fragment_a380x.js
+          cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
+          node ./scripts/install-source_a380x.js
+          df -h
+      - name: Upload to CloudFlare CDN (Installer)
+        env:
+          CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
+          CDN_BUCKET_DESTINATION: addons/a380x/master-4k
+        run: |
+          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
+      - name: Build Standalone Download files
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cd ./fbw-a380x/out/
+          rm -rf build-modules
+          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          cd ../../
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            mv ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }}.001 ./${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} # Only applicable if split in 1 part!
+          fi
+          df -h
+      - name: Count Standalone Download files
+        run: |
+          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 1 ]; then
+            echo "Standalone Download is is not split"
+          else
+            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
+            echo "Error: The number of standalone download parts is not 1. Adjust all download references and workflows for the new number of parts!" >&2
+            exit 1
+          fi
+      - name: Delete old GitHub pre-release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.PRE_RELEASE_TAG }}
+          assets: "*A380X-master-4K*"
+          fail-if-no-assets: false
+      - name: Upload pre-release assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release_id: ${{ env.PRE_RELEASE_ID }}
+          assets_path: ./${{ env.BUILD_DIR_NAME }}/
