@@ -41,6 +41,7 @@
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
 
 ## 0.12.0
 
