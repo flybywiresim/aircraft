@@ -8,8 +8,6 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { AdscButton } from 'instruments/src/MFD/pages/common/AdscButton';
-// import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-// import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
 
 interface MfdAtccomConnectProps extends AbstractMfdPageProps {}
 
@@ -49,11 +47,6 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
                 freeTextAllowed={false}
                 containerStyle="width: 150px;"
                 alignLabels="center"
-                // onModified={(i, text) => {
-                //   if (i !== null) {
-                //     this.onDropdownModified(i, text);
-                //   }
-                // }}
                 numberOfDigitsForInputField={4}
                 tmpyActive={this.tmpyActive}
                 hEventConsumer={this.props.mfd.hEventConsumer}
