@@ -25,6 +25,19 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_prim_out_bus_
 
@@ -83,19 +96,7 @@ struct base_prim_out_bus
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 fe_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
+  base_arinc_429 fg_status_word;
 };
 
 #endif
@@ -361,6 +362,7 @@ struct base_sec_laws_outputs
 {
   base_sec_lateral_surface_positions lateral_law_outputs;
   base_sec_pitch_surface_positions pitch_law_outputs;
+  real_T rudder_trim_command_deg;
 };
 
 #endif

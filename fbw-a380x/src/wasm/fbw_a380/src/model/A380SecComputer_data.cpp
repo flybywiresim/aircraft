@@ -37,7 +37,8 @@ base_sec_laws_outputs rtP_sec_laws_output_MATLABStruct{
     0.0,
     0.0,
     0.0
-  }
+  },
+  0.0
 } ;
 
 base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct{
@@ -63,11 +64,17 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   1.0,
 
-  0.0,
+  1.0,
 
   0.0,
 
   0.0,
+
+  0.0,
+
+  -20.0,
+
+  20.0,
 
   13.0,
 
@@ -181,6 +188,10 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   19.0,
 
+  11.0,
+
+  12.0,
+
   30.0,
 
   0.02,
@@ -188,6 +199,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   5.0,
 
   1.0,
+
+  -2.0,
 
   -1.0,
 
@@ -229,6 +242,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   30.0,
 
+  2.0,
+
   1.0,
 
   30.0,
@@ -267,6 +282,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   false,
 
+  false,
+
   true,
 
   true,
@@ -282,6 +299,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   true,
 
   false,
+
+  true,
 
   0,
 
@@ -1126,268 +1145,6 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
           {
             0U,
             0.0F
-          }
-        },
-
-        {
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
           },
 
           {
@@ -1397,6 +1154,283 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          }
+        },
+
+        {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -1938,7 +1972,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
         0.0,
         0.0,
         0.0
-      }
+      },
+      0.0
     },
 
     {
@@ -2407,6 +2442,10 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   -11.0,
 
+  0.0,
+
+  0.0,
+
   -1.0,
 
   0.25,
@@ -2443,10 +2482,6 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   0.0,
 
-  1.0,
-
-  -1.0,
-
   0.0,
 
   1.0,
@@ -2455,27 +2490,31 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   0.0,
 
-  -1.0,
-
-  20.0,
-
-  -30.0,
-
-  20.0,
-
-  -30.0,
+  1.0,
 
   -1.0,
-
-  20.0,
-
-  -30.0,
-
-  20.0,
-
-  -30.0,
 
   0.0,
+
+  -1.0,
+
+  20.0,
+
+  -30.0,
+
+  20.0,
+
+  -30.0,
+
+  -1.0,
+
+  20.0,
+
+  -30.0,
+
+  20.0,
+
+  -30.0,
 
   0.0,
 
@@ -2500,6 +2539,9 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
   false,
 
   false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
