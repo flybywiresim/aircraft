@@ -812,7 +812,12 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         }
         break;
       case VerticalMode.ALT_CPT:
-        text = 'ALT*';
+        if (this.crzAltMode) {
+          // TODO hook to new FG var if necessary
+          text = 'ALT CRZ *';
+        } else {
+          text = 'ALT*';
+        }
         break;
       case VerticalMode.ALT_CST_CPT:
         text = 'ALT CST*';
@@ -820,9 +825,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       case VerticalMode.ALT_CST:
         text = 'ALT CST';
         break;
-      /* case 18:
-            text = 'ALT CRZ';
-            break; */
       case VerticalMode.FPA: {
         const FPAText = `${this.FPA > 0 ? '+' : ''}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
@@ -1007,7 +1009,10 @@ class B2Cell extends DisplayComponent<CellProps> {
         const clbArmed = (fmv >> 2) & 1;
         const desArmed = (fmv >> 3) & 1;
         const gsArmed = (fmv >> 4) & 1;
+
+        // TODO hook to FG once implemented
         const openClimbArmed = false;
+        const altCruiseArmed = false;
 
         let text1: string;
         let color1 = 'Cyan';
@@ -1023,6 +1028,8 @@ class B2Cell extends DisplayComponent<CellProps> {
           color1 = 'Magenta';
         } else if (altArmed) {
           text1 = gsArmed ? 'ALT ' : '      ALT';
+        } else if (altCruiseArmed) {
+          text1 = '      ALT CRZ';
         } else {
           text1 = '';
           vertModeActive = false;
