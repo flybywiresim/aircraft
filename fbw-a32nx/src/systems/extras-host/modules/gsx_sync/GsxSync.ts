@@ -48,20 +48,20 @@ export class GsxSync {
     this.fuelHose.setConsumer(this.sub.on('gsx_fuelhose_connected'));
     this.refuelStarted.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
 
-    if (NXDataStore.get('GSX_FUEL_SYNC', '0') == '1') {
-      this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
-      this.refuelStarted.sub(this.onRefuelStarted.bind(this));
-    }
+    this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
+    this.refuelStarted.sub(this.onRefuelStarted.bind(this));
 
-    if (NXDataStore.get('GSX_POWER_SYNC', '0') == '1') {
-      this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
-      this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
-      this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
-      this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
-    }
+    this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
   }
 
   private onFuelHoseConnected(hose: number): void {
+    if (NXDataStore.get('GSX_FUEL_SYNC', '0') != '1') {
+      return;
+    }
+
     if (hose != 0 && this.desiredFuel == 0) {
       this.desiredFuel = SimVar.GetSimVarValueFast('L:A32NX_FUEL_LEFT_MAIN_DESIRED', SimVarValueType.Number);
     }
@@ -91,6 +91,10 @@ export class GsxSync {
   }
 
   private onRefuelStarted(refuel: boolean): void {
+    if (NXDataStore.get('GSX_FUEL_SYNC', '0') != '1') {
+      return;
+    }
+
     if (!refuel && this.fuelHose.get() == 1 && this.isDefuel) {
       SimVar.SetSimVarValue('L:A32NX_FUEL_LEFT_MAIN_DESIRED', SimVarValueType.Number, this.desiredFuel);
       SimVar.SetSimVarValue('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', SimVarValueType.Number, this.desiredFuel);
@@ -110,6 +114,10 @@ export class GsxSync {
   }
 
   private evaluateGsxPowerSource(): void {
+    if (NXDataStore.get('GSX_POWER_SYNC', '0') != '1') {
+      return;
+    }
+
     const extAvail = this.isExtPowerAvail();
     const jetwayState = this.stateJetway.get();
     let action = -1;

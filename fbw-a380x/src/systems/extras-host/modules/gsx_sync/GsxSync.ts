@@ -72,10 +72,8 @@ export class GsxSync {
     this.refuelStarted.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
     this.cargoDoorTarget.setConsumer(this.sub.on('a38nx_cargo_door_target'));
 
-    if (NXDataStore.get('GSX_FUEL_SYNC', '0') == '1') {
-      this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
-      this.refuelStarted.sub(this.onRefuelStarted.bind(this));
-    }
+    this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
+    this.refuelStarted.sub(this.onRefuelStarted.bind(this));
 
     this.toggleCargo1.sub(this.onToggleCargo1.bind(this));
     this.toggleCargo2.sub(this.onToggleCargo2.bind(this));
@@ -84,12 +82,10 @@ export class GsxSync {
     this.cargoPercentBoard.sub(this.onCargoBoardCompleted.bind(this));
     this.cargoPercentDeboard.sub(this.onCargoDeboardCompleted.bind(this));
 
-    if (NXDataStore.get('GSX_POWER_SYNC', '0') == '1') {
-      this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
-      this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
-      this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
-      this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
-    }
+    this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
   }
 
   private isCargoOpen(): boolean {
@@ -149,6 +145,10 @@ export class GsxSync {
   }
 
   private onFuelHoseConnected(hose: number): void {
+    if (NXDataStore.get('GSX_FUEL_SYNC', '0') != '1') {
+      return;
+    }
+
     if (hose != 0 && this.desiredFuel == 0) {
       this.desiredFuel = SimVar.GetSimVarValueFast('L:A32NX_FUEL_DESIRED', 'kilograms');
     }
@@ -167,6 +167,10 @@ export class GsxSync {
   }
 
   private onRefuelStarted(refuel: boolean): void {
+    if (NXDataStore.get('GSX_FUEL_SYNC', '0') != '1') {
+      return;
+    }
+
     if (!refuel && this.fuelHose.get() == 1 && this.isDefuel) {
       SimVar.SetSimVarValue('L:A32NX_FUEL_DESIRED', 'kilograms', this.desiredFuel);
       const refuelRate = SimVar.GetSimVarValueFast('L:A32NX_EFB_REFUEL_RATE_SETTING', SimVarValueType.Number);
@@ -185,6 +189,10 @@ export class GsxSync {
   }
 
   private evaluateGsxPowerSource(): void {
+    if (NXDataStore.get('GSX_POWER_SYNC', '0') != '1') {
+      return;
+    }
+
     const extAvail = this.isExtPowerAvail();
     const jetwayState = this.stateJetway.get();
     let action = -1;
