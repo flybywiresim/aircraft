@@ -28,19 +28,19 @@
  */
 class FuelConfiguration_A380X {
   // Fuel tank default quantities in gallons
-  static constexpr double fuelFeedOneDefault = 1082.0;                // tank 2
+  static constexpr double fuelFeedOneDefault = 1233.9;                // tank 2
   static constexpr double fuelFeedTwoDefault = fuelFeedOneDefault;    // tank 5
   static constexpr double fuelFeedThreeDefault = fuelFeedOneDefault;  // tank 6
   static constexpr double fuelFeedFourDefault = fuelFeedOneDefault;   // tank 9
 
-  static constexpr double fuelLeftOuterDefault = 2731.0;                 // tank 1
-  static constexpr double fuelRightOuterDefault = fuelLeftOuterDefault;  // tank 10
-  static constexpr double fuelLeftMidDefault = 9630.0;                   // tank 3
-  static constexpr double fuelRightMidDefault = fuelLeftMidDefault;      // tank 8
-  static constexpr double fuelLeftInnerDefault = 12187.0;                // tank 4
-  static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;  // tank 7
+  static constexpr double fuelLeftOuterDefault = 0;                        // tank 1
+  static constexpr double fuelRightOuterDefault = fuelLeftOuterDefault;    // tank 10
+  static constexpr double fuelLeftMidDefault = 0;                          // tank 3
+  static constexpr double fuelRightMidDefault = fuelLeftMidDefault;        // tank 8
+  static constexpr double fuelLeftInnerDefault = 0;                        // tank 4
+  static constexpr double fuelRightInnerDefault = fuelLeftInnerDefault;    // tank 7
 
-  static constexpr double fuelTrimDefault = 6259.0;  // tank 11
+  static constexpr double fuelTrimDefault = 0;  // tank 11
 
  private:
   // Actual fuel tank quantities in gallons

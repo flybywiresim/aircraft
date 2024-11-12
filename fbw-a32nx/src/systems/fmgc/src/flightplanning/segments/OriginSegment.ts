@@ -59,6 +59,7 @@ export class OriginSegment extends FlightPlanSegment {
   }
 
   private resetOriginLegFlag() {
+    // TODO this needs to be synced
     this.allLegs.forEach((leg) => {
       if (leg.isDiscontinuity === false) {
         leg.flags &= ~FlightPlanLegFlags.Origin;
