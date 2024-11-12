@@ -6,17 +6,24 @@ TOC:
 - [Build Process](#build-process)
 - [Updating the Source File](#update-source-file)
 
+<span style="color: red">
+OBS:
+The localization files for the flyPad are now in the fbw-common EFB section. The process is the same as described here. 
+The only difference is the path to the localization files. The path is `fbw-a32nx/src/localization/flypad` instead of 
+`fbw-a32nx/src/localization/a32nx`.
+</span>
+
 ## Development Process
 
 - To add something to the localization files simply add the key to the source language files:
-  - For MSFS locPak: `fbw-a32nx/src/localization/msfs/en-US.locPak`
-- Only change the source language file. The other language files are generated automatically from 
+    - For MSFS locPak: `fbw-a32nx/src/localization/msfs/en-US.locPak`
+- Only change the source language file. The other language files are generated automatically from
   Localazy and any changes will be overwritten.
-- Ping in the Discord channel `#localisation` to have someone with write permission to Localazy to 
+- Ping in the Discord channel `#localisation` to have someone with write permission to Localazy to
   add the key (several ways to do that - but the permission required is powerful). Adding it is a 2min thing.
 - Do this in good time before it is merged to master
 - Translators can now start to translate this (worst case is the term is not translated and shown in English)
-- Same for removing or changing keys - do the change locally in the English source file and ping in 
+- Same for removing or changing keys - do the change locally in the English source file and ping in
   `#localisation` for someone with write permission to Localazy to remove the key or change the default text.
 
 **Remark:**
@@ -24,7 +31,7 @@ TOC:
 The update could be automated via GitHub actions (as the download is - it's basically one command) but this would
 require the write key to be available in the GitHub action. As forks have no access to GitHub secrets automating
 this would not work for forks without making the write key public which is of course a no-go.
-Alternate solutions are still investigated. 
+Alternate solutions are still investigated.
 
 ## Build Process
 
@@ -55,7 +62,7 @@ folder of the flyPad or locPak folder.
 
 It checks the JSON syntax and writes new JSON files for each language to their respective target folder:
 
-msfs locPak: 
+msfs locPak:
 `fbw-a380x/src/localization/msfs` and `out/flybywire-aircraft-a380-842/`
 
 ## Update Source File
@@ -66,11 +73,11 @@ Although an automatic update could be done, we have chosen to manually make chan
 keys).
 
 ATTENTION:<br/>
-ANY CHANGES TO THE SOURCE FILES ON LOCALAZY WILL IMMEDIATELY BE VISIBLE IN EVER NEW BUILD OF 
-THE A32NX - INDEPENDENT OF EDITION. 
+ANY CHANGES TO THE SOURCE FILES ON LOCALAZY WILL IMMEDIATELY BE VISIBLE IN EVER NEW BUILD OF
+THE A32NX - INDEPENDENT OF EDITION.
 
 ### Using Localazy CLI
-                           
+
 Install the Localazy CLI via `npm install -g @localazy/cli` and then use the following commands to upload the source.
 
 [Localazy CLI Documentation](https://localazy.com/docs/cli/command-line-options)
@@ -95,7 +102,7 @@ MSFS locPak:
 The writeKey can be found in the Localazy project settings which are accessible by the Owners/Managers of the project.
 
 ### Using the English source file and Localazy Website
-                                               
+
 #### MSFS locPak:
 
 - Make the necessary changes to the en.json (adding keys, removing key, changing default English strings)

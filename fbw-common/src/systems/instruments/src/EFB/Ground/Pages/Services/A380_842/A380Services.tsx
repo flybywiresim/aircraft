@@ -477,19 +477,19 @@ export const A380Services: React.FC = () => {
       dispatch(setGpuButtonState(ServiceButtonState.DISABLED));
       dispatch(setBaggageButtonState(ServiceButtonState.DISABLED));
       dispatch(setCateringButtonState(ServiceButtonState.DISABLED));
-      if (boarding1DoorButtonState === 1) {
+      if (main1LeftDoorOpen === 1) {
         toggleMain1LeftDoor();
       }
-      if (boarding2DoorButtonState === 1) {
+      if (main2LeftDoorOpen === 1) {
         toggleMain2LeftDoor();
       }
-      if (boarding3DoorButtonState === 1) {
+      if (upper1LeftDoorOpen === 1) {
         toggleUpper1LeftDoor();
       }
-      if (serviceDoorButtonState === 1) {
+      if (main4RightDoorOpen === 1) {
         toggleMain4RightDoor();
       }
-      if (cargo1DoorButtonState === 1) {
+      if (frontCargoDoorOpen === 1) {
         toggleFrontCargoDoor();
       }
     } else if (
