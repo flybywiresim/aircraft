@@ -10,11 +10,12 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
+import { FwcDataEvents } from '@flybywiresim/msfs-avionics-common';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;
@@ -38,8 +39,10 @@ export class LowerArea extends DisplayComponent<{
 const circlePath = (r: number, cx: number, cy: number) =>
   `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
+const SPOILERS_HIDE_DEFLECTION_BELOW_DEG = 5.15;
+
 class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars>();
+  private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars & FwcDataEvents>();
 
   private targetClass = Subject.create('');
 
@@ -60,7 +63,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
 
   private readonly spoilerExtensionVisible = MappedSubject.create(
-    ([pos, armed]) => (pos > 0.05 || armed ? 'visible' : 'hidden'),
+    ([pos, armed]) => (pos > SPOILERS_HIDE_DEFLECTION_BELOW_DEG || armed ? 'visible' : 'hidden'),
     this.spoilersCommandedPosition,
     this.spoilersArmed,
   );
@@ -445,7 +448,9 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
             class={this.speedBrakesStillExtended.map((it) =>
               it ? 'NormalStroke Amber CornerRound' : 'NormalStroke Green CornerRound',
             )}
-            visibility={this.spoilersCommandedPosition.map((p) => (p >= 0.05 ? 'inherit' : 'hidden'))}
+            visibility={this.spoilersCommandedPosition.map((p) =>
+              p >= SPOILERS_HIDE_DEFLECTION_BELOW_DEG ? 'inherit' : 'hidden',
+            )}
           />
           <path
             d="M 21.6 183.5 h 3 l -1.5 3 z"
@@ -454,6 +459,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
           />
         </g>
         <GearIndicator bus={this.props.bus} />
+        <RudderTrimIndicator bus={this.props.bus} />
       </g>
     );
   }
@@ -481,6 +487,37 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           class="NormalStroke Green CornerRound"
           d="M 18.4 204.3 h 10 l -5 5.5 z M 20.9 204.3 v 2.6 M 23.4 204.3 v 5.5 M 25.9 204.3 v 2.6"
         />
+      </g>
+    );
+  }
+}
+
+class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FwcDataEvents>();
+
+  private readonly onGround = Arinc429LocalVarConsumerSubject.create(this.sub.on('fwc_discrete_word_126_1')).map((w) =>
+    w.bitValueOr(28, false),
+  );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+  }
+
+  render(): VNode {
+    return (
+      <g visibility={'inherit'}>
+        <text x={41.2} y={184.7} class={'FontSmallest White'}>
+          RUD TRIM
+        </text>
+        <rect width="23" height="3.5" x="41" y="186" class="NormalOutline White" />
+        <line x1="52.5" y1="186" x2="52.5" y2="189.5" class="NormalOutline White" />
+        <polygon points="52.5,186.25 54,187.75 52.5,189.25 51,187.75" class="Cyan Fill Stroke" />
+        <text x={41.2} y={194.5} class={'FontSmallest Amber'}>
+          L{'\xa0'}13.0
+        </text>
+        <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
+          °
+        </text>
       </g>
     );
   }
