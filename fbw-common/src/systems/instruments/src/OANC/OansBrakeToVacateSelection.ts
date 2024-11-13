@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData, Runway } from '@flybywiresim/fbw-sdk';
 import {
+  booleanContains,
+  booleanDisjoint,
   Feature,
   FeatureCollection,
   Geometry,
-  Polygon,
-  Position,
-  booleanContains,
-  booleanDisjoint,
   lineOffset,
   lineString,
   point,
   polygon,
+  Polygon,
+  Position,
 } from '@turf/turf';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { Label, LabelStyle } from './';
+import { FmsDataStore, Label, LabelStyle } from '.';
 import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
 import {
@@ -28,9 +28,9 @@ import {
   pointToLineDistance,
 } from './OancMapUtils';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
-import { GenericAdirsEvents } from '../ND/types/GenericAdirsEvents';
+import { NavigationDatabaseService } from '@fmgc/index';
 
-const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
+export const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
 const CLAMP_DRY_STOPBAR_DISTANCE = 100; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 
@@ -38,18 +38,12 @@ const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end o
  * Utility class for brake to vacate (BTV) functions on the A380
  */
 
-export class BrakeToVacateUtils<T extends number> {
-  private readonly sub = this.bus.getSubscriber<BtvData & GenericAdirsEvents>();
-
-  private readonly remainingDistToExitArinc = Arinc429Register.empty();
-
-  private readonly remaininingDistToRwyEndArinc = Arinc429Register.empty();
+export class OansBrakeToVacateSelection<T extends number> {
+  private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData>();
 
   private readonly runwayLengthArinc = Arinc429Register.empty();
 
   private readonly runwayBearingArinc = Arinc429Register.empty();
-
-  private readonly requestedStoppingDistArinc = Arinc429Register.empty();
 
   constructor(
     private readonly bus: EventBus,
@@ -62,27 +56,6 @@ export class BrakeToVacateUtils<T extends number> {
     private readonly zoomLevelIndex?: Subscribable<number>,
     private getZoomLevelInverseScale?: () => number,
   ) {
-    this.remainingDistToExit.sub((v) => {
-      this.remainingDistToExitArinc.setValue(v < 0 ? 0 : v);
-      this.remainingDistToExitArinc.setSsm(
-        v < 0 ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
-      );
-      this.remainingDistToExitArinc.writeToSimVar('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT');
-    });
-
-    this.remaininingDistToRwyEnd.sub((v) => {
-      this.remaininingDistToRwyEndArinc.setValue(v < 0 ? 0 : v);
-      this.remaininingDistToRwyEndArinc.setSsm(
-        v < 0 ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
-      );
-      this.remaininingDistToRwyEndArinc.writeToSimVar('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END');
-    });
-
-    this.sub
-      .on('groundSpeed')
-      .atFrequency(2)
-      .handle((value) => this.groundSpeed.set(value));
-
     this.dryStoppingDistance.sub(() => this.drawBtvLayer());
     this.wetStoppingDistance.sub(() => this.drawBtvLayer());
     this.liveStoppingDistance.sub(() => this.drawBtvLayer());
@@ -93,13 +66,10 @@ export class BrakeToVacateUtils<T extends number> {
     this.clearSelection();
   }
 
-  private readonly groundSpeed = Arinc429Register.empty();
-
   /** Updated during deceleration on the ground. Counted from touchdown distance (min. 400m).  */
-  private readonly remainingDistToExit = Subject.create<number>(0);
-
-  /** Updated during deceleration on the ground. Counted from touchdown distance (min. 400m).  */
-  private readonly remaininingDistToRwyEnd = Subject.create<number>(0);
+  private readonly remaininingDistToRwyEnd = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('oansRemainingDistToRwyEnd'),
+  );
 
   readonly btvRunway = Subject.create<string | null>(null);
 
@@ -123,17 +93,6 @@ export class BrakeToVacateUtils<T extends number> {
 
   private btvExitPosition: Position;
 
-  private btvPathGeometry: Position[];
-
-  /** Stopping distance for dry rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
-  private readonly dryStoppingDistance = ConsumerSubject.create(this.sub.on('dryStoppingDistance').whenChanged(), 0);
-
-  /** Stopping distance for wet rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
-  private readonly wetStoppingDistance = ConsumerSubject.create(this.sub.on('wetStoppingDistance').whenChanged(), 0);
-
-  /** Live remaining stopping distance during deceleration, in meters. Null if not set. Counted from actual aircraft position. */
-  private readonly liveStoppingDistance = ConsumerSubject.create(this.sub.on('stopBarDistance').whenChanged(), 0);
-
   /** "runway ahead" advisory was triggered */
   private rwyAheadTriggered: boolean = false;
 
@@ -153,9 +112,52 @@ export class BrakeToVacateUtils<T extends number> {
 
   private readonly rwyAheadArinc = Arinc429Register.empty();
 
+  private btvPathGeometry: Position[];
+
+  /** Stopping distance for dry rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
+  private readonly dryStoppingDistance = ConsumerSubject.create(this.sub.on('dryStoppingDistance').whenChanged(), 0);
+
+  /** Stopping distance for wet rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
+  private readonly wetStoppingDistance = ConsumerSubject.create(this.sub.on('wetStoppingDistance').whenChanged(), 0);
+
+  /** Live remaining stopping distance during deceleration, in meters. Null if not set. Counted from actual aircraft position. */
+  private readonly liveStoppingDistance = ConsumerSubject.create(this.sub.on('stopBarDistance').whenChanged(), 0);
+
   private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
   private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
   private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
+
+  private readonly groundSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed_1'));
+  private readonly groundSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed_2'));
+  private readonly groundSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed_3'));
+  private readonly groundSpeed = MappedSubject.create(
+    ([gs1, gs2, gs3]) => {
+      if (gs1.isNormalOperation()) {
+        return gs1;
+      } else if (gs2.isNormalOperation()) {
+        return gs2;
+      } else {
+        return gs3;
+      }
+    },
+    this.groundSpeed1,
+    this.groundSpeed2,
+    this.groundSpeed3,
+  );
+
+  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_1'));
+  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_2'));
+  private readonly onGround = MappedSubject.create(
+    ([g1, g2]) => {
+      if (g1.isNormalOperation()) {
+        return g1.bitValue(11);
+      } else {
+        return g2.bitValueOr(11, false);
+      }
+    },
+    this.lgciuDiscreteWord2_1,
+    this.lgciuDiscreteWord2_2,
+  );
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
@@ -198,11 +200,10 @@ export class BrakeToVacateUtils<T extends number> {
     this.btvRunwayLda.set(lda);
     this.btvRunwayBearingTrue.set(heading);
     this.btvRunway.set(runway);
-    this.remaininingDistToRwyEnd.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
-    this.remainingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', runway, true);
+    pub.pub('oansSelectedLandingRunway', runway);
+    pub.pub('oansThresholdPositions', [this.btvThresholdPosition, this.btvOppositeThresholdPosition], true);
 
     this.runwayLengthArinc.setValue(lda);
     this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -261,6 +262,7 @@ export class BrakeToVacateUtils<T extends number> {
       return;
     }
     this.btvExitPosition = exitDistFromCenterLine1 < exitDistFromCenterLine2 ? exitLoc1 : exitLoc2;
+    this.bus.getPublisher<FmsOansData>().pub('oansExitPosition', this.btvExitPosition, true);
 
     // Subtract 400m due to distance of touchdown zone from threshold
     const exitDistance =
@@ -268,10 +270,6 @@ export class BrakeToVacateUtils<T extends number> {
       MIN_TOUCHDOWN_ZONE_DISTANCE;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
-    this.requestedStoppingDistArinc.setValue(exitDistance);
-    this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
-
     this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/${exit}`, true);
 
     this.btvPathGeometry = Array.from(feature.geometry.coordinates as Position[]);
@@ -301,11 +299,10 @@ export class BrakeToVacateUtils<T extends number> {
     this.btvRunwayLda.set(lda);
     this.btvRunwayBearingTrue.set(heading);
     this.btvRunway.set(runway);
-    this.remaininingDistToRwyEnd.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
-    this.remainingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', runway, true);
+    pub.pub('oansSelectedLandingRunway', runway);
+    pub.pub('oansThresholdPositions', [this.btvThresholdPosition, this.btvOppositeThresholdPosition], true);
 
     this.runwayLengthArinc.setValue(lda);
     this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -316,26 +313,50 @@ export class BrakeToVacateUtils<T extends number> {
     this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
   }
 
-  runwayIsSet() {
-    return (
-      this.btvThresholdPosition.length !== 0 &&
-      this.btvOppositeThresholdPosition.length !== 0 &&
-      this.btvRunway.get() !== null
-    );
+  public async setBtvRunwayFromFmsRunway(fmsDataStore: FmsDataStore): Promise<[Runway, Coordinates]> {
+    const destination = fmsDataStore.destination.get();
+    const rwyIdent = fmsDataStore.landingRunway.get();
+    if (destination && rwyIdent) {
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+      const arps = await db.getAirports([destination]);
+      const arpCoordinates = arps[0].location;
+
+      const runways = await db.getRunways(destination);
+      const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+      const oppositeThreshold = placeBearingDistance(
+        landingRunwayNavdata.thresholdLocation,
+        landingRunwayNavdata.bearing,
+        landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+      );
+      const localThr: Position = [0, 0];
+      const localOppThr: Position = [0, 0];
+      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
+
+      this.selectRunwayFromNavdata(
+        rwyIdent,
+        landingRunwayNavdata.length,
+        landingRunwayNavdata.bearing,
+        localThr,
+        localOppThr,
+      );
+
+      return [landingRunwayNavdata, arpCoordinates];
+    }
   }
 
   selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
     this.btvExitPosition = btvExitPosition;
 
-    // Account for touchdown zone distance
-    const correctedStoppingDistance = reqStoppingDistance - MIN_TOUCHDOWN_ZONE_DISTANCE;
+    // Requested stopping distance measured from runway threshold (i.e. LDA)
+    const correctedStoppingDistance = reqStoppingDistance;
 
-    this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', 'N/A');
-    this.requestedStoppingDistArinc.setValue(correctedStoppingDistance);
-    this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
+    const pub = this.bus.getPublisher<FmsOansData>();
+    pub.pub('oansSelectedExit', 'N/A');
+    pub.pub('oansExitPosition', this.btvExitPosition, true);
 
-    this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/MANUAL`, true);
+    pub.pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/MANUAL`, true);
 
     this.btvExitDistance.set(correctedStoppingDistance);
     this.btvExit.set('N/A');
@@ -355,8 +376,10 @@ export class BrakeToVacateUtils<T extends number> {
     this.drawBtvLayer();
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', null, true);
+    pub.pub('oansSelectedLandingRunway', null);
     pub.pub('oansSelectedExit', null, true);
+    pub.pub('oansThresholdPositions', [], true);
+    pub.pub('oansExitPosition', [], true);
     pub.pub('ndBtvMessage', '', true);
 
     this.runwayLengthArinc.setValue(0);
@@ -366,65 +389,6 @@ export class BrakeToVacateUtils<T extends number> {
     this.runwayBearingArinc.setValue(0);
     this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
     this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
-
-    this.requestedStoppingDistArinc.setValue(0);
-    this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-    this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
-
-    this.remainingDistToExit.set(-1);
-    this.remaininingDistToRwyEnd.set(-1);
-  }
-
-  updateRemainingDistances(pos: Position) {
-    // Only update below 600ft AGL, and in landing FMGC phase
-    const ra1 = this.radioAltitude1.get();
-    const ra2 = this.radioAltitude2.get();
-    const ra3 = this.radioAltitude3.get();
-
-    if (
-      !(ra1.valueOr(2500) < 600 || ra2.valueOr(2500) < 600 || ra3.valueOr(2500) < 600) ||
-      this.fwsFlightPhase.get() < 9 ||
-      this.fwsFlightPhase.get() > 11
-    ) {
-      this.remaininingDistToRwyEnd.set(-1);
-      this.remainingDistToExit.set(-1);
-      return;
-    }
-
-    if (this.btvThresholdPosition && this.btvThresholdPosition.length > 0) {
-      if (this.btvOppositeThresholdPosition && this.btvOppositeThresholdPosition.length > 0) {
-        const rwyEndDistanceFromTdz =
-          pointDistance(
-            this.btvThresholdPosition[0],
-            this.btvThresholdPosition[1],
-            this.btvOppositeThresholdPosition[0],
-            this.btvOppositeThresholdPosition[1],
-          ) - MIN_TOUCHDOWN_ZONE_DISTANCE;
-
-        const rwyEndDistance = pointDistance(
-          pos[0],
-          pos[1],
-          this.btvOppositeThresholdPosition[0],
-          this.btvOppositeThresholdPosition[1],
-        );
-
-        this.remaininingDistToRwyEnd.set(MathUtils.round(Math.min(rwyEndDistanceFromTdz, rwyEndDistance), 0.1));
-      }
-
-      if (this.btvExitPosition && this.btvExitPosition.length > 0) {
-        const exitDistanceFromTdz =
-          pointDistance(
-            this.btvThresholdPosition[0],
-            this.btvThresholdPosition[1],
-            this.btvExitPosition[0],
-            this.btvExitPosition[1],
-          ) - MIN_TOUCHDOWN_ZONE_DISTANCE;
-
-        const exitDistance = pointDistance(pos[0], pos[1], this.btvExitPosition[0], this.btvExitPosition[1]);
-
-        this.remainingDistToExit.set(MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1));
-      }
-    }
   }
 
   drawBtvPath() {
@@ -605,13 +569,18 @@ export class BrakeToVacateUtils<T extends number> {
     }
 
     // On ground & above 25kts: STOP line
-    if (this.liveStoppingDistance.get() > 0 && this.aircraftOnGround.get() && this.groundSpeed.value > 25) {
-      const liveRunOverCondition = this.remaininingDistToRwyEnd.get() - this.liveStoppingDistance.get() <= 0;
+    const distToRwyEnd = this.remaininingDistToRwyEnd.get();
+    if (
+      this.liveStoppingDistance.get() > 0 &&
+      this.aircraftOnGround.get() &&
+      this.groundSpeed.get().value > 25 &&
+      distToRwyEnd.ssm === Arinc429SignStatusMatrix.NormalOperation
+    ) {
+      const liveRunOverCondition = distToRwyEnd.value - this.liveStoppingDistance.get() <= 0;
       // If runover predicted, draw stop bar a little behind the runway end
       const distanceToDraw =
-        liveRunOverCondition &&
-        this.liveStoppingDistance.get() - this.remaininingDistToRwyEnd.get() > CLAMP_DRY_STOPBAR_DISTANCE
-          ? this.remaininingDistToRwyEnd.get() + 100
+        liveRunOverCondition && this.liveStoppingDistance.get() - distToRwyEnd.value > CLAMP_DRY_STOPBAR_DISTANCE
+          ? distToRwyEnd.value + 100
           : this.liveStoppingDistance.get();
       const stopLinePoint = fractionalPointAlongLine(
         this.btvThresholdPosition[0],
@@ -700,17 +669,17 @@ export class BrakeToVacateUtils<T extends number> {
     aircraftBearing: number,
     runwayFeatures: FeatureCollection<Geometry, AmdbProperties>,
   ): void {
-    // Only update every 10 position update, computation is around 4ms
+    // Only update every 10th position update, computation is around 4ms
     this.skip++;
     if (this.skip % 10 !== 0) {
       return;
     }
 
     if (
-      this.aircraftOnGround.get() === false ||
-      this.groundSpeed.ssm !== Arinc429SignStatusMatrix.NormalOperation ||
-      this.groundSpeed.value > 40 ||
-      this.groundSpeed.value < 1
+      this.onGround.get() === false ||
+      this.groundSpeed.get().ssm !== Arinc429SignStatusMatrix.NormalOperation ||
+      this.groundSpeed.get().value > 40 ||
+      this.groundSpeed.get().value < 1
     ) {
       // Transmit no advisory
       this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
@@ -724,7 +693,7 @@ export class BrakeToVacateUtils<T extends number> {
     // Warn 7s before entering the runway area: Draw area from aircraft nose to 7s in front of aircraft (with a/c width), check if intersects with runway geometry
     // Only available with AMDB data atm, i.e. Navigraph sub
     const distNose = 73 / 2 / MathUtils.METRES_TO_NAUTICAL_MILES;
-    const dist7Sec = (this.groundSpeed.value / 60 / 60) * 7 + distNose; // Add distance to aircraft front
+    const dist7Sec = (this.groundSpeed.get().value / 60 / 60) * 7 + distNose; // Add distance to aircraft front
     const nosePosition = placeBearingDistance(globalPos, aircraftBearing, distNose);
     const predictionHorizon = placeBearingDistance(globalPos, aircraftBearing, dist7Sec);
     const line = lineString([
