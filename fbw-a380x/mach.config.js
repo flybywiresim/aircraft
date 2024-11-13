@@ -28,6 +28,7 @@ module.exports = {
     typecheckingPlugin(),
   ],
   instruments: [
+    msfsAvionicsInstrument('AtcMailbox'),
     msfsAvionicsInstrument('Clock'),
     msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('FCU', 'FcuBaseInstrument.ts'),
