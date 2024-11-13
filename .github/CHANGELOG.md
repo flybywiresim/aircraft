@@ -48,6 +48,7 @@
 1. [A380X/PRESS] Add pressurization system failures failures ecam messages - @mjuhe (Miquel Juhe)
 1. [A380X/MFD] Fix ETA and add TOD prediction in PERF page - @BravoMike99 (bruno_pt99)
 1. [A380/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
+1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 
 ## 0.12.0
 
