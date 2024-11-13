@@ -22,7 +22,6 @@ import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
-import { MagVar } from '@microsoft/msfs-sdk';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
@@ -47,7 +46,8 @@ export interface SerializedFlightPlanLeg {
 
 export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
-  Origin = 1 << 1,
+  PendingDirectToTurningPoint = 1 << 1,
+  Origin = 1 << 2,
 }
 
 export interface LegCalculations {
@@ -325,25 +325,6 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         magneticCourse,
       },
       'T-P',
-      '',
-      undefined,
-    );
-  }
-
-  static directToTurnStart(segment: EnrouteSegment, location: Coordinates, bearing: DegreesTrue): FlightPlanLeg {
-    const magVar = MagVar.get(location.lat, location.long);
-
-    return new FlightPlanLeg(
-      segment,
-      {
-        procedureIdent: '',
-        type: LegType.FC,
-        overfly: false,
-        waypoint: WaypointFactory.fromPlaceBearingDistance('T-P', location, 0.1, bearing),
-        magneticCourse: A32NX_Util.trueToMagnetic(bearing, magVar),
-        length: 0.1,
-      },
-      '',
       '',
       undefined,
     );
