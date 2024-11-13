@@ -567,6 +567,8 @@
     },
     "Title": "Schnelleinstellungen"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Über"
@@ -740,6 +742,7 @@
       "Blue": "Blau",
       "Brightness": "Helligkeit",
       "Dark": "Dunkel",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Sprache",
       "Light": "Hell",
       "Local": "Lokal",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC und Lokal"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",
