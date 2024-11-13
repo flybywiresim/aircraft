@@ -1383,7 +1383,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2] + simData.zeta_trim_pos;
+  prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2] + 0.85 * simData.zeta_trim_pos;
   prims[primIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.vert_acc_1_g = 0;
@@ -1607,7 +1607,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -50. * rightSpoiler2Position;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
-  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg = -simInput.inputs[2] + simData.zeta_trim_pos;
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg = -simInput.inputs[2] + 0.85 * simData.zeta_trim_pos;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_trim_pos_deg = -25.5 * simData.zeta_trim_pos;
 
   if (secIndex == 0) {
@@ -2613,7 +2613,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // set rudder pedals position
   idRudderPedalPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]))));
-  idRudderPedalAnimationPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]) + (100. * simData.zeta_trim_pos))));
+  idRudderPedalAnimationPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]) + (85. * simData.zeta_trim_pos))));
 
   // provide tracking mode state
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
