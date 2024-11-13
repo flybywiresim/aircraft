@@ -685,7 +685,9 @@ export class FwsMemos {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.paxOxyMasksDeployed,
       whichCodeToReturn: () => [0],
-      codesToReturn: [!this.fws.aircraftOnGround.get() && this.fws.excessPressure.get() ? '350000001' : '350000002'],
+      codesToReturn: [
+        !this.fws.aircraftOnGround.get() && this.fws.excessCabinAltitude.get() ? '350000001' : '350000002',
+      ],
       memoInhibit: () => false,
       failure: 0,
       sysPage: SdPages.None,
