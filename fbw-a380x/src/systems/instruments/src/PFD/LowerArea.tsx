@@ -515,18 +515,18 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly rudderTrim3Order = Arinc429LocalVarConsumerSubject.create(this.sub.on('sec_rudder_trim_order_3'));
 
   private readonly rudderTrimOrder = MappedSubject.create(
-    ([eng1, order1, order3]) => (eng1 ? order1 : order3),
+    ([eng1, order1, order3]) => (eng1 ? order1.valueOr(0) : order3.valueOr(0)),
     this.rudderTrim1Engaged,
     this.rudderTrim1Order,
     this.rudderTrim3Order,
   );
 
   private readonly rudderTrimOrderText = this.rudderTrimOrder.map(
-    (v) => `${v.valueOr(0) <= 0 ? 'L' : 'R'}${v.valueOr(0).toFixed(1).padStart(5, '\xa0')}`,
+    (v) => `${v >= 0 || Math.abs(v) < 0.01 ? 'L' : 'R'}${Math.abs(v).toFixed(1).padStart(5, '\xa0')}`,
   );
 
   private readonly rudderTrimOrderTextClass = this.rudderTrimOrder.map((v) => {
-    const absTrim = Math.abs(v.valueOr(0));
+    const absTrim = Math.abs(v);
     if (absTrim < 0.3) {
       return 'FontSmallest White';
     } else if (absTrim < 3.6) {
@@ -534,6 +534,11 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     } else {
       return 'FontSmallest Red';
     }
+  });
+
+  private readonly rudderTrimOrderPolygonPoints = this.rudderTrimOrder.map((v) => {
+    const xOffset = -11.5 * (v / 25.5);
+    return `${52.5 + xOffset},186.25 ${54 + xOffset},187.75 ${52.5 + xOffset},189.25 ${51 + xOffset},187.75`;
   });
 
   onAfterRender(node: VNode): void {
@@ -548,7 +553,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         </text>
         <rect width="23" height="3.5" x="41" y="186" class="NormalOutline White" />
         <line x1="52.5" y1="186" x2="52.5" y2="189.5" class="NormalOutline White" />
-        <polygon points="52.5,186.25 54,187.75 52.5,189.25 51,187.75" class="Cyan Fill Stroke" />
+        <polygon points={this.rudderTrimOrderPolygonPoints} class="Cyan Fill Stroke" />
         <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
           {this.rudderTrimOrderText}
         </text>
