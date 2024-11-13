@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Coordinates, DegreesTrue } from 'msfs-geo';
+import { Coordinates, DegreesMagnetic } from 'msfs-geo';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 
@@ -12,16 +12,16 @@ export interface DataInterface {
 
   createPlaceBearingPlaceBearingWaypoint(
     place1: Fix,
-    bearing1: DegreesTrue,
+    bearing1: DegreesMagnetic,
     place2: Fix,
-    bearing2: DegreesTrue,
+    bearing2: DegreesMagnetic,
     stored?: boolean,
     ident?: string,
   ): PilotWaypoint;
 
   createPlaceBearingDistWaypoint(
     place: Fix,
-    bearing: DegreesTrue,
+    bearing: DegreesMagnetic,
     distance: NauticalMiles,
     stored?: boolean,
     ident?: string,
