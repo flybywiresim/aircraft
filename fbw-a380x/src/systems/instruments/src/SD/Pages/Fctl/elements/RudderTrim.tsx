@@ -1,3 +1,5 @@
+import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
+import { deflectionToXOffset } from 'instruments/src/SD/Pages/Fctl/elements/HorizontalDeflectionIndicator';
 import React, { FC } from 'react';
 
 export enum RudderPosition {
@@ -11,13 +13,17 @@ interface RudderTrimProps {
 }
 
 export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
-  const deflectionInfoValid = true;
-  const rudderTrim = 0;
+  const sec1RudderStatusWord = useArinc429Var('L:A32NX_SEC_1_RUDDER_STATUS_WORD');
+  const sec3RudderStatusWord = useArinc429Var('L:A32NX_SEC_3_RUDDER_STATUS_WORD');
+  const secSourceForTrim = sec1RudderStatusWord.bitValueOr(28, false) ? 1 : 3;
 
-  const deflectionXValue = 0;
+  const deflectionInfoValid = sec1RudderStatusWord.bitValueOr(28, false) || sec3RudderStatusWord.bitValueOr(28, false);
+  const rudderTrim = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_TRIM_ORDER`).valueOr(0);
 
-  const powerSource1Avail = true;
-  const powerSource2Avail = true;
+  const deflectionXValue = deflectionToXOffset(-rudderTrim);
+
+  const powerSource1Avail = useSimVar(`L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED`, 'boolean', 1000);
+  const powerSource2Avail = useSimVar(`L:A32NX_ELEC_DC_1_BUS_IS_POWERED`, 'boolean', 1000);
 
   const [pitchIntegral, pitchFractional] = Math.abs(rudderTrim).toFixed(1).split('.');
 

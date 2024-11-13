@@ -10,12 +10,17 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429LocalVarConsumerSubject, ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+  ArincEventBus,
+  MathUtils,
+} from '@flybywiresim/fbw-sdk';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
-import { FwcDataEvents } from '@flybywiresim/msfs-avionics-common';
+import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;
@@ -493,11 +498,43 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FwcDataEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FwcDataEvents & SecDataEvents>();
 
   private readonly onGround = Arinc429LocalVarConsumerSubject.create(this.sub.on('fwc_discrete_word_126_1')).map((w) =>
     w.bitValueOr(28, false),
   );
+
+  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+
+  private readonly rudderTrim1Engaged = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_status_word_1'),
+  ).map((w) => w.bitValueOr(28, false));
+
+  private readonly rudderTrim1Order = Arinc429LocalVarConsumerSubject.create(this.sub.on('sec_rudder_trim_order_1'));
+
+  private readonly rudderTrim3Order = Arinc429LocalVarConsumerSubject.create(this.sub.on('sec_rudder_trim_order_3'));
+
+  private readonly rudderTrimOrder = MappedSubject.create(
+    ([eng1, order1, order3]) => (eng1 ? order1 : order3),
+    this.rudderTrim1Engaged,
+    this.rudderTrim1Order,
+    this.rudderTrim3Order,
+  );
+
+  private readonly rudderTrimOrderText = this.rudderTrimOrder.map(
+    (v) => `${v.valueOr(0) <= 0 ? 'L' : 'R'}${v.valueOr(0).toFixed(1).padStart(5, '\xa0')}`,
+  );
+
+  private readonly rudderTrimOrderTextClass = this.rudderTrimOrder.map((v) => {
+    const absTrim = Math.abs(v.valueOr(0));
+    if (absTrim < 0.3) {
+      return 'FontSmallest White';
+    } else if (absTrim < 3.6) {
+      return 'FontSmallest Amber';
+    } else {
+      return 'FontSmallest Red';
+    }
+  });
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -512,8 +549,8 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         <rect width="23" height="3.5" x="41" y="186" class="NormalOutline White" />
         <line x1="52.5" y1="186" x2="52.5" y2="189.5" class="NormalOutline White" />
         <polygon points="52.5,186.25 54,187.75 52.5,189.25 51,187.75" class="Cyan Fill Stroke" />
-        <text x={41.2} y={194.5} class={'FontSmallest Amber'}>
-          L{'\xa0'}13.0
+        <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
+          {this.rudderTrimOrderText}
         </text>
         <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
           °

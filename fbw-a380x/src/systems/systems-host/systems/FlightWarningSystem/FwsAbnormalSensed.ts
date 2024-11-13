@@ -1665,6 +1665,18 @@ export class FwsAbnormalSensed {
       sysPage: -1,
       inopSysAllPhases: () => [],
     },
+    271800004: {
+      // RUDDER TRIM NOT IN TO RANGE
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.rudderTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.fws.rudderTrimNotToWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
     271800005: {
       // SPD BRK NOT RETRACTED
       flightPhaseInhib: [5, 6, 7, 8, 9, 10],
@@ -1677,6 +1689,7 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
+
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],

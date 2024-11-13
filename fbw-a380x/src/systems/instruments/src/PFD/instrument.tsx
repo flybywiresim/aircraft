@@ -10,7 +10,7 @@ import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
 import './style.scss';
-import { RopRowOansPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
+import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 
 class A380X_PFD extends BaseInstrument {
@@ -34,7 +34,11 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fmsDataPublisher: FmsDataPublisher;
 
+  private readonly fwsPublisher = new FwcPublisher(this.bus);
+
   private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
+
+  private readonly secPublisher = new SecPublisher(this.bus);
 
   private readonly tawsPublisher = new TawsPublisher(this.bus);
 
@@ -55,7 +59,9 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
     this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
     this.backplane.addPublisher('FmsDataPublisher', this.fmsDataPublisher);
+    this.backplane.addPublisher('FwsPublisher', this.fwsPublisher);
     this.backplane.addPublisher('RopRowOansPublisher', this.ropRowOansPublisher);
+    this.backplane.addPublisher('SecPublisher', this.secPublisher);
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
   }
