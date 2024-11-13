@@ -10,7 +10,6 @@ import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterfac
 import { Coordinates } from 'msfs-geo';
 import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { MagVar } from '@microsoft/msfs-sdk';
 
 export class WaypointEntryUtils {
   /**
@@ -156,7 +155,7 @@ export class WaypointEntryUtils {
    * @param fms the FMS
    * @param {string} str place-bearing/place-bearing
    *
-   * @returns place and true bearing * 2
+   * @returns place and magnetic bearing
    */
   static async parsePbx(fms: DisplayInterface & DataInterface, str: string): Promise<[Fix, number, Fix, number]> {
     const pbx = str.match(/^([^\-/]+)-([0-9]{1,3})\/([^\-/]+)-([0-9]{1,3})$/);
@@ -173,11 +172,9 @@ export class WaypointEntryUtils {
     }
 
     const place1 = await WaypointEntryUtils.parsePlace(fms, pbx[1]);
-    const magVar1 = MagVar.get(place1.location.lat, place1.location.long);
     const place2 = await WaypointEntryUtils.parsePlace(fms, pbx[3]);
-    const magVar2 = MagVar.get(place2.location.lat, place2.location.long);
 
-    return [place1, A32NX_Util.magneticToTrue(brg1, magVar1), place2, A32NX_Util.magneticToTrue(brg2, magVar2)];
+    return [place1, brg1, place2, brg2];
   }
 
   /**
@@ -197,9 +194,8 @@ export class WaypointEntryUtils {
 
     if (WaypointEntryUtils.isPlaceFormat(place)) {
       const wp = await WaypointEntryUtils.parsePlace(fms, place);
-      const magVar = Facilities.getMagVar(wp.location.lat, wp.location.long);
 
-      return [wp, A32NX_Util.magneticToTrue(brg, magVar), dist];
+      return [wp, brg, dist];
     }
 
     throw new FmsError(FmsErrorType.FormatError);
