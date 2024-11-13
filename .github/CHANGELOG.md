@@ -47,6 +47,8 @@
 1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
 1. [RA] Add direct coupling and interrupted antenna cable failures to RAs - @beheh (Benedict Etzel)
 1. [A32NX/TELEX] Keep flight number set even if already taken - @BenJuan26 (BenJuan26)
+1. [HYD] Placeholder inhibit logic for electrical backup on ground - @Crocket63 (crocket)
+1. [A380X/PRESS] Add pressurization system failures failures ecam messages - @mjuhe (Miquel Juhe)
 
 ## 0.12.0
 
