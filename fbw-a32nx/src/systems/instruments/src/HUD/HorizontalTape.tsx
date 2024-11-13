@@ -146,29 +146,38 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
             this.flightPhase = fp;
             //onGround
-            if(this.flightPhase <= 2 || this.flightPhase >= 9){
+            if(this.flightPhase <= 4 || this.flightPhase >= 8){
+                this.headingTicksVisibility.set("block");  
+            }
+            //inFlight
+            if(this.flightPhase > 4 && this.flightPhase < 8){
+                this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
                 if(this.declutterMode == 2 ){
                     this.headingTicksVisibility.set("none");
                 }
                 if(this.declutterMode < 2 ){
                     this.headingTicksVisibility.set("block");
-                }
-            }
-            //inFlight
-            if(this.flightPhase > 2 && this.flightPhase <= 8){
-                this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-                this.headingTicksVisibility.set("block");    
+                } 
             }
         });
 
         sub.on('declutterMode').whenChanged().handle((value) => {
             this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
             this.declutterMode = value;    
-            if(this.declutterMode > 1 ){
-                this.headingTicksVisibility.set("none");
-            }else{
-                this.headingTicksVisibility.set("block");
-            }    
+            //onGround
+            if(this.flightPhase <= 4 || this.flightPhase >= 8){
+                this.headingTicksVisibility.set("block");  
+            }
+            //inFlight
+            if(this.flightPhase > 4 && this.flightPhase < 8){
+                this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+                if(this.declutterMode == 2 ){
+                    this.headingTicksVisibility.set("none");
+                }
+                if(this.declutterMode < 2 ){
+                    this.headingTicksVisibility.set("block");
+                } 
+            }   
         }); 
 
         sub.on('heading').withArinc429Precision(2).handle((newVal) => {

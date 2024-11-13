@@ -27,7 +27,7 @@ interface TcasState {
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
     private flightPhase = -1;
     private declutterMode = 0;
-    private crosswindMode = false;
+    private onGround = true;
     private sVisibility = Subject.create<String>('');
 
 
@@ -62,27 +62,27 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         super.onAfterRender(node);
 
         const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents >();
-        
-        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-            this.flightPhase = fp;
-            if(fp < 5 || fp >= 9){
-              this.sVisibility.set("none");
-            }
-            if(fp > 4 && fp < 9){
-              this.sVisibility.set("block");
+
+        sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+            this.onGround = value;
+            if(this.onGround){
+                this.sVisibility.set("none"); 
+            }else{
+            (this.declutterMode == 2 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
             }
           });
+
+
         
-          sub.on('declutterMode').whenChanged().handle((value) => {
-              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-              this.declutterMode = value;
-              if(this.declutterMode == 2 ){
-                this.sVisibility.set("none");
-              }
-              if(this.declutterMode < 2 && (this.flightPhase > 4 && this.flightPhase < 9)){
-                this.sVisibility.set("block");
-                }
-          }); 
+        sub.on('declutterMode').whenChanged().handle((value) => {
+            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+            this.declutterMode = value;
+            if(this.onGround){
+                this.sVisibility.set("none"); 
+            }else{
+            (this.declutterMode == 2 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
+            }
+        }); 
 
         sub.on('tcasState').whenChanged().handle((s) => {
             this.tcasState.tcasState = s;
@@ -143,7 +143,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                     this.sVisibility.set("none");
                 }
                 if(this.declutterMode < 2 ){
-                    if(absVSpeed > 10){
+                    if(absVSpeed > 20){
                         this.sVisibility.set("block");
                     }else{
                         this.sVisibility.set("none");

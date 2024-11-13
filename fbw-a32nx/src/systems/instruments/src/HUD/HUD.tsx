@@ -47,6 +47,35 @@ import { Layer } from '../MsfsAvionicsCommon/Layer';
 // | 10     | 2nd ENG SHUTDOWN |                 |       6    |   Go Around       taxi
 // | &gt; 1 | 5 MIN AFTER      |                 |       7    |   Done  (auto brk off or 30kts)
 
+//           finalGnd=
+//            TO pwr+                                                                                                                
+//           | onGnd |  xwnd | dec0 | dec1 | dec2 |
+//           | 0 | 1 | 0 | 1 |      |      |      |
+//           |---|---|---|---|------|------|------|
+//           finalGnd 1 xwnd on dec != 2
+//     xSpd  | 1 | 1 | 0 | 1 |   1  |   0  |   0  |    108
+//     xSpd  | 1 | 1 | 0 | 1 |   0  |   1  |   0  |    106
+//           finalGnd 1 xwnd on dec == 2
+//     xSpd  | 1 | 1 | 0 | 1 |   0  |   0  |   1  |    105
+
+//           finalGnd 1 xwnd off dec != 2
+//     spd   | 1 | 1 | 1 | 0 |   1  |   0  |   0  |    116                    
+//     spd   | 1 | 1 | 1 | 0 |   0  |   1  |   0  |    114  
+//           finalGnd 1 xwnd off dec == 2
+//     spd   | 1 | 1 | 1 | 0 |   0  |   0  |   1  |    113           
+
+//           finalGnd 0 xwnd on dec != 2
+//    xAlt   | 1 | 0 | 0 | 1 |   1  |   0  |   0  |    76     
+//    xAlt   | 1 | 0 | 0 | 1 |   0  |   1  |   0  |    74   
+//           finalGnd 0 xwnd on dec == 2
+//    xAlt   | 1 | 0 | 0 | 1 |   0  |   0  |   1  |    73     
+
+//           finalGnd 0 xwnd off dec != 2
+//    alt    | 1 | 0 | 1 | 0 |   1  |   0  |   0  |    84                    
+//    alt    | 1 | 0 | 1 | 0 |   0  |   1  |   0  |    82    
+//           finalGnd 0 xwnd off dec == 2
+//    alt    | 1 | 0 | 1 | 0 |   0  |   0  |   1  |    81     
+
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
@@ -62,6 +91,10 @@ interface HUDProps extends ComponentProps {
 export class HUDComponent extends DisplayComponent<HUDProps> {
     private flightPhase = -1;
     private declutterMode = 0;
+    private bitMask = 0;
+    private onPower = false;
+    private finalGnd = false;
+    private onGround = true;
     private xwndMode = false;
     private sSpdXwndModeOn = Subject.create<String>('');
     private sSpdXwndModeOff = Subject.create<String>('');
@@ -98,6 +131,109 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         this.failuresConsumer = new FailuresConsumer('A32NX');
 
     }
+
+    private getBitMask(gnd: boolean, xwndMode: boolean, decclutterMode: number ) : void{
+        const nArr = [];
+        let n = -1;
+        nArr[0] = 1;
+        (gnd) ? nArr[1] = 1 : nArr[1] = 0;
+        (xwndMode) ? nArr[2] = 0 : nArr[2] = 1;
+        (xwndMode) ? nArr[3] = 1 : nArr[3] = 0;
+        (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
+        (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
+        (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
+        this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
+
+
+          //----------
+        //finalGnd 1 xwnd on  dec != 2     
+        if(this.bitMask == 108 || this.bitMask == 106) {
+            this.sAltXwndModeOn.set('block');
+            this.sAltXwndModeOff.set('none');
+            this.sSpdXwndModeOn.set('block');
+            this.sSpdXwndModeOff.set('none');
+            this.altTapeMaskFill = "noFill";
+            this.windIndicator.set('block');
+        }
+        //finalGnd 1 xwnd on  dec == 2          
+        if(this.bitMask == 105 ) {
+            this.sAltXwndModeOn.set('block');
+            this.sAltXwndModeOff.set('none');
+            this.sSpdXwndModeOn.set('block');
+            this.sSpdXwndModeOff.set('none');
+            this.altTapeMaskFill = "noFill";
+            this.windIndicator.set('block');
+        }   
+
+          //----------
+        //finalGnd 1 xwnd off  dec != 2     
+        if(this.bitMask == 116 || this.bitMask == 114) {
+            this.sAltXwndModeOn.set('none');
+            this.sAltXwndModeOff.set('block');
+            this.sSpdXwndModeOn.set('none');
+            this.sSpdXwndModeOff.set('block');
+            this.altTapeMaskFill = "BackgroundFill";
+            this.windIndicator.set('block');
+        }
+        //finalGnd 1 xwnd off  dec == 2          
+        if(this.bitMask == 113 ) {
+            this.sAltXwndModeOn.set('none');
+            this.sAltXwndModeOff.set('block');
+            this.sSpdXwndModeOn.set('none');
+            this.sSpdXwndModeOff.set('block');
+            this.altTapeMaskFill = "BackgroundFill";
+            this.windIndicator.set('block');
+        }     
+
+        
+        //----------
+        //finalGnd 0 xwnd on  dec != 2     
+        if(this.bitMask == 74 || this.bitMask == 76) {
+            this.sAltXwndModeOn.set('none');
+            this.sAltXwndModeOff.set('none');
+            this.sSpdXwndModeOn.set('block');
+            this.sSpdXwndModeOff.set('none'); 
+            this.altTapeMaskFill = "noFill";
+            this.windIndicator.set('block');
+        }
+        //finalGnd 0 xwnd on  dec == 2          
+        if(this.bitMask == 73 ) {
+            this.sAltXwndModeOn.set('none');
+            this.sAltXwndModeOff.set('none');
+            this.sSpdXwndModeOn.set('none');
+            this.sSpdXwndModeOff.set('none');  
+            this.altTapeMaskFill = "noFill";
+            this.windIndicator.set('none');
+        }
+
+        //----------
+        //finalGnd 0 xwnd off dec !=2       
+        if(this.bitMask == 82 || this.bitMask == 84) {
+            this.sAltXwndModeOn.set('none');
+            this.sAltXwndModeOff.set('none');
+            this.sSpdXwndModeOn.set('none');
+            this.sSpdXwndModeOff.set('block');  
+            this.altTapeMaskFill = "noFill";
+            this.windIndicator.set('block');
+        }
+        //finalGnd 0 xwnd off dec ==2       
+        if(this.bitMask == 81) {
+            this.sAltXwndModeOn.set('none');
+            this.sAltXwndModeOff.set('none');
+            this.sSpdXwndModeOn.set('none');
+            this.sSpdXwndModeOff.set('none');           
+            this.altTapeMaskFill = "noFill";
+            this.windIndicator.set('none');
+        }
+        console.log(
+            " bitMask: " + this.bitMask +
+            " onGround: " + this.onGround +
+            " onPower: " + this.onPower +
+            " finalGnd: " + this.finalGnd +
+            " declutterMode: " + this.declutterMode +
+            " xwndMode: " + this.xwndMode 
+        )
+    }
     
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -110,206 +246,33 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
         sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
             console.log("fmgc flighphase: " + fp );
+           
         })
         
-        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-            this.xwndMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-            this.flightPhase = fp;
-            //preflight / taxi
-            if(this.flightPhase <= 2 ){
-                if(this.declutterMode == 2 ){
-                    this.sAltXwndModeOn.set("none");
-                    this.sAltXwndModeOff.set("none");
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                } 
-                if(this.declutterMode < 2 ) {
-                    this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                    this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block") ; 
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-                }  
-            }
-            //takeoff
-            if(this.flightPhase >= 3 && this.flightPhase <= 5){
-                this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none");
-                this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block");
-                this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-            }  
-            //clb crz des
-            if( this.flightPhase == 6 || this.flightPhase == 7){
-                if(this.declutterMode == 2 ){
-                    this.sAltXwndModeOn.set("none") ;
-                    this.sAltXwndModeOff.set("none");
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                }  
-                if(this.declutterMode < 2 ) {
-                    this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block");     
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block");
-                }   
-            }
-            //touchdown rollout
-            if( this.flightPhase == 8) {
-                this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block");
-            } 
-            //taxi
-            if( this.flightPhase >= 9){    
-                if(this.declutterMode == 2 ) {
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                } 
-                if(this.declutterMode < 2 ){
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-                }
-            }
 
-            (this.declutterMode == 2 ) ?  this.windIndicator.set("none") : this.windIndicator.set("block"); 
+        sub.on('fwcFlightPhase').whenChanged().handle((value) => {
+        this.flightPhase = value;
+            (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
+            (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
 
-            console.log("flighphase: " + this.flightPhase );
-        });
-
-        // remove alt tape on rollout
+        })
         sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-            this.lgRightCompressed = value;
-            console.log('HlgleftComp: '+ this.lgRightCompressed);
-            if(this.lgRightCompressed == true){
-                if(this.flightPhase >= 7){
-                    this.sAltXwndModeOn.set("none");
-                    this.sAltXwndModeOff.set("none");
-                    this.altTapeMaskFill = "noFill";
-                    console.log('HlgleftComp2: ' + this.lgRightCompressed);
-                }
-            }
-        });
-
-        
-        sub.on('declutterMode').whenChanged().handle((value) => {
-            this.xwndMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-            this.declutterMode = value;
-            //preflight / taxi
-            if(this.flightPhase <= 2 ){
-                if(this.declutterMode == 2 ){
-                    this.sAltXwndModeOn.set("none");
-                    this.sAltXwndModeOff.set("none");
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                } 
-                if(this.declutterMode < 2 ) {
-                    this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                    this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block") ; 
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-                }  
-            }
-            //takeoff
-            if(this.flightPhase >= 3 && this.flightPhase <= 5){
-                this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none");
-                this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block");
-                this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-            }  
-            (this.declutterMode == 2 ) ?  this.windIndicator.set("none") : this.windIndicator.set("block");
-            //clb crz des
-            if( this.flightPhase == 6 || this.flightPhase == 7){
-                if(this.declutterMode == 2 ){
-                    this.sAltXwndModeOn.set("none") ;
-                    this.sAltXwndModeOff.set("none");
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                }  
-                if(this.declutterMode < 2 ) {
-                    this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block");     
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block");
-                }   
-            }
-            //touchdown rollout
-            if( this.flightPhase == 8) {
-                this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block");
-            } 
-            //taxi
-            if( this.flightPhase >= 9){    
-                (this.declutterMode == 2 ) ? this.sSpdXwndModeOn.set("none") :  this.sSpdXwndModeOff.set("none");
-                (this.declutterMode < 2 ) ? this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") : this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-            }  
-            (this.declutterMode == 2 ) ?  this.windIndicator.set("none") : this.windIndicator.set("block");
-            console.log("decVal: " + this.declutterMode );
-        }); 
-          
-        sub.on('crosswindMode').whenChanged().handle((value) => {
-            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-            this.xwndMode = value;
-            //preflight / taxi
-            if(this.flightPhase <= 2 ){
-                if(this.declutterMode == 2 ){
-                    this.sAltXwndModeOn.set("none");
-                    this.sAltXwndModeOff.set("none");
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                } 
-                if(this.declutterMode < 2 ) {
-                    this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                    this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block") ; 
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-                }  
-            }
-            //takeoff
-            if(this.flightPhase >= 3 && this.flightPhase <= 5){
-                this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none");
-                this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block");
-                this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") ;
-                this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-            }  
-            (this.declutterMode == 2 ) ?  this.windIndicator.set("none") : this.windIndicator.set("block");
-            //clb crz des
-            if( this.flightPhase == 6 || this.flightPhase == 7){
-                if(this.declutterMode == 2 ){
-                    this.sAltXwndModeOn.set("none") ;
-                    this.sAltXwndModeOff.set("none");
-                    this.sSpdXwndModeOn.set("none");
-                    this.sSpdXwndModeOff.set("none");
-                }  
-                if(this.declutterMode < 2 ) {
-                    this.sAltXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sAltXwndModeOff.set(this.xwndMode ? "none" : "block");     
-                    this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                    this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block");
-                }   
-            }
-            //touchdown rollout
-            if( this.flightPhase == 8) {
-                this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none");
-                this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block");
-            } 
-            //taxi
-            if( this.flightPhase >= 9){    
-                (this.declutterMode == 2 ) ? this.sSpdXwndModeOn.set("none") :  this.sSpdXwndModeOff.set("none");
-                (this.declutterMode < 2 ) ? this.sSpdXwndModeOn.set(this.xwndMode ? "block" : "none") : this.sSpdXwndModeOff.set(this.xwndMode ? "none" : "block") ;
-            }  
-            (this.declutterMode == 2 ) ?  this.windIndicator.set("none") : this.windIndicator.set("block");
-            console.log("xwindVal: " + this.xwndMode);
-        });
-          
-        sub.on('speed').whenChanged().handle((value) => {
-            
-            this.groundSpeed = value;
-            if(this.groundSpeed < 30){
-                console.log('speed < 30: ' + this.lgRightCompressed);
-                this.altTapeMaskFill = "BackgroundFill";
-            }
+            this.onGround = value;
+            (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
         })
+        sub.on('declutterMode').whenChanged().handle((value) => {
+            this.declutterMode = value;
+            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
+        
+        })
+        sub.on('crosswindMode').whenChanged().handle((value) => {
+            this.xwndMode = value;
+            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
+        
+        })
+    
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
@@ -393,7 +356,8 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                     <AttitudeIndicatorFixedCenter 
                     bus={this.props.bus} 
                     isAttExcessive={this.isAttExcessive}
-                    filteredRadioAlt={this.filteredRadioAltitude} />
+                    filteredRadioAlt={this.filteredRadioAltitude}
+                    instrument={this.props.instrument} />
 
                     <AltitudeIndicator bus={this.props.bus} />
                     <AirspeedIndicator

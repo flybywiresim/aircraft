@@ -104,18 +104,16 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus; isA
                         <path
                             class="SmallStroke Green"
                             d="m 590,512 h 34"
-
                         />
                         <path
                             class="SmallStroke Green"
                             d="m 656,512 h 34"
-
                         />
                         <path
                             class="SmallStroke Green"
-                            d="M 640,496 V 484"
-
+                            d="M 640,496 v -16"
                         />
+
                     </g>
                     <TotalFlightPathAngle bus={this.props.bus} />
                     <FlightPathDirector bus={this.props.bus} />
@@ -126,6 +124,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus; isA
                         filteredRadioAltitude={this.props.filteredRadioAlt}
                         attExcessive={this.props.isAttExcessive}
                     /> 
+                    <FlareIndicator bus={this.props.bus}/>
                 </g>
             </>
         );
@@ -584,6 +583,7 @@ class RadioAltAndDH extends DisplayComponent<{
     attExcessive: Subscribable<boolean>;
   }> {
     private sVisibility = Subject.create('none');
+    private sFlareVisibility = Subject.create('none');
     private daRaGroup = FSComponent.createRef<SVGGElement>();
   
     private roll = new Arinc429Word(0);
@@ -634,11 +634,11 @@ class RadioAltAndDH extends DisplayComponent<{
         });
   
       sub
-        .on('fmgcFlightPhase')
+        .on('fwcFlightPhase')
         .whenChanged()
         .handle((fp) => {
           this.fmgcFlightPhase = fp;
-          (fp == 5 || fp == 6) ? this.sVisibility.set("block") : this.sVisibility.set('none');
+          (fp >= 4 && fp <= 9) ? this.sVisibility.set("block") : this.sVisibility.set('none');
         });
   
       sub.on('altitudeAr').handle((a) => {
@@ -675,6 +675,7 @@ class RadioAltAndDH extends DisplayComponent<{
                   size = 'FontMedium';
                 }
                 if (raValue < 5) {
+                  
                   text = Math.round(raValue).toString();
                 } else if (raValue <= 50) {
                   text = (Math.round(raValue / 5) * 5).toString();
@@ -686,6 +687,10 @@ class RadioAltAndDH extends DisplayComponent<{
               color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
               text = 'RA';
             }
+
+            (raValue < 5) ? this.sVisibility.set('none') : this.sVisibility.set('block');      
+
+
           }
   
           this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
@@ -730,6 +735,35 @@ class RadioAltAndDH extends DisplayComponent<{
           <text ref={this.radioAlt} id="RadioAlt" x="0" y="0" transform="translate(640 600)" class={this.classSub}>
             {this.radioAltText}
           </text>
+        </g>
+      );
+    }
+  }
+
+
+  
+class FlareIndicator extends DisplayComponent<{
+    bus: ArincEventBus;
+  }> {
+    private sVisibility = Subject.create('none');
+    private flareGroup = FSComponent.createRef<SVGGElement>();
+    onAfterRender(node: VNode): void {
+      super.onAfterRender(node);
+  
+      const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+  
+        sub.on('activeVerticalMode').whenChanged().handle((v) =>{
+            v === VerticalMode.FLARE ? this.sVisibility.set('block') : this.sVisibility.set('none'); 
+        })
+    }
+  
+    render(): VNode {
+      return (
+        <g ref={this.flareGroup} id="FlareArrows" display={this.sVisibility}>
+            <path class="SmallStroke Green" d="m 615,512 v -32"  />
+            <path class="SmallStroke Green" d="m 609,496 l 6 -16  l 6 16"  />
+            <path class="SmallStroke Green" d="m 665,512 v -32"  />
+            <path class="SmallStroke Green" d="m 659,496 l 6 -16  l 6 16"  />
         </g>
       );
     }

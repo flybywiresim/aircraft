@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  ComponentProps,
   ClockEvents,
   DisplayComponent,
   FSComponent,
@@ -11,9 +10,6 @@ import {
   Subject,
   Subscribable,
   VNode, 
-  SubscribableMapFunctions,
-  ConsumerSubject,
-  HEvent,
   EventBus
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
@@ -25,7 +21,6 @@ import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 
 import { GenericAdirsEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericAdirsEvents';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -165,6 +160,9 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+  private bitMask = 0;
+  private onPower = false;
+  private finalGnd = false;
   private sDecelVis = Subject.create<String>('none');
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
@@ -178,7 +176,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
 
   private showBarsRef = FSComponent.createRef<SVGGElement>();
-  private GSText  = Subject.create<String>('');
 
   private vfeNext = FSComponent.createRef<SVGPathElement>();
 
@@ -193,6 +190,69 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private rightMainGearCompressed: boolean;
 
   private pathSub = Subject.create('');
+
+  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
+    const nArr = [];
+    let n = -1;
+    nArr[0] = 1;
+    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
+    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
+    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
+    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
+    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
+    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
+    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
+
+
+      //----------
+    //finalGnd 1 xwnd on  dec != 2     
+    if(this.bitMask == 108 || this.bitMask == 106) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }
+    //finalGnd 1 xwnd on  dec == 2          
+    if(this.bitMask == 105 ) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }   
+
+      //----------
+    //finalGnd 1 xwnd off  dec != 2     
+    if(this.bitMask == 116 || this.bitMask == 114) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }
+    //finalGnd 1 xwnd off  dec == 2          
+    if(this.bitMask == 113 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }     
+
+    
+    //----------
+    //finalGnd 0 xwnd on  dec != 2     
+    if(this.bitMask == 74 || this.bitMask == 76) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none'); 
+    }
+    //finalGnd 0 xwnd on  dec == 2          
+    if(this.bitMask == 73 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');  
+    }
+
+    //----------
+    //finalGnd 0 xwnd off dec !=2       
+    if(this.bitMask == 82 || this.bitMask == 84) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');  
+    }
+    //finalGnd 0 xwnd off dec ==2       
+    if(this.bitMask == 81) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');      
+    }
+}
 
   private setOutline() {
     let airspeedValue: number;
@@ -222,177 +282,33 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     super.onAfterRender(node);
 
 
-    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents & HEvent >();
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-        this.GSText.set("block");
-      }else{
-          this.GSText.set("none");
-      }
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-        this.sDecelVis.set('none');
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-      //touchdown rollout
-      if( this.flightPhase == 8) {
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      } 
-      //taxi
-      if( this.flightPhase >= 9){    
-        if(this.declutterMode == 2 ) {
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        } 
-       
-      }  
-    });
+    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents >();
 
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.lgRightCompressed = value;
-      //console.log('lgleftComp: '+ this.lgRightCompressed);
-      if(this.lgRightCompressed == true){
-        if(this.flightPhase == 7 || this.flightPhase == 8){
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none") ;
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block") ;
-          
-        }
-      }
-    });
-  
+    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
+      this.flightPhase = value;
+          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
+          (this.onGround.get() == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+
+      })
+      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+          this.onGround.set(value);
+          (this.onGround.get() == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
+      sub.on('declutterMode').whenChanged().handle((value) => {
+          this.declutterMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      
+      })
+      sub.on('crosswindMode').whenChanged().handle((value) => {
+          this.crosswindMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
+
     sub.on('autoBrakeDecel').whenChanged().handle((value) => {
       value ? this.sDecelVis.set('block') : this.sDecelVis.set('none');
     })
-
-    sub.on('declutterMode').whenChanged().handle((value) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.declutterMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-      //touchdown rollout
-      if( this.flightPhase == 8) {
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      } 
-      //taxi
-      if( this.flightPhase >= 9){    
-        if(this.declutterMode == 2 ) {
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        } 
-      }  
-    }); 
-    
-    sub.on('crosswindMode').whenChanged().handle((value) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.crosswindMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-      //touchdown rollout
-      if( this.flightPhase == 8) {
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      } 
-      //taxi
-      if( this.flightPhase >= 9){    
-        if(this.declutterMode == 2 ) {
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        } 
-      }  
-    });
-
     sub.on('vFeNext')
       .withArinc429Precision(2)
       .handle((vfe) => {
@@ -508,7 +424,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             <text class="ScaledStroke Green FontMediumSmaller" transform="translate(20 123)">MAX</text>
           </g>
           
-          <g ref={this.groundSpeedRef} id="SpeedIndicator" display={this.GSText} transform="translate(32 35) ">
+          <g ref={this.groundSpeedRef} id="SpeedIndicator" transform="translate(32 35) ">
             <SpeedIndicator bus={this.props.bus} />
           </g>
 
@@ -595,6 +511,9 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+  private bitMask = 0;
+  private onPower = false;
+  private finalGnd = false;
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
 
@@ -616,6 +535,69 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
   private airSpeed = Arinc429Word.empty();
 
+  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
+    const nArr = [];
+    let n = -1;
+    nArr[0] = 1;
+    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
+    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
+    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
+    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
+    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
+    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
+    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
+
+
+      //----------
+    //finalGnd 1 xwnd on  dec != 2     
+    if(this.bitMask == 108 || this.bitMask == 106) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }
+    //finalGnd 1 xwnd on  dec == 2          
+    if(this.bitMask == 105 ) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }   
+
+      //----------
+    //finalGnd 1 xwnd off  dec != 2     
+    if(this.bitMask == 116 || this.bitMask == 114) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }
+    //finalGnd 1 xwnd off  dec == 2          
+    if(this.bitMask == 113 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }     
+
+    
+    //----------
+    //finalGnd 0 xwnd on  dec != 2     
+    if(this.bitMask == 74 || this.bitMask == 76) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none'); 
+    }
+    //finalGnd 0 xwnd on  dec == 2          
+    if(this.bitMask == 73 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');  
+    }
+
+    //----------
+    //finalGnd 0 xwnd off dec !=2       
+    if(this.bitMask == 82 || this.bitMask == 84) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');  
+    }
+    //finalGnd 0 xwnd off dec ==2       
+    if(this.bitMask == 81) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');      
+    }
+}
+
   private setOutline(): void {
     let airspeedValue: number;
     if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
@@ -626,10 +608,10 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       airspeedValue = this.airSpeed.value;
     }
     if (Number.isNaN(airspeedValue)) {
-      //this.offTapeRef.instance.classList.add('HiddenElement');
+      this.offTapeRef.instance.classList.add('HiddenElement');
       this.offTapeFailedRef.instance.classList.remove('HiddenElement');
     } else {
-      //this.offTapeRef.instance.classList.remove('HiddenElement');
+      this.offTapeRef.instance.classList.remove('HiddenElement');
       this.offTapeFailedRef.instance.classList.add('HiddenElement');
 
       const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
@@ -646,154 +628,23 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
 
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;  
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-      //touchdown rollout
-      if( this.flightPhase == 8) {
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      } 
-      //taxi
-      if( this.flightPhase >= 9){    
-        if(this.declutterMode == 2 ) {
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        } 
-      }  
-  });
-  
-  sub.on('declutterMode').whenChanged().handle((value) => {
-    this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-    this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-    this.declutterMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-      //touchdown rollout
-      if( this.flightPhase == 8) {
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      } 
-      //taxi
-      if( this.flightPhase >= 9){    
-        if(this.declutterMode == 2 ) {
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        } 
-      }  
-  }); 
-  
-  sub.on('crosswindMode').whenChanged().handle((value) => {
-    this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-    this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-    this.crosswindMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-      //touchdown rollout
-      if( this.flightPhase == 8) {
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      } 
-      //taxi
-      if( this.flightPhase >= 9){    
-        if(this.declutterMode == 2 ) {
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        } 
-      }  
-  });
+    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
+      this.flightPhase = value;
+          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
+          (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
+      sub.on('declutterMode').whenChanged().handle((value) => {
+          this.declutterMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      
+      })
+      sub.on('crosswindMode').whenChanged().handle((value) => {
+          this.crosswindMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
 
     sub
       .on('leftMainGearCompressed')
@@ -802,6 +653,9 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
         this.leftMainGearCompressed = g;
         this.onGround = this.rightMainGearCompressed || g;
         this.setOutline();
+        this.onGround = g;
+        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
       });
 
     sub
@@ -811,6 +665,9 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
         this.rightMainGearCompressed = g;
         this.onGround = this.leftMainGearCompressed || g;
         this.setOutline();
+        this.onGround = g;
+        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
       });
 
     sub
@@ -918,16 +775,6 @@ bus: ArincEventBus;
           default:
             break;
         }
-        console.log("abMode: " + am);
-      });
-
-    sub
-      .on('autoBrakeActive')
-      .whenChanged()
-      .handle((am) => {
-
-        console.log("abActive: "+am);
-
       });
 
       sub
@@ -940,9 +787,7 @@ bus: ArincEventBus;
           this.decelRef.instance.style.visibility = 'hidden';
         }, 3000);
       } 
-        console.log("abDECEL "+ad);
-
-      });
+    });
   }
 
 
@@ -963,98 +808,6 @@ bus: ArincEventBus;
   }
 
 }
-
-// interface CellProps extends ComponentProps {
-//   bus: ArincEventBus;
-// }
-// class DecelCell extends ShowForSecondsComponent<CellProps>{
-//   private DecelCell = FSComponent.createRef<DecelCell>();
-//   private decelRef = FSComponent.createRef<SVGGElement>();
-//   private decelTxt1 = FSComponent.createRef<SVGTextElement>();
-//   private decelTxt2 = FSComponent.createRef<SVGTextElement>();
-//   private decelTxt3 = FSComponent.createRef<SVGTextElement>();
-//   private decelTxt = FSComponent.createRef<SVGTextElement>();
-//   private yOffset = Subject.create(0);
-//   private box = FSComponent.createRef<SVGGElement>();
-  
-//   onAfterRender(node: VNode): void {
-//     super.onAfterRender(node);
-//     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values >();
-    
-
-//       sub.on('autoBrakeMode')
-//       .whenChanged()
-//       .handle((am) => {
-//         switch (am) {
-//           case 0:
-//             //none
-//             this.yOffset.set(0);
-
-//             break;
-//           case 1:
-//             //MIN
-//             this.yOffset.set(0);
-//             this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
-
-//             break;
-//           case 2:
-//             //MED
-//             this.yOffset.set(12);
-//             this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
-
-//             break;
-//           case 3:
-//             // MAX
-//             this.yOffset.set(20);
-//             this.decelRef.instance.setAttribute('d', `m18 ${104 + this.yOffset.get()} h 13 v -6 h -13z`);
-//             break;
-//           default:
-//             break;
-//         }
-//         console.log("abMode: " + am);
-//       });
-
-//     sub
-//       .on('autoBrakeActive')
-//       .whenChanged()
-//       .handle((am) => {
-
-//         console.log("abActive: "+am);
-
-//       });
-
-//       sub
-//       .on('autoBrakeDecel')
-//       .whenChanged()
-//       .handle((ad) => { 
-//       if (ad) {
-//         this.decelRef.instance.style.visibility = 'visible';
-//         setTimeout(() => {
-//           this.decelRef.instance.style.visibility = 'hidden';
-//         }, 3000);
-//       } 
-//         console.log("abDECEL "+ad);
-
-//       });
-//   }
-
-
-//   render(): VNode {
-//     return (
-//       <g id='decelModeChanged' >
-//         <path
-//           ref={this.decelRef}
-//           class="NormalStroke Green"
-//           visibility="hidden"
-//           d=""
-//         />
-//             {/* <text ref={this.decelTxt1} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 103)">MIN</text>
-//             <text ref={this.decelTxt2} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 115)">MED</text>
-//             <text ref={this.decelTxt3} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 123)">MAX</text> */}
-//       </g>
-//     );
-//   }
-// }
 
 class SpeedTrendArrow extends DisplayComponent<{
   airspeed: Subscribable<number>;
@@ -1751,25 +1504,23 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         >
           {this.textSub}
         </text>
-        <g>
-          <path 
-          ref={this.upperBoundbGRef}
-          id="UpperSpeedTargetBackground" 
-          class="GreenFill"
-          style="transform: translate3d(0px, -100px, 0px)"
-          d="m 15.3 132.65 h 9 v 5 h -9z"
-          >
-          </path>
-          <text
-            ref={this.lowerBoundRef}
-            id="SelectedSpeedUpperText"
-            class="FontTiny EndAlign InverseGreen "
-            x="24.113895"
-            y="36.670692"
-          >
-            {this.textSub}
-          </text>
-        </g>
+        <path 
+        ref={this.upperBoundbGRef}
+        id="UpperSpeedTargetBackground" 
+        class="GreenFill"
+        style="transform: translate3d(0px, -100px, 0px)"
+        d="m 15.3 132.65 h 9 v 5 h -9z"
+        >
+        </path>
+        <text
+          ref={this.lowerBoundRef}
+          id="SelectedSpeedLowerText"
+          class="FontTiny EndAlign InverseGreen "
+          x="24.113895"
+          y="36.670692"
+        >
+          {this.textSub}
+        </text>
         <path
           ref={this.speedTargetRef}
           class="ScaledStroke CornerRound Green"
@@ -1993,6 +1744,9 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 
 //GroundSpeed indicator
 class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private sVisibility = Subject.create('none');
   private readonly groundSpeedRef = FSComponent.createRef<SVGTextElement>();
 
   private readonly trueAirSpeedRef = FSComponent.createRef<SVGTextElement>();
@@ -2004,8 +1758,27 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<GenericAdirsEvents>();
+    const sub = this.props.bus.getSubscriber<GenericAdirsEvents & HUDSimvars>();
 
+    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      //onDeparture
+      if(this.flightPhase <= 5){
+        if(value){
+          this.sVisibility.set("block");  
+        }else{
+          this.sVisibility.set("none");  
+        }
+      } 
+      //onArrival
+      if(this.flightPhase >= 7){
+        if(value){
+          this.sVisibility.set("block");  
+        }else{
+          this.sVisibility.set("none");  
+        }
+      } 
+    });
     sub
       .on('groundSpeed')
       .atFrequency(2)
@@ -2023,12 +1796,15 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode | null {
     return (
-      <Layer x={2} y={25}>
-        <text x={0} y={0} class="Green FontMediumSmaller">
-          GS
-        </text>
-        <text ref={this.groundSpeedRef} x={18} y={0} class="Green FontMediumSmaller EndAlign" />
-        </Layer>
+      <g id="GnsSpdGroup" display={this.sVisibility}>
+
+        <Layer x={2} y={25}>
+          <text x={0} y={0} class="Green FontMediumSmaller">
+            GS
+          </text>
+          <text ref={this.groundSpeedRef} x={18} y={0} class="Green FontMediumSmaller EndAlign" />
+          </Layer>
+      </g>
     );
   }
 }

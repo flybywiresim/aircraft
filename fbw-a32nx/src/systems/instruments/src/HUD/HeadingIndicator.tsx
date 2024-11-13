@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, Subject, Subscribable, Value, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -189,7 +189,9 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     private flightPhase = -1;
     private declutterMode = 0;
     private crosswindMode = false;
-    private bVisibility = false;
+    private bVisibility = true;
+    private bVis2 = true;
+    private sTotalVis = Subject.create('none');
     private sVisibility = Subject.create('none');
     private groundTrack = Arinc429ConsumerSubject.create(null);
 
@@ -207,8 +209,22 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars>();
+        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents>();
         this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
+
+        sub.on('leftMainGearCompressed').whenChanged().handle((value)=>{
+            this.bVisibility = !value;
+            this.bVis2 = true;
+        })
+
+        sub.on('realTime').atFrequency(2).handle((_t)=>{
+            (this.bVis2 && this.bVisibility && this.isVisibleSub.get()) ? this.sTotalVis.set('block') : this.sTotalVis.set('none');
+            // console.log(
+            //     "sTotalVis: " + this.sTotalVis.get()+
+            //     "  bVisibility: " + this.bVisibility+
+            //     "  isVisibleSub: " + this.isVisibleSub.get()
+            // )
+        })
 
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
@@ -222,19 +238,18 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
 
         
         sub.on('declutterMode').whenChanged().handle((value) => { 
-            (value == 2 ) ? this.sVisibility.set('none') : this.sVisibility.set('block'); 
-            console.log("value groundTrack: "+ this.sVisibility );
-
+            (value == 2 ) ? this.bVis2 = false : this.bVis2 = true; 
         }); 
-
-
     }
 
     render(): VNode {
         return (
-            <g style={{ transform: this.transformSub, display: this.isVisibleSub.map((v) => (v ? '' : 'none')) }} id="ActualTrackIndicator">
-                <path class="ThickOutline CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" display={this.sVisibility}/>
-                <path class="ThickStroke Green CornerRound" d="m68.906 145.75   -4 6 4 6 4 -6z" display={this.sVisibility}/>
+            <g style={{ transform: this.transformSub }} 
+                id="ActualTrackIndicator"
+                display={this.sTotalVis}
+                >
+                <path class="ThickOutline CornerRound" d="m68.906 145.75   -6 9 6 9 6 -9z" />
+                <path class="ThickStroke Green CornerRound" d="m68.906 145.75   -6 9 6 9 6 -9z"/>
             </g>
         );
     }

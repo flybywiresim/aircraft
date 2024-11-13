@@ -57,7 +57,7 @@ export class SyntheticRunway extends DisplayComponent<{bus: ArincEventBus}> {
             this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
             this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
             this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-            if(this.data.cornerCoordinates !== undefined){
+            if(this.data !== undefined){
                 //console.log("defined data");
                 this.updateSyntheticRunway();
             }else{

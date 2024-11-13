@@ -8,11 +8,13 @@ import { ArincEventBus, HUDSyntheticRunway, GenericDataListenerSync } from '@fly
 import {
     AdirsSimVarDefinitions,
     AdirsSimVars,
-    SwitchingPanelSimVarsDefinitions, SwitchingPanelVSimVars,
+    SwitchingPanelSimVarsDefinitions, 
+    SwitchingPanelVSimVars,
 } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
-export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
+export type HUDSimvars = AdirsSimVars & 
+SwitchingPanelVSimVars & {
     crosswindMode: boolean;
     declutterMode: number;
     coldDark: number;
@@ -54,7 +56,7 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fdBank: number;
     fdPitch: number;
     v1: number;
-    vr:number;
+    vr: number;
     fwcFlightPhase: number;
     fmgcFlightPhase: number;
     hasLoc: boolean;
@@ -123,6 +125,7 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     xtk: number;
     ldevRequestLeft: boolean;
     ldevRequestRight: boolean;
+    vdev: number;
     landingElevation1Raw: number;
     landingElevation2Raw: number;
     fac1Healthy: boolean;
@@ -165,8 +168,10 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fm1TransAltRaw: number;
     fm2TransAltRaw: number;
     fm1TransLvlRaw: number;
-    fm2TransLvlRaw: number
-  }
+    fm2TransLvlRaw: number;
+    fm1Backbeam: boolean;
+    fm2Backbeam: boolean;
+  };
 
   export enum HUDVars {
     crosswindMode = 'L:A32NX_HUD_CROSSWIND_MODE',
@@ -235,8 +240,8 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
-    tla1='L:A32NX_AUTOTHRUST_TLA:1',
-    tla2='L:A32NX_AUTOTHRUST_TLA:2',
+    tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
+    tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
     tcasState = 'L:A32NX_TCAS_STATE',
     tcasCorrective = 'L:A32NX_TCAS_RA_CORRECTIVE',
     tcasRedZoneL = 'L:A32NX_TCAS_VSPEED_RED:1',
@@ -256,7 +261,7 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
     crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
     tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
-    flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+    flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
     autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
     autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
     autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
@@ -280,6 +285,7 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
     ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
     ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
+    vdev = 'L:A32NX_FM_VDEV',
     landingElevation1Raw = 'L:A32NX_FM1_LANDING_ELEVATION',
     landingElevation2Raw = 'L:A32NX_FM2_LANDING_ELEVATION',
     fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
@@ -325,6 +331,8 @@ export type HUDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fm2TransAltRaw = 'L:A32NX_FM2_TRANS_ALT',
     fm1TransLvlRaw = 'L:A32NX_FM1_TRANS_LVL',
     fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
+    fm1Backbeam = 'L:A32NX_FM1_BACKBEAM_SELECTED',
+    fm2Backbeam = 'L:A32NX_FM2_BACKBEAM_SELECTED',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -442,6 +450,7 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
         ['xtk', { name: HUDVars.xtk, type: SimVarValueType.NM }],
         ['ldevRequestLeft', { name: HUDVars.ldevLeft, type: SimVarValueType.Bool }],
         ['ldevRequestRight', { name: HUDVars.ldevRight, type: SimVarValueType.Bool }],
+        ['vdev', { name: HUDVars.vdev, type: SimVarValueType.Number }],
         ['landingElevation1Raw', { name: HUDVars.landingElevation1Raw, type: SimVarValueType.Number }],
         ['landingElevation2Raw', { name: HUDVars.landingElevation2Raw, type: SimVarValueType.Number }],
         ['fac1Healthy', { name: HUDVars.fac1Healthy, type: SimVarValueType.Bool }],
@@ -485,7 +494,9 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
         ['fm2TransAltRaw', { name: HUDVars.fm2TransAltRaw, type: SimVarValueType.Number }],
         ['fm1TransLvlRaw', { name: HUDVars.fm1TransLvlRaw, type: SimVarValueType.Number }],
         ['fm2TransLvlRaw', { name: HUDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
-    ])
+        ['fm1Backbeam', { name: HUDVars.fm1Backbeam, type: SimVarValueType.Bool }],
+        ['fm2Backbeam', { name: HUDVars.fm2Backbeam, type: SimVarValueType.Bool }],
+    ]);
 
     public constructor(bus: ArincEventBus) {
         super(HUDSimvarPublisher.simvars, bus);

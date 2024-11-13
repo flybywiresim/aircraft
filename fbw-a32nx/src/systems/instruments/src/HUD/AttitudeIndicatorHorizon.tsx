@@ -414,27 +414,24 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
 
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.flightPhase = fp;
-      if(fp < 5 || fp >= 9){
-        this.sVisibility.set("none");
-      }
-      if(fp > 4 && fp < 9){
-        this.sVisibility.set("block");
-      }
-    });
-  
+   
     sub.on('declutterMode').whenChanged().handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number')
         this.declutterMode = value;
-        if((this.flightPhase > 4) && (this.flightPhase < 9)){
-          if(this.declutterMode == 2){
-            this.sVisibility.set("none");
-          }else{
-            this.sVisibility.set("block");
-          }
+        if(this.onGround){
+          this.sVisibility.set("none");
+        }else{
+          (this.declutterMode == 2) ? this.sVisibility.set("none") : this.sVisibility.set("block");
         }
     }); 
+  
+    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.onGround = value;
+      if(this.onGround){
+        this.sVisibility.set("none");
+      }else{
+        (this.declutterMode == 2) ? this.sVisibility.set("none") : this.sVisibility.set("block");
+      }
+    })
 
     sub
       .on('leftMainGearCompressed')
@@ -561,6 +558,8 @@ class PitchScale extends DisplayComponent<{
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 } >   {
+  private fmgcFlightPhase = -1;
+  private forcedFma = false;
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
@@ -584,33 +583,78 @@ class PitchScale extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent>();
-    
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;
-      // preflight, taxi
-      if(fp < 3 || fp >= 9){
-        if(this.declutterMode < 2){
-        this.sVisibility.set("block");
-        this.sVisibilityDeclutterMode2.set("block");
-        }else{
-          this.sVisibility.set("none");
-          this.sVisibilityDeclutterMode2.set("none");
-        }
-      }
 
-    });
-  
-    sub.on('declutterMode').whenChanged().handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.declutterMode = value;
-        if(this.declutterMode < 2){
+    sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.fmgcFlightPhase = fp;
+      //force fma during climb and descent
+      if(fp == 1 || fp == 2 || fp == 4){
+        this.forcedFma = true;
+        if(this.declutterMode == 2 ){
           this.sVisibility.set("block");
           this.sVisibilityDeclutterMode2.set("block");
         }else{
+          this.sVisibility.set("block");
+          this.sVisibilityDeclutterMode2.set("block");
+        } 
+      }else{
+        this.forcedFma = false;
+      }
+
+    })
+
+    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+      this.flightPhase = fp;
+      //onGround
+      if(this.flightPhase <= 2 || this.flightPhase >= 9){
+          if(this.declutterMode == 2 ){
+            this.sVisibility.set("none");
+            this.sVisibilityDeclutterMode2.set("none");
+          }
+          if(this.declutterMode < 2 ){
+          this.sVisibility.set("block");
+          this.sVisibilityDeclutterMode2.set("block");
+          }
+      }
+      //inFlight
+      if(this.flightPhase > 2 && this.flightPhase <= 9 ){
+        if(this.forcedFma){
+          if(this.declutterMode == 2 ){
+            this.sVisibility.set("block");
+            this.sVisibilityDeclutterMode2.set("block");
+          }else{
+            this.sVisibility.set("block");
+            this.sVisibilityDeclutterMode2.set("block");
+          }   
+        }else{
+          if(this.declutterMode == 2 ){
+            this.sVisibility.set("none");
+            this.sVisibilityDeclutterMode2.set("block");
+          }else{
+            this.sVisibility.set("block");
+            this.sVisibilityDeclutterMode2.set("block");
+          }   
+        }
+      }
+
+    })
+    
+    sub.on('declutterMode').whenChanged().handle((value) => {
+      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
+      this.declutterMode = value;
+      if(this.forcedFma){
+          this.sVisibility.set("block");
+          this.sVisibilityDeclutterMode2.set("block");
+      } else{
+        if(this.declutterMode == 2 ){
           this.sVisibility.set("none");
           this.sVisibilityDeclutterMode2.set("block");
-        }
+        }else{
+          this.sVisibility.set("block");
+          this.sVisibilityDeclutterMode2.set("block");
+        }    
+      }  
     }); 
 
 

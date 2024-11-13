@@ -117,22 +117,21 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
         render(): VNode {
             return (
             <>
-                <g id="LSGroup" transform="scale(2.5 2.5) translate(185 51) " display={this.LSGroupVisibility} >
+                <g id="LSGroup" transform="scale(2.5 2.5) translate(185 51) " >
                    
-                    <g id="LSGroup" >
+                    <g id="LSGroup"  display={this.LSGroupVisibility}>
                         <LandingSystemInfo  bus={this.props.bus} isVisible={this.lsVisible} /> 
-                        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
                         <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
                         <MarkerBeaconIndicator bus={this.props.bus} /> 
-
                     </g>
-                    <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
-                        <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
-                            <LDevIndicator bus={this.props.bus} />
-                        </g>
-                        <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
-                            <VDevIndicator bus={this.props.bus} />
-                        </g>
+                        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
+                </g>
+                <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
+                    <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
+                        <LDevIndicator bus={this.props.bus} />
+                    </g>
+                    <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
+                        <VDevIndicator bus={this.props.bus} />
                     </g>
                 </g>
             </>
@@ -339,8 +338,11 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
 class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
     private flightPhase = -1;
+    private declutterMode = 0;
     private readonly lsVisible = ConsumerSubject.create(null, false);
     private LSLocRef = new NodeReference<SVGGElement>;
+    private onGround = true;
+    private LsState = false;
     private lagFilter = new LagFilter(1.5);
 
     private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -378,26 +380,45 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
 
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
-            if(this.flightPhase < 5 || this.flightPhase >= 8){
-                this.LSLocRef.instance.style.visibility = 'visible';
-                this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+        })
+
+        sub.on('declutterMode').whenChanged().handle((value)=>{
+            this.declutterMode = value;
+            if(this.LsState){
+                if(this.onGround){
+                    this.LSLocRef.instance.style.visibility = 'visible';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+                }else{
+                    if(this.declutterMode == 2){
+                        this.LSLocRef.instance.style.visibility = 'hidden';
+                    }else{
+                        this.LSLocRef.instance.style.visibility = 'visible';
+                    }
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+                }
+            }else{
+                if(this.onGround){
+                    this.LSLocRef.instance.style.visibility = 'visible';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+                }else{
+                    this.LSLocRef.instance.style.visibility = 'hidden';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+                }
             }
-            if(this.flightPhase >= 5 && this.flightPhase < 8){
-                this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
-                this.LSLocRef.instance.style.visibility = 'hidden';
-            }
-        });
+
+        })
+
 
         sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-           if(value == false){
-            if(this.flightPhase >= 4 && this.flightPhase <= 6){
+            this.onGround = value;
+            if(value){
+                this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+                this.LSLocRef.instance.style.visibility = 'visible'; 
+            }else{
                 this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
                 this.LSLocRef.instance.style.visibility = 'hidden';
             }
-           }
-   
         });
-
 
         sub.on('hasLoc').whenChanged().handle((hasLoc) => {
             if (hasLoc) {
@@ -410,19 +431,27 @@ class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrumen
             }
         });
         sub.on('ls1Button').whenChanged().handle((value) =>{
-            if(value){
-                if(this.flightPhase >= 5 && this.flightPhase < 8){
+            this.LsState = value;
+            if(this.LsState){
+                if(this.onGround){
                     this.LSLocRef.instance.style.visibility = 'visible';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+                }else{
+                    if(this.declutterMode == 2){
+                        this.LSLocRef.instance.style.visibility = 'hidden';
+                    }else{
+                        this.LSLocRef.instance.style.visibility = 'visible';
+                    }
                     this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
                 }
             }else{
-                if(this.flightPhase < 5 || this.flightPhase >= 8){
+                if(this.onGround){
                     this.LSLocRef.instance.style.visibility = 'visible';
                     this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
                 }else{
                     this.LSLocRef.instance.style.visibility = 'hidden';
+                    this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
                 }
-
             }
         })
         

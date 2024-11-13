@@ -239,6 +239,10 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+  private bitMask = 0;
+  private onPower = false;
+  private finalGnd = false;
+  private onGround = true;
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
   private lgLeftCompressed = false;
@@ -246,122 +250,94 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   private subscribable = Subject.create<number>(0);
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
 
+  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
+    const nArr = [];
+    let n = -1;
+    nArr[0] = 1;
+    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
+    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
+    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
+    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
+    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
+    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
+    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
+
+
+      //----------
+    //finalGnd 1 xwnd on  dec != 2     
+    if(this.bitMask == 108 || this.bitMask == 106) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }
+    //finalGnd 1 xwnd on  dec == 2          
+    if(this.bitMask == 105 ) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }   
+
+      //----------
+    //finalGnd 1 xwnd off  dec != 2     
+    if(this.bitMask == 116 || this.bitMask == 114) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }
+    //finalGnd 1 xwnd off  dec == 2          
+    if(this.bitMask == 113 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }     
+
+    
+    //----------
+    //finalGnd 0 xwnd on  dec != 2     
+    if(this.bitMask == 74 || this.bitMask == 76) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none'); 
+    }
+    //finalGnd 0 xwnd on  dec == 2          
+    if(this.bitMask == 73 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');  
+    }
+
+    //----------
+    //finalGnd 0 xwnd off dec !=2       
+    if(this.bitMask == 82 || this.bitMask == 84) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');  
+    }
+    //finalGnd 0 xwnd off dec ==2       
+    if(this.bitMask == 81) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('none');      
+    }
+}
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.lgRightCompressed = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED','Bool');
-      this.flightPhase = fp;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-    });
-      
-    // remove alt tape on rollout
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.lgRightCompressed = value;
-      console.log('lgleftComp: '+ this.lgRightCompressed);
-      if(this.lgRightCompressed == true){
-        if(this.flightPhase >= 7){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
+    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
+      this.flightPhase = value;
+          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
+          (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
 
-        }
-      }
-    });
-  
-    sub.on('declutterMode').whenChanged().handle((value) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.declutterMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-    }); 
-    
-    sub.on('crosswindMode').whenChanged().handle((value) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.crosswindMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-    });
+      })
+      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+        this.onGround = value;
+        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
+      sub.on('declutterMode').whenChanged().handle((value) => {
+          this.declutterMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      
+      })
+      sub.on('crosswindMode').whenChanged().handle((value) => {
+          this.crosswindMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
 
     const pf = this.props.bus.getSubscriber<Arinc429Values>();
 
@@ -418,6 +394,10 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+  private bitMask = 0;
+  private onPower = false;
+  private finalGnd = false;
+  private onGround = true;
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
   private lgRightCompressed = false;
@@ -440,124 +420,95 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
   private targetAltitudeColor = Subject.create<TargetAltitudeColor>(TargetAltitudeColor.Cyan);
 
+  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
+    const nArr = [];
+    let n = -1;
+    nArr[0] = 1;
+    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
+    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
+    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
+    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
+    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
+    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
+    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
+
+
+      //----------
+    //finalGnd 1 xwnd on  dec != 2     
+    if(this.bitMask == 108 || this.bitMask == 106) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }
+    //finalGnd 1 xwnd on  dec == 2          
+    if(this.bitMask == 105 ) {
+        this.sCrosswindModeOn.set('block');
+        this.sCrosswindModeOff.set('none');
+    }   
+
+      //----------
+    //finalGnd 1 xwnd off  dec != 2     
+    if(this.bitMask == 116 || this.bitMask == 114) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }
+    //finalGnd 1 xwnd off  dec == 2          
+    if(this.bitMask == 113 ) {
+        this.sCrosswindModeOn.set('none');
+        this.sCrosswindModeOff.set('block');
+    }     
+
+    
+    //----------
+    //finalGnd 0 xwnd on  dec != 2     
+    if(this.bitMask == 74 || this.bitMask == 76) {
+      this.sCrosswindModeOn.set('none');
+      this.sCrosswindModeOff.set('none'); 
+  }
+  //finalGnd 0 xwnd on  dec == 2          
+  if(this.bitMask == 73 ) {
+      this.sCrosswindModeOn.set('none');
+      this.sCrosswindModeOff.set('none');  
+  }
+
+  //----------
+  //finalGnd 0 xwnd off dec !=2       
+  if(this.bitMask == 82 || this.bitMask == 84) {
+      this.sCrosswindModeOn.set('none');
+      this.sCrosswindModeOff.set('none');  
+  }
+  //finalGnd 0 xwnd off dec ==2       
+  if(this.bitMask == 81) {
+      this.sCrosswindModeOn.set('none');
+      this.sCrosswindModeOff.set('none');      
+  }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
 
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-    this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-    this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-    this.flightPhase = fp;
-    this.lgRightCompressed = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED','Bool');
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-    });
+    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
+      this.flightPhase = value;
+          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
+          (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+
+      })
+      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+        this.onGround = value;
+        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
+        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
+      sub.on('declutterMode').whenChanged().handle((value) => {
+          this.declutterMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
       
-    // remove alt tape on rollout
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.lgRightCompressed = value;
-      //console.log('lgleftComp: '+ this.lgRightCompressed);
-      if(this.lgRightCompressed == true){
-        if(this.flightPhase >= 7 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-          console.log('lgleftComp2: ' + this.lgRightCompressed);
-        }
-      }
-    });
-
-
-    sub.on('declutterMode').whenChanged().handle((value) => {
-      this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.declutterMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-    }); 
-    
-    sub.on('crosswindMode').whenChanged().handle((value) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.crosswindMode = value;
-      //preflight / taxi
-      if(this.flightPhase <= 2 ){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        } 
-        if(this.declutterMode < 2 ) {
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }  
-      }
-      //takeoff
-      if(this.flightPhase >= 3 && this.flightPhase <= 5){
-        this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-        this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-      }  
-      //clb crz des
-      if( this.flightPhase == 6 || this.flightPhase == 7){
-        if(this.declutterMode == 2 ){
-          this.sCrosswindModeOn.set("none");
-          this.sCrosswindModeOff.set("none");
-        }  
-        if(this.declutterMode < 2 ) {   
-          this.sCrosswindModeOn.set(this.crosswindMode ? "block" : "none");
-          this.sCrosswindModeOff.set(this.crosswindMode ? "none" : "block");
-        }   
-      }
-    });
+      })
+      sub.on('crosswindMode').whenChanged().handle((value) => {
+          this.crosswindMode = value;
+          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+      })
     
 
     sub
