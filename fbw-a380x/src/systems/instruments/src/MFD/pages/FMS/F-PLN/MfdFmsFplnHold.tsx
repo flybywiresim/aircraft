@@ -61,8 +61,9 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         this.waypointIdent.set(leg?.ident ?? '');
         this.inboundCourse.set(hold.inboundMagneticCourse ?? null);
         this.turnSelectedIndex.set(hold?.turnDirection === TurnDirection.Left ? 0 : 1);
-        this.legDefiningParameterSelectedIndex.set(hold?.time !== undefined ? 0 : 1);
-        this.legTime.set(hold?.time ?? null);
+        this.legDefiningParameterSelectedIndex.set(
+          hold?.distance != null ? 1 : hold?.time != null ? 0 : this.legDefiningParameterSelectedIndex.get(),
+        );        this.legTime.set(hold?.time ?? null);
         this.legDistance.set(hold?.distance ?? null);
 
         this.lastExitUtc.set('--:--');
