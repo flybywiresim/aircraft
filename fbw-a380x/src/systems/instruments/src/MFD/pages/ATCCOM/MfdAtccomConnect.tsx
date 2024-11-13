@@ -1,17 +1,19 @@
-import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomConnect.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+// import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { AdscButton } from 'instruments/src/MFD/pages/common/AdscButton';
 
 interface MfdAtccomConnectProps extends AbstractMfdPageProps {}
 
-export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
+export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
   private atcCenter = Subject.create<string | null>(null);
 
   private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
@@ -31,7 +33,12 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
   render(): VNode {
     return (
       <>
-        {super.render()}
+        <ActivePageTitleBar
+          activePage={Subject.create('CONNECT')}
+          offset={Subject.create('')}
+          eoIsActive={Subject.create(false)}
+          tmpyIsActive={Subject.create(false)}
+        />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-atccom-connect-row">
@@ -48,7 +55,7 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
                 containerStyle="width: 150px;"
                 alignLabels="center"
                 numberOfDigitsForInputField={4}
-                tmpyActive={this.tmpyActive}
+                tmpyActive={Subject.create(false)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -67,7 +74,7 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
           <div class="mfd-atccom-connect-row" style="margin-top: 10px">
             <div class="mfd-atccom-connect-col-1"></div>
             <div class="mfd-atccom-connect-col-2">
-              <div class="mfd-atccom-connect mfd-label">NOTIFYING</div>
+              <div class="mfd-atccom-connect mfd-label">NOTIFY</div>
             </div>
           </div>
           <div class="mfd-atccom-connect-row mfd-atccom-connect-section-1">
@@ -147,6 +154,22 @@ export class MfdAtccomConnect extends FmsPage<MfdAtccomConnectProps> {
           <div class="mfd-atccom-connect-row" style="justify-content: center; margin-top: 10px">
             <div class="mfd-atccom-connect-connected-centers-list"></div>
           </div>
+        </div>
+        <div
+          id="atccom-inop"
+          style="
+    position: absolute;
+    top: 132px;
+    width: 768px;
+    height: 818px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 35px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #e68000"
+        >
+          <span>NOT YET IMPLEMENTED</span>
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
