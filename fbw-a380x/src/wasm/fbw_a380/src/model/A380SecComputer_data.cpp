@@ -72,9 +72,9 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   0.0,
 
-  -20.0,
+  -25.5,
 
-  20.0,
+  25.5,
 
   13.0,
 
@@ -1821,10 +1821,20 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -2214,12 +2224,22 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
       {
         0U,
         0.0F
+      },
+
+      {
+        0U,
+        0.0F
       }
     }
   },
 
 
   {
+    {
+      0U,
+      0.0F
+    },
+
     {
       0U,
       0.0F

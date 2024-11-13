@@ -594,6 +594,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idSecPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_PRESSED");
     idSecHealthy[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_HEALTHY");
+    idSecRudderStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_RUDDER_STATUS_WORD");
+    idSecRudderTrimOrder[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_RUDDER_TRIM_ORDER");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -628,8 +630,6 @@ void FlyByWireInterface::setupLocalVariables() {
     idFacDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
     idFacDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
     idFacDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
-    idFacDeltaRRudderTrim[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
-    idFacRudderTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
   }
 
   idLeftInboardAileronSolenoidEnergized[0] = std::make_unique<LocalVariable>("A32NX_LEFT_INBOARD_AIL_GREEN_SERVO_SOLENOID_ENERGIZED");
@@ -1677,6 +1677,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   }
 
   idSecHealthy[secIndex]->set(secsDiscreteOutputs[secIndex].sec_healthy);
+  idSecRudderStatusWord[secIndex]->set(Arinc429Utils::toSimVar(secsBusOutputs[secIndex].rudder_status_word));
+  idSecRudderTrimOrder[secIndex]->set(Arinc429Utils::toSimVar(secsBusOutputs[secIndex].rudder_trim_order_deg));
 
   return true;
 }
@@ -1862,8 +1864,6 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacDiscreteWord3[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_3));
   idFacDiscreteWord4[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_4));
   idFacDiscreteWord5[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_5));
-  idFacDeltaRRudderTrim[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].delta_r_rudder_trim_deg));
-  idFacRudderTrimPos[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].rudder_trim_pos_deg));
 
   return true;
 }

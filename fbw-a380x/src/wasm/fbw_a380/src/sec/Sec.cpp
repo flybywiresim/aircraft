@@ -118,6 +118,7 @@ base_sec_out_bus Sec::getBusOutputs() {
     output.rudder_status_word.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.rudder_trim_order_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.fctl_law_status_word.SSM = Arinc429SignStatus::FailureWarning;
     output.misc_data_status_word.SSM = Arinc429SignStatus::FailureWarning;
     return output;

@@ -367,6 +367,8 @@ class A380SecComputer final
     uint32_T SSM_ma;
     uint32_T SSM_jut;
     uint32_T SSM_kh;
+    uint32_T SSM_h2;
+    uint32_T SSM_ago;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -675,6 +677,8 @@ class A380SecComputer final
     real32_T Data_dq;
     real32_T Data_pv;
     real32_T Data_p1d;
+    real32_T Data_lyv;
+    real32_T Data_ke;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
     boolean_T is_unit_3;
@@ -934,10 +938,10 @@ class A380SecComputer final
     real_T Saturation4_UpperSat;
     real_T Saturation4_LowerSat;
     real_T Constant_Value_a;
-    real32_T Gain_Gain_b;
+    real32_T Gain_Gain_e0;
     real32_T Gain1_Gain;
     real32_T Gain2_Gain;
-    real32_T Gain3_Gain_g;
+    real32_T Gain3_Gain_o;
     real32_T Gain4_Gain;
     boolean_T Constant1_Value_b;
     boolean_T Constant_Value_ad;
@@ -998,7 +1002,7 @@ class A380SecComputer final
   static void A380SecComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
   static void A380SecComputer_MATLABFunction_m(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
-  static void A380SecComputer_MATLABFunction_c(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void A380SecComputer_MATLABFunction_e(const boolean_T rtu_u[19], real32_T *rty_y);
   A380LateralDirectLaw LawMDLOBJ1;
   A380PitchDirectLaw LawMDLOBJ2;
 };
