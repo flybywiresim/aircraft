@@ -41,6 +41,12 @@
 1. [A380X/FADEC] Add N1 fan protection measures (METOTS, KOZ) - @flogross89 (floridude)
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
+1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
+1. [RA] Add direct coupling and interrupted antenna cable failures to RAs - @beheh (Benedict Etzel)
+1. [A32NX/TELEX] Keep flight number set even if already taken - @BenJuan26 (BenJuan26)
+1. [HYD] Placeholder inhibit logic for electrical backup on ground - @Crocket63 (crocket)
+1. [A380X/PRESS] Add pressurization system failures failures ecam messages - @mjuhe (Miquel Juhe)
 
 ## 0.12.0
 

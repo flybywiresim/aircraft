@@ -38,12 +38,12 @@ class CDUPilotsWaypoint {
                 case StoredWaypointType.Pbd:
                     template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}{end}`;
                     template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
-                    template[6][0] = `{green}${storedWp.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(storedWp.waypoint, storedWp.pbdBearing)}/${storedWp.pbdDistance.toFixed(1)}{end}`;
+                    template[6][0] = `{green}${storedWp.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(storedWp.pbdBearing)}/${storedWp.pbdDistance.toFixed(1)}{end}`;
                     break;
                 case StoredWaypointType.Pbx:
                     template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}{end}`;
                     template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
-                    template[8][0] = `{green}${storedWp.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.waypoint, storedWp.pbxBearing1)}\xa0/${storedWp.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.waypoint, storedWp.pbxBearing2)}{end}`;
+                    template[8][0] = `{green}${storedWp.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.pbxBearing1)}\xa0/${storedWp.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.pbxBearing2)}{end}`;
                     break;
                 default:
             }
@@ -114,8 +114,7 @@ class CDUPilotsWaypoint {
         return `${CDUPilotsWaypoint.formatAngle(coordinates.lat, 2)}${coordinates.lat < 0 ? 'S' : 'N'}/${CDUPilotsWaypoint.formatAngle(coordinates.long, 3)}${coordinates.long < 0 ? 'W' : 'E'}`;
     }
 
-    static formatBearing(wp, bearing) {
-        const magVar = Facilities.getMagVar(wp.location.lat, wp.location.long);
-        return `${A32NX_Util.trueToMagnetic(bearing, magVar).toFixed(0).padStart(3, '0')}°`;
+    static formatBearing(bearing) {
+        return `${bearing.toFixed(0).padStart(3, '0')}°`;
     }
 }
