@@ -279,11 +279,6 @@ impl Brake {
     }
 }
 impl SimulationElement for Brake {
-    fn read(&mut self, reader: &mut crate::simulation::SimulatorReader) {
-        // DEBUG
-        self.temperature = reader.read(&self.temperature_id);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.temperature_id, self.temperature);
     }
@@ -410,5 +405,222 @@ impl SimulationElement for BrakeFanPanel {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.brakes_hot_identifier, self.brakes_hot);
         writer.write(&self.running_identifier, self.brake_fan_pb_pressed);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::*;
+    use crate::simulation::{
+        test::{ReadByName, SimulationTestBed, TestBed},
+        Aircraft,
+    };
+    use uom::si::{
+        length::meter,
+        mass::kilogram,
+        pressure::{pascal, psi},
+        thermodynamic_temperature::degree_celsius,
+    };
+
+    #[test]
+    fn test_brake_initialization() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
+        test_bed.run_without_delta();
+
+        test_bed.run_with_delta(Duration::from_millis(10));
+
+        let brake_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+
+        assert_eq!(
+            brake_temperature,
+            test_bed.ambient_temperature(),
+            "Brake temperature should match ambient temperature at initialization"
+        );
+    }
+
+    #[test]
+    fn braking_heats_up() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        test_bed.run_without_delta();
+
+        // Simulate brake heating due to pressure and movement
+        let initial_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+        test_bed.command(|a| a.set_actuator_pressure(Pressure::new::<pascal>(5000.0)));
+        test_bed.command(|a| a.set_passed_length(Length::new::<meter>(0.01)));
+
+        test_bed.run_with_delta(Duration::from_millis(10));
+
+        let brake_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+
+        assert!(
+            brake_temperature > initial_temperature,
+            "Temperature should increase when brake is applied"
+        );
+    }
+
+    #[test]
+    fn brake_cools_down() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        test_bed.run_without_delta();
+
+        // Set an elevated initial temperature to test cooling
+        let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(300.);
+        test_bed.command(|a| a.set_brake_temperature(initial_temperature));
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        let brake_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+
+        println!("{brake_temperature:?} < {initial_temperature:?}");
+
+        assert!(
+            brake_temperature < initial_temperature,
+            "Temperature should decrease when brake fan is on"
+        );
+    }
+
+    #[test]
+    fn test_brake_update_cools_down_with_brake_fan() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        test_bed.run_without_delta();
+
+        // Set an elevated initial temperature to test cooling
+        let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(300.);
+        test_bed.command(|a| a.set_brake_temperature(initial_temperature));
+
+        // Enable brake fan to simulate cooling
+        test_bed.command(|a| a.set_brake_fan_on(true));
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        let brake_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+
+        println!("{brake_temperature:?} < {initial_temperature:?}");
+
+        assert!(
+            brake_temperature < initial_temperature,
+            "Temperature should decrease when brake fan is on"
+        );
+    }
+
+    #[test]
+    fn brake_with_parking_brake() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        test_bed.run_without_delta();
+
+        // Parking brake is set (i.e no movement)
+        let initial_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+        test_bed.command(|a| a.set_actuator_pressure(Pressure::new::<psi>(3000.0)));
+        test_bed.command(|a| a.set_passed_length(Length::default()));
+
+        test_bed.run_with_delta(Duration::from_millis(10));
+
+        let brake_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+
+        println!("{brake_temperature:?} < {initial_temperature:?}");
+        assert_eq!(
+            brake_temperature, initial_temperature,
+            "Temperature should increase when brake is applied"
+        );
+    }
+
+    #[test]
+    fn hot_brake_with_parking_brake() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        test_bed.run_without_delta();
+
+        // Set an elevated initial temperature to test cooling
+        let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(300.);
+        test_bed.command(|a| a.set_brake_temperature(initial_temperature));
+
+        // Parking brake is set (i.e no movement)
+        test_bed.command(|a| a.set_actuator_pressure(Pressure::new::<psi>(3000.0)));
+        test_bed.command(|a| a.set_passed_length(Length::default()));
+
+        test_bed.run_with_delta(Duration::from_millis(10));
+
+        let brake_temperature: ThermodynamicTemperature =
+            test_bed.read_by_name("BRAKE_TEMPERATURE_0");
+
+        assert!(
+            brake_temperature < initial_temperature,
+            "Temperature should increase when brake is applied"
+        );
+    }
+
+    struct TestAircraft {
+        brake_properties: BrakeProperties,
+        brake: Brake,
+        passed_length: Length,
+        actuator_pressure: Pressure,
+        brake_fan_on: bool,
+        gear_extended_phys: bool,
+    }
+    impl TestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                brake_properties: BrakeProperties::new(
+                    Length::new::<meter>(0.3),
+                    Length::new::<meter>(0.05),
+                    Mass::new::<kilogram>(8.0),
+                ),
+                brake: Brake::new(context, 0),
+                passed_length: Length::default(),
+                actuator_pressure: Pressure::default(),
+                brake_fan_on: false,
+                gear_extended_phys: false,
+            }
+        }
+
+        fn set_passed_length(&mut self, passed_length: Length) {
+            self.passed_length = passed_length;
+        }
+
+        fn set_actuator_pressure(&mut self, actuator_pressure: Pressure) {
+            self.actuator_pressure = actuator_pressure;
+        }
+
+        fn set_brake_fan_on(&mut self, brake_fan_on: bool) {
+            self.brake_fan_on = brake_fan_on;
+        }
+
+        fn set_gear_extended_phys(&mut self, gear_extended_phys: bool) {
+            self.gear_extended_phys = gear_extended_phys;
+        }
+
+        fn set_brake_temperature(&mut self, temperature: ThermodynamicTemperature) {
+            println!("{:?}", self.brake.temperature);
+            self.brake.temperature = temperature;
+            println!("{:?}", self.brake.temperature);
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.brake.update(
+                context,
+                &self.brake_properties,
+                self.passed_length,
+                self.actuator_pressure,
+                self.brake_fan_on,
+                self.gear_extended_phys,
+            );
+        }
+    }
+    impl SimulationElement for TestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.brake.accept(visitor);
+
+            visitor.visit(self);
+        }
     }
 }
