@@ -19,7 +19,8 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
 
   const rudderTrimAvail = sec1RudderStatusWord.bitValueOr(28, false) || sec3RudderStatusWord.bitValueOr(28, false);
   const secRudderTrim = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_TRIM_ORDER`).valueOr(0);
-  const [simRudderTrim] = useSimVar('A:RUDDER TRIM PCT', 'number'); // We don't have a rudder trim sensor implemented yet
+  // We don't have a rudder trim sensor implemented yet, so that's our fallback if SECs are failed
+  const [simRudderTrim]: [number, (v: number) => void] = useSimVar('A:RUDDER TRIM PCT', 'number');
   const rudderTrim = rudderTrimAvail ? secRudderTrim : -0.85 * 30 * simRudderTrim;
 
   const deflectionInfoValid = true;
