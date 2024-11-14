@@ -30,7 +30,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { Units } from '@flybywiresim/fbw-sdk';
-import { getEtaFromUtcOrPresent } from '../../shared/utils';
+import { getEtaFromUtcOrPresent, secondsToHHmmString } from '../../shared/utils';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
@@ -42,6 +42,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private fuelOnBoard = Subject.create<number | null>(null);
 
   private fuelPlanningIsDisabled = Subject.create<boolean>(true);
+
+  private DestinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
+    v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
+  );
 
   private tripFuelWeight = Subject.create<number | null>(null);
 
@@ -103,7 +107,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     if (this.loadedFlightPlan.destinationAirport) {
       this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
       const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
-      this.destEta.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, false));
+
+      // TODO Should display ETA if EET present
+      this.destEta.set(
+        this.activeFlightPhase.get() != FmgcFlightPhase.Preflight
+          ? getEtaFromUtcOrPresent(destPred?.secondsFromPresent, false)
+          : secondsToHHmmString(destPred?.secondsFromPresent),
+      );
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
       this.destEfobBelowMin.set(
@@ -164,6 +174,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             const tripFuel =
               fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob);
             this.tripFuelWeight.set(tripFuel);
+            if (destPred?.secondsFromPresent) {
+              this.tripFuelTime.set(destPred.secondsFromPresent);
+            }
 
             // Calculate Rte Rsv fuel for 5.0% reserve
             this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
@@ -182,11 +195,15 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 (this.props.fmcService.master.fmgc.data.routeReserveFuelWeight.get() ?? 0),
             );
           } else {
-            // EXTRA = EFOB - MIN DEST FOB
-            this.extraFuelWeight.set(
-              destPred?.estimatedFuelOnBoard ??
-                0 - (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
-            );
+            if (destPred) {
+              this.tripFuelWeight.set(this.props.fmcService.master.fmgc.getFOB() - destPred.estimatedFuelOnBoard);
+              this.tripFuelTime.set(destPred.secondsFromPresent);
+              // EXTRA = EFOB - MIN DEST FOB
+              this.extraFuelWeight.set(
+                destPred.estimatedFuelOnBoard -
+                  (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
+              );
+            }
           }
 
           this.updateDestAndAltnPredictions();
@@ -469,7 +486,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div style="display: grid; grid-template-columns: auto auto auto auto;">
                   <div class="mfd-fms-fuel-load-dest-grid-top-cell" />
                   <div class="mfd-fms-fuel-load-dest-grid-top-cell" />
-                  <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">UTC</div>
+                  <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">
+                    {this.DestinationAlternateTimeHeader}
+                  </div>
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">EFOB</div>
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-middle-cell">DEST</div>
                   <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destIcao}</div>
