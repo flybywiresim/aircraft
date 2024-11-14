@@ -16,6 +16,9 @@
 1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
 1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
+1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A380X/MFD] Fix ETA and add TOD prediction in PERF page - @BravoMike99 (bruno_pt99)
+1. [A380/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/TELEX] Added popup for telex consent - @saschl (saschl) @Maximilian-Reuter (\_chaoz)
 1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
 1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
@@ -40,6 +43,12 @@
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
+1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
+1. [RA] Add direct coupling and interrupted antenna cable failures to RAs - @beheh (Benedict Etzel)
+1. [A32NX/TELEX] Keep flight number set even if already taken - @BenJuan26 (BenJuan26)
+1. [HYD] Placeholder inhibit logic for electrical backup on ground - @Crocket63 (crocket)
+1. [A380X/PRESS] Add pressurization system failures failures ecam messages - @mjuhe (Miquel Juhe)
 
 ## 0.12.0
 
