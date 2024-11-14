@@ -33,6 +33,10 @@ class A380X_EWD extends BaseInstrument {
     return 'A380X_EWD';
   }
 
+  public get isInteractive(): boolean {
+    return true;
+  }
+
   public connectedCallback(): void {
     super.connectedCallback();
 
