@@ -50,6 +50,8 @@
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
+1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
+1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
