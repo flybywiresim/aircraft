@@ -1,7 +1,5 @@
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode,
-  ConsumerSubject,
-  HEvent,
-  SubscribableMapFunctions, } from '@microsoft/msfs-sdk';
+  HEvent, } from '@microsoft/msfs-sdk';
 
 import {
   ArincEventBus,
@@ -18,7 +16,8 @@ import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReado
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+import { AutoThrustMode } from '@shared/autopilot';
+import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -236,108 +235,64 @@ interface AltitudeIndicatorProps {
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
+  private elems : HudElemsVis = {
+    xWindAltTape    : Subject.create<String>(''),
+    altTape         : Subject.create<String>(''),
+    xWindSpdTape    : Subject.create<String>(''),
+    spdTapeOrForcedOnLand         : Subject.create<String>(''),
+    altTapeMaskFill : Subject.create<String>(''),
+    windIndicator   : Subject.create<String>(''), 
+  };
+
+  private setElems() {
+    this.elems.altTape         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+  }
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
   private bitMask = 0;
+  private athMode = 0;
+  private onToPower = false;
   private onPower = false;
   private finalGnd = false;
   private onGround = true;
-  private sCrosswindModeOn = Subject.create<String>('');
-  private sCrosswindModeOff = Subject.create<String>('');
   private lgLeftCompressed = false;
   private lgRightCompressed = false;
   private subscribable = Subject.create<number>(0);
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
 
-  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
-    const nArr = [];
-    let n = -1;
-    nArr[0] = 1;
-    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
-    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
-    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
-    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
-    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
-    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
-    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
-
-
-      //----------
-    //finalGnd 1 xwnd on  dec != 2     
-    if(this.bitMask == 108 || this.bitMask == 106) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }
-    //finalGnd 1 xwnd on  dec == 2          
-    if(this.bitMask == 105 ) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }   
-
-      //----------
-    //finalGnd 1 xwnd off  dec != 2     
-    if(this.bitMask == 116 || this.bitMask == 114) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }
-    //finalGnd 1 xwnd off  dec == 2          
-    if(this.bitMask == 113 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }     
-
-    
-    //----------
-    //finalGnd 0 xwnd on  dec != 2     
-    if(this.bitMask == 74 || this.bitMask == 76) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none'); 
-    }
-    //finalGnd 0 xwnd on  dec == 2          
-    if(this.bitMask == 73 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');  
-    }
-
-    //----------
-    //finalGnd 0 xwnd off dec !=2       
-    if(this.bitMask == 82 || this.bitMask == 84) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');  
-    }
-    //finalGnd 0 xwnd off dec ==2       
-    if(this.bitMask == 81) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');      
-    }
-}
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
-    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
-      this.flightPhase = value;
-          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
-          (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues >();
 
-      })
-      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-        this.onGround = value;
-        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
-      sub.on('declutterMode').whenChanged().handle((value) => {
-          this.declutterMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      
-      })
-      sub.on('crosswindMode').whenChanged().handle((value) => {
-          this.crosswindMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
+    sub.on('AThrMode').whenChanged().handle((value)=>{
+      this.athMode = value;
+      (this.athMode == AutoThrustMode.MAN_FLEX || 
+          this.athMode == AutoThrustMode.MAN_TOGA || 
+          this.athMode == AutoThrustMode.TOGA_LK
+      ) ? this.onToPower = true : this.onToPower = false;
+      this.setElems();
+  })
+  sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.onGround = value;
+      this.setElems();
+  })
+  sub.on('declutterMode').whenChanged().handle((value) => {
+      this.declutterMode = value;
+      this.setElems();
+  
+  })
+  sub.on('crosswindMode').whenChanged().handle((value) => {
+      this.crosswindMode = value;
+      this.setElems();
+  })
 
     const pf = this.props.bus.getSubscriber<Arinc429Values>();
 
@@ -354,7 +309,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   render(): VNode {
 
     return (
-      <g id="AltitudeTape" transform="scale(4.25 4.25) translate(131 38)" display={this.sCrosswindModeOff} >
+      <g id="AltitudeTape" transform="scale(4.25 4.25) translate(131 38)" display={this.elems.altTape} >
         {/* <AltTapeBackground /> */}
         {/* <LandingElevationIndicator bus={this.props.bus} /> */}
         <g ref={this.tapeRef}>
@@ -391,15 +346,32 @@ enum TargetAltitudeColor {
 }
 
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps> {
+  private elems : HudElemsVis = {
+    xWindAltTape    : Subject.create<String>(''),
+    altTape         : Subject.create<String>(''),
+    xWindSpdTape    : Subject.create<String>(''),
+    spdTapeOrForcedOnLand         : Subject.create<String>(''),
+    altTapeMaskFill : Subject.create<String>(''),
+    windIndicator   : Subject.create<String>(''), 
+  };
+
+  private setElems() {
+    this.elems.altTape         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+  }
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
   private bitMask = 0;
+  private athMode = 0;
+  private onToPower = false;
   private onPower = false;
   private finalGnd = false;
   private onGround = true;
-  private sCrosswindModeOn = Subject.create<String>('');
-  private sCrosswindModeOff = Subject.create<String>('');
   private lgRightCompressed = false;
 
   private abnormal = FSComponent.createRef<SVGGElement>();
@@ -420,95 +392,35 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
   private targetAltitudeColor = Subject.create<TargetAltitudeColor>(TargetAltitudeColor.Cyan);
 
-  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
-    const nArr = [];
-    let n = -1;
-    nArr[0] = 1;
-    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
-    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
-    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
-    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
-    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
-    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
-    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
 
-
-      //----------
-    //finalGnd 1 xwnd on  dec != 2     
-    if(this.bitMask == 108 || this.bitMask == 106) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }
-    //finalGnd 1 xwnd on  dec == 2          
-    if(this.bitMask == 105 ) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }   
-
-      //----------
-    //finalGnd 1 xwnd off  dec != 2     
-    if(this.bitMask == 116 || this.bitMask == 114) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }
-    //finalGnd 1 xwnd off  dec == 2          
-    if(this.bitMask == 113 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }     
-
-    
-    //----------
-    //finalGnd 0 xwnd on  dec != 2     
-    if(this.bitMask == 74 || this.bitMask == 76) {
-      this.sCrosswindModeOn.set('none');
-      this.sCrosswindModeOff.set('none'); 
-  }
-  //finalGnd 0 xwnd on  dec == 2          
-  if(this.bitMask == 73 ) {
-      this.sCrosswindModeOn.set('none');
-      this.sCrosswindModeOff.set('none');  
-  }
-
-  //----------
-  //finalGnd 0 xwnd off dec !=2       
-  if(this.bitMask == 82 || this.bitMask == 84) {
-      this.sCrosswindModeOn.set('none');
-      this.sCrosswindModeOff.set('none');  
-  }
-  //finalGnd 0 xwnd off dec ==2       
-  if(this.bitMask == 81) {
-      this.sCrosswindModeOn.set('none');
-      this.sCrosswindModeOff.set('none');      
-  }
-  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent  & Arinc429Values & SimplaneValues>();
 
-    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
-      this.flightPhase = value;
-          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
-          (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+    sub.on('AThrMode').whenChanged().handle((value)=>{
+      this.athMode = value;
+      (this.athMode == AutoThrustMode.MAN_FLEX || 
+          this.athMode == AutoThrustMode.MAN_TOGA || 
+          this.athMode == AutoThrustMode.TOGA_LK
+      ) ? this.onToPower = true : this.onToPower = false;
+      this.setElems();
+  })
 
-      })
-      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-        this.onGround = value;
-        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
-      sub.on('declutterMode').whenChanged().handle((value) => {
-          this.declutterMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      
-      })
-      sub.on('crosswindMode').whenChanged().handle((value) => {
-          this.crosswindMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
+  sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.onGround = value;
+      this.setElems();
+  })
+  sub.on('declutterMode').whenChanged().handle((value) => {
+      this.declutterMode = value;
+      this.setElems();
+  
+  })
+  sub.on('crosswindMode').whenChanged().handle((value) => {
+      this.crosswindMode = value;
+      this.setElems();
+  })
     
 
     sub
@@ -573,7 +485,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
           </text>
         </g>
         <g ref={this.normal} id="AltTapes" transform="scale(4.25 4.25) translate(131 38)">
-          <g id="normalAltTape"  display={this.sCrosswindModeOff} >
+          <g id="normalAltTape"  display={this.elems.altTape} >
             <path
               id="AltTapeOutline"
               class="NormalStroke Green"
@@ -604,7 +516,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
 
 
-          <g id="CrosswindAltTape" transform="translate( 0 -66.5)"  display={this.sCrosswindModeOn} >
+          <g id="CrosswindAltTape" transform="translate( 0 -66.5)"  display={this.elems.xWindAltTape} >
               <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
               
 

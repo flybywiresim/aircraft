@@ -257,8 +257,8 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           <PitchScale bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} isAttExcessive={this.props.isAttExcessive}   />
 
           {/* horizon */}
-          <path id="HorizonLine" d="m 1 512 h 1278" class="SmallStroke Green" />
-
+          <path id="HorizonLine" d="m -100 512 h 1480" class="SmallStroke Green" />
+   
           <HorizontalTape
             type="headingTape"
             bus={this.props.bus}

@@ -2,24 +2,19 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode,  
-    SubscribableMapFunctions,
-    MappedSubject,
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode,
     Subscribable,
-    ConsumerSubject,ConsumerValue, EventBus,
     HEvent, } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { LagFilter } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
-import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { LinearDeviationIndicator } from './LinearDeviationIndicator';
@@ -27,54 +22,8 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-
-
-import { GenericAdirsEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericAdirsEvents';
-import { Layer } from '../MsfsAvionicsCommon/Layer';
-// L:A32NX_FWC_FLIGHT_PHASE                         L:A32NX_FMGC_FLIGHT_PHASE
-// | 0      |                  |                 |       0    |   Preflight
-// | 1      | ELEC PWR         | taxi            |       0    |                
-// | 2      | ENG 1 STARTED    | taxi            |       0    |                       
-// | 3      | 1ST ENG TO PWR   | takeoff         |       1    |   Takeoff
-// | 4      | 80 kt            | takeoff         |       1    |                           
-// | 5      | LIFTOFF          | clb             |       1    |                  
-// | 6      | 1500ft (in clb)  |                 |       2    |   TO pwr to clmb  .Climb
-// | 7      | 800 ft (in desc) |                 |       3    |   Cruise
-// | 8      | TOUCHDOWN        | rollout         |       4    |   Descent   
-// | 9      | 80 kt            | taxi            |       5    |   Approach  (at IAF reached)
-// | 10     | 2nd ENG SHUTDOWN |                 |       6    |   Go Around       taxi
-// | &gt; 1 | 5 MIN AFTER      |                 |       7    |   Done  (auto brk off or 30kts)
-
-//           finalGnd=
-//            TO pwr+                                                                                                                
-//           | onGnd |  xwnd | dec0 | dec1 | dec2 |
-//           | 0 | 1 | 0 | 1 |      |      |      |
-//           |---|---|---|---|------|------|------|
-//           finalGnd 1 xwnd on dec != 2
-//     xSpd  | 1 | 1 | 0 | 1 |   1  |   0  |   0  |    108
-//     xSpd  | 1 | 1 | 0 | 1 |   0  |   1  |   0  |    106
-//           finalGnd 1 xwnd on dec == 2
-//     xSpd  | 1 | 1 | 0 | 1 |   0  |   0  |   1  |    105
-
-//           finalGnd 1 xwnd off dec != 2
-//     spd   | 1 | 1 | 1 | 0 |   1  |   0  |   0  |    116                    
-//     spd   | 1 | 1 | 1 | 0 |   0  |   1  |   0  |    114  
-//           finalGnd 1 xwnd off dec == 2
-//     spd   | 1 | 1 | 1 | 0 |   0  |   0  |   1  |    113           
-
-//           finalGnd 0 xwnd on dec != 2
-//    xAlt   | 1 | 0 | 0 | 1 |   1  |   0  |   0  |    76     
-//    xAlt   | 1 | 0 | 0 | 1 |   0  |   1  |   0  |    74   
-//           finalGnd 0 xwnd on dec == 2
-//    xAlt   | 1 | 0 | 0 | 1 |   0  |   0  |   1  |    73     
-
-//           finalGnd 0 xwnd off dec != 2
-//    alt    | 1 | 0 | 1 | 0 |   1  |   0  |   0  |    84                    
-//    alt    | 1 | 0 | 1 | 0 |   0  |   1  |   0  |    82    
-//           finalGnd 0 xwnd off dec == 2
-//    alt    | 1 | 0 | 1 | 0 |   0  |   0  |   1  |    81     
+import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
+import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
 
 
 export const getDisplayIndex = () => {
@@ -89,21 +38,36 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
+    private elems : HudElemsVis = {
+        xWindAltTape    : Subject.create<String>(''),
+        altTape         : Subject.create<String>(''),
+        xWindSpdTape    : Subject.create<String>(''),
+        spdTapeOrForcedOnLand         : Subject.create<String>(''),
+        altTapeMaskFill : Subject.create<String>(''),
+        windIndicator   : Subject.create<String>(''), 
+      };
+    
+      private setElems() {
+        this.elems.altTape         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+        this.elems.altTapeMaskFill .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+        this.elems.spdTapeOrForcedOnLand         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+        this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+        this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+        this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+      }
+    private onLanding = false;
+    private groundSpeed = 0;
+    private onRollout = false;
+    private onDecel = false;
+    private landSpeed = false;
     private flightPhase = -1;
     private declutterMode = 0;
     private bitMask = 0;
-    private onPower = false;
-    private finalGnd = false;
+    private athMode = 0;
+    private onToPower = false;
     private onGround = true;
-    private xwndMode = false;
-    private sSpdXwndModeOn = Subject.create<String>('');
-    private sSpdXwndModeOff = Subject.create<String>('');
-    private sAltXwndModeOn = Subject.create<String>('');
-    private sAltXwndModeOff = Subject.create<String>('');
-    private windIndicator = Subject.create<String>('');
-    private altTapeMaskFill = "BackgroundFill";
+    private crosswindMode = false;
     private lgRightCompressed = false;
-    private groundSpeed = 0;
     private headingFailed = Subject.create(true);
 
     private displayBrightness = Subject.create(0);
@@ -132,108 +96,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
     }
 
-    private getBitMask(gnd: boolean, xwndMode: boolean, decclutterMode: number ) : void{
-        const nArr = [];
-        let n = -1;
-        nArr[0] = 1;
-        (gnd) ? nArr[1] = 1 : nArr[1] = 0;
-        (xwndMode) ? nArr[2] = 0 : nArr[2] = 1;
-        (xwndMode) ? nArr[3] = 1 : nArr[3] = 0;
-        (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
-        (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
-        (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
-        this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
-
-
-          //----------
-        //finalGnd 1 xwnd on  dec != 2     
-        if(this.bitMask == 108 || this.bitMask == 106) {
-            this.sAltXwndModeOn.set('block');
-            this.sAltXwndModeOff.set('none');
-            this.sSpdXwndModeOn.set('block');
-            this.sSpdXwndModeOff.set('none');
-            this.altTapeMaskFill = "noFill";
-            this.windIndicator.set('block');
-        }
-        //finalGnd 1 xwnd on  dec == 2          
-        if(this.bitMask == 105 ) {
-            this.sAltXwndModeOn.set('block');
-            this.sAltXwndModeOff.set('none');
-            this.sSpdXwndModeOn.set('block');
-            this.sSpdXwndModeOff.set('none');
-            this.altTapeMaskFill = "noFill";
-            this.windIndicator.set('block');
-        }   
-
-          //----------
-        //finalGnd 1 xwnd off  dec != 2     
-        if(this.bitMask == 116 || this.bitMask == 114) {
-            this.sAltXwndModeOn.set('none');
-            this.sAltXwndModeOff.set('block');
-            this.sSpdXwndModeOn.set('none');
-            this.sSpdXwndModeOff.set('block');
-            this.altTapeMaskFill = "BackgroundFill";
-            this.windIndicator.set('block');
-        }
-        //finalGnd 1 xwnd off  dec == 2          
-        if(this.bitMask == 113 ) {
-            this.sAltXwndModeOn.set('none');
-            this.sAltXwndModeOff.set('block');
-            this.sSpdXwndModeOn.set('none');
-            this.sSpdXwndModeOff.set('block');
-            this.altTapeMaskFill = "BackgroundFill";
-            this.windIndicator.set('block');
-        }     
-
-        
-        //----------
-        //finalGnd 0 xwnd on  dec != 2     
-        if(this.bitMask == 74 || this.bitMask == 76) {
-            this.sAltXwndModeOn.set('none');
-            this.sAltXwndModeOff.set('none');
-            this.sSpdXwndModeOn.set('block');
-            this.sSpdXwndModeOff.set('none'); 
-            this.altTapeMaskFill = "noFill";
-            this.windIndicator.set('block');
-        }
-        //finalGnd 0 xwnd on  dec == 2          
-        if(this.bitMask == 73 ) {
-            this.sAltXwndModeOn.set('none');
-            this.sAltXwndModeOff.set('none');
-            this.sSpdXwndModeOn.set('none');
-            this.sSpdXwndModeOff.set('none');  
-            this.altTapeMaskFill = "noFill";
-            this.windIndicator.set('none');
-        }
-
-        //----------
-        //finalGnd 0 xwnd off dec !=2       
-        if(this.bitMask == 82 || this.bitMask == 84) {
-            this.sAltXwndModeOn.set('none');
-            this.sAltXwndModeOff.set('none');
-            this.sSpdXwndModeOn.set('none');
-            this.sSpdXwndModeOff.set('block');  
-            this.altTapeMaskFill = "noFill";
-            this.windIndicator.set('block');
-        }
-        //finalGnd 0 xwnd off dec ==2       
-        if(this.bitMask == 81) {
-            this.sAltXwndModeOn.set('none');
-            this.sAltXwndModeOff.set('none');
-            this.sSpdXwndModeOn.set('none');
-            this.sSpdXwndModeOff.set('none');           
-            this.altTapeMaskFill = "noFill";
-            this.windIndicator.set('none');
-        }
-        console.log(
-            " bitMask: " + this.bitMask +
-            " onGround: " + this.onGround +
-            " onPower: " + this.onPower +
-            " finalGnd: " + this.finalGnd +
-            " declutterMode: " + this.declutterMode +
-            " xwndMode: " + this.xwndMode 
-        )
-    }
     
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -249,27 +111,62 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
            
         })
         
+        sub.on('activeVerticalMode').whenChanged().handle((value)=>{
+            (value == VerticalMode.ROLL_OUT) ? this.onRollout = true : this.onRollout = false;
+            if(this.onGround && this.landSpeed && (this.onDecel || this.onRollout)){
+                this.onLanding = true;
+            }else{
+                this.onLanding = false;
+            }
+        })
 
-        sub.on('fwcFlightPhase').whenChanged().handle((value) => {
-        this.flightPhase = value;
-            (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
-            (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
+        sub.on('autoBrakeDecel').whenChanged().handle((value)=>{
+            this.onDecel = value;
+                        if(this.onGround && this.landSpeed && (this.onDecel || this.onRollout)){
+                this.onLanding = true;
+            }else{
+                this.onLanding = false;
+            }
+        })
 
+        sub.on('groundSpeed').whenChanged().handle((value)=>{
+            this.groundSpeed = value;
+            (this.groundSpeed > 30) ? this.landSpeed = true : this.landSpeed = false;
+            if(this.onGround && this.landSpeed && (this.onDecel || this.onRollout)){
+                this.onLanding = true;
+            }else{
+                this.onLanding = false;
+            }
         })
         sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
             this.onGround = value;
-            (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
+
+            if(this.onGround && this.landSpeed && (this.onDecel || this.onRollout)){
+                this.onLanding = true;
+            }else{
+                this.onLanding = false;
+            }
+
+            this.setElems();
         })
+
+        sub.on('AThrMode').whenChanged().handle((value)=>{
+            this.athMode = value;
+            (this.athMode == AutoThrustMode.MAN_FLEX || 
+                this.athMode == AutoThrustMode.MAN_TOGA || 
+                this.athMode == AutoThrustMode.TOGA_LK
+            ) ? this.onToPower = true : this.onToPower = false;
+            this.setElems();
+        })
+
         sub.on('declutterMode').whenChanged().handle((value) => {
             this.declutterMode = value;
-            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
+            this.setElems();
         
         })
         sub.on('crosswindMode').whenChanged().handle((value) => {
-            this.xwndMode = value;
-            this.getBitMask(this.finalGnd, this.xwndMode, this.declutterMode);
+            this.crosswindMode = value;
+            this.setElems();
         
         })
     
@@ -328,8 +225,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         instrument={this.props.instrument}
                         isAttExcessive={this.isAttExcessive}
                         filteredRadioAlt={this.filteredRadioAltitude}
-                        
-                 
                     />
                        
 
@@ -337,18 +232,16 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278 v 800 h -1278 Z"/> 
 
                     <g id="TapesMasks" >
-                        <g id="AltTapeMask" display={this.sAltXwndModeOff}>
+                        <g id="AltTapeMask" display={this.elems.altTape}>
                             <path id="AltitudeTapeMask" class="BlackFill" d="m1045 322 h 114 v 365 h-114z" ></path>
                         </g>
-                        <g id="SpdTapeMask" display={this.sSpdXwndModeOff}>
+                        <g id="SpdTapeMask" display={this.elems.spdTapeOrForcedOnLand}>
                             <path id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
 
                         </g>
-                        {/* <path id="AltTapeMask" class="BlackFill" d="m1059 274 h 98 v 364 h-98z"></path>
-                        <path id="SpeedTapeMask" class="BlackFill" d="m70 274 h 98 v 364 h-98z"></path> */}
-                    </g>
+                    </g> 
 
-                    <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.windIndicator} >
+                    <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.elems.windIndicator} >
                         <WindIndicator bus={this.props.bus} />
                     </g>
 
@@ -370,14 +263,14 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         <path
                         id="Mask2"
                         class="BackgroundFill"
-                        display={this.sSpdXwndModeOff}
+                        display={this.elems.spdTapeOrForcedOnLand}
                         d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z" 
                         // d="M 60 0 H 208 V 1024 H 60 Z  M 61 274 v 364 h 146 v -364 z" 
                         />
                         <path
                         id="Mask3"
-                        class={this.altTapeMaskFill}
-                        display={this.sAltXwndModeOff}
+                        class={this.elems.altTapeMaskFill.get().toString()}
+                        display={this.elems.altTape}
                         d="M 1038 250 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z" 
                         // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z" 
                         />

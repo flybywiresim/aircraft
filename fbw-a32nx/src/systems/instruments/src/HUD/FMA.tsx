@@ -18,6 +18,8 @@ import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywire
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import {WindMode, HudElemsVis, HudElemsVisStr, getBitMask} from './HUDUtils';
+import { AutoThrustMode } from '@shared/autopilot';
 
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
@@ -49,11 +51,32 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
 }
 
 export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean> }> {
+  private elems : HudElemsVis = {
+    xWindAltTape    : Subject.create<String>(''),
+    altTape         : Subject.create<String>(''),
+    xWindSpdTape    : Subject.create<String>(''),
+    spdTapeOrForcedOnLand         : Subject.create<String>(''),
+    altTapeMaskFill : Subject.create<String>(''),
+    windIndicator   : Subject.create<String>(''), 
+  };
+
+  private setElems() {
+    this.elems.altTape               .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill       .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+  }
+  
+  private bitMask = 0;
+  private athMode = 0;
+  private onToPower = false;
+  private onGround = true;
+  private crosswindMode = false;
   private flightPhase = -1;
   private fmgcFlightPhase = -1;
-  private forcedFma = false;
   private declutterMode = 0;
-  private sFMAref = Subject.create<String>('');
 
   private activeLateralMode: number = 0;
 
@@ -143,84 +166,26 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       this.handleFMABorders();
     });
 
-    sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.fmgcFlightPhase = fp;
-      //force fma during climb and descent
-      if(fp == 1 || fp == 2 || fp == 4){
-        this.forcedFma = true;
-        if(this.declutterMode == 2 ){
-          this.sFMAref.set("block");
-        }else{
-          this.sFMAref.set("block");
-        } 
-      }else{
-        this.forcedFma = false;
-      }
-
+    sub.on('AThrMode').whenChanged().handle((value)=>{
+      this.athMode = value;
+      (this.athMode == AutoThrustMode.MAN_FLEX || 
+          this.athMode == AutoThrustMode.MAN_TOGA || 
+          this.athMode == AutoThrustMode.TOGA_LK
+      ) ? this.onToPower = true : this.onToPower = false;
+      this.setElems();
     })
-
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;
-      //onGround
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode == 2 ){
-            this.sFMAref.set("none");
-          }
-          if(this.declutterMode < 2 ){
-            this.sFMAref.set("block");
-          }
-      }
-      //inFlight
-      if(this.flightPhase > 2 && this.flightPhase <= 9 ){
-        if(this.forcedFma){
-          if(this.declutterMode == 2 ){
-            this.sFMAref.set("block");
-          }else{
-            this.sFMAref.set("block");
-          }   
-        }else{
-          if(this.declutterMode == 2 ){
-            this.sFMAref.set("none");
-          }else{
-            this.sFMAref.set("block");
-          }   
-        }
-      }
-
-
-      
-    });
-
+  
+    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+        this.onGround = value;
+        this.setElems();
+    })
     sub.on('declutterMode').whenChanged().handle((value) => {
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.declutterMode = value;
-      if(this.forcedFma){
-        if(this.declutterMode == 2 ){
-          this.sFMAref.set("block");
-      }else{
-        this.sFMAref.set("block");
-      }   
-      } else{
-        if(this.declutterMode == 2 ){
-            this.sFMAref.set("none");
-        }else{
-          this.sFMAref.set("block");
-        }    
-      }  
-    }); 
-
-
-    sub.on('leftMainGearCompressed').whenChanged().handle((value)=>{
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      if(this.flightPhase >= 8 && this.flightPhase <= 10){
-        if(this.declutterMode == 2 ){
-          this.sFMAref.set("block");
-        }else{
-          this.sFMAref.set("block");
-        }   
-      } 
+        this.declutterMode = value;
+        this.setElems();
+    })
+    sub.on('crosswindMode').whenChanged().handle((value) => {
+        this.crosswindMode = value;
+        this.setElems();
     })
 
 
@@ -321,7 +286,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   render(): VNode {
     return (
-      <g display={this.sFMAref} id="FMA" transform="scale(5 5) translate(40 0)">
+      <g display={this.elems.spdTapeOrForcedOnLand} id="FMA" transform="scale(5 5) translate(40 0)">
         {/* <g class="NormalStroke Grey">
           <path d={this.firstBorderSub} />
           <path d={this.secondBorderSub} />

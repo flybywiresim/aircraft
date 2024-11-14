@@ -24,8 +24,8 @@ import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 
 import { GenericAdirsEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericAdirsEvents';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
-
-
+import { AutoThrustMode } from '@shared/autopilot';
+import {WindMode, HudElemsVis, HudElemsVisStr, getBitMask} from './HUDUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -161,13 +161,32 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private declutterMode = 0;
   private crosswindMode = false;
   private bitMask = 0;
-  private onPower = false;
-  private finalGnd = false;
+  private athMode = 0;
+  private onToPower = false;
   private sDecelVis = Subject.create<String>('none');
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
   private groundSpeedRef = FSComponent.createRef<SVGGElement>();
   private lgRightCompressed = true;
+
+
+  private elems : HudElemsVis = {
+    xWindAltTape    : Subject.create<String>(''),
+    altTape         : Subject.create<String>(''),
+    xWindSpdTape    : Subject.create<String>(''),
+    spdTapeOrForcedOnLand         : Subject.create<String>(''),
+    altTapeMaskFill : Subject.create<String>(''),
+    windIndicator   : Subject.create<String>(''), 
+  };
+
+  private setElems() {
+    this.elems.altTape               .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill       .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindSpdTape); 
+  }
 
   private speedSub = Subject.create<number>(0);
 
@@ -190,69 +209,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private rightMainGearCompressed: boolean;
 
   private pathSub = Subject.create('');
-
-  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
-    const nArr = [];
-    let n = -1;
-    nArr[0] = 1;
-    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
-    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
-    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
-    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
-    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
-    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
-    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
-
-
-      //----------
-    //finalGnd 1 xwnd on  dec != 2     
-    if(this.bitMask == 108 || this.bitMask == 106) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }
-    //finalGnd 1 xwnd on  dec == 2          
-    if(this.bitMask == 105 ) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }   
-
-      //----------
-    //finalGnd 1 xwnd off  dec != 2     
-    if(this.bitMask == 116 || this.bitMask == 114) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }
-    //finalGnd 1 xwnd off  dec == 2          
-    if(this.bitMask == 113 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }     
-
-    
-    //----------
-    //finalGnd 0 xwnd on  dec != 2     
-    if(this.bitMask == 74 || this.bitMask == 76) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none'); 
-    }
-    //finalGnd 0 xwnd on  dec == 2          
-    if(this.bitMask == 73 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');  
-    }
-
-    //----------
-    //finalGnd 0 xwnd off dec !=2       
-    if(this.bitMask == 82 || this.bitMask == 84) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');  
-    }
-    //finalGnd 0 xwnd off dec ==2       
-    if(this.bitMask == 81) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');      
-    }
-}
 
   private setOutline() {
     let airspeedValue: number;
@@ -281,30 +237,30 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents>();
 
-    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents >();
+  sub.on('AThrMode').whenChanged().handle((value)=>{
+    this.athMode = value;
+    (this.athMode == AutoThrustMode.MAN_FLEX || 
+        this.athMode == AutoThrustMode.MAN_TOGA || 
+        this.athMode == AutoThrustMode.TOGA_LK
+    ) ? this.onToPower = true : this.onToPower = false;
+    this.setElems();
+  })
 
-    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
-      this.flightPhase = value;
-          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
-          (this.onGround.get() == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+  sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+      this.onGround.set(value);
+      this.setElems();
+  })
+  sub.on('declutterMode').whenChanged().handle((value) => {
+      this.declutterMode = value;
+      this.setElems();
 
-      })
-      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-          this.onGround.set(value);
-          (this.onGround.get() == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
-      sub.on('declutterMode').whenChanged().handle((value) => {
-          this.declutterMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      
-      })
-      sub.on('crosswindMode').whenChanged().handle((value) => {
-          this.crosswindMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
+  })
+  sub.on('crosswindMode').whenChanged().handle((value) => {
+      this.crosswindMode = value;
+      this.setElems();
+  })
 
     sub.on('autoBrakeDecel').whenChanged().handle((value) => {
       value ? this.sDecelVis.set('block') : this.sDecelVis.set('none');
@@ -371,14 +327,12 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
         <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements} transform="scale(4.25 4.25) translate(15 38)">
           
-          <g id="CrosswindSpeedTape" transform="translate( -120 -66.5)" display={this.sCrosswindModeOn}>
+          <g id="CrosswindSpeedTape" transform="translate( -120 -66.5)" display={this.elems.xWindSpdTape}>
             <CrosswindDigitalSpeedReadout bus={this.props.bus} />
           </g>
 
-          <g id="NormalSpeedTape" display={this.sCrosswindModeOff}>
-              
-            {/* <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" /> */}
-            {/* Outline */}
+          <g id="NormalSpeedTape" display={this.elems.spdTapeOrForcedOnLand}>
+
             <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
             <VerticalTape
               tapeValue={this.speedSub}
@@ -508,10 +462,31 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 const getSpeedTapeOffset = (speed: number): number => (-speed * DistanceSpacing) / ValueSpacing;
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
+  private elems : HudElemsVis = {
+    xWindAltTape    : Subject.create<String>(''),
+    altTape         : Subject.create<String>(''),
+    xWindSpdTape    : Subject.create<String>(''),
+    spdTapeOrForcedOnLand         : Subject.create<String>(''),
+    altTapeMaskFill : Subject.create<String>(''),
+    windIndicator   : Subject.create<String>(''), 
+  };
+
+  private setElems() {
+    this.elems.altTape         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+  }
+
+
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
   private bitMask = 0;
+  private athMode = 0;
+  private onToPower = false;
   private onPower = false;
   private finalGnd = false;
   private sCrosswindModeOn = Subject.create<String>('');
@@ -535,68 +510,6 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
   private airSpeed = Arinc429Word.empty();
 
-  private getBitMask(gnd: boolean, crosswindMode: boolean, decclutterMode: number ) : void{
-    const nArr = [];
-    let n = -1;
-    nArr[0] = 1;
-    (gnd) ? nArr[1] = 1 : nArr[1] = 0;
-    (crosswindMode) ? nArr[2] = 0 : nArr[2] = 1;
-    (crosswindMode) ? nArr[3] = 1 : nArr[3] = 0;
-    (decclutterMode == 0) ? nArr[4] = 1 : nArr[4] = 0;
-    (decclutterMode == 1) ? nArr[5] = 1 : nArr[5] = 0;
-    (decclutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
-    this.bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
-
-
-      //----------
-    //finalGnd 1 xwnd on  dec != 2     
-    if(this.bitMask == 108 || this.bitMask == 106) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }
-    //finalGnd 1 xwnd on  dec == 2          
-    if(this.bitMask == 105 ) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none');
-    }   
-
-      //----------
-    //finalGnd 1 xwnd off  dec != 2     
-    if(this.bitMask == 116 || this.bitMask == 114) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }
-    //finalGnd 1 xwnd off  dec == 2          
-    if(this.bitMask == 113 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');
-    }     
-
-    
-    //----------
-    //finalGnd 0 xwnd on  dec != 2     
-    if(this.bitMask == 74 || this.bitMask == 76) {
-        this.sCrosswindModeOn.set('block');
-        this.sCrosswindModeOff.set('none'); 
-    }
-    //finalGnd 0 xwnd on  dec == 2          
-    if(this.bitMask == 73 ) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');  
-    }
-
-    //----------
-    //finalGnd 0 xwnd off dec !=2       
-    if(this.bitMask == 82 || this.bitMask == 84) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('block');  
-    }
-    //finalGnd 0 xwnd off dec ==2       
-    if(this.bitMask == 81) {
-        this.sCrosswindModeOn.set('none');
-        this.sCrosswindModeOff.set('none');      
-    }
-}
 
   private setOutline(): void {
     let airspeedValue: number;
@@ -630,21 +543,24 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
 
-    sub.on('fwcFlightPhase').whenChanged().handle((value) => {
-      this.flightPhase = value;
-          (this.flightPhase >= 3 && this.flightPhase < 9) ? this.onPower = true : this.onPower = false;
-          (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
-      sub.on('declutterMode').whenChanged().handle((value) => {
-          this.declutterMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      
-      })
-      sub.on('crosswindMode').whenChanged().handle((value) => {
-          this.crosswindMode = value;
-          this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
-      })
+    sub.on('AThrMode').whenChanged().handle((value)=>{
+      this.athMode = value;
+      (this.athMode == AutoThrustMode.MAN_FLEX || 
+          this.athMode == AutoThrustMode.MAN_TOGA || 
+          this.athMode == AutoThrustMode.TOGA_LK
+      ) ? this.onToPower = true : this.onToPower = false;
+      this.setElems();
+  })
+
+  sub.on('declutterMode').whenChanged().handle((value) => {
+      this.declutterMode = value;
+      this.setElems();
+  
+  })
+  sub.on('crosswindMode').whenChanged().handle((value) => {
+      this.crosswindMode = value;
+      this.setElems();
+  })
 
     sub
       .on('leftMainGearCompressed')
@@ -654,8 +570,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
         this.onGround = this.rightMainGearCompressed || g;
         this.setOutline();
         this.onGround = g;
-        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+        this.setElems();
       });
 
     sub
@@ -666,8 +581,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
         this.onGround = this.leftMainGearCompressed || g;
         this.setOutline();
         this.onGround = g;
-        (this.onGround == true && this.onPower == true) ? this.finalGnd = true : this.finalGnd = false;
-        this.getBitMask(this.finalGnd, this.crosswindMode, this.declutterMode);
+        this.setElems();
       });
 
     sub
@@ -708,7 +622,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
           <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
           <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
         </g>
-        <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  display={this.sCrosswindModeOff}  >
+        <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  display={this.elems.spdTapeOrForcedOnLand}  >
           <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m1.9058 38.086h21.859" />
           <SpeedTarget bus={this.props.bus} />
           <text id="AutoBrkDecel" ref={this.decelRef} class="FontMediumSmaller  EndAlign Green" x="20.53927" y="129.06996">

@@ -2,6 +2,8 @@ import { DisplayComponent, EventBus, FSComponent, Subject, VNode,ConsumerSubject
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import { AutoThrustMode } from '@shared/autopilot';
+import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
@@ -13,11 +15,30 @@ type LinearDeviationIndicatorProps = {
 }
 
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
+    private elems : HudElemsVis = {
+        xWindAltTape    : Subject.create<String>(''),
+        altTape         : Subject.create<String>(''),
+        xWindSpdTape    : Subject.create<String>(''),
+        spdTapeOrForcedOnLand         : Subject.create<String>(''),
+        altTapeMaskFill : Subject.create<String>(''),
+        windIndicator   : Subject.create<String>(''), 
+    };
     
+    private setElems() {
+        this.elems.altTape               .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+        this.elems.altTapeMaskFill       .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+        this.elems.spdTapeOrForcedOnLand .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+        this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+        this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+        this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    }
     private flightPhase = -1;
     private declutterMode = 0;
     private crosswindMode = false;
-    private sVisibility = Subject.create<String>('');
+    private athMode = 0;
+    private onToPower = false;
+    private onGround = true;
+   
     private lgRightCompressed = false;
         
     private shouldShowLinearDeviation = false;
@@ -47,104 +68,28 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent   & HUDSimvars>();
+ 
+        sub.on('AThrMode').whenChanged().handle((value)=>{
+          this.athMode = value;
+          (this.athMode == AutoThrustMode.MAN_FLEX || 
+              this.athMode == AutoThrustMode.MAN_TOGA || 
+              this.athMode == AutoThrustMode.TOGA_LK
+          ) ? this.onToPower = true : this.onToPower = false;
+          this.setElems();
+      })
     
-        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-            this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-            this.flightPhase = fp;
-            this.lgRightCompressed = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED','Bool');
-              //preflight / taxi
-              if(this.flightPhase <= 2 ){
-                if(this.declutterMode == 2 ){
-                  this.sVisibility.set("none");
-                } 
-                if(this.declutterMode < 2 ) {
-                  this.sVisibility.set(this.crosswindMode ? "none" : "block");
-                }  
-              }
-              //takeoff
-              if(this.flightPhase >= 3 && this.flightPhase <= 5){
-                this.sVisibility.set(this.crosswindMode ? "none" : "block");
-              }  
-              //clb crz des
-              if( this.flightPhase == 6 || this.flightPhase == 7){
-                if(this.declutterMode == 2 ){
-                  this.sVisibility.set("none");
-                }  
-                if(this.declutterMode < 2 ) {   
-                  this.sVisibility.set(this.crosswindMode ? "none" : "block");
-                }   
-              }
-            });
-              
-            // remove alt tape on rollout
-            sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-              this.lgRightCompressed = value;
-              //console.log('lgleftComp: '+ this.lgRightCompressed);
-              if(this.lgRightCompressed == true){
-                if(this.flightPhase >= 7 ){
-                  this.sVisibility.set("none");
-                  console.log('lgleftComp2: ' + this.lgRightCompressed);
-                }
-              }
-            });
-        
-        
-            sub.on('declutterMode').whenChanged().handle((value) => {
-              this.crosswindMode = SimVar.GetSimVarValue('L:A32NX_HUD_CROSSWIND_MODE','Bool');
-              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-              this.declutterMode = value;
-              //preflight / taxi
-              if(this.flightPhase <= 2 ){
-                if(this.declutterMode == 2 ){
-                  this.sVisibility.set("none");
-                } 
-                if(this.declutterMode < 2 ) {
-                  this.sVisibility.set(this.crosswindMode ? "none" : "block");
-                }  
-              }
-              //takeoff
-              if(this.flightPhase >= 3 && this.flightPhase <= 5){
-                this.sVisibility.set(this.crosswindMode ? "none" : "block");
-              }  
-              //clb crz des
-              if( this.flightPhase == 6 || this.flightPhase == 7){
-                if(this.declutterMode == 2 ){
-                  this.sVisibility.set("none");
-                }  
-                if(this.declutterMode < 2 ) {   
-                  this.sVisibility.set(this.crosswindMode ? "none" : "block");
-                }   
-              }
-            }); 
-            
-            sub.on('crosswindMode').whenChanged().handle((value) => {
-              this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-              this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-              this.crosswindMode = value;
-              //preflight / taxi
-              if(this.flightPhase <= 2 ){
-                if(this.declutterMode == 2 ){
-                  this.sVisibility.set("none");
-                } 
-                if(this.declutterMode < 2 ) {
-                  this.sVisibility.set(this.crosswindMode ? "none" : "block");
-                }  
-              }
-              //takeoff
-              if(this.flightPhase >= 3 && this.flightPhase <= 5){
-                this.sVisibility.set(this.crosswindMode ? "none" : "block");
-              }  
-              //clb crz des
-              if( this.flightPhase == 6 || this.flightPhase == 7){
-                if(this.declutterMode == 2 ){
-                  this.sVisibility.set("none");
-                }  
-                if(this.declutterMode < 2 ) {   
-                  this.sVisibility.set(this.crosswindMode ? "none" : "block");
-                }   
-              }
-            });
+      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+          this.onGround = value;
+          this.setElems();
+      })
+      sub.on('declutterMode').whenChanged().handle((value) => {
+          this.declutterMode = value;
+          this.setElems();
+      })
+      sub.on('crosswindMode').whenChanged().handle((value) => {
+          this.crosswindMode = value;
+          this.setElems();
+      })
 
         sub.on('altitudeAr').handle((alt) => {
             if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
@@ -210,7 +155,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
     render(): VNode {
         return (
-            <g id="LinearDeviationIndicator" transform="scale(4.25 4.25) translate(131 38)"  display={this.sVisibility}>
+            <g id="LinearDeviationIndicator" transform="scale(4.25 4.25) translate(131 38)"  display={this.elems.altTape}>
                 <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontMediumSmaller  Green">{this.upperLinearDeviationReadoutText}</text>
                 <g id="LinearDeviationDot" transform={this.componentTransform}>
                     <path
