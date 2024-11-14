@@ -28,7 +28,7 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
   const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
   const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
-  const [minRwyLength, setMinRwyLength] = usePersistentProperty('CONFIG_MIN_RWY_LENGTH', '3000');
+  const [minRwyLength, setMinRwyLength] = usePersistentProperty('CONFIG_MIN_RWY_LENGTH', '1500');
   const [minRwyLengthSetting, setMinRwyLengthSetting] = useState(minRwyLength);
 
   const [usingMetric, setUsingMetric] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
