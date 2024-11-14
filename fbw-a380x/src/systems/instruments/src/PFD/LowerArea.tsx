@@ -5,6 +5,7 @@ import {
   DisplayComponent,
   EventSubscriber,
   FSComponent,
+  HEvent,
   MappedSubject,
   Subject,
   Subscribable,
@@ -498,13 +499,20 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FwcDataEvents & SecDataEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & FwcDataEvents & SecDataEvents & ClockEvents & PFDSimvars & HEvent
+  >();
 
   private readonly onGround = Arinc429LocalVarConsumerSubject.create(this.sub.on('fwc_discrete_word_126_1')).map((w) =>
     w.bitValueOr(28, false),
   );
 
   private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+
+  private readonly engine1Running = ConsumerSubject.create(this.sub.on('engOneRunning'), false);
+  private readonly engine2Running = ConsumerSubject.create(this.sub.on('engTwoRunning'), false);
+  private readonly engine3Running = ConsumerSubject.create(this.sub.on('engThreeRunning'), false);
+  private readonly engine4Running = ConsumerSubject.create(this.sub.on('engFourRunning'), false);
 
   private readonly rudderTrim1Engaged = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('sec_rudder_status_word_1'),
@@ -525,10 +533,14 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     (v) => `${v >= 0 || Math.abs(v) < 0.01 ? 'L' : 'R'}${Math.abs(v).toFixed(1).padStart(5, '\xa0')}`,
   );
 
+  private readonly rudderTrimIndicatorVisibilityCondition = Subject.create(false);
+
+  private readonly rudderTrimIndicatorVisibilityStatus = Subject.create(false);
+
   private readonly rudderTrimOrderTextClass = this.rudderTrimOrder.map((v) => {
     const absTrim = Math.abs(v);
     if (absTrim < 0.3) {
-      return 'FontSmallest White';
+      return 'HiddenElement';
     } else if (absTrim < 3.6) {
       return 'FontSmallest Amber';
     } else {
@@ -536,30 +548,93 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     }
   });
 
+  private readonly rudderTrimOrderTextVisibility = this.rudderTrimOrder.map((t) =>
+    Math.abs(t) < 0.3 ? 'hidden' : 'inherit',
+  );
+
   private readonly rudderTrimOrderPolygonPoints = this.rudderTrimOrder.map((v) => {
     const xOffset = -11.5 * (v / 25.5);
     return `${52.5 + xOffset},186.25 ${54 + xOffset},187.75 ${52.5 + xOffset},189.25 ${51 + xOffset},187.75`;
   });
 
+  private rudderTrimWasMoved = false;
+
+  private engineHasFailed = false;
+
+  private delayStartTime: number | null = null;
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.sub.on('hEvent').handle((ev) => {
+      if (ev === 'A32NX.RUDDER_TRIM_MANUALLY_MOVED') {
+        this.rudderTrimWasMoved = true;
+      }
+    });
+
+    this.sub
+      .on('simTime')
+      .atFrequency(4)
+      .handle((t) => {
+        const gnd = this.onGround.get();
+        const cas = this.speed.get();
+        const rt = this.rudderTrimOrder.get();
+
+        const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
+        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(0) < 60 && Math.abs(rt) > 0.3;
+
+        if (
+          !this.onGround.get() &&
+          (!this.engine1Running.get() ||
+            !this.engine2Running.get() ||
+            !this.engine3Running.get() ||
+            !this.engine4Running.get())
+        ) {
+          this.engineHasFailed = true;
+        }
+
+        const visCondition =
+          this.rudderTrimWasMoved ||
+          onGroundSlower60Exceeds0p3 ||
+          inFlightOrGroundFaster60Exceeds1Deg ||
+          this.engineHasFailed;
+        this.rudderTrimWasMoved = false;
+
+        if (visCondition && !this.rudderTrimIndicatorVisibilityCondition.get()) {
+          this.rudderTrimIndicatorVisibilityStatus.set(true);
+        } else if (this.rudderTrimIndicatorVisibilityCondition.get() && !visCondition) {
+          this.delayStartTime = t;
+          this.rudderTrimIndicatorVisibilityStatus.set(true);
+        }
+        this.rudderTrimIndicatorVisibilityCondition.set(visCondition);
+
+        if (
+          !this.rudderTrimIndicatorVisibilityCondition.get() &&
+          t - this.delayStartTime > 7_000 &&
+          !this.engineHasFailed
+        ) {
+          this.rudderTrimIndicatorVisibilityStatus.set(false);
+        }
+      });
   }
 
   render(): VNode {
     return (
-      <g visibility={'inherit'}>
+      <g visibility={this.rudderTrimIndicatorVisibilityStatus.map((v) => (v ? 'inherit' : 'hidden'))}>
         <text x={41.2} y={184.7} class={'FontSmallest White'}>
           RUD TRIM
         </text>
         <rect width="23" height="3.5" x="41" y="186" class="NormalOutline White" />
         <line x1="52.5" y1="186" x2="52.5" y2="189.5" class="NormalOutline White" />
         <polygon points={this.rudderTrimOrderPolygonPoints} class="Cyan Fill Stroke" />
-        <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
-          {this.rudderTrimOrderText}
-        </text>
-        <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
-          °
-        </text>
+        <g visibility={this.rudderTrimOrderTextVisibility}>
+          <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
+            {this.rudderTrimOrderText}
+          </text>
+          <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
+            °
+          </text>
+        </g>
       </g>
     );
   }

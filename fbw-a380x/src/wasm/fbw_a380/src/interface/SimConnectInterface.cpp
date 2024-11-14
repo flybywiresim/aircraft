@@ -2011,6 +2011,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::RUDDER_TRIM_LEFT: {
       simInputRudderTrim.rudderTrimSwitchLeft = true;
+      execute_calculator_code("(>H:A32NX.RUDDER_TRIM_MANUALLY_MOVED)", nullptr, nullptr, nullptr);
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_TRIM_LEFT: ";
         std::cout << "(no data)";
@@ -2021,6 +2022,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::RUDDER_TRIM_RESET: {
       simInputRudderTrim.rudderTrimReset = true;
+      execute_calculator_code("(>H:A32NX.RUDDER_TRIM_MANUALLY_MOVED)", nullptr, nullptr, nullptr);
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_TRIM_RESET: ";
         std::cout << "(no data)";
@@ -2031,6 +2033,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::RUDDER_TRIM_RIGHT: {
       simInputRudderTrim.rudderTrimSwitchRight = true;
+      execute_calculator_code("(>H:A32NX.RUDDER_TRIM_MANUALLY_MOVED)", nullptr, nullptr, nullptr);
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_TRIM_RIGHT: ";
         std::cout << "(no data)";
