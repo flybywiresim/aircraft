@@ -17,9 +17,12 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
   const sec3RudderStatusWord = useArinc429Var('L:A32NX_SEC_3_RUDDER_STATUS_WORD');
   const secSourceForTrim = sec1RudderStatusWord.bitValueOr(28, false) ? 1 : 3;
 
-  const deflectionInfoValid = sec1RudderStatusWord.bitValueOr(28, false) || sec3RudderStatusWord.bitValueOr(28, false);
-  const rudderTrim = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_TRIM_ORDER`).valueOr(0);
+  const rudderTrimAvail = sec1RudderStatusWord.bitValueOr(28, false) || sec3RudderStatusWord.bitValueOr(28, false);
+  const secRudderTrim = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_TRIM_ORDER`).valueOr(0);
+  const [simRudderTrim] = useSimVar('A:RUDDER TRIM PCT', 'number'); // We don't have a rudder trim sensor implemented yet
+  const rudderTrim = rudderTrimAvail ? secRudderTrim : -0.85 * 30 * simRudderTrim;
 
+  const deflectionInfoValid = true;
   const deflectionXValue = deflectionToXOffset(-rudderTrim);
 
   const powerSource1Avail = useSimVar(`L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED`, 'boolean', 1000);
@@ -27,7 +30,7 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
 
   const [pitchIntegral, pitchFractional] = Math.abs(rudderTrim).toFixed(1).padStart(4, '\xa0').split('.');
 
-  const powerAvailableClass = powerSource1Avail || powerSource2Avail ? 'Cyan' : 'Amber';
+  const powerAvailableClass = (powerSource1Avail || powerSource2Avail) && rudderTrimAvail ? 'Cyan' : 'Amber';
 
   return (
     <g id="rudder-trim" transform={`translate(${x} ${y})`}>
@@ -48,29 +51,29 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
         <text
           x={72}
           y={17}
-          visibility={Math.abs(rudderTrim) > 0.05 ? 'visible' : 'hidden'}
-          className={`${powerAvailableClass} F26`}
+          visibility={Math.abs(rudderTrim) > 0.05 && deflectionInfoValid ? 'visible' : 'hidden'}
+          className={`${powerAvailableClass} F22`}
         >
           {Math.sign(rudderTrim) === 1 ? 'L' : 'R'}
         </text>
-        <text x={122} y={17} className={`${powerAvailableClass} F26 EndAlign`}>
+        <text x={122} y={17} className={`${powerAvailableClass} F22 EndAlign`}>
           {pitchIntegral}
         </text>
-        <text x={118} y={17} className={`${powerAvailableClass} F26`}>
+        <text x={118} y={17} className={`${powerAvailableClass} F22`}>
           .
         </text>
-        <text x={134} y={17} className={`${powerAvailableClass} F26`}>
+        <text x={134} y={17} className={`${powerAvailableClass} F22`}>
           {pitchFractional}
         </text>
-        <text x={145} y={19} className="Cyan F26">
+        <text x={145} y={19} className="Cyan F22">
           °
         </text>
       </g>
 
-      <text x={94} y={17} visibility={!deflectionInfoValid ? 'visible' : 'hidden'} className="Amber F26">
+      <text x={94} y={17} visibility={!deflectionInfoValid ? 'visible' : 'hidden'} className="Amber F22">
         XX
       </text>
-      <text x={-7} y={18} visibility={!deflectionInfoValid ? 'visible' : 'hidden'} className="Amber F26">
+      <text x={-7} y={18} visibility={!deflectionInfoValid ? 'visible' : 'hidden'} className="Amber F22">
         X
       </text>
     </g>
