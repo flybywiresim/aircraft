@@ -49,6 +49,7 @@
 1. [A380X/MFD] Fix ETA and add TOD prediction in PERF page - @BravoMike99 (bruno_pt99)
 1. [A380/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
+1. [A380X/SD] Fix engine fuel flow and fuel used on cruise page still use only ENG 1 + 2 LVars @heclak (heclak)
 
 ## 0.12.0
 
