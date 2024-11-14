@@ -30,6 +30,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { Units } from '@flybywiresim/fbw-sdk';
+import { getEtaFromUtcOrPresent } from '../../shared/utils';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
@@ -101,15 +102,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     if (this.loadedFlightPlan.destinationAirport) {
       this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
-
       const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
-      if (destPred) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
-        this.destEta.set(
-          `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`,
-        );
-      }
+      this.destEta.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, false));
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
       this.destEfobBelowMin.set(
@@ -163,8 +157,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB());
           }
 
+          const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
-            const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
             // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
             const fob = this.props.fmcService.master.fmgc.getFOB() * 1_000;
             const tripFuel =
@@ -188,11 +182,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 (this.props.fmcService.master.fmgc.data.routeReserveFuelWeight.get() ?? 0),
             );
           } else {
-            // EXTRA = FOB - TRIP - MIN FUEL DEST
+            // EXTRA = EFOB - MIN DEST FOB
             this.extraFuelWeight.set(
-              (this.fuelOnBoard.get() ?? 0) -
-                ((this.tripFuelWeight.get() ?? 0) -
-                  (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0)),
+              destPred?.estimatedFuelOnBoard ??
+                0 - (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
             );
           }
 
