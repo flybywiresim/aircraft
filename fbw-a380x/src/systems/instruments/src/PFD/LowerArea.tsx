@@ -509,10 +509,10 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
 
-  private readonly engine1Running = ConsumerSubject.create(this.sub.on('engOneRunning'), false);
-  private readonly engine2Running = ConsumerSubject.create(this.sub.on('engTwoRunning'), false);
-  private readonly engine3Running = ConsumerSubject.create(this.sub.on('engThreeRunning'), false);
-  private readonly engine4Running = ConsumerSubject.create(this.sub.on('engFourRunning'), false);
+  private readonly engine1Running = ConsumerSubject.create(this.sub.on('engOneRunning'), true);
+  private readonly engine2Running = ConsumerSubject.create(this.sub.on('engTwoRunning'), true);
+  private readonly engine3Running = ConsumerSubject.create(this.sub.on('engThreeRunning'), true);
+  private readonly engine4Running = ConsumerSubject.create(this.sub.on('engFourRunning'), true);
 
   private readonly rudderTrim1Engaged = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('sec_rudder_status_word_1'),
