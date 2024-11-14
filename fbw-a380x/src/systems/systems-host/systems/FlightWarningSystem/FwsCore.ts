@@ -419,9 +419,39 @@ export class FwsCore {
 
   public readonly apuBleedValveOpen = Subject.create(false);
 
-  public readonly excessPressure = Subject.create(false);
-
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
+
+  public readonly excessCabinAltitude = Subject.create(false);
+
+  public readonly excessDiffPressure = Subject.create(false);
+
+  public readonly allOutflowValvesOpen = Subject.create(false);
+
+  public readonly ocsm1AutoFailure = Subject.create(false);
+
+  public readonly ocsm2AutoFailure = Subject.create(false);
+
+  public readonly ocsm3AutoFailure = Subject.create(false);
+
+  public readonly ocsm4AutoFailure = Subject.create(false);
+
+  public readonly ocsmAutoCtlFault = Subject.create(false);
+
+  public readonly ocsm1Failure = Subject.create(false);
+
+  public readonly ocsm2Failure = Subject.create(false);
+
+  public readonly ocsm3Failure = Subject.create(false);
+
+  public readonly ocsm4Failure = Subject.create(false);
+
+  public readonly pressRedundLost = Subject.create(false);
+
+  public readonly pressSysFault = Subject.create(false);
+
+  public readonly flowSelectorKnob = Subject.create(0);
+
+  public readonly manCabinAltMode = Subject.create(false);
 
   /* 22 - AUTOFLIGHT */
 
@@ -1653,17 +1683,6 @@ export class FwsCore {
     SimVar.SetSimVarValue('L:A32NX_NO_SMOKING_MEMO', SimVarValueType.Bool, true);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', SimVarValueType.Bool, true);
 
-    const empty = Arinc429Register.empty();
-    empty.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_2_DISCRETE_WORD_2', empty.value, empty.ssm);
-
-    Arinc429Word.toSimVarValue('L:A32NX_PRESS_CPC_1_DISCRETE_WORD', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_PRESS_CPC_2_DISCRETE_WORD', empty.value, empty.ssm);
-
     [1, 2].forEach((i) => {
       const dw = Arinc429Register.empty();
       dw.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -2692,7 +2711,7 @@ export class FwsCore {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-    this.flightLevel.set(Math.round(pressureAltitude / 100) * 100);
+    this.flightLevel.set(Math.round(pressureAltitude / 100));
 
     this.phase8ConfirmationNode60.write(this.fwcFlightPhase.get() === 8, deltaTime);
 
@@ -2733,6 +2752,16 @@ export class FwsCore {
     cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
     cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
 
+    const cpiomBCpcsAppDiscreteWord1 = Arinc429Register.empty();
+    const cpiomBCpcsAppDiscreteWord2 = Arinc429Register.empty();
+    const cpiomBCpcsAppDiscreteWord3 = Arinc429Register.empty();
+    const cpiomBCpcsAppDiscreteWord4 = Arinc429Register.empty();
+
+    cpiomBCpcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
+    cpiomBCpcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
+    cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
+    cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
+
     let vcsDiscreteWordToUse;
 
     if (cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
@@ -2755,6 +2784,23 @@ export class FwsCore {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord3;
     } else {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
+    }
+
+    let cpcsDiscreteWordToUse;
+    let cpcsToUseId;
+
+    if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
+      cpcsToUseId = 1;
+    } else if (cpiomBCpcsAppDiscreteWord2.isNormalOperation()) {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord2;
+      cpcsToUseId = 2;
+    } else if (cpiomBCpcsAppDiscreteWord3.isNormalOperation()) {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord3;
+      cpcsToUseId = 3;
+    } else {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord4;
+      cpcsToUseId = 4;
     }
 
     this.oneTcsAppFailed.set(
@@ -2863,14 +2909,82 @@ export class FwsCore {
       !cpiomBVcsAppDiscreteWord2.isNormalOperation() || !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
     );
 
-    this.excessPressure.set(false); // TODO: Connect to CPCS FWS warnings
-
     const engNotRunning =
       !this.engine1Running.get() &&
       !this.engine2Running.get() &&
       !this.engine3Running.get() &&
       !this.engine4Running.get();
     this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // FIXME eng running should use core speed at above min idle
+
+    const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
+    this.excessCabinAltitude.set(cpcsDiscreteWordToUse.bitValueOr(13, false) || manExcessAltitude);
+
+    this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
+
+    const outflowValve1OpenAmount = Arinc429Register.empty();
+    const outflowValve2OpenAmount = Arinc429Register.empty();
+    const outflowValve3OpenAmount = Arinc429Register.empty();
+    const outflowValve4OpenAmount = Arinc429Register.empty();
+
+    outflowValve1OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+    outflowValve2OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+    outflowValve3OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+    outflowValve4OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+
+    this.allOutflowValvesOpen.set(
+      outflowValve1OpenAmount.value > 99 &&
+        outflowValve2OpenAmount.value > 99 &&
+        outflowValve3OpenAmount.value > 99 &&
+        outflowValve4OpenAmount.value > 99,
+    );
+
+    this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm2AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm3AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
+
+    this.ocsmAutoCtlFault.set(
+      (cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
+        (this.ocsm1AutoFailure.get() &&
+          this.ocsm2AutoFailure.get() &&
+          this.ocsm3AutoFailure.get() &&
+          this.ocsm4AutoFailure.get()),
+    );
+
+    const ocsm1Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_1_FAILURE', 'bool');
+    const ocsm1Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_2_FAILURE', 'bool');
+    const ocsm2Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_1_FAILURE', 'bool');
+    const ocsm2Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_2_FAILURE', 'bool');
+    const ocsm3Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_1_FAILURE', 'bool');
+    const ocsm3Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_2_FAILURE', 'bool');
+    const ocsm4Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_1_FAILURE', 'bool');
+    const ocsm4Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_2_FAILURE', 'bool');
+
+    this.ocsm1Failure.set(ocsm1Channel1Failure && ocsm1Channel2Failure);
+    this.ocsm2Failure.set(ocsm2Channel1Failure && ocsm2Channel2Failure);
+    this.ocsm3Failure.set(ocsm3Channel1Failure && ocsm3Channel2Failure);
+    this.ocsm4Failure.set(ocsm4Channel1Failure && ocsm4Channel2Failure);
+
+    const numberOfCpcsFaults = [
+      cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
+    ].filter((cpcs) => cpcs === true).length;
+
+    this.pressRedundLost.set(numberOfCpcsFaults > 1);
+
+    this.pressSysFault.set(
+      this.ocsm1Failure.get() && this.ocsm2Failure.get() && this.ocsm3Failure.get() && this.ocsm4Failure.get(),
+    );
+
+    // 0: Man, 1: Low, 2: Norm, 3: High
+    this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
+
+    this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
     /* 23 - COMMUNICATION */
     this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal

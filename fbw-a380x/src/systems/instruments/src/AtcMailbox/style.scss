@@ -1,0 +1,54 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+
+.atc-mailbox-top-layout {
+  display: grid;
+  grid-template-columns: 13% auto 18%;
+  height: 256px;
+  width: 768px;
+  position: absolute;
+  top: 768px;
+}
+
+.atc-mailbox-left-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-right: 2px solid $display-white;
+}
+
+.atc-mailbox-center-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.atc-mailbox-right-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 2px solid $display-white;
+}
+
+.atc-mailbox-center-bottom {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
+
+.atc-mailbox-center-top {
+  display: flex;
+  flex: 8;
+  border-bottom: 2px solid white;
+}
+
+.atc-mailbox-cb-1 {
+  flex: 1;
+  border-right: 2px solid white;
+}
+
+.atc-mailbox-cb-2 {
+  flex: 1;
+}
