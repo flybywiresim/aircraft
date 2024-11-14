@@ -32,8 +32,11 @@ export const HorizontalDeflectionIndication: FC<HorizontalDeflectionIndicationPr
   onGround,
 }) => {
   const deflectionXValue = deflectionToXOffset(deflection);
+  const rudderTravelLimiter = 30;
+  const rudderTravelLimXValue = deflectionToXOffset(rudderTravelLimiter);
 
   const maxDeflectionVisible = onGround && deflectionInfoValid && powerAvail;
+  const rudderTravelLimVisible = onGround && deflectionInfoValid && powerAvail;
 
   const powerAvailableClass = powerAvail ? 'Green' : 'Amber';
 
@@ -41,7 +44,11 @@ export const HorizontalDeflectionIndication: FC<HorizontalDeflectionIndicationPr
     <g transform={`translate(${x} ${y})`}>
       <path className="Grey Fill" d="m0,0 h 116 v15 h-116 z" />
 
-      <path className={`Green SW2 ${maxDeflectionVisible ? '' : 'Hide'}`} d="m-1,0 v 15 M117,0 v15" />
+      <path className={`Green SW2 ${maxDeflectionVisible ? '' : 'Hide'}`} d="m-1,0 v 15 M117,0 v 15" />
+      <path
+        className={`Green NoFill SW3 LineRound ${rudderTravelLimVisible ? '' : 'Hide'}`}
+        d={`M ${58 - rudderTravelLimXValue + 4},0 h -5 v 12 M ${58 + rudderTravelLimXValue - 4},0 h 5 v 12`}
+      />
 
       <path
         className={`${powerAvailableClass} Fill ${deflectionInfoValid ? '' : 'Hide'}`}
