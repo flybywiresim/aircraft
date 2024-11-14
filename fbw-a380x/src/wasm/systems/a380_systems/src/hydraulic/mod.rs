@@ -1545,7 +1545,66 @@ impl A380GearSystemFactory {
     }
 }
 
+// FIXME Placeholder logic to remove when eha inhibit is handled on flight computer side
+struct A380EhaInhibitPlaceholder {
+    general_eng_1_starter_active_id: VariableIdentifier,
+    general_eng_2_starter_active_id: VariableIdentifier,
+    general_eng_3_starter_active_id: VariableIdentifier,
+    general_eng_4_starter_active_id: VariableIdentifier,
+
+    any_engine_master_on: bool,
+    elec_backup_allowed: bool,
+
+    on_ground_delay: DelayedTrueLogicGate,
+}
+impl A380EhaInhibitPlaceholder {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            general_eng_1_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:1".to_owned()),
+            general_eng_2_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:2".to_owned()),
+            general_eng_3_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:3".to_owned()),
+            general_eng_4_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:4".to_owned()),
+
+            any_engine_master_on: false,
+            elec_backup_allowed: false,
+
+            on_ground_delay: DelayedTrueLogicGate::new(Duration::from_secs(120)).starting_as(true),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        lgciu1: &impl LgciuWeightOnWheels,
+        lgciu2: &impl LgciuWeightOnWheels,
+    ) {
+        let is_on_ground = lgciu1.left_and_right_gear_compressed(true)
+            || lgciu2.left_and_right_gear_compressed(true);
+
+        self.on_ground_delay.update(context, is_on_ground);
+
+        self.elec_backup_allowed = !self.on_ground_delay.output() || self.any_engine_master_on;
+    }
+
+    fn is_allowed(&self) -> bool {
+        self.elec_backup_allowed
+    }
+}
+impl SimulationElement for A380EhaInhibitPlaceholder {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.any_engine_master_on = reader.read(&self.general_eng_1_starter_active_id)
+            || reader.read(&self.general_eng_2_starter_active_id)
+            || reader.read(&self.general_eng_3_starter_active_id)
+            || reader.read(&self.general_eng_4_starter_active_id);
+    }
+}
+
 pub(super) struct A380Hydraulic {
+    eha_backup_inhibit_logic: A380EhaInhibitPlaceholder,
     nose_steering: SteeringActuator,
     body_wheel_steering_left: SteeringActuator,
     body_wheel_steering_right: SteeringActuator,
@@ -1695,6 +1754,7 @@ impl A380Hydraulic {
         );
 
         A380Hydraulic {
+            eha_backup_inhibit_logic: A380EhaInhibitPlaceholder::new(context),
             nose_steering: SteeringActuator::new(
                 context,
                 "NOSE_WHEEL",
@@ -2300,12 +2360,14 @@ impl A380Hydraulic {
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            &self.eha_backup_inhibit_logic,
         );
 
         self.right_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            &self.eha_backup_inhibit_logic,
         );
 
         self.gear_system.update(
@@ -2328,16 +2390,22 @@ impl A380Hydraulic {
         adirs: &impl AdirsMeasurementOutputs,
         lgcius: &LandingGearControlInterfaceUnitSet,
     ) {
+        self.eha_backup_inhibit_logic
+            .update(context, lgciu1, lgciu2);
+
         self.gear_system_gravity_extension_controller
             .update(context);
 
-        self.aileron_system_controller.update();
+        self.aileron_system_controller
+            .update(&self.eha_backup_inhibit_logic);
 
-        self.elevator_system_controller.update();
+        self.elevator_system_controller
+            .update(&self.eha_backup_inhibit_logic);
 
         self.ths_system_controller.update();
 
-        self.rudder_system_controller.update();
+        self.rudder_system_controller
+            .update(&self.eha_backup_inhibit_logic);
 
         self.tilting_gears.update(context);
 
@@ -3057,6 +3125,8 @@ impl CargoDoorLocked for A380Hydraulic {
 
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.eha_backup_inhibit_logic.accept(visitor);
+
         self.engine_driven_pump_1a.accept(visitor);
         self.engine_driven_pump_1a_controller.accept(visitor);
 
@@ -5034,6 +5104,8 @@ struct AileronSystemHydraulicController {
 
     left_aileron_controllers: [[AileronController; 2]; 3],
     right_aileron_controllers: [[AileronController; 2]; 3],
+
+    eha_backup_allowed: bool,
 }
 impl AileronSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
@@ -5104,6 +5176,8 @@ impl AileronSystemHydraulicController {
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
             right_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -5121,7 +5195,9 @@ impl AileronSystemHydraulicController {
         &self.right_aileron_controllers[panel as usize][..]
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, eha_backup_placeholder: &A380EhaInhibitPlaceholder) {
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
+
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
         self.filter_dual_control();
@@ -5419,7 +5495,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.left_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_inboard_aileron_green_actuator_solenoid_id),
-            reader.read(&self.left_inboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.left_inboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.left_midboard_position_requests_from_fbw = [
@@ -5432,7 +5509,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.left_midboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_midboard_aileron_yellow_actuator_solenoid_id),
-            reader.read(&self.left_midboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.left_midboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.left_outboard_position_requests_from_fbw = [
@@ -5458,7 +5536,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.right_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_inboard_aileron_green_actuator_solenoid_id),
-            reader.read(&self.right_inboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.right_inboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_midboard_position_requests_from_fbw = [
@@ -5471,7 +5550,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.right_midboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_midboard_aileron_yellow_actuator_solenoid_id),
-            reader.read(&self.right_midboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.right_midboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_outboard_position_requests_from_fbw = [
@@ -5519,6 +5599,8 @@ struct ElevatorSystemHydraulicController {
 
     left_controllers: [[AileronController; 2]; 2],
     right_controllers: [[AileronController; 2]; 2],
+
+    eha_backup_allowed: bool,
 }
 impl ElevatorSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
@@ -5569,6 +5651,8 @@ impl ElevatorSystemHydraulicController {
             // Controllers are in outboard->inboard order
             left_controllers: [[AileronController::new(), AileronController::new()]; 2],
             right_controllers: [[AileronController::new(), AileronController::new()]; 2],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -5586,7 +5670,9 @@ impl ElevatorSystemHydraulicController {
         &self.right_controllers[panel as usize][..]
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, eha_backup_placeholder: &A380EhaInhibitPlaceholder) {
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
+
         self.update_elevator_controllers_positions();
         self.update_elevator_controllers_solenoids();
     }
@@ -5763,7 +5849,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.left_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_inboard_elevator_green_actuator_solenoid_id),
-            reader.read(&self.left_inboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.left_inboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.left_outboard_position_requests_from_fbw = [
@@ -5776,7 +5863,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.left_outboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_outboard_elevator_green_actuator_solenoid_id),
-            reader.read(&self.left_outboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.left_outboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_inboard_position_requests_from_fbw = [
@@ -5789,7 +5877,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.right_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_inboard_elevator_yellow_actuator_solenoid_id),
-            reader.read(&self.right_inboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.right_inboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_outboard_position_requests_from_fbw = [
@@ -5802,7 +5891,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.right_outboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_outboard_elevator_yellow_actuator_solenoid_id),
-            reader.read(&self.right_outboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.right_outboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
     }
 }
@@ -6000,6 +6090,8 @@ struct RudderSystemHydraulicController {
     lower_electric_mode_solenoid_energized_from_fbw: [bool; 2],
 
     rudder_controllers: [[RudderController; 2]; 2],
+
+    eha_backup_allowed: bool,
 }
 impl RudderSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
@@ -6047,6 +6139,8 @@ impl RudderSystemHydraulicController {
 
             // Controllers are in Upper -> Lower order
             rudder_controllers: [[RudderController::new(), RudderController::new()]; 2],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -6057,7 +6151,8 @@ impl RudderSystemHydraulicController {
         &self.rudder_controllers[panel as usize][..]
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, eha_backup_placeholder: &A380EhaInhibitPlaceholder) {
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
         self.update_rudder_controllers_positions();
         self.update_rudder_controllers_solenoids();
     }
@@ -6191,8 +6286,10 @@ impl SimulationElement for RudderSystemHydraulicController {
             reader.read(&self.upper_rudder_green_actuator_hydraulic_solenoid_id),
         ];
         self.upper_electric_mode_solenoid_energized_from_fbw = [
-            reader.read(&self.upper_rudder_yellow_actuator_electric_solenoid_id),
-            reader.read(&self.upper_rudder_green_actuator_electric_solenoid_id),
+            reader.read(&self.upper_rudder_yellow_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
+            reader.read(&self.upper_rudder_green_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.lower_position_requests_from_fbw = [
@@ -6208,8 +6305,10 @@ impl SimulationElement for RudderSystemHydraulicController {
             reader.read(&self.lower_rudder_yellow_actuator_hydraulic_solenoid_id),
         ];
         self.lower_electric_mode_solenoid_energized_from_fbw = [
-            reader.read(&self.lower_rudder_green_actuator_electric_solenoid_id),
-            reader.read(&self.lower_rudder_yellow_actuator_electric_solenoid_id),
+            reader.read(&self.lower_rudder_green_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
+            reader.read(&self.lower_rudder_yellow_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
         ];
     }
 }
@@ -6659,6 +6758,8 @@ struct SpoilerGroup {
     spoilers: [SpoilerElement; 8],
     hydraulic_controllers: [SpoilerController; 8],
     spoiler_positions: [f64; 8],
+
+    eha_backup_allowed: bool,
 }
 impl SpoilerGroup {
     const PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO: f64 = 0.55;
@@ -6677,6 +6778,8 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 8),
             ],
             spoiler_positions: [0.; 8],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -6685,7 +6788,12 @@ impl SpoilerGroup {
         context: &UpdateContext,
         green_section: &impl SectionPressure,
         yellow_section: &impl SectionPressure,
+        eha_backup_placeholder: &A380EhaInhibitPlaceholder,
     ) {
+        // FIXME REMOVE elec backup inhibit once handles from flight computers
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
+        self.hydraulic_controllers[5].set_elec_backup_allowed(self.eha_backup_allowed);
+
         self.spoilers[0].update(
             context,
             &self.hydraulic_controllers[0],
@@ -6778,6 +6886,8 @@ struct SpoilerController {
     electrical_mode_ena_id: Option<VariableIdentifier>,
     requested_position: Ratio,
     elec_backup_active: bool,
+
+    elec_backup_allowed: bool,
 }
 impl SpoilerController {
     fn new(context: &mut InitContext, spoiler_side: &str, spoiler_id_number: usize) -> Self {
@@ -6799,7 +6909,13 @@ impl SpoilerController {
 
             requested_position: Ratio::new::<ratio>(0.),
             elec_backup_active: false,
+
+            elec_backup_allowed: false,
         }
+    }
+
+    fn set_elec_backup_allowed(&mut self, elec_backup_allowed: bool) {
+        self.elec_backup_allowed = elec_backup_allowed;
     }
 
     fn spoiler_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
@@ -6838,7 +6954,7 @@ impl SimulationElement for SpoilerController {
 impl HydraulicLocking for SpoilerController {}
 impl ElectroHydrostaticPowered for SpoilerController {
     fn should_activate_electrical_mode(&self) -> bool {
-        self.elec_backup_active
+        self.elec_backup_active && self.elec_backup_allowed
     }
 }
 
@@ -8938,6 +9054,9 @@ mod tests {
                 )
                 .run_waiting_for(Duration::from_secs(1));
 
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
+
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
@@ -8986,6 +9105,9 @@ mod tests {
                     AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -9150,6 +9272,9 @@ mod tests {
                     < 0.1
             );
 
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
+
             test_bed = test_bed
                 .reset_all_aileron_commands()
                 .ac_eha_active()
@@ -9188,6 +9313,9 @@ mod tests {
                     AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -9376,6 +9504,9 @@ mod tests {
                 .set_left_spoilers_out()
                 .set_right_spoilers_out()
                 .run_waiting_for(Duration::from_secs(5));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
