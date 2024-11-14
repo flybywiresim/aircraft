@@ -561,7 +561,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private engineHasFailed = false;
 
-  private delayStartTime: number | null = null;
+  private delayStartTime: number = 0;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
