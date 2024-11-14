@@ -45,6 +45,7 @@ const DisplayUnitToPotentiometer: { [k in DisplayUnitID]: number } = {
 interface DisplayUnitProps {
   displayUnitId: DisplayUnitID;
   failed?: boolean;
+  hideBootTestScreens?: boolean;
 }
 
 enum DisplayUnitState {
@@ -63,7 +64,7 @@ function BacklightBleed(props) {
 }
 
 export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<DisplayUnitProps>>(
-  ({ displayUnitId, failed, children }, ref) => {
+  ({ displayUnitId, failed, hideBootTestScreens, children }, ref) => {
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN' /* TODO 380 simvar */, 'Bool', 200);
     const [state, setState] = useState(coldDark ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
@@ -167,7 +168,7 @@ export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<
       );
     }
 
-    if (state === DisplayUnitState.ThalesBootup) {
+    if (state === DisplayUnitState.ThalesBootup && !hideBootTestScreens) {
       return (
         <>
           <BacklightBleed homeCockpit={homeCockpit} />
@@ -181,7 +182,7 @@ export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<
       );
     }
 
-    if (state === DisplayUnitState.Selftest) {
+    if (state === DisplayUnitState.Selftest && !hideBootTestScreens) {
       return (
         <>
           <BacklightBleed homeCockpit={homeCockpit} />

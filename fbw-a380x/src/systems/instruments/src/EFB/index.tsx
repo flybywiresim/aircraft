@@ -47,6 +47,7 @@ render(
           mcduKeyboard: false,
           pauseOnTod: true,
           pilotAvatars: false,
+          eclSoftKeys: true,
         },
         sim: {
           cones: false,
@@ -54,6 +55,7 @@ render(
           pilotSeat: true,
           registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
           wheelChocks: false,
+          cabinLighting: true,
         },
         throttle: {
           numberOfAircraftThrottles: 4,

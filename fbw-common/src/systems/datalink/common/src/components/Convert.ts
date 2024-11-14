@@ -8,14 +8,16 @@ export function wordWrap(text: string, maxLength: number) {
 
   const words = text.match(/[-.:*@_A-Z0-9]+|\[\s+\]|\n/g);
   for (const word of words) {
-    if (length + word.length >= maxLength || word === '\n') {
+    if (word === '\n') {
+      continue;
+    }
+
+    if (length + word.length >= maxLength) {
       result.push(line.join(' ').toUpperCase());
       line = [];
       length = 0;
-      if (word === '\n') {
-        continue;
-      }
     }
+
     length += word.length + 1;
     line.push(word);
   }

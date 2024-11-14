@@ -35,4 +35,4 @@ Every new commit to this PR will cause new A32NX and A380X artifacts to be creat
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
 1. On the left side, find and click on the **PR Build** tab
-1. Click on either **flybywire-aircraft-a320-neo** or **flybywire-aircraft-a380-842** download link at the bottom of the page
+1. Click on either **flybywire-aircraft-a320-neo**, **flybywire-aircraft-a380-842 (4K)** or **flybywire-aircraft-a380-842 (8K)** download link at the bottom of the page
