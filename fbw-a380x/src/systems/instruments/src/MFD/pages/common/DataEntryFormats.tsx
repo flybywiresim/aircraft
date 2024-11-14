@@ -1428,7 +1428,7 @@ export class SquawkFormat implements DataEntryFormat<number> {
   }
 }
 
-// OFFSET intercept angle offset intercept angle behaves differently to the other types of angles in the jets. Grumble Grumble
+// OFFSET intercept behaves differently to the other types of angles in the jets. Grumble Grumble
 export class OffsetAngleFormat implements DataEntryFormat<number> {
   public placeholder = '--';
 
