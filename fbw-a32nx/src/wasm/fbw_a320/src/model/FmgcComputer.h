@@ -107,6 +107,8 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_b3;
     boolean_T Memory_PreviousInput_ae;
     boolean_T Memory_PreviousInput_ev;
+    boolean_T Memory_PreviousInput_mx;
+    boolean_T Memory_PreviousInput_o;
     boolean_T Memory_PreviousInput_fm;
     boolean_T Memory_PreviousInput_nu;
     boolean_T Memory_PreviousInput_as;
@@ -123,7 +125,7 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_hu;
     boolean_T Memory_PreviousInput_bh;
     boolean_T Memory_PreviousInput_cm;
-    boolean_T Memory_PreviousInput_o;
+    boolean_T Memory_PreviousInput_ol;
     boolean_T Memory_PreviousInput_kr;
     boolean_T Memory_PreviousInput_km;
     boolean_T icLoad;
@@ -191,6 +193,10 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_bs;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_pe;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_iv;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_a3;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_epf;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_fl;
+    rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_dn1;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_mrk;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_kd;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_n5;
@@ -416,6 +422,12 @@ class FmgcComputer final
     real_T BitfromLabel1_bit_b;
     real_T BitfromLabel2_bit_kr;
     real_T BitfromLabel4_bit_i;
+    real_T BitfromLabel1_bit_nh;
+    real_T BitfromLabel2_bit_fro;
+    real_T BitfromLabel4_bit_e;
+    real_T BitfromLabel1_bit_mz;
+    real_T BitfromLabel2_bit_b3;
+    real_T BitfromLabel4_bit_kh;
     real_T BitfromLabel_bit_b;
     real_T BitfromLabel2_bit_n0;
     real_T BitfromLabel3_bit_d;
@@ -592,6 +604,8 @@ class FmgcComputer final
     real_T ConfirmNode_timeDelay_ib;
     real_T ConfirmNode_timeDelay_lp;
     real_T ConfirmNode_timeDelay_ob;
+    real_T ConfirmNode_timeDelay_io;
+    real_T ConfirmNode_timeDelay_p;
     real_T ConfirmNode_timeDelay_a3g;
     real_T ConfirmNode_timeDelay_m;
     real_T ConfirmNode_timeDelay_mu;
@@ -736,6 +750,10 @@ class FmgcComputer final
     real32_T A429ValueOrDefault2_defaultValue_e;
     real32_T A429ValueOrDefault_defaultValue_i;
     real32_T A429ValueOrDefault1_defaultValue_dp;
+    real32_T A429ValueOrDefault_defaultValue_a;
+    real32_T A429ValueOrDefault1_defaultValue_hb;
+    real32_T A429ValueOrDefault_defaultValue_aa;
+    real32_T A429ValueOrDefault1_defaultValue_a;
     real32_T A429ValueOrDefault_defaultValue_g;
     real32_T A429ValueOrDefault_defaultValue_k;
     real32_T A429ValueOrDefault3_defaultValue_bw;
@@ -828,6 +846,8 @@ class FmgcComputer final
     boolean_T SRFlipFlop_initial_condition_lz;
     boolean_T SRFlipFlop_initial_condition_oz;
     boolean_T SRFlipFlop_initial_condition_pr;
+    boolean_T SRFlipFlop_initial_condition_eb;
+    boolean_T SRFlipFlop_initial_condition_jw;
     boolean_T SRFlipFlop_initial_condition_ce;
     boolean_T SRFlipFlop_initial_condition_hs;
     boolean_T SRFlipFlop_initial_condition_dp;
@@ -941,6 +961,10 @@ class FmgcComputer final
     boolean_T PulseNode_isRisingEdge_f;
     boolean_T ConfirmNode_isRisingEdge_fq;
     boolean_T ConfirmNode_isRisingEdge_ep;
+    boolean_T PulseNode_isRisingEdge_az;
+    boolean_T ConfirmNode_isRisingEdge_b;
+    boolean_T PulseNode_isRisingEdge_m;
+    boolean_T ConfirmNode_isRisingEdge_ef;
     boolean_T PulseNode1_isRisingEdge_b;
     boolean_T PulseNode_isRisingEdge_lz;
     boolean_T ConfirmNode_isRisingEdge_g;
@@ -976,7 +1000,7 @@ class FmgcComputer final
     boolean_T PulseNode3_isRisingEdge_l4;
     boolean_T PulseNode3_isRisingEdge_ng;
     boolean_T PulseNode_isRisingEdge_o;
-    boolean_T ConfirmNode_isRisingEdge_b;
+    boolean_T ConfirmNode_isRisingEdge_ba;
     boolean_T PulseNode_isRisingEdge_fz;
     boolean_T ConfirmNode_isRisingEdge_k3;
     boolean_T ConfirmNode_isRisingEdge_cs;
@@ -1098,6 +1122,8 @@ class FmgcComputer final
     boolean_T Logic_table_cv[16];
     boolean_T Logic_table_jq[16];
     boolean_T Logic_table_lw[16];
+    boolean_T Logic_table_ao[16];
+    boolean_T Logic_table_om[16];
     boolean_T Logic_table_dr[16];
     boolean_T Logic_table_d3[16];
     boolean_T Logic_table_fi[16];

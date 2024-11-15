@@ -1965,9 +1965,9 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
     verticalMode = 10;
   } else if (captureMode && altMode && !dashMode && !altConstraintValid) {
     verticalMode = 11;
-  } else if (climbMode && openMode) {
+  } else if (climbMode && (openMode || expedMode)) {
     verticalMode = 12;
-  } else if (descentMode && openMode) {
+  } else if (descentMode && (openMode || expedMode)) {
     verticalMode = 13;
   } else if (vsMode) {
     verticalMode = 14;
