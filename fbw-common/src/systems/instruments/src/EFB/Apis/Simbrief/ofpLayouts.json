@@ -142,5 +142,33 @@
         "NOTAM",
         "Company NOTAM",
         "Maps"
+    ],
+    "KLM": [
+        "All",
+        "Dispatch Briefing",
+        "Administrator Notes",
+        "OFP Flight Particulars",
+        "OFP Navigation Part",
+        "OFP Alternate Summary",
+        "Air Traffic Control",
+        "Lido Briefing",
+        "Runway Analysis",
+        "UAD Charts",
+        "Airports Weather",
+        "NOTAM",
+        "Crew Alert"
+    ],
+    "BER": [
+        "All",
+        "Summary",
+        "Flight Log",
+        "Wind Information",
+        "ATC Flight Plan",
+        "Additional Info",
+        "Runway Analysis",
+        "Weather",
+        "Notam",
+        "Crew Alert & Bulletin",
+        "Maps"
     ]
 }
