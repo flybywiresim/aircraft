@@ -246,7 +246,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
               this.uiService.navigateTo('surv/controls');
               break;
             case 'ATCCOM':
-              this.uiService.navigateTo('atccom/connect/notification');
+              this.uiService.navigateTo('atccom/connect');
               break;
             case 'ND': // Move cursor to ND
               break;
