@@ -182,8 +182,8 @@ devDependencies:
     specifier: ^0.8.0
     version: 0.8.0
   '@flybywiresim/igniter':
-    specifier: ^1.2.3
-    version: 1.2.3
+    specifier: ^1.3.0
+    version: 1.3.0
   '@flybywiresim/rnp':
     specifier: ^2.1.0
     version: 2.1.0
@@ -2162,8 +2162,8 @@ packages:
       - debug
     dev: true
 
-  /@flybywiresim/igniter@1.2.3:
-    resolution: {integrity: sha512-WomCeno5IiqDd8kiGiUkEtaJ+Aack+PT8pwLhHMxGuVb7naTbI4JzoRWfdDe/WSTTqAzwl9nlvazgm/iGHr7xQ==}
+  /@flybywiresim/igniter@1.3.0:
+    resolution: {integrity: sha512-2tqIywGo4/DPzz9AviitmEnmngc9nOzoelqqvMVMMl2p0LUCqlpdhQeIoexR701bxco1pkmoJZBqKPXalhTdCg==}
     hasBin: true
     dev: true
 
