@@ -594,10 +594,6 @@ mod tests {
             self.brake_fan_on = brake_fan_on;
         }
 
-        fn set_gear_extended_phys(&mut self, gear_extended_phys: bool) {
-            self.gear_extended_phys = gear_extended_phys;
-        }
-
         fn set_brake_temperature(&mut self, temperature: ThermodynamicTemperature) {
             println!("{:?}", self.brake.temperature);
             self.brake.temperature = temperature;
