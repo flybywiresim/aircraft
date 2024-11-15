@@ -35,7 +35,7 @@
 1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
 1. [A380X/MFD] MFD/SURV: Fixed TCAS not switching status when using DEFAULT SETTINGS button - @flogross89 (floridude)
 1. [A380X/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
-1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
+1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
@@ -53,6 +53,13 @@
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
 1. [A380X/PERF] Changed managed speeds to more realistic numbers - @slightlyclueles (abnormaltoast)
 1. [A380X/MFD] Add ATCCOM connect page - @heclak (heclak)
+1. [A380X/PFD] Fix CP VV button turning on VV on both PFDs - @heclak (Heclak)
+1. [A380X/FMS] Fixed handling of window altitude constraints, deletion of constraints, and formatting - @tracernz (Mike)
+1. [A380X/SD] Fix engine fuel flow and fuel used on cruise page still use only ENG 1 + 2 LVars @heclak (heclak)
+1. [A380X/ENG] Improved engine fire behaviour - overhead fire pushbuttons silence aural warning and unpowers FADEC - @mjuhe (Miquel Juhe)
+1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
+1. [A32NX/FMGC] Implemented simulated FMGC computers - @lukecologne (luke)
+1. [A32NX/FMGC] Implemented simulated FCU computers - @lukecologne (luke)
 
 ## 0.12.0
 
