@@ -12,6 +12,8 @@ export interface GsxSimVarEvents {
   gsx_aircraft_cargo_2_toggle: number;
   /** GSX Fuelhose Connected - true => non-zero*/
   gsx_fuelhose_connected: number;
+  /** GSX Refuel Service - 4 => requested, 5 => active */
+  gsx_refuel_state: number;
   /** Jetway State as reported by GSX - 5 => connected */
   gsx_jetway_state: number;
   /** GSX Board Service - 4 => requested, 5 => active */
@@ -43,6 +45,7 @@ export class GsxSimVarPublisher extends SimVarPublisher<GsxSimVarEvents> {
     ['gsx_gpu_state', { name: 'L:FSDT_GSX_GPU_STATE', type: SimVarValueType.Number }],
     ['gsx_boarding_cargo_percent', { name: 'L:FSDT_GSX_BOARDING_CARGO_PERCENT', type: SimVarValueType.Number }],
     ['gsx_deboarding_cargo_percent', { name: 'L:FSDT_GSX_DEBOARDING_CARGO_PERCENT', type: SimVarValueType.Number }],
+    ['gsx_refuel_state', { name: 'L:FSDT_GSX_REFUELING_STATE', type: SimVarValueType.Number }],
     ['gsx_fuelhose_connected', { name: 'L:FSDT_GSX_FUELHOSE_CONNECTED', type: SimVarValueType.Number }],
     ['a32nx_refuel_started_by_user', { name: 'L:A32NX_REFUEL_STARTED_BY_USR', type: SimVarValueType.Bool }],
     ['a38nx_cargo_door_target', { name: 'A:INTERACTIVE POINT GOAL:16', type: SimVarValueType.PercentOver100 }],

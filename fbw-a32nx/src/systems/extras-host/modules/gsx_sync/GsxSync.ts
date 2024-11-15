@@ -31,6 +31,8 @@ export class GsxSync {
 
   private readonly fuelHose = ConsumerSubject.create(null, 0);
 
+  private readonly stateRefuel = ConsumerSubject.create(null, 1);
+
   private readonly refuelStarted = ConsumerSubject.create(null, false);
 
   constructor(private readonly bus: EventBus) {
@@ -46,15 +48,23 @@ export class GsxSync {
     this.stateDeparture.setConsumer(this.sub.on('gsx_departure_state'));
     this.stateGpu.setConsumer(this.sub.on('gsx_gpu_state'));
     this.fuelHose.setConsumer(this.sub.on('gsx_fuelhose_connected'));
+    this.stateRefuel.setConsumer(this.sub.on('gsx_refuel_state'));
     this.refuelStarted.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
 
     this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
+    this.stateRefuel.sub(this.onRefuelState.bind(this));
     this.refuelStarted.sub(this.onRefuelStarted.bind(this));
 
     this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
+  }
+
+  private onRefuelState(state: number): void {
+    if (state == 4) {
+      SimVar.SetSimVarValue('L:FSDT_GSX_SET_PROGRESS_REFUEL', SimVarValueType.Number, -1);
+    }
   }
 
   private onFuelHoseConnected(hose: number): void {
