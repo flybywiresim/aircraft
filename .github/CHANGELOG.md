@@ -24,7 +24,6 @@
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
 1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
 1. [A380X/SURV] Fixed BTV setup from F/O side, and ROW issues at G/A with early THR RED - @flogross89 (floridude)
-1. [A380/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [A380X/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [GENERAL] Mitigated issue with pop-ups (i.e. pause on TOD notification) being unable to be dismissed while camera is in freelook + ALT-TAB - @2hwk (2cas)
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
