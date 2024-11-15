@@ -561,14 +561,8 @@ export class FlightManagementComputer implements FmcInterface {
     ident?: string,
   ): PilotWaypoint {
     return (
-      this.dataManager?.createPlaceBearingPlaceBearingWaypoint(
-        place1 as Waypoint,
-        bearing1,
-        place2 as Waypoint,
-        bearing2,
-        stored,
-        ident,
-      ) ?? null
+      this.dataManager?.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident) ??
+      null
     );
   }
 
@@ -579,9 +573,7 @@ export class FlightManagementComputer implements FmcInterface {
     stored?: boolean,
     ident?: string,
   ): PilotWaypoint {
-    return (
-      this.dataManager?.createPlaceBearingDistWaypoint(place as Waypoint, bearing, distance, stored, ident) ?? null
-    );
+    return this.dataManager?.createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident) ?? null;
   }
 
   getStoredWaypointsByIdent(ident: string): PilotWaypoint[] {

@@ -383,7 +383,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return 0.8;
+    return 0.84;
   }
 
   /** in feet */
@@ -449,7 +449,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return this.data.cruisePreSelMach.get() ?? 0.82;
+    return this.data.cruisePreSelMach.get() ?? 0.85;
   }
 
   getClimbSpeedLimit(): SpeedLimit {
@@ -502,7 +502,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return 0.8;
+    return 0.84;
   }
 
   /** in knots */
