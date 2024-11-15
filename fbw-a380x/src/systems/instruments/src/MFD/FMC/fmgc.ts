@@ -8,7 +8,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
@@ -303,6 +303,24 @@ export class FmgcData {
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  private readonly defaults = new Map<Extract<keyof FmgcData, string>, any>();
+
+  constructor() {
+    for (const prop in this) {
+      if (SubscribableUtils.isMutableSubscribable(this[prop])) {
+        this.defaults.set(prop as keyof FmgcData, this[prop].get());
+      }
+    }
+  }
+
+  public reset(): void {
+    for (const prop of this.defaults.keys()) {
+      if (SubscribableUtils.isMutableSubscribable(this[prop])) {
+        this[prop].set(this.defaults.get(prop));
+      }
+    }
+  }
 }
 
 /**

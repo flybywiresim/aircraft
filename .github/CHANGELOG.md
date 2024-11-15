@@ -62,6 +62,7 @@
 1. [A380X/ENGINES] Corrected ENG4 throttle variable typo - @rthom91 (Randy Thom)
 1. [ND] Fixed track line not visible in GA TRK, RWY TRK and RWY modes - @ta-dzik (ta_dzik)
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
+1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 
 ## 0.12.0
 
