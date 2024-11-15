@@ -1,5 +1,5 @@
 {
-  "index": "./index.tsx",
+  "index": "./instrument.tsx",
   "isInteractive": false,
   "dimensions": {
     "px": {
