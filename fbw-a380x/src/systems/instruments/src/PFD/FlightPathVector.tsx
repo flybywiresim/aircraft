@@ -34,7 +34,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
   private readonly isBirdBlack = this.isTrkFpaActive.map(SubscribableMapFunctions.not());
 
   private readonly isVelocityVectorActive = ConsumerSubject.create(
-    this.sub.on(getDisplayIndex() === 2 ? 'fcuRightVelocityVectorOn' : 'fcuLeftVelocityVectorOn'),
+    this.sub.on(getDisplayIndex() === 3 ? 'fcuRightVelocityVectorOn' : 'fcuLeftVelocityVectorOn'),
     false,
   );
 
