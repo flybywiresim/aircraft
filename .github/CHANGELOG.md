@@ -37,7 +37,6 @@
 1. [A380X/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
 1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
-1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
@@ -62,6 +61,7 @@
 1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
 1. [A32NX/FMGC] Implemented simulated FMGC computers - @lukecologne (luke)
 1. [A32NX/FMGC] Implemented simulated FCU computers - @lukecologne (luke)
+1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 
 ## 0.12.0
 
