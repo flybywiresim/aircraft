@@ -57,6 +57,8 @@
 1. [A380X/SD] Fix engine fuel flow and fuel used on cruise page still use only ENG 1 + 2 LVars @heclak (heclak)
 1. [A380X/ENG] Improved engine fire behaviour - overhead fire pushbuttons silence aural warning and unpowers FADEC - @mjuhe (Miquel Juhe)
 1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
+1. [A32NX/FMGC] Implemented simulated FMGC computers - @lukecologne (luke)
+1. [A32NX/FMGC] Implemented simulated FCU computers - @lukecologne (luke)
 
 ## 0.12.0
 
