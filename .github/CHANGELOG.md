@@ -50,6 +50,7 @@
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
+1. [A380X/PRIM] Fix max. spoiler deflection based on flap conf - @flogross89 (floridude)
 
 ## 0.12.0
 
