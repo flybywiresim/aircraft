@@ -50,6 +50,10 @@
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
+1. [A380X/PERF] Changed managed speeds to more realistic numbers - @slightlyclueles (abnormaltoast)
+1. [A380X/MFD] Add ATCCOM connect page - @heclak (heclak)
+1. [A380X/PFD] Fix CP VV button turning on VV on both PFDs - @heclak (Heclak)
+1. [A380X/FMS] Fixed handling of window altitude constraints, deletion of constraints, and formatting - @tracernz (Mike)
 1. [ND] Fixed track line not visible in GA TRK, RWY TRK and RWY modes - @ta-dzik (ta_dzik)
 
 ## 0.12.0

@@ -1910,8 +1910,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <span class="mfd-label mfd-spacing-right">TRANS</span>
                     <InputField<number>
                       dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
+                      dataHandlerDuringValidation={async (v) => {
+                        this.loadedFlightPlan?.setPerformanceData('pilotTransitionAltitude', v);
+                        this.props.fmcService.master?.acInterface.updateTransitionAltitudeLevel();
+                      }}
                       mandatory={Subject.create(false)}
-                      inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                      enteredByPilot={this.transAltIsPilotEntered}
                       value={this.transAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
