@@ -34,15 +34,14 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 Elac (&elacs)[2],
                                 Sec (&secs)[3],
                                 Fac (&facs)[2],
-                                AutopilotStateMachine& autopilotStateMachine,
-                                AutopilotLawsModelClass& autopilotLaws,
-                                Autothrust& autoThrust) {
+                                const fmgc_outputs& fmgc1,
+                                const fmgc_outputs& fmgc2,
+                                FadecComputer (&fadecs)[2]) {
   // check if enabled
   if (!idIsEnabled->get()) {
     return;
   }
 
-  // do file management
   manageFlightDataRecorderFiles();
 
   // write base data
@@ -66,17 +65,14 @@ void FlightDataRecorder::update(const BaseData& baseData,
     writeFac(facs[i]);
   }
 
-  // write AP state machine data
-  auto autopilotStateMachineOut = autopilotStateMachine.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotStateMachineOut), sizeof(autopilotStateMachineOut));
+  // write FMGC data
+  writeFmgc(fmgc1);
+  // writeFmgc(fmgc2);
 
-  // write AP laws data
-  auto autopilotLawsOut = autopilotLaws.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotLawsOut), sizeof(autopilotLawsOut));
-
-  // write ATHR data
-  auto autoThrustOut = autoThrust.getExternalOutputs().out;
-  fileStream->write((char*)(&autoThrustOut), sizeof(autoThrustOut));
+  // write FADEC data
+  for (int i = 0; i < NUMBER_OF_FADEC_TO_WRITE; ++i) {
+    writeFadec(fadecs[i]);
+  }
 }
 
 void FlightDataRecorder::writeElac(Elac& elac) {
@@ -104,6 +100,24 @@ void FlightDataRecorder::writeFac(Fac& fac) {
   fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
   auto analog_outputs = fac.getAnalogOutputs();
   fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+}
+
+void FlightDataRecorder::writeFmgc(const fmgc_outputs& fmgc) {
+  fileStream->write((char*)(&fmgc.logic), sizeof(fmgc.logic));
+  fileStream->write((char*)(&fmgc.ap_fd_logic), sizeof(fmgc.ap_fd_logic));
+  fileStream->write((char*)(&fmgc.ap_fd_outer_loops), sizeof(fmgc.ap_fd_outer_loops));
+  fileStream->write((char*)(&fmgc.athr), sizeof(fmgc.athr));
+  fileStream->write((char*)(&fmgc.discrete_outputs), sizeof(fmgc.discrete_outputs));
+  fileStream->write((char*)(&fmgc.bus_outputs), sizeof(fmgc.bus_outputs));
+  fileStream->write((char*)(&fmgc.data.bus_inputs), sizeof(fmgc.data.bus_inputs));
+  fileStream->write((char*)(&fmgc.data.discrete_inputs), sizeof(fmgc.data.discrete_inputs));
+  fileStream->write((char*)(&fmgc.data.fms_inputs), sizeof(fmgc.data.fms_inputs));
+}
+
+void FlightDataRecorder::writeFadec(FadecComputer& fadec) {
+  auto outputs = fadec.getExternalOutputs().out;
+  fileStream->write((char*)(&outputs.fadec_bus_output), sizeof(outputs.fadec_bus_output));
+  fileStream->write((char*)(&outputs.output), sizeof(outputs.output));
 }
 
 void FlightDataRecorder::terminate() {
