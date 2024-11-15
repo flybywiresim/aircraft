@@ -1177,6 +1177,14 @@
             </Requires>
         </Sound>
 
+        <!-- V1 callout ===================================================================== -->
+        <Sound WwiseEvent="V1" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_V1_CALLOUT" Continuous="false">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
     </SimVarSounds>
 
     <!-- AvionicSounds ========================================================================================== -->
@@ -1216,7 +1224,6 @@
         <Sound WwiseData="true" WwiseEvent="aural_1000ft" />
         <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
         <Sound WwiseData="true" WwiseEvent="aural_retard" />
-        <Sound WwiseData="true" WwiseEvent="aural_v1" />
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="WIPER_BASE_L" />

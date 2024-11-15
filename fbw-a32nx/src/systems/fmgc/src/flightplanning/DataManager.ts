@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
@@ -19,11 +19,11 @@ type SerializedWaypoint = {
   ident: string;
   coordinates: Coordinates;
   pbxPlace1?: string;
-  pbxBearing1?: DegreesTrue;
+  pbxBearing1?: DegreesMagnetic;
   pbxPlace2?: string;
-  pbxBearing2?: DegreesTrue;
+  pbxBearing2?: DegreesMagnetic;
   pbdPlace?: string;
-  pbdBearing?: DegreesTrue;
+  pbdBearing?: DegreesMagnetic;
   pbdDistance?: NauticalMiles;
 };
 
@@ -38,9 +38,9 @@ type PbxWaypoint = {
   storedIndex: number;
   waypoint: Waypoint;
   pbxPlace1: string;
-  pbxBearing1: DegreesTrue;
+  pbxBearing1: DegreesMagnetic;
   pbxPlace2: string;
-  pbxBearing2: DegreesTrue;
+  pbxBearing2: DegreesMagnetic;
 };
 
 type PbdWaypoint = {
@@ -48,7 +48,7 @@ type PbdWaypoint = {
   storedIndex: number;
   waypoint: Waypoint;
   pbdPlace: string;
-  pbdBearing: DegreesTrue;
+  pbdBearing: DegreesMagnetic;
   pbdDistance: NauticalMiles;
 };
 
@@ -278,13 +278,16 @@ export class DataManager {
    * @returns
    */
   createPlaceBearingPlaceBearingWaypoint(
-    place1: Waypoint,
-    bearing1: DegreesTrue,
-    place2: Waypoint,
-    bearing2: DegreesTrue,
+    place1: Fix,
+    magneticBearing1: DegreesMagnetic,
+    place2: Fix,
+    magneticBearing2: DegreesMagnetic,
     stored = false,
     ident: string = undefined,
   ): PbxWaypoint {
+    const bearing1 = A32NX_Util.magneticToTrue(magneticBearing1, A32NX_Util.getRadialMagVar(place1));
+    const bearing2 = A32NX_Util.magneticToTrue(magneticBearing2, A32NX_Util.getRadialMagVar(place2));
+
     const coordinates = A32NX_Util.greatCircleIntersection(place1.location, bearing1, place2.location, bearing2);
     const index = stored ? this.generateStoredWaypointIndex() : -1;
 
@@ -297,9 +300,9 @@ export class DataManager {
       storedIndex: index,
       waypoint: WaypointFactory.fromLocation(ident, coordinates),
       pbxPlace1: place1.ident.substring(0, 5),
-      pbxBearing1: bearing1,
+      pbxBearing1: magneticBearing1,
       pbxPlace2: place2.ident.substring(0, 5),
-      pbxBearing2: bearing2,
+      pbxBearing2: magneticBearing2,
     };
 
     if (stored) {
@@ -319,12 +322,14 @@ export class DataManager {
    * @returns
    */
   createPlaceBearingDistWaypoint(
-    origin: Waypoint,
-    bearing: DegreesTrue,
+    origin: Fix,
+    magneticBearing: DegreesMagnetic,
     distance: NauticalMiles,
     stored = false,
     ident: string = undefined,
   ): PbdWaypoint {
+    const bearing = A32NX_Util.magneticToTrue(magneticBearing, A32NX_Util.getRadialMagVar(origin));
+
     const coordinates = Avionics.Utils.bearingDistanceToCoordinates(
       bearing,
       distance,
@@ -342,7 +347,7 @@ export class DataManager {
       storedIndex: index,
       waypoint: WaypointFactory.fromLocation(ident, coordinates),
       pbdPlace: origin.ident,
-      pbdBearing: bearing,
+      pbdBearing: magneticBearing,
       pbdDistance: distance,
     };
 

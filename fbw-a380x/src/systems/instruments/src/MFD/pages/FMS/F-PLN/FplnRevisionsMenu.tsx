@@ -24,7 +24,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     return [];
   }
 
-  const revisedLeg = fpln.loadedFlightPlan?.legElementAt(legIndex);
+  const previousLeg = fpln.loadedFlightPlan?.maybeElementAt(legIndex - 1);
+  const revisedLeg = fpln.loadedFlightPlan?.elementAt(legIndex);
 
   return [
     {
@@ -34,6 +35,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity) ||
         planIndex === FlightPlanIndex.Temporary ||
         [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        revisedLeg?.isDiscontinuity ||
         !revisedLeg?.isXF(),
       onPressed: () => {
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
@@ -60,6 +62,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'DELETE *',
       disabled:
         [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        (revisedLeg?.isDiscontinuity && !previousLeg?.isDiscontinuity && previousLeg?.isVectors()) ||
         planIndex === FlightPlanIndex.Temporary,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
@@ -87,7 +90,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'HOLD',
       disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: async () => {
-        if (revisedLeg && !revisedLeg.isHX()) {
+        if (revisedLeg && !revisedLeg.isDiscontinuity && !revisedLeg.isHX()) {
           const alt = revisedLeg.definition.altitude1
             ? revisedLeg.definition.altitude1
             : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
@@ -97,7 +100,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
           let inboundMagneticCourse = 100;
           const prevTerm = previousLeg?.isDiscontinuity === false && previousLeg?.terminationWaypoint();
           const wptTerm = revisedLeg.terminationWaypoint();
-          if (previousLeg && previousLeg.isDiscontinuity === false && previousLeg.isXF() && prevTerm && wptTerm) {
+          if (previousLeg && !previousLeg.isDiscontinuity && previousLeg.isXF() && prevTerm && wptTerm) {
             inboundMagneticCourse = Avionics.Utils.computeGreatCircleHeading(prevTerm.location, wptTerm.location);
           }
 
@@ -127,6 +130,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         [
           FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath,
         ].includes(type) ||
+        revisedLeg?.isDiscontinuity ||
         revisedLeg?.waypointDescriptor === WaypointDescriptor.Airport ||
         revisedLeg?.waypointDescriptor === WaypointDescriptor.Runway,
       onPressed: () => {
@@ -138,6 +142,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name:
         !altnFlightPlan &&
         ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) &&
+        !revisedLeg?.isDiscontinuity &&
         revisedLeg?.definition.overfly
           ? 'DELETE OVERFLY *'
           : 'OVERFLY *',
@@ -192,6 +197,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: '(N/A) WIND',
       disabled: true,
       onPressed: () => {
+        if (!revisedLeg || revisedLeg.isDiscontinuity) {
+          return;
+        }
+
         // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
         if (revisedLeg?.segment?.class === SegmentClass.Arrival) {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/des`);

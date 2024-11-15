@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "kn"
     },
     "SYNC": "SYNC",
+    "Takeoff": {
+      "Airport": "Airport",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Calculate",
+      "CentreOfGravity": "TOCG",
+      "Clear": "Clear",
+      "CoGPosition": "CG Position",
+      "CoGPositions": {
+        "Forward": "Forward (<27%)",
+        "Standard": "Standard"
+      },
+      "Configuration": "Configuration",
+      "CrosswindAboveLimitMessage": "Do you want to perform the computation with {actual_crosswind} knots?",
+      "CrosswindAboveLimitTitle": "Maximum Crosswind Is {max_crosswind} Knots",
+      "EnterManually": "Enter Manually",
+      "EntryAngle": "Entry Angle",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG Outside Takeoff Envelope",
+        "FlexNotPossible": "Flex Not Possible",
+        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "InvalidData": "Invalid Inputs",
+        "MaximumPressureAlt": "Above Maximum Pressure Altitude ({max_zp} ft)",
+        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
+        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumTemperature": "Above Maximum OAT ({tmax}°C)",
+        "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
+        "OperatingEmptyWeight": "Below Operating Empty Weight ({oew} {weight_unit})",
+        "StructuralMtow": "Above Structural MTOW ({structural_mtow} {weight_unit})",
+        "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
+        "TooLight": "Below Minimum Takeoff Weight",
+        "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
+      },
+      "Packs": "Packs",
+      "Qnh": "QNH",
+      "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Runway Condition",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Dry Snow - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Slush - 12.7 mm/½\"",
+        "Contaminated13mmWater": "Water - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "Wet Snow - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Wet Snow - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Wet Snow - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Compacted Snow",
+        "Dry": "Dry",
+        "Wet": "Wet"
+      },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Runway Slope",
+      "Temperature": "Temperature",
+      "Thrust": "Thrust",
+      "Title": "Takeoff",
+      "Tora": "TORA",
+      "Weight": "Takeoff Weight",
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
+    },
     "Title": "Leistungsberechnungen",
     "TopOfDescent": {
       "Data": {
@@ -497,6 +567,8 @@
     },
     "Title": "Schnelleinstellungen"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Über"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "Checklisten automatisch ausfüllen",
       "BoardingTime": "Boarding-Dauer",
       "DmcSelfTestTime": "DMC-Selbsttestdauer",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Co-Pilot-Avatar anzeigen",
       "HomeCockpitMode": "Homecockpit-Modus",
       "McduFocusTimeout": "MCDU Fokusdauer (Sekunden)",
@@ -587,11 +660,15 @@
       "EnableSimBridge": "SimBridge Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
       "ExternalMcduServerPort": "Externer MCDU-Serverport",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "Inaktiv",
+      "Left": "Left",
       "LoadOnly": "Einmaliges Laden",
       "None": "Aus",
       "Off": "Aus",
+      "PilotSeat": "Pilot Seat for Control",
+      "Right": "Right",
       "Save": "Zurückspeichern bei Änderung",
       "Side": "Seite",
       "SimBridgeIp": "Externe SimBridge Hostadresse",
@@ -665,6 +742,7 @@
       "Blue": "Blau",
       "Brightness": "Helligkeit",
       "Dark": "Dunkel",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Sprache",
       "Light": "Hell",
       "Local": "Lokal",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTC und Lokal"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

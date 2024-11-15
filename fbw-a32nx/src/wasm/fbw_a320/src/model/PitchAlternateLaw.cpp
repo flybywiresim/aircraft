@@ -420,10 +420,10 @@ void PitchAlternateLaw::reset(void)
   PitchAlternateLaw_DWork.icLoad = true;
   PitchAlternateLaw_DWork.is_active_c9_PitchAlternateLaw = 0U;
   PitchAlternateLaw_DWork.is_c9_PitchAlternateLaw = PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
-  PitchAlternateLaw_DWork.is_active_c7_PitchAlternateLaw = 0U;
-  PitchAlternateLaw_DWork.is_c7_PitchAlternateLaw = PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
   rtb_nz_limit_up_g = 0.0;
   rtb_nz_limit_lo_g = 0.0;
+  PitchAlternateLaw_DWork.is_active_c7_PitchAlternateLaw = 0U;
+  PitchAlternateLaw_DWork.is_c7_PitchAlternateLaw = PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
   PitchAlternateLaw_RateLimiter_Reset(&PitchAlternateLaw_DWork.sf_RateLimiter);
   PitchAlternateLaw_LagFilter_Reset(&PitchAlternateLaw_DWork.sf_LagFilter_g3);
   PitchAlternateLaw_WashoutFilter_Reset(&PitchAlternateLaw_DWork.sf_WashoutFilter_c);
@@ -474,7 +474,7 @@ void PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_
   int32_T tmp;
   boolean_T rtb_NOT;
   boolean_T rtb_eta_trim_deg_should_freeze;
-  if (PitchAlternateLaw_DWork.is_active_c9_PitchAlternateLaw == 0U) {
+  if (PitchAlternateLaw_DWork.is_active_c9_PitchAlternateLaw == 0) {
     PitchAlternateLaw_DWork.is_active_c9_PitchAlternateLaw = 1U;
     PitchAlternateLaw_DWork.is_c9_PitchAlternateLaw = PitchAlternateLaw_IN_running;
     rtb_eta_trim_deg_should_freeze = false;
@@ -512,7 +512,7 @@ void PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_
   }
 
   rtb_Gain5 = PitchAlternateLaw_rtP.Gain5_Gain * rtb_Switch_c;
-  if (PitchAlternateLaw_DWork.is_active_c7_PitchAlternateLaw == 0U) {
+  if (PitchAlternateLaw_DWork.is_active_c7_PitchAlternateLaw == 0) {
     PitchAlternateLaw_DWork.is_active_c7_PitchAlternateLaw = 1U;
     PitchAlternateLaw_DWork.is_c7_PitchAlternateLaw = PitchAlternateLaw_IN_ground;
     rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
@@ -853,7 +853,7 @@ void PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_
     rty_Out_eta_deg, &PitchAlternateLaw_DWork.sf_RateLimiter_b);
   *rty_Out_eta_trim_limit_up = PitchAlternateLaw_rtP.Constant2_Value;
   *rty_Out_eta_trim_limit_lo = PitchAlternateLaw_rtP.Constant3_Value_j;
-  if (PitchAlternateLaw_DWork.is_active_c8_PitchAlternateLaw == 0U) {
+  if (PitchAlternateLaw_DWork.is_active_c8_PitchAlternateLaw == 0) {
     PitchAlternateLaw_DWork.is_active_c8_PitchAlternateLaw = 1U;
     PitchAlternateLaw_DWork.is_c8_PitchAlternateLaw = PitchAlternateLaw_IN_manual;
   } else {
