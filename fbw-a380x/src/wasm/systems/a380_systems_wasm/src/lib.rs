@@ -410,6 +410,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
         (34_002, FailureType::RadioAltimeter(3)),
+        (34_010, FailureType::RadioAntennaInterrupted(1)),
+        (34_011, FailureType::RadioAntennaInterrupted(2)),
+        (34_012, FailureType::RadioAntennaInterrupted(3)),
+        (34_020, FailureType::RadioAntennaDirectCoupling(1)),
+        (34_021, FailureType::RadioAntennaDirectCoupling(2)),
+        (34_022, FailureType::RadioAntennaDirectCoupling(3)),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
