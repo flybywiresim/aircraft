@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
@@ -87,53 +87,50 @@ export const LoadSheetWidget = () => {
     setImageSize(cImageSize);
   };
 
-  const filterLoadsheetSection = useCallback(
-    (section) => {
-      const cleanStyles = (html) => {
-        return html
-          .replace(/^<div [^>]+>/, '')
-          .replace(/<\/div>$/, '')
-          .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')
-          .replace(/font-size:\s*\d+px;?/g, '')
-          .replace(/font-family:\s*[^;]+;/g, '')
-          .replace(/<a\b[^>]*>[\s\S]*?<\/a>/g, '');
-      };
+  function filterLoadsheetSection(section) {
+    const cleanStyles = (html) => {
+      return html
+        .replace(/^<div [^>]+>/, '')
+        .replace(/<\/div>$/, '')
+        .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')
+        .replace(/font-size:\s*\d+px;?/g, '')
+        .replace(/font-family:\s*[^;]+;/g, '')
+        .replace(/<a\b[^>]*>[\s\S]*?<\/a>/g, '');
+    };
 
-      if (['Maps', 'Map', 'UAD Charts'].includes(section)) {
-        const anchorPattern = /<a\s+class="ofpmaplink"[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/g;
-        const filteredAnchors = [...loadsheet.matchAll(anchorPattern)].map((match) => ({
-          href: match[1],
-          innerHTML: match[2],
-        }));
+    if (['Maps', 'Map', 'UAD Charts'].includes(section)) {
+      const anchorPattern = /<a\s+class="ofpmaplink"[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/g;
+      const filteredAnchors = [...loadsheet.matchAll(anchorPattern)].map((match) => ({
+        href: match[1],
+        innerHTML: match[2],
+      }));
 
-        return `
+      return `
           <pre>
             ${filteredAnchors.map(({ href, innerHTML }) => `<a href="${href}" target="_blank">${innerHTML}</a>`).join('\n')}
           </pre>
         `;
+    }
+
+    if (section !== 'All') {
+      const currentIndex = loadsheetSections.indexOf(section);
+      let nextSection = currentIndex + 1 < loadsheetSections.length ? loadsheetSections[currentIndex + 1] : null;
+      if (['Maps', 'Map', 'UAD Charts'].includes(nextSection)) {
+        nextSection = currentIndex + 2 < loadsheetSections.length ? loadsheetSections[currentIndex + 2] : null;
       }
 
-      if (section !== 'All') {
-        const currentIndex = loadsheetSections.indexOf(section);
-        let nextSection = currentIndex + 1 < loadsheetSections.length ? loadsheetSections[currentIndex + 1] : null;
-        if (['Maps', 'Map', 'UAD Charts'].includes(nextSection)) {
-          nextSection = currentIndex + 2 < loadsheetSections.length ? loadsheetSections[currentIndex + 2] : null;
-        }
+      const sectionMarkerPattern = new RegExp(
+        `<!--BKMK///${section}///\\d-->[\\s\\S]*?(?=<!--BKMK///${nextSection || ''}///\\d-->|$)`,
+        'g',
+      );
 
-        const sectionMarkerPattern = new RegExp(
-          `<!--BKMK///${section}///\\d-->[\\s\\S]*?(?=<!--BKMK///${nextSection || ''}///\\d-->|$)`,
-          'g',
-        );
-
-        const filteredLoadsheet = loadsheet.match(sectionMarkerPattern);
-        if (filteredLoadsheet && filteredLoadsheet.length > 0) {
-          return `\n<pre>${cleanStyles(filteredLoadsheet[0])}</pre>\n`;
-        }
+      const filteredLoadsheet = loadsheet.match(sectionMarkerPattern);
+      if (filteredLoadsheet && filteredLoadsheet.length > 0) {
+        return `\n<pre>${cleanStyles(filteredLoadsheet[0])}</pre>\n`;
       }
-      return `\n<pre>${cleanStyles(loadsheet)}</pre>\n`;
-    },
-    [loadsheet],
-  );
+    }
+    return `\n<pre>${cleanStyles(loadsheet)}</pre>\n`;
+  }
 
   const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
