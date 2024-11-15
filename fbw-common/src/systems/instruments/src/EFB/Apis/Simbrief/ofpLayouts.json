@@ -11,7 +11,8 @@
         "Runway Analysis",
         "Airport WX List",
         "NOTAM",
-        "Company NOTAM"
+        "Company NOTAM",
+        "Maps"
     ],
     "AAL": [
         "All",
@@ -20,6 +21,7 @@
         "Flight Log",
         "Weather Forecast",
         "NOTAMs",
+        "Maps",
         "Load Closeout",
         "Runway Analysis"
     ],
@@ -34,7 +36,8 @@
         "NOTAMs",
         "Station Weather",
         "FIR/UIR Sigmets",
-        "Runway Analysis"
+        "Runway Analysis",
+        "Maps"
     ],
     "BAW": [
         "All",
@@ -48,6 +51,7 @@
         "Weather",
         "NOTAM",
         "Crew Information",
+        "Maps",
         "Additional Docs",
         "RAIM",
         "Additional Briefing Documents",
@@ -62,7 +66,8 @@
         "Flight Log",
         "Enroute Winds",
         "NOTAMs and Remarks",
-        "Runway Analysis"
+        "Runway Analysis",
+        "Maps"
     ],
     "DLH": [
         "All",
@@ -72,6 +77,7 @@
         "Crew Information",
         "Weather",
         "NOTAM",
+        "Maps",
         "Official VAA/TCA",
         "CDA",
         "Additional Docs",
@@ -90,6 +96,7 @@
         "Weather",
         "NOTAM",
         "Crew Information",
+        "Maps",
         "Official VAA/TCA",
         "Additional Docs",
         "RAIM",
@@ -106,7 +113,8 @@
         "Runway Analysis",
         "Airport WX List",
         "NOTAM",
-        "Company NOTAM"
+        "Company NOTAM",
+        "Maps"
     ],
     "JBU": [
         "All",
@@ -114,13 +122,15 @@
         "Dispatch Release",
         "Flight Plan",
         "Airport Briefing",
-        "Runway Analysis"
+        "Runway Analysis",
+        "Maps"
     ],
     "QFA": [
         "All",
         "Computer Flight Plan",
         "Weather and NOTAMs",
-        "Runway Analysis"
+        "Runway Analysis",
+        "Maps"
     ],
     "THY": [
         "All",
@@ -130,6 +140,7 @@
         "Runway Analysis",
         "Airport WX List",
         "NOTAM",
-        "Company NOTAM"
+        "Company NOTAM",
+        "Maps"
     ]
 }
