@@ -1415,6 +1415,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = ra2Bus;
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
+  prims[primIndex].modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
+  prims[primIndex].modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.fcu_own_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.fcu_opp_bus = {};
   if (primIndex == 0) {
