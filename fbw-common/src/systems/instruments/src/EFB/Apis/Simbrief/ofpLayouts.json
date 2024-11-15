@@ -36,28 +36,6 @@
         "FIR/UIR Sigmets",
         "Runway Analysis"
     ],
-    "AFR 2017": [
-        "All",
-        "Dispatcher Comments",
-        "Airport Suitability",
-        "FPL Summary",
-        "MEL-CDL",
-        "Last System Forecast Weight",
-        "Flight Summary",
-        "Limitations",
-        "Fuel Summary",
-        "Operational Impacts",
-        "Route/FL Summary",
-        "Flight Log",
-        "Destination Alternate",
-        "WPT Coordinates",
-        "ATC Flight Plan",
-        "Runway Analysis",
-        "UAD Charts",
-        "Weather Bulletin",
-        "NOTAM",
-        "Crew Alert"
-    ],
     "BAW": [
         "All",
         "Summary",
