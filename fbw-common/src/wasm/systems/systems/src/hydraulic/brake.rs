@@ -277,6 +277,10 @@ impl Brake {
         let nusselt = 0.037 * PRANDT_NUMBER.powf(1. / 3.) * reynold_number.powf(0.8);
         nusselt * K / characteristic_length.get::<meter>()
     }
+
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.temperature
+    }
 }
 impl SimulationElement for Brake {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -347,14 +351,17 @@ impl BrakeProbe {
         }
 
         // TODO: implement a more physical based simulation
-        let target_temperature_diff = TemperatureInterval::new::<kelvin>(if brake_fan_is_on {
+        let target_temperature = if brake_fan_is_on {
             (context.ambient_temperature().get::<degree_celsius>()
-                + brake.temperature.get::<degree_celsius>())
+                + brake.temperature().get::<degree_celsius>())
                 / 2.
         } else {
-            brake.temperature.get::<degree_celsius>()
-                - context.ambient_temperature().get::<degree_celsius>()
-        });
+            brake.temperature().get::<degree_celsius>()
+        };
+
+        let target_temperature_diff = TemperatureInterval::new::<kelvin>(
+            target_temperature - self.temperature.get::<degree_celsius>(),
+        );
 
         self.temperature += target_temperature_diff * Self::THERMAL_INERTIA;
     }
