@@ -89,13 +89,36 @@ export const LoadSheetWidget = () => {
 
   const filterLoadsheetSection = useCallback(
     (section) => {
+      const cleanStyles = (html) => {
+        return html
+          .replace(/^<div [^>]+>/, '')
+          .replace(/<\/div>$/, '')
+          .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')
+          .replace(/font-size:\s*\d+px;?/g, '')
+          .replace(/font-family:\s*[^;]+;/g, '')
+          .replace(/<a\b[^>]*>[\s\S]*?<\/a>/g, '');
+      };
+
+      if (['Maps', 'Map', 'UAD Charts'].includes(section)) {
+        const anchorPattern = /<a\s+class="ofpmaplink"[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/g;
+        const filteredAnchors = [...loadsheet.matchAll(anchorPattern)].map((match) => ({
+          href: match[1],
+          innerHTML: match[2],
+        }));
+
+        return `
+          <pre>
+            ${filteredAnchors.map(({ href, innerHTML }) => `<a href="${href}" target="_blank">${innerHTML}</a>`).join('\n')}
+          </pre>
+        `;
+      }
+
       if (section !== 'All') {
         const currentIndex = loadsheetSections.indexOf(section);
-
-        const nextSection =
-          currentIndex !== -1 && currentIndex + 1 < loadsheetSections.length
-            ? loadsheetSections[currentIndex + 1]
-            : null;
+        let nextSection = currentIndex + 1 < loadsheetSections.length ? loadsheetSections[currentIndex + 1] : null;
+        if (['Maps', 'Map', 'UAD Charts'].includes(nextSection)) {
+          nextSection = currentIndex + 2 < loadsheetSections.length ? loadsheetSections[currentIndex + 2] : null;
+        }
 
         const sectionMarkerPattern = new RegExp(
           `<!--BKMK///${section}///\\d-->[\\s\\S]*?(?=<!--BKMK///${nextSection || ''}///\\d-->|$)`,
@@ -103,28 +126,11 @@ export const LoadSheetWidget = () => {
         );
 
         const filteredLoadsheet = loadsheet.match(sectionMarkerPattern);
-
         if (filteredLoadsheet && filteredLoadsheet.length > 0) {
-          return `
-            \n<pre>${filteredLoadsheet[0]
-              .replace(/^<div [^>]+>/, '')
-              .replace(/<\/div>$/, '')
-              .replace(/font-size:\s*\d+px;?/g, '')
-              .replace(/font-family:\s*[^;]+;/g, '')
-              .replace(/font-size:\s*\d+px;?/g, '')
-              .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')}
-            </pre>\n`;
+          return `\n<pre>${cleanStyles(filteredLoadsheet[0])}</pre>\n`;
         }
-      } else
-        return `
-          \n${loadsheet
-            .replace(/^<div [^>]+>/, '')
-            .replace(/<\/div>$/, '')
-            .replace(/font-size:\s*\d+px;?/g, '')
-            .replace(/font-family:\s*[^;]+;/g, '')
-            .replace(/font-size:\s*\d+px;?/g, '')
-            .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')}
-          \n`;
+      }
+      return `\n<pre>${cleanStyles(loadsheet)}</pre>\n`;
     },
     [loadsheet],
   );
@@ -175,6 +181,7 @@ export const LoadSheetWidget = () => {
             height={51}
             onScrollStop={(scroll) => dispatch(setOfpScroll(scroll))}
             initialScroll={ofpScroll}
+            triggerScrollReset={currentLoadsheetSection}
           >
             <div
               ref={ref}
