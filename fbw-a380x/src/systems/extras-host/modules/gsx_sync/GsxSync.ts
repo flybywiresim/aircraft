@@ -47,6 +47,8 @@ export class GsxSync {
 
   private readonly fuelHose = ConsumerSubject.create(null, 0);
 
+  private readonly stateRefuel = ConsumerSubject.create(null, 1);
+
   private readonly refuelStarted = ConsumerSubject.create(null, false);
 
   private readonly cargoDoorTarget = ConsumerSubject.create(null, 0);
@@ -69,10 +71,12 @@ export class GsxSync {
     this.cargoPercentBoard.setConsumer(this.sub.on('gsx_boarding_cargo_percent'));
     this.cargoPercentDeboard.setConsumer(this.sub.on('gsx_deboarding_cargo_percent'));
     this.fuelHose.setConsumer(this.sub.on('gsx_fuelhose_connected'));
+    this.stateRefuel.setConsumer(this.sub.on('gsx_refuel_state'));
     this.refuelStarted.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
     this.cargoDoorTarget.setConsumer(this.sub.on('a38nx_cargo_door_target'));
 
     this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
+    this.stateRefuel.sub(this.onRefuelState.bind(this));
     this.refuelStarted.sub(this.onRefuelStarted.bind(this));
 
     this.toggleCargo1.sub(this.onToggleCargo1.bind(this));
@@ -141,6 +145,12 @@ export class GsxSync {
   private onBoardingCompleted(state: number): void {
     if (state == 6 && this.isCargoOpen()) {
       SimVar.SetSimVarValue('A:INTERACTIVE POINT GOAL:16', SimVarValueType.PercentOver100, 0);
+    }
+  }
+
+  private onRefuelState(state: number): void {
+    if (state == 4) {
+      SimVar.SetSimVarValue('L:FSDT_GSX_SET_PROGRESS_REFUEL', SimVarValueType.Number, -1);
     }
   }
 
