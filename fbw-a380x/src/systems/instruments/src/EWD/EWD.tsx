@@ -85,10 +85,10 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engineStateSubs[2].setConsumer(sub.on('engine_state_3').whenChanged());
     this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
 
-    this.engFirePb[0].setConsumer(sub.on('engine_fire_pb_1').whenChanged());
-    this.engFirePb[1].setConsumer(sub.on('engine_fire_pb_2').whenChanged());
-    this.engFirePb[2].setConsumer(sub.on('engine_fire_pb_3').whenChanged());
-    this.engFirePb[3].setConsumer(sub.on('engine_fire_pb_4').whenChanged());
+    this.engFirePb[0].setConsumer(sub.on('engine_fire_pb_1'));
+    this.engFirePb[1].setConsumer(sub.on('engine_fire_pb_2'));
+    this.engFirePb[2].setConsumer(sub.on('engine_fire_pb_3'));
+    this.engFirePb[3].setConsumer(sub.on('engine_fire_pb_4'));
 
     this.reverserSubs[0].setConsumer(sub.on('thrust_reverse_2').whenChanged());
     this.reverserSubs[1].setConsumer(sub.on('thrust_reverse_3').whenChanged());
