@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "नॉट्स"
     },
     "SYNC": "समकालीन करें",
+    "Takeoff": {
+      "Airport": "Airport",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Calculate",
+      "CentreOfGravity": "TOCG",
+      "Clear": "Clear",
+      "CoGPosition": "CG Position",
+      "CoGPositions": {
+        "Forward": "Forward (<27%)",
+        "Standard": "Standard"
+      },
+      "Configuration": "Configuration",
+      "CrosswindAboveLimitMessage": "Do you want to perform the computation with {actual_crosswind} knots?",
+      "CrosswindAboveLimitTitle": "Maximum Crosswind Is {max_crosswind} Knots",
+      "EnterManually": "Enter Manually",
+      "EntryAngle": "Entry Angle",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG Outside Takeoff Envelope",
+        "FlexNotPossible": "Flex Not Possible",
+        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "InvalidData": "Invalid Inputs",
+        "MaximumPressureAlt": "Above Maximum Pressure Altitude ({max_zp} ft)",
+        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
+        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumTemperature": "Above Maximum OAT ({tmax}°C)",
+        "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
+        "OperatingEmptyWeight": "Below Operating Empty Weight ({oew} {weight_unit})",
+        "StructuralMtow": "Above Structural MTOW ({structural_mtow} {weight_unit})",
+        "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
+        "TooLight": "Below Minimum Takeoff Weight",
+        "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
+      },
+      "Packs": "Packs",
+      "Qnh": "QNH",
+      "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Runway Condition",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Dry Snow - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Slush - 12.7 mm/½\"",
+        "Contaminated13mmWater": "Water - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "Wet Snow - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Wet Snow - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Wet Snow - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Compacted Snow",
+        "Dry": "Dry",
+        "Wet": "Wet"
+      },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Runway Slope",
+      "Temperature": "Temperature",
+      "Thrust": "Thrust",
+      "Title": "Takeoff",
+      "Tora": "TORA",
+      "Weight": "Takeoff Weight",
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
+    },
     "Title": "परफॉर्मेंस",
     "TopOfDescent": {
       "Data": {
@@ -488,7 +558,7 @@
       "Brightness": "Set flyPad brightness",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PauseAtTod": "Arm or Disarm Pause at Top of Descent",
+      "PauseAtTod": "Arm or Disarm pause at Top of Descent",
       "PowerButton": "Power Off",
       "Settings": "Go to flyPad Settings page",
       "SimBridge": "Control SimBridge Connection",
@@ -497,6 +567,8 @@
     },
     "Title": "Quick Controls"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "बारे में"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "ऑटोफ़िल चेकलिस्ट",
       "BoardingTime": "बोर्डिंग टाइम",
       "DmcSelfTestTime": "डीएमसी सेल्फ टेस्ट टाइम",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "फर्स्ट ऑफिसर अवतार दिखाएं",
       "HomeCockpitMode": "होम कॉकपिट मोड",
       "McduFocusTimeout": "एमसीडीयू फोकस टाइमआउट (सेकंड)",
@@ -587,11 +660,15 @@
       "EnableSimBridge": "SimBridge कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है तो 5 मिनट के बाद ऑटो निष्क्रिय हो जाता है)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU सर्वर कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है, तो 5 मिनट के बाद स्वतः निष्क्रिय हो जाता है)",
       "ExternalMcduServerPort": "बाहरी MCDU सर्वर पोर्ट",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hecta पास्कल",
       "Inactive": "निष्क्रिय",
+      "Left": "Left",
       "LoadOnly": "सिर्फ लोड करें",
       "None": "कोई नहीं",
       "Off": "बंद",
+      "PilotSeat": "Pilot Seat for Control",
+      "Right": "Right",
       "Save": "सहेजें",
       "Side": "Side",
       "SimBridgeIp": "External SimBridge Host Address",
@@ -665,6 +742,7 @@
       "Blue": "नीला",
       "Brightness": "ब्राइटनेस",
       "Dark": "डार्क",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "भाषा",
       "Light": "हल्का",
       "Local": "स्थानीय",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "यूटीसी और लोकल"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "अप्रैल",
     "Aug": "अगस्त",

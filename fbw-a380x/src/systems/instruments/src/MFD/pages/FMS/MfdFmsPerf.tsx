@@ -22,7 +22,6 @@ import {
   SpeedKnotsFormat,
   SpeedMachFormat,
   TemperatureFormat,
-  TimeHHMMFormat,
   WindDirectionFormat,
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -36,7 +35,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
-import { getApproachName } from '../../shared/utils';
+import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 
@@ -809,30 +808,35 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.crzPredStepAheadRef.instance.style.display = 'none';
                 this.crzPredWaypoint.set('N/A'); // Where to get this from?
                 this.crzPredAltitudeTarget.set(0); // Where to get this from?
+                this.crzTablePredLine1.set(null);
               }
             }
           }
 
           if (crzPred?.secondsFromPresent !== undefined && crzPred?.distanceFromPresentPosition !== undefined) {
+            const timePrediction = getEtaUtcOrFromPresent(
+              crzPred.distanceFromPresentPosition < 0 ? null : crzPred.secondsFromPresent,
+              this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+            );
             if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
               if (
                 this.props.fmcService.master?.fmgc.data.cruisePreSelSpeed.get() ||
                 this.props.fmcService.master?.fmgc.data.cruisePreSelMach.get()
               ) {
                 this.crzTablePredLine1.set(
-                  `${new TimeHHMMFormat().format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
+                  `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
                 );
                 this.crzTablePredLine2.set('');
               } else {
                 // Managed
                 this.crzTablePredLine1.set('');
                 this.crzTablePredLine2.set(
-                  `${new TimeHHMMFormat().format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
+                  `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
                 );
               }
             } else {
               this.crzTablePredLine1.set(
-                `${new TimeHHMMFormat().format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
+                `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
               );
               this.crzTablePredLine2.set('');
             }
@@ -848,7 +852,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableModeLine1.set('PRESEL');
             this.crzTableSpdLine1.set(null);
             this.crzTableMachLine1.set(null);
-            this.crzTablePredLine1.set(null);
             this.crzTableModeLine2.set('MANAGED');
             this.crzTableSpdLine2.set('---');
             this.crzTableMachLine2.set(
@@ -870,7 +873,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
 
             // TODO add predictions
-            this.crzTablePredLine1.set('--:--   ----');
             this.crzTableModeLine2.set(null);
             this.crzTableSpdLine2.set(null);
             this.crzTableMachLine2.set(null);
@@ -879,7 +881,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableModeLine1.set('SELECTED');
             this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
-            this.crzTablePredLine1.set(null);
 
             this.crzTableModeLine2.set('MANAGED');
             // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
@@ -898,10 +899,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
           // Update CRZ DEST predictions
           const destPred = this.props.fmcService.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
+          let destEta = '--:--';
           if (destPred?.secondsFromPresent !== undefined) {
-            this.destEta.set(new TimeHHMMFormat().format(destPred.secondsFromPresent / 60)[0] ?? '--:--');
-            this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true).toFixed(1) ?? '--.-');
+            destEta = getEtaUtcOrFromPresent(
+              destPred.secondsFromPresent,
+              this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+            );
           }
+          this.destEta.set(destEta);
+          this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true).toFixed(1) ?? '---.-');
 
           // Update DES speed table
           if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
@@ -1315,10 +1321,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                 </div>
                 <div class="mfd-fms-perf-to-thrred-noise-grid">
-                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-bottom: 15px; width: 125px;">
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; width: 125px;">
                     <span class="mfd-label">THR RED</span>
                   </div>
-                  <div style="margin-bottom: 15px;">
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
@@ -1339,7 +1345,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div
                       class="mfd-fms-perf-to-thrred-noise-grid-cell"
                       ref={this.toNoiseFieldsRefs[0]}
-                      style="margin-bottom: 15px; margin-right: 15px;"
+                      style="margin-right: 15px;"
                     >
                       <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                         <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
@@ -1350,7 +1356,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div>
-                    <div ref={this.toNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
+                    <div ref={this.toNoiseFieldsRefs[1]} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <InputField<number>
                         dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                         mandatory={Subject.create(false)}
@@ -1365,10 +1371,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div style="grid-row-start: span 2;">
-                    <div
-                      ref={this.toNoiseFieldsRefs[2]}
-                      style="display: flex; justify-content: center; align-items: center;"
-                    >
+                    <div ref={this.toNoiseFieldsRefs[2]} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <ConditionalComponent
                         width={112}
                         height={62}
@@ -1386,13 +1389,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    class="mfd-fms-perf-to-thrred-noise-grid-cell"
-                    style="margin-right: 15px; margin-bottom: 15px; width: 125px;"
-                  >
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; width: 125px;">
                     <span class="mfd-label">ACCEL</span>
                   </div>
-                  <div style="margin-bottom: 15px;">
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
@@ -1413,7 +1413,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div
                       ref={this.toNoiseFieldsRefs[3]}
                       class="mfd-fms-perf-to-thrred-noise-grid-cell"
-                      style="margin-right: 15px; margin-bottom: 15px;"
+                      style="margin-right: 15px;"
                     >
                       <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                         <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
@@ -1424,7 +1424,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div>
-                    <div ref={this.toNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
+                    <div ref={this.toNoiseFieldsRefs[4]} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         mandatory={Subject.create(false)}
@@ -1438,16 +1438,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       />
                     </div>
                   </div>
-                  <div
-                    class="mfd-fms-perf-to-thrred-noise-grid-cell"
-                    style="margin-right: 15px; margin-bottom: 15px; width: 125px;"
-                  >
+                  <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; width: 125px;">
                     <span ref={this.toNoiseEndLabelRef} class="mfd-label">
                       NOISE END
                     </span>
                   </div>
                   <div>
-                    <div ref={this.toNoiseButtonRef} style="display: flex;">
+                    <div ref={this.toNoiseButtonRef} class="mfd-fms-perf-to-thrred-noise-grid-cell-start">
                       <ConditionalComponent
                         width={98}
                         height={40}
@@ -1465,7 +1462,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         componentIfTrue={<></>}
                       />
                     </div>
-                    <div ref={this.toNoiseEndInputRef}>
+                    <div ref={this.toNoiseEndInputRef} class="mfd-fms-perf-to-thrred-noise-grid-cell-centered">
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) =>
@@ -1913,8 +1910,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <span class="mfd-label mfd-spacing-right">TRANS</span>
                     <InputField<number>
                       dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
+                      dataHandlerDuringValidation={async (v) => {
+                        this.loadedFlightPlan?.setPerformanceData('pilotTransitionAltitude', v);
+                        this.props.fmcService.master?.acInterface.updateTransitionAltitudeLevel();
+                      }}
                       mandatory={Subject.create(false)}
-                      inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                      enteredByPilot={this.transAltIsPilotEntered}
                       value={this.transAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
@@ -2077,7 +2078,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       }
                     />
                   </div>
-                  <div class="mfd-fms-perf-speed-table-cell" />
+                  <div class="mfd-fms-perf-speed-table-cell">
+                    <span class="mfd-value">{this.crzTablePredLine1}</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">
+                      {this.crzTablePredLine1.map((it) => (it ? 'NM' : ''))}
+                    </span>
+                  </div>
                   <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                     <div
                       class={{

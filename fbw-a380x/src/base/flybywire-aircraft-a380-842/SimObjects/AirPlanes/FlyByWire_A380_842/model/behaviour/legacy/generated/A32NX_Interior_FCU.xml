@@ -10,9 +10,9 @@
             <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
             <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_2>
             <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
-            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_3>
             <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
             <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
             <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
@@ -70,10 +70,10 @@
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
-                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
                 </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
@@ -238,20 +238,11 @@
     </Template>
 
     <Template Name="FBW_Airbus_Autopilot_Knob_VerticalSpeed_Template">
-        <DefaultTemplateParameters>
+        <Parameters Type="Default">
             <ID>1</ID>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-            <TEMPLATE_TO_CALL>FBW_Airbus_Autopilot_Knob_VerticalSpeed_SubTemplate</TEMPLATE_TO_CALL>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_Airbus_Autopilot_Knob_VerticalSpeed_SubTemplate">
-        <DefaultTemplateParameters>
-            <NODE_ID>AUTOPILOT_Knob_VerticalSpeed#SUFFIX_ID#</NODE_ID>
-            <ANIM_NAME>AUTOPILOT_Knob_VerticalSpeed#SUFFIX_ID#</ANIM_NAME>
-            <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_VerticalSpeed_PushPull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+            <NODE_ID>AUTOPILOT_Knob_VerticalSpeed</NODE_ID>
+            <ANIM_NAME>AUTOPILOT_Knob_VerticalSpeed</ANIM_NAME>
+            <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_VerticalSpeed_PushPull</ANIM_NAME_PUSHPULL>
             <PART_ID>AUTOPILOT_Knob_VerticalSpeed</PART_ID>
             <WWISE_EVENT>QNHknob</WWISE_EVENT>
             <COUNT>36</COUNT>
@@ -265,13 +256,7 @@
             <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
             <ANIMTIP_3>%((L:A32NX_TRK_FPA_MODE_ACTIVE, bool))%{if}Engage flight path angle%{else}Engage vertical speed%{end}</ANIMTIP_3>
             <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
-        </DefaultTemplateParameters>
-        <EditableTemplateParameters>
-            <AddParams>
-                <ANIM_NAME/>
-                <ANIM_NAME_PUSHPULL/>
-            </AddParams>
-        </EditableTemplateParameters>
+        </Parameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
@@ -295,10 +280,7 @@
                     (&gt;H:A320_Neo_FCU_VS_PULL)
                     (&gt;H:A320_Neo_CDU_VS)
                 </PULL_CODE>
-                <PUSH_CODE>
-                    (&gt;H:A320_Neo_FCU_VS_PUSH)
-                    (&gt;H:A320_Neo_CDU_VS)
-                </PUSH_CODE>
+                <PUSH_CODE/>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
                 <WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>

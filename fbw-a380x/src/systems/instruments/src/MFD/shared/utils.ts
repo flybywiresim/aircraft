@@ -3,6 +3,16 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
+export function getEtaFromUtcOrPresent(seconds: number | null, fromPresent: boolean) {
+  if (seconds === null) {
+    return '--:--';
+  }
+
+  const secondsEta = fromPresent ? seconds : seconds + SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+  const eta = new Date(secondsEta * 1000);
+  return `${eta.getUTCHours().toString().padStart(2, '0')}:${eta.getUTCMinutes().toString().padStart(2, '0')}`;
+}
+
 export function secondsToHHmmString(seconds: number) {
   const minutesTotal = seconds / 60;
   const hours = Math.abs(Math.floor(minutesTotal / 60))

@@ -48,17 +48,7 @@ export class AtccomHeader extends AbstractHeader {
           <PageSelectorDropdownMenu
             isActive={this.connectIsSelected}
             label="CONNECT"
-            menuItems={[
-              { label: 'NOTIFICATION', action: () => this.props.uiService.navigateTo('atccom/connect/notification') },
-              {
-                label: 'CONNECTION STATUS',
-                action: () => this.props.uiService.navigateTo('atccom/connect/conn-status'),
-              },
-              {
-                label: 'MAX UPLINK DELAY',
-                action: () => this.props.uiService.navigateTo('atccom/connect/max-uplink-delay'),
-              },
-            ]}
+            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/connect') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorConnect`}
             containerStyle="flex: 1"
           />
@@ -71,17 +61,11 @@ export class AtccomHeader extends AbstractHeader {
           />
           <PageSelectorDropdownMenu
             isActive={this.reportModifyIsSelected}
-            label="REPORT & MODIFY"
-            menuItems={[
-              { label: 'POSITION', action: () => this.props.uiService.navigateTo('atccom/report-modify/position') },
-              { label: 'MODIFY', action: () => this.props.uiService.navigateTo('atccom/report-modify/modify') },
-              {
-                label: 'OTHER REPORTS',
-                action: () => this.props.uiService.navigateTo('atccom/report-modify/other-reports'),
-              },
-            ]}
+            label="REPORT<br /> & NOTIFY"
+            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/report-modify/position') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorReportModify`}
-            containerStyle="flex: 1"
+            containerStyle="flex: 1.2"
+            labelStyle="margin-top: 0; margin-bottom: 0; padding-top: 2px; padding-bottom: 2px"
           />
           <PageSelectorDropdownMenu
             isActive={this.msgRecordIsSelected}
@@ -89,6 +73,7 @@ export class AtccomHeader extends AbstractHeader {
             menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/msg-record') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorMsgRecord`}
             containerStyle="flex: 1"
+            labelStyle="margin-top: 0; margin-bottom: 0; padding-top: 2px; padding-bottom: 2px"
           />
           <PageSelectorDropdownMenu
             isActive={this.atisIsSelected}
@@ -103,6 +88,7 @@ export class AtccomHeader extends AbstractHeader {
             menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/emer') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorEmer`}
             containerStyle="flex: 1"
+            labelStyle="color: #000; background-color: #ff9601; background-clip: content-box"
           />
         </div>
       </>

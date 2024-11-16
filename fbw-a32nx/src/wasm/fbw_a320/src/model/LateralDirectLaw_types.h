@@ -1,4 +1,4 @@
-#ifndef RTW_HEADER_LateralDirectLaw_types_h_
-#define RTW_HEADER_LateralDirectLaw_types_h_
+#ifndef LateralDirectLaw_types_h_
+#define LateralDirectLaw_types_h_
 #endif
 
