@@ -1,0 +1,31 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+
+.sys-box {
+  border: 1px solid $display-light-grey;
+  padding: 10px;
+  padding-top: 50px;
+  width: 270px;
+  position: relative;
+}
+
+.sys-box.active {
+  border: 1px solid $display-green;
+}
+
+.sys-group {
+  border: 1px solid $display-light-grey;
+  padding: 5px;
+}
+
+.sys-group.active {
+  border: 1px solid $display-green;
+}
+
+.sys-group.failed {
+  border: 1px solid $display-amber;
+}
+
+.sys-status-item.failed {
+  color: $display-amber;
+}

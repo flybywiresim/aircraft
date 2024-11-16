@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -14,7 +13,6 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
-import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/PFD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -72,8 +70,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
   private readonly altitude = Arinc429RegisterSubject.createEmpty();
 
-  private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
-
   private isNegativeSub = Subject.create('hidden');
 
   private showThousandsZeroSub = Subject.create(false);
@@ -102,7 +98,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars>();
 
     this.altitude.sub((altitude) => {
       const isNegative = altitude.value < 0;
@@ -148,8 +144,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
     // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
     sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
-
-    this.baroMode.setConsumer(sub.on('baroMode'));
   }
 
   render(): VNode {
