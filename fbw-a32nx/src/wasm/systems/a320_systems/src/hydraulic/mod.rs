@@ -3823,7 +3823,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
     ) {
         for (brake_temperature, sensor) in self.brake_temperatures.iter_mut().zip(
             left_brake_temperature_sensors
-                .into_iter()
+                .iter()
                 .chain(right_brake_temperature_sensors),
         ) {
             *brake_temperature = sensor.signal();
