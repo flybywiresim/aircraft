@@ -191,30 +191,30 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="mfd-pos-monitor-header"></div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">ACCURACY</span>
-              <span class="mfd-value">{this.fmsAccuracy}</span>
+              <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
+              <span class="mfd-value bigger">{this.fmsAccuracy}</span>
             </div>
-            <div class="mfd-label-value-container" style={"margin-right: 5px;"}>
-              <span class="mfd-label mfd-spacing-right" style="width: 70px;">
+            <div class="mfd-label-value-container" style={"margin-right:113px;"}>
+              <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
                 EPU
               </span>
-              <span class="mfd-value">{this.fmsEpu}</span>
+              <span class="mfd-value bigger">{this.fmsEpu}</span>
               <span class="mfd-label-unit mfd-unit-trailing">NM</span>
             </div>
           </div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
-              <span class="mfd-value mfd-spacing-right">GPS PRIMARY</span>
+              <span class="mfd-value bigger mfd-spacing-right">GPS PRIMARY</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label mfd-spacing-right">RNP</span>
+              <span class="mfd-label bigger mfd-spacing-right">RNP</span>
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
                 value={this.fmsRnp}
                 onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
-                containerStyle="width: 130px;"
+                containerStyle="width: 140px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
