@@ -14,7 +14,7 @@ import {
 
 interface BaseSecEvents {
   sec_rudder_status_word: number;
-  sec_rudder_trim_order: number;
+  sec_rudder_trim_actual_position: number;
 }
 
 /**
@@ -39,8 +39,8 @@ export class SecPublisher extends SimVarPublisher<SecDataEvents> {
         { name: 'L:A32NX_SEC_#index#_RUDDER_STATUS_WORD', type: SimVarValueType.Number, indexed: true },
       ],
       [
-        'sec_rudder_trim_order',
-        { name: 'L:A32NX_SEC_#index#_RUDDER_TRIM_ORDER', type: SimVarValueType.Number, indexed: true },
+        'sec_rudder_trim_actual_position',
+        { name: 'L:A32NX_SEC_#index#_RUDDER_ACTUAL_POSITION', type: SimVarValueType.Number, indexed: true },
       ],
     ]);
     super(simvars, bus, pacer);

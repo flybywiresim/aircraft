@@ -12,7 +12,7 @@ const RTPIDisplay = () => {
   const sec1RudderStatusWord = useArinc429Var('L:A32NX_SEC_1_RUDDER_STATUS_WORD');
 
   const secSourceForTrim = sec1RudderStatusWord.bitValueOr(28, false) ? 1 : 3;
-  const trimPos = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_TRIM_ORDER`);
+  const trimPos = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_ACTUAL_POSITION`);
 
   if (!trimPos.isFailureWarning() || ltsTest === 0) {
     const directionText = trimPos.value >= 0 ? 'L' : 'R';

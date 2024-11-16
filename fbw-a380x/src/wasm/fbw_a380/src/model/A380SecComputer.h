@@ -58,7 +58,7 @@ class A380SecComputer final
     real_T rudder_1_pos_deg;
     real_T rudder_2_pos_deg;
     real_T rudder_pedal_pos_deg;
-    real_T rudder_trim_pos_deg;
+    real_T rudder_trim_actual_pos_deg;
     uint32_T SSM;
     uint32_T SSM_k;
     uint32_T SSM_kx;

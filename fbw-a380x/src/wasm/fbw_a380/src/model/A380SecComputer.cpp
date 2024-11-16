@@ -1286,7 +1286,7 @@ void A380SecComputer::step()
       A380SecComputer_DWork.icLoad);
     if (A380SecComputer_DWork.icLoad) {
       if (rtb_Compare_l) {
-        ca = A380SecComputer_U.in.analog_inputs.rudder_trim_pos_deg;
+        ca = A380SecComputer_U.in.analog_inputs.rudder_trim_actual_pos_deg;
       } else {
         ca = A380SecComputer_P.Constant_Value;
       }
@@ -1303,7 +1303,7 @@ void A380SecComputer::step()
 
     A380SecComputer_RateLimiter_e(A380SecComputer_DWork.Delay_DSTATE, A380SecComputer_P.RateLimiterGenericVariableTs_up,
       A380SecComputer_P.RateLimiterGenericVariableTs_lo, A380SecComputer_U.in.time.dt,
-      A380SecComputer_U.in.analog_inputs.rudder_trim_pos_deg, !A380SecComputer_B.logic.rudder_trim_engaged,
+      A380SecComputer_U.in.analog_inputs.rudder_trim_actual_pos_deg, !A380SecComputer_B.logic.rudder_trim_engaged,
       &A380SecComputer_B.laws.rudder_trim_command_deg, &A380SecComputer_DWork.sf_RateLimiter_bh);
     rtb_NOT_bl = (A380SecComputer_B.logic.master_prim == A380SecComputer_P.CompareToConstant_const_l);
     LawMDLOBJ1.step(&A380SecComputer_U.in.time.dt, &A380SecComputer_B.logic.total_sidestick_roll_command,
@@ -1850,9 +1850,9 @@ void A380SecComputer::step()
     }
 
     if (A380SecComputer_B.logic.rudder_trim_engaged) {
-      A380SecComputer_Y.out.analog_outputs.rudder_trim_pos_order_deg = A380SecComputer_B.laws.rudder_trim_command_deg;
+      A380SecComputer_Y.out.analog_outputs.rudder_trim_command_deg = A380SecComputer_B.laws.rudder_trim_command_deg;
     } else {
-      A380SecComputer_Y.out.analog_outputs.rudder_trim_pos_order_deg = A380SecComputer_P.Constant15_Value;
+      A380SecComputer_Y.out.analog_outputs.rudder_trim_command_deg = A380SecComputer_P.Constant15_Value;
     }
 
     rtb_VectorConcatenate[0] = A380SecComputer_B.logic.left_aileron_1_avail;
@@ -2007,7 +2007,7 @@ void A380SecComputer::step()
       &A380SecComputer_Y.out.bus_outputs.elevator_status_word.Data);
     A380SecComputer_MATLABFunction_e(rtb_VectorConcatenate_k, &A380SecComputer_Y.out.bus_outputs.rudder_status_word.Data);
     A380SecComputer_Y.out.bus_outputs.misc_data_status_word.Data = static_cast<real32_T>
-      (A380SecComputer_U.in.analog_inputs.rudder_trim_pos_deg);
+      (A380SecComputer_U.in.analog_inputs.rudder_trim_actual_pos_deg);
     A380SecComputer_MATLABFunction_e(rtb_VectorConcatenate_b,
       &A380SecComputer_Y.out.bus_outputs.fctl_law_status_word.Data);
     A380SecComputer_MATLABFunction_e(rtb_VectorConcatenate_n,
@@ -2096,10 +2096,10 @@ void A380SecComputer::step()
       (A380SecComputer_P.EnumeratedConstant1_Value);
     A380SecComputer_Y.out.bus_outputs.rudder_2_position_deg.Data = static_cast<real32_T>
       (A380SecComputer_U.in.analog_inputs.rudder_2_pos_deg);
-    A380SecComputer_Y.out.bus_outputs.rudder_trim_order_deg.SSM = static_cast<uint32_T>
+    A380SecComputer_Y.out.bus_outputs.rudder_trim_actual_pos_deg.SSM = static_cast<uint32_T>
       (A380SecComputer_P.EnumeratedConstant1_Value);
-    A380SecComputer_Y.out.bus_outputs.rudder_trim_order_deg.Data = static_cast<real32_T>
-      (A380SecComputer_U.in.analog_inputs.rudder_trim_pos_deg);
+    A380SecComputer_Y.out.bus_outputs.rudder_trim_actual_pos_deg.Data = static_cast<real32_T>
+      (A380SecComputer_U.in.analog_inputs.rudder_trim_actual_pos_deg);
     A380SecComputer_Y.out.bus_outputs.fctl_law_status_word.SSM = static_cast<uint32_T>
       (A380SecComputer_P.EnumeratedConstant1_Value);
     A380SecComputer_Y.out.bus_outputs.misc_data_status_word.SSM = static_cast<uint32_T>
@@ -2472,7 +2472,7 @@ void A380SecComputer::step()
     A380SecComputer_B.Data_ih = A380SecComputer_U.in.bus_inputs.prim_2_bus.left_spoiler_position_deg.Data;
     A380SecComputer_B.SSM_e5 = A380SecComputer_U.in.bus_inputs.prim_2_bus.right_spoiler_position_deg.SSM;
     A380SecComputer_B.Data_du = A380SecComputer_U.in.bus_inputs.prim_2_bus.right_spoiler_position_deg.Data;
-    A380SecComputer_B.rudder_trim_pos_deg = A380SecComputer_U.in.analog_inputs.rudder_trim_pos_deg;
+    A380SecComputer_B.rudder_trim_actual_pos_deg = A380SecComputer_U.in.analog_inputs.rudder_trim_actual_pos_deg;
     A380SecComputer_B.SSM_bf = A380SecComputer_U.in.bus_inputs.prim_2_bus.elevator_status_word.SSM;
     A380SecComputer_B.Data_nx = A380SecComputer_U.in.bus_inputs.prim_2_bus.elevator_status_word.Data;
     A380SecComputer_B.SSM_fd = A380SecComputer_U.in.bus_inputs.prim_2_bus.elevator_1_position_deg.SSM;
@@ -2670,8 +2670,8 @@ void A380SecComputer::step()
     A380SecComputer_B.Data_jsg = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_1_position_deg.Data;
     A380SecComputer_B.SSM_gbi = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_2_position_deg.SSM;
     A380SecComputer_B.Data_g1 = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_2_position_deg.Data;
-    A380SecComputer_B.SSM_fhm = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_trim_order_deg.SSM;
-    A380SecComputer_B.Data_j4 = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_trim_order_deg.Data;
+    A380SecComputer_B.SSM_fhm = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_trim_actual_pos_deg.SSM;
+    A380SecComputer_B.Data_j4 = A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_trim_actual_pos_deg.Data;
     A380SecComputer_B.Data_jyh = A380SecComputer_U.in.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
     A380SecComputer_B.SSM_ltj = A380SecComputer_U.in.bus_inputs.sec_x_bus.fctl_law_status_word.SSM;
     A380SecComputer_B.Data_e4 = A380SecComputer_U.in.bus_inputs.sec_x_bus.fctl_law_status_word.Data;
@@ -2728,8 +2728,8 @@ void A380SecComputer::step()
     A380SecComputer_B.SSM_mx3 = A380SecComputer_U.in.bus_inputs.sec_y_bus.rudder_2_position_deg.SSM;
     A380SecComputer_B.Data_gk4 = A380SecComputer_U.in.bus_inputs.sec_y_bus.rudder_2_position_deg.Data;
     A380SecComputer_B.SSM_er = A380SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
-    A380SecComputer_B.SSM_hm = A380SecComputer_U.in.bus_inputs.sec_y_bus.rudder_trim_order_deg.SSM;
-    A380SecComputer_B.Data_gbt = A380SecComputer_U.in.bus_inputs.sec_y_bus.rudder_trim_order_deg.Data;
+    A380SecComputer_B.SSM_hm = A380SecComputer_U.in.bus_inputs.sec_y_bus.rudder_trim_actual_pos_deg.SSM;
+    A380SecComputer_B.Data_gbt = A380SecComputer_U.in.bus_inputs.sec_y_bus.rudder_trim_actual_pos_deg.Data;
     A380SecComputer_B.SSM_dm = A380SecComputer_U.in.bus_inputs.sec_y_bus.fctl_law_status_word.SSM;
     A380SecComputer_B.Data_p0 = A380SecComputer_U.in.bus_inputs.sec_y_bus.fctl_law_status_word.Data;
     A380SecComputer_B.SSM_fk = A380SecComputer_U.in.bus_inputs.sec_y_bus.misc_data_status_word.SSM;
@@ -2823,7 +2823,7 @@ void A380SecComputer::step()
   A380SecComputer_Y.out.data.analog_inputs.rudder_1_pos_deg = A380SecComputer_B.rudder_1_pos_deg;
   A380SecComputer_Y.out.data.analog_inputs.rudder_2_pos_deg = A380SecComputer_B.rudder_2_pos_deg;
   A380SecComputer_Y.out.data.analog_inputs.rudder_pedal_pos_deg = A380SecComputer_B.rudder_pedal_pos_deg;
-  A380SecComputer_Y.out.data.analog_inputs.rudder_trim_pos_deg = A380SecComputer_B.rudder_trim_pos_deg;
+  A380SecComputer_Y.out.data.analog_inputs.rudder_trim_actual_pos_deg = A380SecComputer_B.rudder_trim_actual_pos_deg;
   A380SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM = A380SecComputer_B.SSM_ng;
   A380SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data = A380SecComputer_B.Data_ix;
   A380SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM = A380SecComputer_B.SSM_ba;
@@ -3386,8 +3386,8 @@ void A380SecComputer::step()
   A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_1_position_deg.Data = A380SecComputer_B.Data_jsg;
   A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_2_position_deg.SSM = A380SecComputer_B.SSM_gbi;
   A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_2_position_deg.Data = A380SecComputer_B.Data_g1;
-  A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_trim_order_deg.SSM = A380SecComputer_B.SSM_fhm;
-  A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_trim_order_deg.Data = A380SecComputer_B.Data_j4;
+  A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_trim_actual_pos_deg.SSM = A380SecComputer_B.SSM_fhm;
+  A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.rudder_trim_actual_pos_deg.Data = A380SecComputer_B.Data_j4;
   A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.fctl_law_status_word.SSM = A380SecComputer_B.SSM_ltj;
   A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.fctl_law_status_word.Data = A380SecComputer_B.Data_e4;
   A380SecComputer_Y.out.data.bus_inputs.sec_x_bus.misc_data_status_word.SSM = A380SecComputer_B.SSM_hn;
@@ -3438,8 +3438,8 @@ void A380SecComputer::step()
   A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_1_position_deg.Data = A380SecComputer_B.Data_mb;
   A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_2_position_deg.SSM = A380SecComputer_B.SSM_mx3;
   A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_2_position_deg.Data = A380SecComputer_B.Data_gk4;
-  A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_trim_order_deg.SSM = A380SecComputer_B.SSM_hm;
-  A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_trim_order_deg.Data = A380SecComputer_B.Data_gbt;
+  A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_trim_actual_pos_deg.SSM = A380SecComputer_B.SSM_hm;
+  A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.rudder_trim_actual_pos_deg.Data = A380SecComputer_B.Data_gbt;
   A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.fctl_law_status_word.SSM = A380SecComputer_B.SSM_dm;
   A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.fctl_law_status_word.Data = A380SecComputer_B.Data_p0;
   A380SecComputer_Y.out.data.bus_inputs.sec_y_bus.misc_data_status_word.SSM = A380SecComputer_B.SSM_fk;
@@ -3505,7 +3505,7 @@ void A380SecComputer::initialize()
   A380SecComputer_B.rudder_1_pos_deg = A380SecComputer_P.out_Y0.data.analog_inputs.rudder_1_pos_deg;
   A380SecComputer_B.rudder_2_pos_deg = A380SecComputer_P.out_Y0.data.analog_inputs.rudder_2_pos_deg;
   A380SecComputer_B.rudder_pedal_pos_deg = A380SecComputer_P.out_Y0.data.analog_inputs.rudder_pedal_pos_deg;
-  A380SecComputer_B.rudder_trim_pos_deg = A380SecComputer_P.out_Y0.data.analog_inputs.rudder_trim_pos_deg;
+  A380SecComputer_B.rudder_trim_actual_pos_deg = A380SecComputer_P.out_Y0.data.analog_inputs.rudder_trim_actual_pos_deg;
   A380SecComputer_B.SSM_ng = A380SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
   A380SecComputer_B.Data_ix = A380SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
   A380SecComputer_B.SSM_ba = A380SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM;
@@ -4087,8 +4087,8 @@ void A380SecComputer::initialize()
   A380SecComputer_B.Data_jsg = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_1_position_deg.Data;
   A380SecComputer_B.SSM_gbi = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_2_position_deg.SSM;
   A380SecComputer_B.Data_g1 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_2_position_deg.Data;
-  A380SecComputer_B.SSM_fhm = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_trim_order_deg.SSM;
-  A380SecComputer_B.Data_j4 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_trim_order_deg.Data;
+  A380SecComputer_B.SSM_fhm = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_trim_actual_pos_deg.SSM;
+  A380SecComputer_B.Data_j4 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.rudder_trim_actual_pos_deg.Data;
   A380SecComputer_B.SSM_ltj = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.fctl_law_status_word.SSM;
   A380SecComputer_B.Data_e4 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.fctl_law_status_word.Data;
   A380SecComputer_B.SSM_hn = A380SecComputer_P.out_Y0.data.bus_inputs.sec_x_bus.misc_data_status_word.SSM;
@@ -4139,8 +4139,8 @@ void A380SecComputer::initialize()
   A380SecComputer_B.Data_mb = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_1_position_deg.Data;
   A380SecComputer_B.SSM_mx3 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_2_position_deg.SSM;
   A380SecComputer_B.Data_gk4 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_2_position_deg.Data;
-  A380SecComputer_B.SSM_hm = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_trim_order_deg.SSM;
-  A380SecComputer_B.Data_gbt = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_trim_order_deg.Data;
+  A380SecComputer_B.SSM_hm = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_trim_actual_pos_deg.SSM;
+  A380SecComputer_B.Data_gbt = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.rudder_trim_actual_pos_deg.Data;
   A380SecComputer_B.SSM_dm = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.fctl_law_status_word.SSM;
   A380SecComputer_B.Data_p0 = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.fctl_law_status_word.Data;
   A380SecComputer_B.SSM_fk = A380SecComputer_P.out_Y0.data.bus_inputs.sec_y_bus.misc_data_status_word.SSM;

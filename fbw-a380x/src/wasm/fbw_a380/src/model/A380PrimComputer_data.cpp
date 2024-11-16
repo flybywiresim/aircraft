@@ -153,7 +153,12 @@ base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct{
     0.0
   },
   0.0,
-  false
+  false,
+  false,
+  0.0,
+  0.0,
+  0.0,
+  0.0
 } ;
 
 base_prim_laws_outputs rtP_prim_laws_output_MATLABStruct{
@@ -252,6 +257,18 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   0.0,
 
   0.0,
+
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
 
   23.0,
 
@@ -633,6 +650,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   -40.0,
 
+  -0.03,
+
   -40.0,
 
   -40.0,
@@ -726,6 +745,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   40.0,
 
   40.0,
+
+  0.03,
 
   40.0,
 
@@ -2746,7 +2767,12 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         0.0
       },
       0.0,
-      false
+      false,
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     },
 
     {
@@ -3485,6 +3511,16 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
+  5.0F,
+
+  32.0F,
+
+  23.0F,
+
+  0.0F,
+
+  0.0F,
+
   0.0F,
 
   0.0F,
@@ -3563,6 +3599,10 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   false,
 
+  false,
+
+  false,
+
   true,
 
   false,
@@ -3594,6 +3634,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
 
   false,
 

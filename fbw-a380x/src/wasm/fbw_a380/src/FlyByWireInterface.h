@@ -456,7 +456,7 @@ class FlyByWireInterface {
   // SEC discrete output Lvars
   std::unique_ptr<LocalVariable> idSecHealthy[3];
   std::unique_ptr<LocalVariable> idSecRudderStatusWord[3];
-  std::unique_ptr<LocalVariable> idSecRudderTrimOrder[3];
+  std::unique_ptr<LocalVariable> idSecRudderTrimActualPos[3];
 
   // Flight controls solenoid valve energization Lvars
   std::unique_ptr<LocalVariable> idLeftInboardAileronSolenoidEnergized[2];

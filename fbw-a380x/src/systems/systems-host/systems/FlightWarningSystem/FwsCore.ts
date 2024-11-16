@@ -3321,14 +3321,14 @@ export class FwsCore {
     );
 
     // rudder trim not takeoff
-    const sec1RudderTrimOrder = Arinc429Word.fromSimVarValue('L:A32NX_SEC_1_RUDDER_TRIM_ORDER');
-    const sec3RudderTrimOrder = Arinc429Word.fromSimVarValue('L:A32NX_SEC_3_RUDDER_TRIM_ORDER');
+    const sec1RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_1_RUDDER_ACTUAL_POSITION');
+    const sec3RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION');
     const sec1Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'boolean') > 0;
     const sec3Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'boolean') > 0;
 
     const rudderTrimConfig =
-      (sec1Healthy && Math.abs(sec1RudderTrimOrder.valueOr(0)) > 3.6) ||
-      (sec3Healthy && Math.abs(sec3RudderTrimOrder.valueOr(0)) > 3.6);
+      (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
+      (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
 
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =

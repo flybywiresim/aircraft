@@ -518,9 +518,13 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     this.sub.on('sec_rudder_status_word_1'),
   ).map((w) => w.bitValueOr(28, false));
 
-  private readonly rudderTrim1Order = Arinc429LocalVarConsumerSubject.create(this.sub.on('sec_rudder_trim_order_1'));
+  private readonly rudderTrim1Order = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_trim_actual_position_1'),
+  );
 
-  private readonly rudderTrim3Order = Arinc429LocalVarConsumerSubject.create(this.sub.on('sec_rudder_trim_order_3'));
+  private readonly rudderTrim3Order = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_trim_actual_position_3'),
+  );
 
   private readonly rudderTrimOrder = MappedSubject.create(
     ([eng1, order1, order3]) => (eng1 ? order1.valueOr(0) : order3.valueOr(0)),

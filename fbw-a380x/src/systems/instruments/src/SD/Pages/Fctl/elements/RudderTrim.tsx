@@ -17,13 +17,10 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
   const sec3RudderStatusWord = useArinc429Var('L:A32NX_SEC_3_RUDDER_STATUS_WORD');
   const secSourceForTrim = sec1RudderStatusWord.bitValueOr(28, false) ? 1 : 3;
 
-  const rudderTrimAvail = sec1RudderStatusWord.bitValueOr(28, false) || sec3RudderStatusWord.bitValueOr(28, false);
-  const secRudderTrim = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_TRIM_ORDER`).valueOr(0);
-  // We don't have a rudder trim sensor implemented yet, so that's our fallback if SECs are failed
-  const [simRudderTrim]: [number, (v: number) => void] = useSimVar('A:RUDDER TRIM PCT', 'number');
-  const rudderTrim = rudderTrimAvail ? secRudderTrim : -0.85 * 30 * simRudderTrim;
+  const rudderTrimAvail = true;
+  const rudderTrim = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_ACTUAL_POSITION`).valueOr(0);
 
-  const deflectionInfoValid = true;
+  const deflectionInfoValid = sec1RudderStatusWord.bitValueOr(28, false) || sec3RudderStatusWord.bitValueOr(28, false);
   const deflectionXValue = deflectionToXOffset(-rudderTrim);
 
   const powerSource1Avail = useSimVar(`L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED`, 'boolean', 1000);

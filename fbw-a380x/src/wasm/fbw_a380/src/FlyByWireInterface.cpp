@@ -595,7 +595,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idSecPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_PRESSED");
     idSecHealthy[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_HEALTHY");
     idSecRudderStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_RUDDER_STATUS_WORD");
-    idSecRudderTrimOrder[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_RUDDER_TRIM_ORDER");
+    idSecRudderTrimActualPos[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_RUDDER_ACTUAL_POSITION");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -1607,8 +1607,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -50. * rightSpoiler2Position;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
-  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg = -simInput.inputs[2] + 0.85 * simData.zeta_trim_pos;
-  secs[secIndex].modelInputs.in.analog_inputs.rudder_trim_pos_deg = -25.5 * simData.zeta_trim_pos;
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg =
+      -simInput.inputs[2] + 0.85 * simData.zeta_trim_pos;  // FIXME pos_order_deg statt zeta_trim_pos
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_trim_actual_pos_deg = -25.5 * simData.zeta_trim_pos;
 
   if (secIndex == 0) {
     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
@@ -1678,7 +1679,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 
   idSecHealthy[secIndex]->set(secsDiscreteOutputs[secIndex].sec_healthy);
   idSecRudderStatusWord[secIndex]->set(Arinc429Utils::toSimVar(secsBusOutputs[secIndex].rudder_status_word));
-  idSecRudderTrimOrder[secIndex]->set(Arinc429Utils::toSimVar(secsBusOutputs[secIndex].rudder_trim_order_deg));
+  idSecRudderTrimActualPos[secIndex]->set(Arinc429Utils::toSimVar(secsBusOutputs[secIndex].rudder_trim_actual_pos_deg));
 
   return true;
 }
@@ -1993,13 +1994,13 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idLowerRudderCommandedPosition[1]->set(primsAnalogOutputs[2].rudder_1_pos_order_deg + secsAnalogOutputs[2].rudder_1_pos_order_deg);
 
   idRudderTrimActiveModeCommanded[0]->set(secsDiscreteOutputs[0].rudder_trim_active_mode);
-  idRudderTrimCommandedPosition[0]->set(secsAnalogOutputs[0].rudder_trim_pos_order_deg);
+  idRudderTrimCommandedPosition[0]->set(secsAnalogOutputs[0].rudder_trim_command_deg);
   idRudderTrimActiveModeCommanded[1]->set(secsDiscreteOutputs[2].rudder_trim_active_mode);
-  idRudderTrimCommandedPosition[1]->set(secsAnalogOutputs[2].rudder_trim_pos_order_deg);
+  idRudderTrimCommandedPosition[1]->set(secsAnalogOutputs[2].rudder_trim_command_deg);
 
   // Simulate the two electric motors from the Pedal Feel and Trim Unit (PFTU), change zero-force position of the rudder pedals
   SimOutputZetaTrim outputZetaTrim = {};
-  outputZetaTrim.zeta_trim_pos = -(secsAnalogOutputs[0].rudder_trim_pos_order_deg + secsAnalogOutputs[2].rudder_trim_pos_order_deg) / 25.5;
+  outputZetaTrim.zeta_trim_pos = -(secsAnalogOutputs[0].rudder_trim_command_deg + secsAnalogOutputs[2].rudder_trim_command_deg) / 25.5;
   if (secsDiscreteOutputs[0].rudder_trim_active_mode || secsDiscreteOutputs[2].rudder_trim_active_mode) {
     if (!simConnectInterface.sendData(outputZetaTrim)) {
       std::cout << "WASM: Write data failed!" << std::endl;
