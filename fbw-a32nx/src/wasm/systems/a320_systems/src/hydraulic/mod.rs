@@ -1453,6 +1453,8 @@ pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
     ptu_continuous_mode_id: VariableIdentifier,
+    left_brake_fan_running_id: VariableIdentifier,
+    right_brake_fan_running_id: VariableIdentifier,
 
     nose_steering: SteeringActuator,
 
@@ -1599,6 +1601,9 @@ impl A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
             ptu_continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
+            left_brake_fan_running_id: context.get_identifier("BRAKE_FAN_LEFT_RUNNING".to_owned()),
+            right_brake_fan_running_id: context
+                .get_identifier("BRAKE_FAN_RIGHT_RUNNING".to_owned()),
 
             nose_steering: SteeringActuator::new(
                 context,
@@ -2132,6 +2137,7 @@ impl A320Hydraulic {
             lgciu1,
             lgciu2,
             autobrake_panel,
+            brakefan_panel,
             engine1,
             engine2,
             self.left_brake_assembly.brake_temperature_sensors(),
@@ -2152,6 +2158,7 @@ impl A320Hydraulic {
         self.pushback_tug.update(context);
         self.bypass_pin.update(&self.pushback_tug);
 
+        // The relay turning on the brake fans is grounded via LGCIU 2 signal and powered by DC2 (206PP via 3GS)
         let brake_fan_turned_on = self.dc2_powered
             && brake_fan_panel.brake_fan_pb_is_pressed()
             && lgciu2.left_gear_compressed(false);
@@ -2698,6 +2705,16 @@ impl SimulationElement for A320Hydraulic {
             &self.ptu_continuous_mode_id,
             self.power_transfer_unit.is_in_continuous_mode()
                 && !self.ptu_high_pitch_sound_active.output(),
+        );
+
+        // Sound variables for brake fans
+        writer.write(
+            &self.left_brake_fan_running_id,
+            self.left_brake_assembly.any_brake_fan_running(),
+        );
+        writer.write(
+            &self.right_brake_fan_running_id,
+            self.right_brake_assembly.any_brake_fan_running(),
         );
     }
 
@@ -3616,6 +3633,9 @@ struct A320HydraulicBrakeSteerComputerUnit {
     tiller_pedal_disconnect_id: VariableIdentifier,
     autopilot_nosewheel_demand_id: VariableIdentifier,
 
+    brake_fan_running_identifier: VariableIdentifier,
+    brake_fan_running: bool,
+
     autobrake_controller: A320AutobrakeController,
     parking_brake_demand: bool,
 
@@ -3692,6 +3712,9 @@ impl A320HydraulicBrakeSteerComputerUnit {
                 .get_identifier("TILLER_PEDAL_DISCONNECT".to_owned()),
             autopilot_nosewheel_demand_id: context
                 .get_identifier("AUTOPILOT_NOSEWHEEL_DEMAND".to_owned()),
+
+            brake_fan_running_identifier: context.get_identifier("BRAKE_FAN_RUNNING".to_owned()),
+            brake_fan_running: false,
 
             autobrake_controller: A320AutobrakeController::new(context),
 
@@ -3784,7 +3807,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
     }
 
     /// Updates brakes and nose steering demands
-    fn update(
+    fn update<TemperatureSensor: ControllerSignal<ThermodynamicTemperature>>(
         &mut self,
         context: &UpdateContext,
         current_pressure: &impl SectionPressure,
@@ -3792,18 +3815,21 @@ impl A320HydraulicBrakeSteerComputerUnit {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         autobrake_panel: &AutobrakePanel,
+        brakefan_panel: &BrakeFanPanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        left_brake_temperature_sensors: &[impl ControllerSignal<ThermodynamicTemperature>; 2],
-        right_brake_temperature_sensors: &[impl ControllerSignal<ThermodynamicTemperature>; 2],
+        left_brake_temperature_sensors: &[TemperatureSensor; 2],
+        right_brake_temperature_sensors: &[TemperatureSensor; 2],
     ) {
-        for (i, brake_temperature) in self.brake_temperatures.iter_mut().enumerate() {
-            *brake_temperature = if i < 2 {
-                left_brake_temperature_sensors[i].signal()
-            } else {
-                right_brake_temperature_sensors[i - 2].signal()
-            };
+        for (brake_temperature, sensor) in self.brake_temperatures.iter_mut().zip(
+            left_brake_temperature_sensors
+                .into_iter()
+                .chain(right_brake_temperature_sensors),
+        ) {
+            *brake_temperature = sensor.signal();
         }
+
+        self.brake_fan_running = brakefan_panel.brake_fan_pb_is_pressed();
 
         self.update_steering_demands(context, lgciu1, engine1, engine2);
 
@@ -3996,6 +4022,11 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
                 ssm,
             );
         }
+
+        writer.write(
+            &self.brake_fan_running_identifier,
+            self.brake_fan_btn_pressed,
+        );
     }
 }
 impl SteeringController for A320HydraulicBrakeSteerComputerUnit {

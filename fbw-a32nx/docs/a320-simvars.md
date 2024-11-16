@@ -78,9 +78,17 @@
     - (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must
       take into account
 
-- A32NX_BRAKE_FAN
+- A32NX_BRAKE_FAN_RUNNING
     - boolean
-    - whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+    - whether or not the brake fan is running
+      (brake fan button pressed AND left main landing gear down and locked, reported by BSCU)
+
+- A32NX_BRAKE_FAN_{side}_RUNNING
+    - boolean
+    - wether or not a brake fan on the corresponding side is running
+    - {side}
+        - LEFT
+        - RIGHT
 
 - A32NX_BRAKE_FAN_BTN_PRESSED
     - boolean

@@ -109,6 +109,14 @@ impl<const N: usize> BrakeAssembly<N> {
     ) -> &[impl ControllerSignal<ThermodynamicTemperature>; N] {
         &self.brake_probes
     }
+
+    pub fn any_brake_fan_running(&self) -> bool {
+        self.brake_fans
+            .iter()
+            .map(|brake_fans| brake_fans.iter().any(|bf| bf.is_running()))
+            .next()
+            .unwrap_or_default()
+    }
 }
 impl<const N: usize> SimulationElement for BrakeAssembly<N> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -379,7 +387,6 @@ impl SimulationElement for BrakeProbe {
 
 pub struct BrakeFanPanel {
     brake_fan_pb_identifier: VariableIdentifier,
-    running_identifier: VariableIdentifier,
     brakes_hot_identifier: VariableIdentifier,
 
     brake_fan_pb_pressed: bool,
@@ -389,7 +396,6 @@ impl BrakeFanPanel {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             brake_fan_pb_identifier: context.get_identifier("BRAKE_FAN_BTN_PRESSED".to_owned()),
-            running_identifier: context.get_identifier("BRAKE_FAN".to_owned()),
             brakes_hot_identifier: context.get_identifier("BRAKES_HOT".to_owned()),
             brake_fan_pb_pressed: false,
             brakes_hot: false,
@@ -411,7 +417,6 @@ impl SimulationElement for BrakeFanPanel {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.brakes_hot_identifier, self.brakes_hot);
-        writer.write(&self.running_identifier, self.brake_fan_pb_pressed);
     }
 }
 
