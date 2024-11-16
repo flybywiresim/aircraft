@@ -64,6 +64,7 @@
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
 1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Various Fuel & Load Fixes - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
