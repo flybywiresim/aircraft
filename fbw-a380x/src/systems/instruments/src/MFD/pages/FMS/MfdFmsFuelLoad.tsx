@@ -30,7 +30,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { Units } from '@flybywiresim/fbw-sdk';
-import { getEtaFromUtcOrPresent, secondsToHHmmString } from '../../shared/utils';
+import { getEtaFromUtcOrPresent } from '../../shared/utils';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
@@ -110,9 +110,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
       // TODO Should display ETA if EET present
       this.destEta.set(
-        this.activeFlightPhase.get() != FmgcFlightPhase.Preflight
-          ? getEtaFromUtcOrPresent(destPred?.secondsFromPresent, false)
-          : secondsToHHmmString(destPred?.secondsFromPresent),
+        getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
       );
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
@@ -178,12 +176,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               this.tripFuelTime.set(destPred.secondsFromPresent);
             }
 
-            // Calculate Rte Rsv fuel for 5.0% reserve
+            // Calculate Rte Rsv fuel
             this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
-              tripFuel ? tripFuel * 0.05 : null,
+              tripFuel ? tripFuel * this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage.get() : null,
             );
             this.props.fmcService.master.fmgc.data.routeReserveFuelWeightPilotEntry.set(
-              tripFuel ? tripFuel * 0.05 : null,
+              tripFuel ? tripFuel * this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage.get() : null,
             );
 
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
@@ -198,9 +196,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             if (destPred) {
               this.tripFuelWeight.set(this.props.fmcService.master.fmgc.getFOB() - destPred.estimatedFuelOnBoard);
               this.tripFuelTime.set(destPred.secondsFromPresent);
-              // EXTRA = EFOB - MIN DEST FOB
+              // EXTRA = FOB - TRIP/EFOB - MIN DEST FOB
               this.extraFuelWeight.set(
-                destPred.estimatedFuelOnBoard -
+                this.props.fmcService.master.fmgc.getFOB() -
+                  destPred.estimatedFuelOnBoard -
                   (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
               );
             }
@@ -369,7 +368,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">RTE RSV</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  disabled={Subject.create(true)}
+                  disabled={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   dataEntryFormat={
                     new WeightFormat(
                       Subject.create(AirlineModifiableInformation.EK.rsvMin),
@@ -381,7 +380,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   }
                   enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.routeReserveFuelWeight}
-                  inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -391,14 +389,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               </div>
               <div style="margin-bottom: 20px; margin-left: 5px">
                 <InputField<number>
-                  disabled={Subject.create(true)}
+                  disabled={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
                   dataHandlerDuringValidation={async (v) =>
                     this.props.fmcService.master?.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v)
                   }
                   enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage}
-                  inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   alignText="center"
                   containerStyle="width: 120px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}

@@ -13,11 +13,7 @@ export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromP
   return `${eta.getUTCHours().toString().padStart(2, '0')}:${eta.getUTCMinutes().toString().padStart(2, '0')}`;
 }
 
-export function secondsToHHmmString(seconds: number | null | undefined) {
-  if (seconds == null || seconds == undefined) {
-    return '--:--';
-  }
-
+export function secondsToHHmmString(seconds: number) {
   const minutesTotal = seconds / 60;
   const hours = Math.abs(Math.floor(minutesTotal / 60))
     .toFixed(0)
