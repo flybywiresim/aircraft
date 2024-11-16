@@ -1,0 +1,6 @@
+#include "../../fbw-a32nx/src/wasm/fbw_a320/src/model/ElacComputer_types.h"
+#include "../../fbw-a32nx/src/wasm/fbw_a320/src/model/FacComputer_types.h"
+#include "../../fbw-a32nx/src/wasm/fbw_a320/src/model/FadecComputer_types.h"
+#include "../../fbw-a32nx/src/wasm/fbw_a320/src/model/FmgcComputer_types.h"
+#include "../../fbw-a32nx/src/wasm/fbw_a320/src/model/SecComputer_types.h"
+#include "../../fbw-a32nx/src/wasm/fbw_a320/src/recording/RecordingDataTypes.h"

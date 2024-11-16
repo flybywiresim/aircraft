@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import React, { useRef, useState } from 'react';
 // import { useInteractionEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
-import { LegacyCdsDisplayUnit, DisplayUnitID } from '@instruments/common/LegacyCdsDisplayUnit';
+import { DisplayUnitID, LegacyCdsDisplayUnit } from '@instruments/common/LegacyCdsDisplayUnit';
 
 // import { getSimVar } from '../util';
+import { SdPages } from '@shared/EcamSystemPages';
 import { EngPage } from './Pages/Engine/EngPage';
 import { BleedPage } from './Pages/Bleed/BleedPage';
 import { HydPage } from './Pages/Hyd/HydPage';
@@ -22,48 +26,31 @@ import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
 import { StatusArea } from './StatusArea';
-import { Mailbox } from './Mailbox';
 
 import '../index.scss';
 import { useArinc429Var, useUpdate } from '@flybywiresim/fbw-sdk';
-
-enum SdPages {
-  None = -1,
-  Eng = 0,
-  Bleed = 1,
-  Press = 2,
-  ElecAc = 3,
-  Fuel = 4,
-  Hyd = 5,
-  Cb = 6,
-  Apu = 7,
-  Cond = 8,
-  Door = 9,
-  ElecDc = 10,
-  Wheel = 11,
-  Fctl = 12,
-  Video = 13,
-  Crz = 14,
-  Status = 15,
-}
 
 const CRZ_CONDITION_TIMER_DURATION = 60;
 const ENG_CONDITION_TIMER_DURATION = 10;
 const APU_CONDITION_TIMER_DURATION = 10;
 const FCTL_CONDITION_TIMER_DURATION = 20;
 const STS_DISPLAY_TIMER_DURATION = 3;
+const ECAM_LIGHT_DELAY_ALL = 200;
+const ECAM_ALL_CYCLE_DELAY = 3000;
 
 export const SystemDisplay = () => {
   const [currentPage, setCurrentPage] = useState(SdPages.Door);
   const [prevFailPage, setPrevFailPage] = useState(SdPages.Eng);
   const [ecamCycleInterval, setEcamCycleInterval] = useState(-1);
+  const [ecamButtonLightDelayTimer, setEcamButtonLightDelayTimer] = useState(Number.MIN_SAFE_INTEGER);
   const [failPage] = useSimVar('L:A32NX_ECAM_SFAIL', 'Enum', 300);
 
   const [prevEcamAllButtonState, setPrevEcamAllButtonState] = useState(false);
 
   const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
 
-  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 100);
+  const [ecamAllButtonPushed] = useSimVar('L:A32NX_BTN_ALL', 'Bool', 100);
+  const startPageAllCycleRef = useRef(-1);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
   const [crzCondTimer, setCrzCondTimer] = useState(CRZ_CONDITION_TIMER_DURATION);
   const [ecamFCTLTimer, setEcamFCTLTimer] = useState(FCTL_CONDITION_TIMER_DURATION);
@@ -132,32 +119,52 @@ export const SystemDisplay = () => {
   };
 
   const updateCallback = (deltaTime) => {
+    if (ecamButtonLightDelayTimer != Number.MIN_SAFE_INTEGER) {
+      setEcamButtonLightDelayTimer((t) => t - deltaTime);
+      if (ecamButtonLightDelayTimer <= 0) {
+        setPage(currentPage);
+        setEcamButtonLightDelayTimer(Number.MIN_SAFE_INTEGER);
+      }
+    }
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
-      // button press
-      setPage((prev) => (prev + 1) % 12);
-      setCurrentPage((prev) => (prev + 1) % 12);
+      // if the ALL button was pressed for the first time, remember the start page
+      startPageAllCycleRef.current = currentPage;
+      setCurrentPage((prev) => {
+        setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
+        prev = page === SdPages.None ? SdPages.Eng : prev + 1;
+        // wrap around to SdPages.Eng when reaching SdPages.Crz
+        return prev % SdPages.Crz;
+      });
       setEcamCycleInterval(
+        // interval to cycle through pages when ALL button is held
         setInterval(() => {
           setCurrentPage((prev) => {
-            setPage((prev + 1) % 12);
-            return (prev + 1) % 12;
+            // if the ALL button did a full circle back to the page it started, do not advance pages anymore
+            if (prev === startPageAllCycleRef.current) {
+              return prev;
+            }
+            // C/B page should be last page so index should not exceed SdPages.Crz
+            prev = prev === SdPages.Cb ? SdPages.Eng : prev + 1;
+            setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
+            return prev;
           });
-        }, 1000) as unknown as number,
+        }, ECAM_ALL_CYCLE_DELAY) as unknown as number,
       );
     } else if (!ecamAllButtonPushed && prevEcamAllButtonState) {
-      // button release
+      // ALL button released
       clearInterval(ecamCycleInterval);
     } else if (!ecamAllButtonPushed) {
       if (currentPage !== SdPages.Status) {
         setStsPrevPage(currentPage);
       }
       const newPage = page;
-      if (newPage !== -1) {
-        setCurrentPage(newPage);
-      } else {
-        setCurrentPage(pageWhenUnselected);
+      if (ecamButtonLightDelayTimer === Number.MIN_SAFE_INTEGER) {
+        if (newPage !== -1) {
+          setCurrentPage(newPage);
+        } else {
+          setCurrentPage(pageWhenUnselected);
+        }
       }
-
       switch (fwcFlightPhase) {
         case 12:
         case 1:
@@ -250,13 +257,12 @@ export const SystemDisplay = () => {
 
         // Disable user selected page when new failure detected
         if (prevFailPage !== failPage) {
-          setCurrentPage(SdPages.None);
           setPage(SdPages.None);
         }
       }
 
-      // switch page when desired page was changed, or new Failure detected
-      if ((pageWhenUnselected !== newPage && page === SdPages.None) || prevFailPage !== failPage) {
+      // switch page when new Failure detected
+      if (prevFailPage !== failPage) {
         setCurrentPage(pageWhenUnselected);
       }
 
@@ -268,31 +274,31 @@ export const SystemDisplay = () => {
 
   useUpdate(updateCallback);
 
+  // make sure this is in line with the enum in EcamSystemPages.ts
   const PAGES = {
     0: <EngPage />,
-    1: <BleedPage />,
-    2: <PressPage />,
-    3: <ElecAcPage />,
-    4: <FuelPage />,
-    5: <HydPage />,
-    6: <CbPage />,
-    7: <ApuPage />,
-    8: <CondPage />,
-    9: <DoorPage />,
-    10: <ElecDcPage />,
-    11: <WheelPage />,
-    12: <FctlPage />,
-    13: <CruisePage />, // TODO video page
-    14: <CruisePage />,
-    15: <StatusPage />,
+    1: <ApuPage />,
+    2: <BleedPage />,
+    3: <CondPage />,
+    4: <PressPage />,
+    5: <DoorPage />,
+    6: <ElecAcPage />,
+    7: <ElecDcPage />,
+    8: <FuelPage />,
+    9: <WheelPage />,
+    10: <HydPage />,
+    11: <FctlPage />,
+    12: <CbPage />,
+    13: <CruisePage />,
+    14: <StatusPage />,
+    15: <CruisePage />, // TODO video page
   };
 
   return (
-    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
+    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd} hideBootTestScreens={true}>
       <g>
         {PAGES[currentPage]}
         <StatusArea />
-        <Mailbox />
       </g>
     </LegacyCdsDisplayUnit>
   );

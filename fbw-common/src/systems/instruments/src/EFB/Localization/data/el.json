@@ -289,7 +289,7 @@
     "Landing": {
       "AirportIcao": "ICAO Αεροδρομίου",
       "ApproachSpeed": "Ταχύτητα Προσέγγισης",
-      "ApproachSpeedUnit": "Κόμβοι",
+      "ApproachSpeedUnit": "kts",
       "AutoLand": "Αυτόματη Προσγείωση",
       "Calculate": "Υπολογισμός",
       "Clear": "Εκκαθάριση",
@@ -334,9 +334,79 @@
       "WindDirection": "Κατεύθυνση Ανέμου",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Μέγεθος Ανέμου",
-      "WindMagnitudeUnit": "Κόμβοι"
+      "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Συγχρονισμός",
+    "Takeoff": {
+      "Airport": "Αεροδρόμιο",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Υπολογισμός",
+      "CentreOfGravity": "TOCG",
+      "Clear": "Εκκαθάριση",
+      "CoGPosition": "Θέση CG",
+      "CoGPositions": {
+        "Forward": "Εμπρός (<27%)",
+        "Standard": "Τυπικό"
+      },
+      "Configuration": "Διαμόρφωση",
+      "CrosswindAboveLimitMessage": "Θέλετε να εκτελέσετε τον υπολογισμό με {actual_crosswind} κόμβους;",
+      "CrosswindAboveLimitTitle": "Ο μέγιστος πλευρικός άνεμος είναι {max_crosswind} κόμβοι",
+      "EnterManually": "Εισάγετε χειροκίνητα",
+      "EntryAngle": "Γωνία εισόδου",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG έξω απο τον φάκελο απογείωσης",
+        "FlexNotPossible": "Το Flex δεν είναι δυνατό",
+        "HeadwindLimited": "Ο αντίθετος άνεμος έχει μειωθεί σε{max_headwind} κόμβους",
+        "InvalidData": "Μη έγκυρες είσοδοι",
+        "MaximumPressureAlt": "Πάνω από την μέγιστη υψομετρική πίεση ({max_zp} ft)",
+        "MaximumRunwaySlope": "Πέρα από τα όρια κλίσης του διαδρόμου (±2%)",
+        "MaximumTailwind": "Πάνω από τον μέγιστο ούριο άνεμο ({max_tailwind} κόμβοι)",
+        "MaximumTemperature": "Πάνω από το μέγιστο OAT ({tmax}°C)",
+        "MaximumTireSpeed": "Η μέγιστη ταχύτητα ελαστικών δεν ικανοποιείται",
+        "OperatingEmptyWeight": "Κάτω από το λειτουργικό κενό βάρος ({oew}{weight_unit})",
+        "StructuralMtow": "Πάνω από το δομικό MTOW ({structural_mtow} {weight_unit})",
+        "TooHeavy": "Πέρα από το όριο βάρους απογείωσης - Μέγιστο {mtow}{weight_unit}",
+        "TooLight": "Κάτω από το ελάχιστο βάρος απογείωσης",
+        "VmcgVmcaLimits": "Τα όρια VMCG/VMCA δεν ικανοποιούνται"
+      },
+      "Packs": "Συστήματα Παροχής Αέρα",
+      "Qnh": "QNH",
+      "Runway": "Διάδρομος",
+      "RunwayBearing": "Πορεία διαδρόμου",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Κατάσταση διαδρόμου",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Ξηρό χιόνι - 100 χιλιοστά/4\"",
+        "Contaminated10mmDrySnow": "Ξηρό χιόνι - 10 χιλιοστά/⅖\"",
+        "Contaminated13mmSlush": "Λάσπη - 12,7 χιλιοστά/½\"",
+        "Contaminated13mmWater": "Νερό - 12,7 χιλιοστά/½\"",
+        "Contaminated15mmWetSnow": "Υγρό χιόνι - 15 χιλιοστά/⅗\"",
+        "Contaminated30mmWetSnow": "Υγρό χιόνι - 30 χιλιοστά/⅗\"",
+        "Contaminated5mmWetSnow": "Υγρό χιόνι - 5 χιλιοστά/⅕\"",
+        "Contaminated6mmSlush": "Λάσπη - 6,3 χιλιοστά/¼\"",
+        "Contaminated6mmWater": "Νερό - 6,3 χιλιοστά/¼\"\n",
+        "ContaminatedCompactedSnow": "Συμπυκνωμένο χιόνι",
+        "Dry": "Ξηρός",
+        "Wet": "Υγρός"
+      },
+      "RunwayElevation": "Υψόμετρο διαδρόμου",
+      "RunwayElevationUnit": "πόδια",
+      "RunwayLengthUnitFt": "πόδια",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Κλίση διαδρόμου",
+      "Temperature": "Θερμοκρασία",
+      "Thrust": "Ώθηση",
+      "Title": "Απογείωση",
+      "Tora": "TORA",
+      "Weight": "Βάρος απογείωσης",
+      "Wind": "Άνεμος",
+      "WindMagnitudeUnit": "kts ή °/kts"
+    },
     "Title": "Απόδοση",
     "TopOfDescent": {
       "Data": {
@@ -362,7 +432,7 @@
         "Sync": "Συγχρονισμός",
         "Title": "Ταχύτητα Εδάφους",
         "UnitKnots": "κόμβοι",
-        "UnitKt": "κόμβοι"
+        "UnitKt": "kt"
       },
       "Result": {
         "BeforeTarget": "Προτού Στόχου",
@@ -497,6 +567,8 @@
     },
     "Title": "Γρήγοροι έλεγχοι"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Σχετικά"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Εμφάνιση φιγούρας First Officer",
       "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
       "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
@@ -570,7 +643,7 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Εμφάνιση φιγούρας πιλότου",
       "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
-      "SyncEfis": "Συγχρονισμός των χειριστηρίων EFIS μεταξύ κυβερνήτη και FO",
+      "SyncEfis": "Συγχρονισμός EFIS και ηχητικών χειρισμών μεταξύ κυβερνήτη και FO",
       "Title": "Ρεαλισμός"
     },
     "SimOptions": {
@@ -587,11 +660,15 @@
       "EnableSimBridge": "Ενεργοποίηση σύνδεσης Simbridge (Αυτόματη απενεργοποίηση μετά απο 5 λεπτά σε περίπτωση μη επιτυχούς σύνδεσης)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
       "ExternalMcduServerPort": "Εξωτερική Θύρα Διακομιστή MCDU",
+      "FdrEnabled": "Ενεργοποίηση του Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "Ανενεργό",
+      "Left": "Αριστερά",
       "LoadOnly": "Φόρτωση Μόνο",
       "None": "Κανένα",
       "Off": "Απενεργοποιημένο",
+      "PilotSeat": "Κάθισμα πιλότου για έλεγχο",
+      "Right": "Δεξιά",
       "Save": "Αποθήκευση",
       "Side": "Side",
       "SimBridgeIp": "Εξωτερική διεύθυνση φιλοξενίας SimBridge",
@@ -665,6 +742,7 @@
       "Blue": "Μπλέ",
       "Brightness": "Φωτεινότητα",
       "Dark": "Σκοτεινό",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Γλώσσα",
       "Light": "Φωτεινό",
       "Local": "Τοπική",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTC και Τοπική"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Απρ",
     "Aug": "Αυγ",
