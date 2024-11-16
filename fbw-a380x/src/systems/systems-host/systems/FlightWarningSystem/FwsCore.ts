@@ -249,8 +249,6 @@ export class FwsCore {
 
   public readonly masterCaution = Subject.create(false);
 
-  public readonly fireActive = Subject.create(false);
-
   private nonCancellableWarningCount = 0;
 
   public readonly stallWarning = Subject.create(false);
@@ -262,17 +260,15 @@ export class FwsCore {
   );
 
   public readonly masterWarningOutput = MappedSubject.create(
-    ([mw, fire, stall, startup]) => (mw || fire || stall) && startup,
+    ([mw, stall, startup]) => (mw || stall) && startup,
     this.masterWarning,
-    this.fireActive,
     this.stallWarning,
     this.startupCompleted,
   );
 
   public readonly auralCrcOutput = MappedSubject.create(
-    ([auralCrc, fireActive, startup]) => (auralCrc || fireActive) && startup,
+    ([auralCrc, startup]) => auralCrc && startup,
     this.auralCrcActive,
-    this.fireActive,
     this.startupCompleted,
   );
 
@@ -585,6 +581,16 @@ export class FwsCore {
   public readonly eng3FireDetected = Subject.create(false);
 
   public readonly eng4FireDetected = Subject.create(false);
+
+  public readonly apuFireDetectedAural = Subject.create(false);
+
+  public readonly eng1FireDetectedAural = Subject.create(false);
+
+  public readonly eng2FireDetectedAural = Subject.create(false);
+
+  public readonly eng3FireDetectedAural = Subject.create(false);
+
+  public readonly eng4FireDetectedAural = Subject.create(false);
 
   public readonly mlgFireDetected = Subject.create(false);
 
@@ -3623,6 +3629,12 @@ export class FwsCore {
         this.fireButtonAPU.get(),
     );
 
+    this.apuFireDetectedAural.set(this.apuFireDetected.get() && !this.fireButtonAPU.get());
+    this.eng1FireDetectedAural.set(this.eng1FireDetected.get() && !this.fireButtonEng1.get());
+    this.eng2FireDetectedAural.set(this.eng2FireDetected.get() && !this.fireButtonEng2.get());
+    this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
+    this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
+
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
 
     this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
@@ -3739,19 +3751,6 @@ export class FwsCore {
           this.mlgFireDetected.get() ||
           this.emergencyGeneratorOn.get() ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0)),
-    );
-
-    // fire always forces the master warning and SC aural on
-    this.fireActive.set(
-      [
-        this.apuFireDetected.get(),
-        this.eng1FireDetected.get(),
-        this.eng2FireDetected.get(),
-        this.eng3FireDetected.get(),
-        this.eng4FireDetected.get(),
-        this.mlgFireDetected.get(),
-        this.cargoFireTest.get(),
-      ].some((e) => e),
     );
 
     const flightPhase = this.fwcFlightPhase.get();

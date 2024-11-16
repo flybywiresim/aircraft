@@ -27,6 +27,7 @@
   <CustomClientEvent Name="A32NX FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Altitude knob on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU ALT INCREMENT TOGGLE" EventID="A32NX.FCU_ALT_INCREMENT_TOGGLE" SubCategory="A32NX FCU" IsGlobal="true" >Toggle Altitude increment on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU ALT INCREMENT SET" EventID="A32NX.FCU_ALT_INCREMENT_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Altitude increment on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU METRIC ALT TOGGLE PUSH" EventID="A32NX.FCU_METRIC_ALT_TOGGLE_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push metric alt toggle on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU VS INC" EventID="A32NX.FCU_VS_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial V/S knob on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU VS DEC" EventID="A32NX.FCU_VS_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial V/S knob on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU VS SET" EventID="A32NX.FCU_VS_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set VS/FPA value on FCU</CustomClientEvent>
@@ -35,6 +36,30 @@
   <CustomClientEvent Name="A32NX FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push LOC button on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push APPR button on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push EXPED button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT FD PUSH" EventID="A32NX.FCU_EFIS_L_FD_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left FD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT LS PUSH" EventID="A32NX.FCU_EFIS_L_LS_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left LS button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO INC" EventID="A32NX.FCU_EFIS_L_BARO_INC" SubCategory="A32NX FCU" IsGlobal="true" >Increment left baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO DEC" EventID="A32NX.FCU_EFIS_L_BARO_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Decrement left baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO SET" EventID="A32NX.FCU_EFIS_L_BARO_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set left baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO PUSH" EventID="A32NX.FCU_EFIS_L_BARO_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO PULL" EventID="A32NX.FCU_EFIS_L_BARO_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull left baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT CSTR PUSH" EventID="A32NX.FCU_EFIS_L_CSTR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left CSTR button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT WPT PUSH" EventID="A32NX.FCU_EFIS_L_WPT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left WPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT VORD PUSH" EventID="A32NX.FCU_EFIS_L_VORD_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left VORD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT NDB PUSH" EventID="A32NX.FCU_EFIS_L_NDB_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left NDB button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT ARPT PUSH" EventID="A32NX.FCU_EFIS_L_ARPT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push left ARPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT FD PUSH" EventID="A32NX.FCU_EFIS_R_FD_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right FD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT LS PUSH" EventID="A32NX.FCU_EFIS_R_LS_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right LS button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO INC" EventID="A32NX.FCU_EFIS_R_BARO_INC" SubCategory="A32NX FCU" IsGlobal="true" >Increment right baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO DEC" EventID="A32NX.FCU_EFIS_R_BARO_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Decrement right baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO SET" EventID="A32NX.FCU_EFIS_R_BARO_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set right baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO PUSH" EventID="A32NX.FCU_EFIS_R_BARO_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO PULL" EventID="A32NX.FCU_EFIS_R_BARO_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull right baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT CSTR PUSH" EventID="A32NX.FCU_EFIS_R_CSTR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right CSTR button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT WPT PUSH" EventID="A32NX.FCU_EFIS_R_WPT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right WPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT VORD PUSH" EventID="A32NX.FCU_EFIS_R_VORD_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right VORD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT NDB PUSH" EventID="A32NX.FCU_EFIS_R_NDB_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right NDB button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT ARPT PUSH" EventID="A32NX.FCU_EFIS_R_ARPT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push right ARPT button on FCU</CustomClientEvent>
   <CustomClientEvent Name="A32NX AUTOBRAKE SET" EventID="A32NX.AUTOBRAKE_SET" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to desired state (1=DISARM, 2=LO, 3=MED, 4=MAX)</CustomClientEvent>
   <CustomClientEvent Name="A32NX AUTOBRAKE SET DISARM" EventID="A32NX.AUTOBRAKE_SET_DISARM" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to disarmed state</CustomClientEvent>
   <CustomClientEvent Name="A32NX AUTOBRAKE SET LO" EventID="A32NX.AUTOBRAKE_SET_LO" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to LO state</CustomClientEvent>
