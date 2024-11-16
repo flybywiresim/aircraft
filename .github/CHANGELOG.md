@@ -59,6 +59,7 @@
 1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
 1. [A32NX/FMGC] Implemented simulated FMGC computers - @lukecologne (luke)
 1. [A32NX/FMGC] Implemented simulated FCU computers - @lukecologne (luke)
+1. [A380X/ENGINES] Corrected ENG4 throttle variable typo - @rthom91 (Randy Thom)
 
 ## 0.12.0
 
