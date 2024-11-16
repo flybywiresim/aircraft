@@ -196,7 +196,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           } else {
             if (destPred) {
               const fobKg = this.props.fmcService.master.fmgc.getFOB() * 1000;
-              const remainingTripFuel = fobKg - destPred.estimatedFuelOnBoard;
+              const remainingTripFuel = fobKg - Units.poundToKilogram(destPred?.estimatedFuelOnBoard);
               this.tripFuelWeight.set(remainingTripFuel);
               this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred.secondsFromPresent, true));
               // EXTRA = FOB - TRIP/EFOB - MIN DEST FOB

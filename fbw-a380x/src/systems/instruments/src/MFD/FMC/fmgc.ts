@@ -129,8 +129,6 @@ export class FmgcData {
     (v) => v !== null,
   );
 
-
-
   public readonly paxNumber = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
