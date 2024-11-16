@@ -518,6 +518,16 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     this.sub.on('sec_rudder_status_word_1'),
   ).map((w) => w.bitValueOr(28, false));
 
+  private readonly rudderTrim3Engaged = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_status_word_3'),
+  ).map((w) => w.bitValueOr(28, false));
+
+  private readonly rudderTrimAvailable = MappedSubject.create(
+    ([eng1, eng3]) => eng1 || eng3,
+    this.rudderTrim1Engaged,
+    this.rudderTrim3Engaged,
+  );
+
   private readonly rudderTrim1Order = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('sec_rudder_trim_actual_position_1'),
   );
@@ -624,7 +634,13 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <g visibility={this.rudderTrimIndicatorVisibilityStatus.map((v) => (v ? 'inherit' : 'hidden'))}>
+      <g
+        visibility={MappedSubject.create(
+          ([vis, avail]) => (vis && avail ? 'inherit' : 'hidden'),
+          this.rudderTrimIndicatorVisibilityStatus,
+          this.rudderTrimAvailable,
+        )}
+      >
         <text x={41.2} y={184.7} class={'FontSmallest White'}>
           RUD TRIM
         </text>
