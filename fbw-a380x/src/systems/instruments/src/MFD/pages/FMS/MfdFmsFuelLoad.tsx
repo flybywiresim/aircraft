@@ -174,13 +174,16 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.tripFuelWeight.set(tripFuel);
             this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, true));
 
-            // Calculate Rte Rsv fuel
+            // Calculate Rte Rsv fuel if not manually entered
+            const pilotEnteredReserveFuel = this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered.get();
             this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
-              tripFuel ? tripFuel * this.props.fmcService.master.fmgc.data.routeReserveRelative.get() : null,
+              !pilotEnteredReserveFuel && tripFuel
+                ? (tripFuel * this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage.get()!) / 100
+                : null,
             );
-            this.props.fmcService.master.fmgc.data.routeReserveFuelWeightPilotEntry.set(
-              tripFuel ? tripFuel * this.props.fmcService.master.fmgc.data.routeReserveRelative.get() : null,
-            );
+            if (!pilotEnteredReserveFuel) {
+              this.props.fmcService.master.fmgc.data.routeReserveFuelWeightPilotEntry.set(null);
+            }
 
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
             this.extraFuelWeight.set(
@@ -192,13 +195,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             );
           } else {
             if (destPred) {
-              this.tripFuelWeight.set(this.props.fmcService.master.fmgc.getFOB() - destPred.estimatedFuelOnBoard);
+              const fobKg = this.props.fmcService.master.fmgc.getFOB() * 1000;
+              const remainingTripFuel = fobKg - destPred.estimatedFuelOnBoard;
+              this.tripFuelWeight.set(remainingTripFuel);
               this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred.secondsFromPresent, true));
               // EXTRA = FOB - TRIP/EFOB - MIN DEST FOB
               this.extraFuelWeight.set(
-                this.props.fmcService.master.fmgc.getFOB() -
-                  destPred.estimatedFuelOnBoard -
-                  (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
+                remainingTripFuel - (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
               );
             }
           }
@@ -238,7 +241,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">FOB</span>
-                <span class="mfd-value">{this.fuelOnBoard.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
+                <span class="mfd-value">{this.fuelOnBoard.map((it) => (it ? it.toFixed(1) : '---.-'))}</span>
                 <span class="mfd-label-unit mfd-unit-trailing">T</span>
               </div>
             </div>

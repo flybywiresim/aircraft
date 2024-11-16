@@ -112,11 +112,16 @@ export class FmgcData {
   /** in percent. null if not set. */
   public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null);
 
-  public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) =>
-    it === null ? AirlineModifiableInformation.EK.rteRsv : it,
-  ); // in percent
-
-  public readonly routeReserveRelative = this.routeReserveFuelPercentage.map((it) => it / 100);
+  public readonly routeReserveFuelPercentage = MappedSubject.create(
+    ([percentagePilotEntry, reservePilotEntry]) =>
+      reservePilotEntry !== null
+        ? null
+        : percentagePilotEntry === null
+          ? AirlineModifiableInformation.EK.rteRsv
+          : percentagePilotEntry,
+    this.routeReserveFuelPercentagePilotEntry,
+    this.routeReserveFuelWeightPilotEntry,
+  );
 
   public readonly routeReserveFuelPercentageIsPilotEntered = this.routeReserveFuelPercentagePilotEntry.map(
     (v) => v !== null,
