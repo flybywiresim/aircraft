@@ -196,12 +196,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           } else {
             if (destPred) {
               const fobKg = this.props.fmcService.master.fmgc.getFOB() * 1000;
-              const remainingTripFuel = fobKg - Units.poundToKilogram(destPred?.estimatedFuelOnBoard);
+              const destFuelKg = Units.poundToKilogram(destPred?.estimatedFuelOnBoard);
+              const remainingTripFuel = fobKg - destFuelKg;
               this.tripFuelWeight.set(remainingTripFuel);
               this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred.secondsFromPresent, true));
-              // EXTRA = FOB - TRIP/EFOB - MIN DEST FOB
               this.extraFuelWeight.set(
-                remainingTripFuel - (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
+                destFuelKg - (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
               );
             }
           }
