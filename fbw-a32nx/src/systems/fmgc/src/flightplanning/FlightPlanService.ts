@@ -11,7 +11,7 @@ import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, OffsetData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
@@ -459,6 +459,22 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(finalIndex);
 
     await plan.enableAltn(atIndexInAlternate, cruiseLevel);
+  }
+
+  async setOffsetParams(
+    startIndex: number,
+    endIndex: number,
+    desiredOffset: OffsetData,
+    planIndex: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<void> {
+    const finalIndex = this.prepareDestructiveModification(planIndex);
+
+    const plan = alternate
+      ? this.flightPlanManager.get(finalIndex).alternateFlightPlan
+      : this.flightPlanManager.get(finalIndex);
+
+    plan.setOffsetParams(startIndex, endIndex, desiredOffset);
   }
 
   async setPilotEnteredAltitudeConstraintAt(

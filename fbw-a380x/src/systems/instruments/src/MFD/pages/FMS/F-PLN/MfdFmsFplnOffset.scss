@@ -1,0 +1,27 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fms-fpln-offset-waypoint-text-grid {
+  padding-top: 20px;
+  display: grid;
+  grid-template-columns: 200px 200px 30px 200px;
+  padding-left: 5px;
+  margin-top: 10px;
+  padding-bottom: 15px;
+}
+
+.mfd-offset-dist-angle-input-grid {
+  display: grid;
+  grid-template-columns: auto;
+}
+
+.mfd-offset-dist-input-grid {
+  display: grid;
+  grid-template-columns: 150px 150px;
+}
+
+.mfd-offset-ret-canc-tmpy-grid {
+  padding-top: 440px;
+  grid-column: span 4;
+  display: grid;
+  grid-template-columns: 251px 256px 248px;
+}
