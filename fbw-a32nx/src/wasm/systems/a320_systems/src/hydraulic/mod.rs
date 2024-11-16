@@ -2137,7 +2137,7 @@ impl A320Hydraulic {
             lgciu1,
             lgciu2,
             autobrake_panel,
-            brakefan_panel,
+            brake_fan_panel,
             engine1,
             engine2,
             self.left_brake_assembly.brake_temperature_sensors(),
@@ -3815,7 +3815,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         autobrake_panel: &AutobrakePanel,
-        brakefan_panel: &BrakeFanPanel,
+        brake_fan_panel: &BrakeFanPanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
         left_brake_temperature_sensors: &[TemperatureSensor; 2],
@@ -3829,7 +3829,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
             *brake_temperature = sensor.signal();
         }
 
-        self.brake_fan_running = brakefan_panel.brake_fan_pb_is_pressed();
+        self.brake_fan_running = brake_fan_panel.brake_fan_pb_is_pressed();
 
         self.update_steering_demands(context, lgciu1, engine1, engine2);
 
@@ -4023,10 +4023,7 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
             );
         }
 
-        writer.write(
-            &self.brake_fan_running_identifier,
-            self.brake_fan_btn_pressed,
-        );
+        writer.write(&self.brake_fan_running_identifier, self.brake_fan_running);
     }
 }
 impl SteeringController for A320HydraulicBrakeSteerComputerUnit {
