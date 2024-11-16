@@ -396,8 +396,8 @@ class FcuComputer final
     boolean_T rtu_arpt, efis_filter_selection *rty_efisFilter, rtDW_EFISFilterLogic_FcuComputer_T *localDW);
   static void FcuComputer_MATLABFunction_f_Init(rtDW_MATLABFunction_FcuComputer_d_T *localDW);
   static void FcuComputer_MATLABFunction_e_Reset(rtDW_MATLABFunction_FcuComputer_d_T *localDW);
-  static void FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T *rty_std,
-    boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW);
+  static void FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T rtu_qfe_avail,
+    boolean_T *rty_std, boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW);
   static void FcuComputer_MATLABFunction1_n_Init(rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
   static void FcuComputer_MATLABFunction1_d_Reset(rtDW_MATLABFunction1_FcuComputer_j_T *localDW);
   static void FcuComputer_MATLABFunction1_o(boolean_T rtu_std_active, boolean_T rtu_inhg_active, real_T rtu_click_count,
