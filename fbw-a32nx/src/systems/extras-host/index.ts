@@ -11,6 +11,7 @@ import {
   ExtrasSimVarPublisher,
   FlightDeckBounds,
   GPUManagement,
+  GroundSupportPublisher,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
@@ -72,6 +73,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly msfsMiscPublisher: MsfsMiscPublisher;
 
+  private readonly groundSupportPublisher: GroundSupportPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
@@ -106,6 +109,7 @@ class ExtrasHost extends BaseInstrument {
     this.msfsElectricsPublisher = new MsfsElectricsPublisher(this.bus);
     this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
     this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
+    this.groundSupportPublisher = new GroundSupportPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
@@ -120,6 +124,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+    this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
