@@ -5,8 +5,14 @@
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode,
     Subscribable,
     HEvent, } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, FailuresConsumer } from '@flybywiresim/fbw-sdk';
-
+    import {
+        ArincEventBus,
+        Arinc429Register,
+        Arinc429Word,
+        Arinc429WordData,
+        FailuresConsumer,
+      } from '@flybywiresim/fbw-sdk';
+      
 import { A320Failure } from '@failures';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -23,7 +29,7 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
-import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
+import { HudElemsVis, LagFilter, getBitMask, calculateHorizonOffsetFromPitch } from './HUDUtils';
 
 
 export const getDisplayIndex = () => {
@@ -80,8 +86,8 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
     private pitch: Arinc429WordData = Arinc429Register.empty();
 
-    private roll = new Arinc429Word(0);
-
+    private roll: Arinc429WordData = Arinc429Register.empty();
+  
     private ownRadioAltitude = new Arinc429Word(0);
 
     private filteredRadioAltitude = Subject.create(0);
@@ -89,6 +95,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     private radioAltitudeFilter = new LagFilter(5);
 
     private failuresConsumer;
+
 
     constructor(props: HUDProps) {
         super(props);
@@ -275,6 +282,11 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
                         // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z" 
                         />
                     </g>
+
+                    <ExtendedHorizon
+                        bus={this.props.bus}
+                        instrument={this.props.instrument}
+                    />
                     
                      <AirspeedIndicatorOfftape bus={this.props.bus} /> 
                     <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
@@ -295,3 +307,219 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
 
 }
+
+
+interface ExtendedHorizonProps {
+    bus: ArincEventBus;
+    instrument: BaseInstrument;
+  
+  }
+
+
+class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
+    private pitchGroupRef = FSComponent.createRef<SVGGElement>();
+    private rollGroupRef = FSComponent.createRef<SVGGElement>();
+    private path = FSComponent.createRef<SVGPathElement>();
+    private path2 = FSComponent.createRef<SVGPathElement>();
+    private path3 = FSComponent.createRef<SVGPathElement>();
+    private extendedAlt = FSComponent.createRef<SVGPathElement>();
+    private extendedSpd = FSComponent.createRef<SVGPathElement>();
+    
+  private pitch = 0;
+    private yOffset = Subject.create(0);
+  
+    private xAltTop = Subject.create<String>('');
+    private yAltTop = Subject.create<String>('');
+
+    private xSpdTop = Subject.create<String>('');
+    private ySpdTop = Subject.create<String>('');
+
+    private spdRollDev = 0;
+    private altRollDev = 0;
+  
+    onAfterRender(node: VNode): void {
+      super.onAfterRender(node);
+  
+      const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
+      const fiveDeg = 182.857;
+
+    
+     apfd.on('rollAr').handle((roll) => {
+        const radRoll = roll.value/180*Math.PI;
+
+        //frame of reference 1  air pitch   :F1
+        //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
+        const D = (calculateHorizonOffsetFromPitch(this.pitch));
+ 
+        let rSign = 1;
+        
+        let xPos = -(D)*Math.sin(radRoll);
+        let yPos = (D)/Math.cos(radRoll);
+        
+        // xposition from frame2 to eval if extention should be drawn  
+        let Lalt = 0;
+        let Lspd = 0;
+        if(roll.value < 0){
+           
+            if(D*Math.cos(radRoll) > 0  && D*Math.cos(radRoll) < 355 ){
+                Lspd = 472;
+                Lalt = 400;
+            }else{
+                Lalt = 494;
+                Lspd = 570;
+            }
+            
+        }else{
+            if(D*Math.cos(radRoll) > 0  && D*Math.cos(radRoll) < 355 ){
+
+                Lalt = 400;
+                Lspd = 472;
+            }else{
+                Lalt = 494;
+                Lspd = 570;
+            }
+        }
+        let xPosF = 640+ (Lalt + xPos)/Math.cos(radRoll);
+        let xPosFspd = 640- (Lspd - xPos)/Math.cos(radRoll);
+
+
+        
+        if(roll.isNormalOperation()) {
+            this.spdRollDev = -(640-168)*Math.tan(radRoll);
+            this.altRollDev = (Lalt)*Math.tan(radRoll);
+            const yOffset = -this.yOffset.get();
+            this.rollGroupRef.instance.style.display = 'block';
+            this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
+            
+            if(roll.value < 0){
+                rSign = -1;
+            }else{
+                rSign = 1;
+            }
+
+
+            const ax = '640 ';
+            const ay = '512 ';
+            const bx = '0 ';
+            const by = ( - D).toString();
+            const cx = (640+xPos*Math.cos(radRoll*rSign)).toString();
+            const cy = (512+xPos*Math.sin(radRoll)).toString();
+            
+            let ex = (640+(Lalt + xPos)*Math.cos(-radRoll)).toString();       //acual eval point
+            let ey = (512+(Lalt + xPos)*Math.sin(radRoll)).toString();        //acual eval point
+
+            let exs = (640-(Lspd - xPos)*Math.cos(-radRoll)).toString();
+            let eys = (512+(Lspd - xPos)*Math.sin(-radRoll)).toString();
+            
+
+
+            //vertial offset of eval point from horizon
+            let F1AltSideVertDev = Math.sqrt(  (Number(ex) - xPosF)**2 +(Number(ey) - 512)**2);
+            if(Number(ey) < 512){
+                F1AltSideVertDev *= -1;
+            }
+            let F1SpdSideVertDev = Math.sqrt(  (Number(exs) - xPosFspd)**2 +(Number(eys) - 512)**2);
+            if(Number(eys) < 512){
+                F1SpdSideVertDev *= -1;
+            }
+
+                        // debug eval point pos circles
+                        this.xAltTop.set((xPosF).toString());
+                        this.yAltTop.set((512).toString());    
+                        this.xSpdTop.set((xPosFspd).toString());
+                        this.ySpdTop.set((512).toString());       
+                        // end debug
+                        //debug draws : toggle .DEBUG to block in styles.scss to show
+                        this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`) ;
+                        this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`) ;
+                        this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`) ;
+                        //end debug
+
+            const F1HorizonPitchOffset = D*Math.cos(radRoll);
+
+            if(((F1HorizonPitchOffset-F1AltSideVertDev) > 0) && ((F1HorizonPitchOffset-F1AltSideVertDev)  < 355)   ){
+                this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green') ;
+                this.extendedAlt.instance.setAttribute('d', ``) ;
+            }else{
+                this.extendedAlt.instance.setAttribute('class', 'SmallStroke red') ;
+                this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `) ;
+            }
+
+            if(  ((F1HorizonPitchOffset>F1SpdSideVertDev)) && ((F1HorizonPitchOffset-F1SpdSideVertDev  < 355 ))   ){
+                this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green') ;
+                this.extendedSpd.instance.setAttribute('d', ``) ;
+            }else{
+                this.extendedSpd.instance.setAttribute('class', 'SmallStroke blue') ;
+                this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `) ;
+            }
+            const t1 =F1HorizonPitchOffset-F1SpdSideVertDev;
+            const t2 =yPos-F1SpdSideVertDev;
+            console.log(
+                "\nD: "+D +
+                "\nD cos r: "+D*Math.cos(radRoll) +
+                "\nF1HorizonPitchOffset-F1SpdSideVertDev: "+t1 +
+                "\nyPos-F1SpdSideVertDev: "+t2 +
+                "\nyPos: "+yPos +
+                "\nF1HorizonPitchOffset: "+F1HorizonPitchOffset +
+                "\nyroll: "+roll.value +
+                "\nF1SpdSideVertDev: "+F1SpdSideVertDev 
+            );
+
+
+
+        }else {
+            this.rollGroupRef.instance.style.display = 'none';
+        }
+  });
+
+    apfd.on('pitchAr').handle((pitch) => {
+        this.pitch = pitch.value;
+        if (pitch.isNormalOperation()) {
+            this.pitchGroupRef.instance.style.display = 'block';
+            this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
+            const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - 182.857;
+            this.yOffset.set(yOffset);
+        }
+    });
+  
+    }
+
+    render(): VNode {
+      // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
+      // FIXME: further fine tune.
+      return (
+        <g>
+            <path  d='m 0 329.143 h 1280' class="red DEBUG"/>
+            <path  d='m 0 688 h 1280' class="red DEBUG"/>
+
+            <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
+
+                <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
+
+                    <path
+                    ref={this.extendedAlt}
+                    id="extendedAlt"
+                    d="" class="SmallStroke Green"
+                    />
+                                        <path
+                    ref={this.extendedSpd}
+                    id="extendedSpd"
+                    d="" class="SmallStroke Green"
+                    />
+
+                    {/* debug  */}
+                    <circle cx={this.xAltTop} cy={this.yAltTop} r='5' class="blue DEBUG"    display="block"    />
+                    <circle cx={this.xSpdTop} cy={this.ySpdTop} r='5' class="blue DEBUG"    display="block"    />
+                    <circle cx='640' cy='512' r='5' class="blue DEBUG"    display="block"    />
+                    <path ref={this.path} d='' class="yellow  DEBUG"/>
+                    <path ref={this.path2} d='' class="yellow DEBUG"/>
+                    <path ref={this.path3} d='' class="yellow DEBUG"/>
+                    {/* debug  */}
+                </g>
+            </g>
+
+        </g>
+
+      );
+    }
+  }

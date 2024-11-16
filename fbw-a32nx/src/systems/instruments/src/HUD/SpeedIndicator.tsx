@@ -186,6 +186,15 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).windIndicator);
     this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindSpdTape); 
+  
+    console.log(
+        "\n xWindAltTape: " + this.elems.xWindAltTape.get() +
+        "\n altTape: " + this.elems.altTape.get()+
+        "\n xWindSpdTape: " + this.elems.xWindSpdTape.get()+
+        "\n spdTapeOrForcedOnLand: " + this.elems.spdTapeOrForcedOnLand.get() +
+        "\n altTapeMaskFill: " + this.elems.altTapeMaskFill.get() +
+        "\n windIndicator: " + this.elems.windIndicator.get()
+     )
   }
 
   private speedSub = Subject.create<number>(0);

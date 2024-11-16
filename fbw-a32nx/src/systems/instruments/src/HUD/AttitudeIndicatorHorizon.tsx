@@ -157,8 +157,8 @@ class HeadingBug extends DisplayComponent<{
         display={this.sVisibility}
       >
         
-        <path class="ThickStroke" d="m 630,490 h 20 l -10,21z" display={this.sGndHeadingBugVisibility}/>
-        <path class="ThickStroke Green" d="m 640,500  l 0 24" display={this.sAirHeadingBugVisibility} />
+        <path id="gndHorizonHeadingBug" class="ThickStroke" d="m 630,490 h 20 l -10,21z" display={this.sGndHeadingBugVisibility}/>
+        <path id="airHorizonHeadingBug" class="ThickStroke Green" d="m 640,500  l 0 24" display={this.sAirHeadingBugVisibility} />
       </g>
     );
   }
@@ -177,7 +177,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
-
+  
   private pitchProtActiveVisibility = Subject.create('visible');
 
   private pitchProtLostVisibility = Subject.create('hidden');
@@ -246,7 +246,10 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   render(): VNode {
     return (
+      
       <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
+
+
         <g id="PitchGroup" ref={this.pitchGroupRef} class="ScaledStroke Green">
           <SyntheticRunway bus={this.props.bus} />
 
@@ -258,7 +261,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
           {/* horizon */}
           <path id="HorizonLine" d="m -100 512 h 1480" class="SmallStroke Green" />
+
    
+
           <HorizontalTape
             type="headingTape"
             bus={this.props.bus}
@@ -283,6 +288,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     );
   }
 }
+
+
+
 
 class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private tailStrike = FSComponent.createRef<SVGPathElement>();

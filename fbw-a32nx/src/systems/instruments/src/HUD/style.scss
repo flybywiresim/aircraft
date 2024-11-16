@@ -297,6 +297,7 @@ text.Red {
 }
 .Test{
   fill: #ff000080;
+  stroke: #ff0000
 }
 .Test{
   stroke: #ff0000;
@@ -304,4 +305,29 @@ text.Red {
 
 .noFill{
   fill: none;
+}
+
+.blue{
+  stroke: blue;
+  fill: #0000ff80;
+  stroke-width: 2px;
+}
+.yellow{
+  stroke: yellow;
+  fill: rgba(255, 255, 0, 0.144);
+  stroke-width: .5px;
+}
+.purple{
+  stroke: purple;
+  fill: purple;
+  stroke-width: 2px;
+}
+.red{
+  stroke: red;
+  fill: red;
+  stroke-width: 2px;
+}
+
+.DEBUG{
+  display: block;
 }

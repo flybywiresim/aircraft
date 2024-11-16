@@ -1,16 +1,10 @@
 import { Subject } from "@microsoft/msfs-sdk";
 
-export const calculateHorizonOffsetFromPitch = (pitch: number) => pitch * 1024 / 28;
-// if (pitch > -5 && pitch <= 20) {
-//     return pitch * 1.8 * 16.34722222222222;
-// } if (pitch > 20 && pitch <= 30) {
-//     return (-0.04 * pitch ** 2 + 3.4 * pitch - 16) * 16.34722222222222;
-// } if (pitch > 30) {
-//     return (20 + pitch) * 16.34722222222222;
-// } if (pitch < -5 && pitch >= -15) {
-//     return (0.04 * pitch ** 2 + 2.2 * pitch + 1) * 16.34722222222222;
-// }
-// return (pitch - 8) * 16.34722222222222;
+export const calculateHorizonOffsetFromPitch = (pitch: number) => {
+  let offset =  pitch * 1024 / 28;
+  return offset;
+};
+
 
 export const calculateVerticalOffsetFromRoll = (roll: number) => {
     let offset = 0;
@@ -185,7 +179,7 @@ export const getSupplier = (displayIndex: number | undefined, knobValue: number)
 //---------------------------------------------------------------
 // onToPower 0 onGnd 0 xwnd off dec != 2
 //    alt    |   0   |   0   | 1 | 0 |   1  |   0  |   0  |    20  
-//    alt    |   0   |   0   | 1 | 0 |   0  |   1  |   0  |    19    
+//    alt    |   0   |   0   | 1 | 0 |   0  |   1  |   0  |    18    
 // onToPower 0 onGnd 0 xwnd off dec == 2
 //    alt    |   0   |   0   | 1 | 0 |   0  |   0  |   1  |    17     
 
@@ -249,7 +243,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
     bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
     
     //onToPower 1 onGnd 1 xwnd on  dec != 2     
-    if(bitMask == 108 || bitMask == 106) {
+    if(bitMask == 106 || bitMask == 108) {
         //crosswindMode: WindMode.CrossWind,
         elemVis.xWindAltTape    = 'none';
         elemVis.altTape         = 'block';
@@ -273,7 +267,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
 
       //----------
     //onToPower 1 onGnd 1 xwnd off  dec != 2     
-    if(bitMask == 116 || bitMask == 114) {
+    if(bitMask == 114 || bitMask == 116) {
         //crosswindMode: WindMode.Normal;
         elemVis.xWindAltTape    = 'none';
         elemVis.altTape         = 'block';
@@ -405,13 +399,13 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
     }
       //----------
       //onToPower 0 onGnd 0 xwnd off dec !=2       
-    if(bitMask == 19 || bitMask == 20) {
+    if(bitMask == 18 || bitMask == 20) {
           //crosswindMode: WindMode.Normal;
         elemVis.xWindAltTape    = 'none';
         elemVis.altTape         = 'block';
         elemVis.xWindSpdTape    = 'none';
         elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'noFill';
+        elemVis.altTapeMaskFill = 'BackgroundFill';
         elemVis.windIndicator   = 'block';
     }
       //onToPower 0 onGnd 0 xwnd off dec ==2       
@@ -432,20 +426,20 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
     // // elems.altTapeMaskFill .set( elemVis.altTapeMaskFill );
     // // elems.windIndicator   .set( elemVis.windIndicator   );
 
-    // console.log(
-    //     "\n bitMask: " + bitMask +
-    //     "\n onToPower: " + onToPower +
-    //     "\n onGround: " + onGround +
-    //     "\n declutterMode: " + declutterMode +
-    //     "\n xwndMode: " + xwndMode +
-    //         //"\n crosswindMode: " + elemsVis.crosswindMode +
-    //     "\n xWindAltTape: " + elemVis.xWindAltTape +
-    //     "\n altTape: " + elemVis.altTape+
-    //     "\n xWindSpdTape: " + elemVis.xWindSpdTape+
-    //     "\n spdTapeOrForcedOnLand: " + elemVis.spdTapeOrForcedOnLand +
-    //     "\n altTapeMaskFill: " + elemVis.altTapeMaskFill +
-    //     "\n windIndicator: " + elemVis.windIndicator
-    // )
+    console.log(
+     "\n bitMask: " + bitMask +
+      "\n onToPower: " + onToPower +
+      "\n onGround: " + onGround +
+      "\n declutterMode: " + declutterMode 
+    //     // "\n xwndMode: " + xwndMode 
+    // //         //"\n crosswindMode: " + elemsVis.crosswindMode +
+    // //     "\n xWindAltTape: " + elemVis.xWindAltTape +
+    // //     "\n altTape: " + elemVis.altTape+
+    // //     "\n xWindSpdTape: " + elemVis.xWindSpdTape+
+    // //     "\n spdTapeOrForcedOnLand: " + elemVis.spdTapeOrForcedOnLand +
+    // //     "\n altTapeMaskFill: " + elemVis.altTapeMaskFill +
+    // //     "\n windIndicator: " + elemVis.windIndicator
+    )
 
     return elemVis;
 }
