@@ -19,6 +19,8 @@ include_directories(
     ./src/busStructures
     ./src/elac
     ./src/fac
+    ./src/fmgc
+    ./src/fcu
     ./src/failures
     ./src/fcdc
     ./src/interface
@@ -45,40 +47,36 @@ add_executable(flybywire-a32nx-fbw
     src/fac/Fac.cpp
     src/failures/FailuresConsumer.cpp
     src/fcdc/Fcdc.cpp
+    src/fcu/Fcu.cpp
+    src/fmgc/Fmgc.cpp
     src/interface/SimConnectInterface.cpp
-    src/model/AutopilotLaws_data.cpp
-    src/model/AutopilotLaws.cpp
-    src/model/AutopilotStateMachine_data.cpp
-    src/model/AutopilotStateMachine.cpp
-    src/model/Autothrust_data.cpp
-    src/model/Autothrust.cpp
-    src/model/Double2MultiWord.cpp
     src/model/ElacComputer_data.cpp
     src/model/ElacComputer.cpp
     src/model/FacComputer_data.cpp
     src/model/FacComputer.cpp
+    src/model/FadecComputer_data.cpp
+    src/model/FadecComputer.cpp
+    src/model/FcuComputer_data.cpp
+    src/model/FcuComputer.cpp
+    src/model/FmgcComputer_data.cpp
+    src/model/FmgcComputer.cpp
+    src/model/FmgcOuterLoops.cpp
     src/model/LateralDirectLaw.cpp
     src/model/LateralNormalLaw.cpp
     src/model/look1_binlxpw.cpp
-    src/model/look2_binlcpw.cpp
+    src/model/look1_iflf_binlxpw.cpp
     src/model/look2_binlxpw.cpp
     src/model/look2_pbinlxpw.cpp
-    src/model/mod_2RcCQkwc.cpp
-    src/model/mod_obTiuOCQ.cpp
-    src/model/MultiWordIor.cpp
     src/model/PitchAlternateLaw.cpp
     src/model/PitchDirectLaw.cpp
     src/model/PitchNormalLaw.cpp
     src/model/rt_modd.cpp
-    src/model/rt_remd.cpp
     src/model/SecComputer_data.cpp
     src/model/SecComputer.cpp
-    src/model/uMultiWord2Double.cpp
     src/recording/FlightDataRecorder.cpp
     src/sec/Sec.cpp
     src/utils/ConfirmNode.cpp
     src/utils/HysteresisNode.cpp
     src/utils/PulseNode.cpp
     src/utils/SRFlipFLop.cpp
-
 )
