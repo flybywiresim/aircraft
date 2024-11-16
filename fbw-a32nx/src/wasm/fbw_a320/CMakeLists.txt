@@ -45,32 +45,32 @@ add_executable(flybywire-a32nx-fbw
     src/SpoilersHandler.cpp
     src/elac/Elac.cpp
     src/fac/Fac.cpp
-    src/fmgc/Fmgc.cpp
-    src/fcu/Fcu.cpp
     src/failures/FailuresConsumer.cpp
     src/fcdc/Fcdc.cpp
+    src/fcu/Fcu.cpp
+    src/fmgc/Fmgc.cpp
     src/interface/SimConnectInterface.cpp
     src/model/ElacComputer_data.cpp
     src/model/ElacComputer.cpp
     src/model/FacComputer_data.cpp
     src/model/FacComputer.cpp
-    src/model/FmgcComputer_data.cpp
-    src/model/FmgcComputer.cpp
-    src/model/FcuComputer_data.cpp
-    src/model/FcuComputer.cpp
     src/model/FadecComputer_data.cpp
     src/model/FadecComputer.cpp
+    src/model/FcuComputer_data.cpp
+    src/model/FcuComputer.cpp
+    src/model/FmgcComputer_data.cpp
+    src/model/FmgcComputer.cpp
+    src/model/FmgcOuterLoops.cpp
     src/model/LateralDirectLaw.cpp
     src/model/LateralNormalLaw.cpp
     src/model/look1_binlxpw.cpp
+    src/model/look1_iflf_binlxpw.cpp
+    src/model/look2_binlxpw.cpp
     src/model/look2_pbinlxpw.cpp
-    src/model/mod_2RcCQkwc.cpp
-    src/model/mod_obTiuOCQ.cpp
     src/model/PitchAlternateLaw.cpp
     src/model/PitchDirectLaw.cpp
     src/model/PitchNormalLaw.cpp
     src/model/rt_modd.cpp
-    src/model/rt_remd.cpp
     src/model/SecComputer_data.cpp
     src/model/SecComputer.cpp
     src/recording/FlightDataRecorder.cpp
@@ -79,5 +79,4 @@ add_executable(flybywire-a32nx-fbw
     src/utils/HysteresisNode.cpp
     src/utils/PulseNode.cpp
     src/utils/SRFlipFLop.cpp
-
 )
