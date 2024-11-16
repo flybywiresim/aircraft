@@ -25,8 +25,9 @@ const EngineColumn: FC<Position & EngineNumber & IgnitionActive & EngineColumnPr
   const [starterValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_STARTER_VALVE_OPEN`, 'number', 500); // TODO: Update with correct SimVars
   const starting = !!(N2 < 58.5 && ignition && starterValveOpen); // TODO Should be N3
   const [fadecManuallyPowered] = useSimVar(`L:A32NX_OVHD_FADEC_${engine}`, 'bool', 500);
+  const [engineFirePbReleased] = useSimVar(`L:A32NX_FIRE_BUTTON_ENG${engine}`, 'bool', 500);
 
-  const fadecPowered = ignition || anyEngineRunning || fadecManuallyPowered;
+  const fadecPowered = (ignition || anyEngineRunning || fadecManuallyPowered) && !engineFirePbReleased;
 
   const [fuelFlow] = useSimVar(`L:A32NX_ENGINE_FF:${engine}`, 'number', 100);
 
