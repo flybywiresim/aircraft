@@ -112,6 +112,8 @@ export class FmgcData {
   /** in percent. null if not set. */
   public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null);
 
+  public readonly routeReserveFuelIsPilotEntered = this.routeReserveFuelWeightPilotEntry.map((it) => it !== null);
+
   public readonly routeReserveFuelPercentage = MappedSubject.create(
     ([percentagePilotEntry, reservePilotEntry]) =>
       reservePilotEntry !== null
@@ -127,7 +129,7 @@ export class FmgcData {
     (v) => v !== null,
   );
 
-  public readonly routeReserveFuelIsPilotEntered = this.routeReserveFuelWeightPilotEntry.map((it) => it !== null);
+
 
   public readonly paxNumber = Subject.create<number | null>(null);
 

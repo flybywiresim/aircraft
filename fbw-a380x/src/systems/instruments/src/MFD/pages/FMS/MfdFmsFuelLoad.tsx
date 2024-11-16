@@ -392,9 +392,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <InputField<number>
                   disabled={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
-                  dataHandlerDuringValidation={async (v) =>
-                    this.props.fmcService.master?.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v)
-                  }
+                  dataHandlerDuringValidation={async (v) => {
+                    this.props.fmcService.master?.fmgc.data.routeReserveFuelWeightPilotEntry.set(null);
+                    this.props.fmcService.master?.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v);
+                  }}
                   enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentageIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage}
                   alignText="center"
