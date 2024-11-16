@@ -107,6 +107,10 @@ clang++ \
   "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/fac" \
   "${DIR}/src/fac/Fac.cpp" \
+  -I "${DIR}/src/fmgc" \
+  "${DIR}/src/fmgc/Fmgc.cpp" \
+  -I "${DIR}/src/fcu" \
+  "${DIR}/src/fcu/Fcu.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/utils" \
@@ -115,13 +119,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/AutopilotLaws_data.cpp" \
-  "${DIR}/src/model/AutopilotLaws.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine_data.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine.cpp" \
-  "${DIR}/src/model/Autothrust_data.cpp" \
-  "${DIR}/src/model/Autothrust.cpp" \
-  "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/ElacComputer_data.cpp" \
   "${DIR}/src/model/ElacComputer.cpp" \
   "${DIR}/src/model/SecComputer_data.cpp" \
@@ -133,15 +130,18 @@ clang++ \
   "${DIR}/src/model/LateralDirectLaw.cpp" \
   "${DIR}/src/model/FacComputer_data.cpp" \
   "${DIR}/src/model/FacComputer.cpp" \
+  "${DIR}/src/model/FmgcComputer_data.cpp" \
+  "${DIR}/src/model/FmgcComputer.cpp" \
+  "${DIR}/src/model/FmgcOuterLoops.cpp" \
+  "${DIR}/src/model/FcuComputer_data.cpp" \
+  "${DIR}/src/model/FcuComputer.cpp" \
+  "${DIR}/src/model/FadecComputer_data.cpp" \
+  "${DIR}/src/model/FadecComputer.cpp" \
+  "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
-  "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_pbinlxpw.cpp" \
-  "${DIR}/src/model/mod_2RcCQkwc.cpp" \
-  "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
-  "${DIR}/src/model/rt_remd.cpp" \
-  "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${FBW_COMMON_DIR}/src/zlib" \
   "${FBW_COMMON_DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
