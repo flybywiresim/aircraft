@@ -392,7 +392,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   dataHandlerDuringValidation={async (v) =>
                     this.props.fmcService.master?.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v)
                   }
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered}
+                  enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentageIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage}
                   alignText="center"
                   containerStyle="width: 120px;"
