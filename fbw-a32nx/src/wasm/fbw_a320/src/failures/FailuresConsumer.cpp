@@ -1,6 +1,6 @@
 #include "FailuresConsumer.h"
-#include <utility>
 #include <algorithm>
+#include <utility>
 
 FailuresConsumer::FailuresConsumer() {
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Elac1, false));
@@ -12,6 +12,10 @@ FailuresConsumer::FailuresConsumer() {
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fac2, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fcdc1, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fcdc2, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fcu1, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fcu2, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fmgc1, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fmgc2, false));
 }
 
 void FailuresConsumer::initialize() {
@@ -53,10 +57,8 @@ bool FailuresConsumer::setIfFound(double identifier, bool value) {
 }
 
 bool FailuresConsumer::isAnyActive() {
-  if (std::any_of(activeFailures.begin(), activeFailures.end(), [](auto pair) {
-    return pair.second;
-  })) {
-      return true;
+  if (std::any_of(activeFailures.begin(), activeFailures.end(), [](auto pair) { return pair.second; })) {
+    return true;
   }
   return false;
 }
