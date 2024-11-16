@@ -26,7 +26,7 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
   const powerSource1Avail = useSimVar(`L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED`, 'boolean', 1000);
   const powerSource2Avail = useSimVar(`L:A32NX_ELEC_DC_1_BUS_IS_POWERED`, 'boolean', 1000);
 
-  const [pitchIntegral, pitchFractional] = Math.abs(rudderTrim).toFixed(1).padStart(4, '\xa0').split('.');
+  const rudderTrimText = Math.abs(rudderTrim).toFixed(1).padStart(4, '\xa0');
 
   const powerAvailableClass = (powerSource1Avail || powerSource2Avail) && rudderTrimAvail ? 'Cyan' : 'Amber';
 
@@ -54,16 +54,10 @@ export const RudderTrim: FC<RudderTrimProps> = ({ x, y }) => {
         >
           {Math.sign(rudderTrim) === 1 ? 'L' : 'R'}
         </text>
-        <text x={122} y={17} className={`${powerAvailableClass} F22 EndAlign`}>
-          {pitchIntegral}
+        <text x={159} y={17} className={`${powerAvailableClass} F22 EndAlign`}>
+          {rudderTrimText}
         </text>
-        <text x={118} y={17} className={`${powerAvailableClass} F22`}>
-          .
-        </text>
-        <text x={134} y={17} className={`${powerAvailableClass} F22`}>
-          {pitchFractional}
-        </text>
-        <text x={145} y={19} className="Cyan F22">
+        <text x={159} y={19} className="Cyan F22">
           °
         </text>
       </g>
