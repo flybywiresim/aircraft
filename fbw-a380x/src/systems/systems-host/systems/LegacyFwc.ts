@@ -248,7 +248,7 @@ export class LegacyFwc {
     const eng3MCL = eng3TLA > 22.9;
     const eng3SupMCT = !(eng3TLA < 36.7);
 
-    const eng4TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:5', 'number');
+    const eng4TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number');
     const eng4TLAFTO = eng1TLAFTO; // until we have proper FADECs
     const eng4MCT = eng3TLA > 33.3 && eng3TLA < 36.7;
     const eng4TLAFullPwr = eng3TLA > 43.3;

@@ -11,9 +11,6 @@ export interface FmsVars {
   linearDeviationActive: boolean;
   targetAltitude: number;
   verticalProfileLatched: boolean;
-  showSpeedMargins: boolean;
-  upperSpeedMargin: number;
-  lowerSpeedMargin: number;
   rnp: number;
   toWptIdent0: number;
   toWptIdent1: number;
@@ -45,9 +42,6 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
           'verticalProfileLatched',
           { name: (_side) => 'L:A32NX_PFD_VERTICAL_PROFILE_LATCHED', type: SimVarValueType.Bool },
         ],
-        ['showSpeedMargins', { name: (_side) => 'L:A32NX_PFD_SHOW_SPEED_MARGINS', type: SimVarValueType.Bool }],
-        ['upperSpeedMargin', { name: (_side) => 'L:A32NX_PFD_UPPER_SPEED_MARGIN', type: SimVarValueType.Knots }],
-        ['lowerSpeedMargin', { name: (_side) => 'L:A32NX_PFD_LOWER_SPEED_MARGIN', type: SimVarValueType.Knots }],
         ['rnp', { name: (side) => `L:A32NX_FMGC_${side}_RNP`, type: SimVarValueType.Number }],
         ['toWptIdent0', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_IDENT_0`, type: SimVarValueType.Number }],
         ['toWptIdent1', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_IDENT_1`, type: SimVarValueType.Number }],

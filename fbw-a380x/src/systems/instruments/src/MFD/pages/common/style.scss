@@ -829,3 +829,25 @@
 .invisible {
   visibility: hidden;
 }
+
+.mfd-adsc-button {
+  border: 4px inset $display-light-grey;
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  height: 65px;
+}
+
+.mfd-adsc-button.disabled {
+  background-color: $display-dark-grey;
+  border: none;
+}
+
+.mfd-adsc-label-off {
+  font-size: 20px;
+  color: $display-dark-grey;
+  font-family: "Ecam", monospace;
+}
