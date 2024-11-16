@@ -493,6 +493,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLowerRudderCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
   std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRudderTrimActualPosition;
 
   // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];

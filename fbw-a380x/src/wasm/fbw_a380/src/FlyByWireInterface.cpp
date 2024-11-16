@@ -720,6 +720,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idRudderTrimActiveModeCommanded[i] = std::make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_ACTIVE_MODE_COMMANDED");
     idRudderTrimCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_COMMANDED_POSITION");
   }
+  idRudderTrimActualPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_TRIM_ACTUAL_POSITION");
 
   idLeftAileronInwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_INWARD_DEFLECTION");
   idLeftAileronMiddlePosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_MIDDLE_DEFLECTION");
@@ -1383,7 +1384,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2] + 0.85 * simData.zeta_trim_pos;
+  prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -(simInput.inputs[2] + idRudderTrimActualPosition->get() / 30);
   prims[primIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.vert_acc_1_g = 0;
@@ -1607,9 +1608,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -50. * rightSpoiler2Position;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
   secs[secIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
-  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg =
-      -simInput.inputs[2] + 0.85 * simData.zeta_trim_pos;  // FIXME pos_order_deg statt zeta_trim_pos
-  secs[secIndex].modelInputs.in.analog_inputs.rudder_trim_actual_pos_deg = -25.5 * simData.zeta_trim_pos;
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg = -(simInput.inputs[2] + idRudderTrimActualPosition->get() / 30);
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_trim_actual_pos_deg = idRudderTrimActualPosition->get();
 
   if (secIndex == 0) {
     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
@@ -1798,7 +1798,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
       facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
 
   facs[facIndex].modelInputs.in.analog_inputs.yaw_damper_position_deg = 0;
-  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = -simData.zeta_trim_pos * 25.5;
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = idRudderTrimActualPosition->get();
   facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = rudderTravelLimiterPosition;
   facs[facIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * idLeftSpoilerPosition[5]->get();
   facs[facIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * idRightSpoilerPosition[5]->get();
@@ -1999,13 +1999,8 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRudderTrimCommandedPosition[1]->set(secsAnalogOutputs[2].rudder_trim_command_deg);
 
   // Simulate the two electric motors from the Pedal Feel and Trim Unit (PFTU), change zero-force position of the rudder pedals
-  SimOutputZetaTrim outputZetaTrim = {};
-  outputZetaTrim.zeta_trim_pos = -(secsAnalogOutputs[0].rudder_trim_command_deg + secsAnalogOutputs[2].rudder_trim_command_deg) / 25.5;
   if (secsDiscreteOutputs[0].rudder_trim_active_mode || secsDiscreteOutputs[2].rudder_trim_active_mode) {
-    if (!simConnectInterface.sendData(outputZetaTrim)) {
-      std::cout << "WASM: Write data failed!" << std::endl;
-      return false;
-    }
+    idRudderTrimActualPosition->set(secsAnalogOutputs[0].rudder_trim_command_deg + secsAnalogOutputs[2].rudder_trim_command_deg);
   }
 
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
@@ -2614,7 +2609,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // set rudder pedals position
   idRudderPedalPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]))));
-  idRudderPedalAnimationPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]) + (85. * simData.zeta_trim_pos))));
+  idRudderPedalAnimationPosition->set(
+      std::max(-100., std::min(100., (-100. * (simInput.inputs[2] + idRudderTrimActualPosition->get() / 30.)))));
 
   // provide tracking mode state
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
