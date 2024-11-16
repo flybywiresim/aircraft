@@ -116,6 +116,8 @@ export class FmgcData {
     it === null ? AirlineModifiableInformation.EK.rteRsv : it,
   ); // in percent
 
+  public readonly routeReserveRelative = this.routeReserveFuelPercentage.map((r) => r / 100);
+
   public readonly routeReserveFuelIsPilotEntered = MappedSubject.create(
     ([fuel, time]) => fuel !== null || time !== null,
     this.routeReserveFuelWeightPilotEntry,
