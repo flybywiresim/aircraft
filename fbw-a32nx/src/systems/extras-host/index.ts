@@ -11,6 +11,9 @@ import {
   ExtrasSimVarPublisher,
   FlightDeckBounds,
   GPUManagement,
+  MsfsElectricsPublisher,
+  MsfsFlightModelPublisher,
+  MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
 } from '@flybywiresim/fbw-sdk';
@@ -63,6 +66,12 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly simVarPublisher: ExtrasSimVarPublisher;
 
+  private readonly msfsElectricsPublisher: MsfsElectricsPublisher;
+
+  private readonly msfsFlightModelPublisher: MsfsFlightModelPublisher;
+
+  private readonly msfsMiscPublisher: MsfsMiscPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
@@ -94,6 +103,9 @@ class ExtrasHost extends BaseInstrument {
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
+    this.msfsElectricsPublisher = new MsfsElectricsPublisher(this.bus);
+    this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
+    this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
@@ -105,6 +117,10 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
+    this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
+    this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
+    this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
     this.backplane.addInstrument('Clock', this.clock);
