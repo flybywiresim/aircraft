@@ -84,17 +84,19 @@ void Autothrust::Autothrust_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt
   localDW->pU = rtu_U;
 }
 
-void Autothrust::Autothrust_N1fanprotectioneng1(real_T rtu_cas, real_T rtu_n1_c, real_T *rty_n1_c_protected)
+void Autothrust::Autothrust_A380XN1fanprotection(real_T rtu_cas, real_T rtu_n1_c, real_T *rty_n1_c_protected)
 {
   *rty_n1_c_protected = rtu_n1_c;
-  if ((rtu_cas < 60.0) && (rtu_n1_c > 64.0) && (rtu_n1_c < 72.0)) {
+  if ((rtu_cas < 60.0) && (rtu_n1_c > 62.5) && (rtu_n1_c < 73.5)) {
     if (rtu_n1_c < 68.0) {
       *rty_n1_c_protected = 62.5;
     } else {
       *rty_n1_c_protected = 73.5;
     }
-  } else if ((rtu_cas < 35.0) && (rtu_n1_c >= 78.0)) {
-    *rty_n1_c_protected = 76.5;
+  }
+
+  if (rtu_cas < 35.0) {
+    *rty_n1_c_protected = std::fmin(*rty_n1_c_protected, 76.5);
   }
 }
 
@@ -930,7 +932,7 @@ void Autothrust::step()
   }
 
   Autothrust_Y.out.output.is_in_reverse_1 = rtb_r_h;
-  Autothrust_N1fanprotectioneng1(Autothrust_U.in.data.V_ias_kn, rtb_Gain2, &rtb_y_p);
+  Autothrust_A380XN1fanprotection(Autothrust_U.in.data.V_ias_kn, rtb_Gain2, &rtb_y_p);
   Autothrust_MATLABFunction(rtb_y_p - Autothrust_U.in.data.engine_N1_1_percent, &rtb_y_a, &rtb_r_he);
   if (rtb_r_he) {
     Autothrust_DWork.Delay_DSTATE_e = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
@@ -977,7 +979,7 @@ void Autothrust::step()
   }
 
   Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_1_deg, &rtb_y_a);
-  Autothrust_N1fanprotectioneng1(Autothrust_U.in.data.V_ias_kn, rtb_Gain3, &rtb_Switch_c5);
+  Autothrust_A380XN1fanprotection(Autothrust_U.in.data.V_ias_kn, rtb_Gain3, &rtb_Switch_c5);
   Autothrust_MATLABFunction(rtb_Switch_c5 - Autothrust_U.in.data.engine_N1_2_percent, &rtb_y_p, &rtb_r_he);
   if (rtb_r_he) {
     Autothrust_DWork.Delay_DSTATE_a = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition_f;
@@ -1019,7 +1021,7 @@ void Autothrust::step()
   }
 
   Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_2_deg, &rtb_y_p);
-  Autothrust_N1fanprotectioneng1(Autothrust_U.in.data.V_ias_kn, rtb_Switch_f_idx_2, &rtb_Switch_j);
+  Autothrust_A380XN1fanprotection(Autothrust_U.in.data.V_ias_kn, rtb_Switch_f_idx_2, &rtb_Switch_j);
   Autothrust_MATLABFunction(rtb_Switch_j - Autothrust_U.in.data.engine_N1_3_percent, &rtb_Switch_c5, &rtb_r_a);
   if (rtb_r_a) {
     Autothrust_DWork.Delay_DSTATE_au = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition_i;
@@ -1063,7 +1065,7 @@ void Autothrust::step()
   }
 
   Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_3_deg, &rtb_Switch_c5);
-  Autothrust_N1fanprotectioneng1(Autothrust_U.in.data.V_ias_kn, rtb_Switch_f_idx_3, &rtb_Switch_fk);
+  Autothrust_A380XN1fanprotection(Autothrust_U.in.data.V_ias_kn, rtb_Switch_f_idx_3, &rtb_Switch_fk);
   Autothrust_MATLABFunction(rtb_Switch_fk - Autothrust_U.in.data.engine_N1_4_percent, &rtb_Switch_j, &rtb_r_h);
   if (rtb_r_h) {
     Autothrust_DWork.Delay_DSTATE_e1 = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition_fg;
