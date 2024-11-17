@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "同期",
+    "Takeoff": {
+      "Airport": "空港",
+      "AntiIce": "防氷装置",
+      "Calculate": "計算を実行",
+      "CentreOfGravity": "TOCG",
+      "Clear": "消去",
+      "CoGPosition": "重心位置",
+      "CoGPositions": {
+        "Forward": "Forward (<27%)",
+        "Standard": "標準"
+      },
+      "Configuration": "離陸構成",
+      "CrosswindAboveLimitMessage": "{actual_crosswind} ノットで計算しますか？",
+      "CrosswindAboveLimitTitle": "最大横風制限は{max_crosswind}ノットです",
+      "EnterManually": "手動入力",
+      "EntryAngle": "滑走路進入角度",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CGが離陸範囲を超過",
+        "FlexNotPossible": "Flex使用不可",
+        "HeadwindLimited": "向かい風制限は{max_headwind} knotsまで減少した",
+        "InvalidData": "無効な入力",
+        "MaximumPressureAlt": "最高気圧高度({max_zp} ft)を超過",
+        "MaximumRunwaySlope": "滑走路の勾配制限を超過 (±2%)",
+        "MaximumTailwind": "最大追い風制限( {max_tailwind} knots)を超過",
+        "MaximumTemperature": "最大OAT ({tmax}°C)を超過",
+        "MaximumTireSpeed": "最大タイヤ速度の制限が満たされていません",
+        "OperatingEmptyWeight": "空虚重量 ({oew} {weight_unit})未満",
+        "StructuralMtow": "最大離陸重量（{structural_mtow}{weight_unit} ）制限超過",
+        "TooHeavy": "離陸重量制限を超過 - 最大 {mtow} {weight_unit}まで",
+        "TooLight": "最小離陸重量未満です",
+        "VmcgVmcaLimits": "VMCG/VMCAの制限が満たされていません"
+      },
+      "Packs": "空調",
+      "Qnh": "QNH",
+      "Runway": "滑走路",
+      "RunwayBearing": "滑走路の方位",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "滑走路の状態",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "乾いた雪 - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "乾いた雪 - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "スラッシュ - 12.7 mm/½\"",
+        "Contaminated13mmWater": "水 - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "湿った雪 - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "湿った雪 - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "湿った雪 - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "スラッシュ - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "水 - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "圧雪",
+        "Dry": "乾燥",
+        "Wet": "湿潤"
+      },
+      "RunwayElevation": "滑走路の標高",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "滑走路の勾配",
+      "Temperature": "気温",
+      "Thrust": "スラスト位置",
+      "Title": "離陸",
+      "Tora": "TORA",
+      "Weight": "離陸重量",
+      "Wind": "風",
+      "WindMagnitudeUnit": "kts or °/kts"
+    },
     "Title": "パフォーマンス",
     "TopOfDescent": {
       "Data": {
@@ -497,6 +567,8 @@
     },
     "Title": "クイックコントロール"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "flyPadについて"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",
+      "EclSoftKeys": "EWD電子チェックリストの画面に操作ボタンを表示する",
       "FirstOfficerAvatar": "副操縦士のアバターを表示",
       "HomeCockpitMode": "ホームコックピットモード",
       "McduFocusTimeout": "MCDUへのフォーカスがタイムアウトする時間(秒)",
@@ -570,7 +643,7 @@
       "PauseAtTodDistance": "一時停止を有効にする降下開始地点からの距離(nm)",
       "PilotAvatar": "機長のアバターを表示",
       "SeparateTillerFromRudderInputs": "ティラーをラダー入力から分離",
-      "SyncEfis": "機長席と副操縦士席のEFIS操作を同期",
+      "SyncEfis": "機長席と副操縦士席のEFISと音声の操作を同期",
       "Title": "リアリズム"
     },
     "SimOptions": {
@@ -587,11 +660,15 @@
       "EnableSimBridge": "SimBridge接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDUサーバー接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
       "ExternalMcduServerPort": "外部MCDUサーバーポート",
+      "FdrEnabled": "フライトデータレコーダー(FDR) の有効化",
       "Hpa": "hPa",
       "Inactive": "停止",
+      "Left": "左側",
       "LoadOnly": "読み込みのみ",
       "None": "なし",
       "Off": "オフ",
+      "PilotSeat": "どちら側の操縦席で操縦するか",
+      "Right": "右側",
       "Save": "保存",
       "Side": "Side",
       "SimBridgeIp": "外部SimBridgeホストアドレス",
@@ -665,6 +742,7 @@
       "Blue": "ブルー",
       "Brightness": "明るさ",
       "Dark": "ダーク",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "言語",
       "Light": "ライト",
       "Local": "ローカル",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",

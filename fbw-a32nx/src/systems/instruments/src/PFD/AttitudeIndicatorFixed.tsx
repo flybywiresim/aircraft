@@ -4,8 +4,9 @@
 
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -187,86 +188,57 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 }
 
 class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private lateralMode = 0;
+  private fdEngaged = false;
 
-  private fdYawCommand = 0;
+  private fcuEisDiscreteWord2 = new Arinc429Word(0);
 
-  private fdActive = false;
+  private fdYawCommand = new Arinc429Word(0);
 
   private yawRef = FSComponent.createRef<SVGPathElement>();
 
-  private isActive(): boolean {
-    if (!this.fdActive || !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34)) {
-      return false;
-    }
-    return true;
-  }
+  private handleFdState() {
+    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
+    const showFd = this.fdEngaged && !fdOff;
 
-  private setOffset() {
-    const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
-    if (this.isActive()) {
+    const showYaw = showFd && !(this.fdYawCommand.isFailureWarning() || this.fdYawCommand.isNoComputedData());
+
+    if (showYaw) {
+      const offset = -Math.max(Math.min(this.fdYawCommand.value, 45), -45) * 0.44;
+
       this.yawRef.instance.style.visibility = 'visible';
       this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+    } else {
+      this.yawRef.instance.style.visibility = 'hidden';
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FgBus & FcuBus>();
 
-    sub.on('fdYawCommand').handle((fy) => {
+    sub.on('yawFdCommand').handle((fy) => {
       this.fdYawCommand = fy;
 
-      if (this.isActive()) {
-        this.setOffset();
-      } else {
-        this.yawRef.instance.style.visibility = 'hidden';
-      }
+      this.handleFdState();
     });
 
     sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.lateralMode = lm;
-
-        if (this.isActive()) {
-          this.setOffset();
-        } else {
-          this.yawRef.instance.style.visibility = 'hidden';
-        }
-      });
-
-    // FIXME, differentiate properly (without duplication)
-    sub
-      .on('fd1Active')
+      .on('fdEngaged')
       .whenChanged()
       .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
+        this.fdEngaged = fd;
 
-          if (this.isActive()) {
-            this.setOffset();
-          } else {
-            this.yawRef.instance.style.visibility = 'hidden';
-          }
-        }
+        this.handleFdState();
       });
 
     sub
-      .on('fd2Active')
+      .on('fcuEisDiscreteWord2')
       .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
+      .handle((tr) => {
+        this.fcuEisDiscreteWord2 = tr;
 
-          if (this.isActive()) {
-            this.setOffset();
-          } else {
-            this.yawRef.instance.style.visibility = 'hidden';
-          }
-        }
+        this.handleFdState();
       });
   }
 
@@ -283,19 +255,25 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
-  private lateralMode = 0;
+  private fdEngaged = false;
 
-  private verticalMode = 0;
+  private fcuEisDiscreteWord2 = new Arinc429Word(0);
 
-  private fdActive = false;
+  private fcuDiscreteWord1 = new Arinc429Word(0);
 
-  private trkFpaActive = false;
+  private fmgcDiscreteWord2 = new Arinc429Word(0);
 
-  private fdBank = 0;
+  private fmgcDiscreteWord5 = new Arinc429Word(0);
 
-  private fdPitch = 0;
+  private fdRollCommand = new Arinc429Word(0);
 
-  private fdRef = FSComponent.createRef<SVGGElement>();
+  private fdPitchCommand = new Arinc429Word(0);
+
+  private fdYawCommand = new Arinc429Word(0);
+
+  private leftMainGearCompressed = false;
+
+  private rightMainGearCompressed = false;
 
   private lateralRef1 = FSComponent.createRef<SVGPathElement>();
 
@@ -305,15 +283,19 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
+  private fdFlagVisibleSub = Subject.create('hidden');
+
   private handleFdState() {
-    const [toggled, showLateral, showVertical] = this.isActive();
+    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
+    const showFd = this.fdEngaged && !fdOff;
 
-    let FDRollOffset = 0;
-    let FDPitchOffset = 0;
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
 
-    if (toggled && showLateral) {
-      const FDRollOrder = this.fdBank;
-      FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
+    const showRoll =
+      showFd && !trkFpaActive && !(this.fdRollCommand.isFailureWarning() || this.fdRollCommand.isNoComputedData());
+
+    if (showRoll) {
+      const FDRollOffset = Math.min(Math.max(this.fdRollCommand.value, -45), 45) * 0.44;
 
       this.lateralRef1.instance.setAttribute('visibility', 'visible');
       this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
@@ -325,9 +307,11 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
       this.lateralRef2.instance.setAttribute('visibility', 'hidden');
     }
 
-    if (toggled && showVertical) {
-      const FDPitchOrder = this.fdPitch;
-      FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
+    const showPitch =
+      showFd && !trkFpaActive && !(this.fdPitchCommand.isFailureWarning() || this.fdPitchCommand.isNoComputedData());
+
+    if (showPitch) {
+      const FDPitchOffset = Math.min(Math.max(this.fdPitchCommand.value, -22.5), 22.5) * 0.89;
 
       this.verticalRef1.instance.setAttribute('visibility', 'visible');
       this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
@@ -338,104 +322,139 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
       this.verticalRef1.instance.setAttribute('visibility', 'hidden');
       this.verticalRef2.instance.setAttribute('visibility', 'hidden');
     }
+
+    const onGround = this.leftMainGearCompressed || this.rightMainGearCompressed;
+    if (
+      !fdOff &&
+      (!this.fdEngaged ||
+        this.fdRollCommand.isFailureWarning() ||
+        this.fdPitchCommand.isFailureWarning() ||
+        (this.fdYawCommand.isFailureWarning() && onGround))
+    ) {
+      this.fdFlagVisibleSub.set('block');
+    } else {
+      this.fdFlagVisibleSub.set('none');
+    }
   }
 
-  private isActive(): [boolean, boolean, boolean] {
-    const toggled = this.fdActive && !this.trkFpaActive;
+  private handleFdBarsFlashing() {
+    const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
+    const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
-    const showLateralFD = this.lateralMode !== 0 && this.lateralMode !== 34 && this.lateralMode !== 40;
-    const showVerticalFD = this.verticalMode !== 0 && this.verticalMode !== 34;
+    if (fdRollBarFlashing) {
+      this.lateralRef1.instance.classList.add('BlinkInfinite');
+      this.lateralRef2.instance.classList.add('BlinkInfinite');
+    } else {
+      this.lateralRef1.instance.classList.remove('BlinkInfinite');
+      this.lateralRef2.instance.classList.remove('BlinkInfinite');
+    }
 
-    return [toggled, showLateralFD, showVerticalFD];
+    if (fdPitchBarFlashing) {
+      this.verticalRef1.instance.classList.add('BlinkInfinite');
+      this.verticalRef2.instance.classList.add('BlinkInfinite');
+    } else {
+      this.verticalRef1.instance.classList.remove('BlinkInfinite');
+      this.verticalRef2.instance.classList.remove('BlinkInfinite');
+    }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & FgBus & FcuBus>();
 
     sub
-      .on('fd1Active')
+      .on('fdEngaged')
       .whenChanged()
       .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
+        this.fdEngaged = fd;
 
-          if (this.isActive()[0]) {
-            this.fdRef.instance.style.display = 'inline';
-          } else {
-            this.fdRef.instance.style.display = 'none';
-          }
-        }
+        this.handleFdState();
       });
 
     sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-
-          if (this.isActive()[0]) {
-            this.fdRef.instance.style.display = 'inline';
-          } else {
-            this.fdRef.instance.style.display = 'none';
-          }
-        }
-      });
-
-    sub
-      .on('trkFpaActive')
+      .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((tr) => {
-        this.trkFpaActive = tr;
-
-        if (this.isActive()[0]) {
-          this.fdRef.instance.style.display = 'inline';
-        } else {
-          this.fdRef.instance.style.display = 'none';
-        }
-      });
-
-    sub
-      .on('fdBank')
-      .withPrecision(2)
-      .handle((fd) => {
-        this.fdBank = fd;
-
-        this.handleFdState();
-      });
-    sub
-      .on('fdPitch')
-      .withPrecision(2)
-      .handle((fd) => {
-        this.fdPitch = fd;
+        this.fcuEisDiscreteWord2 = tr;
 
         this.handleFdState();
       });
 
     sub
-      .on('activeLateralMode')
+      .on('fcuDiscreteWord1')
       .whenChanged()
-      .handle((vm) => {
-        this.lateralMode = vm;
+      .handle((tr) => {
+        this.fcuDiscreteWord1 = tr;
 
         this.handleFdState();
       });
 
     sub
-      .on('activeVerticalMode')
+      .on('fmgcDiscreteWord2')
       .whenChanged()
-      .handle((lm) => {
-        this.verticalMode = lm;
+      .handle((tr) => {
+        this.fmgcDiscreteWord2 = tr;
 
+        this.handleFdBarsFlashing();
+      });
+
+    sub
+      .on('fmgcDiscreteWord5')
+      .whenChanged()
+      .handle((tr) => {
+        this.fmgcDiscreteWord5 = tr;
+
+        this.handleFdBarsFlashing();
+      });
+
+    sub
+      .on('rollFdCommand')
+      .withArinc429Precision(2)
+      .handle((fd) => {
+        this.fdRollCommand = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('pitchFdCommand')
+      .withArinc429Precision(2)
+      .handle((fd) => {
+        this.fdPitchCommand = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('yawFdCommand')
+      .withArinc429Precision(2)
+      .handle((fd) => {
+        this.fdYawCommand = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((g) => {
+        this.leftMainGearCompressed = g;
+        this.handleFdState();
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((g) => {
+        this.rightMainGearCompressed = g;
         this.handleFdState();
       });
   }
 
   render(): VNode | null {
     return (
-      <g ref={this.fdRef} style="display: none">
+      <g>
         <g class="ThickOutline">
           <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />
 
@@ -446,6 +465,15 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
           <path ref={this.verticalRef2} id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
         </g>
+        <text
+          display={this.fdFlagVisibleSub}
+          id="FDFlag"
+          x="52.702862"
+          y="56.065434"
+          class="FontLargest EndAlign Red Blink9Seconds"
+        >
+          FD
+        </text>
       </g>
     );
   }

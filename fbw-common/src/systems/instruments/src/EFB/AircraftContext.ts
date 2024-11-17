@@ -42,6 +42,7 @@ interface RealismOptions {
   mcduKeyboard: boolean;
   pauseOnTod: boolean;
   pilotAvatars: boolean;
+  eclSoftKeys: boolean;
 }
 
 interface SimOptions {
@@ -50,6 +51,7 @@ interface SimOptions {
   pilotSeat: boolean;
   registrationDecal: boolean;
   wheelChocks: boolean;
+  cabinLighting: boolean;
 }
 
 interface ThrottleOptions {
@@ -91,6 +93,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       mcduKeyboard: false,
       pauseOnTod: false,
       pilotAvatars: false,
+      eclSoftKeys: false,
     },
     sim: {
       cones: false,
@@ -98,6 +101,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       pilotSeat: false,
       registrationDecal: false,
       wheelChocks: false,
+      cabinLighting: false,
     },
     throttle: {
       numberOfAircraftThrottles: 0,

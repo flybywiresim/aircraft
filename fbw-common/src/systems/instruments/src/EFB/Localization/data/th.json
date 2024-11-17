@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "ซิงค์",
+    "Takeoff": {
+      "Airport": "Airport",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Calculate",
+      "CentreOfGravity": "TOCG",
+      "Clear": "Clear",
+      "CoGPosition": "CG Position",
+      "CoGPositions": {
+        "Forward": "Forward (<27%)",
+        "Standard": "Standard"
+      },
+      "Configuration": "Configuration",
+      "CrosswindAboveLimitMessage": "Do you want to perform the computation with {actual_crosswind} knots?",
+      "CrosswindAboveLimitTitle": "Maximum Crosswind Is {max_crosswind} Knots",
+      "EnterManually": "Enter Manually",
+      "EntryAngle": "Entry Angle",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG Outside Takeoff Envelope",
+        "FlexNotPossible": "Flex Not Possible",
+        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "InvalidData": "Invalid Inputs",
+        "MaximumPressureAlt": "Above Maximum Pressure Altitude ({max_zp} ft)",
+        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
+        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumTemperature": "Above Maximum OAT ({tmax}°C)",
+        "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
+        "OperatingEmptyWeight": "Below Operating Empty Weight ({oew} {weight_unit})",
+        "StructuralMtow": "Above Structural MTOW ({structural_mtow} {weight_unit})",
+        "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
+        "TooLight": "Below Minimum Takeoff Weight",
+        "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
+      },
+      "Packs": "Packs",
+      "Qnh": "QNH",
+      "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Runway Condition",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Dry Snow - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Slush - 12.7 mm/½\"",
+        "Contaminated13mmWater": "Water - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "Wet Snow - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Wet Snow - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Wet Snow - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Compacted Snow",
+        "Dry": "Dry",
+        "Wet": "Wet"
+      },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Runway Slope",
+      "Temperature": "Temperature",
+      "Thrust": "Thrust",
+      "Title": "Takeoff",
+      "Tora": "TORA",
+      "Weight": "Takeoff Weight",
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
+    },
     "Title": "ประสิทธิภาพ",
     "TopOfDescent": {
       "Data": {
@@ -488,7 +558,7 @@
       "Brightness": "ปรับความสว่างของ flyPad",
       "FinishBoarding": "เสร็จสิ้นการขึ้นเครื่องทันที",
       "OnScreenKeyboard": "เปิด/ปิดแป้นพิมพ์บนหน้าจอ",
-      "PauseAtTod": "Arm or Disarm Pause at Top of Descent",
+      "PauseAtTod": "Arm or Disarm pause at Top of Descent",
       "PowerButton": "ปิดเครื่อง",
       "Settings": "ไปที่หน้าการตั้งค่า FlyPad",
       "SimBridge": "ควบคุมการเชื่อมต่อ SimBridge",
@@ -497,6 +567,8 @@
     },
     "Title": "Quick Controls"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "เกี่ยวกับ"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "Checklists ป้อนอัตโนมัติ",
       "BoardingTime": "เวลาขึ้นเครื่อง",
       "DmcSelfTestTime": "เวลา DMC Self Test",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "แสดงอวตารนักบินผู้ช่วย",
       "HomeCockpitMode": "โหมด Home Cockpit",
       "McduFocusTimeout": "หมดเวลาโฟกัส MCDU (วินาที)",
@@ -587,11 +660,15 @@
       "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อ SimBridge (ปิดการทำงานหลังจาก 5 นาทีโดยอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "เปิดใช้งานการเชื่อมต่อเซิร์ฟเวอร์ MCDU (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
       "ExternalMcduServerPort": "พอร์ตเซิร์ฟเวอร์ MCDU ภายนอก",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "ไม่ได้ใช้งาน",
+      "Left": "Left",
       "LoadOnly": "โหลดเท่านั้น",
       "None": "ไม่มี",
       "Off": "ปิด",
+      "PilotSeat": "Pilot Seat for Control",
+      "Right": "Right",
       "Save": "บันทึก",
       "Side": "Side",
       "SimBridgeIp": "External SimBridge Host Address",
@@ -665,6 +742,7 @@
       "Blue": "ฟ้า",
       "Brightness": "ความสว่าง",
       "Dark": "มืด",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "ภาษา",
       "Light": "สว่าง",
       "Local": "ท้องถิ่น",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTC และท้องถิ่น"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "เม.ย.",
     "Aug": "ส.ค.",
