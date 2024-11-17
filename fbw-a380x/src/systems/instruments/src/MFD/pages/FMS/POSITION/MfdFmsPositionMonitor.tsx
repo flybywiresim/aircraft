@@ -206,8 +206,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div class="mfd-label-value-container">
               <span class="mfd-value bigger mfd-spacing-right">GPS PRIMARY</span>
             </div>
-            <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right">RNP</span>
+            <div class="mfd-label-value-container" style={"margin-right:95px"}>
+              <span class="mfd-label bigger mfd-spacing-right-small">RNP</span>
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
                 value={this.fmsRnp}
