@@ -464,9 +464,6 @@ class A380PrimComputer final
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant9_Value;
-    real_T Constant7_Value;
-    real_T Constant11_Value;
-    real_T Constant12_Value;
     real_T uDLookupTable_tableData[5];
     real_T uDLookupTable_bp01Data[5];
     real_T Constant2_Value;
@@ -480,14 +477,14 @@ class A380PrimComputer final
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
     real_T Constant10_Value;
-    real_T Constant11_Value_k;
+    real_T Constant11_Value;
     real_T Constant1_Value_n;
     real_T Constant2_Value_k;
     real_T Constant3_Value_g;
     real_T Constant4_Value_i;
     real_T Constant5_Value_n;
     real_T Constant6_Value_f;
-    real_T Constant7_Value_h;
+    real_T Constant7_Value;
     real_T Constant8_Value;
     real_T Constant9_Value_n;
     real_T Constant_Value_b;
@@ -564,7 +561,7 @@ class A380PrimComputer final
     real32_T Constant33_Value;
     real32_T Constant34_Value;
     real32_T Constant35_Value;
-    real32_T Constant12_Value_o;
+    real32_T Constant12_Value;
     real32_T Constant11_Value_i;
     real32_T Constant20_Value;
     real32_T Gain_Gain_k;
