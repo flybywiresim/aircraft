@@ -1,24 +1,62 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FcuSimvars } from '../shared/FcuSimvarPublisher';
 
 export class SpdDisplay extends DisplayComponent<{ x: number; y: number; bus: EventBus }> {
-  private value = 0;
+  private value = ConsumerSubject.create(null, 0);
 
-  private dashes = false;
+  private dashes = ConsumerSubject.create(null, false);
 
-  private managed = false;
+  private managed = ConsumerSubject.create(null, false);
 
-  private machActive = false;
+  private machActive = ConsumerSubject.create(null, false);
 
-  private lightsTest = false;
+  private lightsTest = Subject.create(false);
 
-  private dotVisibilitySub = Subject.create('');
+  private dotVisibilitySub = MappedSubject.create(
+    ([lightsTest, managed]) => (managed || lightsTest ? 'visible' : 'hidden'),
+    this.lightsTest,
+    this.managed,
+  );
 
-  private spdLabelSub = Subject.create('');
+  private spdLabelSub = MappedSubject.create(
+    ([machActive, lightsTest]) => !machActive || lightsTest,
+    this.machActive,
+    this.lightsTest,
+  );
+  private machLabelSub = MappedSubject.create(
+    ([machActive, lightsTest]) => machActive || lightsTest,
+    this.machActive,
+    this.lightsTest,
+  );
 
-  private machLabelSub = Subject.create('');
-
-  private valueSub = Subject.create('');
+  private valueSub = MappedSubject.create(
+    ([lightsTest, dashes, value, machActive]) => {
+      if (lightsTest) {
+        return '8.88';
+      } else if (machActive && dashes) {
+        return '-.--';
+      } else if (machActive && !dashes) {
+        return value.toFixed(2);
+      } else if (dashes) {
+        return '---';
+      } else {
+        return Math.round(value).toString().padStart(3, '0');
+      }
+    },
+    this.lightsTest,
+    this.dashes,
+    this.value,
+    this.machActive,
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -29,78 +67,35 @@ export class SpdDisplay extends DisplayComponent<{ x: number; y: number; bus: Ev
       .on('lightsTest')
       .whenChanged()
       .handle((value) => {
-        this.lightsTest = value === 0;
-
-        this.handleLabels();
-        this.handleSpeedDisplay();
-        this.handleDot();
+        this.lightsTest.set(value === 0);
       });
 
-    sub
-      .on('afsDisplayMachMode')
-      .whenChanged()
-      .handle((value) => {
-        this.machActive = value;
+    this.machActive.setConsumer(sub.on('afsDisplayMachMode'));
 
-        this.handleSpeedDisplay();
-        this.handleLabels();
-      });
+    this.dashes.setConsumer(sub.on('afsDisplaySpdMachDashes'));
 
-    sub
-      .on('afsDisplaySpdMachDashes')
-      .whenChanged()
-      .handle((value) => {
-        this.dashes = value;
-        this.handleSpeedDisplay();
-      });
+    this.value.setConsumer(sub.on('afsDisplaySpdMachValue'));
 
-    sub
-      .on('afsDisplaySpdMachValue')
-      .whenChanged()
-      .handle((value) => {
-        this.value = value;
-        this.handleSpeedDisplay();
-      });
-
-    sub
-      .on('afsDisplaySpdMachManaged')
-      .whenChanged()
-      .handle((value) => {
-        this.managed = value;
-        this.handleDot();
-      });
-  }
-
-  private handleSpeedDisplay() {
-    if (this.lightsTest) {
-      this.valueSub.set('8.88');
-    } else if (this.machActive && this.dashes) {
-      this.valueSub.set('-.--');
-    } else if (this.machActive && !this.dashes) {
-      this.valueSub.set(this.value.toFixed(2));
-    } else if (this.dashes) {
-      this.valueSub.set('---');
-    } else {
-      this.valueSub.set(Math.round(this.value).toString().padStart(3, '0'));
-    }
-  }
-
-  private handleLabels() {
-    this.machLabelSub.set(this.machActive || this.lightsTest ? 'Active' : 'Inactive');
-    this.spdLabelSub.set(!this.machActive || this.lightsTest ? 'Active' : 'Inactive');
-  }
-
-  private handleDot() {
-    this.dotVisibilitySub.set(this.managed || this.lightsTest ? 'visible' : 'hidden');
+    this.managed.setConsumer(sub.on('afsDisplaySpdMachManaged'));
   }
 
   public render(): VNode {
     return (
       <g transform={`translate(${this.props.x} ${this.props.y})`}>
-        <text id="SPD" class={this.spdLabelSub} x="77" y="57.6">
+        <text
+          id="SPD"
+          class={{ Active: this.spdLabelSub, Inactive: this.spdLabelSub.map(SubscribableMapFunctions.not()) }}
+          x="77"
+          y="57.6"
+        >
           SPD
         </text>
-        <text id="MACH" class={this.machLabelSub} x="205" y="57.6">
+        <text
+          id="MACH"
+          class={{ Active: this.machLabelSub, Inactive: this.machLabelSub.map(SubscribableMapFunctions.not()) }}
+          x="205"
+          y="57.6"
+        >
           MACH
         </text>
         <text id="Value" class="Value" x="92" y="163">
