@@ -168,6 +168,10 @@ import {
         //   change lvar when btns added to model.
         <g id="CrosswindAltReadoutGroup">
           <g>
+            <path id="cwTapeBg" 
+              class="NormalStroke  BackgroundFill" 
+              d="m117.75 70.337  h 22 v 21 h -22 z"
+            />
             <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
               <Drum
                 type="ten-thousands"

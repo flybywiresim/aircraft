@@ -58,6 +58,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     spdTapeOrForcedOnLand         : Subject.create<String>(''),
     altTapeMaskFill : Subject.create<String>(''),
     windIndicator   : Subject.create<String>(''), 
+    FMA   : Subject.create<String>(''), 
+    VS    : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -67,6 +69,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
     this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    this.elems.FMA                   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS                    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
   }
   
   private bitMask = 0;
@@ -286,7 +290,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   render(): VNode {
     return (
-      <g display={this.elems.spdTapeOrForcedOnLand} id="FMA" transform="scale(5 5) translate(40 0)">
+      <g display={this.elems.FMA} id="FMA" transform="scale(5 5) translate(40 0)">
         {/* <g class="NormalStroke Grey">
           <path d={this.firstBorderSub} />
           <path d={this.secondBorderSub} />

@@ -91,8 +91,8 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
     render(): VNode {
         return (
             <>
-                <g ref={this.abnormalRef}>
-                    <text id="HDGFailText" class="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>
+                <g ref={this.abnormalRef} transform="scale(4 4)">
+                    <text id="HDGFailText" class="Blink9Seconds FontLargest EndAlign Red" x="154" y="120">HDG</text>
                 </g>
                 <g id="HeadingOfftapeGroup" ref={this.normalRef} transform="translate(571 367)">
                     <SelectedHeading heading={this.heading} bus={this.props.bus} />
@@ -432,8 +432,8 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
     render(): VNode {
         return (
             <g id="TrueRefFlag" ref={this.trueFlagRef}>
-                <rect x="62.439" y="134.468" width="12.935" height="4.575" class="Cyan NormalStroke" />
-                <text x="68.9065" y="137.008" text-anchor="middle" alignment-baseline="middle" class="FontSmallest Cyan">TRUE</text>
+                <rect x="38" y="85" width="61" height="25" class="Green NormalStroke" />
+                <text x="68.9065" y="100" text-anchor="middle" alignment-baseline="middle" class="FontLargest Green">TRUE</text>
             </g>
         );
     }

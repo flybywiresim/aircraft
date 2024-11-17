@@ -8,6 +8,8 @@ import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
+import {WindMode, HudElemsVis, getBitMask} from './HUDUtils';
+import { AutoThrustMode } from '@shared/autopilot';
 
 interface VerticalSpeedIndicatorProps {
     bus: ArincEventBus,
@@ -28,9 +30,32 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     private flightPhase = -1;
     private declutterMode = 0;
     private onGround = true;
-    private sVisibility = Subject.create<String>('');
-
-
+    private crosswindMode = false;
+    private bitMask = 0;
+    private athMode = 0;
+    private onToPower = false;
+    private elems : HudElemsVis = {
+        xWindAltTape    : Subject.create<String>(''),
+        altTape         : Subject.create<String>(''),
+        xWindSpdTape    : Subject.create<String>(''),
+        spdTapeOrForcedOnLand         : Subject.create<String>(''),
+        altTapeMaskFill : Subject.create<String>(''),
+        windIndicator   : Subject.create<String>(''), 
+        FMA             : Subject.create<String>(''), 
+        VS              : Subject.create<String>(''), 
+      };
+    
+    private setElems() {
+    this.elems.altTape               .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill       .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    this.elems.FMA                   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS                    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    }
+      
     private yOffsetSub = Subject.create(0);
 
     private needleColour = Subject.create('Green');
@@ -40,6 +65,8 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     private vsFailed = FSComponent.createRef<SVGGElement>();
 
     private vsNormal = FSComponent.createRef<SVGGElement>();
+
+    private VSref = FSComponent.createRef<SVGGElement>();
 
     private lagFilter = new LagFilter(2);
 
@@ -63,25 +90,29 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
         const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents >();
 
+        sub.on('AThrMode').whenChanged().handle((value)=>{
+          this.athMode = value;
+          (this.athMode == AutoThrustMode.MAN_FLEX || 
+              this.athMode == AutoThrustMode.MAN_TOGA || 
+              this.athMode == AutoThrustMode.TOGA_LK
+          ) ? this.onToPower = true : this.onToPower = false;
+          this.setElems();
+        })
+
         sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-            this.onGround = value;
-            if(this.onGround){
-                this.sVisibility.set("none"); 
-            }else{
-            (this.declutterMode == 2 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
-            }
+          this.onGround = value;
+          this.setElems();
           });
 
-
+          sub.on('crosswindMode').whenChanged().handle((value) => {
+            this.crosswindMode = value;
+            this.setElems();
+            (value == true) ? this.VSref.instance.setAttribute('transform', 'scale(5 5) translate(90 -37)')  : this.VSref.instance.setAttribute('transform', 'scale(5 5) translate(90 20)')    ; 
+          }); 
         
         sub.on('declutterMode').whenChanged().handle((value) => {
-            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-            this.declutterMode = value;
-            if(this.onGround){
-                this.sVisibility.set("none"); 
-            }else{
-            (this.declutterMode == 2 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
-            }
+          this.declutterMode = value;
+          this.setElems();
         }); 
 
         sub.on('tcasState').whenChanged().handle((s) => {
@@ -111,8 +142,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         });
 
         sub.on('vs').withArinc429Precision(3).handle((vs) => {
-            this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-            this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
+          this.setElems();
 
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
@@ -138,19 +168,8 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                 this.yOffsetSub.set(sign * -47.37);
             }
 
-            if(this.flightPhase > 4 && this.flightPhase < 9){
-                if(this.declutterMode == 2 ){
-                    this.sVisibility.set("none");
-                }
-                if(this.declutterMode < 2 ){
-                    if(absVSpeed > 20){
-                        this.sVisibility.set("block");
-                    }else{
-                        this.sVisibility.set("none");
-                    }
-                }
-            }else{
-                this.sVisibility.set("none");
+            if(Math.abs(vs.value) < 20){
+              this.elems.VS.set('none');
             }
 
         });
@@ -166,7 +185,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
     render(): VNode {
         return (
-            <g id="VerticalSpeedIndicator" transform="scale(5 5) translate(90 20)">
+            <g id="VerticalSpeedIndicator"  ref={this.VSref} display={this.elems.VS} transform="scale(5 5) translate(90 20)">
                 {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
                 <g id="VSpeedFailText" ref={this.vsFailed}>
@@ -177,31 +196,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
                 {/* <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} /> */}
 
-                <g id="VerticalSpeedGroup" ref={this.vsNormal} display={this.sVisibility} transform="scale(1 1) translate(0 0)">
-                    {/* <g class="Fill White">
-                        <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
-                        <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
-                        <path d="m149.92 34.054v-1.2095h1.9151v1.2095z" />
-                        <path d="m151.84 107.31h-1.9151v1.4615h1.9151z" />
-                        <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
-                        <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
-                    </g>
-                    <g class="SmallStroke White">
-                        <path d="m149.92 67.216h1.7135h0" />
-                        <path d="m151.84 48.569h-1.9151h0" />
-                        <path d="m151.84 38.489h-1.9151h0" />
-                        <path d="m149.92 94.43h1.7135h0" />
-                        <path d="m151.84 113.08h-1.9151h0" />
-                        <path d="m151.84 123.16h-1.9151h0" />
-                    </g>
-                    <g class="FontSmallest MiddleAlign Fill White">
-                        <text x="148.47067" y="109.72845">1</text>
-                        <text x="148.24495" y="119.8801">2</text>
-                        <text x="148.27068" y="129.90607">6</text>
-                        <text x="148.49667" y="55.316456">1</text>
-                        <text x="148.26495" y="45.356102">2</text>
-                        <text x="148.21367" y="35.195072">6</text>
-                    </g> */}
+                <g id="VerticalSpeedGroup" ref={this.vsNormal} display={this.elems.VS} transform="scale(1 1) translate(0 0)">
                     <path class="ScaledStrokeThin  Green" d="m145.79 80.65 h 6.0476 v 0.25 h-6.0476z" />
                     <VSpeedNeedle yOffset={this.yOffsetSub} needleColour={this.needleColour} />
 

@@ -281,7 +281,12 @@ text.Red {
   stroke: none;
   fill-rule: evenodd;
 }
-
+.ReadoutBackgroundFill {
+  fill: $display-background;
+  stroke: $display-green;
+  stroke-width: .1mm;
+  fill-rule: evenodd;
+}
 .ModeChangedPath {
   visibility: visible !important;
 }
@@ -329,5 +334,5 @@ text.Red {
 }
 
 .DEBUG{
-  display: block;
+  display: none;
 }

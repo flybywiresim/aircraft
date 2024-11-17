@@ -197,6 +197,8 @@ export enum WindMode{
     xWindAltTape   : string,
     altTapeMaskFill: string,
     windIndicator  : string,
+    FMA            : string,
+    VS            : string,
   }
 
   export interface  HudElemsVis {
@@ -206,6 +208,8 @@ export enum WindMode{
     xWindAltTape   : Subject<String>,
     altTapeMaskFill: Subject<String>,
     windIndicator  : Subject<String>,
+    FMA            : Subject<String>,
+    VS            : Subject<String>,
   }
 
 
@@ -220,6 +224,8 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         spdTapeOrForcedOnLand        : '',
         altTapeMaskFill: '',
         windIndicator  : '',
+        FMA            : '',
+        VS            : '',
     }
 
     let elems : HudElemsVis = {
@@ -229,6 +235,8 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         spdTapeOrForcedOnLand         : Subject.create<String>(''),
         altTapeMaskFill : Subject.create<String>(''),
         windIndicator   : Subject.create<String>(''), 
+        FMA             : Subject.create<String>(''), 
+        VS             : Subject.create<String>(''), 
       };
 
     let n = -1;
@@ -242,204 +250,228 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
     (declutterMode == 2) ? nArr[6] = 1 : nArr[6] = 0;
     bitMask = nArr[0]*64 + nArr[1]*32 + nArr[2]*16 + nArr[3]*8 + nArr[4]*4 + nArr[5]*2 + nArr[6]*1;
     
-    //onToPower 1 onGnd 1 xwnd on  dec != 2     
+      //onToPower 1 onGnd 1 xwnd on  dec != 2     
     if(bitMask == 106 || bitMask == 108) {
-        //crosswindMode: WindMode.CrossWind,
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block';
-        
+          //crosswindMode: WindMode.CrossWind,
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
         
     }
-    //onToPower 1 onGnd 1 xwnd on  dec == 2          
+      //onToPower 1 onGnd 1 xwnd on  dec == 2          
     if(bitMask == 105 ) {
-        //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block';
+          //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }   
 
       //----------
-    //onToPower 1 onGnd 1 xwnd off  dec != 2     
+      //onToPower 1 onGnd 1 xwnd off  dec != 2     
     if(bitMask == 114 || bitMask == 116) {
-        //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block';  
+          //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
-    //onToPower 1 onGnd 1 xwnd off  dec == 2          
+      //onToPower 1 onGnd 1 xwnd off  dec == 2          
     if(bitMask == 113 ) {
-        //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block'; 
+          //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }     
 
     
-    //----------
-    //onToPower 1 onGnd 0 xwnd on  dec != 2     
+      //----------
+      //onToPower 1 onGnd 0 xwnd on  dec != 2     
     if(bitMask == 74 || bitMask == 76) {
-        //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'block';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'block';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'block';
+          //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'block';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'block';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
-    //onToPower 1 onGnd 0 xwnd on  dec == 2          
+      //onToPower 1 onGnd 0 xwnd on  dec == 2          
     if(bitMask == 73 ) {
-        //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'block';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'block';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'block';
+          //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'block';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'block';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
 
-      //----------
-      //onToPower 1 onGnd 0 xwnd off dec !=2       
+        //----------
+        //onToPower 1 onGnd 0 xwnd off dec !=2       
     if(bitMask == 82 || bitMask == 84) {
-          //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block';
+            //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
-    //onToPower 1 onGnd 0 xwnd off dec ==2       
+      //onToPower 1 onGnd 0 xwnd off dec ==2       
     if(bitMask == 81) {
-          //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block';
+            //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
-      //-----------------------------------------------------
+        //-----------------------------------------------------
 
      
-      //onToPower 0 onGnd 1 xwnd on  dec != 2     
+        //onToPower 0 onGnd 1 xwnd on  dec != 2     
     if(bitMask == 42 || bitMask == 44) {
-          //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'block';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'block';
+            //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'block';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'none';
     }
-      //onToPower 0 onGnd 1 xwnd on  dec == 2          
+        //onToPower 0 onGnd 1 xwnd on  dec == 2          
     if(bitMask == 41 ) {
-          //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'none';   
+            //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'none';
+        elemVis.FMA                   = 'none';
+        elemVis.VS                    = 'none';
     }
-      //----------
-      //onToPower 0 onGnd 1 xwnd off  dec != 2     
+        //----------
+        //onToPower 0 onGnd 1 xwnd off  dec != 2     
     if(bitMask == 50 || bitMask == 52) {
-          //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'block';
+            //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'none';
     }
-      //onToPower 0 onGnd 1 xwnd off  dec == 2          
+        //onToPower 0 onGnd 1 xwnd off  dec == 2          
     if(bitMask == 49 ) {
-          //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'none'; 
+            //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'none';
+        elemVis.FMA                   = 'none';
+        elemVis.VS                    = 'none';
     }
     
-      //----------
-      //onToPower 0 onGnd 0 xwnd on  dec != 2     
+        //----------
+        //onToPower 0 onGnd 0 xwnd on  dec != 2     
     if(bitMask == 10 || bitMask == 12) {
-          //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'block';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'block';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'block';
+            //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'block';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'block';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
-      //onToPower 0 onGnd 0 xwnd on  dec == 2          
+        //onToPower 0 onGnd 0 xwnd on  dec == 2          
     if(bitMask == 9 ) {
-          //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'none';
+            //crosswindMode: WindMode.CrossWind;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'none';
+        elemVis.FMA                   = 'none';
+        elemVis.VS                    = 'none';
     }
-      //----------
-      //onToPower 0 onGnd 0 xwnd off dec !=2       
+        //----------
+        //onToPower 0 onGnd 0 xwnd off dec !=2       
     if(bitMask == 18 || bitMask == 20) {
-          //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'block';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'block';
-        elemVis.altTapeMaskFill = 'BackgroundFill';
-        elemVis.windIndicator   = 'block';
+            //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'block';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'block';
+        elemVis.altTapeMaskFill       = 'BackgroundFill';
+        elemVis.windIndicator         = 'block';
+        elemVis.FMA                   = 'block';
+        elemVis.VS                    = 'block';
     }
-      //onToPower 0 onGnd 0 xwnd off dec ==2       
+        //onToPower 0 onGnd 0 xwnd off dec ==2       
     if(bitMask == 17) {
-          //crosswindMode: WindMode.Normal;
-        elemVis.xWindAltTape    = 'none';
-        elemVis.altTape         = 'none';
-        elemVis.xWindSpdTape    = 'none';
-        elemVis.spdTapeOrForcedOnLand         = 'none';
-        elemVis.altTapeMaskFill = 'noFill';
-        elemVis.windIndicator   = 'none'; 
+            //crosswindMode: WindMode.Normal;
+        elemVis.xWindAltTape          = 'none';
+        elemVis.altTape               = 'none';
+        elemVis.xWindSpdTape          = 'none';
+        elemVis.spdTapeOrForcedOnLand = 'none';
+        elemVis.altTapeMaskFill       = 'noFill';
+        elemVis.windIndicator         = 'none';
+        elemVis.FMA                   = 'none';
+        elemVis.VS                    = 'none';
     }
 
-    // // elems.xWindAltTape    .set( elemVis.xWindAltTape    );
-    // // elems.altTape         .set( elemVis.altTape         );
-    // // elems.xWindSpdTape    .set( elemVis.xWindSpdTape    );
-    // // elems.spdTapeOrForcedOnLand         .set( elemVis.spdTapeOrForcedOnLand         );
-    // // elems.altTapeMaskFill .set( elemVis.altTapeMaskFill );
-    // // elems.windIndicator   .set( elemVis.windIndicator   );
-
-    console.log(
-     "\n bitMask: " + bitMask +
-      "\n onToPower: " + onToPower +
-      "\n onGround: " + onGround +
-      "\n declutterMode: " + declutterMode 
-    //     // "\n xwndMode: " + xwndMode 
-    // //         //"\n crosswindMode: " + elemsVis.crosswindMode +
-    // //     "\n xWindAltTape: " + elemVis.xWindAltTape +
-    // //     "\n altTape: " + elemVis.altTape+
-    // //     "\n xWindSpdTape: " + elemVis.xWindSpdTape+
-    // //     "\n spdTapeOrForcedOnLand: " + elemVis.spdTapeOrForcedOnLand +
-    // //     "\n altTapeMaskFill: " + elemVis.altTapeMaskFill +
-    // //     "\n windIndicator: " + elemVis.windIndicator
-    )
+      // console.log(
+      //  "\n bitMask: " + bitMask +
+      //   "\n onToPower: " + onToPower +
+      //   "\n onGround: " + onGround +
+      //   "\n declutterMode: " + declutterMode 
+      // //     // "\n xwndMode: " + xwndMode 
+      // // //         //"\n crosswindMode: " + elemsVis.crosswindMode +
+      // // //     "\n xWindAltTape: " + elemVis.xWindAltTape +
+      // // //     "\n altTape: " + elemVis.altTape+
+      // // //     "\n xWindSpdTape: " + elemVis.xWindSpdTape+
+      // // //     "\n spdTapeOrForcedOnLand: " + elemVis.spdTapeOrForcedOnLand +
+      // // //     "\n altTapeMaskFill: " + elemVis.altTapeMaskFill +
+      // // //     "\n windIndicator: " + elemVis.windIndicator
+      // )
 
     return elemVis;
 }

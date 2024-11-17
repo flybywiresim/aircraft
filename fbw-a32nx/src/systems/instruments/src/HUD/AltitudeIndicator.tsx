@@ -242,6 +242,8 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     spdTapeOrForcedOnLand         : Subject.create<String>(''),
     altTapeMaskFill : Subject.create<String>(''),
     windIndicator   : Subject.create<String>(''), 
+    FMA             : Subject.create<String>(''), 
+    VS              : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -251,6 +253,8 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
     this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    this.elems.FMA             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS              .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
   }
   private flightPhase = -1;
   private declutterMode = 0;
@@ -353,6 +357,8 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     spdTapeOrForcedOnLand         : Subject.create<String>(''),
     altTapeMaskFill : Subject.create<String>(''),
     windIndicator   : Subject.create<String>(''), 
+    FMA             : Subject.create<String>(''), 
+    VS              : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -362,6 +368,8 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
     this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    this.elems.FMA             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS              .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
   }
   private flightPhase = -1;
   private declutterMode = 0;
@@ -516,7 +524,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
 
 
-          <g id="CrosswindAltTape" transform="translate( 0 -66.5)"  display={this.elems.xWindAltTape} >
+          <g id="CrosswindAltTape" transform="translate( 0 -68)"  display={this.elems.xWindAltTape} >
               <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
               
 

@@ -59,6 +59,13 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
 
         const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
 
+   // FIXME clean this up.. should be handled by an IE in the XML
+   sub.on('hEvent').handle((eventName) => {
+    if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
+      SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+    }
+  });
+
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
             //onGround
@@ -97,9 +104,6 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
 
         this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
 
-  
-
-
         sub.on('baroCorrectedAltitude').handle((altitude) => {
             this.altitude2.setWord(altitude);
         });
@@ -107,12 +111,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
         this.ldevRequest.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight'));
 
         this.xtk.setConsumer(sub.on('xtk'));
-
-
-
     }
-    
-        
         
         render(): VNode {
             return (
@@ -121,6 +120,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
                    
                     <g id="LSGroup"  display={this.LSGroupVisibility}>
                         <LandingSystemInfo  bus={this.props.bus} isVisible={this.lsVisible} /> 
+                        <LocBcIndicator bus={this.props.bus} />
                         <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
                         <MarkerBeaconIndicator bus={this.props.bus} /> 
                     </g>
@@ -140,7 +140,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
 }
 
 interface LandingSystemInfoProps {
-    bus: ArincEventBus
+    bus: ArincEventBus;
     isVisible: Subscribable<boolean>;
 }
 
@@ -218,9 +218,14 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
         this.dmeDistance.setConsumer(sub.on('dme'));
 
-        this.pausable.push(sub.on('fm1NavDiscrete').whenChanged().handle((fm1NavDiscrete) => {
+        this.pausable.push(
+            sub
+            .on('fm1NavDiscrete')
+            .whenChanged()
+            .handle((fm1NavDiscrete) => {
             this.fm1NavDiscrete.setWord(fm1NavDiscrete);
-        }));
+        }),
+        );
 
         this.isLsFreqHidden.sub((hidden) => {
             console.log('isLsFreqHidden', hidden, this.lsFrequency.get());
@@ -274,9 +279,8 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
     render(): VNode {
         return (
-            <g
-                id="LSInfoGroup"
-                 transform=" translate(-110 125)"
+            <g id="LSInfoGroup"
+                transform=" translate(-110 125)"
                 class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}
             >
                 <text
@@ -328,15 +332,41 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
                             {this.dmeTextTrailing}
                         </tspan>
                     </text>
-                    <text class="Green FontMediumSmaller AlignLeft" x="17.159119" y="157.22606">NM</text>
+                    <text class="Green FontMediumSmaller AlignLeft" x="17.159119" y="157.22606">
+                        NM
+                    </text>
                 </g>
-
             </g>
         );
     }
 }
 
-class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
+class LocBcIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+    private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+  
+    private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
+  
+    // FIXME hook up when MMR ready
+    private readonly mixLocVnav = Subject.create(false);
+  
+    private readonly text = MappedSubject.create(
+      ([backbeam, mixLocVnav]) => (backbeam ? 'B/C' : mixLocVnav ? 'LOC' : ''),
+      this.backbeam,
+      this.mixLocVnav,
+    );
+  
+    /** @inheritdoc */
+    render(): VNode {
+      return (
+        <g id="LocBcIndicator">
+          <text class="FontMediumSmaller AlignLeft Magenta" x="38.410" y="126.45">
+            {this.text}
+          </text>
+        </g>
+      );
+    }
+  }
+class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
     private flightPhase = -1;
     private declutterMode = 0;
     private readonly lsVisible = ConsumerSubject.create(null, false);
@@ -489,13 +519,12 @@ interface LSPath {
     da: Arinc429WordData;
 }
 
-class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {   
+class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {   
     private LSGsRef = new NodeReference<SVGGElement>;
-    private readonly lsVisible = ConsumerSubject.create(null, false);
 
     private needsUpdate = false;
 
-    private glideGroupOffest = FSComponent.createRef<SVGGElement>();
+    private crosswindMode = false;
 
     private data: LSPath = {
       roll: new Arinc429Word(0),
@@ -543,6 +572,10 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrume
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
+
+        sub.on('crosswindMode').whenChanged().handle((value) => {
+            this.crosswindMode = value;
+        });
 
         sub.on('hasGlideslope').whenChanged().handle((hasGlideSlope) => {
             this.hasGlideSlope = hasGlideSlope;
@@ -605,13 +638,16 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrume
     
         const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
         const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin ;
-        //this.glideGroupOffest.instance.style.transform = `translate3d(0px, ${yOffset/2.5}px, 0px)`;
-        this.LSGsRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + 3 * DistanceSpacing / ValueSpacing )/2.5}px, 0px)`;
+        if(this.crosswindMode == false){
+            this.LSGsRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + 3 * DistanceSpacing / ValueSpacing )/2.5}px, 0px)`;
+        }else{
+            this.LSGsRef.instance.style.transform = `translate3d(110px, -44.5px, 0px)`;
+        }
         //DistanceSpacing
     }
     render(): VNode {
         return (
-            <g id="LocalizerSymbolsGroup"  ref={this.LSGsRef}>
+            <g id="GlideSlopeSymbolsGroup"  ref={this.LSGsRef}>
                 <path  class={{Green: true,Fill: true }}
                     d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
                 />
@@ -701,7 +737,6 @@ class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     
         const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
         const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin ;
-        //this.glideGroupOffest.instance.style.transform = `translate3d(0px, ${yOffset/2.5}px, 0px)`;
         this.VDevRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + 3 * DistanceSpacing / ValueSpacing )/2.5}px, 0px)`;
         //DistanceSpacing
     }

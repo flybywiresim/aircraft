@@ -251,7 +251,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
 
         <g id="PitchGroup" ref={this.pitchGroupRef} class="ScaledStroke Green">
-          <SyntheticRunway bus={this.props.bus} />
 
           <TailstrikeIndicator bus={this.props.bus} />
 

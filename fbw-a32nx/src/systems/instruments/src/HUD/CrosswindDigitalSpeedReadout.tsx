@@ -203,9 +203,14 @@ import {
     render(): VNode {
       return (
         //   change lvar when btns added to model.
-        <g id="CrosswindSpeedReadoutGroup" transform="translate(0 0)"  >
+        <g id="CrosswindSpeedReadoutGroup" transform="translate(-125 -.5)"  >
+          <path
+            id="CrosswindSpeedReadoutOutline"
+            class="NormalStroke Green ReadoutBackgroundFill"
+            d="m125.5 77.5 h 13 v 7 h -13 z"
+          />
           <g>
-            <svg x="111.5" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+            <svg x="117" y="76.5" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
               <Drum
                 type="hundreds"
                 position={this.hundredsPosition}
@@ -213,12 +218,12 @@ import {
                 color={this.color}
                 getText={HundredsDigit}
                 valueSpacing={1}
-                distanceSpacing={7}
+                distanceSpacing={10}
                 displayRange={1}
                 amount={10}
               />
             </svg>
-            <svg x="125.5" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+            <svg x="128.5" y="76.5" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
               <Drum
                 type="tens"
                 position={this.tensPosition}
@@ -226,12 +231,12 @@ import {
                 color={this.color}
                 getText={TensDigits}
                 valueSpacing={1}
-                distanceSpacing={7}
+                distanceSpacing={10}
                 displayRange={1}
                 amount={10}
               />
             </svg>
-            <svg x="131.5" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+            <svg x="132.5" y="76.5" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
               <Drum
                 type="unit"
                 position={this.unitsValue}
@@ -239,19 +244,15 @@ import {
                 color={this.color}
                 getText={UnitDigits}
                 valueSpacing={1}
-                distanceSpacing={7}
+                distanceSpacing={10}
                 displayRange={1}
-                amount={5}
+                amount={10}
               />
             </svg>
           </g>
 
-          <path
-            id="CrosswindSpeedReadoutOutline"
-            class="NormalStroke Green"
-            d="m117.75 76.337 h 22 v 9 h -22 z"
-          />
-          <path id="cwTape" 
+
+          {/* <path id="cwTape" 
             class="NormalStroke  Green" 
             d="m128.75 76.337  v -6 " 
           />
@@ -266,7 +267,7 @@ import {
           <path id="cwTape" 
             class="NormalStroke  Green" 
             d="m117.75 70.337  h 22 "
-          />
+          /> */}
   
         </g>
       );
@@ -361,7 +362,8 @@ import {
     }
   
     private getOffset(position: number) {
-      this.gRef.instance.style.transform = `translate3d(0px, ${(position * this.props.distanceSpacing) / this.props.valueSpacing}px, 0px)`;
+      //this.gRef.instance.style.transform = `translate3d(0px, ${(position * this.props.distanceSpacing) / this.props.valueSpacing}px, 0px)`;
+      this.gRef.instance.style.transform = `translate3d(0px, ${  Math.floor(((position * this.props.distanceSpacing) / this.props.valueSpacing)/10)*10     }px, 0px)`;
     }
   
     private updateValue() {

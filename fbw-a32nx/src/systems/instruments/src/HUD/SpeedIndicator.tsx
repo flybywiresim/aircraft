@@ -25,7 +25,7 @@ import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { GenericAdirsEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericAdirsEvents';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { AutoThrustMode } from '@shared/autopilot';
-import {WindMode, HudElemsVis, HudElemsVisStr, getBitMask} from './HUDUtils';
+import {WindMode, HudElemsVis, getBitMask} from './HUDUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -177,6 +177,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     spdTapeOrForcedOnLand         : Subject.create<String>(''),
     altTapeMaskFill : Subject.create<String>(''),
     windIndicator   : Subject.create<String>(''), 
+    FMA             : Subject.create<String>(''), 
+    VS              : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -186,15 +188,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).windIndicator);
     this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindSpdTape); 
-  
-    console.log(
-        "\n xWindAltTape: " + this.elems.xWindAltTape.get() +
-        "\n altTape: " + this.elems.altTape.get()+
-        "\n xWindSpdTape: " + this.elems.xWindSpdTape.get()+
-        "\n spdTapeOrForcedOnLand: " + this.elems.spdTapeOrForcedOnLand.get() +
-        "\n altTapeMaskFill: " + this.elems.altTapeMaskFill.get() +
-        "\n windIndicator: " + this.elems.windIndicator.get()
-     )
+    this.elems.FMA                   .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS                    .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).VS); 
   }
 
   private speedSub = Subject.create<number>(0);
@@ -335,9 +330,48 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         </g>
 
         <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements} transform="scale(4.25 4.25) translate(15 38)">
-          
-          <g id="CrosswindSpeedTape" transform="translate( -120 -66.5)" display={this.elems.xWindSpdTape}>
-            <CrosswindDigitalSpeedReadout bus={this.props.bus} />
+                                  {/* transform="translate( -120 -66.5)" */}
+          <g id="CrosswindSpeedTape" transform="translate( 0 -68)" display={this.elems.xWindSpdTape}>
+            <g id="CrosswindSpeedTapeTest" >
+
+              <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
+              <VerticalTape
+                tapeValue={this.speedSub}
+                lowerLimit={30}
+                upperLimit={660}
+                valueSpacing={ValueSpacing}
+                displayRange={(DisplayRange + 6)/2}
+                distanceSpacing={DistanceSpacing}
+                type="speed"
+              >
+                <V1BugElement bus={this.props.bus} />
+                <VRBugElement bus={this.props.bus} />
+                <FlapsSpeedPointBugs bus={this.props.bus} />
+                <path
+                  id="VFeNextMarker"
+                  ref={this.vfeNext}
+                  class="ScaledStroke Green"
+                  d="m19.031 81.34h-2.8709m0-1.0079h2.8709"
+                />
+                <VProtBug bus={this.props.bus} />
+              </VerticalTape>
+
+              <VMaxBar bus={this.props.bus} />
+              <VAlphaProtBar bus={this.props.bus} />
+              <VStallWarnBar bus={this.props.bus} />
+              <g ref={this.showBarsRef}>
+                <VLsBar bus={this.props.bus} />
+              </g>
+              <VAlphaLimBar bus={this.props.bus} />
+              <SpeedTrendArrow mode={'normal'} airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing}/>
+
+
+              <V1Offtape bus={this.props.bus} />
+                
+
+              </g> 
+              <CrosswindDigitalSpeedReadout bus={this.props.bus} /> 
+
           </g>
 
           <g id="NormalSpeedTape" display={this.elems.spdTapeOrForcedOnLand}>
@@ -478,6 +512,8 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     spdTapeOrForcedOnLand         : Subject.create<String>(''),
     altTapeMaskFill : Subject.create<String>(''),
     windIndicator   : Subject.create<String>(''), 
+    FMA             : Subject.create<String>(''), 
+    VS             : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -487,6 +523,8 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     this.elems.windIndicator   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
     this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    this.elems.FMA             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
   }
 
 
@@ -508,8 +546,10 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   private offTapeFailedRef = FSComponent.createRef<SVGGElement>();
 
   private decelRef = FSComponent.createRef<SVGTextElement>();
+  private decelXwndRef = FSComponent.createRef<SVGTextElement>();
 
   private spdLimFlagRef = FSComponent.createRef<SVGTextElement>();
+  private spdLimFlagXwndRef = FSComponent.createRef<SVGTextElement>();
 
   private onGround = true;
 
@@ -607,8 +647,10 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .handle((a) => {
         if (a) {
           this.decelRef.instance.style.visibility = 'visible';
+          this.decelXwndRef.instance.style.visibility = 'visible';
         } else {
           this.decelRef.instance.style.visibility = 'hidden';
+          this.decelXwndRef.instance.style.visibility = 'hidden';
         }
       });
 
@@ -617,9 +659,12 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .whenChanged()
       .handle((a) => {
         if (a === 0) {
+          
           this.spdLimFlagRef.instance.style.visibility = 'visible';
+          this.spdLimFlagXwndRef.instance.style.visibility = 'visible';
         } else {
           this.spdLimFlagRef.instance.style.visibility = 'hidden';
+          this.spdLimFlagXwndRef.instance.style.visibility = 'hidden';
         }
       });
   }
@@ -627,31 +672,65 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   render(): VNode {
     return (
       <>
-        <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef} transform="scale(4.25 4.25) translate(15 38)">
-          <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
-          <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
-        </g>
-        <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  display={this.elems.spdTapeOrForcedOnLand}  >
-          <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m1.9058 38.086h21.859" />
-          <SpeedTarget bus={this.props.bus} />
-          <text id="AutoBrkDecel" ref={this.decelRef} class="FontMediumSmaller  EndAlign Green" x="20.53927" y="129.06996">
-            DECEL
-          </text>
-          <path
-            class="Fill Green SmallOutline"
-            d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z"
-          />
-          <path class="Fill Green SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-          <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke Green" d="m1.9058 123.56h21.859" />
-          <g ref={this.spdLimFlagRef}>
-            <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMediumSmaller EndAlign Green Blink9Seconds">
-              SPD
-            </text>
-            <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMediumSmaller EndAlign Green Blink9Seconds">
-              LIM
-            </text>
+        <g id="offTapeSpeedGroup">
+          <g id="crosswind">
+            {/* <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef} transform="scale(4.25 4.25) translate(15 38)">
+              <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058  -7.5 h21.859" />
+              <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 33 h21.859" />
+            </g> */}
+            <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  display={this.elems.xWindSpdTape}  >
+              <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m1.9058  -7.5 h21.859" />
+              <SpeedTarget bus={this.props.bus} mode={WindMode.CrossWind}/>
+              <text id="AutoBrkDecel" ref={this.decelXwndRef} class="FontMediumSmaller  EndAlign Green" x="20.53927" y="38">
+                DECEL
+              </text>
+              <path
+                class="Fill Green SmallOutline"
+                d="m13.994 12 v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z"
+              />
+              {/* <path class="Fill Green SmallOutline" d="m0.092604 12.55 v-0.7257h2.0147v0.7257z" /> */}
+              <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke Green" d="m1.9058 33 h21.859" />
+              <g ref={this.spdLimFlagXwndRef}>
+                <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMediumSmaller EndAlign Green Blink9Seconds">
+                  SPD
+                </text>
+                <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMediumSmaller EndAlign Green Blink9Seconds">
+                  LIM
+                </text>
+              </g>
+            </g>
+          </g>
+
+          <g id="normal">
+            <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef} transform="scale(4.25 4.25) translate(15 38)">
+            <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
+            <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
+            </g>
+            <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)"  display={this.elems.spdTapeOrForcedOnLand}  >
+              <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m1.9058 38.086h21.859" />
+              <SpeedTarget bus={this.props.bus} mode={WindMode.Normal}/>
+              <text id="AutoBrkDecel" ref={this.decelRef} class="FontMediumSmaller  EndAlign Green" x="20.53927" y="129.06996">
+                DECEL
+              </text>
+              <path
+                class="Fill Green SmallOutline"
+                d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z"
+              />
+              <path class="Fill Green SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
+              <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke Green" d="m1.9058 123.56h21.859" />
+              <g ref={this.spdLimFlagRef}>
+                <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMediumSmaller EndAlign Green Blink9Seconds">
+                  SPD
+                </text>
+                <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMediumSmaller EndAlign Green Blink9Seconds">
+                  LIM
+                </text>
+              </g>
+            </g>
           </g>
         </g>
+        
+
       </>
     );
   }
@@ -1242,15 +1321,17 @@ interface SpeedStateInfo {
   speed: Arinc429WordData;
 }
 
-class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
-  private upperBoundRef = FSComponent.createRef<SVGTextElement>();
+class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode}> {
+  private xwindOffset = 0;
+  private xwindDisplayRangeRatio = 2;
+  private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
   private upperBoundbGRef = FSComponent.createRef<SVGPathElement>();
 
-  private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
+  private upperBoundRef = FSComponent.createRef<SVGTextElement>();
 
   private speedTargetRef = FSComponent.createRef<SVGPathElement>();
 
-  private currentVisible: NodeReference<SVGElement> = this.upperBoundRef;
+  private currentVisible: NodeReference<SVGElement> = this.lowerBoundRef;
 
   private textSub = Subject.create('0');
 
@@ -1282,8 +1363,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.needsUpdate = true;
-
+    const mode = this.props.mode.valueOf();
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
+
+    sub.on('crosswindMode').whenChanged().handle((value)=>{
+      this.handleCrosswinMode();
+    })
 
     sub
       .on('isSelectedSpeed')
@@ -1352,7 +1437,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
           ((currentValueAtPrecision -
             (this.speedState.isSpeedManaged ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed)) *
             DistanceSpacing) /
-          ValueSpacing;
+          ValueSpacing + this.xwindOffset;
         this.speedTargetRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
       } else {
         const text = Math.round(
@@ -1387,46 +1472,54 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     const currentTargetSpeed = this.speedState.isSpeedManaged
       ? this.speedState.managedTargetSpeed
       : this.speedState.targetSpeed;
-    if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
-      this.upperBoundRef.instance.style.visibility = 'visible';
-      this.lowerBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
-      this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.currentVisible = this.upperBoundRef;
-    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
+    if (this.speedState.speed.value - currentTargetSpeed > (DisplayRange-6) / this.xwindDisplayRangeRatio) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
-      this.upperBoundbGRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.currentVisible = this.lowerBoundRef;
-    } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
+    } else if (this.speedState.speed.value - currentTargetSpeed < -(DisplayRange-6)  / this.xwindDisplayRangeRatio && !this.decelActive) {
+      this.upperBoundRef.instance.style.visibility = 'visible';
+      this.upperBoundbGRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
+      this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.currentVisible = this.upperBoundRef;
+    } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < (DisplayRange-6)  / this.xwindDisplayRangeRatio) {
       this.upperBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundbGRef.instance.style.visibility = 'hidden';
+      this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'visible';
       this.currentVisible = this.speedTargetRef;
       inRange = true;
     } else {
-      this.lowerBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundbGRef.instance.style.visibility = 'hidden';
+      this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
     }
     return inRange;
+  }
+  
+  private handleCrosswinMode(){
+    if(this.props.mode === WindMode.Normal){
+      this.xwindOffset = 0;
+      this.xwindDisplayRangeRatio = 1;
+      this.upperBoundbGRef.instance.style.transform = "transform: translate3d(0px, -100px, 0px)";
+      this.upperBoundRef.instance.setAttribute('y','36.670692');
+      this.lowerBoundRef.instance.setAttribute('y','128.27917');
+    }else{
+      this.xwindOffset = -68.5;
+      this.xwindDisplayRangeRatio = 2;
+      this.upperBoundbGRef.instance.style.transform = "translate3d(0px, -144.5px, 0px)";
+      this.upperBoundRef.instance.setAttribute('y','-8');
+      this.lowerBoundRef.instance.setAttribute('y','38.5');
+
+    }
   }
 
   render(): VNode {
     return (
       <>
-        <text
-          ref={this.upperBoundRef}
-          id="SelectedSpeedLowerText"
-          class="FontTiny EndAlign Green"
-          x="24.078989"
-          y="128.27917"
-        >
-          {this.textSub}
-        </text>
         <path 
         ref={this.upperBoundbGRef}
         id="UpperSpeedTargetBackground" 
@@ -1436,15 +1529,25 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         >
         </path>
         <text
-          ref={this.lowerBoundRef}
-          id="SelectedSpeedLowerText"
+          ref={this.upperBoundRef}
+          id="SelectedSpeedUpperText"
           class="FontTiny EndAlign InverseGreen "
           x="24.113895"
           y="36.670692"
         >
           {this.textSub}
         </text>
+        <text
+          ref={this.lowerBoundRef}
+          id="SelectedSpeedLowerText"
+          class="FontTiny EndAlign Green"
+          x="24.078989"
+          y="128.27917"
+        >
+          {this.textSub}
+        </text>
         <path
+          id="speedTarget"
           ref={this.speedTargetRef}
           class="ScaledStroke CornerRound Green"
           style="transform: translate3d(0px, 0px, 0px)"
@@ -1719,10 +1822,10 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode | null {
     return (
-      <g id="GnsSpdGroup" display={this.sVisibility}>
+      <g id="GndSpdGroup" display={this.sVisibility}>
 
         <Layer x={2} y={25}>
-          <text x={0} y={0} class="Green FontMediumSmaller">
+          <text ref={this.groundSpeedRef} x={0} y={0} class="Green FontMediumSmaller">
             GS
           </text>
           <text ref={this.groundSpeedRef} x={18} y={0} class="Green FontMediumSmaller EndAlign" />
