@@ -3,10 +3,10 @@ export const AirlineModifiableInformation: AmiCollection = {
     perfFactor: 0, // %
     idleFactor: 0, // %
     perfCode: 'ARM',
-    taxiFuel: 200, // kg
+    taxiFuel: 1500, // kg
     rteRsv: 5, // %
     rsvMin: 0, // kg
-    rsvMax: 10_000, // kg
+    rsvMax: 50_000, // kg
     rsvInflt: true, // YES / NO
     rsvAltn: false, // YES / NO
     finalTg: 30, // minutes
