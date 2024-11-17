@@ -6,6 +6,7 @@ import {
   EventBus,
   GameStateProvider,
   Instrument,
+  KeyEventManager,
   MappedSubject,
   SimVarValueType,
   Wait,
@@ -25,6 +26,8 @@ export class GPUManagement implements Instrument {
     ([gpuDoorOpenPercent]) => gpuDoorOpenPercent >= 1,
     this.gpuDoorOpenPercent,
   );
+
+  private keyEventManager?: KeyEventManager;
 
   private readonly groundVelocity = ConsumerSubject.create(this.sub.on('msfs_ground_velocity'), 0);
 
@@ -47,6 +50,9 @@ export class GPUManagement implements Instrument {
       const element = ConsumerSubject.create(this.sub.on(`ext_pwr_avail_${index}`), false);
       this.ExtPowerAvailStates.set(index, element);
     }
+    KeyEventManager.getManager(this.bus).then((manager) => {
+      this.keyEventManager = manager;
+    });
   }
 
   public init(): void {
@@ -90,7 +96,9 @@ export class GPUManagement implements Instrument {
   }
 
   private toggleMSFSGpu(): void {
-    SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'Bool', true);
+    if (this.keyEventManager) {
+      this.keyEventManager.triggerKey('REQUEST_POWER_SUPPLY', true);
+    }
   }
 
   private setEXTpower(connect: boolean): void {

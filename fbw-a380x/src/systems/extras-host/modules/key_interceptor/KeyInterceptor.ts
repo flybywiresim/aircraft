@@ -82,7 +82,7 @@ export class KeyInterceptor {
     COPILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
     PILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
     // --- EXTERNAL POWER events ---
-    'FBW.EXT_PWR_TOGGLE': { handler: this.onExtPwrToggle.bind(this) },
+    REQUEST_POWER_SUPPLY: { handler: this.onExtPwrToggle.bind(this) },
   };
 
   private publisher = this.bus.getPublisher<InterRmpBusEvents & GPUControlEvents>();
@@ -108,6 +108,7 @@ export class KeyInterceptor {
 
   private registerIntercepts() {
     for (const [key, config] of Object.entries(this.keys)) {
+      console.log(`key: ${key} , passthrough: ${!!config.passThrough}`);
       this.keyInterceptManager.interceptKey(key, !!config.passThrough);
     }
 

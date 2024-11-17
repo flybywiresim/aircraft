@@ -581,7 +581,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             );
 
             builder.copy(
-                Variable::named(&format!("A32NX_EXT_PWR_AVAIL:{i}")),
+                Variable::named(&format!("EXT_PWR_AVAIL:{i}")),
                 Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_AVAILABLE")),
             );
 
