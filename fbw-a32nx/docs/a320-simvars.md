@@ -71,16 +71,24 @@
     - represents the brake temperature of the rear wheels
 
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
-    - celsius
-    - represents the reported brake temperature of the rear wheels by the sensor.
+    - `Arinc429Word<Celsius>`
+    - represents the reported brake temperature of the main wheels reported by the BSCU.
     - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool
       the sensor more than the brakes
     - (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must
       take into account
 
-- A32NX_BRAKE_FAN
+- A32NX_BRAKE_FAN_RUNNING
     - boolean
-    - whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+    - whether or not the brake fan is running
+      (brake fan button pressed AND left main landing gear down and locked, reported by BSCU)
+
+- A32NX_BRAKE_FAN_{side}_RUNNING
+    - boolean
+    - wether or not a brake fan on the corresponding side is running
+    - {side}
+        - LEFT
+        - RIGHT
 
 - A32NX_BRAKE_FAN_BTN_PRESSED
     - boolean
