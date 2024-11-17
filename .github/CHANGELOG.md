@@ -60,6 +60,11 @@
 1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
 1. [A32NX/FMGC] Implemented simulated FMGC computers - @lukecologne (luke)
 1. [A32NX/FMGC] Implemented simulated FCU computers - @lukecologne (luke)
+1. [A380X/ENGINES] Corrected ENG4 throttle variable typo - @rthom91 (Randy Thom)
+1. [ND] Fixed track line not visible in GA TRK, RWY TRK and RWY modes - @ta-dzik (ta_dzik)
+1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
+1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
+1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 

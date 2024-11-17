@@ -3275,12 +3275,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         | 29  | Baro on QNH                       |
 
 - A32NX_FCU_{side}_EIS_BARO
-    - FCU {side} EIS Baro correction in inHg. NCD if Std or hPa
+    - FCU {side} EIS Baro correction in inHg. Remains at previous value if in STD, and
+        is at the inHG value corresponding to the selected hPa value if in hPa
     - {side} = LEFT, RIGHT
     - Arinc429<inHg>
 
 - A32NX_FCU_{side}_EIS_BARO_HPA
-    - FCU {side} EIS Baro correction in hPa. NCD if Std or inHg
+    - FCU {side} EIS Baro correction in hPa. Remains at previous value if in STD, and
+        is at the hPa value corresponding to the selected inHG value if in inHG
     - {side} = LEFT, RIGHT
     - Arinc429<hPa>
 
