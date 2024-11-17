@@ -1,4 +1,4 @@
-#ifndef RTW_HEADER_PitchDirectLaw_types_h_
-#define RTW_HEADER_PitchDirectLaw_types_h_
+#ifndef PitchDirectLaw_types_h_
+#define PitchDirectLaw_types_h_
 #endif
 

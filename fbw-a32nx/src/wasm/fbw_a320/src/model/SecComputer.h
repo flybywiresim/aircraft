@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_SecComputer_h_
-#define RTW_HEADER_SecComputer_h_
+#ifndef SecComputer_h_
+#define SecComputer_h_
 #include "rtwtypes.h"
 #include "SecComputer_types.h"
 #include "LateralDirectLaw.h"

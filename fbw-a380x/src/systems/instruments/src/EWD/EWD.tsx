@@ -59,6 +59,14 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly abnormalSensedVisible = ConsumerSubject.create(null, false);
 
+  // Todo: This logic should be handled by the FADEC
+  private readonly engFirePb: ConsumerSubject<boolean>[] = [
+    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(null, false),
+  ];
+
   private readonly memosLimitationVisible = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.normalChecklistsVisible,
@@ -76,6 +84,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.engineStateSubs[1].setConsumer(sub.on('engine_state_2').whenChanged());
     this.engineStateSubs[2].setConsumer(sub.on('engine_state_3').whenChanged());
     this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
+
+    this.engFirePb[0].setConsumer(sub.on('engine_fire_pb_1'));
+    this.engFirePb[1].setConsumer(sub.on('engine_fire_pb_2'));
+    this.engFirePb[2].setConsumer(sub.on('engine_fire_pb_3'));
+    this.engFirePb[3].setConsumer(sub.on('engine_fire_pb_4'));
 
     this.reverserSubs[0].setConsumer(sub.on('thrust_reverse_2').whenChanged());
     this.reverserSubs[1].setConsumer(sub.on('thrust_reverse_3').whenChanged());
@@ -116,7 +129,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={93}
                 y={126}
                 engine={1}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[0],
+                )}
                 n1Degraded={this.n1Degraded[0]}
               />
               <EngineGauge
@@ -124,7 +141,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={262}
                 y={126}
                 engine={2}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[1],
+                )}
                 n1Degraded={this.n1Degraded[1]}
               />
               <EngineGauge
@@ -132,7 +153,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={497}
                 y={126}
                 engine={3}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[2],
+                )}
                 n1Degraded={this.n1Degraded[2]}
               />
               <EngineGauge
@@ -140,7 +165,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={668}
                 y={126}
                 engine={4}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[3],
+                )}
                 n1Degraded={this.n1Degraded[3]}
               />
 

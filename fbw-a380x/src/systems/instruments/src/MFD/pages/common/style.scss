@@ -776,10 +776,78 @@
   margin-bottom: 2px;
 }
 
+.mfd-surv-status-button {
+  background-color: #3c3c3c;
+  height: 60px;
+  width: 90px;
+  position: absolute;
+  top: -35px;
+  left: 0px;
+  right: 0px;
+  margin: auto;
+  border: 2px solid $display-light-grey;
+}
+
+.mfd-surv-status-button:hover {
+  border-color: $display-cyan;
+}
+
+.mfd-surv-status-button-label {
+  text-align: center;
+  font-size: 22px;
+  padding-top: 3px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+}
+
+.mfd-surv-status-indicator {
+  width: 100%;
+  height: 14.3%;
+  background-color: $display-light-grey;
+}
+
+.mfd-surv-status-indicator.active {
+  background-color: $display-green;
+}
+
+.mfd-surv-status-item {
+  font-size: 24px;
+}
+
+.mfd-surv-status-item.active {
+  color: $display-green;
+}
+
+.mfd-surv-status-item.failed {
+  color: $display-amber;
+}
+
 .hidden {
   display: none;
 }
 
 .invisible {
   visibility: hidden;
+}
+
+.mfd-adsc-button {
+  border: 4px inset $display-light-grey;
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  height: 65px;
+}
+
+.mfd-adsc-button.disabled {
+  background-color: $display-dark-grey;
+  border: none;
+}
+
+.mfd-adsc-label-off {
+  font-size: 20px;
+  color: $display-dark-grey;
+  font-family: "Ecam", monospace;
 }

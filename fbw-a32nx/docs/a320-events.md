@@ -2,13 +2,18 @@
 
 ## Contents
 
-1. [Autopilot](#autopilot)
-    1. [Non internal events](#non-internal-events)
-    1. [Internal events - not to be used for mapping](#internal-events---not-to-be-used-for-mapping)
-1. [Throttle Mapping System](#throttle-mapping-system)
+- [A320neo Custom Events](#a320neo-custom-events)
+  - [Contents](#contents)
+  - [FCU](#fcu)
+    - [AFS CP](#afs-cp)
+    - [EFIS CP](#efis-cp)
+  - [FADEC Internal events - not to be used for mapping](#fadec-internal-events---not-to-be-used-for-mapping)
+  - [Throttle Mapping System](#throttle-mapping-system)
+  - [Autobrake System](#autobrake-system)
 
-## Autopilot
-### Non internal events
+## FCU
+
+### AFS CP
 
 - A32NX.FCU_AP_{index}_PUSH
     - Trigger when button AP {index} is pushed on FCU
@@ -95,6 +100,9 @@
 - A32NX.FCU_ALT_PULL
     - Triggered when ALT knob is **pulled** on FCU
 
+- A32NX.FCU_METRIC_ALT_TOGGLE_PUSH
+    - Triggered when the metric alt knob is **pushed** on FCU
+
 - A32NX.FCU_VS_INC
     - Triggered when VS knob is **clockwise dialed** on FCU
 
@@ -124,19 +132,58 @@
 - A32NX.FMGC_DIR_TO_TRIGGER
     - When triggered, the Autopilot is pushed into NAV mode
 
-### Internal events - not to be used for mapping
+### EFIS CP
 
-- A32NX.FCU_TO_AP_HDG_PUSH
-    - Triggered after HDG knob is **pushed** on FCU to notify autopilot
+- A32NX.FCU_EFIS_{side}_FD_PUSH
+    - Triggered when FD button is **pushed** on FCU
+    - side = L, R
 
-- A32NX.FCU_TO_AP_HDG_PULL
-    - Triggered after HDG knob is **pulled** on FCU to notify autopilot
+- A32NX.FCU_EFIS_{side}_LS_PUSH
+    - Triggered when FD button is **pushed** on FCU
+    - side = L, R
 
-- A32NX.FCU_TO_AP_VS_PUSH
-    - Triggered after V/S knob is **pushed** on FCU to notify autopilot
+- A32NX.FCU_EFIS_{side}_BARO_INC
+    - Triggered when the baro knob is **clockwise dialed** on FCU
+    - side = L, R
 
-- A32NX.FCU_TO_AP_VS_PULL
-    - Triggered after V/S knob is **pulled** on FCU to notify autopilot
+- A32NX.FCU_EFIS_{side}_BARO_DEC
+    - Triggered when the baro knob is **anti-clockwise dialed** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_BARO_SET
+    - Triggered to set the baro value on FCU
+    - Value is expected as the first parameter, in hPa.
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_BARO_PUSH
+    - Triggered when the baro knob is **pushed** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_BARO_PULL
+    - Triggered when the baro knob is **pulled** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_CSTR_PUSH
+    - Triggered when the CSTR knob is **pushed** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_WPT_PUSH
+    - Triggered when the WPT knob is **pushed** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_VORD_PUSH
+    - Triggered when the VORD knob is **pushed** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_NDB_PUSH
+    - Triggered when the NDB knob is **pushed** on FCU
+    - side = L, R
+
+- A32NX.FCU_EFIS_{side}_ARPT_PUSH
+    - Triggered when the ARPT knob is **pushed** on FCU
+    - side = L, R
+
+## FADEC Internal events - not to be used for mapping
 
 - A32NX.ATHR_RESET_DISABLE
     - Resets permanently disabled A/THR system (after pressing ATHR disconnect for at least 15 s)
