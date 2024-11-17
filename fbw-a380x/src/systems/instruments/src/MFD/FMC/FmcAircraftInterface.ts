@@ -868,8 +868,9 @@ export class FmcAircraftInterface {
     if (!Vtap) {
       // Overspeed protection
       const vMax = this.speedVmax.get();
-      const greenDot = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
-      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, greenDot), vMax - 5);
+      const greenDot = this.fmgc.data.greenDotSpeed.get();
+      const vMin = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 0 && greenDot ? greenDot : 0;
+      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin), vMax - 5);
     }
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
