@@ -182,28 +182,42 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       ctx.stroke();
     };
 
-    const drawPoints = () => {
-      const drawDiamond = (cg: number, weight: number, color: string) => {
-        ctx.fillStyle = color;
-        ctx.strokeStyle = alt;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        const [cgX, cgY] = cgWeightToXY(cg, weight);
-        ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
-        ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
-        ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
-        ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      };
+    const drawDiamond = (cg: number, weight: number, color: string) => {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = alt;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const [cgX, cgY] = cgWeightToXY(cg, weight);
+      ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+      ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+      ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+      ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    };
 
+    const drawLimitTriangle = (cg: number, weight: number, color: string) => {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = alt;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const [cgX] = cgWeightToXY(cg, weight);
+      ctx.moveTo(cgX, 0);
+      ctx.lineTo(cgX - CanvasConst.diamondWidth, CanvasConst.diamondHeight);
+      ctx.lineTo(cgX + CanvasConst.diamondWidth, CanvasConst.diamondHeight);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    };
+
+    const drawPoints = () => {
       // MLW
-      drawDiamond(mldwCg, mldw, secondary);
+      mldw < limits.weight.max ? drawDiamond(mldwCg, mldw, secondary) : drawLimitTriangle(mldwCg, mldw, secondary);
       // MTOW
-      drawDiamond(cg, gw, primary);
+      gw < limits.weight.max ? drawDiamond(cg, gw, primary) : drawLimitTriangle(cg, gw, primary);
       // MZFW
-      drawDiamond(zfwCg, zfw, base);
+      zfw < limits.weight.max ? drawDiamond(zfwCg, zfw, base) : drawLimitTriangle(zfwCg, zfw, base);
     };
 
     drawWeightLines();
