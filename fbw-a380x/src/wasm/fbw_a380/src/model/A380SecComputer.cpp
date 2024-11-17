@@ -987,11 +987,17 @@ void A380SecComputer::step()
       A380SecComputer_P.BitfromLabel9_bit_m, &rtb_y_c);
     rtb_NOT_bl = (rtb_y_c != 0U);
     A380SecComputer_MATLABFunction(&A380SecComputer_U.in.bus_inputs.sec_x_bus.rudder_status_word, &rtb_y_ch);
-    rtb_AND3_d = !A380SecComputer_U.in.discrete_inputs.is_unit_2;
-    rudderTrimAvail = (A380SecComputer_U.in.discrete_inputs.is_unit_1 || (rtb_AND3_d &&
-      A380SecComputer_U.in.discrete_inputs.is_unit_3));
+    if (A380SecComputer_U.in.discrete_inputs.is_unit_1) {
+      rudderTrimAvail = A380SecComputer_U.in.discrete_inputs.sec_overhead_button_pressed;
+    } else {
+      rudderTrimAvail = ((!A380SecComputer_U.in.discrete_inputs.is_unit_2) &&
+                         (A380SecComputer_U.in.discrete_inputs.is_unit_3 &&
+                          A380SecComputer_U.in.discrete_inputs.sec_overhead_button_pressed));
+    }
+
     A380SecComputer_B.logic.rudder_trim_engaged = (rudderTrimAvail && (A380SecComputer_U.in.discrete_inputs.is_unit_1 ||
-      (rtb_AND3_d && (A380SecComputer_U.in.discrete_inputs.is_unit_3 && ((rtb_y_c == 0U) || (!rtb_y_ch))))));
+      ((!A380SecComputer_U.in.discrete_inputs.is_unit_2) && (A380SecComputer_U.in.discrete_inputs.is_unit_3 && ((rtb_y_c
+      == 0U) || (!rtb_y_ch))))));
     if (rtb_DataTypeConversion_i == 0) {
       A380SecComputer_B.logic.active_pitch_law = a380_pitch_efcs_law::DirectLaw;
       A380SecComputer_B.logic.active_lateral_law = a380_lateral_efcs_law::DirectLaw;
@@ -1264,8 +1270,9 @@ void A380SecComputer::step()
     rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_gp.Data = rtb_Data_hr;
     A380SecComputer_MATLABFunction(&rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_gp, &rtb_y_ch);
     rtb_NOT_bl = ((rtb_NOT_bl || (rtb_y_c != 0U)) && rtb_y_ch);
-    A380SecComputer_MATLABFunction_f((A380SecComputer_U.in.discrete_inputs.rudder_trim_reset_pressed && (!rtb_NOT_bl)),
-      A380SecComputer_P.PulseNode_isRisingEdge_m, &rtb_y_ch, &A380SecComputer_DWork.sf_MATLABFunction_f);
+    A380SecComputer_MATLABFunction_f((A380SecComputer_U.in.discrete_inputs.rudder_trim_reset_pressed &&
+      A380SecComputer_B.logic.rudder_trim_engaged && (!rtb_NOT_bl)), A380SecComputer_P.PulseNode_isRisingEdge_m,
+      &rtb_y_ch, &A380SecComputer_DWork.sf_MATLABFunction_f);
     A380SecComputer_DWork.Memory_PreviousInput_b = A380SecComputer_P.Logic_table_f
       [(((A380SecComputer_U.in.discrete_inputs.rudder_trim_left_pressed ||
           A380SecComputer_U.in.discrete_inputs.rudder_trim_right_pressed || rtb_NOT_bl) + (static_cast<uint32_T>
