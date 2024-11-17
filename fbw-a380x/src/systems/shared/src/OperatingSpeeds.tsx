@@ -7,161 +7,309 @@
 // TODO: Weight interpolation is different for the two CG extremes, one formula might be too inaccurate.
 
 import { Feet, Knots } from 'msfs-geo';
-import { MathUtils, Units } from '@flybywiresim/fbw-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
-import { Common } from '@fmgc/guidance/vnav/common';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { LerpLookupTable } from '@microsoft/msfs-sdk';
 
-// Maybe we need bilinear interpolation
-const vls = [
-  [
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-    (m: number) => vlsConf0(m),
-  ], // Clean Config
-  [
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 127, 123),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.1 * (m - 600), 127, 123),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 137, 133),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 146, 143),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 155, 151),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 164, 159),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1100), 172, 167),
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 179, 175),
-  ], // Config 1 + F
-  [
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 122, 120),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.1 * (m - 600), 122, 120),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 132, 128),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 141, 137),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 149, 146),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1000), 158, 153),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1100), 165, 161),
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 173, 168),
-  ], // Config 2
-  [
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 120, 120),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 600), 120, 120),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 128, 124),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 137, 133),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 145, 141),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1000), 153, 149),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1100), 160, 156),
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 168, 163),
-  ], // Config 3
-  [
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 120, 120),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.05 * (m - 600), 120, 120),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 700), 125, 121),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 133, 130),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 141, 138),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 149, 145),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1100), 157, 152),
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 164, 159),
-  ], // Config Full
-  [
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 133, 130),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.11 * (m - 600), 133, 130),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.1 * (m - 700), 144, 141),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 154, 150),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.1 * (m - 900), 163, 159),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 173, 168),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 1100), 181, 177),
-    () => interpolateForCgAndWeight(null, (cgS) => cgS, 190, 185),
-  ], // Config 1
-];
-
-/**
- * F2-Speed Table
- * calls function(gross weight (1000 lb)) which returns CAS, automatically compensates for cg.
- * Indexes: 0 to 9 represent gross weight (1000 lb) in 100k lb steps from 600 to 1200.
- */
-const f2 = [
-  () => interpolateForCgAndWeight(null, (cgS) => cgS, 143, 140),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 600), 143, 140),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 154, 151),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.1 * (m - 800), 165, 161),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 175, 171),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 1000), 184, 181),
-  (m: number) => interpolateForCgAndWeight(m, (cgS) => cgS, 191, 189),
-  () => interpolateForCgAndWeight(null, (cgS) => cgS, 191, 191),
-];
-
-/**
- * F3-Speed Table
- * calls function(gross weight (1000 lb)) which returns CAS, automatically compensates for cg.
- * Indexes: 0 to 9 represent gross weight (1000 lb) in 100k lb steps from 600 to 1200.
- */
-const f3 = [
-  () => interpolateForCgAndWeight(null, (cgS) => cgS, 130, 130),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 600), 130, 130),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 137, 134),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 146, 143),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 155, 151),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 163, 160),
-  (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.06 * (m - 1100), 171, 167),
-  () => interpolateForCgAndWeight(null, (cgS) => cgS, 177, 175),
-];
-
-/**
- * S-Speed Table
- * calls function(gross weight (1000 lb)) which returns CAS.
- * Indexes: 0 to 9 represent gross weight (1000 lb) in 100k lb steps from 600 to 1200.
- */
-const s = [
-  () => 153,
-  (m: number) => 153 + 0.12 * (m - 600),
-  (m: number) => 165 + 0.11 * (m - 700),
-  (m: number) => 176 + 0.11 * (m - 800),
-  (m: number) => 187 + 0.1 * (m - 900),
-  (m: number) => 197 + 0.1 * (m - 1000),
-  (m: number) => 207 + 0.08 * (m - 1100),
-  () => 215,
-];
-
-/**
- * Calculate green dot speed depending on altitude and weight
- * @param m mass: gross weight in klb
- * @param alt altitude: in feet
- * @returns green dot speed in knots
- */
-function greenDotSpeed(m: number, alt: number = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet')): number {
-  const greenDotTable = [
-    [0, 0, 10_000, 20_000, 30_000, 40_000],
-    [600, 167, 167, 168, 196, 210],
-    [700, 180, 180, 185, 213, 226],
-    [800, 194, 194, 202, 228, 240],
-    [900, 207, 207, 222, 244, 252],
-    [1000, 217, 217, 238, 257, 252],
-    [1100, 228, 228, 255, 272, 272],
-    [1200, 238, 238, 266, 262, 262],
-  ];
-  return tableInterpolation(greenDotTable, m, alt);
+export enum ApproachConf {
+  CONF_1 = 1,
+  CONF_1F,
+  CONF_2,
+  CONF_3,
+  CONF_FULL,
 }
 
-/**
- * Calculate VLS for CONF 0, depending on weight and altitude
- * @param m mass: gross weight in 1000 lb
- * @param alt altitude: in feet
- * @returns green dot speed
- */
-function vlsConf0(m: number, alt: Feet = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet')): Knots {
-  const vlsTable = [
-    [0, 0, 10_000, 15_000, 20_000, 25_000, 30_000, 32_000, 34_000, 36_000, 38_000, 40_000, 43_000],
-    [600, 155, 155, 155, 156, 160, 165, 166, 168, 169, 171, 174, 178],
-    [700, 168, 168, 168, 171, 178, 180, 182, 184, 186, 189, 192, 198],
-    [800, 179, 179, 181, 187, 191, 195, 197, 200, 203, 207, 211, 211],
-    [900, 190, 191, 195, 201, 205, 210, 213, 216, 220, 224, 224, 227],
-    [1000, 200, 203, 210, 213, 218, 225, 228, 233, 236, 236, 236, 236],
-    [1100, 210, 216, 222, 226, 231, 239, 244, 247, 247, 247, 250, 250],
-    [1200, 219, 229, 233, 238, 244, 254, 258, 258, 257, 262, 262, 262],
-  ];
-  return tableInterpolation(vlsTable, m, alt);
+export class SpeedsLookupTables {
+  /** VLS approach in knots, key is (cg in %MAC, weight in kg) */
+  private static readonly VLS_APPR_CONF: Record<ApproachConf, LerpLookupTable> = {
+    [ApproachConf.CONF_1]: new LerpLookupTable([
+      [128, 29, 250_000],
+      [140, 29, 300_000],
+      [151, 29, 350_000],
+      [162, 29, 400_000],
+      [172, 29, 450_000],
+      [182, 29, 500_000],
+      [191, 29, 550_000],
+      [200, 29, 600_000],
+      [126, 43, 250_000],
+      [137, 43, 300_000],
+      [148, 43, 350_000],
+      [158, 43, 400_000],
+      [168, 43, 450_000],
+      [177, 43, 500_000],
+      [186, 43, 550_000],
+      [195, 43, 600_000],
+    ]),
+    [ApproachConf.CONF_1F]: new LerpLookupTable([
+      [123, 29, 250_000],
+      [133, 29, 300_000],
+      [144, 29, 350_000],
+      [154, 29, 400_000],
+      [163, 29, 450_000],
+      [172, 29, 500_000],
+      [180, 29, 550_000],
+      [188, 29, 600_000],
+      [123, 43, 250_000],
+      [130, 43, 300_000],
+      [140, 43, 350_000],
+      [150, 43, 400_000],
+      [159, 43, 450_000],
+      [167, 43, 500_000],
+      [176, 43, 550_000],
+      [183, 43, 600_000],
+    ]),
+    [ApproachConf.CONF_2]: new LerpLookupTable([
+      [123, 29, 250_000],
+      [128, 29, 300_000],
+      [138, 29, 350_000],
+      [148, 29, 400_000],
+      [157, 29, 450_000],
+      [165, 29, 500_000],
+      [173, 29, 550_000],
+      [181, 29, 600_000],
+      [123, 43, 250_000],
+      [125, 43, 300_000],
+      [135, 43, 350_000],
+      [144, 43, 400_000],
+      [153, 43, 450_000],
+      [161, 43, 500_000],
+      [169, 43, 550_000],
+      [176, 43, 600_000],
+    ]),
+    [ApproachConf.CONF_3]: new LerpLookupTable([
+      [123, 29, 250_000],
+      [124, 29, 300_000],
+      [134, 29, 350_000],
+      [144, 29, 400_000],
+      [152, 29, 450_000],
+      [161, 29, 500_000],
+      [169, 29, 550_000],
+      [176, 29, 600_000],
+      [123, 43, 250_000],
+      [123, 43, 300_000],
+      [131, 43, 350_000],
+      [140, 43, 400_000],
+      [148, 43, 450_000],
+      [156, 43, 500_000],
+      [164, 43, 550_000],
+      [171, 43, 600_000],
+    ]),
+    [ApproachConf.CONF_FULL]: new LerpLookupTable([
+      [123, 29, 250_000],
+      [123, 29, 300_000],
+      [131, 29, 350_000],
+      [140, 29, 400_000],
+      [148, 29, 450_000],
+      [157, 29, 500_000],
+      [165, 29, 550_000],
+      [173, 29, 600_000],
+      [123, 43, 250_000],
+      [123, 43, 300_000],
+      [127, 43, 350_000],
+      [136, 43, 400_000],
+      [144, 43, 450_000],
+      [152, 43, 500_000],
+      [160, 43, 550_000],
+      [168, 43, 600_000],
+    ]),
+  };
+
+  static getApproachVls(conf: number, cg: number, weight: number): number {
+    if (conf === 1) {
+      return SpeedsLookupTables.VLS_CONF_0.get(0, weight);
+    } else {
+      return SpeedsLookupTables.VLS_APPR_CONF[conf].get(cg, weight);
+    }
+  }
+
+  // cg in %MAC, weight in kg
+  static readonly S_SPEED: LerpLookupTable = new LerpLookupTable([
+    [146, 250_000],
+    [160, 300_000],
+    [173, 350_000],
+    [185, 400_000],
+    [196, 450_000],
+    [207, 500_000],
+    [215, 550_000],
+    [215, 600_000],
+  ]);
+
+  // cg in %MAC, weight in kg
+  static readonly F2_SPEED: LerpLookupTable = new LerpLookupTable([
+    [144, 29, 250_000],
+    [150, 29, 300_000],
+    [162, 29, 350_000],
+    [173, 29, 400_000],
+    [184, 29, 450_000],
+    [191, 29, 500_000],
+    [191, 29, 550_000],
+    [191, 29, 600_000],
+    [144, 43, 250_000],
+    [146, 43, 300_000],
+    [158, 43, 350_000],
+    [169, 43, 400_000],
+    [179, 43, 450_000],
+    [189, 43, 500_000],
+    [191, 43, 550_000],
+    [191, 43, 600_000],
+  ]);
+
+  // cg in %MAC, weight in kg
+  static readonly F3_SPEED: LerpLookupTable = new LerpLookupTable([
+    [133, 29, 250_000],
+    [133, 29, 300_000],
+    [143, 29, 350_000],
+    [153, 29, 400_000],
+    [163, 29, 450_000],
+    [171, 29, 500_000],
+    [177, 29, 550_000],
+    [177, 29, 600_000],
+    [133, 43, 250_000],
+    [133, 43, 300_000],
+    [139, 43, 350_000],
+    [149, 43, 400_000],
+    [158, 43, 450_000],
+    [167, 43, 500_000],
+    [175, 43, 550_000],
+    [177, 43, 600_000],
+  ]);
+
+  // altitude in ft, weight in kg
+  static readonly GREEN_DOT: LerpLookupTable = new LerpLookupTable([
+    [160, 10_000, 250_000],
+    [175, 10_000, 300_000],
+    [190, 10_000, 350_000],
+    [205, 10_000, 400_000],
+    [216, 10_000, 450_000],
+    [228, 10_000, 500_000],
+    [239, 10_000, 550_000],
+    [252, 10_000, 600_000],
+    [161, 20_000, 250_000],
+    [178, 20_000, 300_000],
+    [196, 20_000, 350_000],
+    [219, 20_000, 400_000],
+    [237, 20_000, 450_000],
+    [256, 20_000, 500_000],
+    [267, 20_000, 550_000],
+    [277, 20_000, 600_000],
+    [186, 30_000, 250_000],
+    [208, 30_000, 300_000],
+    [224, 30_000, 350_000],
+    [241, 30_000, 400_000],
+    [256, 30_000, 450_000],
+    [272, 30_000, 500_000],
+    [284, 30_000, 550_000],
+    [292, 30_000, 600_000],
+    [203, 40_000, 250_000],
+    [220, 40_000, 300_000],
+    [236, 40_000, 350_000],
+    [252, 40_000, 400_000],
+    [252, 40_000, 450_000],
+    [260, 40_000, 500_000],
+    [260, 40_000, 550_000],
+    [260, 40_000, 600_000],
+  ]);
+
+  // altitude in ft, weight in kg
+  static readonly VLS_CONF_0: LerpLookupTable = new LerpLookupTable([
+    [149, 0, 250_000],
+    [163, 0, 300_000],
+    [176, 0, 350_000],
+    [188, 0, 400_000],
+    [199, 0, 450_000],
+    [210, 0, 500_000],
+    [220, 0, 550_000],
+    [231, 0, 600_000],
+    [149, 10_000, 250_000],
+    [163, 10_000, 300_000],
+    [176, 10_000, 350_000],
+    [189, 10_000, 400_000],
+    [202, 10_000, 450_000],
+    [216, 10_000, 500_000],
+    [231, 10_000, 550_000],
+    [243, 10_000, 600_000],
+    [149, 15_000, 250_000],
+    [163, 15_000, 300_000],
+    [178, 15_000, 350_000],
+    [192, 15_000, 400_000],
+    [209, 15_000, 450_000],
+    [222, 15_000, 500_000],
+    [234, 15_000, 550_000],
+    [246, 15_000, 600_000],
+    [149, 20_000, 250_000],
+    [165, 20_000, 300_000],
+    [183, 20_000, 350_000],
+    [199, 20_000, 400_000],
+    [212, 20_000, 450_000],
+    [226, 20_000, 500_000],
+    [239, 20_000, 550_000],
+    [252, 20_000, 600_000],
+    [151, 25_000, 250_000],
+    [171, 25_000, 300_000],
+    [187, 25_000, 350_000],
+    [202, 25_000, 400_000],
+    [217, 25_000, 450_000],
+    [231, 25_000, 500_000],
+    [246, 25_000, 550_000],
+    [260, 25_000, 600_000],
+    [158, 30_000, 250_000],
+    [174, 30_000, 300_000],
+    [191, 30_000, 350_000],
+    [207, 30_000, 400_000],
+    [224, 30_000, 450_000],
+    [239, 30_000, 500_000],
+    [256, 30_000, 550_000],
+    [270, 30_000, 600_000],
+    [158, 32_000, 250_000],
+    [176, 32_000, 300_000],
+    [193, 32_000, 350_000],
+    [210, 32_000, 400_000],
+    [227, 32_000, 450_000],
+    [244, 32_000, 500_000],
+    [259, 32_000, 550_000],
+    [270, 32_000, 600_000],
+    [159, 34_000, 250_000],
+    [178, 34_000, 300_000],
+    [196, 34_000, 350_000],
+    [213, 34_000, 400_000],
+    [231, 34_000, 450_000],
+    [247, 34_000, 500_000],
+    [259, 34_000, 550_000],
+    [270, 34_000, 600_000],
+    [161, 36_000, 250_000],
+    [180, 36_000, 300_000],
+    [198, 36_000, 350_000],
+    [217, 36_000, 400_000],
+    [235, 36_000, 450_000],
+    [247, 36_000, 500_000],
+    [259, 36_000, 550_000],
+    [275, 36_000, 600_000],
+    [162, 38_000, 250_000],
+    [182, 38_000, 300_000],
+    [202, 38_000, 350_000],
+    [222, 38_000, 400_000],
+    [235, 38_000, 450_000],
+    [247, 38_000, 500_000],
+    [259, 38_000, 550_000],
+    [275, 38_000, 600_000],
+    [164, 40_000, 250_000],
+    [185, 40_000, 300_000],
+    [206, 40_000, 350_000],
+    [222, 40_000, 400_000],
+    [235, 40_000, 450_000],
+    [250, 40_000, 500_000],
+    [265, 40_000, 550_000],
+    [270, 40_000, 600_000],
+    [168, 43_000, 250_000],
+    [191, 43_000, 300_000],
+    [208, 43_000, 350_000],
+    [223, 43_000, 400_000],
+    [235, 43_000, 450_000],
+    [250, 43_000, 500_000],
+    [250, 43_000, 550_000],
+    [250, 43_000, 600_000],
+  ]);
 }
 
 // FIXME these are from the A320
@@ -203,41 +351,6 @@ const vfeFS = [
   VfeFF, // Config Full
   VfeF1, // Config 1
 ];
-
-/**
- * Correct input function for cg and weight
- * @param m gross weight (1000 lb)
- * @param weightFn function to be called with weight variable
- * @param cg29Value speed for 29%, i.e. lower CG limit
- * @param cg43Value speed for 43%, i.e. upper CG limit
- * @param cg center of gravity
- * @returns cg and weight corrected velocity (CAS)
- */
-function interpolateForCgAndWeight(
-  m: number,
-  weightFn: (cgSpeed: number, m?: number) => number,
-  cg29Value: number,
-  cg43Value: number,
-  cg: number = SimVar.GetSimVarValue('CG PERCENT', 'percent'),
-) {
-  if (cg < 29) {
-    return weightFn(cg29Value, m);
-  }
-  if (cg > 43) {
-    return weightFn(cg43Value, m);
-  }
-  const cgSpeed = cg29Value + ((cg43Value - cg29Value) / 14) * (cg - 29);
-  return weightFn(cgSpeed, m);
-}
-
-/**
- * Ensure gross weight (mass) is withing valid range
- * @param m mass: gross weight in 1000 lb
- * @returns index for speed tables
- */
-function correctMass(m: number): number {
-  return Math.ceil(((m > 1200 ? 1200 : m) - 600) / 100);
-}
 
 /**
  * Corrects velocity for mach effect by adding 1kt for every 1000ft above FL200
@@ -334,7 +447,7 @@ export class A380OperatingSpeeds {
 
   /**
    * Computes Vs, Vls, Vapp, F, S and GD
-   * @param m mass: gross weight in t
+   * @param m mass: gross weight in kg
    * @param calibratedAirSpeed CAS in kt
    * @param fPos flaps position
    * @param fmgcFlightPhase sic
@@ -351,19 +464,23 @@ export class A380OperatingSpeeds {
     altitude: Feet,
     wind: Knots = 0,
   ) {
-    // Convert mass from tons to klb (1000*lb)
-    const klb = Math.min(1200, Math.max(Units.kilogramToPound(m * 1_000) / 1_000, 600));
+    const cg = SimVar.GetSimVarValue('CG PERCENT', 'percent');
 
-    const cm = correctMass(klb);
-    this.vls = vls[fPos][cm](klb);
+    if (fPos === 0) {
+      this.vls = SpeedsLookupTables.VLS_CONF_0.get(altitude, m);
+    } else if (fPos === 1 && calibratedAirSpeed > 212) {
+      this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1, cg, m);
+    } else {
+      this.vls = SpeedsLookupTables.getApproachVls(fPos + 1, cg, m);
+    }
     this.vapp = this.vls + addWindComponent(wind);
-    this.vref = vls[4][cm](klb);
+    this.vref = this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
 
-    this.gd = greenDotSpeed(klb, altitude);
+    this.gd = SpeedsLookupTables.GREEN_DOT.get(altitude, m);
     this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
     this.vfeN = fPos === 4 ? 0 : vfeFS[getVfeNIdx(fPos)];
 
-    this.vs1g = vls[fPos][cm](klb) / 1.23;
+    this.vs1g = this.vls / 1.23;
     this.vls = Math.max(1.23 * this.vs1g, Vmcl);
     if (fmgcFlightPhase <= FmgcFlightPhase.Takeoff) {
       this.vls = Math.max(1.15 * this.vs1g, 1.05 * Math.min(v2Speed, Vmcl));
@@ -390,11 +507,18 @@ export class A380OperatingSpeeds {
       this.vls = this.vls + spoilerVlsIncrease[conf] * (spoilers / maxSpoilerExtension[conf]);
     }
 
-    const vs1gConf0 = vls[0][cm](klb) / 1.23;
-    const vs1gConf1F = vls[1][cm](klb) / 1.23;
-    this.f2 = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? Math.max(1.18 * vs1gConf1F, Vmcl + 5) : f2[cm](klb);
-    this.f3 = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? Math.max(1.18 * vs1gConf1F, Vmcl + 5) : f3[cm](klb);
-    this.s = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : s[cm](klb);
+    const vs1gConf0 = SpeedsLookupTables.VLS_CONF_0.get(altitude, m) / 1.23;
+    const vs1gConf1F = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1, cg, m) / 1.23;
+    this.f2 =
+      fmgcFlightPhase <= FmgcFlightPhase.Takeoff
+        ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
+        : SpeedsLookupTables.F2_SPEED.get(altitude, m);
+    this.f3 =
+      fmgcFlightPhase <= FmgcFlightPhase.Takeoff
+        ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
+        : SpeedsLookupTables.F3_SPEED.get(altitude, m);
+    this.s =
+      fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : SpeedsLookupTables.S_SPEED.get(altitude, m);
   }
 }
 
@@ -486,63 +610,24 @@ export class A380SpeedsUtils {
   /**
    * Get Vs1g for the given config
    *
-   * @param {number} mass mass of the aircraft in tons
-   * @param {number} conf 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
-   * @param {boolean} gearDown true if the gear is down
+   * @param {number} mass mass of the aircraft in kg
+   * @param {number} conf 0 - CONF 1, 1 - CONF 1, 2 - CONF 1+F, 3 - CONF 2, 4 - CONF 3, 5 - CONF FULL.
+   * @param {boolean} takeof if VS1g should be calculated for takeoff
    */
   static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
-    const klb = Units.kilogramToPound(mass) / 1000.0;
-    const weightTableIndex = Math.max(0, Math.min(7, correctMass(klb)));
     // FIXME rough, dirty hack
     if (takeoff === true) {
-      return vls[conf][weightTableIndex](klb) / 1.15;
+      return SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.15;
     }
     if (conf === 5) {
-      return Math.max(vls[conf][weightTableIndex](klb) / 1.18, Vmcl);
+      return Math.max(
+        SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.18,
+        Vmcl,
+      );
     }
-    return Math.max(vls[conf][weightTableIndex](klb) / 1.23, Vmcl);
+    return Math.max(
+      SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.23,
+      Vmcl,
+    );
   }
-}
-
-/**
- * Placeholder
- * @param table
- * @param i
- * @param j
- * @returns
- */
-function tableInterpolation(table: number[][], i: number, j: number): number {
-  const numRows = table.length;
-  const numCols = table[0].length;
-  // Iterate through rows to find the upper bound to i
-  let r: number;
-  for (r = 1; r < numRows; r++) {
-    if (table[r][0] > i) {
-      break;
-    }
-  }
-  // Get lower bound to i
-  const r1 = Math.max(1, r - 1);
-  const r2 = Math.min(numRows - 1, r);
-  // Iterate through rows to find the upper bound to j
-  let c: number;
-  for (c = 1; c < numCols; c++) {
-    if (table[0][c] > j) {
-      break;
-    }
-  }
-  // Get the lower bound to j
-  const c1 = Math.max(1, c - 1);
-  const c2 = Math.min(numCols - 1, c);
-
-  const interpolatedRowAtC1 =
-    r1 === r2 ? table[r1][c1] : Common.interpolate(i, table[r1][0], table[r2][0], table[r1][c1], table[r2][c1]);
-  const interpolatedRowAtC2 =
-    r1 === r2 ? table[r1][c2] : Common.interpolate(i, table[r1][0], table[r2][0], table[r1][c2], table[r2][c2]);
-
-  if (c1 === c2) {
-    return interpolatedRowAtC1;
-  }
-
-  return Common.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
 }

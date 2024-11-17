@@ -7,8 +7,8 @@ export const VfeF2 = 220; // kt, Vmo with FLAPS 2
 export const VfeF3 = 196; // kt, Vmo with FLAPS 3
 export const VfeFF = 182; // kt, Vmo with FLAPS FULL
 
-export const Vmcl = 120; // kt
-export const Vmcl2 = 144; // kt
+export const Vmcl = 123; // kt
+export const Vmcl2 = 147; // kt
 
 export const Vle = 250; // kt, Gear extended
 export const Mle = 0.55; // mach, Gear extended
