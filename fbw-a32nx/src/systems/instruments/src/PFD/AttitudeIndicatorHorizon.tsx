@@ -2,24 +2,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  ClockEvents,
-  ConsumerSubject,
-  DisplayComponent,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  Subscribable,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import {
   ArincEventBus,
   Arinc429Register,
   Arinc429Word,
   Arinc429WordData,
   Arinc429RegisterSubject,
-  Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
@@ -42,73 +33,98 @@ class HeadingBug extends DisplayComponent<{
   isCaptainSide: boolean;
   yOffset: Subscribable<number>;
 }> {
-  private isActive = false;
+  private fcuSelectedHeading = new Arinc429Word(0);
 
-  private selectedHeading = Subject.create(0);
+  private fcuSelectedTrack = new Arinc429Word(0);
 
-  private heading = Arinc429ConsumerSubject.create(null);
+  private fcuEisDiscreteWord2 = new Arinc429Word(0);
 
-  private attitude = Arinc429ConsumerSubject.create(null);
+  private fcuDiscreteWord1 = new Arinc429Word(0);
 
-  private fdActive = ConsumerSubject.create(null, true);
+  private heading: Arinc429WordData = new Arinc429Word(0);
 
-  private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
+  private bugVisible = Subject.create(false);
 
-  private readonly visibilitySub = MappedSubject.create(
-    ([heading, attitude, fdActive, selectedHeading]) => {
-      const headingDelta = getSmallestAngle(selectedHeading, heading.value);
+  private bugTranslate = Subject.create('');
+
+  private yOffset = 0;
+
+  private calculateAndSetOffset() {
+    const fdActive = !this.fcuEisDiscreteWord2.bitValueOr(23, false);
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
+
+    const targetValue = trkFpaActive ? this.fcuSelectedTrack : this.fcuSelectedHeading;
+
+    const showSelectedHeadingBug = !(fdActive || targetValue.isNoComputedData() || targetValue.isFailureWarning());
+
+    if (showSelectedHeadingBug) {
+      const headingDelta = getSmallestAngle(targetValue.value, this.heading.value);
+
       const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
-      const inRange = Math.abs(offset) <= DisplayRange + 10;
-      return !fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange;
-    },
-    this.heading,
-    this.attitude,
-    this.fdActive,
-    this.selectedHeading,
-  );
 
-  private readonly headingBugSubject = MappedSubject.create(
-    ([heading, selectedHeading, yOffset, visible]) => {
-      if (visible) {
-        const headingDelta = getSmallestAngle(selectedHeading, heading.value);
-
-        const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
-
-        return `transform: translate3d(${offset}px, ${yOffset}px, 0px)`;
+      if (Math.abs(offset) <= DisplayRange + 10) {
+        this.bugVisible.set(true);
+        this.bugTranslate.set(`transform: translate3d(${offset}px, ${this.yOffset}px, 0px)`);
+      } else {
+        this.bugVisible.set(false);
       }
-      return '';
-    },
-    this.heading,
-    this.selectedHeading,
-    this.props.yOffset,
-    this.visibilitySub,
-  );
+    } else {
+      this.bugVisible.set(false);
+    }
+  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values>();
-
-    this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
+    const sub = this.props.bus.getSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values & FcuBus>();
 
     sub
-      .on('selectedHeading')
+      .on('fcuSelectedHeading')
       .whenChanged()
       .handle((s) => {
-        this.selectedHeading.set(s);
+        this.fcuSelectedHeading = s;
+        this.calculateAndSetOffset();
       });
 
-    this.attitude.setConsumer(sub.on('pitchAr'));
-    this.fdActive.setConsumer(sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged());
+    sub
+      .on('fcuSelectedTrack')
+      .whenChanged()
+      .handle((s) => {
+        this.fcuSelectedTrack = s;
+        this.calculateAndSetOffset();
+      });
+
+    sub.on('heading').handle((h) => {
+      this.heading = h;
+      this.calculateAndSetOffset();
+    });
+
+    sub
+      .on('fcuEisDiscreteWord2')
+      .whenChanged()
+      .handle((fd) => {
+        this.fcuEisDiscreteWord2 = fd;
+      });
+
+    sub
+      .on('fcuDiscreteWord1')
+      .whenChanged()
+      .handle((fd) => {
+        this.fcuDiscreteWord1 = fd;
+      });
+
+    this.props.yOffset.sub((yOffset) => {
+      this.yOffset = yOffset;
+      this.calculateAndSetOffset();
+    });
   }
 
   render(): VNode {
     return (
       <g
-        ref={this.horizonHeadingBug}
         id="HorizonHeadingBug"
-        style={this.headingBugSubject}
-        visibility={this.visibilitySub.map((v) => (v ? 'inherit' : 'hidden'))}
+        style={this.bugTranslate}
+        visibility={this.bugVisible.map((v) => (v ? 'inherit' : 'hidden'))}
       >
         <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
         <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />

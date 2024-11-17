@@ -56,7 +56,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private destEta = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('--.-');
+  private destEfob = Subject.create<string>('---.-');
 
   private destEfobBelowMin = Subject.create(false);
 
@@ -64,7 +64,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private altnEta = Subject.create<string>('--:--');
 
-  private altnEfob = Subject.create<string>('--.-');
+  private altnEfob = Subject.create<string>('---.-');
 
   private altnEfobBelowMin = Subject.create(false);
 
@@ -111,7 +111,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         );
       }
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
-      this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '--.-');
+      this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
       this.destEfobBelowMin.set(
         destEfob * 1_000 < (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
       );
@@ -120,12 +120,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     if (this.loadedFlightPlan.alternateDestinationAirport) {
       this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
       this.altnEta.set('--:--');
-      this.altnEfob.set('--.-');
+      this.altnEfob.set('---.-');
       this.altnEfobBelowMin.set(false);
     } else {
       this.altnIcao.set('NONE');
       this.altnEta.set('--:--');
-      this.altnEfob.set('--.-');
+      this.altnEfob.set('---.-');
       this.altnEfobBelowMin.set(false);
     }
   }
@@ -525,7 +525,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                   <div class="mfd-label-value-container" style="margin-right: 20px;">
                     <span class="mfd-value">
-                      {this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '--.-'))}
+                      {this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>

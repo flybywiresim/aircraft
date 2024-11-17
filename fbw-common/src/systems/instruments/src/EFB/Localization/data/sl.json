@@ -567,6 +567,8 @@
     },
     "Title": "Hitri nadzor"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Vizitka"
@@ -740,6 +742,7 @@
       "Blue": "Modro",
       "Brightness": "Svetlost",
       "Dark": "Temno",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Jezik",
       "Light": "Svetlo",
       "Local": "Lokalni čas",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC in lokalni čas"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Avg",

@@ -27,9 +27,9 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
 
         let rowBottomLine = ["<RETURN"];
         mcdu.onLeftInput[5] = () => {
-            targetPlan.pendingAirways = undefined;
-
-            CDULateralRevisionPage.ShowPage(mcdu, targetPlan.elementAt(reviseIndex), reviseIndex, forPlan, inAlternate);
+            mcdu.eraseTemporaryFlightPlan(() => {
+                CDULateralRevisionPage.ShowPage(mcdu, targetPlan.elementAt(reviseIndex), reviseIndex, forPlan, inAlternate);
+            });
         };
 
         if (fpIsSec && targetPlan.pendingAirways && targetPlan.pendingAirways.elements.length > 0) {

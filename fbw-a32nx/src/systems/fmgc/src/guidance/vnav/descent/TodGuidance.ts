@@ -88,8 +88,7 @@ export class TodGuidance {
       this.cooldown <= 0 &&
         !this.tdPaused &&
         this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
-        this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
-        Simplane.getAutoPilotAirspeedManaged(),
+        this.observer.get().flightPhase <= FmgcFlightPhase.Cruise,
     );
 
     if (this.tdArmed.getVar()) {
@@ -145,7 +144,6 @@ export class TodGuidance {
     const tdReached =
       this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
       this.observer.get().flightPhase <= FmgcFlightPhase.Cruise &&
-      Simplane.getAutoPilotAirspeedManaged() &&
       this.aircraftToDescentProfileRelation.isPastTopOfDescent();
 
     if (tdReached !== this.tdReached) {

@@ -8,7 +8,6 @@ import {
   ArraySubject,
   ClockEvents,
   ComponentProps,
-  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -22,13 +21,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
-  BrakeToVacateUtils,
   ControlPanelAirportSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
   FmsDataStore,
+  MIN_TOUCHDOWN_ZONE_DISTANCE,
   NavigraphAmdbClient,
-  Oanc,
+  OansBrakeToVacateSelection,
   OansControlEvents,
   globalToAirportCoordinates,
 } from '@flybywiresim/oanc';
@@ -146,8 +145,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.sub.on('oansRequestedStoppingDistance'),
   );
 
+  // Need to add touchdown zone distance to displayed value. BTV computes from TDZ internally,
+  // but users enter LDA from threshold
   private readonly reqStoppingDistance = this.oansRequestedStoppingDistance.map((it) =>
-    it.isNormalOperation() ? it.value : 0,
+    it.isNormalOperation() ? Math.round(it.value + MIN_TOUCHDOWN_ZONE_DISTANCE) : null,
   );
 
   private readonly fmsLandingRunwayVisibility = this.fmsDataStore.landingRunway.map((rwy) =>
@@ -160,7 +161,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private landingRunwayNavdata: Runway | undefined;
 
-  private btvUtils = new BrakeToVacateUtils(this.props.bus);
+  private btvUtils = new OansBrakeToVacateSelection(this.props.bus);
 
   private readonly airportDatabase = this.navigraphAvailable.map((a) => (a ? 'FBW9027250BB04' : 'N/A'));
 
@@ -169,12 +170,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
-
-  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
-  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
-  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
-
-  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
@@ -265,13 +260,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.pposLonWord.setWord(value);
       });
 
-    // This lead to BTV being disarmed at 300ft. We'll have to investigate and then fix FIXME
-    /* this.btvUtils.below300ftRaAndLanding.sub((v) => {
-      if (this.navigraphAvailable.get() === false && v && !this.btvUtils.runwayIsSet()) {
-        this.setBtvRunwayFromFmsRunway();
-      }
-    });*/
-
     this.fmsDataStore.landingRunway.sub(async (it) => {
       // Set control panel display
       if (it) {
@@ -319,7 +307,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
         if (this.arpCoordinates && ppos.lat && this.navigraphAvailable.get() === false) {
           globalToAirportCoordinates(this.arpCoordinates, ppos, this.localPpos);
-          this.btvUtils.updateRemainingDistances(this.localPpos);
+          this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
         }
       });
 
@@ -469,14 +457,27 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   }
 
   private async setBtvRunwayFromFmsRunway() {
-    [this.landingRunwayNavdata, this.arpCoordinates] = await Oanc.setBtvRunwayFromFmsRunway(
-      this.fmsDataStore,
-      this.btvUtils,
-    );
+    [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromFmsRunway(this.fmsDataStore);
 
     if (this.landingRunwayNavdata) {
       this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
       this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
+    }
+  }
+
+  private async btvFallbackSetDistance(distance: number | null) {
+    if (this.navigraphAvailable.get() === false) {
+      if (distance && distance > MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
+        const exitLocation = placeBearingDistance(
+          this.landingRunwayNavdata.thresholdLocation,
+          this.landingRunwayNavdata.bearing,
+          distance / MathUtils.METRES_TO_NAUTICAL_MILES,
+        );
+        const localExitPos: Position = [0, 0];
+        globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
+
+        this.btvUtils.selectExitFromManualEntry(distance, localExitPos);
+      }
     }
   }
 
@@ -631,27 +632,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       <div>
                         <InputField<number>
                           dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
-                          dataHandlerDuringValidation={async (val) => {
-                            if (this.navigraphAvailable.get() === false) {
-                              SimVar.SetSimVarValue(
-                                'L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE',
-                                SimVarValueType.Number,
-                                val,
-                              );
-
-                              if (val && this.landingRunwayNavdata && this.arpCoordinates) {
-                                const exitLocation = placeBearingDistance(
-                                  this.landingRunwayNavdata.thresholdLocation,
-                                  this.landingRunwayNavdata.bearing,
-                                  val / MathUtils.METRES_TO_NAUTICAL_MILES,
-                                );
-                                const localExitPos: Position = [0, 9];
-                                globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
-
-                                this.btvUtils.selectExitFromManualEntry(val, localExitPos);
-                              }
-                            }
-                          }}
+                          dataHandlerDuringValidation={async (val) => this.btvFallbackSetDistance(val)}
                           value={this.reqStoppingDistance}
                           mandatory={Subject.create(false)}
                           inactive={this.selectedEntityString.map((it) => !it)}
@@ -662,7 +643,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div
                       class="oans-cp-map-data-btv-rwy-length"
-                      style={{ visibility: this.fmsLandingRunwayVisibility }}
+                      style={{
+                        visibility: this.fmsLandingRunwayVisibility.map((it) =>
+                          it === 'hidden' ? 'inherit' : 'hidden',
+                        ),
+                      }}
                     >
                       <div class="mfd-label amber" style="margin-right: 10px;">
                         SELECT LANDING RUNWAY IN FMS

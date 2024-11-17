@@ -567,6 +567,8 @@
     },
     "Title": "Quick Controls"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "O aplikácií"
@@ -740,6 +742,7 @@
       "Blue": "Modrá",
       "Brightness": "Jas",
       "Dark": "Tmavá",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Jazyk",
       "Light": "Svetlá",
       "Local": "Lokálne",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC a lokálne"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "apr",
     "Aug": "aug",
