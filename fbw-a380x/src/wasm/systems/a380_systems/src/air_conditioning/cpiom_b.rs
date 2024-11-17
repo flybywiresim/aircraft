@@ -979,21 +979,19 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     ) {
         let (adirs_airspeed, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
         self.exterior_airspeed = adirs_airspeed.unwrap_or_default();
-        let new_exterior_altitude: Length;
 
-        if !self.is_initialised && adirs_ambient_pressure.is_some() {
+        self.exterior_flight_altitude = if !self.is_initialised {
             self.exterior_pressure
                 .reset(adirs_ambient_pressure.unwrap_or(Pressure::new::<hectopascal>(Air::P_0)));
             self.is_initialised = true;
-            new_exterior_altitude =
-                self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
+            self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure)
         } else {
             self.exterior_pressure.update(
                 context.delta(),
                 adirs_ambient_pressure.unwrap_or(Pressure::new::<hectopascal>(Air::P_0)),
             );
 
-            new_exterior_altitude =
+            let new_exterior_altitude =
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
             // When the reference pressure changes, we skip the update to the external
             // V/S to avoid a jump
@@ -1007,9 +1005,9 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                     self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
                 );
             }
+            new_exterior_altitude
         };
 
-        self.exterior_flight_altitude = new_exterior_altitude;
         self.previous_reference_pressure = self.reference_pressure;
     }
 
