@@ -363,7 +363,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
 
         if self.should_open_fcv {
             self.pid
-                .change_setpoint(pack_flow_demand.get::<kilogram_per_second>());
+                .change_setpoint(pack_flow_demand.get::<kilogram_per_second>().max(0.));
             self.pid.next_control_output(
                 self.pack_flow.get::<kilogram_per_second>(),
                 Some(context.delta()),
