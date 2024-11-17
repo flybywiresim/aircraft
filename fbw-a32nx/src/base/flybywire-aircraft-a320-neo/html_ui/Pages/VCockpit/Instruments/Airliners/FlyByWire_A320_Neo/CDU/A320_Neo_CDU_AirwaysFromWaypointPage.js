@@ -17,10 +17,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         let prevIcao = waypoint.definition.waypoint.databaseId;
         let prevFpIndex = reviseIndex;
 
-        if (!targetPlan.pendingAirways) {
-            mcdu.flightPlanService.startAirwayEntry(reviseIndex, forPlan, inAlternate);
-        }
-
         const rows = [["----"], [""], [""], [""], [""]];
         const subRows = [["VIA", ""], [""], [""], [""], [""]];
         const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
