@@ -62,6 +62,10 @@
 1. [A380X/ENGINES] Corrected ENG4 throttle variable typo - @rthom91 (Randy Thom)
 1. [ND] Fixed track line not visible in GA TRK, RWY TRK and RWY modes - @ta-dzik (ta_dzik)
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
+1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
+1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
+1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
+1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 
 ## 0.12.0

@@ -155,8 +155,8 @@ void FcuComputer::FcuComputer_MATLABFunction_e_Reset(rtDW_MATLABFunction_FcuComp
   localDW->qfe_active = false;
 }
 
-void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T *rty_std,
-  boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW)
+void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T rtu_qfe_avail,
+  boolean_T *rty_std, boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW)
 {
   if (rtu_knob_push && localDW->std_active) {
     localDW->std_active = false;
@@ -169,6 +169,11 @@ void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_
     } else {
       localDW->std_active = ((rtu_knob_pull && tmp) || localDW->std_active);
     }
+  }
+
+  if (!rtu_qfe_avail) {
+    localDW->qnh_active = true;
+    localDW->qfe_active = false;
   }
 
   *rty_std = localDW->std_active;
@@ -1112,8 +1117,8 @@ void FcuComputer::step()
       FcuComputer_P.PulseNode_isRisingEdge_gp, &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction_hk);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_knob.pulled,
       FcuComputer_P.PulseNode1_isRisingEdge_j, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_fv);
-    FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, &rtb_Equal9, &rtb_OR_o, &rtb_qfe,
-      &FcuComputer_DWork.sf_MATLABFunction_ofc);
+    FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, FcuComputer_U.in.discrete_inputs.pin_prog_qfe_avail, &rtb_Equal9,
+      &rtb_OR_o, &rtb_qfe, &FcuComputer_DWork.sf_MATLABFunction_ofc);
     FcuComputer_MATLABFunction1_o(rtb_Equal9, FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_is_inhg,
       static_cast<real_T>(FcuComputer_U.in.discrete_inputs.capt_efis_inputs.baro_knob.turns),
       FcuComputer_U.in.sim_input.left_baro_setting_hpa, &rtb_y_j3, &rtb_y_o, &FcuComputer_DWork.sf_MATLABFunction1_ou);
@@ -1145,8 +1150,8 @@ void FcuComputer::step()
       FcuComputer_P.PulseNode_isRisingEdge_p, &rtb_Equal8, &FcuComputer_DWork.sf_MATLABFunction_aa0);
     FcuComputer_MATLABFunction_d(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.baro_knob.pulled,
       FcuComputer_P.PulseNode1_isRisingEdge_o, &rtb_OR3_j, &FcuComputer_DWork.sf_MATLABFunction_f0);
-    FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, &rtb_Equal9, &rtb_qnh, &rtb_qfe,
-      &FcuComputer_DWork.sf_MATLABFunction_o3);
+    FcuComputer_MATLABFunction_o(rtb_Equal8, rtb_OR3_j, FcuComputer_U.in.discrete_inputs.pin_prog_qfe_avail, &rtb_Equal9,
+      &rtb_qnh, &rtb_qfe, &FcuComputer_DWork.sf_MATLABFunction_o3);
     FcuComputer_MATLABFunction1_o(rtb_Equal9, FcuComputer_U.in.discrete_inputs.fo_efis_inputs.baro_is_inhg, static_cast<
       real_T>(FcuComputer_U.in.discrete_inputs.fo_efis_inputs.baro_knob.turns),
       FcuComputer_U.in.sim_input.right_baro_setting_hpa, &rtb_BusAssignment_b_logic_fo_efis.baro_value_hpa, &rtb_y_o,
