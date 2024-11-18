@@ -65,6 +65,8 @@
 1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Add ATCCOM D-ATIS page - @heclak (Heclak)
+1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
+1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 
 ## 0.12.0
 
