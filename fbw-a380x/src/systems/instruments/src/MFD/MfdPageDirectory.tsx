@@ -16,6 +16,7 @@ import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/MfdFmsPerf';
 import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionIrs';
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
 import { MfdAtccomConnect } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomConnect';
+import { MfdAtccomDAtis } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomDAtis';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
@@ -98,6 +99,8 @@ export function pageForUrl(
       return <MfdSurvStatusSwitching pageTitle="STATUS & SWITCHING" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'atccom/connect':
       return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/d-atis':
+      return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;

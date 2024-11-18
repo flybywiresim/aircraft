@@ -1,0 +1,48 @@
+@import "../../../MsfsAvionicsCommon/definitions";
+
+.mfd-atccom-datis-block {
+  border-bottom: 1px solid $display-light-grey;
+  width: 100%;
+  padding: 5px 5px 0 5px;
+  height: 250px;
+
+  .d-atis-icon {
+    // border: 1px solid #fff;
+    width: 60px;
+    height: 40px;
+    position: relative;
+
+    svg {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      margin: auto;
+    }
+  }
+  .atis-time {
+    margin: 0 10px;
+    font-size: 22px;
+  }
+  .atis-version {
+    margin: 0 5px;
+    font-size: 22px;
+  }
+}
+
+.mfd-atccom-datis-block-header-row {
+  display: flex;
+  align-items: center;
+}
+
+.mfd-atccom-datis-block-msgarea {
+  font-size: 27px;
+  line-height: 38px;
+  padding-left: 15px;
+}
+
+.mfd-atccom-datis-footer {
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
+  padding: 3px 0;
+}
