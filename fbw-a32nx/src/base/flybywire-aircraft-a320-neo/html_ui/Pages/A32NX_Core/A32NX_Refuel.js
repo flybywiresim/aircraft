@@ -5,6 +5,12 @@
 const WING_FUELRATE_GAL_SEC = 4.01;
 const CENTER_MODIFIER = 0.4528;
 
+const RefuelRate = {
+    REAL: '0',
+    FAST: '1',
+    INSTANT: '2',
+};
+
 class A32NX_Refuel {
     constructor() {}
 
@@ -48,7 +54,7 @@ class A32NX_Refuel {
         const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
         const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
         const refuelRate = SimVar.GetSimVarValue("L:A32NX_EFB_REFUEL_RATE_SETTING", "number");
-        if (refuelRate != 2) {
+        if (refuelRate !== RefuelRate.INSTANT) {
             if (!onGround || eng1Running || eng2Running || gs > 0.1 || (!busDC2 && !busDCHot1)) {
                 return;
             }
@@ -73,7 +79,7 @@ class A32NX_Refuel {
         const LOutTarget = LOutTargetSimVar;
         const RInnTarget = RInnTargetSimVar;
         const ROutTarget = ROutTargetSimVar;
-        if (refuelRate == 2) { // instant
+        if (refuelRate == RefuelRate.INSTANT) {
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
@@ -81,7 +87,7 @@ class A32NX_Refuel {
             SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
         } else {
             let multiplier = 1;
-            if (refuelRate == 1) { // fast
+            if (refuelRate == RefuelRate.FAST) {
                 multiplier = 5;
             }
             multiplier *= _deltaTime / 1000;

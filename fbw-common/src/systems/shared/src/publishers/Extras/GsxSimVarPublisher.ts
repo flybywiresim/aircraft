@@ -28,10 +28,10 @@ export interface GsxSimVarEvents {
   gsx_boarding_cargo_percent: number;
   /** GSX Deboarding Cargo loaded 0-100% */
   gsx_deboarding_cargo_percent: number;
+  /** GSX/COUATL Engine Started - true => non-zero*/
+  gsx_couatl_started: number;
 
   a32nx_refuel_started_by_user: boolean;
-
-  a38nx_cargo_door_target: number;
 }
 
 export class GsxSimVarPublisher extends SimVarPublisher<GsxSimVarEvents> {
@@ -47,8 +47,8 @@ export class GsxSimVarPublisher extends SimVarPublisher<GsxSimVarEvents> {
     ['gsx_deboarding_cargo_percent', { name: 'L:FSDT_GSX_DEBOARDING_CARGO_PERCENT', type: SimVarValueType.Number }],
     ['gsx_refuel_state', { name: 'L:FSDT_GSX_REFUELING_STATE', type: SimVarValueType.Number }],
     ['gsx_fuelhose_connected', { name: 'L:FSDT_GSX_FUELHOSE_CONNECTED', type: SimVarValueType.Number }],
+    ['gsx_couatl_started', { name: 'L:FSDT_GSX_COUATL_STARTED', type: SimVarValueType.Number }],
     ['a32nx_refuel_started_by_user', { name: 'L:A32NX_REFUEL_STARTED_BY_USR', type: SimVarValueType.Bool }],
-    ['a38nx_cargo_door_target', { name: 'A:INTERACTIVE POINT GOAL:16', type: SimVarValueType.PercentOver100 }],
   ]);
 
   constructor(bus: EventBus, pacer?: PublishPacer<GsxSimVarEvents>) {
