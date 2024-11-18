@@ -21,7 +21,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
     return (
       <>
         <ActivePageTitleBar
-          activePage={Subject.create('D-ATIS')}
+          activePage={Subject.create('D-ATIS/LIST')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
           tmpyIsActive={Subject.create(false)}
