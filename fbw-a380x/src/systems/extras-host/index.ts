@@ -81,7 +81,7 @@ class ExtrasHost extends BaseInstrument {
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   private readonly telexCheck = new TelexCheck();
-  /**interactionpoint 19 is GPU connection and 4 GPUs in total */
+  /**interaction point 19 is GPU connection and 4 GPUs in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 19, 4);
 
   private readonly lightSync: LightSync = new LightSync(this.bus);

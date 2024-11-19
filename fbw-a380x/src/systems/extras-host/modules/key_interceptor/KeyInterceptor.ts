@@ -9,7 +9,6 @@ import {
   NotificationType,
   PopUpDialog,
   RadioUtils,
-  GPUControlEvents,
 } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
@@ -82,10 +81,9 @@ export class KeyInterceptor {
     COPILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
     PILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
     // --- EXTERNAL POWER events ---
-    REQUEST_POWER_SUPPLY: { handler: this.onExtPwrToggle.bind(this) },
   };
 
-  private publisher = this.bus.getPublisher<InterRmpBusEvents & GPUControlEvents>();
+  private publisher = this.bus.getPublisher<InterRmpBusEvents>();
 
   private keyInterceptManager: KeyEventManager;
 
@@ -108,7 +106,6 @@ export class KeyInterceptor {
 
   private registerIntercepts() {
     for (const [key, config] of Object.entries(this.keys)) {
-      console.log(`key: ${key} , passthrough: ${!!config.passThrough}`);
       this.keyInterceptManager.interceptKey(key, !!config.passThrough);
     }
 
@@ -246,10 +243,5 @@ export class KeyInterceptor {
 
   private onComReceiveAll(_toggle: boolean): void {
     // FIXME implement, inop for now
-  }
-
-  private onExtPwrToggle(): void {
-    const gpuToggleEvent: keyof GPUControlEvents = 'gpu_toggle';
-    this.publisher.pub(gpuToggleEvent, undefined, false, false);
   }
 }

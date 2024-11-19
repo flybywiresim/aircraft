@@ -122,7 +122,7 @@ export const A380Services: React.FC = () => {
   const gpuAvail = gpu1Avail || gpu2Avail || gpu3Avail || gpu4Avail;
 
   const eventBus = useEventBus();
-
+  const pub = eventBus.getPublisher<GPUControlEvents>();
   // Wheel Chocks and Cones
   // TODO FIXME: Reenable
   /*
@@ -146,7 +146,7 @@ export const A380Services: React.FC = () => {
   const toggleBaggageTruck = () => SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
   const toggleCateringTruck = () => SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
   const toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
-  const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
+  const toggleGpu = () => pub.pub('gpu_toggle', true, true);
 
   // Button states
   const {
