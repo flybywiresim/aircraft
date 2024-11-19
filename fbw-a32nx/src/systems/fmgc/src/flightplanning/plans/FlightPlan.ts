@@ -401,9 +401,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param data performance data available in uplink
    */
   setImportedPerformanceData(data: ImportedPerformanceData) {
-    // TODO don't do this on 2024
-    this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
-    this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+    // Workaround for MSFS2020 not having transition alt/level in the navdata
+    if (!isMsfs2024()) {
+      this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
+      this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+    }
     this.setPerformanceData('costIndex', data.costIndex);
     this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
     this.setPerformanceData('pilotTropopause', data.pilotTropopause);
