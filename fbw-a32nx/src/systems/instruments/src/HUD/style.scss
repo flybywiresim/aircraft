@@ -161,7 +161,7 @@
 
 .Magenta {
   fill: none;
-  stroke: $display-magenta;
+  stroke: $display-green;
 }
 text.Magenta {
   fill: $display-green;
@@ -210,7 +210,7 @@ text.White {
 
 .Green.Fill {
   fill: $display-green;
-  stroke: none;
+  stroke: $display-green;
 }
 
 text.Green {

@@ -2,16 +2,28 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils,
-     NodeReference, Subject, Subscribable, SubscribableMapFunctions, Subscription, Value, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { 
+    ClockEvents, 
+    ConsumerSubject, 
+    ConsumerValue,
+    DisplayComponent, 
+    FSComponent, 
+    HEvent, 
+    MappedSubject, 
+     NodeReference, 
+     Subject, 
+     Subscribable, 
+     SubscribableMapFunctions, 
+     Subscription, 
+     VNode, 
+    } from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, MathUtils, Arinc429WordData, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
 import { calculateHorizonOffsetFromPitch } from './HUDUtils';
-import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 
 const DistanceSpacing = 1024 / 28 * 5;   //182.857
 const ValueSpacing = 5;
@@ -19,11 +31,11 @@ const ValueSpacing = 5;
 
 
 // FIXME true ref
-export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
+export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
     private readonly lsVisible = ConsumerSubject.create(null, false);
     private LSGroupVisibility = Subject.create('none');
     private bVisible = 0;
-    //private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
+    private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
     private flightPhase = -1;
     private crosswindMode = false;
     private declutterMode = 0;
@@ -59,12 +71,12 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
 
         const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
 
-   // FIXME clean this up.. should be handled by an IE in the XML
-   sub.on('hEvent').handle((eventName) => {
-    if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-      SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-    }
-  });
+        // FIXME clean this up.. should be handled by an IE in the XML
+        sub.on('hEvent').handle((eventName) => {
+            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
+            SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+            }
+        });
 
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
@@ -146,8 +158,6 @@ interface LandingSystemInfoProps {
 
 class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
     // source data
-    private readonly lsVisible = ConsumerSubject.create(null, false);
-    
 
     private readonly lsAlive = ConsumerSubject.create(null, false);
 
@@ -169,7 +179,14 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
     private readonly freqTextLeading = this.lsFrequency.map((v) => Math.trunc(v).toString()).pause();
 
-    private readonly freqTextTrailing = this.lsFrequency.map((v) => `.${Math.round((v - Math.trunc(v)) * 100).toString().padStart(2, '0')}`).pause();
+    private readonly freqTextTrailing = this.lsFrequency
+    .map(
+        (v) =>
+             `.${Math.round((v - Math.trunc(v)) * 100)
+                .toString()
+                .padStart(2, '0')}`,
+    )
+    .pause();
 
     private readonly isLsIdentHidden = MappedSubject.create(
         ([ident, isAlive]) => ident.length === 0 || !isAlive,
@@ -189,9 +206,13 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
     private readonly dmeDistanceRounded = this.dmeDistance.map((v) => MathUtils.round(v, 0.1));
 
-    private readonly dmeTextLeading = this.dmeDistanceRounded.map((v) => (v < 20 ? Math.trunc(v).toString() : Math.round(v).toString())).pause();
+    private readonly dmeTextLeading = this.dmeDistanceRounded
+    .map((v) => (v < 20 ? Math.trunc(v).toString() : Math.round(v).toString()))
+    .pause();
 
-    private readonly dmeTextTrailing = this.dmeDistanceRounded.map((v) => (v < 20 ? `.${Math.round((v - Math.trunc(v)) * 10).toString()}` : '')).pause();
+  private readonly dmeTextTrailing = this.dmeDistanceRounded
+    .map((v) => (v < 20 ? `.${Math.round((v - Math.trunc(v)) * 10).toString()}` : ''))
+    .pause();
 
     private readonly pausable: (ConsumerSubject<unknown> | Subscription)[] = [
         this.lsAlive,
@@ -205,8 +226,6 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<HUDSimvars>();
-        
-        this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
 
         this.lsAlive.setConsumer(sub.on('hasLoc'));
 
@@ -370,7 +389,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
     private flightPhase = -1;
     private declutterMode = 0;
     private readonly lsVisible = ConsumerSubject.create(null, false);
-    private LSLocRef = new NodeReference<SVGGElement>;
+    private LSLocRef = FSComponent.createRef<SVGGElement>();
     private onGround = true;
     private LsState = false;
     private lagFilter = new LagFilter(1.5);
@@ -520,6 +539,27 @@ interface LSPath {
 }
 
 class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {   
+    private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+
+    private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
+  
+    // FIXME hook up when MMR ready
+    private readonly mixLocVnav = Subject.create(false);
+  
+    private readonly isHidden = MappedSubject.create(
+      ([backbeam, mixLocVnav]) => backbeam && !mixLocVnav,
+      this.backbeam,
+      this.mixLocVnav,
+    );
+  
+    private readonly hasGlideSlope = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+  
+    private readonly noGlideSlope = MappedSubject.create(
+      ([isHidden, hasGlideSlope]) => isHidden || !hasGlideSlope,
+      this.isHidden,
+      this.hasGlideSlope,
+    );
+    
     private LSGsRef = new NodeReference<SVGGElement>;
 
     private needsUpdate = false;
@@ -527,7 +567,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
     private crosswindMode = false;
 
     private data: LSPath = {
-      roll: new Arinc429Word(0),
+      roll: new  Arinc429Word(0),
       pitch: new Arinc429Word(0),
       fpa: new Arinc429Word(0),
       da: new Arinc429Word(0),
@@ -542,8 +582,6 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
     private glideSlopeDiamond = FSComponent.createRef<SVGPathElement>();
     
     private diamondGroup = FSComponent.createRef<SVGGElement>();
-
-    private hasGlideSlope = false;
 
     private handleGlideSlopeError(glideSlopeError: number): void {
         const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
@@ -561,12 +599,9 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
             this.upperDiamond.instance.classList.add('HiddenElement');
             this.lowerDiamond.instance.classList.add('HiddenElement');
             this.glideSlopeDiamond.instance.classList.remove('HiddenElement');
-            this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${dots * 30.238 / 2}px, 0px)`;
+            this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 30.238) / 2}px, 0px)`;
         }
     }
-
-
-
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -578,7 +613,6 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
         });
 
         sub.on('hasGlideslope').whenChanged().handle((hasGlideSlope) => {
-            this.hasGlideSlope = hasGlideSlope;
             if (hasGlideSlope) {
                 this.diamondGroup.instance.classList.remove('HiddenElement');
             } else {
@@ -587,11 +621,17 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
             }
         });
 
-        sub.on('glideSlopeError').handle((gs) => {
-            if (this.hasGlideSlope) {
-                this.handleGlideSlopeError(gs);
+        this.noGlideSlope.sub((noGlideSlope) => {
+            if (noGlideSlope) {
+              this.lagFilter.reset();
             }
-        });
+          });
+      
+          this.sub.on('glideSlopeError').handle((gs) => {
+            if (!this.noGlideSlope.get()) {
+              this.handleGlideSlopeError(gs);
+            }
+          });
 
         sub.on('fpa').handle((fpa) => {
             this.data.fpa = fpa;
@@ -812,9 +852,6 @@ class LDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
 }
 
 class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-    private readonly lsVisible = ConsumerSubject.create(null, false);
-    private LSMarkerRef = new NodeReference<SVGGElement>;
-
     private classNames = Subject.create('HiddenElement');
 
     private markerText = Subject.create('');
@@ -826,7 +863,10 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
         const baseClass = 'FontLarge StartAlign';
 
-        sub.on('markerBeacon').whenChanged().handle((markerState) => {
+        sub
+        .on('markerBeacon')
+        .whenChanged()
+        .handle((markerState) => {
             if (markerState === 0) {
                 this.classNames.set(`${baseClass} HiddenElement`);
             } else if (markerState === 1) {
@@ -840,19 +880,13 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
                 this.markerText.set('IM');
             }
         });
-        this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-        if(this.lsVisible){
-            this.LSMarkerRef.instance.style.visibility = 'visible'
-        }else{
-            this.LSMarkerRef.instance.style.visibility = 'hidden'    
-        }
     }
 
     render(): VNode {
         return (
-        <g ref={this.LSMarkerRef}>
-            <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">{this.markerText}</text>
-        </g>
+            <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">
+            {this.markerText}
+          </text>
         );
     }
 }

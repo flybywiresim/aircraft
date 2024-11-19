@@ -265,10 +265,6 @@ class QFUIndicator extends DisplayComponent<{bus: ArincEventBus, ILSCourse: Subs
     
     private qfuContainer = FSComponent.createRef<SVGGElement>();
 
-    private ilsCourseRight = FSComponent.createRef<SVGGElement>();
-
-    private ilsCourseLeft = FSComponent.createRef<SVGGElement>();
-
     private ilsCoursePointer = FSComponent.createRef<SVGGElement>();
 
     private heading = 0;
@@ -295,20 +291,14 @@ class QFUIndicator extends DisplayComponent<{bus: ArincEventBus, ILSCourse: Subs
                 this.qfuContainer.instance.classList.remove('HiddenElement');
                 if (Math.abs(delta) > DisplayRange) {
                     if (delta > 0) {
-                        this.ilsCourseRight.instance.classList.remove('HiddenElement');
-                        this.ilsCourseLeft.instance.classList.add('HiddenElement');
                         this.ilsCoursePointer.instance.classList.add('HiddenElement');
                     } else {
-                        this.ilsCourseLeft.instance.classList.remove('HiddenElement');
-                        this.ilsCourseRight.instance.classList.add('HiddenElement');
                         this.ilsCoursePointer.instance.classList.add('HiddenElement');
                     }
                 } else {
                     const offset = getSmallestAngle(this.ilsCourse, this.heading) * DistanceSpacing / ValueSpacing;
                     this.ilsCoursePointer.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
                     this.ilsCoursePointer.instance.classList.remove('HiddenElement');
-                    this.ilsCourseRight.instance.classList.add('HiddenElement');
-                    this.ilsCourseLeft.instance.classList.add('HiddenElement');
                 }
             }
         });
@@ -325,20 +315,14 @@ class QFUIndicator extends DisplayComponent<{bus: ArincEventBus, ILSCourse: Subs
                 this.qfuContainer.instance.classList.remove('HiddenElement');
                 if (Math.abs(delta) > DisplayRange) {
                     if (delta > 0) {
-                        this.ilsCourseRight.instance.classList.remove('HiddenElement');
-                        this.ilsCourseLeft.instance.classList.add('HiddenElement');
                         this.ilsCoursePointer.instance.classList.add('HiddenElement');
                     } else {
-                        this.ilsCourseLeft.instance.classList.remove('HiddenElement');
-                        this.ilsCourseRight.instance.classList.add('HiddenElement');
                         this.ilsCoursePointer.instance.classList.add('HiddenElement');
                     }
                 } else {
                     const offset = getSmallestAngle(this.ilsCourse, this.heading) * DistanceSpacing / ValueSpacing;
                     this.ilsCoursePointer.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
                     this.ilsCoursePointer.instance.classList.remove('HiddenElement');
-                    this.ilsCourseRight.instance.classList.add('HiddenElement');
-                    this.ilsCourseLeft.instance.classList.add('HiddenElement');
                 }
             }
         });

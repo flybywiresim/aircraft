@@ -469,18 +469,17 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
         
         sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
             this.flightPhase = fp;
-            // preflight, taxi
-            if(fp < 5 || fp >= 8){
+          });
+
+        sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+            if(value){
                 this.sVisibility.set("none");
             }else{
                 this.sVisibility.set("block");
             }
-            
-            // TODO use fmgc flighphase to all declutter in approach and landing mode 
-            if(fp > 2 && fp < 9){
-              this.sVisibility.set("block");
-            }
-          });
+        })
+
+
         sub.on('isSelectedSpeed').whenChanged().handle((s) => {
             this.speedState.isSelectedSpeed = s;
             this.needsUpdate = true;
@@ -548,6 +547,7 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
                 this.speedRefs[4].instance.setAttribute('d', `m 601,${512 - sign * 46} v ${-sign * (Math.abs(deltaSpeed) - 10) * 4.6}`);
                 this.setVisible([1, 2, 3, 4]);
             } else {
+
                 this.speedRefs[5].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
                 this.setVisible([5]);
             }
@@ -566,10 +566,16 @@ class DeltaSpeed extends DisplayComponent <{ bus: ArincEventBus }> {
                 <path ref={this.speedRefs[2]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
                 <path ref={this.speedRefs[3]} class="ScaledStroke CornerRound Green" d="m 595,512 h 12" style="visibility:hidden" />
                 <path ref={this.speedRefs[4]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
-                <g ref={this.speedRefs[5]} class="ScaledStroke CornerRound Green" style="visibility:hidden">
-                    <path d="m 595,466 v 92" />
-                    <path d="m 601,466 v 92" />
-                    <path d="m 607,466 v 92" />
+                <g ref={this.speedRefs[5]} class="ScaledStroke CornerRound Green" style="visibility:hidden" >
+                    <path class="ScaledStroke CornerRound Green" d="m 595,466 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,476.2 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,486.4 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,496.6 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,506.8 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,517 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,527.2 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,537.4 h 11" style="visibility:hidden" />
+                    <path class="ScaledStroke CornerRound Green" d="m 595,547.6 h 11" style="visibility:hidden" />
                 </g>
             </g>
             </>

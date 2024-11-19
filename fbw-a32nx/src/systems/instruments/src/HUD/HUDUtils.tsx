@@ -199,6 +199,7 @@ export enum WindMode{
     windIndicator  : string,
     FMA            : string,
     VS            : string,
+    QFE            : string,
   }
 
   export interface  HudElemsVis {
@@ -210,6 +211,7 @@ export enum WindMode{
     windIndicator  : Subject<String>,
     FMA            : Subject<String>,
     VS            : Subject<String>,
+    QFE            : Subject<String>,
   }
 
 
@@ -226,6 +228,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         windIndicator  : '',
         FMA            : '',
         VS            : '',
+        QFE            : '',
     }
 
     let elems : HudElemsVis = {
@@ -237,6 +240,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         windIndicator   : Subject.create<String>(''), 
         FMA             : Subject.create<String>(''), 
         VS             : Subject.create<String>(''), 
+        QFE             : Subject.create<String>(''), 
       };
 
     let n = -1;
@@ -261,6 +265,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
         
     }
       //onToPower 1 onGnd 1 xwnd on  dec == 2          
@@ -274,6 +279,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }   
 
       //----------
@@ -288,6 +294,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
       //onToPower 1 onGnd 1 xwnd off  dec == 2          
     if(bitMask == 113 ) {
@@ -300,6 +307,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }     
 
     
@@ -315,6 +323,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
       //onToPower 1 onGnd 0 xwnd on  dec == 2          
     if(bitMask == 73 ) {
@@ -327,6 +336,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
 
         //----------
@@ -341,6 +351,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
       //onToPower 1 onGnd 0 xwnd off dec ==2       
     if(bitMask == 81) {
@@ -353,6 +364,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
         //-----------------------------------------------------
 
@@ -360,7 +372,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         //onToPower 0 onGnd 1 xwnd on  dec != 2     
     if(bitMask == 42 || bitMask == 44) {
             //crosswindMode: WindMode.CrossWind;
-        elemVis.xWindAltTape          = 'none';
+        elemVis.xWindAltTape          = 'block';
         elemVis.altTape               = 'none';
         elemVis.xWindSpdTape          = 'block';
         elemVis.spdTapeOrForcedOnLand = 'none';
@@ -368,6 +380,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'none';
+        elemVis.QFE                   = 'block';
     }
         //onToPower 0 onGnd 1 xwnd on  dec == 2          
     if(bitMask == 41 ) {
@@ -380,19 +393,21 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'none';
         elemVis.FMA                   = 'none';
         elemVis.VS                    = 'none';
+        elemVis.QFE                   = 'none';
     }
         //----------
         //onToPower 0 onGnd 1 xwnd off  dec != 2     
     if(bitMask == 50 || bitMask == 52) {
             //crosswindMode: WindMode.Normal;
         elemVis.xWindAltTape          = 'none';
-        elemVis.altTape               = 'none';
+        elemVis.altTape               = 'block';
         elemVis.xWindSpdTape          = 'none';
         elemVis.spdTapeOrForcedOnLand = 'block';
         elemVis.altTapeMaskFill       = 'noFill';
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'none';
+        elemVis.QFE                   = 'block';
     }
         //onToPower 0 onGnd 1 xwnd off  dec == 2          
     if(bitMask == 49 ) {
@@ -405,6 +420,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'none';
         elemVis.FMA                   = 'none';
         elemVis.VS                    = 'none';
+        elemVis.QFE                   = 'none';
     }
     
         //----------
@@ -419,6 +435,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
         //onToPower 0 onGnd 0 xwnd on  dec == 2          
     if(bitMask == 9 ) {
@@ -431,6 +448,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'none';
         elemVis.FMA                   = 'none';
         elemVis.VS                    = 'none';
+        elemVis.QFE                   = 'none';
     }
         //----------
         //onToPower 0 onGnd 0 xwnd off dec !=2       
@@ -444,6 +462,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'block';
         elemVis.FMA                   = 'block';
         elemVis.VS                    = 'block';
+        elemVis.QFE                   = 'block';
     }
         //onToPower 0 onGnd 0 xwnd off dec ==2       
     if(bitMask == 17) {
@@ -456,6 +475,7 @@ export function getBitMask(onToPower: boolean, onGround: boolean, xwndMode: bool
         elemVis.windIndicator         = 'none';
         elemVis.FMA                   = 'none';
         elemVis.VS                    = 'none';
+        elemVis.QFE                   = 'none';
     }
 
       // console.log(

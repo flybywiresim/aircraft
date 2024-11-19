@@ -363,7 +363,7 @@ import {
   
     private getOffset(position: number) {
       //this.gRef.instance.style.transform = `translate3d(0px, ${(position * this.props.distanceSpacing) / this.props.valueSpacing}px, 0px)`;
-      this.gRef.instance.style.transform = `translate3d(0px, ${  Math.floor(((position * this.props.distanceSpacing) / this.props.valueSpacing)/10)*10     }px, 0px)`;
+      this.gRef.instance.style.transform = `translate3d(0px, ${  Math.round(((position * this.props.distanceSpacing) / this.props.valueSpacing)/10)*10     }px, 0px)`;
     }
   
     private updateValue() {

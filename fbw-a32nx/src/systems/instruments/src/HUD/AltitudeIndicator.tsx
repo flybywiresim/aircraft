@@ -244,6 +244,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     windIndicator   : Subject.create<String>(''), 
     FMA             : Subject.create<String>(''), 
     VS              : Subject.create<String>(''), 
+    QFE             : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -255,6 +256,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
     this.elems.FMA             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
     this.elems.VS              .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    this.elems.QFE             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE); 
   }
   private flightPhase = -1;
   private declutterMode = 0;
@@ -359,6 +361,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     windIndicator   : Subject.create<String>(''), 
     FMA             : Subject.create<String>(''), 
     VS              : Subject.create<String>(''), 
+    QFE             : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -370,6 +373,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
     this.elems.FMA             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
     this.elems.VS              .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    this.elems.QFE             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE); 
   }
   private flightPhase = -1;
   private declutterMode = 0;
@@ -505,7 +509,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
               selectedAltitude={this.shownTargetAltitude}
               altitudeColor={this.targetAltitudeColor}
             />
-            <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
             <MetricAltIndicator
               bus={this.props.bus}
               targetAlt={this.shownTargetAltitude}
@@ -521,17 +524,10 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             <DigitalAltitudeReadout bus={this.props.bus} />
           </g>
      
-
-
-
           <g id="CrosswindAltTape" transform="translate( 0 -68)"  display={this.elems.xWindAltTape} >
               <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
-              
-
           </g>
-
-
-
+          <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
         </g>
       </>
     );
@@ -779,7 +775,11 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
-  private sVisibility = Subject.create<String>('');
+  private bitMask = 0;
+  private athMode = 0;
+  private onToPower = false;
+  private onPower = false;
+  private onGround = true;
   private mode = Subject.create('');
 
   private text = Subject.create('');
@@ -797,6 +797,31 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private qfeGroup = FSComponent.createRef<SVGGElement>();
 
   private qfeBorder = FSComponent.createRef<SVGGElement>();
+
+  private elems : HudElemsVis = {
+    xWindAltTape    : Subject.create<String>(''),
+    altTape         : Subject.create<String>(''),
+    xWindSpdTape    : Subject.create<String>(''),
+    spdTapeOrForcedOnLand         : Subject.create<String>(''),
+    altTapeMaskFill : Subject.create<String>(''),
+    windIndicator   : Subject.create<String>(''), 
+    FMA             : Subject.create<String>(''), 
+    VS              : Subject.create<String>(''), 
+    QFE             : Subject.create<String>(''), 
+  };
+
+  private setElems() {
+    this.elems.altTape               .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape );
+    this.elems.altTapeMaskFill       .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
+    this.elems.spdTapeOrForcedOnLand .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
+    this.elems.windIndicator         .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
+    this.elems.xWindAltTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
+    this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
+    this.elems.FMA                   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
+    this.elems.VS                    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    this.elems.QFE                   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE); 
+  }
+
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -831,24 +856,29 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.getText();
       });
 
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-        if(fp < 5 || fp >= 9){
-          this.sVisibility.set("none");
-        }
-        if(fp > 4 && fp < 9){
-          this.sVisibility.set("block");
-        }
-        this.handleBlink();
-      });
-    sub.on('declutterMode').whenChanged().handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-        this.declutterMode = value;
-      }); 
-    sub
+      sub.on('AThrMode').whenChanged().handle((value)=>{
+        this.athMode = value;
+        (this.athMode == AutoThrustMode.MAN_FLEX || 
+            this.athMode == AutoThrustMode.MAN_TOGA || 
+            this.athMode == AutoThrustMode.TOGA_LK
+        ) ? this.onToPower = true : this.onToPower = false;
+        this.setElems();
+      })
+    
+      sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
+          this.onGround = value;
+          this.setElems();
+      })
+      sub.on('declutterMode').whenChanged().handle((value) => {
+          this.declutterMode = value;
+          this.setElems();
+    
+      })
+      sub.on('crosswindMode').whenChanged().handle((value) => {
+          this.crosswindMode = value;
+          this.setElems();
+      })
+      sub
       .on('fmTransAltRaw')
       .whenChanged()
       .handle((ta) => {
@@ -932,8 +962,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             STD
           </text>
         </g>
-        <g id="AltimeterGroup" transform="translate(0 10)">
-          <g ref={this.qfeGroup} id="QFEGroup" display={this.sVisibility}>
+        <g id="AltimeterGroup" transform="translate(0 10)" display={this.elems.QFE}>
+          <g ref={this.qfeGroup} id="QFEGroup" >
             <path
               ref={this.qfeBorder}
               class="NormalStroke Green"

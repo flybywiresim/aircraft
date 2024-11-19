@@ -692,7 +692,7 @@ class PitchScale extends DisplayComponent<{
     sub.on('realTime').handle((_t) => {
       if (this.needsUpdate) {
           this.needsUpdate = false;
-          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation(); 
           if (daAndFpaValid) {
               // this.threeDegRef.instance.classList.remove('HiddenElement');
               this.MoveThreeDegreeMark();

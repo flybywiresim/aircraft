@@ -60,6 +60,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     windIndicator   : Subject.create<String>(''), 
     FMA   : Subject.create<String>(''), 
     VS    : Subject.create<String>(''), 
+    QFE             : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -71,6 +72,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
     this.elems.FMA                   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
     this.elems.VS                    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    this.elems.QFE                   .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE); 
   }
   
   private bitMask = 0;

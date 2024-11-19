@@ -29,10 +29,31 @@ import {WindMode, HudElemsVis, getBitMask} from './HUDUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
-const DisplayRange = 42;
+let DisplayRange = 42;
 
 const decelValueSpacing = 10;
 const decelDistanceSpacing = 5;
+
+export class AirspeedIndicator  extends DisplayComponent<{ bus: ArincEventBus;  instrument: BaseInstrument}>{
+  private crosswindMode = false;
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents>();
+    sub.on('crosswindMode').whenChanged().handle((value) => {
+        this.crosswindMode = value;
+        (this.crosswindMode) ? DisplayRange = DisplayRange = 21 : DisplayRange = 42; 
+    })
+  }
+
+  render(): VNode {
+    return (
+      <>
+        <AirspeedIndicatorBase bus={this.props.bus} instrument={this.props.instrument}/>
+      </>
+    )}
+}
+
 
 class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   private offsetSub = Subject.create('translate3d(0px, 0px, 0px)');
@@ -156,7 +177,7 @@ interface AirspeedIndicatorProps {
   instrument: BaseInstrument;
 }
 
-export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> {
+class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
@@ -179,6 +200,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     windIndicator   : Subject.create<String>(''), 
     FMA             : Subject.create<String>(''), 
     VS              : Subject.create<String>(''), 
+    QFE             : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -190,6 +212,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     this.elems.xWindSpdTape          .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).xWindSpdTape); 
     this.elems.FMA                   .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).FMA); 
     this.elems.VS                    .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).VS); 
+    this.elems.QFE                   .set(getBitMask(this.onToPower, this.onGround.get(), this.crosswindMode, this.declutterMode).QFE); 
   }
 
   private speedSub = Subject.create<number>(0);
@@ -201,6 +224,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   private showBarsRef = FSComponent.createRef<SVGGElement>();
 
   private vfeNext = FSComponent.createRef<SVGPathElement>();
+  private vfeNextXwnd = FSComponent.createRef<SVGPathElement>();
 
   private barTimeout = 0;
 
@@ -275,9 +299,12 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         if (vfe.isNormalOperation()) {
           const offset = (-vfe.value * DistanceSpacing) / ValueSpacing;
           this.vfeNext.instance.classList.remove('HiddenElement');
+          this.vfeNextXwnd.instance.classList.remove('HiddenElement');
           this.vfeNext.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+          this.vfeNextXwnd.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
         } else {
           this.vfeNext.instance.classList.add('HiddenElement');
+          this.vfeNextXwnd.instance.classList.add('HiddenElement');
         }
       });
 
@@ -335,12 +362,13 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             <g id="CrosswindSpeedTapeTest" >
 
               <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
+              <path id="SpeedTapeBelowForty" class="NormalStroke Green" d="m19.031 81 v20" />
               <VerticalTape
                 tapeValue={this.speedSub}
                 lowerLimit={30}
                 upperLimit={660}
                 valueSpacing={ValueSpacing}
-                displayRange={(DisplayRange + 6)/2}
+                displayRange={DisplayRange + 6}
                 distanceSpacing={DistanceSpacing}
                 type="speed"
               >
@@ -349,7 +377,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                 <FlapsSpeedPointBugs bus={this.props.bus} />
                 <path
                   id="VFeNextMarker"
-                  ref={this.vfeNext}
+                  ref={this.vfeNextXwnd}
                   class="ScaledStroke Green"
                   d="m19.031 81.34h-2.8709m0-1.0079h2.8709"
                 />
@@ -377,6 +405,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
           <g id="NormalSpeedTape" display={this.elems.spdTapeOrForcedOnLand}>
 
             <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
+            <path id="SpeedTapeBelowForty" class="NormalStroke Green" d="m19.031 81 v43" />
+
             <VerticalTape
               tapeValue={this.speedSub}
               lowerLimit={30}
@@ -513,7 +543,8 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     altTapeMaskFill : Subject.create<String>(''),
     windIndicator   : Subject.create<String>(''), 
     FMA             : Subject.create<String>(''), 
-    VS             : Subject.create<String>(''), 
+    VS              : Subject.create<String>(''), 
+    QFE             : Subject.create<String>(''), 
   };
 
   private setElems() {
@@ -524,7 +555,8 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     this.elems.xWindAltTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
     this.elems.xWindSpdTape    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape); 
     this.elems.FMA             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA); 
-    this.elems.VS             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    this.elems.VS              .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS); 
+    this.elems.QFE             .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE); 
   }
 
 
@@ -1258,7 +1290,7 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
       <path
         id="StallWarnBarberpole"
         ref={this.VStallWarnIndicator}
-        class="BarRed"
+        class="BarGreen"
         // eslint-disable-next-line max-len
         d="m22.053 85.835v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.419h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.419h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
       />
@@ -1323,7 +1355,6 @@ interface SpeedStateInfo {
 
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode}> {
   private xwindOffset = 0;
-  private xwindDisplayRangeRatio = 2;
   private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
   private upperBoundbGRef = FSComponent.createRef<SVGPathElement>();
 
@@ -1472,19 +1503,19 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode}
     const currentTargetSpeed = this.speedState.isSpeedManaged
       ? this.speedState.managedTargetSpeed
       : this.speedState.targetSpeed;
-    if (this.speedState.speed.value - currentTargetSpeed > (DisplayRange-6) / this.xwindDisplayRangeRatio) {
+    if (this.speedState.speed.value - currentTargetSpeed > DisplayRange ) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.currentVisible = this.lowerBoundRef;
-    } else if (this.speedState.speed.value - currentTargetSpeed < -(DisplayRange-6)  / this.xwindDisplayRangeRatio && !this.decelActive) {
+    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange  && !this.decelActive) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.upperBoundbGRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.currentVisible = this.upperBoundRef;
-    } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < (DisplayRange-6)  / this.xwindDisplayRangeRatio) {
+    } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange ) {
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
@@ -1503,13 +1534,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode}
   private handleCrosswinMode(){
     if(this.props.mode === WindMode.Normal){
       this.xwindOffset = 0;
-      this.xwindDisplayRangeRatio = 1;
       this.upperBoundbGRef.instance.style.transform = "transform: translate3d(0px, -100px, 0px)";
       this.upperBoundRef.instance.setAttribute('y','36.670692');
       this.lowerBoundRef.instance.setAttribute('y','128.27917');
     }else{
+      //this.xwindOffset = -68.5;
       this.xwindOffset = -68.5;
-      this.xwindDisplayRangeRatio = 2;
       this.upperBoundbGRef.instance.style.transform = "translate3d(0px, -144.5px, 0px)";
       this.upperBoundRef.instance.setAttribute('y','-8');
       this.lowerBoundRef.instance.setAttribute('y','38.5');
@@ -1560,6 +1590,9 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode}
 }
 
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
+  private crosswindMode = false;
+  private xwindOffset = 0;
+  private SpeedMarginsRef = FSComponent.createRef<SVGGElement>();
   private shouldShowMargins = false;
 
   private currentSpeed = Subject.create(Arinc429Word.empty());
@@ -1574,7 +1607,13 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars & HUDSimvars>();
+
+    sub.on('crosswindMode').whenChanged().handle((value)=>{
+      this.crosswindMode = value;
+      (this.crosswindMode) ? this.xwindOffset = -68 : this.xwindOffset = 0;
+      this.SpeedMarginsRef.instance.setAttribute('transform',`translate(0 ${this.xwindOffset})`)
+    })
 
     sub
       .on('showSpeedMargins')
@@ -1592,7 +1631,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <g id="SpeedMargins">
+      <g ref={this.SpeedMarginsRef}id="SpeedMargins" >
         <path
           id="UpperSpeedMargin"
           class="Fill Magenta"
