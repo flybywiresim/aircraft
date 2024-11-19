@@ -384,6 +384,8 @@ class Row2 extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscr
 }
 
 class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
+  private isArmed = Subject.create('');
+
   private text = Subject.create('');
 
   private className = Subject.create('FontMediumSmaller Smaller MiddleAlign Green');
@@ -402,12 +404,15 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
         switch (am) {
           case 0:
             this.text.set('');
+            this.isArmed.set('none');
             break;
           case 1:
             this.text.set('BRK LO ');
+            this.isArmed.set('block');
             break;
           case 2:
             this.text.set('BRK MED ');
+            this.isArmed.set('block');
             break;
           case 3:
             // MAX will be shown in 3rd row
@@ -444,9 +449,12 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
-        {this.text}
-      </text>
+      <g>
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 3.2 8 h 28" stroke-dasharray="1 1.8"/>
+        <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
+          {this.text}
+        </text>
+      </g>
     );
   }
 }
@@ -684,6 +692,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 }
 
 class A3Cell extends DisplayComponent<CellProps> {
+  private isArmed = Subject.create('');
+
   private classSub = Subject.create('');
 
   private textSub = Subject.create('');
@@ -721,9 +731,11 @@ class A3Cell extends DisplayComponent<CellProps> {
             case 3:
               text = 'BRK MAX';
               className = 'Green';
+              this.isArmed.set('block');
         break;
       default:
         text = '';
+        this.isArmed.set('none');
     }
   }
     this.textSub.set(text);
@@ -763,9 +775,12 @@ class A3Cell extends DisplayComponent<CellProps> {
 
   render(): VNode {
     return (
-      <text class={this.classSub} x="16.989958" y="21.641243">
-        {this.textSub}
-      </text>
+      <g>
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 20 16.4 h 30" stroke-dasharray="1 1.8"/>
+        <text class={this.classSub} x="16.989958" y="21.641243">
+          {this.textSub}
+        </text>
+      </g>
     );
   }
 }
@@ -1144,7 +1159,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-class B2Cell extends DisplayComponent<CellProps> {
+class B2Cell extends DisplayComponent<CellProps> {  
+  private fmaVerticalArmed = Subject.create('');
+  
   private text1Sub = Subject.create('');
 
   private text2Sub = Subject.create('');
@@ -1166,6 +1183,9 @@ class B2Cell extends DisplayComponent<CellProps> {
         const desArmed = (fmv >> 3) & 1;
         const gsArmed = (fmv >> 4) & 1;
         const finalArmed = (fmv >> 5) & 1;
+
+        (altArmed || altCstArmed || clbArmed || desArmed || gsArmed || finalArmed) 
+        ? this.fmaVerticalArmed.set('block') : this.fmaVerticalArmed.set('none');
 
         let text1: string;
         let color1 = 'Green';
@@ -1200,6 +1220,7 @@ class B2Cell extends DisplayComponent<CellProps> {
   render(): VNode {
     return (
       <g>
+        <path id="dash" display={this.fmaVerticalArmed} class="NormalStroke Green" d="m 35.7 8 h 30" stroke-dasharray="1 2"/>
         <text class={this.classSub} style="white-space: pre" x="40.777474" y="13.629653">
           {this.text1Sub}
         </text>
@@ -1324,7 +1345,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-class C2Cell extends DisplayComponent<CellProps> {
+class C2Cell extends DisplayComponent<CellProps> {   
+  private isArmed = Subject.create('');
+
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
 
   private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), LateralMode.NONE);
@@ -1358,6 +1381,8 @@ class C2Cell extends DisplayComponent<CellProps> {
 
     const finalArmed = isArmed(verticalArmed, ArmedVerticalMode.FINAL);
 
+    (navArmed || locArmed || finalArmed) ? this.isArmed.set('block') : this.isArmed.set('none');
+
     if (locArmed) {
       return backbeam ? 'LOC B/C' : 'LOC';
       // case 3:
@@ -1373,9 +1398,12 @@ class C2Cell extends DisplayComponent<CellProps> {
 
   render(): VNode {
     return (
-      <text class="FontMediumSmaller MiddleAlign Green" x="84.234184" y="13.629653">
-        {this.text}
-      </text>
+      <g>
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 70 8 h 30" stroke-dasharray="1 2"/>
+        <text class="FontMediumSmaller MiddleAlign Green" x="84.234184" y="13.629653">
+          {this.text}
+        </text>
+      </g>
     );
   }
 }
@@ -1995,6 +2023,8 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
 }
 
 class E3Cell extends ShowForSecondsComponent<CellProps> {
+  private isArmed = Subject.create('');
+  
   private classSub = Subject.create('');
 
   private posSub = Subject.create(0);
@@ -2009,13 +2039,16 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
     switch (athrStatus) {
       case 1:
         className = 'Green FontMediumSmaller';
+        this.isArmed.set('block');
         break;
       case 2:
         className = 'Green FontMediumSmaller ';
+        this.isArmed.set('none');
         break;
       default:
         this.isShown = false;
         className = 'HiddenElement';
+        this.isArmed.set('none');
     }
     return className;
   }
@@ -2043,6 +2076,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
   render(): VNode {
     return (
       <g>
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 135.5 16.4 h 21" stroke-dasharray="1 1.8"/>
         <path
           ref={this.modeChangedPathRef}
           class="NormalStroke Green"
