@@ -129,7 +129,7 @@ class SystemsHost extends BaseInstrument {
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();
-    this.gpws = new LegacyGpws(this.soundManager);
+    this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
     this.fwsCore.init();
 

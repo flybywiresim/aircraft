@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 import { NXLogicConfirmNode, NXLogicMemoryNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
+import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export enum FwcFlightPhase {
@@ -462,7 +463,13 @@ export class FwsFlightPhases {
       return;
     }
 
-    const delta = Math.abs(this.fws.adrPressureAltitude.get() - targetAltitude);
+    // FIXME better altitude selection
+    const adrAltitude = SimVar.GetSimVarValue(
+      `L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_${this.fws.fwsNumber}`,
+      SimVarValueType.Number,
+    );
+    this.fws.fwsNumber;
+    const delta = Math.abs(adrAltitude - targetAltitude);
 
     if (delta < 200) {
       this._wasBellowThreshold = true;

@@ -86,7 +86,7 @@ export class FwsCore {
 
   private readonly startupCompleted = Subject.create(false);
 
-  public readonly soundManager = new FwsSoundManager(this.startupCompleted);
+  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted);
 
   private readonly flightPhases = new FwsFlightPhases(this);
 
@@ -2503,9 +2503,6 @@ export class FwsCore {
     // approach capability downgrade
     const newCapability = SimVar.GetSimVarValue('L:A32NX_ApproachCapability', SimVarValueType.Number);
     const capabilityDowngrade = newCapability < this.approachCapability.get();
-    if (capabilityDowngrade) {
-      console.log(newCapability, this.approachCapability.get());
-    }
     this.approachCapabilityDowngradeDebounce.write(capabilityDowngrade, deltaTime);
     this.approachCapabilityDowngradeDebouncePulse.write(this.approachCapabilityDowngradeDebounce.read(), deltaTime);
     // Capability downgrade after debounce --> triple click

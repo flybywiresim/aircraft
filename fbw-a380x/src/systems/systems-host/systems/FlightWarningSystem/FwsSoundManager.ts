@@ -2,7 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { SimVarValueType, Subscribable } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarValueType, Subscribable } from '@microsoft/msfs-sdk';
+
+export interface FwsSoundManagerControlEvents {
+  enqueueSound: string;
+  dequeueSound: string;
+}
 
 // Synthetic voice has priority over everything, SC is least important
 enum FwsAuralWarningType {
@@ -18,14 +23,18 @@ export enum FwsAuralVolume {
 }
 
 interface FwsAural {
-  /** The LocalVar which triggers the playback. Required, sounds can only be triggered through LocalVars here. Not prefixed by L: here. */
-  localVarName: string;
+  /** The LocalVar which triggers the playback. Not prefixed by L: here. Either localVarName or wwiseEventName has to be defined. */
+  localVarName?: string;
+  /** The Wwise event which triggers the playback. Either localVarName or wwiseEventName has to be defined. */
+  wwiseEventName?: string;
   /** Sounds are queued based on type and priority (highest priority = gets queued first within same type) */
   priority: number;
   type: FwsAuralWarningType;
   /** Length of audio in seconds, if non-repetitive */
   length?: number;
-  repetitive?: boolean;
+  /** If this is set, this sound is repeated periodically with the specified pause in seconds */
+  periodicWithPause?: number;
+  continuous?: boolean;
 }
 
 export const FwsAuralsList: Record<string, FwsAural> = {
@@ -33,100 +42,234 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     localVarName: 'A32NX_FWC_CRC',
     priority: 5,
     type: FwsAuralWarningType.AuralWarning,
-    repetitive: true,
+    continuous: true,
   },
   singleChime: {
     localVarName: 'A32NX_FWC_SC',
     length: 0.54,
     priority: 0,
     type: FwsAuralWarningType.SingleChime,
-    repetitive: false,
+    continuous: false,
   },
   cavalryChargeOnce: {
     localVarName: 'A32NX_FWC_CAVALRY_CHARGE',
     length: 0.9,
     priority: 4,
     type: FwsAuralWarningType.AuralWarning,
-    repetitive: false,
+    continuous: false,
   },
   cavalryChargeCont: {
     localVarName: 'A32NX_FWC_CAVALRY_CHARGE',
     priority: 4,
     type: FwsAuralWarningType.AuralWarning,
-    repetitive: true,
+    continuous: true,
   },
   tripleClick: {
     localVarName: 'A32NX_FMA_TRIPLE_CLICK',
     length: 0.62,
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
-    repetitive: false,
+    continuous: false,
   },
   v1: {
     localVarName: 'A32NX_AUDIO_V1_CALLOUT',
     length: 1.3,
     priority: 1,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: false,
+    continuous: false,
   },
   autoBrakeOff: {
     localVarName: 'A32NX_AUDIO_AUTOBRAKE_OFF',
     length: 1.5,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: false,
+    continuous: false,
   },
   runwayTooShort: {
     localVarName: 'A32NX_AUDIO_ROW_RWY_TOO_SHORT',
     length: 1.6,
     priority: 4,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: true,
+    continuous: true,
   },
   keepMaxReverse: {
     localVarName: 'A32NX_AUDIO_ROP_KEEP_MAX_REVERSE',
     length: 1.4,
     priority: 4,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: false,
+    continuous: false,
   },
   setMaxReverse: {
     localVarName: 'A32NX_AUDIO_ROW_SET_MAX_REVERSE',
     length: 1.62,
     priority: 4,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: false,
+    continuous: false,
   },
   brakeMaxBraking: {
     localVarName: 'A32NX_AUDIO_ROP_MAX_BRAKING',
     length: 3.1,
     priority: 4,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: true,
+    continuous: true,
   },
   stall: {
     localVarName: 'A32NX_AUDIO_ROP_MAX_BRAKING',
     length: 3.0,
     priority: 5,
     type: FwsAuralWarningType.SyntheticVoice,
-    repetitive: true,
+    continuous: true,
   },
   cChordOnce: {
     localVarName: 'A32NX_ALT_DEVIATION',
     length: 1.0,
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
-    repetitive: false,
+    continuous: false,
   },
   cChordCont: {
     localVarName: 'A32NX_ALT_DEVIATION',
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
-    repetitive: true,
+    continuous: true,
+  },
+  // Altitude callouts
+  minimums: {
+    wwiseEventName: 'aural_minimumnew',
+    length: 0.67,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  hundred_above: {
+    wwiseEventName: 'aural_100above',
+    length: 0.72,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  retard: {
+    wwiseEventName: 'new_retard',
+    length: 0.9,
+    periodicWithPause: 0.2,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_2500: {
+    wwiseEventName: 'new_2500',
+    length: 1.1,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_2500b: {
+    wwiseEventName: 'new_2_500',
+    length: 1.047,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_2000: {
+    wwiseEventName: 'new_2000',
+    length: 0.72,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_1000: {
+    wwiseEventName: 'new_1000',
+    length: 0.9,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_500: {
+    wwiseEventName: 'new_500',
+    length: 0.6,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_400: {
+    wwiseEventName: 'new_400',
+    length: 0.6,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_300: {
+    wwiseEventName: 'new_300',
+    length: 0.6,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_200: {
+    wwiseEventName: 'new_200',
+    length: 0.6,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_100: {
+    wwiseEventName: 'new_100',
+    length: 0.6,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_90: {
+    wwiseEventName: '90_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_80: {
+    wwiseEventName: '80_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_70: {
+    wwiseEventName: '70_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_60: {
+    wwiseEventName: '60_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_50: {
+    wwiseEventName: '50_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_40: {
+    wwiseEventName: '40_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_30: {
+    wwiseEventName: '30_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_20: {
+    wwiseEventName: '20_380',
+    length: 0.4,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_10: {
+    wwiseEventName: '10_380',
+    length: 0.3,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+  alt_5: {
+    wwiseEventName: '5_380',
+    length: 0.3,
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
   },
 };
 
-// FIXME Not all sounds are added to this yet (e.g. altitude callouts, CIDS chimes), consider adding them in the future
+// FIXME Not all sounds are added to this yet (e.g. CIDS chimes), consider adding them in the future
 // Also, single chimes are not filtered (in RL only once every two seconds)
 export class FwsSoundManager {
   private readonly soundQueue = new Set<keyof typeof FwsAuralsList>();
@@ -138,7 +281,21 @@ export class FwsSoundManager {
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
 
-  constructor(private startupCompleted: Subscribable<boolean>) {}
+  constructor(
+    private bus: EventBus,
+    private startupCompleted: Subscribable<boolean>,
+  ) {
+    // Stop all sounds
+    Object.values(FwsAuralsList).forEach((a) => {
+      if (a.localVarName) {
+        SimVar.SetSimVarValue(`L:${a.localVarName}`, SimVarValueType.Bool, false);
+      }
+    });
+
+    const sub = this.bus.getSubscriber<FwsSoundManagerControlEvents>();
+    sub.on('enqueueSound').handle((s) => this.enqueueSound(s));
+    sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
+  }
 
   /** Add sound to queue. Don't add if already playing */
   enqueueSound(soundKey: keyof typeof FwsAuralsList) {
@@ -155,16 +312,21 @@ export class FwsSoundManager {
   }
 
   /** Remove sound from queue, e.g. when condition doesn't apply anymore. If sound is currently playing, stops sound immediately */
-  dequeueSound(soundKey: keyof typeof FwsAuralsList, stopSoundImmediately = true) {
+  dequeueSound(soundKey: keyof typeof FwsAuralsList) {
     // Check if this sound is currently playing
-    if (this.currentSoundPlaying === soundKey && stopSoundImmediately) {
+    if (this.currentSoundPlaying === soundKey && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
       this.stopCurrentSound();
     }
     this.soundQueue.delete(soundKey);
   }
 
   private stopCurrentSound() {
-    if (this.currentSoundPlaying) {
+    // Only LVar sounds which are continuous can be stopped
+    if (
+      this.currentSoundPlaying &&
+      FwsAuralsList[this.currentSoundPlaying].localVarName &&
+      FwsAuralsList[this.currentSoundPlaying]?.continuous
+    ) {
       SimVar.SetSimVarValue(`L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`, SimVarValueType.Bool, false);
       this.currentSoundPlaying = null;
       this.currentSoundPlayTimeRemaining = 0;
@@ -176,11 +338,11 @@ export class FwsSoundManager {
    * @param [stopSoundImmediately=true] If set to true, the sound currently playing is stopped immediately, if
    * condition is false (when working with FWS logic nodes, this should be mostly set to false)
    * */
-  handleSoundCondition(soundKey: keyof typeof FwsAuralsList, condition: boolean, stopSoundImmediately = true) {
+  handleSoundCondition(soundKey: keyof typeof FwsAuralsList, condition: boolean) {
     if (condition && this.currentSoundPlaying !== soundKey) {
       this.enqueueSound(soundKey);
-    } else {
-      this.dequeueSound(soundKey, stopSoundImmediately);
+    } else if (!condition) {
+      this.dequeueSound(soundKey);
     }
   }
 
@@ -195,14 +357,13 @@ export class FwsSoundManager {
       return;
     }
 
-    // If any sound currently playing, stop
-    if (this.currentSoundPlaying) {
-      this.stopCurrentSound();
+    if (sound.localVarName) {
+      SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, true);
+    } else if (sound.wwiseEventName) {
+      Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
-
-    SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, true);
     this.currentSoundPlaying = soundKey;
-    this.currentSoundPlayTimeRemaining = sound.repetitive ? Infinity : sound.length;
+    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
     this.soundQueue.delete(soundKey);
   }
   /** Find most important sound from soundQueue and play */
@@ -249,25 +410,41 @@ export class FwsSoundManager {
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
       } else {
         // Sound finishes in this cycle
-        SimVar.SetSimVarValue(`L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`, SimVarValueType.Bool, false);
+        if (FwsAuralsList[this.currentSoundPlaying].localVarName) {
+          SimVar.SetSimVarValue(
+            `L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`,
+            SimVarValueType.Bool,
+            false,
+          );
+        }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
       }
 
-      // Interrupt if sound with higher category or repetitive sound is present in queue
+      // Interrupt if sound with higher category is present in queue and current sound is continuous
       let shouldInterrupt = false;
+      let rescheduleSound: keyof typeof FwsAuralsList | null = null;
       this.soundQueue.forEach((sk) => {
         const s = FwsAuralsList[sk];
         if (
-          (s && FwsAuralsList[this.currentSoundPlaying] && s.type > FwsAuralsList[this.currentSoundPlaying].type) ||
-          s.repetitive
+          (s &&
+            this.currentSoundPlaying &&
+            FwsAuralsList[this.currentSoundPlaying]?.continuous &&
+            s.type > FwsAuralsList[this.currentSoundPlaying].type) ||
+          s.continuous
         ) {
           shouldInterrupt = true;
         }
       });
 
       if (shouldInterrupt) {
-        this.selectAndPlayMostImportantSound();
+        if (this.currentSoundPlaying && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
+          rescheduleSound = this.currentSoundPlaying;
+          this.stopCurrentSound();
+          if (rescheduleSound) {
+            this.enqueueSound(rescheduleSound);
+          }
+        }
       }
     } else {
       // Play next sound
