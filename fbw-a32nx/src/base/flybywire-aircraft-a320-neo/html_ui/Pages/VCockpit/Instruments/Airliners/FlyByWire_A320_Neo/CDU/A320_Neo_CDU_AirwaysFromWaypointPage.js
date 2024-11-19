@@ -98,11 +98,17 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     rows[i] = [`${pendingAirway.ident}[color]cyan`, "[\xa0\xa0\xa0][color]cyan"];
 
                     mcdu.onRightInput[i] = (value, scratchpadCallback) => {
-                        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                        const currentPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                         if (value.length > 0) {
                             Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then(/** @param wp {import('msfs-navdata').Fix | undefined} */ (wp) => {
                                 if (wp) {
+                                    if (!currentPlan.pendingAirways) {
+                                        mcdu.flightPlanService.startAirwayEntry(prevFpIndex, forPlan, inAlternate);
+                                    }
+
+                                    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                                    targetPlan.pendingAirways.thenAirway(pendingAirway);
                                     const result = targetPlan.pendingAirways.thenTo(wp);
 
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, undefined, result ? 1 : -1, forPlan, inAlternate);
