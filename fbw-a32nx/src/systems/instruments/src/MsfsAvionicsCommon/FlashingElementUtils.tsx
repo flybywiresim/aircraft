@@ -21,7 +21,7 @@ export interface FlashProps extends ComponentProps {
   bus: EventBus;
   visibleClassName?: string;
   hiddenClassName: string;
-  visible: Subscribable<boolean>;
+  visible?: Subscribable<boolean>;
   flashing?: Subscribable<boolean>;
   flashDuration: number;
 }
@@ -35,7 +35,7 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
 
   private visible = MappedSubject.create(
     ([visible, oneHertzClock, flashingMtrig]) => visible && !(flashingMtrig && oneHertzClock),
-    this.props.visible,
+    this.props.visible ?? Subject.create(true),
     this.oneHertzClock,
     this.flashingMtrigResult,
   );
@@ -50,8 +50,13 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
     this.oneHertzClock.setConsumer(sub.on('oneHertzClock'));
 
     sub.on('deltaTime').handle((dt) => {
+      const visible = this.props.visible?.get() ?? true;
       const shouldFlash = this.props.flashing?.get() ?? true;
-      this.flashingMtrigResult.set(this.flashingMtrig.write(this.props.visible.get() && shouldFlash, dt));
+      this.flashingMtrigResult.set(
+        this.props.flashDuration === Infinity
+          ? visible && shouldFlash
+          : this.flashingMtrig.write(visible && shouldFlash, dt),
+      );
     });
 
     this.visible.sub((vis) => {
