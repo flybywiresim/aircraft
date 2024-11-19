@@ -135,13 +135,26 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus; isA
 
 export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus }> {
     private refElement = FSComponent.createRef<SVGGElement>();
-
+    private leftChevron = FSComponent.createRef<SVGGElement>();
+    private rightChevron = FSComponent.createRef<SVGGElement>();
+    private inRange = true;
+    private onGround = true;
+    private merged = false;
+    private onTakeoff = true;
     private vCTrend = new Arinc429Word(0);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
+
+        sub.on('leftMainGearCompressed').whenChanged().handle((value)=>{
+            (value) ? this.onGround = true : this.onGround = false;
+        })
+
+        sub.on('fmgcFlightPhase').whenChanged().handle((value)=>{
+            (value == 1) ? this.onTakeoff = true : this.onTakeoff = false;
+        })
 
         sub.on('vCTrend').withArinc429Precision(2).handle((word) => {
             this.vCTrend = word;
@@ -149,7 +162,39 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
             if (this.vCTrend.isNormalOperation()) {
                 this.refElement.instance.style.visibility = 'visible';
                 const offset = -this.vCTrend.value * 28 / 5;
-                this.refElement.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+                let UsedOffset = offset;
+                if(this.merged == false){
+                    if(this.onTakeoff){
+                        (offset <= -182.857) ? this.inRange = false : this.inRange = true;
+                        UsedOffset = Math.max( -this.vCTrend.value * 28 / 5 , -182.857)  ;                
+                        if(UsedOffset === offset){    
+                            UsedOffset = -this.vCTrend.value * 28 / 5 ; 
+                            if(this.onGround == false){
+                                this.merged = true;
+                                this.inRange = true;
+                            }
+                        }
+                    }else{
+                        UsedOffset = -this.vCTrend.value * 28 / 5 ;
+                    }
+
+                }
+                
+                if(this.merged == false){
+                    if(this.inRange){
+                        this.leftChevron.instance.setAttribute('stroke-dasharray','' );
+                        this.rightChevron.instance.setAttribute('stroke-dasharray','' );
+                    }else{
+                        this.leftChevron.instance.setAttribute('stroke-dasharray','2 3.5 2 3.5 2 3 2 3' );
+                        this.rightChevron.instance.setAttribute('stroke-dasharray','2 3.5 2 3.5 2 3 2 3' );
+                    }
+                }else{
+                    this.leftChevron.instance.setAttribute('stroke-dasharray','' );
+                    this.rightChevron.instance.setAttribute('stroke-dasharray','' );
+                }
+
+                this.refElement.instance.style.transform = `translate3d(0px, ${UsedOffset}px, 0px)`;
+
             } else {
                 this.refElement.instance.style.visibility = 'hidden';
             }
@@ -159,8 +204,8 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
     render(): VNode | null {
         return (
             <g id="TotalFlightPathAngle" ref={this.refElement}>
-                <path class="SmallStroke Green" d="m 574,500 12,12 -12,12" />
-                <path class="SmallStroke Green" d="m 706,500 -12,12 12,12" />
+                <path ref={this.leftChevron} class="SmallStroke Green" d="m 574,500 12,12 -12,12" />
+                <path ref={this.rightChevron} class="SmallStroke Green" d="m 706,500 -12,12 12,12" />
             </g>
         );
     }
