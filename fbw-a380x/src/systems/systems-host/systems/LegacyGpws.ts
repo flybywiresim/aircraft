@@ -12,8 +12,6 @@ type ModesType = {
 
 /**
  * This 1:1 port from the A32NX's GPWS+FWS serves as temporary replacement, until a more sophisticated system simulation is in place.
- * After merge of PR #4872 (https://github.com/flybywiresim/aircraft/pull/4872) (intended for A32NX), the FWS architecture has to
- * be ported to the A380X, then the FWS callout parts of this class can be removed.
  */
 export class LegacyGpws {
   private updateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
