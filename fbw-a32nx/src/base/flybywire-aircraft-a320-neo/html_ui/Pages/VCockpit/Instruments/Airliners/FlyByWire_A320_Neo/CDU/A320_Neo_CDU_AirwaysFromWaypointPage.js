@@ -124,11 +124,17 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         subRows[i + 1] = ["\xa0VIA", ""];
 
                         mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-                            const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                            const currentPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                             if (value.length > 0) {
                                 const airway = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(console.error);
                                 if (airway) {
+                                    if (!currentPlan.pendingAirways) {
+                                        mcdu.flightPlanService.startAirwayEntry(prevFpIndex, forPlan, inAlternate);
+                                    }
+
+                                    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                                    targetPlan.pendingAirways.thenAirway(pendingAirway);
                                     const result = targetPlan.pendingAirways.thenAirway(airway);
 
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1, forPlan, inAlternate);
