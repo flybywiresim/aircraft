@@ -48,6 +48,7 @@
 1. [A32NX/TELEX] Keep flight number set even if already taken - @BenJuan26 (BenJuan26)
 1. [HYD] Placeholder inhibit logic for electrical backup on ground - @Crocket63 (crocket)
 1. [A380X/PRESS] Add pressurization system failures failures ecam messages - @mjuhe (Miquel Juhe)
+1. [A380X] Add rudder trim functionality to SECs, add rudder trim indication to PFD, activate indication on SD/FCTL - @flogross89 (floridude)
 1. [A380X/MFD] Fix ETA and add TOD prediction in PERF page - @BravoMike99 (bruno_pt99)
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
