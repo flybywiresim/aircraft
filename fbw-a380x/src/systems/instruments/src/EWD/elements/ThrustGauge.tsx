@@ -20,7 +20,7 @@ import {
   ThrottlePositionDonutComponent,
   ThrustTransientComponent,
 } from 'instruments/src/MsfsAvionicsCommon/gauges';
-import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface ThrustGaugeProps {
   bus: EventBus;
@@ -30,6 +30,8 @@ interface ThrustGaugeProps {
   active: Subscribable<boolean>;
   n1Degraded: Subscribable<boolean>;
 }
+
+const METOTS_N1_LIMIT = 76.5;
 
 export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & EwdSimvars>();
@@ -123,15 +125,22 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly thrustPercent = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
-      Math.min(
-        1,
-        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
-      ) * 100,
+      this.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
     this.n1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
     this.thrIdleOffset,
   );
+
+  /** Expects values in percent 0-100, returns 0-100 */
+  private thrustPercentFromN1(n1: number, thrustLimitIdle: number, thrustLimitMax: number, thrIdleOffset: number) {
+    return (
+      Math.min(
+        1,
+        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
+      ) * 100
+    );
+  }
 
   private readonly thrustPercentReverse = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitRev]) =>
@@ -159,6 +168,23 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly availRevText = this.availVisible.map((it) => (it ? 'AVAIL' : 'REV'));
+
+  private readonly cas1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_1'));
+
+  // FIXME replace with actual available thrust when ACUTE is implemented
+  private readonly maxThrustAvail = MappedSubject.create(
+    ([cas, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      cas.isNoComputedData() || cas.valueOr(100) < 35
+        ? Math.max(
+            thrIdleOffset * 100,
+            this.thrustPercentFromN1(METOTS_N1_LIMIT, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
+          ) / 10
+        : 10,
+    this.cas1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
 
   private radius = 64;
   private startAngle = 230;
@@ -223,8 +249,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               <GaugeThrustComponent
                 x={this.props.x}
                 y={this.props.y}
-                valueIdle={0.3}
-                valueMax={10}
+                valueIdle={Subject.create(0.42)}
+                valueMax={this.maxThrustAvail}
                 radius={this.radius}
                 startAngle={this.startAngle}
                 endAngle={this.endAngle}
@@ -394,8 +420,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
             <GaugeThrustComponent
               x={this.props.x}
               y={this.props.y}
-              valueIdle={0.04}
-              valueMax={2.6}
+              valueIdle={Subject.create(0.04)}
+              valueMax={Subject.create(2.6)}
               radius={this.revRadius}
               startAngle={this.revStartAngle}
               endAngle={this.revEndAngle}
