@@ -164,20 +164,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
      * @param plan {FlightPlan}
      */
     static _GetAllRows(plan) {
-
-        //  const allRows = [];
-        //  const elements = plan.pendingAirways.elements;
-
-        //  for (let i = 0; i < elements.length; i++) {
-        //      const element = elements[i];
-
-        //      if (element.to) {
-        //          allRows.push([`{cyan}${element.airway.ident}{end}`, `{cyan}${element.isAutoConnected ? '{small}' : '{big}'}${element.to.ident}{end}{end}`, element.to.databaseId, i]);
-        //      }
-        //  }
-
-        //  return allRows;
-
         const allRows = [];
 
         if (plan.pendingAirways) {
