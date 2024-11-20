@@ -178,12 +178,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       <g>
         <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
 
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.vsFlagVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.vsFlagVisible}>
           <text class="FontLargest Red EndAlign" x="153.13206" y="77.501472">
             V
           </text>
