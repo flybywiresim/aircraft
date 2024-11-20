@@ -116,7 +116,7 @@ export interface JS_FacilityAirport {
   /** always seems to be false */
   towered: boolean;
   /** FS2024 only. */
-  holdingPatterns?: JS_HoldingPattern;
+  holdingPatterns?: JS_HoldingPattern[];
   /** Metres, 0 if not defined. FS2024 only. */
   transitionAlt?: number;
   /** Metres, 0 if not defined. FS2024 only. */
