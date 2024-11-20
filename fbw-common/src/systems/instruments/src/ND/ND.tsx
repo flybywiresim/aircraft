@@ -530,24 +530,48 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
     sub
       .on('groundSpeed')
       .atFrequency(2)
-      .handle((value) => this.groundSpeedRegister.setWord(value));
+      .handle((value) => {
+        this.groundSpeedRegister.setWord(value);
 
-    this.groundSpeedRegister.sub((data) => {
-      const element = this.groundSpeedRef.instance;
-
-      element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
-    }, true);
+        this.handleGS();
+      });
 
     sub
       .on('trueAirSpeed')
       .atFrequency(2)
-      .handle((value) => this.trueAirSpeedRegister.setWord(value));
+      .handle((value) => {
+        this.trueAirSpeedRegister.setWord(value);
 
-    this.trueAirSpeedRegister.sub((data) => {
+        this.handleTAS();
+      });
+  }
+
+  private handleGS() {
+    const groundspeed = this.groundSpeedRegister.get();
+
+    if (groundspeed.isFailureWarning()) {
+      this.groundSpeedRef.instance.textContent = '';
+    } else if (groundspeed.isNoComputedData()) {
+      this.groundSpeedRef.instance.textContent = '---';
+    } else {
+      const element = this.groundSpeedRef.instance;
+
+      element.textContent = Math.round(groundspeed.value).toString();
+    }
+  }
+
+  private handleTAS() {
+    const airspeed = this.trueAirSpeedRegister.get();
+
+    if (airspeed.isFailureWarning()) {
+      this.trueAirSpeedRef.instance.textContent = '';
+    } else if (airspeed.isNoComputedData()) {
+      this.trueAirSpeedRef.instance.textContent = '---';
+    } else {
       const element = this.trueAirSpeedRef.instance;
 
-      element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
-    }, true);
+      element.textContent = Math.round(airspeed.value).toString();
+    }
   }
 
   render(): VNode | null {

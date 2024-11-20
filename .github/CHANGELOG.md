@@ -69,6 +69,7 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
+1. [ND] Fix GS & TAS values being blank if no computed data - @MrJigs7 (MrJigs)
 
 ## 0.12.0
 
