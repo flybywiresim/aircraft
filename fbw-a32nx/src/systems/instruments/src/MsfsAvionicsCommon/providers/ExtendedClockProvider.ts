@@ -32,14 +32,14 @@ export class ExtendedClockEventProvider implements Instrument {
       this.monotonicTime += this.deltaTime;
 
       this.oneHertzClock += this.deltaTime;
-      if (this.oneHertzClock > 1000) {
-        this.oneHertzClock = 0;
-      }
 
       publisher.pub('deltaTime', this.deltaTime);
       publisher.pub('monotonicTime', this.monotonicTime);
       publisher.pub('oneHertzClock', this.oneHertzClock > 500);
 
+      if (this.oneHertzClock > 1000) {
+        this.oneHertzClock = 0;
+      }
       this.prevSimTime = time;
     });
   }
