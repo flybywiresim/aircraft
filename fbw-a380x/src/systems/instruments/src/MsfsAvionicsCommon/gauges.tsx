@@ -1,4 +1,12 @@
-import { DisplayComponent, FSComponent, Subscribable, Subject, VNode, MappedSubject } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  Subscribable,
+  Subject,
+  VNode,
+  MappedSubject,
+  SubscribableUtils,
+} from '@microsoft/msfs-sdk';
 
 import './gauges.scss';
 
@@ -451,14 +459,18 @@ interface GaugeThrustComponentProps {
   endAngle: number;
   class: string;
   visible: Subscribable<boolean>;
-  valueIdle: Subscribable<number>;
-  valueMax: Subscribable<number>;
+  valueIdle: number | Subscribable<number>;
+  valueMax: number | Subscribable<number>;
   reverse?: boolean;
 }
 export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentProps> {
   constructor(props: GaugeThrustComponentProps) {
     super(props);
   }
+
+  private readonly valueIdleSub = SubscribableUtils.toSubscribable(this.props.valueIdle, true);
+
+  private readonly valueMaxSub = SubscribableUtils.toSubscribable(this.props.valueMax, true);
 
   private readonly thrustPath = MappedSubject.create(
     ([valueIdle, valueMax]) => {
@@ -491,8 +503,8 @@ export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentP
         `M ${valueMaxEnd.x} ${valueMaxEnd.y} L ${this.props.x},${this.props.y}`,
       ].join(' ');
     },
-    this.props.valueIdle,
-    this.props.valueMax,
+    this.valueIdleSub,
+    this.valueMaxSub,
   );
 
   render(): VNode {
