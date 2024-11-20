@@ -94,10 +94,7 @@ export class FwsCore {
   private static readonly FWC_STARTUP_TIME = 5000;
 
   /** Time to inhibit SCs after one is trigger in ms */
-  private static readonly AURAL_SC_INHIBIT_TIME = 5000;
-
-  /** The time to play the single chime sound in ms */
-  private static readonly AURAL_SC_PLAY_TIME = 500;
+  private static readonly AURAL_SC_INHIBIT_TIME = 2000;
 
   private static readonly EWD_MESSAGE_LINES = 10;
 
@@ -262,12 +259,6 @@ export class FwsCore {
     ([mw, stall, startup]) => (mw || stall) && startup,
     this.masterWarning,
     this.stallWarning,
-    this.startupCompleted,
-  );
-
-  public readonly auralCrcOutput = MappedSubject.create(
-    ([auralCrc, startup]) => auralCrc && startup,
-    this.auralCrcActive,
     this.startupCompleted,
   );
 
@@ -483,8 +474,6 @@ export class FwsCore {
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
 
-  // public readonly autoPilotOffSendTripleClickAfterFirstCavalryCharge = new NXLogicPulseNode(false);
-
   public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
 
   public readonly autoPilotOffVoluntaryMemory = new NXLogicMemoryNode(true);
@@ -499,7 +488,9 @@ export class FwsCore {
 
   public readonly approachCapability = Subject.create(0);
 
-  public readonly approachCapabilityDowngradeDebounce = new NXLogicTriggeredMonostableNode(3, true);
+  public readonly approachCapabilityDowngradeDebounce = new NXLogicTriggeredMonostableNode(1, true);
+
+  public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
 
@@ -1582,7 +1573,7 @@ export class FwsCore {
       }
     });
 
-    this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
+    this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
 
     this.masterCautionOutput.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
@@ -1816,8 +1807,6 @@ export class FwsCore {
     // Update flight phases
     this.flightPhases.update(deltaTime);
 
-    // Update altitude callouts
-
     // Play sounds
     this.soundManager.onUpdate(deltaTime);
 
@@ -1849,6 +1838,7 @@ export class FwsCore {
     this.flightPhase910.set([9, 10].includes(this.flightPhase.get()));
     const flightPhase6789 = [6, 7, 8, 9].includes(this.flightPhase.get());
     const flightPhase112 = [1, 12].includes(this.flightPhase.get());
+    const flightPhase167 = [1, 6, 7].includes(this.flightPhase.get());
 
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
@@ -2444,13 +2434,6 @@ export class FwsCore {
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
-    /* this.autoPilotOffSendTripleClickAfterFirstCavalryCharge.write(
-      this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
-      deltaTime,
-    );
-    if (this.autoPilotOffSendTripleClickAfterFirstCavalryCharge.read()) {
-      // FIXME triple click only on capability downgrade
-    }*/
 
     this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.write(
       this.autoPilotInstinctiveDiscPressedPulse.read() &&
@@ -2467,7 +2450,7 @@ export class FwsCore {
 
     const discPbPressedAfterDisconnection =
       !this.autoPilotDisengagedInstantPulse.read() &&
-      (this.autoPilotInstinctiveDiscPressedPulse.read() || masterWarningButtonLeft || masterCautionButtonRight);
+      (this.autoPilotInstinctiveDiscPressedPulse.read() || masterWarningButtonLeft || masterWarningButtonRight);
 
     this.autoPilotOffUnacknowledged.write(
       this.autoPilotDisengagedInstantPulse.read(),
@@ -2500,11 +2483,16 @@ export class FwsCore {
 
     this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
 
-    // approach capability downgrade
+    // approach capability downgrade. Debounce first, then suppress for a certain amount of time
+    // (to avoid multiple triple clicks, and a delay which is too long)
     const newCapability = SimVar.GetSimVarValue('L:A32NX_ApproachCapability', SimVarValueType.Number);
     const capabilityDowngrade = newCapability < this.approachCapability.get();
-    this.approachCapabilityDowngradeDebounce.write(capabilityDowngrade, deltaTime);
+    this.approachCapabilityDowngradeDebounce.write(
+      capabilityDowngrade && !flightPhase167 && !this.approachCapabilityDowngradeSuppress.read(),
+      deltaTime,
+    );
     this.approachCapabilityDowngradeDebouncePulse.write(this.approachCapabilityDowngradeDebounce.read(), deltaTime);
+    this.approachCapabilityDowngradeSuppress.write(this.approachCapabilityDowngradeDebouncePulse.read(), deltaTime);
     // Capability downgrade after debounce --> triple click
     if (this.approachCapabilityDowngradeDebouncePulse.read()) {
       this.soundManager.enqueueSound('tripleClick');
