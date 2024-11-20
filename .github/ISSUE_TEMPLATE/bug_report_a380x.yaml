@@ -15,7 +15,7 @@ body:
     description: Which simulator are you using?
     options:
     - 2020
-    - 2024
+    - 2024 (Not yet supported)
   validations:
     required: true
 - type: dropdown
