@@ -6,16 +6,6 @@ body:
   attributes:
     value: "# A32NX Bug Report Form"
 - type: dropdown
-  id: version
-  attributes:
-    label: Aircraft Version
-    description: What version of the A32NX are you using?
-    options:
-    - Stable
-    - Development
-  validations:
-    required: true
-- type: dropdown
   id: sim
   attributes:
     label: Simulator Version
@@ -23,6 +13,16 @@ body:
     options:
     - 2020
     - 2024
+  validations:
+    required: true
+- type: dropdown
+  id: version
+  attributes:
+    label: Aircraft Version
+    description: What version of the A32NX are you using?
+    options:
+    - Stable
+    - Development
   validations:
     required: true
 - type: textarea
