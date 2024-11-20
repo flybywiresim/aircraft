@@ -395,7 +395,7 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 
   handleMessage(): void {
-    const [_isShown, isTwoLine, _text] = getA1A2CellText(
+    const [_isShown, isTwoLine, _text, _amberFlashingBox] = getA1A2CellText(
       this.fcuAtsDiscreteWord,
       this.fcuAtsFmaDiscreteWord,
       0,
@@ -479,13 +479,14 @@ function getA1A2CellText(
   flexTemp: number,
   autoBrakeMode: number,
   autoBrakeActive: boolean,
-): [boolean, boolean, string] {
+): [boolean, boolean, string, boolean] {
   const atEngaged = fcuAtsDiscreteWord.bitValueOr(13, false);
   const atActive = fcuAtsDiscreteWord.bitValueOr(14, false);
 
   let text = '';
   let isShown = true;
   let isTwoLine = false;
+  let amberFlashingBox = false;
 
   if (fcuAtsFmaDiscreteWord.bitValueOr(11, false)) {
     isShown = false;
@@ -542,16 +543,12 @@ function getA1A2CellText(
                             </g>`;
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(17, false)) {
     isShown = false;
-    text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
-                            </g>`;
+    amberFlashingBox = true;
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(18, false)) {
     isShown = false;
-    text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
-                            </g>`;
+    amberFlashingBox = true;
+    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(19, false)) {
     text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(20, false)) {
@@ -584,7 +581,7 @@ function getA1A2CellText(
     isShown = false;
   }
 
-  return [isShown, isTwoLine, text];
+  return [isShown, isTwoLine, text, amberFlashingBox];
 }
 
 interface CellProps extends ComponentProps {
@@ -598,6 +595,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   private cellRef = FSComponent.createRef<SVGGElement>();
 
+  private amberFlashingBox = Subject.create(false);
+
   private flexTemp = 0;
 
   private autoBrakeActive = false;
@@ -609,7 +608,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    const [isShown, _isTwoLine, text] = getA1A2CellText(
+    const [isShown, _isTwoLine, text, amberFlashingBox] = getA1A2CellText(
       this.fcuAtsDiscreteWord,
       this.fcuAtsFmaDiscreteWord,
       this.flexTemp,
@@ -626,6 +625,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     }
 
     this.cellRef.instance.innerHTML = text;
+
+    this.amberFlashingBox.set(amberFlashingBox);
   }
 
   onAfterRender(node: VNode): void {
@@ -683,6 +684,9 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
           d="m3.3 1.8143h27.127v6.0476h-27.127z"
         />
         <g ref={this.cellRef} />
+        <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.amberFlashingBox}>
+          <path class="NormalStroke Amber" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+        </FlashOneHertz>
       </g>
     );
   }
