@@ -38,6 +38,8 @@
 1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
+1. [A380X/FADEC] Add N1 fan protection measures (METOTS, KOZ) - @flogross89 (floridude)
+1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
@@ -65,6 +67,8 @@
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
 1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
+1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
+1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 
 ## 0.12.0
 
