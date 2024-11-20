@@ -4076,7 +4076,6 @@ export class FwsCore {
         !ewdLimitationsApprLdgKeys.length,
     );
 
-    // This does not consider interrupting c-chord, priority of synthetic voice etc.
     const chimeRequested = this.auralSingleChimePending || this.requestSingleChimeFromAThrOff;
     if (chimeRequested && !this.auralSingleChimeInhibitTimer.isPending()) {
       this.auralSingleChimePending = false;
