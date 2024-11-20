@@ -18,6 +18,8 @@ import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 /* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
@@ -464,7 +466,7 @@ class Row3 extends DisplayComponent<{
           <AB3Cell AB3Message={this.props.AB3Message} />
           <D3Cell bus={this.props.bus} />
         </g>
-        <BC3Cell BC3Message={this.props.BC3Message} />
+        <BC3Cell bus={this.props.bus} BC3Message={this.props.BC3Message} />
         <E3Cell bus={this.props.bus} />
       </g>
     );
@@ -700,18 +702,23 @@ const getA3Message = (
 
   let text: string;
   let className: string;
+  let flashingClassName = null;
   if (thrLocked) {
     text = 'THR LK';
-    className = 'Amber BlinkInfinite';
+    className = 'Amber';
+    flashingClassName = '';
   } else if (false) {
     text = 'LVR TOGA';
-    className = 'White BlinkInfinite';
+    className = 'White';
+    flashingClassName = '';
   } else if (clbDemand) {
     text = 'LVR CLB';
-    className = 'White BlinkInfinite';
+    className = 'White';
+    flashingClassName = '';
   } else if (mctDemand) {
     text = 'LVR MCT';
-    className = 'White BlinkInfinite';
+    className = 'White';
+    flashingClassName = '';
   } else if (assymThrust) {
     text = 'LVR ASYM';
     className = 'Amber';
@@ -719,10 +726,10 @@ const getA3Message = (
     text = 'BRK MAX';
     className = 'FontMediumSmaller MiddleAlign Cyan';
   } else {
-    return [null, null];
+    return [null, null, null];
   }
 
-  return [text, className];
+  return [text, className, flashingClassName];
 };
 
 interface A3CellProps extends CellProps {
@@ -734,12 +741,15 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private textSub = Subject.create('');
 
+  private shouldFlash = Subject.create(false);
+
   private updateMessage() {
     const className = this.props.A3Message.get()[1];
     const text = this.props.A3Message.get()[0];
 
     this.textSub.set(text);
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
+    this.shouldFlash.set(this.props.A3Message.get()[2] !== null);
   }
 
   onAfterRender(node: VNode): void {
@@ -750,9 +760,11 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   render(): VNode {
     return (
-      <text class={this.classSub} x="16.989958" y="21.641243">
-        {this.textSub}
-      </text>
+      <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
+        <text class={this.classSub} x="16.989958" y="21.641243">
+          {this.textSub}
+        </text>
+      </FlashOneHertz>
     );
   }
 }
@@ -821,9 +833,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private readonly inSpeedProtection = Subject.create(false);
 
-  private speedProtectionPathRef = FSComponent.createRef<SVGPathElement>();
-
-  private inModeReversionPathRef = FSComponent.createRef<SVGPathElement>();
+  private inModeReversion = Subject.create(false);
 
   private fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
@@ -961,17 +971,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       this.boxClassSub.set('NormalStroke White');
     }
 
-    if (longitudinalModeReversion) {
-      this.inModeReversionPathRef.instance.setAttribute('visibility', 'visible');
-    } else {
-      this.inModeReversionPathRef.instance.setAttribute('visibility', 'hidden');
-    }
-
-    if (inSpeedProtection) {
-      this.speedProtectionPathRef.instance.setAttribute('visibility', 'visible');
-    } else {
-      this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
-    }
+    this.inModeReversion.set(longitudinalModeReversion);
 
     const bigBoxDisplayed = tcasMode && this.fmgcDiscreteWord7.bitValueOr(18, false);
     const boxPathString =
@@ -995,7 +995,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents>();
 
     sub
       .on('fmgcDiscreteWord1')
@@ -1067,16 +1067,13 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       <g>
         <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
 
-        <path
-          ref={this.speedProtectionPathRef}
-          class="NormalStroke Amber BlinkInfinite"
-          d="m35.756 1.8143h27.918v6.0476h-27.918z"
-        />
-        <path
-          ref={this.inModeReversionPathRef}
-          class="NormalStroke White BlinkInfinite"
-          d="m35.756 1.8143h27.918v6.0476h-27.918z"
-        />
+        <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.inSpeedProtection}>
+          <path class="NormalStroke Amber" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
+        </FlashOneHertz>
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.inModeReversion}>
+          <path class="NormalStroke White" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
+        </FlashOneHertz>
 
         <text
           ref={this.fmaTextRef}
@@ -1086,15 +1083,15 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
           y="7.1040988"
         >
           <tspan>{this.verticalText}</tspan>
-          <tspan
-            xml:space="preserve"
-            class={{
-              PulseCyanFill: this.inSpeedProtection,
-              Cyan: this.inSpeedProtection.map(SubscribableMapFunctions.not()),
-            }}
+          <FlashOneHertz
+            bus={this.props.bus}
+            flashDuration={Infinity}
+            flashing={this.inSpeedProtection}
+            className1={'Cyan'}
+            className2={'DimmendCyan Fill'}
           >
-            {this.additionalText}
-          </tspan>
+            <tspan xml:space="preserve">{this.additionalText}</tspan>
+          </FlashOneHertz>
         </text>
       </g>
     );
@@ -1482,6 +1479,8 @@ const getBC3Message = (
 
   let text: string;
   let className: string;
+  let flashingClassName1 = '';
+  let flashingClassName2 = '';
   // All currently unused message are set to false
   if (
     !fcdcWord1.bitValue(11) &&
@@ -1492,69 +1491,85 @@ const getBC3Message = (
     flightPhaseForWarning
   ) {
     text = 'MAN PITCH TRIM ONLY';
-    className = 'FontSmall Red Blink9Seconds';
+    className = 'FontSmall';
+    flashingClassName1 = 'Red Fill';
+    flashingClassName2 = 'HiddenElement';
   } else if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     text = 'USE MAN PITCH TRIM';
-    className = 'FontSmall PulseAmber9Seconds Amber';
+    className = 'FontSmall';
+    flashingClassName1 = 'Amber Fill';
+    flashingClassName2 = 'DimmedAmber Fill';
   } else if (false) {
     text = 'FOR GA: SET TOGA';
-    className = 'FontMedium PulseAmber9Seconds Amber';
+    className = 'FontMedium';
+    flashingClassName1 = 'Amber Fill';
+    flashingClassName2 = 'DimmedAmber Fill';
   } else if (TCASArmed && !isAttExcessive) {
     text = 'TCAS           ';
     className = 'FontMediumSmaller Cyan';
   } else if (false) {
     text = 'DISCONNECT AP FOR LDG';
-    className = 'FontMedium PulseAmber9Seconds Amber';
+    className = 'FontMedium';
+    flashingClassName1 = 'Amber Fill';
+    flashingClassName2 = 'DimmedAmber Fill';
   } else if (tcasRaInhibited && !isAttExcessive) {
     text = 'TCAS RA INHIBITED';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
     text = 'TRK FPA DESELECTED';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (false) {
     text = 'SET GREEN DOT SPEED';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (tdReached) {
     text = 'T/D REACHED';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (false) {
     text = 'MORE DRAG';
     className = 'FontMedium White';
   } else if (checkSpeedMode && !isAttExcessive) {
     text = 'CHECK SPEED MODE';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (false) {
     text = 'CHECK APPR SELECTION';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (false) {
     text = 'TURN AREA EXCEEDANCE';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (setHoldSpeed) {
     text = 'SET HOLD SPEED';
-    className = 'FontMedium White';
+    className = 'FontMedium White Fill';
   } else if (false) {
     text = 'VERT DISCONT AHEAD';
-    className = 'FontMedium Amber';
+    className = 'FontMedium Amber Fill';
   } else if (false) {
     text = 'FINAL APP SELECTED';
-    className = 'FontSmall White';
+    className = 'FontSmall White Fill';
   } else {
-    return [null, null];
+    return [null, null, flashingClassName1, flashingClassName2];
   }
 
-  return [text, className];
+  return [text, className, flashingClassName1, flashingClassName2];
 };
 
-class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> }> {
+class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> } & CellProps> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
-  private classNameSub = Subject.create('');
+  private normalClassNames = Subject.create('');
+
+  private flashingClassName1 = Subject.create('');
+
+  private flashingClassName2 = Subject.create('');
+
+  private isFlashing = Subject.create(false);
 
   private fillBC3Cell() {
-    const className = this.props.BC3Message.get()[1];
-    const text = this.props.BC3Message.get()[0];
+    this.normalClassNames.set(`${this.props.BC3Message.get()[1]} MiddleAlign`);
+    this.flashingClassName1.set(this.props.BC3Message.get()[2]);
+    this.flashingClassName2.set(this.props.BC3Message.get()[3]);
+    this.isFlashing.set(this.props.BC3Message.get()[2] !== '');
 
-    this.classNameSub.set(`MiddleAlign ${className}`);
+    const text = this.props.BC3Message.get()[0];
     if (text !== null) {
       this.bc3Cell.instance.innerHTML = text;
     } else {
@@ -1571,7 +1586,17 @@ class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> }> {
   }
 
   render(): VNode {
-    return <text ref={this.bc3Cell} class={this.classNameSub} x="68.087875" y="21.627102" style="white-space: pre" />;
+    return (
+      <FlashOneHertz
+        bus={this.props.bus}
+        flashDuration={9}
+        flashing={this.isFlashing}
+        className1={this.flashingClassName1}
+        className2={this.flashingClassName2}
+      >
+        <text ref={this.bc3Cell} class={this.normalClassNames} x="68.087875" y="21.627102" style="white-space: pre" />
+      </FlashOneHertz>
+    );
   }
 }
 
