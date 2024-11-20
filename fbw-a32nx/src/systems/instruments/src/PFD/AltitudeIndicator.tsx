@@ -381,18 +381,13 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
         <g ref={this.abnormal} style="display: none">
           <path id="AltTapeOutline" class="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
           <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
-          <FlashOneHertz
-            bus={this.props.bus}
-            flashDuration={9}
-            visible={this.altFlagVisible}
-            hiddenClassName="HiddenElement"
-          >
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.altFlagVisible}>
             <text id="AltFailText" class="FontLargest Red EndAlign" x="131.16769" y="83.433167">
               ALT
             </text>
           </FlashOneHertz>
         </g>
-        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasFailed} hiddenClassName="HiddenElement">
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasFailed}>
           <text class="FontMedium Amber EndAlign" x="141.5" y="100">
             T
           </text>
@@ -672,12 +667,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             {this.textSub}
           </text>
         </g>
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.selectedAltFailed}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.selectedAltFailed}>
           <text id="SelectedAltUpperText" class="FontSmall EndAlign Red" x="136.22987" y="37.250134">
             ALT SEL
           </text>
@@ -844,12 +834,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   render(): VNode {
     return (
-      <FlashOneHertz
-        bus={this.props.bus}
-        flashDuration={Infinity}
-        flashing={this.shouldFlash}
-        hiddenClassName="HiddenElement"
-      >
+      <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
         <g ref={this.stdGroup} id="STDAltimeterModeGroup">
           <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
           <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">

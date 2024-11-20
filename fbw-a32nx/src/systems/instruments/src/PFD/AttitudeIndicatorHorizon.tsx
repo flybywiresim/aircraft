@@ -562,12 +562,7 @@ class RadioAltAndDH extends DisplayComponent<{
   render(): VNode {
     return (
       <g ref={this.daRaGroup} id="DHAndRAGroup">
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.attDhTextVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.attDhTextVisible}>
           <text id="AttDHText" x="73.511879" y="113.19068" class="FontLargest Amber EndAlign TextOutline">
             DH
           </text>
@@ -578,7 +573,6 @@ class RadioAltAndDH extends DisplayComponent<{
           flashDuration={9}
           visible={this.radioAltVisible}
           flashing={this.raFlagFlashing}
-          hiddenClassName="HiddenElement"
         >
           <text id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub}>
             {this.radioAltText}
@@ -735,12 +729,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
           class={this.classNameSub}
           d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
         />
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.siFlagVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.siFlagVisible}>
           <text id="SIFailText" x="72.315376" y="48.116844" class="FontSmall Red EndAlign">
             SI
           </text>

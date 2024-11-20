@@ -12,15 +12,15 @@ import {
   EventBus,
   ConsumerSubject,
   Subject,
-  SetSubject,
+  SubscribableUtils,
 } from '@microsoft/msfs-sdk';
 import { ExtendedClockEvents } from './providers/ExtendedClockProvider';
 import { NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 
 export interface FlashProps extends ComponentProps {
   bus: EventBus;
-  visibleClassName?: string;
-  hiddenClassName: string;
+  className1?: Subscribable<string> | string;
+  className2?: Subscribable<string> | string;
   visible?: Subscribable<boolean>;
   flashing?: Subscribable<boolean>;
   flashDuration: number;
@@ -40,7 +40,12 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
     this.flashingMtrigResult,
   );
 
-  private classList = SetSubject.create<string>();
+  private class = MappedSubject.create(
+    ([visible, class1, class2]) => (visible ? class1 : class2),
+    this.visible,
+    SubscribableUtils.toSubscribable(this.props.className1 ?? '', true),
+    SubscribableUtils.toSubscribable(this.props.className2 ?? 'HiddenElement', true),
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -58,23 +63,9 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
           : this.flashingMtrig.write(visible && shouldFlash, dt),
       );
     });
-
-    this.visible.sub((vis) => {
-      if (vis) {
-        if (this.props.visibleClassName) {
-          this.classList.add(this.props.visibleClassName);
-        }
-        this.classList.delete(this.props.hiddenClassName);
-      } else {
-        this.classList.add(this.props.hiddenClassName);
-        if (this.props.visibleClassName) {
-          this.classList.delete(this.props.visibleClassName ?? '');
-        }
-      }
-    }, true);
   }
 
   render(): VNode {
-    return <g class={this.classList}>{this.props.children}</g>;
+    return <g class={this.class}>{this.props.children}</g>;
   }
 }

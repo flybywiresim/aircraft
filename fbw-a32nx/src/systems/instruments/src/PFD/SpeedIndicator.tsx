@@ -257,12 +257,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
       <>
         <g id="FailedGroup" ref={this.failedGroup} class="HiddenElement">
           <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
-          <FlashOneHertz
-            bus={this.props.bus}
-            flashDuration={9}
-            visible={this.spdFlagVisible}
-            hiddenClassName="HiddenElement"
-          >
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdFlagVisible}>
             <text id="SpeedFailText" class="FontLargest EndAlign Red" x="17.756115" y="83.386398">
               SPD
             </text>
@@ -504,12 +499,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
           />
           <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
           <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
-          <FlashOneHertz
-            bus={this.props.bus}
-            flashDuration={9}
-            visible={this.spdLimFlagVisible}
-            hiddenClassName="HiddenElement"
-          >
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdLimFlagVisible}>
             <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red">
               SPD
             </text>
@@ -1183,12 +1173,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         >
           {this.textSub}
         </text>
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.spdSelFlagVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdSelFlagVisible}>
           <text id="SelectedSpeedFailText" class="FontSmall EndAlign Red" x="24.078989" y="36.670692">
             SPD SEL
           </text>
@@ -1381,12 +1366,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <>
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.machFlagVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.machFlagVisible}>
           <text id="MachFailText" class="FontLargest StartAlign Red" x="5.4257932" y="136.88908">
             MACH
           </text>

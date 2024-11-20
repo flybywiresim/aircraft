@@ -133,12 +133,7 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
             </g>
           </svg>
         </g>
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.fpvFlagVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fpvFlagVisible}>
           <text style="visibility:hidden" id="FPVFlag" x="62.987099" y="89.42025" class="FontLargest Red EndAlign">
             FPV
           </text>

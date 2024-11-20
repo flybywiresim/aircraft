@@ -219,7 +219,6 @@ export class FlightPathDirector extends DisplayComponent<{
             flashDuration={Infinity}
             visible={this.isVisible}
             flashing={this.shouldFlash}
-            hiddenClassName="HiddenElement"
           >
             <g ref={this.birdPathWings} class="CornerRound">
               <path

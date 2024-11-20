@@ -109,12 +109,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
         <g ref={this.abnormalRef}>
           <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" class="TapeBackground" />
           <path id="HeadingTapeOutline" class="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />
-          <FlashOneHertz
-            bus={this.props.bus}
-            flashDuration={9}
-            visible={this.hdgFlagVisible}
-            hiddenClassName="HiddenElement"
-          >
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.hdgFlagVisible}>
             <text id="HDGFailText" class="FontLargest EndAlign Red" x="75.926208" y="151.95506">
               HDG
             </text>

@@ -152,12 +152,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   render(): VNode {
     return (
       <>
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={9}
-          visible={this.attFlagVisible}
-          hiddenClassName="HiddenElement"
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.attFlagVisible}>
           <text id="AttFailText" class="FontLargest Red EndAlign" x="75.893127" y="83.136955">
             ATT
           </text>
@@ -452,7 +447,6 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
         {/* These are split up in this order to prevent the shadow of one FD bar to go above the other green FD bar */}
         <FlashOneHertz
           bus={this.props.bus}
-          hiddenClassName="HiddenElement"
           flashDuration={Infinity}
           visible={this.lateralVisible}
           flashing={this.lateralShouldFlash}
@@ -462,7 +456,6 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
         <FlashOneHertz
           bus={this.props.bus}
-          hiddenClassName="HiddenElement"
           flashDuration={Infinity}
           visible={this.longitudinalVisible}
           flashing={this.longitudinalShouldFlash}
@@ -472,7 +465,6 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
         <FlashOneHertz
           bus={this.props.bus}
-          hiddenClassName="HiddenElement"
           flashDuration={Infinity}
           visible={this.lateralVisible}
           flashing={this.lateralShouldFlash}
@@ -482,7 +474,6 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
         <FlashOneHertz
           bus={this.props.bus}
-          hiddenClassName="HiddenElement"
           flashDuration={Infinity}
           visible={this.longitudinalVisible}
           flashing={this.longitudinalShouldFlash}
@@ -490,12 +481,7 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
           <path ref={this.verticalRef2} class="ThickStroke Green" id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
         </FlashOneHertz>
 
-        <FlashOneHertz
-          bus={this.props.bus}
-          hiddenClassName="HiddenElement"
-          flashDuration={9}
-          visible={this.fdFlagVisibleSub}
-        >
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fdFlagVisibleSub}>
           <text id="FDFlag" x="52.702862" y="56.065434" class="FontLargest EndAlign Red">
             FD
           </text>
