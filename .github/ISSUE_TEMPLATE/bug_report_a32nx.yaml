@@ -15,6 +15,16 @@ body:
     - Development
   validations:
     required: true
+- type: dropdown
+  id: sim
+  attributes:
+    label: Simulator Version
+    description: Which simulator are you using?
+    options:
+    - 2020
+    - 2024
+  validations:
+    required: true
 - type: textarea
   id: build-info
   attributes:
