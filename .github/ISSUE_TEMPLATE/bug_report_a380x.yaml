@@ -21,7 +21,7 @@ body:
   id: sim
   attributes:
     label: Simulator
-    description: What sim are you using?
+    description: Which simulator are you using?
     options:
     - 2020
     - 2024
