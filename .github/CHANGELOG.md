@@ -62,7 +62,6 @@
 1. [A380X/EFB] Fixed being able to click on window open handle through the flyPad screen - @2hwk (2cas)
 1. [A32NX/FMGC] Implemented simulated FMGC computers - @lukecologne (luke)
 1. [A32NX/FMGC] Implemented simulated FCU computers - @lukecologne (luke)
-1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
 1. [A380X/ENGINES] Corrected ENG4 throttle variable typo - @rthom91 (Randy Thom)
 1. [ND] Fixed track line not visible in GA TRK, RWY TRK and RWY modes - @ta-dzik (ta_dzik)
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
@@ -70,13 +69,13 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
-1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
-1. [EFB] Fuel Page: Added Total and ETA for A380, Improved State Label on both Aircraft - @Fragtality (Fragtality)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
+1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
+1. [EFB] Fuel Page: Added Total and ETA for A380, Improved State Label on both Aircraft - @Fragtality (Fragtality)
 
 ## 0.12.0
 
