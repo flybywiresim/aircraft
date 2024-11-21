@@ -423,6 +423,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['tcasFail', { name: PFDVars.tcasFail, type: SimVarValueType.Bool }],
     ['engOneRunning', { name: PFDVars.engOneRunning, type: SimVarValueType.Bool }],
     ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
+    ['engThreeRunning', { name: PFDVars.engThreeRunning, type: SimVarValueType.Bool }],
+    ['engFourRunning', { name: PFDVars.engFourRunning, type: SimVarValueType.Bool }],
     ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
     ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
     ['tdReached', { name: PFDVars.tdReached, type: SimVarValueType.Bool }],
