@@ -118,6 +118,7 @@ base_sec_out_bus Sec::getBusOutputs() {
     output.rudder_status_word.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.rudder_trim_actual_pos_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.fctl_law_status_word.SSM = Arinc429SignStatus::FailureWarning;
     output.misc_data_status_word.SSM = Arinc429SignStatus::FailureWarning;
     return output;
@@ -173,7 +174,7 @@ base_sec_analog_outputs Sec::getAnalogOutputs() {
     output.right_spoiler_2_pos_order_deg = 0;
     output.rudder_1_pos_order_deg = 0;
     output.rudder_2_pos_order_deg = 0;
-    output.rudder_trim_pos_order_deg = 0;
+    output.rudder_trim_command_deg = 0;
   } else {
     output = modelOutputs.analog_outputs;
   }
