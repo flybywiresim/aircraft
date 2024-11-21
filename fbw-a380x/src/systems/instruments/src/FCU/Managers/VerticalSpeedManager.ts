@@ -207,7 +207,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       if (this.lightsTest) {
         this.setTextElementActive(this.textVS, true);
         this.setTextElementActive(this.textFPA, true);
-        this.textValueContent = '+8.888';
+        this.textValueContent = '+8.8.8.8';
         return;
       }
       this.setTextElementActive(this.textVS, !this.isFPAMode);

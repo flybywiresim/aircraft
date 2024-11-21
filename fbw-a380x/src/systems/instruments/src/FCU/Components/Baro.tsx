@@ -47,7 +47,7 @@ export class Baro extends DisplayComponent<BaroProps> {
   private readonly baroText = MappedSubject.create(
     ([mode, correction, isLightTest]) => {
       if (isLightTest) {
-        return '88.88';
+        return '8.8.8.8';
       }
       switch (mode) {
         case 'STD':

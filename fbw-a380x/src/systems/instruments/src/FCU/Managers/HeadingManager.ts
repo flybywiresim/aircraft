@@ -227,7 +227,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
         this.setTextElementActive(this.textHDG, true);
         this.setTextElementActive(this.textTRK, true);
         this.setElementVisibility(this.signDegrees, true);
-        this.textValueContent = '.8.8.8';
+        this.textValueContent = '8.8.8';
         return;
       }
       if ((this.isManagedArmed || this.isManagedActive) && !this.showSelectedHeading) {
