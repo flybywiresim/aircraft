@@ -71,6 +71,9 @@
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
+1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
+1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
+1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 
 ## 0.12.0
 
