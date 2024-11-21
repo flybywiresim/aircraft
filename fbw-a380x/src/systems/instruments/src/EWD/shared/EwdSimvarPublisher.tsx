@@ -43,6 +43,7 @@ export interface BaseEwdSimvars {
   abnormal_debug_line: number;
   nose_gear_compressed: boolean;
   engine_fire_pb: boolean;
+  cas: number;
 }
 
 type IndexedTopics =
@@ -61,7 +62,8 @@ type IndexedTopics =
   | 'memo_left'
   | 'memo_right'
   | 'nose_gear_compressed'
-  | 'engine_fire_pb';
+  | 'engine_fire_pb'
+  | 'cas';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
@@ -123,6 +125,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
       ],
       ['engine_fire_pb', { name: 'L:A32NX_FIRE_BUTTON_ENG#index#', type: SimVarValueType.Bool, indexed: true }],
+      ['cas', { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true }],
     ];
 
     super(new Map(simvars), bus, pacer);
