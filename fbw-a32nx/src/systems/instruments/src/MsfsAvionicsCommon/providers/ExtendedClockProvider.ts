@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, Instrument } from '@microsoft/msfs-sdk';
+import { ClockEvents, EventBus, Instrument, Subject } from '@microsoft/msfs-sdk';
 
 export interface ExtendedClockEvents {
   monotonicTime: number;
@@ -17,7 +17,9 @@ export class ExtendedClockEventProvider implements Instrument {
 
   private monotonicTime = 0;
 
-  private oneHertzClock = 0;
+  private oneHertzClockTime = 0;
+
+  private readonly oneHertzClock = Subject.create(false);
 
   constructor(private readonly bus: EventBus) {}
 
@@ -31,16 +33,21 @@ export class ExtendedClockEventProvider implements Instrument {
 
       this.monotonicTime += this.deltaTime;
 
-      this.oneHertzClock += this.deltaTime;
+      this.oneHertzClockTime += this.deltaTime;
+
+      this.oneHertzClock.set(this.oneHertzClockTime > 500);
 
       publisher.pub('deltaTime', this.deltaTime);
       publisher.pub('monotonicTime', this.monotonicTime);
-      publisher.pub('oneHertzClock', this.oneHertzClock > 500);
 
-      if (this.oneHertzClock > 1000) {
-        this.oneHertzClock = 0;
+      if (this.oneHertzClockTime > 1000) {
+        this.oneHertzClockTime = 0;
       }
       this.prevSimTime = time;
+    });
+
+    this.oneHertzClock.sub((oneHertzClock) => {
+      publisher.pub('oneHertzClock', oneHertzClock);
     });
   }
 
