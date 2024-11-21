@@ -17,10 +17,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         let prevIcao = waypoint.definition.waypoint.databaseId;
         let prevFpIndex = reviseIndex;
 
-        if (!targetPlan.pendingAirways) {
-            mcdu.flightPlanService.startAirwayEntry(reviseIndex, forPlan, inAlternate);
-        }
-
         const rows = [["----"], [""], [""], [""], [""]];
         const subRows = [["VIA", ""], [""], [""], [""], [""]];
         const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
@@ -80,15 +76,15 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                         if (value.length > 0) {
-                            const elements = targetPlan.pendingAirways.elements;
-                            const tailElement = elements[elements.length - 1];
+                            const elements = (targetPlan.pendingAirways && targetPlan.pendingAirways.elements) || undefined;
+                            const tailElement = elements ? elements[elements.length - 1] : undefined;
 
                             const lastFix = tailElement ? tailElement.to : targetPlan.legElementAt(prevFpIndex).terminationWaypoint();
 
                             const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, lastFix, value).catch(console.error);
 
                             if (airway) {
-                                const result = targetPlan.pendingAirways.thenAirway(airway);
+                                const result = elements ? targetPlan.pendingAirways.thenAirway(airway) : 1;
 
                                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1, forPlan, inAlternate);
                             } else {
@@ -102,11 +98,17 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     rows[i] = [`${pendingAirway.ident}[color]cyan`, "[\xa0\xa0\xa0][color]cyan"];
 
                     mcdu.onRightInput[i] = (value, scratchpadCallback) => {
-                        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                        const currentPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                         if (value.length > 0) {
                             Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then(/** @param wp {import('msfs-navdata').Fix | undefined} */ (wp) => {
                                 if (wp) {
+                                    if (!currentPlan.pendingAirways) {
+                                        mcdu.flightPlanService.startAirwayEntry(prevFpIndex, forPlan, inAlternate);
+                                    }
+
+                                    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                                    targetPlan.pendingAirways.thenAirway(pendingAirway);
                                     const result = targetPlan.pendingAirways.thenTo(wp);
 
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, undefined, result ? 1 : -1, forPlan, inAlternate);
@@ -122,11 +124,17 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         subRows[i + 1] = ["\xa0VIA", ""];
 
                         mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-                            const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                            const currentPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                             if (value.length > 0) {
                                 const airway = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(console.error);
                                 if (airway) {
+                                    if (!currentPlan.pendingAirways) {
+                                        mcdu.flightPlanService.startAirwayEntry(prevFpIndex, forPlan, inAlternate);
+                                    }
+
+                                    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+                                    targetPlan.pendingAirways.thenAirway(pendingAirway);
                                     const result = targetPlan.pendingAirways.thenAirway(airway);
 
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1, forPlan, inAlternate);
@@ -163,13 +171,16 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
      */
     static _GetAllRows(plan) {
         const allRows = [];
-        const elements = plan.pendingAirways.elements;
 
-        for (let i = 0; i < elements.length; i++) {
-            const element = elements[i];
+        if (plan.pendingAirways) {
+            const elements = plan.pendingAirways.elements;
 
-            if (element.to) {
-                allRows.push([`{cyan}${element.airway.ident}{end}`, `{cyan}${element.isAutoConnected ? '{small}' : '{big}'}${element.to.ident}{end}{end}`, element.to.databaseId, i]);
+            for (let i = 0; i < elements.length; i++) {
+                const element = elements[i];
+
+                if (element.to) {
+                    allRows.push([`{cyan}${element.airway.ident}{end}`, `{cyan}${element.isAutoConnected ? '{small}' : '{big}'}${element.to.ident}{end}{end}`, element.to.databaseId, i]);
+                }
             }
         }
 
