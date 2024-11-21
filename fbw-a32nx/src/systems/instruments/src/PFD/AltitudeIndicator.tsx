@@ -340,7 +340,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
       this.altFlagVisible.set(!altitude.isNormalOperation());
     });
 
-    this.tcasFailed.setConsumer(sub.on('tcasFail').whenChanged());
+    this.tcasFailed.setConsumer(sub.on('tcasFail'));
 
     sub
       .on('fmgcDiscreteWord1')
