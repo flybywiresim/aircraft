@@ -69,6 +69,7 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
+1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 
 ## 0.12.0
 
