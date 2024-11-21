@@ -20,10 +20,12 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import {
+  Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
   Arinc429Word,
+  Arinc429WordData,
   NXDataStore,
   NXLogicClockNode,
   NXLogicConfirmNode,
@@ -33,9 +35,9 @@ import {
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
+import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -78,7 +80,7 @@ enum FwcAuralWarning {
 }
 
 export class PseudoFWC {
-  private readonly sub = this.bus.getSubscriber<EwdSimvars & StallWarningEvents & KeyEvents>();
+  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & StallWarningEvents & KeyEvents>();
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
@@ -339,9 +341,17 @@ export class PseudoFWC {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
-  public readonly approachCapability = Subject.create(0);
+  public readonly fmgc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord3'));
 
-  public readonly approachCapabilityDowngradeDebounce = new NXLogicTriggeredMonostableNode(1, true);
+  public readonly fmgc2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord3'));
+
+  public readonly fmgc1DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord4'));
+
+  public readonly fmgc2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord4'));
+
+  public readonly fmgcApproachCapability = Subject.create(0);
+
+  public readonly approachCapabilityDowngradeDebounce = new NXLogicTriggeredMonostableNode(0.5, true);
 
   public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
 
@@ -756,6 +766,8 @@ export class PseudoFWC {
   public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
 
   public readonly autoBrakeOff = Subject.create(false);
+
+  public autoBrakeOffAuralTriggered = false;
 
   public autoBrakeOffMemoInhibited = false;
 
@@ -1559,10 +1571,38 @@ export class PseudoFWC {
 
     // approach capability downgrade. Debounce first, then suppress for a certain amount of time
     // (to avoid multiple triple clicks, and a delay which is too long)
-    const newCapability = SimVar.GetSimVarValue('L:A32NX_ApproachCapability', SimVarValueType.Number);
-    const capabilityDowngrade = newCapability < this.approachCapability.get();
+    let fmgcApproachCapability = 0;
+    const getApproachCapability = (dw3: Arinc429WordData, dw4: Arinc429WordData): number => {
+      let appCap = 0;
+      const landModeArmed = dw3.bitValueOr(20, false);
+      const landModeActive = dw4.bitValueOr(14, false);
+      const land2Capacity = dw4.bitValueOr(23, false);
+      const land3FailPassiveCapacity = dw4.bitValueOr(24, false);
+      const land3FailOperationalCapacity = dw4.bitValueOr(25, false);
+
+      if (land2Capacity) {
+        appCap = 2;
+      } else if (land3FailPassiveCapacity) {
+        appCap = 3;
+      } else if (land3FailOperationalCapacity) {
+        appCap = 4;
+      } else if (landModeArmed || landModeActive) {
+        appCap = 1;
+      } else {
+        appCap = 0;
+      }
+      return appCap;
+    };
+
+    if (this.fmgc1DiscreteWord4.get().isNormalOperation()) {
+      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord3.get(), this.fmgc1DiscreteWord4.get());
+    } else if (this.fmgc2DiscreteWord4.get().isNormalOperation()) {
+      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord3.get(), this.fmgc1DiscreteWord4.get());
+    }
+
+    const capabilityDowngrade = fmgcApproachCapability < this.fmgcApproachCapability.get();
     this.approachCapabilityDowngradeDebounce.write(
-      capabilityDowngrade && !flightPhase167 && !this.approachCapabilityDowngradeSuppress.read(),
+      capabilityDowngrade && flightPhase167 && !this.approachCapabilityDowngradeSuppress.read(),
       deltaTime,
     );
     this.approachCapabilityDowngradeDebouncePulse.write(this.approachCapabilityDowngradeDebounce.read(), deltaTime);
@@ -1571,7 +1611,7 @@ export class PseudoFWC {
     if (this.approachCapabilityDowngradeDebouncePulse.read()) {
       this.soundManager.enqueueSound('tripleClick');
     }
-    this.approachCapability.set(newCapability);
+    this.fmgcApproachCapability.set(fmgcApproachCapability);
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
@@ -1620,14 +1660,6 @@ export class PseudoFWC {
       this.autoThrustDisengagedInstantPulse.read() &&
       !(this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get()));
 
-    if (involuntaryAThrDisc) {
-      console.log(
-        this.autoThrustDisengagedInstantPulse.read(),
-        this.autoThrustInstinctiveDiscPressed.read(),
-        below50ft && this.allThrottleIdle.get(),
-      );
-    }
-
     this.autoThrustOffInvoluntaryNode.write(involuntaryAThrDisc, aThrEngaged || voluntaryAThrDisc);
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
@@ -1637,6 +1669,7 @@ export class PseudoFWC {
     if (!this.autoBrakeDeactivatedNode.read()) {
       this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
+      this.autoBrakeOffAuralTriggered = false;
     }
 
     this.autoBrakeOffAuralConfirmNode.write(
@@ -1657,8 +1690,9 @@ export class PseudoFWC {
 
     // FIXME double callout if ABRK fails
     this.autoBrakeOff.set(autoBrakeOffShouldTrigger);
-    if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read()) {
+    if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read() && !this.autoBrakeOffAuralTriggered) {
       this.soundManager.enqueueSound('autoBrakeOff');
+      this.autoBrakeOffAuralTriggered = true;
     }
 
     // Engine Logic
@@ -2872,7 +2906,6 @@ export class PseudoFWC {
       this.requestMasterCautionFromABrkOff = false;
     }
 
-    console.log('123');
     this.aThrDiscInputBuffer.write(true, false);
 
     if (this.autoThrustOffVoluntary.get()) {

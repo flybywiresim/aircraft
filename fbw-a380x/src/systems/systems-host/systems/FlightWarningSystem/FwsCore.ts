@@ -1160,6 +1160,8 @@ export class FwsCore {
 
   public readonly autoBrakeOff = Subject.create(false);
 
+  public autoBrakeOffAuralTriggered = false;
+
   public autoBrakeOffMemoInhibited = false;
 
   /* NAVIGATION */
@@ -1838,7 +1840,7 @@ export class FwsCore {
     this.flightPhase910.set([9, 10].includes(this.flightPhase.get()));
     const flightPhase6789 = [6, 7, 8, 9].includes(this.flightPhase.get());
     const flightPhase112 = [1, 12].includes(this.flightPhase.get());
-    const flightPhase167 = [1, 6, 7].includes(this.flightPhase.get());
+    const flightPhase189 = [1, 8, 9].includes(this.flightPhase.get());
 
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
@@ -2485,10 +2487,10 @@ export class FwsCore {
 
     // approach capability downgrade. Debounce first, then suppress for a certain amount of time
     // (to avoid multiple triple clicks, and a delay which is too long)
-    const newCapability = SimVar.GetSimVarValue('L:A32NX_ApproachCapability', SimVarValueType.Number);
+    const newCapability = SimVar.GetSimVarValue('L:A32NX_APPROACH_CAPABILITY', SimVarValueType.Number);
     const capabilityDowngrade = newCapability < this.approachCapability.get();
     this.approachCapabilityDowngradeDebounce.write(
-      capabilityDowngrade && !flightPhase167 && !this.approachCapabilityDowngradeSuppress.read(),
+      capabilityDowngrade && flightPhase189 && !this.approachCapabilityDowngradeSuppress.read(),
       deltaTime,
     );
     this.approachCapabilityDowngradeDebouncePulse.write(this.approachCapabilityDowngradeDebounce.read(), deltaTime);
@@ -2558,6 +2560,7 @@ export class FwsCore {
     if (!this.autoBrakeDeactivatedNode.read()) {
       this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
+      this.autoBrakeOffAuralTriggered = false;
     }
 
     this.autoBrakeOffAuralConfirmNode.write(
@@ -2578,8 +2581,9 @@ export class FwsCore {
 
     // FIXME double callout if ABRK fails
     this.autoBrakeOff.set(autoBrakeOffShouldTrigger);
-    if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read()) {
+    if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read() && !this.autoBrakeOffAuralTriggered) {
       this.soundManager.enqueueSound('autoBrakeOff');
+      this.autoBrakeOffAuralTriggered = true;
     }
 
     // Engine Logic

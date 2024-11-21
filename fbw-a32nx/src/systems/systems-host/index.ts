@@ -14,6 +14,7 @@ import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
 import { PseudoFWC } from 'systems-host/systems/FWC/PseudoFWC';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -31,6 +32,8 @@ class SystemsHost extends BaseInstrument {
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
+
+  private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
   private readonly pseudoFwc = new PseudoFWC(this.bus, this);
 
@@ -50,6 +53,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
+    this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
 
     this.pseudoFwc.init();
     let lastUpdateTime: number;
