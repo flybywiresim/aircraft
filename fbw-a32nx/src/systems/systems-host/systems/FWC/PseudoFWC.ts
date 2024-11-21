@@ -36,7 +36,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
+import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -764,8 +764,6 @@ export class PseudoFWC {
   public readonly autoBrakeOff = Subject.create(false);
 
   public autoBrakeOffAuralTriggered = false;
-
-  public autoBrakeOffMemoInhibited = false;
 
   /* NAVIGATION */
 
@@ -1549,18 +1547,15 @@ export class PseudoFWC {
     if (this.autoPilotDisengagedInstantPulse.read()) {
       // Request quiet CRC one time
       this.requestMasterWarningFromApOff = true;
-      this.soundManager.setVolume(FwsAuralVolume.Attenuated);
       this.soundManager.enqueueSound('cavalryChargeOnce'); // On the A320, play first cav charge completely no matter what
     }
     if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
       this.soundManager.dequeueSound('cavalryChargeOnce');
-      this.soundManager.setVolume(FwsAuralVolume.Full);
     }
     if (!this.autoPilotOffVoluntaryMemory.read() && !this.autoPilotOffInvoluntaryMemory.read()) {
       this.requestMasterWarningFromApOff = false;
       this.soundManager.dequeueSound('cavalryChargeOnce');
       this.soundManager.dequeueSound('cavalryChargeCont');
-      this.soundManager.setVolume(FwsAuralVolume.Full);
     }
 
     this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
@@ -1663,21 +1658,14 @@ export class PseudoFWC {
     this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
 
     if (!this.autoBrakeDeactivatedNode.read()) {
-      this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
       this.autoBrakeOffAuralTriggered = false;
     }
 
-    this.autoBrakeOffAuralConfirmNode.write(
-      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited,
-      deltaTime,
-    );
+    this.autoBrakeOffAuralConfirmNode.write(this.autoBrakeDeactivatedNode.read(), deltaTime);
 
     const autoBrakeOffShouldTrigger =
-      this.aircraftOnGround.get() &&
-      this.computedAirSpeedToNearest2.get() > 33 &&
-      this.autoBrakeDeactivatedNode.read() &&
-      !this.autoBrakeOffMemoInhibited;
+      this.aircraftOnGround.get() && this.computedAirSpeedToNearest2.get() > 33 && this.autoBrakeDeactivatedNode.read();
 
     if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
       // Triggered in this cycle -> request master caution
@@ -2898,7 +2886,6 @@ export class PseudoFWC {
     // When instinctive A/THR disc. p/b is pressed after ABRK deactivation, inhibit audio+memo, don't request master caution
     // Unclear refs, whether this has to happen within the audio confirm node time (1s)
     if (this.autoBrakeDeactivatedNode.read()) {
-      this.autoBrakeOffMemoInhibited = true;
       this.requestMasterCautionFromABrkOff = false;
     }
 
@@ -2934,7 +2921,7 @@ export class PseudoFWC {
     },
     220800004: {
       // A/THR OFF involuntary
-      flightPhaseInhib: [3, 4, 5, 10],
+      flightPhaseInhib: [3, 4, 8],
       simVarIsActive: this.autoThrustOffInvoluntary,
       whichCodeToReturn: () => [0],
       codesToReturn: ['220800004', '220800005'],
@@ -4704,7 +4691,7 @@ export class PseudoFWC {
     // 32 LANDING GEAR
     320000001: {
       // AUTO BRK OFF
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10],
       simVarIsActive: this.autoBrakeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
