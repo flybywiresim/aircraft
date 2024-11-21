@@ -69,10 +69,10 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
-2. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
-3. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
-4. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
-5. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
+1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
+1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
+1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
+1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
 
 ## 0.12.0
 
