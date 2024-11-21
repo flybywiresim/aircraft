@@ -24,7 +24,10 @@ body:
     label: Aircraft Version
     description: What version of the A380X are you using?
     options:
-    - Stable
+    - Stable (8k)
+    - Stable (4k)
+    - Development (8k)
+    - Development (4k)
   validations:
     required: true
 - type: textarea
