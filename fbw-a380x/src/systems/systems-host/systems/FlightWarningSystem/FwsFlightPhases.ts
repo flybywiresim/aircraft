@@ -158,11 +158,11 @@ export class FwsFlightPhases {
   }
 
   _updateFlightPhase(_deltaTime: number) {
-    const raHeight1InValid = this.fws.radioHeight1.isFailureWarning() || this.fws.radioHeight1.isNoComputedData();
-    const raHeight2InValid = this.fws.radioHeight2.isFailureWarning() || this.fws.radioHeight2.isNoComputedData();
+    const raHeight1Invalid = this.fws.radioHeight1.isFailureWarning() || this.fws.radioHeight1.isNoComputedData();
+    const raHeight2Invalid = this.fws.radioHeight2.isFailureWarning() || this.fws.radioHeight2.isNoComputedData();
     let radioHeight;
-    if (raHeight1InValid) {
-      if (raHeight2InValid) {
+    if (raHeight1Invalid) {
+      if (raHeight2Invalid) {
         radioHeight = this.fws.radioHeight3;
       } else {
         radioHeight = this.fws.radioHeight2;
@@ -487,7 +487,7 @@ export class FwsFlightPhases {
     if (this._wasBellowThreshold && this._wasReach200ft) {
       if (delta >= 200) {
         this.fws.soundManager.enqueueSound('cChordCont');
-      } else if (delta < 200) {
+      } else {
         this.fws.soundManager.dequeueSound('cChordCont');
       }
     } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
@@ -499,9 +499,9 @@ export class FwsFlightPhases {
         this.fws.soundManager.enqueueSound('cChordOnce');
       }
     } else if (delta > 750 && this._wasInRange && !this._wasReach200ft) {
-      if (delta > 750) {
+      if (delta >= 750) {
         this.fws.soundManager.enqueueSound('cChordCont');
-      } else if (delta >= 750) {
+      } else {
         this.fws.soundManager.dequeueSound('cChordCont');
       }
     }

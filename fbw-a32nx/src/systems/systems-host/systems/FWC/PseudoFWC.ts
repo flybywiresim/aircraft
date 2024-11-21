@@ -1592,7 +1592,7 @@ export class PseudoFWC {
     if (this.fmgc1DiscreteWord4.get().isNormalOperation()) {
       fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord4.get());
     } else if (this.fmgc2DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord4.get());
+      fmgcApproachCapability = getApproachCapability(this.fmgc2DiscreteWord4.get());
     }
 
     const capabilityDowngrade =
