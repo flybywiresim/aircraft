@@ -341,10 +341,6 @@ export class PseudoFWC {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
-  public readonly fmgc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord3'));
-
-  public readonly fmgc2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord3'));
-
   public readonly fmgc1DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord4'));
 
   public readonly fmgc2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord4'));
@@ -1554,7 +1550,7 @@ export class PseudoFWC {
       // Request quiet CRC one time
       this.requestMasterWarningFromApOff = true;
       this.soundManager.setVolume(FwsAuralVolume.Attenuated);
-      this.soundManager.enqueueSound('cavalryChargeOnce');
+      this.soundManager.enqueueSound('cavalryChargeOnce'); // On the A320, play first cav charge completely no matter what
     }
     if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
       this.soundManager.dequeueSound('cavalryChargeOnce');
@@ -1572,9 +1568,8 @@ export class PseudoFWC {
     // approach capability downgrade. Debounce first, then suppress for a certain amount of time
     // (to avoid multiple triple clicks, and a delay which is too long)
     let fmgcApproachCapability = 0;
-    const getApproachCapability = (dw3: Arinc429WordData, dw4: Arinc429WordData): number => {
+    const getApproachCapability = (dw4: Arinc429WordData): number => {
       let appCap = 0;
-      const landModeArmed = dw3.bitValueOr(20, false);
       const landModeActive = dw4.bitValueOr(14, false);
       const land2Capacity = dw4.bitValueOr(23, false);
       const land3FailPassiveCapacity = dw4.bitValueOr(24, false);
@@ -1586,7 +1581,7 @@ export class PseudoFWC {
         appCap = 3;
       } else if (land3FailOperationalCapacity) {
         appCap = 4;
-      } else if (landModeArmed || landModeActive) {
+      } else if (landModeActive) {
         appCap = 1;
       } else {
         appCap = 0;
@@ -1595,12 +1590,13 @@ export class PseudoFWC {
     };
 
     if (this.fmgc1DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord3.get(), this.fmgc1DiscreteWord4.get());
+      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord4.get());
     } else if (this.fmgc2DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord3.get(), this.fmgc1DiscreteWord4.get());
+      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord4.get());
     }
 
-    const capabilityDowngrade = fmgcApproachCapability < this.fmgcApproachCapability.get();
+    const capabilityDowngrade =
+      fmgcApproachCapability < this.fmgcApproachCapability.get() && fmgcApproachCapability > 0;
     this.approachCapabilityDowngradeDebounce.write(
       capabilityDowngrade && flightPhase167 && !this.approachCapabilityDowngradeSuppress.read(),
       deltaTime,

@@ -2470,15 +2470,14 @@ export class FwsCore {
       // Request quiet CRC one time
       this.requestMasterWarningFromApOff = true;
       this.soundManager.setVolume(FwsAuralVolume.Attenuated);
-      this.soundManager.enqueueSound('cavalryChargeOnce');
+      this.soundManager.enqueueSound('cavalryChargeCont'); // On the A380, first cav charge can be cancelled early
     }
     if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
-      this.soundManager.dequeueSound('cavalryChargeOnce');
+      this.soundManager.dequeueSound('cavalryChargeCont');
       this.soundManager.setVolume(FwsAuralVolume.Full);
     }
     if (!this.autoPilotOffVoluntaryMemory.read() && !this.autoPilotOffInvoluntaryMemory.read()) {
       this.requestMasterWarningFromApOff = false;
-      this.soundManager.dequeueSound('cavalryChargeOnce');
       this.soundManager.dequeueSound('cavalryChargeCont');
       this.soundManager.setVolume(FwsAuralVolume.Full);
     }
@@ -2488,7 +2487,7 @@ export class FwsCore {
     // approach capability downgrade. Debounce first, then suppress for a certain amount of time
     // (to avoid multiple triple clicks, and a delay which is too long)
     const newCapability = SimVar.GetSimVarValue('L:A32NX_APPROACH_CAPABILITY', SimVarValueType.Number);
-    const capabilityDowngrade = newCapability < this.approachCapability.get();
+    const capabilityDowngrade = newCapability < this.approachCapability.get() && newCapability > 0;
     this.approachCapabilityDowngradeDebounce.write(
       capabilityDowngrade && flightPhase189 && !this.approachCapabilityDowngradeSuppress.read(),
       deltaTime,
