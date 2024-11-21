@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from '@microsoft/msfs-sdk';
+import { RadioUtils } from '@flybywiresim/fbw-sdk';
 import {
   InputValidation,
   AtsuStatusCodes,
@@ -21,6 +22,7 @@ import {
   coordinateToString,
   timestampToString,
   Conversion,
+  CpdlcMessageContentFrequency,
 } from '../../common/src';
 import { FmsRouteData } from './databus/FmsBus';
 import { MailboxBus } from './databus/MailboxBus';
@@ -253,6 +255,7 @@ export class Atc {
       const ids = this.messageMonitoring.checkMessageConditions();
       ids.forEach((id) => {
         const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
+
         if (message) {
           UplinkMessageStateMachine.update(this, message, false, true);
           this.mailboxBus.update(message, true);
@@ -263,10 +266,14 @@ export class Atc {
     this.digitalInputs.powerUp();
     this.mailboxBus.powerUp();
     this.poweredUp = true;
+
+    this.digitalOutputs.resetRmpFrequency();
   }
 
   public powerDown(): void {
     if (!this.poweredUp) return;
+
+    this.digitalOutputs.resetRmpFrequency();
 
     if (this.messageWatchdogInterval !== null) {
       clearInterval(this.messageWatchdogInterval);
@@ -414,6 +421,35 @@ export class Atc {
 
   private logonInProgress(): boolean {
     return this.nextAtc !== '';
+  }
+
+  public updateShownMessageInMailbox(uid: number, recallMessage: boolean): void {
+    // no visible message
+    if (uid === -1 || recallMessage === true) {
+      this.digitalOutputs.resetRmpFrequency();
+      return;
+    }
+
+    // find the message and check if it is a RMP relevant message
+    const message = this.messageQueue.find((message) => message.UniqueMessageID === uid);
+    if (message !== undefined && message.Direction === AtsuMessageDirection.Uplink) {
+      const type = message.Content[0].TypeId;
+      if (type === 'UM117' || type === 'UM120') {
+        const bcdFrequency = RadioUtils.packVhfComFrequencyToArinc(
+          parseFloat((message.Content[0].Content[1] as CpdlcMessageContentFrequency).Value) * 1000000,
+        );
+        this.digitalOutputs.sendRmpFrequency(bcdFrequency);
+      } else if (type === 'UM118' || type === 'UM119' || type === 'UM121' || type === 'UM122') {
+        const bcdFrequency = RadioUtils.packVhfComFrequencyToArinc(
+          parseFloat((message.Content[0].Content[2] as CpdlcMessageContentFrequency).Value) * 1000000,
+        );
+        this.digitalOutputs.sendRmpFrequency(bcdFrequency);
+      } else {
+        this.digitalOutputs.resetRmpFrequency();
+      }
+    } else {
+      this.digitalOutputs.resetRmpFrequency();
+    }
   }
 
   public resetLogon(): void {
@@ -581,6 +617,7 @@ export class Atc {
           if (code === AtsuStatusCodes.Ok) {
             message.Response.ComStatus = AtsuMessageComStatus.Sent;
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
+
             setTimeout(() => {
               if (this.mailboxBus.currentMessageStatus(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
                 this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.NoMessage);

@@ -38,6 +38,8 @@
 1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
+1. [A380X/FADEC] Add N1 fan protection measures (METOTS, KOZ) - @flogross89 (floridude)
+1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
@@ -46,6 +48,7 @@
 1. [A32NX/TELEX] Keep flight number set even if already taken - @BenJuan26 (BenJuan26)
 1. [HYD] Placeholder inhibit logic for electrical backup on ground - @Crocket63 (crocket)
 1. [A380X/PRESS] Add pressurization system failures failures ecam messages - @mjuhe (Miquel Juhe)
+1. [A380X] Add rudder trim functionality to SECs, add rudder trim indication to PFD, activate indication on SD/FCTL - @flogross89 (floridude)
 1. [A380X/MFD] Fix ETA and add TOD prediction in PERF page - @BravoMike99 (bruno_pt99)
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
@@ -69,6 +72,11 @@
 1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
 1. [A380X/FWS] Improve landing capability downgrade triple click logic (#9008) - @flogross89 (floridude)
 1. [A32NX/FWS] Add "auto brake off" callout, improve AP/ATHR disconnect aural alert logic - @flogross89 (floridude)
+1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
+1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
+1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
+1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
+1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 
 ## 0.12.0
 

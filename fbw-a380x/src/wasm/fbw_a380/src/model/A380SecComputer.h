@@ -21,14 +21,14 @@ class A380SecComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_MATLABFunction_A380SecComputer_e_T {
+    boolean_T previousInput;
+    boolean_T previousInput_not_empty;
+  };
+
   struct rtDW_MATLABFunction_A380SecComputer_c_T {
     real_T timeSinceCondition;
     boolean_T output;
-  };
-
-  struct rtDW_MATLABFunction_A380SecComputer_b_T {
-    boolean_T previousInput;
-    boolean_T previousInput_not_empty;
   };
 
   struct BlockIO_A380SecComputer_T {
@@ -58,7 +58,7 @@ class A380SecComputer final
     real_T rudder_1_pos_deg;
     real_T rudder_2_pos_deg;
     real_T rudder_pedal_pos_deg;
-    real_T rudder_trim_pos_deg;
+    real_T rudder_trim_actual_pos_deg;
     uint32_T SSM;
     uint32_T SSM_k;
     uint32_T SSM_kx;
@@ -356,6 +356,19 @@ class A380SecComputer final
     uint32_T SSM_lm1;
     uint32_T SSM_nc;
     uint32_T SSM_e4;
+    uint32_T SSM_bw;
+    uint32_T SSM_na;
+    uint32_T SSM_lf;
+    uint32_T SSM_oz;
+    uint32_T SSM_mub;
+    uint32_T SSM_li;
+    uint32_T SSM_hcd;
+    uint32_T SSM_php;
+    uint32_T SSM_ma;
+    uint32_T SSM_jut;
+    uint32_T SSM_kh;
+    uint32_T SSM_h2;
+    uint32_T SSM_ago;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -653,6 +666,19 @@ class A380SecComputer final
     real32_T Data_p5d;
     real32_T Data_oo;
     real32_T Data_ho;
+    real32_T Data_kqr;
+    real32_T Data_omv;
+    real32_T Data_mby;
+    real32_T Data_hk;
+    real32_T Data_hg;
+    real32_T Data_bi;
+    real32_T Data_i4u;
+    real32_T Data_ik;
+    real32_T Data_dq;
+    real32_T Data_pv;
+    real32_T Data_p1d;
+    real32_T Data_lyv;
+    real32_T Data_ke;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
     boolean_T is_unit_3;
@@ -677,29 +703,34 @@ class A380SecComputer final
 
   struct D_Work_A380SecComputer_T {
     real_T Delay_DSTATE;
+    real_T Delay_DSTATE_c;
     real_T pY;
     real_T pU;
     real_T pY_e;
-    boolean_T Delay_DSTATE_c;
+    boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     boolean_T Delay_DSTATE_d;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_n;
+    boolean_T Memory_PreviousInput_b;
     boolean_T icLoad;
+    boolean_T icLoad_l;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_k;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_mf;
-    rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_ek;
-    rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_nu;
-    rtDW_MATLABFunction_A380SecComputer_b_T sf_MATLABFunction_g4;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_mf;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_ek;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_nu;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_g4;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_g2;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_bd;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_mg;
+    rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_bh;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_f;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_cd;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_p0;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_c;
@@ -727,16 +758,23 @@ class A380SecComputer final
 
   struct Parameters_A380SecComputer_T {
     real_T LagFilter_C1;
+    real_T DiscreteTimeIntegratorVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs4_InitialCondition;
     real_T RateLimiterGenericVariableTs25_InitialCondition;
+    real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
+    real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T BitfromLabel6_bit;
-    real_T BitfromLabel7_bit;
     real_T BitfromLabel1_bit;
-    real_T BitfromLabel1_bit_g;
-    real_T BitfromLabel2_bit;
     real_T BitfromLabel3_bit;
+    real_T BitfromLabel2_bit;
+    real_T BitfromLabel6_bit_k;
+    real_T BitfromLabel7_bit;
+    real_T BitfromLabel1_bit_p;
+    real_T BitfromLabel1_bit_g;
+    real_T BitfromLabel2_bit_b;
+    real_T BitfromLabel3_bit_l;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel5_bit;
     real_T BitfromLabel6_bit_d;
@@ -783,12 +821,15 @@ class A380SecComputer final
     real_T BitfromLabel_bit_k;
     real_T BitfromLabel6_bit_a;
     real_T BitfromLabel5_bit_j;
+    real_T BitfromLabel1_bit_l;
+    real_T BitfromLabel2_bit_k;
     real_T CompareToConstant_const;
     real_T CompareToConstant1_const;
     real_T CompareToConstant1_const_p;
     real_T CompareToConstant1_const_d;
-    real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterGenericVariableTs_lo;
+    real_T RateLimiterVariableTs2_lo;
+    real_T RateLimiterGenericVariableTs_lo_o;
     real_T RateLimiterGenericVariableTs1_lo;
     real_T RateLimiterGenericVariableTs2_lo;
     real_T RateLimiterGenericVariableTs3_lo;
@@ -807,8 +848,9 @@ class A380SecComputer final
     real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode_timeDelay_a;
-    real_T RateLimiterVariableTs2_up;
     real_T RateLimiterGenericVariableTs_up;
+    real_T RateLimiterVariableTs2_up;
+    real_T RateLimiterGenericVariableTs_up_l;
     real_T RateLimiterGenericVariableTs1_up;
     real_T RateLimiterGenericVariableTs2_up;
     real_T RateLimiterGenericVariableTs3_up;
@@ -826,6 +868,7 @@ class A380SecComputer final
     SignStatusMatrix EnumeratedConstant1_Value;
     boolean_T SRFlipFlop1_initial_condition;
     boolean_T SRFlipFlop_initial_condition;
+    boolean_T SRFlipFlop_initial_condition_i;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
     boolean_T PulseNode_isRisingEdge;
@@ -834,6 +877,7 @@ class A380SecComputer final
     boolean_T ConfirmNode_isRisingEdge_j;
     boolean_T PulseNode1_isRisingEdge_m;
     boolean_T PulseNode2_isRisingEdge;
+    boolean_T PulseNode_isRisingEdge_m;
     int8_T CompareToConstant2_const;
     int8_T CompareToConstant5_const;
     int8_T CompareToConstant3_const;
@@ -856,6 +900,8 @@ class A380SecComputer final
     real_T Constant1_Value_f;
     real_T Constant2_Value_l;
     real_T Constant3_Value;
+    real_T Constant2_Value_m;
+    real_T Constant_Value;
     real_T Gain_Gain;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
@@ -863,6 +909,7 @@ class A380SecComputer final
     real_T Constant11_Value;
     real_T Constant12_Value;
     real_T Constant13_Value;
+    real_T Constant15_Value;
     real_T Constant1_Value_n;
     real_T Constant2_Value_k;
     real_T Constant3_Value_g;
@@ -872,7 +919,7 @@ class A380SecComputer final
     real_T Constant7_Value;
     real_T Constant8_Value_p;
     real_T Constant9_Value_n;
-    real_T Constant_Value;
+    real_T Constant_Value_b;
     real_T Constant_Value_p;
     real_T Saturation_UpperSat_d;
     real_T Saturation_LowerSat_h;
@@ -891,20 +938,20 @@ class A380SecComputer final
     real_T Saturation4_UpperSat;
     real_T Saturation4_LowerSat;
     real_T Constant_Value_a;
-    real_T Constant14_Value;
-    real32_T Gain_Gain_b;
+    real32_T Gain_Gain_e0;
     real32_T Gain1_Gain;
     real32_T Gain2_Gain;
-    real32_T Gain3_Gain_g;
+    real32_T Gain3_Gain_o;
     real32_T Gain4_Gain;
     boolean_T Constant1_Value_b;
     boolean_T Constant_Value_ad;
-    boolean_T Constant_Value_b;
+    boolean_T Constant_Value_bg;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
     boolean_T Delay_InitialCondition_d;
     boolean_T Logic_table[16];
     boolean_T Logic_table_i[16];
+    boolean_T Logic_table_f[16];
     boolean_T Constant7_Value_h;
     boolean_T reset_Value;
     boolean_T Constant1_Value_f3;
@@ -948,14 +995,14 @@ class A380SecComputer final
   static void A380SecComputer_RateLimiter_e(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380SecComputer_o_T *localDW);
   static void A380SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380SecComputer_MATLABFunction_c(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void A380SecComputer_MATLABFunction_d(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void A380SecComputer_MATLABFunction_p_Reset(rtDW_MATLABFunction_A380SecComputer_e_T *localDW);
+  static void A380SecComputer_MATLABFunction_f(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_A380SecComputer_e_T *localDW);
   static void A380SecComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
   static void A380SecComputer_MATLABFunction_m(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
-  static void A380SecComputer_MATLABFunction_f_Reset(rtDW_MATLABFunction_A380SecComputer_b_T *localDW);
-  static void A380SecComputer_MATLABFunction_g(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_A380SecComputer_b_T *localDW);
-  static void A380SecComputer_MATLABFunction_cw(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void A380SecComputer_MATLABFunction_e(const boolean_T rtu_u[19], real32_T *rty_y);
   A380LateralDirectLaw LawMDLOBJ1;
   A380PitchDirectLaw LawMDLOBJ2;
 };

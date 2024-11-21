@@ -9,10 +9,10 @@ import { render } from '../Common';
 
 const RTPIDisplay = () => {
   const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 400);
-  const fac2DiscreteWord2 = useArinc429Var('L:A32NX_FAC_2_DISCRETE_WORD_2');
+  const sec1RudderStatusWord = useArinc429Var('L:A32NX_SEC_1_RUDDER_STATUS_WORD');
 
-  const facSourceForTrim = fac2DiscreteWord2.bitValueOr(13, false) ? 2 : 1;
-  const trimPos = useArinc429Var(`L:A32NX_FAC_${facSourceForTrim}_RUDDER_TRIM_POS`);
+  const secSourceForTrim = sec1RudderStatusWord.bitValueOr(28, false) ? 1 : 3;
+  const trimPos = useArinc429Var(`L:A32NX_SEC_${secSourceForTrim}_RUDDER_ACTUAL_POSITION`);
 
   if (!trimPos.isFailureWarning() || ltsTest === 0) {
     const directionText = trimPos.value >= 0 ? 'L' : 'R';
@@ -32,9 +32,9 @@ const RTPIDisplay = () => {
 };
 
 const RTPIRoot = () => {
-  const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Boolean', 250);
+  const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Boolean', 250);
 
-  if (!dc2IsPowered) return null;
+  if (!dcEssIsPowered) return null;
 
   return (
     <svg className="rtpi-svg" viewBox="0 0 338 128">
