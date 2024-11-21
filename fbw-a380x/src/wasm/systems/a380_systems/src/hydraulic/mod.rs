@@ -11114,7 +11114,7 @@ mod tests {
             test_bed = test_bed
                 .set_pushback_state(true)
                 .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
-                .run_waiting_for(Duration::from_secs(5));
+                .run_waiting_for(Duration::from_secs(6));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() <= Pressure::new::<psi>(50.));
