@@ -147,6 +147,86 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==</Condition>
             <Action>1 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)</Action>
         </Step>
+        <Step Name="Fuel Pump Feed TK1 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:2, Bool)</Condition>
+            <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK1 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:3, Bool)</Condition>
+            <Action>3 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:64, Bool)</Condition>
+            <Action>64 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:65, Bool)</Condition>
+            <Action>65 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:66, Bool)</Condition>
+            <Action>66 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:67, Bool)</Condition>
+            <Action>67 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Main On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:68, Bool)</Condition>
+            <Action>68 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Stby On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:69, Bool)</Condition>
+            <Action>69 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L OUTR TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:70, Bool)</Condition>
+            <Action>70 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID FWD TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:71, Bool)</Condition>
+            <Action>71 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID AFT TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:72, Bool)</Condition>
+            <Action>72 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR FWD TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:73, Bool)</Condition>
+            <Action>73 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR AFT TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:74, Bool)</Condition>
+            <Action>74 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR AFT TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:78, Bool)</Condition>
+            <Action>78 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR FWD TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:79, Bool)</Condition>
+            <Action>79 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID AFT TK On" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:76, Bool)</Condition>
+            <Action>76 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID FWD TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:77, Bool)</Condition>
+            <Action>77 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R OUTR TK On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:75, Bool)</Condition>
+            <Action>75 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK L On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:80, Bool)</Condition>
+            <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
+            <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
 
         <Step Name="Await APU Avail" Type="COND" Delay="2000">
             <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||</Condition>
@@ -164,6 +244,86 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <Step Name="APU Bleed Off" Type="STEP" Delay="1500">
             <Condition>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
+        </Step>
+            <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
+            <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK L Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:80, Bool) !</Condition>
+            <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R OUTR TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:75, Bool) !</Condition>
+            <Action>75 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID FWD TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:77, Bool) !</Condition>
+            <Action>77 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R MID AFT TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:76, Bool) !</Condition>
+            <Action>76 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR FWD TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:79, Bool) !</Condition>
+            <Action>79 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump R INR AFT TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:78, Bool) !</Condition>
+            <Action>78 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR AFT TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:74, Bool) !</Condition>
+            <Action>74 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L INR FWD TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:73, Bool) !</Condition>
+            <Action>73 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID AFT TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:72, Bool) !</Condition>
+            <Action>72 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L MID FWD TK Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:71, Bool) !</Condition>
+            <Action>71 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump L OUTR TK Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:70, Bool) !</Condition>
+            <Action>70 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:69, Bool) !</Condition>
+            <Action>69 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK4 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:68, Bool) !</Condition>
+            <Action>68 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:67, Bool) !</Condition>
+            <Action>67 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK3 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:66, Bool) !</Condition>
+            <Action>66 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:65, Bool) !</Condition>
+            <Action>65 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK2 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:64, Bool) !</Condition>
+            <Action>64 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK1 Stby Off" Type="STEP" Delay="500">
+            <Condition>(A:CIRCUIT CONNECTION ON:3, Bool) !</Condition>
+            <Action>3 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Pump Feed TK1 Main Off" Type="STEP" Delay="100">
+            <Condition>(A:CIRCUIT CONNECTION ON:2, Bool) !</Condition>
+            <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
         <Step Name="EMER EXT Lt Off" Type="STEP" Delay="1500">
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==</Condition>
@@ -281,87 +441,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>0 (&gt;K:BEACON_LIGHTS_ON)</Action>
         </Step>
 
-        <Step Name="Fuel Pump Feed TK1 Main On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:2, Bool)</Condition>
-            <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK1 Stby On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:3, Bool)</Condition>
-            <Action>3 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK2 Main On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:64, Bool)</Condition>
-            <Action>64 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK2 Stby On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:65, Bool)</Condition>
-            <Action>65 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK3 Main On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:66, Bool)</Condition>
-            <Action>66 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK3 Stby On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:67, Bool)</Condition>
-            <Action>67 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK4 Main On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:68, Bool)</Condition>
-            <Action>68 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK4 Stby On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:69, Bool)</Condition>
-            <Action>69 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L OUTR TK On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:70, Bool)</Condition>
-            <Action>70 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L MID FWD TK On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:71, Bool)</Condition>
-            <Action>71 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L MID AFT TK On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:72, Bool)</Condition>
-            <Action>72 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L INR FWD TK On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:73, Bool)</Condition>
-            <Action>73 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L INR AFT TK On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:74, Bool)</Condition>
-            <Action>74 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R INR AFT TK On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:78, Bool)</Condition>
-            <Action>78 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R INR FWD TK On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:79, Bool)</Condition>
-            <Action>79 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R MID AFT TK On" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:76, Bool)</Condition>
-            <Action>76 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R MID FWD TK On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:77, Bool)</Condition>
-            <Action>77 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R OUTR TK On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:75, Bool)</Condition>
-            <Action>75 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Trim TK L On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:80, Bool)</Condition>
-            <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
-            <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-
         <Step Name="Cockpit Door Locked" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==</Condition>
             <Action>1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
@@ -385,86 +464,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <Step Name="Cockpit Door Open" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
-        </Step>
-        <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
-            <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Trim TK L Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:80, Bool) !</Condition>
-            <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R OUTR TK Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:75, Bool) !</Condition>
-            <Action>75 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R MID FWD TK Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:77, Bool) !</Condition>
-            <Action>77 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R MID AFT TK Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:76, Bool) !</Condition>
-            <Action>76 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R INR FWD TK Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:79, Bool) !</Condition>
-            <Action>79 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump R INR AFT TK Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:78, Bool) !</Condition>
-            <Action>78 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L INR AFT TK Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:74, Bool) !</Condition>
-            <Action>74 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L INR FWD TK Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:73, Bool) !</Condition>
-            <Action>73 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L MID AFT TK Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:72, Bool) !</Condition>
-            <Action>72 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L MID FWD TK Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:71, Bool) !</Condition>
-            <Action>71 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump L OUTR TK Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:70, Bool) !</Condition>
-            <Action>70 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK4 Stby Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:69, Bool) !</Condition>
-            <Action>69 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK4 Main Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:68, Bool) !</Condition>
-            <Action>68 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK3 Stby Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:67, Bool) !</Condition>
-            <Action>67 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK3 Main Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:66, Bool) !</Condition>
-            <Action>66 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK2 Stby Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:65, Bool) !</Condition>
-            <Action>65 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK2 Main Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:64, Bool) !</Condition>
-            <Action>64 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK1 Stby Off" Type="STEP" Delay="500">
-            <Condition>(A:CIRCUIT CONNECTION ON:3, Bool) !</Condition>
-            <Action>3 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
-        </Step>
-        <Step Name="Fuel Pump Feed TK1 Main Off" Type="STEP" Delay="100">
-            <Condition>(A:CIRCUIT CONNECTION ON:2, Bool) !</Condition>
-            <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
         <Step Name="Beacon Off" Type="STEP" Delay="1000">
             <Condition>(A:LIGHT BEACON, Bool) !</Condition>
