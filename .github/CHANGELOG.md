@@ -43,6 +43,7 @@
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [OANS] Display correct flags when IRS position is not available - @Nufflee (nufflee)
 1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
 1. [RA] Add direct coupling and interrupted antenna cable failures to RAs - @beheh (Benedict Etzel)
 1. [A32NX/TELEX] Keep flight number set even if already taken - @BenJuan26 (BenJuan26)
@@ -70,6 +71,10 @@
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
+1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
+1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
+1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
+1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 
 ## 0.12.0
 

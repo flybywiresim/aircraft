@@ -49,7 +49,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     private readonly bus: EventBus,
     private readonly labelManager?: OancLabelManager<T>,
     private readonly aircraftOnGround?: Subscribable<boolean>,
-    private readonly aircraftPpos?: Position,
+    private readonly aircraftPpos?: Subscribable<Position>,
     private readonly canvasRef?: NodeReference<HTMLCanvasElement>,
     private readonly canvasCentreX?: Subscribable<number>,
     private readonly canvasCentreY?: Subscribable<number>,
@@ -435,14 +435,14 @@ export class OansBrakeToVacateSelection<T extends number> {
     const aircraftDistFromThreshold = pointDistance(
       this.btvThresholdPosition[0],
       this.btvThresholdPosition[1],
-      this.aircraftPpos[0],
-      this.aircraftPpos[1],
+      this.aircraftPpos.get()[0],
+      this.aircraftPpos.get()[1],
     );
     const aircraftDistFromRunwayEnd = pointDistance(
       this.btvOppositeThresholdPosition[0],
       this.btvOppositeThresholdPosition[1],
-      this.aircraftPpos[0],
-      this.aircraftPpos[1],
+      this.aircraftPpos.get()[0],
+      this.aircraftPpos.get()[1],
     );
     const isPastThreshold = aircraftDistFromRunwayEnd < this.btvRunwayLda.get();
     // As soon as aircraft passes the touchdown zone distance, draw DRY and WET stop bars from there
@@ -749,7 +749,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     const insideRunways = [];
     runwayFeatures.features.forEach((feat) => {
       if (feat.properties.idrwy) {
-        const inside = booleanContains(feat.geometry as Polygon, point(this.aircraftPpos));
+        const inside = booleanContains(feat.geometry as Polygon, point(this.aircraftPpos.get()));
         if (inside) {
           insideRunways.push(feat.properties.idrwy.replace('.', ' - '));
         }

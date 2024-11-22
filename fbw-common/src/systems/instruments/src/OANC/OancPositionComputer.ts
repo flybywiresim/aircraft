@@ -31,7 +31,7 @@ export class OancPositionComputer<T extends number> {
 
       const polygon = feature.geometry as Polygon;
 
-      if (booleanPointInPolygon(this.oanc.projectedPpos, polygon)) {
+      if (booleanPointInPolygon(this.oanc.projectedPpos.get(), polygon)) {
         switch (feature.properties.feattype) {
           case FeatureType.ParkingStandArea:
             return feature.properties.idstd;
