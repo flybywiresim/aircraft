@@ -86,11 +86,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <!-- ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test) -->
         <Step Name="ENG Fire Test On" Type="PROC" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
-            <Action>1 (&gt;L:A32NX_FIRE_TEST_ENG1)</Action>
+            <Action>1 (&gt;L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED)</Action>
         </Step>
         <Step Name="ENG Fire Test Off" Type="PROC" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
-            <Action>0 (&gt;L:A32NX_FIRE_TEST_ENG1) 1 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
+            <Action>0 (&gt;L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED) 1 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
         </Step>
 
         <!-- Start APU (APU fire tests are done automatically in the A380 -->
