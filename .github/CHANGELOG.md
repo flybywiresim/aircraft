@@ -73,6 +73,8 @@
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
 1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
+1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
+1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 
 ## 0.12.0
 
