@@ -223,9 +223,13 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(A:CIRCUIT CONNECTION ON:80, Bool)</Condition>
             <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
-        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="500">
+        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="1000">
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="NSS DATA TO AVNCS ON" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE)</Action>
         </Step>
 
         <Step Name="Await APU Avail" Type="COND" Delay="2000">
