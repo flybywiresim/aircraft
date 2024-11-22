@@ -58,7 +58,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
 
   private abnormalRef = FSComponent.createRef<SVGGElement>();
 
-  private hdgFlagVisible = Subject.create(false);
+  private readonly hdgFlagVisible = Subject.create(false);
 
   private heading = Subject.create(0);
 

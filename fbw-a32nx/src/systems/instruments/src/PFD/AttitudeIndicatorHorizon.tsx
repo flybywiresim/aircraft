@@ -444,13 +444,13 @@ class RadioAltAndDH extends DisplayComponent<{
 
   private altitude = new Arinc429Word(0);
 
-  private attDhTextVisible = Subject.create(false);
+  private readonly attDhTextVisible = Subject.create(false);
 
   private radioAltText = Subject.create('0');
 
-  private radioAltVisible = Subject.create(true);
+  private readonly radioAltVisible = Subject.create(true);
 
-  private raFlagFlashing = Subject.create(false);
+  private readonly raFlagFlashing = Subject.create(false);
 
   private classSub = Subject.create('');
 
@@ -599,7 +599,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   private slideSlip = FSComponent.createRef<SVGPathElement>();
 
-  private siFlagVisible = Subject.create(false);
+  private readonly siFlagVisible = Subject.create(false);
 
   private onGround = true;
 

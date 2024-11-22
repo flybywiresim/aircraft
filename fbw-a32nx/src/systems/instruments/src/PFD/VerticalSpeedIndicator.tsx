@@ -40,7 +40,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   private radioAlt = new Arinc429Word(0);
 
-  private vsFlagVisible = Subject.create(false);
+  private readonly vsFlagVisible = Subject.create(false);
 
   private vsNormal = FSComponent.createRef<SVGGElement>();
 

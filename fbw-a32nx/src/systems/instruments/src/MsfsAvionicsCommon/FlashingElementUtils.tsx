@@ -26,20 +26,20 @@ export interface FlashProps extends ComponentProps {
 }
 
 export class FlashOneHertz extends DisplayComponent<FlashProps> {
-  private oneHertzClock = ConsumerSubject.create(null, false);
+  private readonly oneHertzClock = ConsumerSubject.create(null, false);
 
-  private flashingMtrig = new NXLogicTriggeredMonostableNode(this.props.flashDuration, true);
+  private readonly flashingMtrig = new NXLogicTriggeredMonostableNode(this.props.flashDuration, true);
 
-  private flashingMtrigResult = Subject.create(false);
+  private readonly flashingMtrigResult = Subject.create(false);
 
-  private visible = MappedSubject.create(
+  private readonly visible = MappedSubject.create(
     ([visible, oneHertzClock, flashingMtrig]) => visible && !(flashingMtrig && oneHertzClock),
     this.props.visible ?? Subject.create(true),
     this.oneHertzClock,
     this.flashingMtrigResult,
   );
 
-  private class = MappedSubject.create(
+  private readonly class = MappedSubject.create(
     ([visible, class1, class2]) => (visible ? class1 : class2),
     this.visible,
     SubscribableUtils.toSubscribable(this.props.className1 ?? '', true),

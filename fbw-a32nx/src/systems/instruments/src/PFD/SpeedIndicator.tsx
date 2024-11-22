@@ -154,7 +154,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
   private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
 
-  private spdFlagVisible = Subject.create(false);
+  private readonly spdFlagVisible = Subject.create(false);
 
   private showBarsRef = FSComponent.createRef<SVGGElement>();
 
@@ -389,7 +389,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
   private decelRef = FSComponent.createRef<SVGTextElement>();
 
-  private spdLimFlagVisible = Subject.create(false);
+  private readonly spdLimFlagVisible = Subject.create(false);
 
   private onGround = true;
 
@@ -1000,7 +1000,7 @@ interface SpeedStateInfo {
 }
 
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
-  private spdSelFlagVisible = Subject.create(false);
+  private readonly spdSelFlagVisible = Subject.create(false);
 
   private upperBoundRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1281,7 +1281,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   private machTextSub = Subject.create('');
 
-  private machFlagVisible = Subject.create(false);
+  private readonly machFlagVisible = Subject.create(false);
 
   private machHysteresis = false;
 

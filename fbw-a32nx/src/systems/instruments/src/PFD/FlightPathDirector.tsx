@@ -49,13 +49,13 @@ export class FlightPathDirector extends DisplayComponent<{
 
   private needsUpdate = false;
 
-  private isVisible = Subject.create(false);
+  private readonly isVisible = Subject.create(false);
 
   private birdPath = FSComponent.createRef<SVGGElement>();
 
   private birdPathWings = FSComponent.createRef<SVGGElement>();
 
-  private shouldFlash = Subject.create(false);
+  private readonly shouldFlash = Subject.create(false);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);

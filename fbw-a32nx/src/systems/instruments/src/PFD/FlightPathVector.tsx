@@ -24,7 +24,7 @@ interface FlightPathVectorData {
 export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
   private bird = FSComponent.createRef<SVGGElement>();
 
-  private fpvFlagVisible = Subject.create(false);
+  private readonly fpvFlagVisible = Subject.create(false);
 
   private fcuDiscreteWord1 = new Arinc429Word(0);
 

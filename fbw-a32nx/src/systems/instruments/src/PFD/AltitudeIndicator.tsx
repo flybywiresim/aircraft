@@ -303,9 +303,9 @@ enum TargetAltitudeColor {
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps> {
   private abnormal = FSComponent.createRef<SVGGElement>();
 
-  private altFlagVisible = Subject.create(false);
+  private readonly altFlagVisible = Subject.create(false);
 
-  private tcasFailed = ConsumerSubject.create(null, false);
+  private readonly tcasFailed = ConsumerSubject.create(null, false);
 
   private normal = FSComponent.createRef<SVGGElement>();
 
@@ -475,7 +475,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
   private selectedAltUpperGroupRef = FSComponent.createRef<SVGGElement>();
 
-  private selectedAltFailed = Subject.create(false);
+  private readonly selectedAltFailed = Subject.create(false);
 
   private targetGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -687,7 +687,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private text = Subject.create('');
 
-  private shouldFlash = Subject.create(false);
+  private readonly shouldFlash = Subject.create(false);
 
   private baroInhg = new Arinc429Word(0);
 

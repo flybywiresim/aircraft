@@ -100,7 +100,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private visibilitySub = Subject.create('hidden');
 
-  private attFlagVisible = Subject.create(false);
+  private readonly attFlagVisible = Subject.create(false);
 
   private fdVisibilitySub = Subject.create('hidden');
 
@@ -281,15 +281,15 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
-  private fdFlagVisibleSub = Subject.create(false);
+  private readonly fdFlagVisibleSub = Subject.create(false);
 
-  private lateralShouldFlash = Subject.create(false);
+  private readonly lateralShouldFlash = Subject.create(false);
 
-  private longitudinalShouldFlash = Subject.create(false);
+  private readonly longitudinalShouldFlash = Subject.create(false);
 
-  private lateralVisible = Subject.create(false);
+  private readonly lateralVisible = Subject.create(false);
 
-  private longitudinalVisible = Subject.create(false);
+  private readonly longitudinalVisible = Subject.create(false);
 
   private handleFdState() {
     const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);

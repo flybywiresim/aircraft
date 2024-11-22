@@ -595,7 +595,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   private cellRef = FSComponent.createRef<SVGGElement>();
 
-  private amberFlashingBox = Subject.create(false);
+  private readonly amberFlashingBox = Subject.create(false);
 
   private flexTemp = 0;
 
@@ -745,7 +745,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private textSub = Subject.create('');
 
-  private shouldFlash = Subject.create(false);
+  private readonly shouldFlash = Subject.create(false);
 
   private updateMessage() {
     const className = this.props.A3Message.get()[1];
@@ -837,7 +837,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private readonly inSpeedProtection = Subject.create(false);
 
-  private inModeReversion = Subject.create(false);
+  private readonly inModeReversion = Subject.create(false);
 
   private fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1559,13 +1559,13 @@ const getBC3Message = (
 class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> } & CellProps> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
-  private normalClassNames = Subject.create('');
+  private readonly normalClassNames = Subject.create('');
 
-  private flashingClassName1 = Subject.create('');
+  private readonly flashingClassName1 = Subject.create('');
 
-  private flashingClassName2 = Subject.create('');
+  private readonly flashingClassName2 = Subject.create('');
 
-  private isFlashing = Subject.create(false);
+  private readonly isFlashing = Subject.create(false);
 
   private fillBC3Cell() {
     this.normalClassNames.set(`${this.props.BC3Message.get()[1]} MiddleAlign`);
