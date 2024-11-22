@@ -102,7 +102,12 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     const lateralArmed = this.lateralArmedSub.get();
 
     const shouldShowLine =
-      (lateralMode === LateralMode.NONE || lateralMode === LateralMode.HDG || lateralMode === LateralMode.TRACK) &&
+      (lateralMode === LateralMode.NONE ||
+        lateralMode === LateralMode.HDG ||
+        lateralMode === LateralMode.TRACK ||
+        lateralMode === LateralMode.RWY ||
+        lateralMode === LateralMode.RWY_TRACK ||
+        lateralMode === LateralMode.GA_TRACK) &&
       !isArmed(lateralArmed, ArmedLateralMode.NAV);
 
     if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {

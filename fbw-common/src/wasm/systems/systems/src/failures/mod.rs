@@ -61,6 +61,8 @@ pub enum FailureType {
     BrakeAccumulatorGasLeak,
     // ATA34
     RadioAltimeter(usize),
+    RadioAntennaInterrupted(usize),
+    RadioAntennaDirectCoupling(usize),
 }
 
 pub struct Failure {

@@ -397,6 +397,7 @@
                 <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
                     <EMISSIVE_CODE>(L:A32NX_EFB_BRIGHTNESS, number) 10 max 100 min 100 /</EMISSIVE_CODE>
                 </UseTemplate>
+                <UseTemplate Name="FBW_GT_Interaction_NoInteraction"/>
             </Component>
             <Component ID="PUSH_EFB_SIDE" Node="PUSH_EFB_SIDE">
                 <UseTemplate Name="ASOBO_GT_Push_Button">

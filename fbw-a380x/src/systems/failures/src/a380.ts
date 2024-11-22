@@ -153,6 +153,13 @@ export const A380Failure = Object.freeze({
   RadioAltimeter1: 34000,
   RadioAltimeter2: 34001,
   RadioAltimeter3: 34002,
+  RadioAntennaInterrupted1: 34010,
+  RadioAntennaInterrupted2: 34011,
+  RadioAntennaInterrupted3: 34012,
+  RadioAntennaDirectCoupling1: 34020,
+  RadioAntennaDirectCoupling2: 34021,
+  RadioAntennaDirectCoupling3: 34022,
+
   Transponder1: 34003,
   Transponder2: 34004,
 });
@@ -303,6 +310,12 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [34, A380Failure.RadioAltimeter1, 'RA SYS A'],
   [34, A380Failure.RadioAltimeter2, 'RA SYS B'],
   [34, A380Failure.RadioAltimeter3, 'RA SYS C'],
+  [34, A380Failure.RadioAntennaInterrupted1, 'RA SYS A Interrupted'],
+  [34, A380Failure.RadioAntennaInterrupted2, 'RA SYS B Interrupted'],
+  [34, A380Failure.RadioAntennaInterrupted3, 'RA SYS C Interrupted'],
+  [34, A380Failure.RadioAntennaDirectCoupling1, 'RA SYS A Direct Coupling'],
+  [34, A380Failure.RadioAntennaDirectCoupling2, 'RA SYS B Direct Coupling'],
+  [34, A380Failure.RadioAntennaDirectCoupling3, 'RA SYS C Direct Coupling'],
   [34, A380Failure.Transponder1, 'XPDR 1'],
   [34, A380Failure.Transponder2, 'XPDR 2'],
 ];

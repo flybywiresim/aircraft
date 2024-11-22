@@ -57,6 +57,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private setHoldSpeed = false;
 
+  private tdReached = false;
+
   private tcasRaInhibited = Subject.create(false);
 
   private trkFpaDeselected = Subject.create(false);
@@ -80,6 +82,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.setHoldSpeed,
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
+        this.tdReached,
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -162,6 +165,14 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       .whenChanged()
       .handle((trk) => {
         this.trkFpaDeselected.set(trk);
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('tdReached')
+      .whenChanged()
+      .handle((tdr) => {
+        this.tdReached = tdr;
         this.handleFMABorders();
       });
   }
@@ -1358,17 +1369,16 @@ const getBC3Message = (
   setHoldSpeed: boolean,
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
+  tdReached: boolean,
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
 
   let text: string;
   let className: string;
+
   // All currently unused message are set to false
   if (false) {
-    text = 'MAN PITCH TRIM ONLY';
-    className = 'Red Blink9Seconds';
-  } else if (false) {
     text = 'USE MAN PITCH TRIM';
     className = 'PulseAmber9Seconds Amber';
   } else if (false) {
@@ -1377,41 +1387,29 @@ const getBC3Message = (
   } else if (TCASArmed && !isAttExcessive) {
     text = 'TCAS           ';
     className = 'FontMediumSmaller Cyan';
-  } else if (false) {
-    text = 'DISCONNECT AP FOR LDG';
-    className = 'PulseAmber9Seconds Amber';
   } else if (tcasRaInhibited && !isAttExcessive) {
     text = 'TCAS RA INHIBITED';
-    className = 'White';
+    className = 'FontMedium White';
   } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
     text = 'TRK FPA DESELECTED';
-    className = 'White';
-  } else if (false) {
-    text = 'SET GREEN DOT SPEED';
-    className = 'White';
-  } else if (false) {
+    className = 'FontMedium White';
+  } else if (tdReached) {
     text = 'T/D REACHED';
+    className = 'FontMedium White';
+  } else if (false) {
+    text = 'EXTEND SPD BRK';
     className = 'White';
   } else if (false) {
-    text = 'MORE DRAG';
+    text = 'RETRACT SPD BRK';
     className = 'White';
   } else if (false) {
-    text = 'CHECK SPEED MODE';
-    className = 'White';
-  } else if (false) {
-    text = 'CHECK APPR SELECTION';
-    className = 'White';
-  } else if (false) {
-    text = 'TURN AREA EXCEEDANCE';
+    text = 'CHECK APPR SEL';
     className = 'White';
   } else if (setHoldSpeed) {
-    text = 'SET HOLD SPEED';
-    className = 'White';
+    text = 'SET HOLD SPD';
+    className = 'FontMedium White';
   } else if (false) {
-    text = 'VERT DISCONT AHEAD';
-    className = 'Amber';
-  } else if (false) {
-    text = 'FINAL APP SELECTED';
+    text = 'EXIT MISSED';
     className = 'White';
   } else {
     return [null, null];
@@ -1435,6 +1433,8 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private trkFpaDeselected = false;
 
+  private tdReached = false;
+
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
       this.isAttExcessive,
@@ -1442,6 +1442,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       this.setHoldSpeed,
       this.trkFpaDeselected,
       this.tcasRaInhibited,
+      this.tdReached,
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1490,6 +1491,14 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       .whenChanged()
       .handle((trk) => {
         this.trkFpaDeselected = trk;
+        this.fillBC3Cell();
+      });
+
+    sub
+      .on('tdReached')
+      .whenChanged()
+      .handle((tdr) => {
+        this.tdReached = tdr;
         this.fillBC3Cell();
       });
   }
