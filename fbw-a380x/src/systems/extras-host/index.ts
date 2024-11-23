@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { FlightDeckBounds, NotificationManager, PilotSeatManager } from '@flybywiresim/fbw-sdk';
+import {
+  FlightDeckBounds,
+  NotificationManager,
+  PilotSeatManager,
+  trySetAircraftReadyState,
+} from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
@@ -135,9 +140,7 @@ class ExtrasHost extends BaseInstrument {
         this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
 
-        // Signal that the aircraft is ready via L:A32NX_IS_READY
-        SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
-        console.log('A380X_EXTRASHOST: Aircraft is ready');
+        trySetAircraftReadyState();
       }
       this.gameState = gs;
     } else {

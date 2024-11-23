@@ -7,7 +7,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { FlightDeckBounds, NotificationManager, PilotSeatManager } from '@flybywiresim/fbw-sdk';
+import {
+  FlightDeckBounds,
+  NotificationManager,
+  PilotSeatManager,
+  trySetAircraftReadyState,
+} from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
@@ -146,6 +151,8 @@ class ExtrasHost extends BaseInstrument {
         this.simVarPublisher.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
+
+        trySetAircraftReadyState();
       }
       this.gameState = gs;
     } else {
