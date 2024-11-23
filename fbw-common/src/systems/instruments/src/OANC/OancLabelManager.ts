@@ -40,7 +40,7 @@ export class OancLabelManager<T extends number> {
     const rotate = -mapCurrentHeading;
 
     if (this.oanc.doneDrawing && this.showLabels && LABEL_VISIBILITY_RULES[this.oanc.zoomLevelIndex.get()]) {
-      this.oanc.labelContainerRef.instance.style.visibility = 'visible';
+      this.oanc.labelContainerRef.instance.style.visibility = 'inherit';
 
       for (const label of this.visibleLabels.getArray()) {
         const element = this.visibleLabelElements.get(label);
@@ -65,7 +65,7 @@ export class OancLabelManager<T extends number> {
           element.style.visibility = 'hidden';
           continue;
         } else if ([LabelStyle.BtvSelectedRunwayArrow, LabelStyle.FmsSelectedRunwayEnd].includes(label.style)) {
-          element.style.visibility = 'visible';
+          element.style.visibility = 'inherit';
         }
 
         const [labelX, labelY] = label.position;
