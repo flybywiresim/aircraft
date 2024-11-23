@@ -1,4 +1,13 @@
-import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FcuSimvars } from '../shared/FcuSimvarPublisher';
 
 interface EisDisplayProps extends ComponentProps {
@@ -9,19 +18,62 @@ interface EisDisplayProps extends ComponentProps {
 }
 
 export class EisDisplay extends DisplayComponent<EisDisplayProps> {
-  private baroValueMode = 0;
+  private baroValueMode = ConsumerSubject.create(null, 0);
 
-  private baroValue = 0;
+  private baroValue = ConsumerSubject.create(null, 0);
 
-  private baroMode = 0;
+  private baroMode = ConsumerSubject.create(null, 0);
 
-  private lightsTest = false;
+  private lightsTest = Subject.create(false);
 
-  private baroValueSub = Subject.create('');
+  private baroValueSub = MappedSubject.create(
+    ([lightsTest, baroValueMode, baroValue]) => {
+      if (lightsTest) {
+        return '88.88';
+      } else if (baroValueMode === 0) {
+        return 'Std';
+      } else if (baroValueMode === 1) {
+        return Math.round(baroValue).toString();
+      } else {
+        return baroValue.toFixed(2);
+      }
+    },
+    this.lightsTest,
+    this.baroValueMode,
+    this.baroValue,
+  );
 
-  private qnhLabelSub = Subject.create('');
+  private qnhLabelSub = MappedSubject.create(
+    ([lightsTest, baroMode]) => {
+      if (lightsTest) {
+        return 'Active';
+      } else if (baroMode === 0) {
+        return 'Inactive';
+      } else if (baroMode === 1) {
+        return 'Active';
+      } else {
+        return 'Inactive';
+      }
+    },
+    this.lightsTest,
+    this.baroMode,
+  );
 
-  private qfeLabelSub = Subject.create('');
+  private qfeLabelSub = MappedSubject.create(
+    ([lightsTest, baroMode]) => {
+      if (lightsTest) {
+        return 'Active';
+      } else if (baroMode === 0) {
+        return 'Inactive';
+      } else if (baroMode === 1) {
+        return 'Inactive';
+      } else {
+        return 'Active';
+      }
+    },
+    this.lightsTest,
+    this.baroMode,
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -32,65 +84,14 @@ export class EisDisplay extends DisplayComponent<EisDisplayProps> {
       .on('lightsTest')
       .whenChanged()
       .handle((value) => {
-        this.lightsTest = value === 0;
-
-        this.handleLabels();
-        this.handleValue();
+        this.lightsTest.set(value === 0);
       });
 
-    sub
-      .on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroValueMode`)
-      .whenChanged()
-      .handle((newVal) => {
-        this.baroValueMode = newVal;
-        this.handleLabels();
-        this.handleValue();
-      });
+    this.baroValueMode.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroValueMode`));
 
-    sub
-      .on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroValue`)
-      .whenChanged()
-      .handle((newVal) => {
-        this.baroValue = newVal;
-        this.handleValue();
-      });
+    this.baroValue.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroValue`));
 
-    sub
-      .on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroMode`)
-      .whenChanged()
-      .handle((newVal) => {
-        this.baroMode = newVal;
-        this.handleLabels();
-        this.handleValue();
-      });
-  }
-
-  private handleValue() {
-    if (this.lightsTest) {
-      this.baroValueSub.set('88.88');
-    } else if (this.baroValueMode === 0) {
-      this.baroValueSub.set('Std');
-    } else if (this.baroValueMode === 1) {
-      this.baroValueSub.set(Math.round(this.baroValue).toString());
-    } else {
-      this.baroValueSub.set(this.baroValue.toFixed(2));
-    }
-  }
-
-  private handleLabels() {
-    if (this.lightsTest) {
-      this.qfeLabelSub.set('Active');
-      this.qnhLabelSub.set('Active');
-    } else if (this.baroMode === 0) {
-      this.qfeLabelSub.set('Inactive');
-      this.qnhLabelSub.set('Inactive');
-    } else if (this.baroMode === 1) {
-      this.qfeLabelSub.set('Inactive');
-      this.qnhLabelSub.set('Active');
-    } else {
-      this.qfeLabelSub.set('Active');
-      this.qnhLabelSub.set('Inactive');
-    }
+    this.baroMode.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroMode`));
   }
 
   public render(): VNode {

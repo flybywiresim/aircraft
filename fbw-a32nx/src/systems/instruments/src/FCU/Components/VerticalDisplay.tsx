@@ -1,28 +1,81 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FcuSimvars } from '../shared/FcuSimvarPublisher';
 
 export class VerticalDisplay extends DisplayComponent<{ x: number; y: number; bus: EventBus }> {
-  private altValue = 0;
+  private altValue = ConsumerSubject.create(null, 0);
 
-  private vsValue = 0;
+  private vsValue = ConsumerSubject.create(null, 0);
 
-  private vsDashes = false;
+  private vsDashes = ConsumerSubject.create(null, false);
 
-  private trkFpaMode = false;
+  private trkFpaMode = ConsumerSubject.create(null, false);
 
-  private managed = false;
+  private managed = ConsumerSubject.create(null, false);
 
-  private lightsTest = false;
+  private lightsTest = Subject.create(false);
 
-  private dotVisibilitySub = Subject.create('');
+  private dotVisibilitySub = MappedSubject.create(
+    ([lightsTest, managed]) => (managed || lightsTest ? 'visible' : 'hidden'),
+    this.lightsTest,
+    this.managed,
+  );
 
-  private vsLabelSub = Subject.create('');
+  private fpaLabelSub = MappedSubject.create(
+    ([trkFpa, lightsTest]) => trkFpa || lightsTest,
+    this.trkFpaMode,
+    this.lightsTest,
+  );
+  private vsLabelSub = MappedSubject.create(
+    ([trkFpa, lightsTest]) => !trkFpa || lightsTest,
+    this.trkFpaMode,
+    this.lightsTest,
+  );
 
-  private fpaLabelSub = Subject.create('');
+  private altValueSub = MappedSubject.create(
+    ([lightsTest, altValue]) => {
+      if (lightsTest) {
+        return '88888';
+      } else {
+        return Math.round(altValue).toString().padStart(5, '0');
+      }
+    },
+    this.lightsTest,
+    this.altValue,
+  );
 
-  private altValueSub = Subject.create('');
+  private vsValueSub = MappedSubject.create(
+    ([lightsTest, vsDashes, vsValue, trkFpaMode]) => {
+      const sign = Math.sign(vsValue) >= 0 ? '+' : '~';
+      const absValue = Math.abs(vsValue);
 
-  private vsValueSub = Subject.create('');
+      if (lightsTest) {
+        return '+8.888';
+      } else if (trkFpaMode && vsDashes) {
+        return '~-.-';
+      } else if (trkFpaMode && !vsDashes) {
+        return `${sign}${absValue.toFixed(1)}`;
+      } else if (vsDashes) {
+        return '~----';
+      } else {
+        return `${sign}${Math.floor(absValue * 0.01)
+          .toString()
+          .padStart(2, '0')}oo`;
+      }
+    },
+    this.lightsTest,
+    this.vsDashes,
+    this.vsValue,
+    this.trkFpaMode,
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -33,94 +86,18 @@ export class VerticalDisplay extends DisplayComponent<{ x: number; y: number; bu
       .on('lightsTest')
       .whenChanged()
       .handle((value) => {
-        this.lightsTest = value === 0;
-
-        this.handleLabels();
-        this.handleVsFpaDisplay();
-        this.handleAltDisplay();
-        this.handleDot();
+        this.lightsTest.set(value === 0);
       });
 
-    sub
-      .on('afsDisplayTrkFpaMode')
-      .whenChanged()
-      .handle((value) => {
-        this.trkFpaMode = value;
+    this.trkFpaMode.setConsumer(sub.on('afsDisplayTrkFpaMode'));
 
-        this.handleVsFpaDisplay();
-        this.handleLabels();
-      });
+    this.vsDashes.setConsumer(sub.on('afsDisplayVsFpaDashes'));
 
-    sub
-      .on('afsDisplayVsFpaDashes')
-      .whenChanged()
-      .handle((value) => {
-        this.vsDashes = value;
-        this.handleVsFpaDisplay();
-      });
+    this.vsValue.setConsumer(sub.on('afsDisplayVsFpaValue'));
 
-    sub
-      .on('afsDisplayVsFpaValue')
-      .whenChanged()
-      .handle((value) => {
-        this.vsValue = value;
-        this.handleVsFpaDisplay();
-      });
+    this.altValue.setConsumer(sub.on('afsDisplayAltValue'));
 
-    sub
-      .on('afsDisplayAltValue')
-      .whenChanged()
-      .handle((value) => {
-        this.altValue = value;
-        this.handleAltDisplay();
-      });
-
-    sub
-      .on('afsDisplayLvlChManaged')
-      .whenChanged()
-      .handle((value) => {
-        this.managed = value;
-
-        this.handleDot();
-      });
-  }
-
-  private handleAltDisplay() {
-    if (this.lightsTest) {
-      this.altValueSub.set('88888');
-    } else {
-      this.altValueSub.set(Math.round(this.altValue).toString().padStart(5, '0'));
-    }
-  }
-
-  private handleVsFpaDisplay() {
-    const sign = Math.sign(this.vsValue) >= 0 ? '+' : '~';
-    const absValue = Math.abs(this.vsValue);
-
-    if (this.lightsTest) {
-      this.vsValueSub.set('+8.888');
-    } else if (this.trkFpaMode && this.vsDashes) {
-      this.vsValueSub.set('~-.-');
-    } else if (this.trkFpaMode && !this.vsDashes) {
-      this.vsValueSub.set(`${sign}${absValue.toFixed(1)}`);
-    } else if (this.vsDashes) {
-      this.vsValueSub.set('~----');
-    } else {
-      this.vsValueSub.set(
-        `${sign}${Math.floor(absValue * 0.01)
-          .toString()
-          .padStart(2, '0')}oo`,
-      );
-    }
-  }
-
-  private handleLabels() {
-    this.fpaLabelSub.set(this.trkFpaMode || this.lightsTest ? 'Active' : 'Inactive');
-    this.vsLabelSub.set(!this.trkFpaMode || this.lightsTest ? 'Active' : 'Inactive');
-  }
-
-  private handleDot() {
-    this.dotVisibilitySub.set(this.managed || this.lightsTest ? 'visible' : 'hidden');
+    this.managed.setConsumer(sub.on('afsDisplayLvlChManaged'));
   }
 
   public render(): VNode {
@@ -136,10 +113,22 @@ export class VerticalDisplay extends DisplayComponent<{ x: number; y: number; bu
         </g>
 
         <g transform="translate(512 0)">
-          <text id="VS" x="348" y="57.6" text-anchor="end" class={this.vsLabelSub}>
+          <text
+            id="VS"
+            x="348"
+            y="57.6"
+            text-anchor="end"
+            class={{ Active: this.vsLabelSub, Inactive: this.vsLabelSub.map(SubscribableMapFunctions.not()) }}
+          >
             V/S
           </text>
-          <text id="FPA" x="461" y="57.6" text-anchor="end" class={this.fpaLabelSub}>
+          <text
+            id="FPA"
+            x="461"
+            y="57.6"
+            text-anchor="end"
+            class={{ Active: this.fpaLabelSub, Inactive: this.fpaLabelSub.map(SubscribableMapFunctions.not()) }}
+          >
             FPA
           </text>
           <text id="Value" class="Value" x="77" y="163">
