@@ -595,7 +595,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         const rt = this.rudderTrimOrder.get();
 
         const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
-        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(0) < 60 && Math.abs(rt) > 0.3;
+        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(61) < 60 && Math.abs(rt) > 0.3;
 
         if (
           !gnd &&
