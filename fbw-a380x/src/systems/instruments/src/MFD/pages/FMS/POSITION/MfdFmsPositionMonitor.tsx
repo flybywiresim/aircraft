@@ -69,6 +69,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozenText = Subject.create('');
 
+  private readonly positionFrozenTimeText = Subject.create('');
+
   private readonly gpsCoordinates: Coordinates = {lat : 0, long: 0}
 
   private readonly gpsPositionText = Subject.create('');
@@ -179,7 +181,13 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   private togglePositonFrozen() {
     const frozen = !this.positionFrozen.get();
     this.positionFrozen.set(frozen);
-    this.positionFrozenText.set(frozen? "POSITION FROZEN \n AT   " + getEtaFromUtcOrPresent(0, true) : "");
+    if(frozen) {
+    this.positionFrozenText.set("POSITION FROZEN");
+    this.positionFrozenTimeText.set("  AT " + getEtaFromUtcOrPresent(0, false))
+    } else {
+      this.positionFrozenText.set("");
+      this.positionFrozenTimeText.set("");
+    }
   }
 
   render(): VNode {
@@ -188,7 +196,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
         {super.render()}
         {/* begin page content */}
         <div class="mfd-page-container">
-          <div class="mfd-pos-monitor-header"></div>
+          <div style={"height:10px"}></div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
@@ -223,11 +231,14 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
           <div class="fc mfd-pos-monitor-table">
-          <div class="mfd-pos-space-between-row" style={"margin-bottom: 10px;"}>
+          <div class="fr space-between">
           <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">  {this.onSideFms}</span>
               <span class="mfd-value bigger">{this.fmPosition}</span>
             </div>
+          </div>
+          <div class ="fr" style={"justify-content: flex-end; height:9px;"}>
+            <span class="mfd-label bigger">{this.positionFrozenText}</span>
           </div>
           <div class="fr space-between">
           <div class="mfd-label-value-container">
@@ -236,17 +247,18 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
           <div class="fr space-between">
+            <div class ="fc">
           <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">MIXIRS</span>
               <span class="mfd-value bigger">{this.noPositionImplemented}</span>
             </div>
-            <div span class="mfd-label" style={"width:195px; height:40px;"}>{this.positionFrozenText}</div>
-            </div>
-            <div class="fr space-between">
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right"> GPIRS</span>
               <span class="mfd-value bigger">{this.noPositionImplemented}</span>
             </div>
+            </div>
+            <div class ="fc">
+            <div span class="mfd-label bigger" style={"width:195px; height:22px;"}>{this.positionFrozenTimeText}</div>
             <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -260,9 +272,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.togglePositonFrozen()}
                 selected={this.positionFrozen}
-                buttonStyle="width: 155px; margin-right:20px"
+                buttonStyle="width: 172px; margin-right:44px"
               />
+            </div>
           </div>
+          
           <div class="mfd-pos-monitor-table-line"></div>
           <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">  {this.offSideFms}</span>
