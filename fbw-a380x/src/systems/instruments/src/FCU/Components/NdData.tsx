@@ -48,9 +48,7 @@ export class NdData extends DisplayComponent<NdDataProps> {
     this.sub
       .on('ovhd_ann_lt_test_active')
       .whenChanged()
-      .handle((v) => {
-        this.lightsTest.set(v);
-      });
+      .handle((v) => this.lightsTest.set(v));
   }
 
   render(): VNode | null {
