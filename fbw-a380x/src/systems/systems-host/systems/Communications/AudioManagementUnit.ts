@@ -32,7 +32,7 @@ export class AudioManagementUnit implements Instrument {
   private readonly onsideRmpIndex = this.index;
   private readonly offsideRmpIndex = this.index === 2 ? 1 : 2;
 
-  private readonly mainPowerVar = 'A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
+  private readonly mainPowerVar = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
 
   private readonly _isHealthy = Subject.create(false);
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
