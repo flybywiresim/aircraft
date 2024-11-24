@@ -280,7 +280,7 @@ export class CruisePathBuilder {
       finalSpeed,
       managedCruiseSpeedMach,
       managedCruiseSpeedMach,
-      EngineModel.getClimbThrustN1(config.engineModelParameters, cruiseAltitude, totalAirTemperature),
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, cruiseAltitude, totalAirTemperature),
       zeroFuelWeight,
       remainingFuelOnBoard,
       headwind.value,
