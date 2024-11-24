@@ -4762,17 +4762,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Set the maximum speed imposed by the climb speed limit in the active flight plan.
-     */
-    set climbSpeedLimit(speed) {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            this.currFlightPlanService.setPerformanceData('climbSpeedLimitSpeed', speed);
-        }
-    }
-
-    /**
      * The altitude below which the climb speed limit of the active flight plan applies or null if not set.
      * @returns {number | null}
      */
@@ -4783,29 +4772,10 @@ class FMCMainDisplay extends BaseAirliners {
         return plan ? plan.performanceData.climbSpeedLimitAltitude : DefaultPerformanceData.ClimbSpeedLimitAltitude;
     }
 
-    /**
-     * Set the altitude below which the climb speed limit of the active flight plan applies.
-     */
-    set climbSpeedLimitAlt(alt) {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            this.currFlightPlanService.setPerformanceData('climbSpeedLimitAltitude', alt);
-        }
-    }
-
     get climbSpeedLimitPilot() {
         const plan = this.currFlightPlanService.active;
 
         return plan ? plan.performanceData.isClimbSpeedLimitPilotEntered : false;
-    }
-
-    set climbSpeedLimitPilot(isPilotEntered) {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            this.currFlightPlanService.setPerformanceData('isClimbSpeedLimitPilotEntered', isPilotEntered);
-        }
     }
 
     /**
@@ -4819,14 +4789,6 @@ class FMCMainDisplay extends BaseAirliners {
         return plan ? plan.performanceData.descentSpeedLimitSpeed : DefaultPerformanceData.DescentSpeedLimitSpeed;
     }
 
-    set descentSpeedLimit(speed) {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            this.currFlightPlanService.setPerformanceData('descentSpeedLimitSpeed', speed);
-        }
-    }
-
     /**
      * The altitude below which the descent speed limit of the active flight plan applies or null if not set.
      * @returns {number | null}
@@ -4838,26 +4800,10 @@ class FMCMainDisplay extends BaseAirliners {
         return plan ? plan.performanceData.descentSpeedLimitAltitude : DefaultPerformanceData.DescentSpeedLimitAltitude;
     }
 
-    set descentSpeedLimitAlt(alt) {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            this.currFlightPlanService.setPerformanceData('descentSpeedLimitAltitude', alt);
-        }
-    }
-
     get descentSpeedLimitPilot() {
         const plan = this.currFlightPlanService.active;
 
         return plan ? plan.performanceData.isDescentSpeedLimitPilotEntered : false;
-    }
-
-    set descentSpeedLimitPilot(isPilotEntered) {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            this.currFlightPlanService.setPerformanceData('isDescentSpeedLimitPilotEntered', isPilotEntered);
-        }
     }
 
     getFlightPhase() {
