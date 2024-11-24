@@ -1,24 +1,57 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FcuSimvars } from '../shared/FcuSimvarPublisher';
 
 export class HdgDisplay extends DisplayComponent<{ x: number; y: number; bus: EventBus }> {
-  private value = 0;
+  private value = ConsumerSubject.create(null, 0);
 
-  private dashes = false;
+  private dashes = ConsumerSubject.create(null, false);
 
-  private managed = false;
+  private managed = ConsumerSubject.create(null, false);
 
-  private trkFpaMode = false;
+  private trkFpaMode = ConsumerSubject.create(null, false);
 
-  private lightsTest = false;
+  private lightsTest = Subject.create(false);
 
-  private dotVisibilitySub = Subject.create('');
+  private dotVisibilitySub = MappedSubject.create(
+    ([lightsTest, managed]) => (managed || lightsTest ? 'visible' : 'hidden'),
+    this.lightsTest,
+    this.managed,
+  );
 
-  private hdgLabelSub = Subject.create('');
+  private trkLabelSub = MappedSubject.create(
+    ([trkFpa, lightsTest]) => trkFpa || lightsTest,
+    this.trkFpaMode,
+    this.lightsTest,
+  );
+  private hdgLabelSub = MappedSubject.create(
+    ([trkFpa, lightsTest]) => !trkFpa || lightsTest,
+    this.trkFpaMode,
+    this.lightsTest,
+  );
 
-  private trkLabelSub = Subject.create('');
-
-  private valueSub = Subject.create('');
+  private valueSub = MappedSubject.create(
+    ([lightsTest, dashes, value]) => {
+      if (lightsTest) {
+        return '888';
+      } else if (dashes) {
+        return '---';
+      } else {
+        return Math.round(value).toString().padStart(3, '0');
+      }
+    },
+    this.lightsTest,
+    this.dashes,
+    this.value,
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -29,73 +62,35 @@ export class HdgDisplay extends DisplayComponent<{ x: number; y: number; bus: Ev
       .on('lightsTest')
       .whenChanged()
       .handle((value) => {
-        this.lightsTest = value === 0;
-
-        this.handleLabels();
-        this.handleHdgDisplay();
-        this.handleDot();
+        this.lightsTest.set(value === 0);
       });
 
-    sub
-      .on('afsDisplayTrkFpaMode')
-      .whenChanged()
-      .handle((value) => {
-        this.trkFpaMode = value;
+    this.trkFpaMode.setConsumer(sub.on('afsDisplayTrkFpaMode'));
 
-        this.handleLabels();
-      });
+    this.dashes.setConsumer(sub.on('afsDisplayHdgTrkDashes'));
 
-    sub
-      .on('afsDisplayHdgTrkDashes')
-      .whenChanged()
-      .handle((value) => {
-        this.dashes = value;
-        this.handleHdgDisplay();
-      });
+    this.value.setConsumer(sub.on('afsDisplayHdgTrkValue'));
 
-    sub
-      .on('afsDisplayHdgTrkValue')
-      .whenChanged()
-      .handle((value) => {
-        this.value = value;
-        this.handleHdgDisplay();
-      });
-
-    sub
-      .on('afsDisplayHdgTrkManaged')
-      .whenChanged()
-      .handle((value) => {
-        this.managed = value;
-        this.handleDot();
-      });
-  }
-
-  private handleHdgDisplay() {
-    if (this.lightsTest) {
-      this.valueSub.set('888');
-    } else if (this.dashes) {
-      this.valueSub.set('---');
-    } else {
-      this.valueSub.set(Math.round(this.value).toString().padStart(3, '0'));
-    }
-  }
-
-  private handleLabels() {
-    this.trkLabelSub.set(this.trkFpaMode || this.lightsTest ? 'Active' : 'Inactive');
-    this.hdgLabelSub.set(!this.trkFpaMode || this.lightsTest ? 'Active' : 'Inactive');
-  }
-
-  private handleDot() {
-    this.dotVisibilitySub.set(this.managed || this.lightsTest ? 'visible' : 'hidden');
+    this.managed.setConsumer(sub.on('afsDisplayHdgTrkManaged'));
   }
 
   public render(): VNode {
     return (
       <g transform={`translate(${this.props.x} ${this.props.y})`}>
-        <text id="HDG" class={this.hdgLabelSub} x="77" y="57.6">
+        <text
+          id="HDG"
+          class={{ Active: this.hdgLabelSub, Inactive: this.hdgLabelSub.map(SubscribableMapFunctions.not()) }}
+          x="77"
+          y="57.6"
+        >
           HDG
         </text>
-        <text id="TRK" class={this.trkLabelSub} x="210" y="57.6">
+        <text
+          id="TRK"
+          class={{ Active: this.trkLabelSub, Inactive: this.trkLabelSub.map(SubscribableMapFunctions.not()) }}
+          x="210"
+          y="57.6"
+        >
           TRK
         </text>
         <text id="LAT" class="Active" x="328" y="57.6">
