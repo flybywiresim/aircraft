@@ -76,6 +76,7 @@
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
+1. [MSFS2024] Fix systems initialization behavior for MSFS2024 - @flogross89 (floridude)
 
 ## 0.12.0
 
