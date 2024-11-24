@@ -385,7 +385,7 @@ pub(super) struct A380AirConditioningSystem {
 }
 
 impl A380AirConditioningSystem {
-    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 550.; // litres/sec
+    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 1250.; // litres/sec
 
     fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
