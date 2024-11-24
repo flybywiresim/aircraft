@@ -2431,15 +2431,15 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       simInputThrottles.ATHR_push = 1;
       std::cout << "WASM: event triggered: AUTO_THROTTLE_ARM" << std::endl;
       break;
-
-      // Re emitting masked event
-      execute_calculator_code("(>K:A32NX.AUTO_THROTTLE_DISCONNECT)", nullptr, nullptr, nullptr);
     }
 
     case Events::AUTO_THROTTLE_DISCONNECT: {
       simInputThrottles.ATHR_disconnect = 1;
       std::cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << std::endl;
       break;
+
+      // Re emitting masked event
+      execute_calculator_code("(>K:A32NX.AUTO_THROTTLE_DISCONNECT)", nullptr, nullptr, nullptr);
     }
 
     case Events::A32NX_ATHR_RESET_DISABLE: {
