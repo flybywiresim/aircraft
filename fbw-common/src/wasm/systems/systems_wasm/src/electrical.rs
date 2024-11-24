@@ -108,7 +108,5 @@ fn stop_apu() {
 }
 
 fn supply_bleed(on: bool) {
-    let action: u32 = if on { 1 } else { 0 };
-
-    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, action);
+    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, action.into());
 }
