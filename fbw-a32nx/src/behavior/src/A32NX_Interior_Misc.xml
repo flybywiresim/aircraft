@@ -368,11 +368,7 @@
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <TOOLTIPID>%((L:A32NX_AUTOPILOT_ACTIVE, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_AUTOPILOT_ACTIVE, Bool) if{
-                        (&gt;K:AUTOPILOT_OFF)
-                    } els{
-                        1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
-                    }
+                    1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)

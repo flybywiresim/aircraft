@@ -2,128 +2,153 @@
 <!-- Copyright (c) 2022 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
-<CustomClientEvents xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <CustomClientEvent Name="A32NX FCU AP1 PUSH" EventID="A32NX.FCU_AP_1_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push AP1 on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU AP2 PUSH" EventID="A32NX.FCU_AP_2_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push AP2 on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU AP DISCONNECT" EventID="A32NX.FCU_AP_DISCONNECT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Disconnect AP</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ATHR PUSH" EventID="A32NX.FCU_ATHR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push ATHR on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ATHR DISCONNECT" EventID="A32NX.FCU_ATHR_DISCONNECT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Disconnect ATHR</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU SPD INC" EventID="A32NX.FCU_SPD_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial Speed knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU SPD DEC" EventID="A32NX.FCU_SPD_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial Speed knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU SPD SET" EventID="A32NX.FCU_SPD_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Speed/Mach value on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU SPD PUSH" EventID="A32NX.FCU_SPD_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push Speed knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU SPD PULL" EventID="A32NX.FCU_SPD_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Speed knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU SPD MACH TOGGLE PUSH" EventID="A32NX.FCU_SPD_MACH_TOGGLE_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push SPD/MACH toggle on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU HDG INC" EventID="A32NX.FCU_HDG_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial Heading knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU HDG DEC" EventID="A32NX.FCU_HDG_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial Heading knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU HDG SET" EventID="A32NX.FCU_HDG_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Heading/Track value on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU HDG PUSH" EventID="A32NX.FCU_HDG_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push Heading knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU HDG PULL" EventID="A32NX.FCU_HDG_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Heading knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU TRK FPA TOGGLE PUSH" EventID="A32NX.FCU_TRK_FPA_TOGGLE_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push TRK/FPA toggle on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT INC" EventID="A32NX.FCU_ALT_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial Altitude knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT DEC" EventID="A32NX.FCU_ALT_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial Altitude knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT SET" EventID="A32NX.FCU_ALT_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Altitude value on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT PUSH" EventID="A32NX.FCU_ALT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push Altitude knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Altitude knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT INCREMENT TOGGLE" EventID="A32NX.FCU_ALT_INCREMENT_TOGGLE" SubCategory="A32NX FCU" IsGlobal="true" >Toggle Altitude increment on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU ALT INCREMENT SET" EventID="A32NX.FCU_ALT_INCREMENT_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Altitude increment on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU VS INC" EventID="A32NX.FCU_VS_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial V/S knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU VS DEC" EventID="A32NX.FCU_VS_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial V/S knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU VS SET" EventID="A32NX.FCU_VS_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set VS/FPA value on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU VS PUSH" EventID="A32NX.FCU_VS_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push V/S knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU VS PULL" EventID="A32NX.FCU_VS_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull V/S knob on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push LOC button on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push APPR button on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push EXPED button on FCU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE SET" EventID="A32NX.AUTOBRAKE_SET" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to desired state (1=DISARM, 2=LO, 3=MED, 4=MAX)</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE SET DISARM" EventID="A32NX.AUTOBRAKE_SET_DISARM" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to disarmed state</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE SET LO" EventID="A32NX.AUTOBRAKE_SET_LO" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to LO state</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE SET MED" EventID="A32NX.AUTOBRAKE_SET_MED" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to MED state</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE SET MAX" EventID="A32NX.AUTOBRAKE_SET_MAX" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to MAX state</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE BUTTON LO" EventID="A32NX.AUTOBRAKE_BUTTON_LO" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Press Autobrake button LO</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE BUTTON MED" EventID="A32NX.AUTOBRAKE_BUTTON_MED" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Press Autobrake button MED</CustomClientEvent>
-  <CustomClientEvent Name="A32NX AUTOBRAKE BUTTON MAX" EventID="A32NX.AUTOBRAKE_BUTTON_MAX" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Press Autobrake button MAX</CustomClientEvent>
-  <CustomClientEvent Name="A32NX EFIS LEFT CHRONO BUTTON" EventID="A32NX.EFIS_L_CHRONO_PUSHED" SubCategory="A32NX EFIS" IsGlobal="true">Press Left Chrono button</CustomClientEvent>
-  <CustomClientEvent Name="A32NX EFIS RIGHT CHRONO BUTTON" EventID="A32NX.EFIS_R_CHRONO_PUSHED" SubCategory="A32NX EFIS" IsGlobal="true">Press Right Chrono button</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE DIR" EventID="H:A320_Neo_CDU_1_BTN_DIR" SubCategory="A32NX MCDU" IsGlobal="true">Press DIR button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE PROG" EventID="H:A320_Neo_CDU_1_BTN_PROG" SubCategory="A32NX MCDU" IsGlobal="true">Press PROG button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE PERF" EventID="H:A320_Neo_CDU_1_BTN_PERF" SubCategory="A32NX MCDU" IsGlobal="true">Press PERF button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE INIT" EventID="H:A320_Neo_CDU_1_BTN_INIT" SubCategory="A32NX MCDU" IsGlobal="true">Press INIT button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE DATA" EventID="H:A320_Neo_CDU_1_BTN_DATA" SubCategory="A32NX MCDU" IsGlobal="true">Press DATA button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE FPLN" EventID="H:A320_Neo_CDU_1_BTN_FPLN" SubCategory="A32NX MCDU" IsGlobal="true">Press F-PLN button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE RAD" EventID="H:A320_Neo_CDU_1_BTN_RAD" SubCategory="A32NX MCDU" IsGlobal="true">Press RAD NAV button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE FUEL" EventID="H:A320_Neo_CDU_1_BTN_FUEL" SubCategory="A32NX MCDU" IsGlobal="true">Press FUEL PRED button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE SEC" EventID="H:A320_Neo_CDU_1_BTN_SEC" SubCategory="A32NX MCDU" IsGlobal="true">Press SEC F-PLN button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE ATC" EventID="H:A320_Neo_CDU_1_BTN_ATC" SubCategory="A32NX MCDU" IsGlobal="true">Press ATC COMM button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE MENU" EventID="H:A320_Neo_CDU_1_BTN_MENU" SubCategory="A32NX MCDU" IsGlobal="true">Press MCDU MENU button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE AIRPORT" EventID="H:A320_Neo_CDU_1_BTN_AIRPORT" SubCategory="A32NX MCDU" IsGlobal="true">Press AIRPORT button on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE DOWN" EventID="H:A320_Neo_CDU_1_BTN_DOWN" SubCategory="A32NX MCDU" IsGlobal="true">Press down arrow on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE UP" EventID="H:A320_Neo_CDU_1_BTN_UP" SubCategory="A32NX MCDU" IsGlobal="true">Press up arrow on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE PREVPAGE" EventID="H:A320_Neo_CDU_1_BTN_PREVPAGE" SubCategory="A32NX MCDU" IsGlobal="true">Press left arrow on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PAGE NEXTPAGE" EventID="H:A320_Neo_CDU_1_BTN_NEXTPAGE" SubCategory="A32NX MCDU" IsGlobal="true">Press right arrow on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 0" EventID="H:A320_Neo_CDU_1_BTN_0" SubCategory="A32NX MCDU" IsGlobal="true">Press 0 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 1" EventID="H:A320_Neo_CDU_1_BTN_1" SubCategory="A32NX MCDU" IsGlobal="true">Press 1 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 2" EventID="H:A320_Neo_CDU_1_BTN_2" SubCategory="A32NX MCDU" IsGlobal="true">Press 2 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 3" EventID="H:A320_Neo_CDU_1_BTN_3" SubCategory="A32NX MCDU" IsGlobal="true">Press 3 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 4" EventID="H:A320_Neo_CDU_1_BTN_4" SubCategory="A32NX MCDU" IsGlobal="true">Press 4 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 5" EventID="H:A320_Neo_CDU_1_BTN_5" SubCategory="A32NX MCDU" IsGlobal="true">Press 5 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 6" EventID="H:A320_Neo_CDU_1_BTN_6" SubCategory="A32NX MCDU" IsGlobal="true">Press 6 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 7" EventID="H:A320_Neo_CDU_1_BTN_7" SubCategory="A32NX MCDU" IsGlobal="true">Press 7 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 8" EventID="H:A320_Neo_CDU_1_BTN_8" SubCategory="A32NX MCDU" IsGlobal="true">Press 8 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU 9" EventID="H:A320_Neo_CDU_1_BTN_9" SubCategory="A32NX MCDU" IsGlobal="true">Press 9 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU A" EventID="H:A320_Neo_CDU_1_BTN_A" SubCategory="A32NX MCDU" IsGlobal="true">Press A on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU B" EventID="H:A320_Neo_CDU_1_BTN_B" SubCategory="A32NX MCDU" IsGlobal="true">Press B on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU C" EventID="H:A320_Neo_CDU_1_BTN_C" SubCategory="A32NX MCDU" IsGlobal="true">Press C on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU D" EventID="H:A320_Neo_CDU_1_BTN_D" SubCategory="A32NX MCDU" IsGlobal="true">Press D on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU E" EventID="H:A320_Neo_CDU_1_BTN_E" SubCategory="A32NX MCDU" IsGlobal="true">Press E on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU F" EventID="H:A320_Neo_CDU_1_BTN_F" SubCategory="A32NX MCDU" IsGlobal="true">Press F on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU G" EventID="H:A320_Neo_CDU_1_BTN_G" SubCategory="A32NX MCDU" IsGlobal="true">Press G on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU H" EventID="H:A320_Neo_CDU_1_BTN_H" SubCategory="A32NX MCDU" IsGlobal="true">Press H on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU I" EventID="H:A320_Neo_CDU_1_BTN_I" SubCategory="A32NX MCDU" IsGlobal="true">Press I on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU J" EventID="H:A320_Neo_CDU_1_BTN_J" SubCategory="A32NX MCDU" IsGlobal="true">Press J on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU K" EventID="H:A320_Neo_CDU_1_BTN_K" SubCategory="A32NX MCDU" IsGlobal="true">Press K on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L" EventID="H:A320_Neo_CDU_1_BTN_L" SubCategory="A32NX MCDU" IsGlobal="true">Press L on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU M" EventID="H:A320_Neo_CDU_1_BTN_M" SubCategory="A32NX MCDU" IsGlobal="true">Press M on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU N" EventID="H:A320_Neo_CDU_1_BTN_N" SubCategory="A32NX MCDU" IsGlobal="true">Press N on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU O" EventID="H:A320_Neo_CDU_1_BTN_O" SubCategory="A32NX MCDU" IsGlobal="true">Press O on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU P" EventID="H:A320_Neo_CDU_1_BTN_P" SubCategory="A32NX MCDU" IsGlobal="true">Press P on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU Q" EventID="H:A320_Neo_CDU_1_BTN_Q" SubCategory="A32NX MCDU" IsGlobal="true">Press Q on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R" EventID="H:A320_Neo_CDU_1_BTN_R" SubCategory="A32NX MCDU" IsGlobal="true">Press R on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU S" EventID="H:A320_Neo_CDU_1_BTN_S" SubCategory="A32NX MCDU" IsGlobal="true">Press S on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU T" EventID="H:A320_Neo_CDU_1_BTN_T" SubCategory="A32NX MCDU" IsGlobal="true">Press T on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU U" EventID="H:A320_Neo_CDU_1_BTN_U" SubCategory="A32NX MCDU" IsGlobal="true">Press U on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU V" EventID="H:A320_Neo_CDU_1_BTN_V" SubCategory="A32NX MCDU" IsGlobal="true">Press V on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU W" EventID="H:A320_Neo_CDU_1_BTN_W" SubCategory="A32NX MCDU" IsGlobal="true">Press W on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU X" EventID="H:A320_Neo_CDU_1_BTN_X" SubCategory="A32NX MCDU" IsGlobal="true">Press X on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU Y" EventID="H:A320_Neo_CDU_1_BTN_Y" SubCategory="A32NX MCDU" IsGlobal="true">Press Y on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU Z" EventID="H:A320_Neo_CDU_1_BTN_Z" SubCategory="A32NX MCDU" IsGlobal="true">Press Z on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU DOT" EventID="H:A320_Neo_CDU_1_BTN_DOT" SubCategory="A32NX MCDU" IsGlobal="true">Press . on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU PLUSMINUS" EventID="H:A320_Neo_CDU_1_BTN_PLUSMINUS" SubCategory="A32NX MCDU" IsGlobal="true">Press +/- on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU SP" EventID="H:A320_Neo_CDU_1_BTN_SP" SubCategory="A32NX MCDU" IsGlobal="true">Press SP on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU SLASH" EventID="H:A320_Neo_CDU_1_BTN_DIV" SubCategory="A32NX MCDU" IsGlobal="true">Press / on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU OVFY" EventID="H:A320_Neo_CDU_1_BTN_OVFY" SubCategory="A32NX MCDU" IsGlobal="true">Press OVFY on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU CLR" EventID="H:A320_Neo_CDU_1_BTN_CLR" SubCategory="A32NX MCDU" IsGlobal="true">Press CLR on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L1" EventID="H:A320_Neo_CDU_1_BTN_L1" SubCategory="A32NX MCDU" IsGlobal="true">Press L1 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L2" EventID="H:A320_Neo_CDU_1_BTN_L2" SubCategory="A32NX MCDU" IsGlobal="true">Press L2 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L3" EventID="H:A320_Neo_CDU_1_BTN_L3" SubCategory="A32NX MCDU" IsGlobal="true">Press L3 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L4" EventID="H:A320_Neo_CDU_1_BTN_L4" SubCategory="A32NX MCDU" IsGlobal="true">Press L4 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L5" EventID="H:A320_Neo_CDU_1_BTN_L5" SubCategory="A32NX MCDU" IsGlobal="true">Press L5 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU L6" EventID="H:A320_Neo_CDU_1_BTN_L6" SubCategory="A32NX MCDU" IsGlobal="true">Press L6 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R1" EventID="H:A320_Neo_CDU_1_BTN_R1" SubCategory="A32NX MCDU" IsGlobal="true">Press R1 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R2" EventID="H:A320_Neo_CDU_1_BTN_R2" SubCategory="A32NX MCDU" IsGlobal="true">Press R2 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R3" EventID="H:A320_Neo_CDU_1_BTN_R3" SubCategory="A32NX MCDU" IsGlobal="true">Press R3 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R4" EventID="H:A320_Neo_CDU_1_BTN_R4" SubCategory="A32NX MCDU" IsGlobal="true">Press R4 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R5" EventID="H:A320_Neo_CDU_1_BTN_R5" SubCategory="A32NX MCDU" IsGlobal="true">Press R5 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX MCDU R6" EventID="H:A320_Neo_CDU_1_BTN_R6" SubCategory="A32NX MCDU" IsGlobal="true">Press R6 on MCDU</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC CLR" EventID="H:A320_Neo_ATC_BTN_CLR" SubCategory="A32NX ATC" IsGlobal="true">Press CLR on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 0" EventID="H:A320_Neo_ATC_BTN_0" SubCategory="A32NX ATC" IsGlobal="true">Press 0 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 1" EventID="H:A320_Neo_ATC_BTN_1" SubCategory="A32NX ATC" IsGlobal="true">Press 1 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 2" EventID="H:A320_Neo_ATC_BTN_2" SubCategory="A32NX ATC" IsGlobal="true">Press 2 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 3" EventID="H:A320_Neo_ATC_BTN_3" SubCategory="A32NX ATC" IsGlobal="true">Press 3 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 4" EventID="H:A320_Neo_ATC_BTN_4" SubCategory="A32NX ATC" IsGlobal="true">Press 4 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 5" EventID="H:A320_Neo_ATC_BTN_5" SubCategory="A32NX ATC" IsGlobal="true">Press 5 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 6" EventID="H:A320_Neo_ATC_BTN_6" SubCategory="A32NX ATC" IsGlobal="true">Press 6 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX ATC 7" EventID="H:A320_Neo_ATC_BTN_7" SubCategory="A32NX ATC" IsGlobal="true">Press 7 on ATC panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX CHRONO TOGGLE" EventID="H:A32NX_CHRONO_TOGGLE" SubCategory="A32NX CHRONO" IsGlobal="true">Press CHR on chrono panel</CustomClientEvent>
-  <CustomClientEvent Name="A32NX CHRONO RESET" EventID="H:A32NX_CHRONO_RST" SubCategory="A32NX CHRONO" IsGlobal="true">Press RST on chrono panel</CustomClientEvent>
+<CustomClientEvents>
+  <CustomClientEvent Name="A32NX ATC 0" EventID="H:A320_Neo_ATC_BTN_0" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 0 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 1" EventID="H:A320_Neo_ATC_BTN_1" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 1 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 2" EventID="H:A320_Neo_ATC_BTN_2" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 2 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 3" EventID="H:A320_Neo_ATC_BTN_3" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 3 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 4" EventID="H:A320_Neo_ATC_BTN_4" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 4 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 5" EventID="H:A320_Neo_ATC_BTN_5" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 5 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 6" EventID="H:A320_Neo_ATC_BTN_6" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 6 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC 7" EventID="H:A320_Neo_ATC_BTN_7" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press 7 on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX ATC CLR" EventID="H:A320_Neo_ATC_BTN_CLR" Category="A32NX" SubCategory="ATC" IsGlobal="true">Press CLR on ATC panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE BUTTON LO" EventID="A32NX.AUTOBRAKE_BUTTON_LO" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Press Autobrake button LO</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE BUTTON MAX" EventID="A32NX.AUTOBRAKE_BUTTON_MAX" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Press Autobrake button MAX</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE BUTTON MED" EventID="A32NX.AUTOBRAKE_BUTTON_MED" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Press Autobrake button MED</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE SET DISARM" EventID="A32NX.AUTOBRAKE_SET_DISARM" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Set Autobrake to disarmed state</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE SET LO" EventID="A32NX.AUTOBRAKE_SET_LO" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Set Autobrake to LO state</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE SET MAX" EventID="A32NX.AUTOBRAKE_SET_MAX" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Set Autobrake to MAX state</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE SET MED" EventID="A32NX.AUTOBRAKE_SET_MED" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Set Autobrake to MED state</CustomClientEvent>
+  <CustomClientEvent Name="A32NX AUTOBRAKE SET" EventID="A32NX.AUTOBRAKE_SET" Category="A32NX" SubCategory="AUTOBRAKE" IsGlobal="true">Set Autobrake to desired state (1=DISARM, 2=LO, 3=MED, 4=MAX)</CustomClientEvent>
+  <CustomClientEvent Name="A32NX CHRONO RESET" EventID="H:A32NX_CHRONO_RST" Category="A32NX" SubCategory="CHRONO" IsGlobal="true">Press RST on chrono panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX CHRONO TOGGLE" EventID="H:A32NX_CHRONO_TOGGLE" Category="A32NX" SubCategory="CHRONO" IsGlobal="true">Press CHR on chrono panel</CustomClientEvent>
+  <CustomClientEvent Name="A32NX EFIS LEFT CHRONO BUTTON" EventID="A32NX.EFIS_L_CHRONO_PUSHED" Category="A32NX" SubCategory="EFIS" IsGlobal="true">Press Left Chrono button</CustomClientEvent>
+  <CustomClientEvent Name="A32NX EFIS RIGHT CHRONO BUTTON" EventID="A32NX.EFIS_R_CHRONO_PUSHED" Category="A32NX" SubCategory="EFIS" IsGlobal="true">Press Right Chrono button</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT DEC" EventID="A32NX.FCU_ALT_DEC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Anti-Clockwise dial Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT INC" EventID="A32NX.FCU_ALT_INC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Clockwise dial Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT INCREMENT SET" EventID="A32NX.FCU_ALT_INCREMENT_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set Altitude increment on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT INCREMENT TOGGLE" EventID="A32NX.FCU_ALT_INCREMENT_TOGGLE" Category="A32NX" SubCategory="FCU" IsGlobal="true">Toggle Altitude increment on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" Category="A32NX" SubCategory="FCU" IsGlobal="true">Pull Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT PUSH" EventID="A32NX.FCU_ALT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ALT SET" EventID="A32NX.FCU_ALT_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set Altitude value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU AP DISCONNECT" EventID="A32NX.FCU_AP_DISCONNECT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Disconnect AP</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU AP1 PUSH" EventID="A32NX.FCU_AP_1_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push AP1 on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU AP2 PUSH" EventID="A32NX.FCU_AP_2_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push AP2 on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push APPR button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ATHR DISCONNECT" EventID="A32NX.FCU_ATHR_DISCONNECT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Disconnect ATHR</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU ATHR PUSH" EventID="A32NX.FCU_ATHR_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push ATHR on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT ARPT PUSH" EventID="A32NX.FCU_EFIS_L_ARPT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left ARPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO DEC" EventID="A32NX.FCU_EFIS_L_BARO_DEC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Decrement left baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO INC" EventID="A32NX.FCU_EFIS_L_BARO_INC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Increment left baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO PULL" EventID="A32NX.FCU_EFIS_L_BARO_PULL" Category="A32NX" SubCategory="FCU" IsGlobal="true">Pull left baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO PUSH" EventID="A32NX.FCU_EFIS_L_BARO_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT BARO SET" EventID="A32NX.FCU_EFIS_L_BARO_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set left baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT CSTR PUSH" EventID="A32NX.FCU_EFIS_L_CSTR_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left CSTR button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT FD PUSH" EventID="A32NX.FCU_EFIS_L_FD_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left FD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT LS PUSH" EventID="A32NX.FCU_EFIS_L_LS_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left LS button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT NDB PUSH" EventID="A32NX.FCU_EFIS_L_NDB_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left NDB button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT VORD PUSH" EventID="A32NX.FCU_EFIS_L_VORD_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left VORD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS LEFT WPT PUSH" EventID="A32NX.FCU_EFIS_L_WPT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push left WPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT ARPT PUSH" EventID="A32NX.FCU_EFIS_R_ARPT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right ARPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO DEC" EventID="A32NX.FCU_EFIS_R_BARO_DEC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Decrement right baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO INC" EventID="A32NX.FCU_EFIS_R_BARO_INC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Increment right baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO PULL" EventID="A32NX.FCU_EFIS_R_BARO_PULL" Category="A32NX" SubCategory="FCU" IsGlobal="true">Pull right baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO PUSH" EventID="A32NX.FCU_EFIS_R_BARO_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right baro knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT BARO SET" EventID="A32NX.FCU_EFIS_R_BARO_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set right baro on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT CSTR PUSH" EventID="A32NX.FCU_EFIS_R_CSTR_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right CSTR button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT FD PUSH" EventID="A32NX.FCU_EFIS_R_FD_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right FD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT LS PUSH" EventID="A32NX.FCU_EFIS_R_LS_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right LS button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT NDB PUSH" EventID="A32NX.FCU_EFIS_R_NDB_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right NDB button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT VORD PUSH" EventID="A32NX.FCU_EFIS_R_VORD_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right VORD button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EFIS RIGHT WPT PUSH" EventID="A32NX.FCU_EFIS_R_WPT_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push right WPT button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push EXPED button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU HDG DEC" EventID="A32NX.FCU_HDG_DEC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Anti-Clockwise dial Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU HDG INC" EventID="A32NX.FCU_HDG_INC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Clockwise dial Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU HDG PULL" EventID="A32NX.FCU_HDG_PULL" Category="A32NX" SubCategory="FCU" IsGlobal="true">Pull Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU HDG PUSH" EventID="A32NX.FCU_HDG_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU HDG SET" EventID="A32NX.FCU_HDG_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set Heading/Track value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push LOC button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU METRIC ALT TOGGLE PUSH" EventID="A32NX.FCU_METRIC_ALT_TOGGLE_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push metric alt toggle on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU SPD DEC" EventID="A32NX.FCU_SPD_DEC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Anti-Clockwise dial Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU SPD INC" EventID="A32NX.FCU_SPD_INC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Clockwise dial Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU SPD MACH TOGGLE PUSH" EventID="A32NX.FCU_SPD_MACH_TOGGLE_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push SPD/MACH toggle on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU SPD PULL" EventID="A32NX.FCU_SPD_PULL" Category="A32NX" SubCategory="FCU" IsGlobal="true">Pull Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU SPD PUSH" EventID="A32NX.FCU_SPD_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU SPD SET" EventID="A32NX.FCU_SPD_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set Speed/Mach value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU TRK FPA TOGGLE PUSH" EventID="A32NX.FCU_TRK_FPA_TOGGLE_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push TRK/FPA toggle on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU VS DEC" EventID="A32NX.FCU_VS_DEC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Anti-Clockwise dial V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU VS INC" EventID="A32NX.FCU_VS_INC" Category="A32NX" SubCategory="FCU" IsGlobal="true">Clockwise dial V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU VS PULL" EventID="A32NX.FCU_VS_PULL" Category="A32NX" SubCategory="FCU" IsGlobal="true">Pull V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU VS PUSH" EventID="A32NX.FCU_VS_PUSH" Category="A32NX" SubCategory="FCU" IsGlobal="true">Push V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX FCU VS SET" EventID="A32NX.FCU_VS_SET" Category="A32NX" SubCategory="FCU" IsGlobal="true">Set VS/FPA value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 0" EventID="H:A320_Neo_CDU_1_BTN_0" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 0 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 1" EventID="H:A320_Neo_CDU_1_BTN_1" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 1 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 2" EventID="H:A320_Neo_CDU_1_BTN_2" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 2 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 3" EventID="H:A320_Neo_CDU_1_BTN_3" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 3 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 4" EventID="H:A320_Neo_CDU_1_BTN_4" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 4 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 5" EventID="H:A320_Neo_CDU_1_BTN_5" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 5 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 6" EventID="H:A320_Neo_CDU_1_BTN_6" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 6 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 7" EventID="H:A320_Neo_CDU_1_BTN_7" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 7 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 8" EventID="H:A320_Neo_CDU_1_BTN_8" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 8 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU 9" EventID="H:A320_Neo_CDU_1_BTN_9" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press 9 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU A" EventID="H:A320_Neo_CDU_1_BTN_A" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press A on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU B" EventID="H:A320_Neo_CDU_1_BTN_B" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press B on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU C" EventID="H:A320_Neo_CDU_1_BTN_C" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press C on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU CLR" EventID="H:A320_Neo_CDU_1_BTN_CLR" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press CLR on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU D" EventID="H:A320_Neo_CDU_1_BTN_D" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press D on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU DOT" EventID="H:A320_Neo_CDU_1_BTN_DOT" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press . on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU E" EventID="H:A320_Neo_CDU_1_BTN_E" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press E on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU F" EventID="H:A320_Neo_CDU_1_BTN_F" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press F on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU G" EventID="H:A320_Neo_CDU_1_BTN_G" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press G on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU H" EventID="H:A320_Neo_CDU_1_BTN_H" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press H on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU I" EventID="H:A320_Neo_CDU_1_BTN_I" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press I on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU J" EventID="H:A320_Neo_CDU_1_BTN_J" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press J on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU K" EventID="H:A320_Neo_CDU_1_BTN_K" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press K on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L" EventID="H:A320_Neo_CDU_1_BTN_L" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L1" EventID="H:A320_Neo_CDU_1_BTN_L1" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L1 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L2" EventID="H:A320_Neo_CDU_1_BTN_L2" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L2 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L3" EventID="H:A320_Neo_CDU_1_BTN_L3" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L3 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L4" EventID="H:A320_Neo_CDU_1_BTN_L4" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L4 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L5" EventID="H:A320_Neo_CDU_1_BTN_L5" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L5 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU L6" EventID="H:A320_Neo_CDU_1_BTN_L6" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press L6 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU M" EventID="H:A320_Neo_CDU_1_BTN_M" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press M on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU N" EventID="H:A320_Neo_CDU_1_BTN_N" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press N on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU O" EventID="H:A320_Neo_CDU_1_BTN_O" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press O on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU OVFY" EventID="H:A320_Neo_CDU_1_BTN_OVFY" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press OVFY on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU P" EventID="H:A320_Neo_CDU_1_BTN_P" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press P on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE AIRPORT" EventID="H:A320_Neo_CDU_1_BTN_AIRPORT" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press AIRPORT button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE ATC" EventID="H:A320_Neo_CDU_1_BTN_ATC" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press ATC COMM button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE DATA" EventID="H:A320_Neo_CDU_1_BTN_DATA" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press DATA button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE DIR" EventID="H:A320_Neo_CDU_1_BTN_DIR" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press DIR button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE DOWN" EventID="H:A320_Neo_CDU_1_BTN_DOWN" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press down arrow on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE FPLN" EventID="H:A320_Neo_CDU_1_BTN_FPLN" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press F-PLN button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE FUEL" EventID="H:A320_Neo_CDU_1_BTN_FUEL" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press FUEL PRED button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE INIT" EventID="H:A320_Neo_CDU_1_BTN_INIT" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press INIT button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE MENU" EventID="H:A320_Neo_CDU_1_BTN_MENU" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press MCDU MENU button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE NEXTPAGE" EventID="H:A320_Neo_CDU_1_BTN_NEXTPAGE" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press right arrow on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE PERF" EventID="H:A320_Neo_CDU_1_BTN_PERF" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press PERF button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE PREVPAGE" EventID="H:A320_Neo_CDU_1_BTN_PREVPAGE" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press left arrow on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE PROG" EventID="H:A320_Neo_CDU_1_BTN_PROG" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press PROG button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE RAD" EventID="H:A320_Neo_CDU_1_BTN_RAD" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press RAD NAV button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE SEC" EventID="H:A320_Neo_CDU_1_BTN_SEC" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press SEC F-PLN button on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PAGE UP" EventID="H:A320_Neo_CDU_1_BTN_UP" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press up arrow on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU PLUSMINUS" EventID="H:A320_Neo_CDU_1_BTN_PLUSMINUS" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press +/- on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU Q" EventID="H:A320_Neo_CDU_1_BTN_Q" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press Q on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R" EventID="H:A320_Neo_CDU_1_BTN_R" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R1" EventID="H:A320_Neo_CDU_1_BTN_R1" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R1 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R2" EventID="H:A320_Neo_CDU_1_BTN_R2" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R2 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R3" EventID="H:A320_Neo_CDU_1_BTN_R3" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R3 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R4" EventID="H:A320_Neo_CDU_1_BTN_R4" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R4 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R5" EventID="H:A320_Neo_CDU_1_BTN_R5" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R5 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU R6" EventID="H:A320_Neo_CDU_1_BTN_R6" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press R6 on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU S" EventID="H:A320_Neo_CDU_1_BTN_S" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press S on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU SLASH" EventID="H:A320_Neo_CDU_1_BTN_DIV" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press / on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU SP" EventID="H:A320_Neo_CDU_1_BTN_SP" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press SP on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU T" EventID="H:A320_Neo_CDU_1_BTN_T" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press T on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU U" EventID="H:A320_Neo_CDU_1_BTN_U" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press U on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU V" EventID="H:A320_Neo_CDU_1_BTN_V" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press V on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU W" EventID="H:A320_Neo_CDU_1_BTN_W" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press W on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU X" EventID="H:A320_Neo_CDU_1_BTN_X" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press X on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU Y" EventID="H:A320_Neo_CDU_1_BTN_Y" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press Y on MCDU</CustomClientEvent>
+  <CustomClientEvent Name="A32NX MCDU Z" EventID="H:A320_Neo_CDU_1_BTN_Z" Category="A32NX" SubCategory="MCDU" IsGlobal="true">Press Z on MCDU</CustomClientEvent>
 </CustomClientEvents>

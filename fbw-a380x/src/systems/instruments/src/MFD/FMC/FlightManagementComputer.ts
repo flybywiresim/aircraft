@@ -183,11 +183,12 @@ export class FlightManagementComputer implements FmcInterface {
     const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
+    this.flightPlanService.createFlightPlans();
+
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
     if (this.instance === FmcIndex.FmcA) {
       this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
 
-      this.flightPlanService.createFlightPlans();
       this.#guidanceController = new GuidanceController(
         this.bus,
         this.fmgc,
@@ -760,6 +761,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.flightPlanService
           .reset()
           .then(() => {
+            this.fmgc.data.reset();
             this.initSimVars();
             this.deleteAllStoredWaypoints();
             this.clearLatestFmsErrorMessage();
@@ -990,6 +992,7 @@ export class FlightManagementComputer implements FmcInterface {
     // FIXME reset ATSU when it is added to A380X
     // this.atsu.resetAtisAutoUpdate();
     await this.flightPlanService.reset();
+    this.fmgc.data.reset();
     this.initSimVars();
     this.deleteAllStoredWaypoints();
     this.clearLatestFmsErrorMessage();

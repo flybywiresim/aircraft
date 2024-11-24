@@ -249,8 +249,6 @@ export class FwsCore {
 
   public readonly masterCaution = Subject.create(false);
 
-  public readonly fireActive = Subject.create(false);
-
   private nonCancellableWarningCount = 0;
 
   public readonly stallWarning = Subject.create(false);
@@ -262,17 +260,15 @@ export class FwsCore {
   );
 
   public readonly masterWarningOutput = MappedSubject.create(
-    ([mw, fire, stall, startup]) => (mw || fire || stall) && startup,
+    ([mw, stall, startup]) => (mw || stall) && startup,
     this.masterWarning,
-    this.fireActive,
     this.stallWarning,
     this.startupCompleted,
   );
 
   public readonly auralCrcOutput = MappedSubject.create(
-    ([auralCrc, fireActive, startup]) => (auralCrc || fireActive) && startup,
+    ([auralCrc, startup]) => auralCrc && startup,
     this.auralCrcActive,
-    this.fireActive,
     this.startupCompleted,
   );
 
@@ -585,6 +581,16 @@ export class FwsCore {
   public readonly eng3FireDetected = Subject.create(false);
 
   public readonly eng4FireDetected = Subject.create(false);
+
+  public readonly apuFireDetectedAural = Subject.create(false);
+
+  public readonly eng1FireDetectedAural = Subject.create(false);
+
+  public readonly eng2FireDetectedAural = Subject.create(false);
+
+  public readonly eng3FireDetectedAural = Subject.create(false);
+
+  public readonly eng4FireDetectedAural = Subject.create(false);
 
   public readonly mlgFireDetected = Subject.create(false);
 
@@ -2786,8 +2792,8 @@ export class FwsCore {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
     }
 
-    let cpcsDiscreteWordToUse;
-    let cpcsToUseId;
+    let cpcsDiscreteWordToUse: Arinc429Register;
+    let cpcsToUseId: number;
 
     if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
       cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
@@ -2926,10 +2932,10 @@ export class FwsCore {
     const outflowValve3OpenAmount = Arinc429Register.empty();
     const outflowValve4OpenAmount = Arinc429Register.empty();
 
-    outflowValve1OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve2OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve3OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve4OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
 
     this.allOutflowValvesOpen.set(
       outflowValve1OpenAmount.value > 99 &&
@@ -3321,14 +3327,14 @@ export class FwsCore {
     );
 
     // rudder trim not takeoff
-    const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
-    const fac2RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_2_RUDDER_TRIM_POS');
-    const fac1Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_1_HEALTHY', 'boolean') > 0;
-    const fac2Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_2_HEALTHY', 'boolean') > 0;
+    const sec1RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_1_RUDDER_ACTUAL_POSITION');
+    const sec3RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION');
+    const sec1Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'boolean') > 0;
+    const sec3Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'boolean') > 0;
 
     const rudderTrimConfig =
-      (fac1Healthy && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
-      (fac2Healthy && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
+      (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
+      (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
 
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
@@ -3623,6 +3629,12 @@ export class FwsCore {
         this.fireButtonAPU.get(),
     );
 
+    this.apuFireDetectedAural.set(this.apuFireDetected.get() && !this.fireButtonAPU.get());
+    this.eng1FireDetectedAural.set(this.eng1FireDetected.get() && !this.fireButtonEng1.get());
+    this.eng2FireDetectedAural.set(this.eng2FireDetected.get() && !this.fireButtonEng2.get());
+    this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
+    this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
+
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
 
     this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
@@ -3739,19 +3751,6 @@ export class FwsCore {
           this.mlgFireDetected.get() ||
           this.emergencyGeneratorOn.get() ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0)),
-    );
-
-    // fire always forces the master warning and SC aural on
-    this.fireActive.set(
-      [
-        this.apuFireDetected.get(),
-        this.eng1FireDetected.get(),
-        this.eng2FireDetected.get(),
-        this.eng3FireDetected.get(),
-        this.eng4FireDetected.get(),
-        this.mlgFireDetected.get(),
-        this.cargoFireTest.get(),
-      ].some((e) => e),
     );
 
     const flightPhase = this.fwcFlightPhase.get();

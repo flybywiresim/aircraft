@@ -22,6 +22,7 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
   isActive: Subscribable<boolean>;
   idPrefix: string;
   containerStyle?: string;
+  labelStyle?: string;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -108,7 +109,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
       <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
         <div class="mfd-page-selector-outer" ref={this.dropdownSelectorRef}>
           <div class="mfd-page-selector-label-container">
-            <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef}>
+            <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef} style={this.props.labelStyle}>
               {this.props.label}
             </span>
           </div>

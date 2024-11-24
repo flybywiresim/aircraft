@@ -12,6 +12,9 @@
 
 #include "../model/ElacComputer_types.h"
 #include "../model/FacComputer_types.h"
+#include "../model/FadecComputer_types.h"
+#include "../model/FcuComputer_types.h"
+#include "../model/FmgcComputer_types.h"
 #include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
@@ -61,8 +64,6 @@ class SimConnectInterface {
     A32NX_FCU_HDG_PUSH,
     A32NX_FCU_HDG_PULL,
     A32NX_FCU_TRK_FPA_TOGGLE_PUSH,
-    A32NX_FCU_TO_AP_HDG_PUSH,
-    A32NX_FCU_TO_AP_HDG_PULL,
     A32NX_FCU_ALT_INC,
     A32NX_FCU_ALT_DEC,
     A32NX_FCU_ALT_SET,
@@ -70,17 +71,43 @@ class SimConnectInterface {
     A32NX_FCU_ALT_PULL,
     A32NX_FCU_ALT_INCREMENT_TOGGLE,
     A32NX_FCU_ALT_INCREMENT_SET,
+    A32NX_FCU_METRIC_ALT_TOGGLE_PUSH,
     A32NX_FCU_VS_INC,
     A32NX_FCU_VS_DEC,
     A32NX_FCU_VS_SET,
     A32NX_FCU_VS_PUSH,
     A32NX_FCU_VS_PULL,
-    A32NX_FCU_TO_AP_VS_PUSH,
-    A32NX_FCU_TO_AP_VS_PULL,
     A32NX_FCU_LOC_PUSH,
     A32NX_FCU_APPR_PUSH,
     A32NX_FCU_EXPED_PUSH,
+    A32NX_FCU_EFIS_L_FD_PUSH,
+    A32NX_FCU_EFIS_L_LS_PUSH,
+    A32NX_FCU_EFIS_L_BARO_INC,
+    A32NX_FCU_EFIS_L_BARO_DEC,
+    A32NX_FCU_EFIS_L_BARO_SET,
+    A32NX_FCU_EFIS_L_BARO_PUSH,
+    A32NX_FCU_EFIS_L_BARO_PULL,
+    A32NX_FCU_EFIS_L_CSTR_PUSH,
+    A32NX_FCU_EFIS_L_WPT_PUSH,
+    A32NX_FCU_EFIS_L_VORD_PUSH,
+    A32NX_FCU_EFIS_L_NDB_PUSH,
+    A32NX_FCU_EFIS_L_ARPT_PUSH,
+    A32NX_FCU_EFIS_R_FD_PUSH,
+    A32NX_FCU_EFIS_R_LS_PUSH,
+    A32NX_FCU_EFIS_R_BARO_INC,
+    A32NX_FCU_EFIS_R_BARO_DEC,
+    A32NX_FCU_EFIS_R_BARO_SET,
+    A32NX_FCU_EFIS_R_BARO_PUSH,
+    A32NX_FCU_EFIS_R_BARO_PULL,
+    A32NX_FCU_EFIS_R_CSTR_PUSH,
+    A32NX_FCU_EFIS_R_WPT_PUSH,
+    A32NX_FCU_EFIS_R_VORD_PUSH,
+    A32NX_FCU_EFIS_R_NDB_PUSH,
+    A32NX_FCU_EFIS_R_ARPT_PUSH,
     A32NX_FMGC_DIR_TO_TRIGGER,
+    A32NX_FMGC_PRESET_SPD_ACTIVATE,
+    A32NX_FMGC_SPD_MODE_ACTIVATE,
+    A32NX_FMGC_MACH_MODE_ACTIVATE,
     A32NX_EFIS_L_CHRONO_PUSHED,
     A32NX_EFIS_R_CHRONO_PUSHED,
     AP_AIRSPEED_ON,
@@ -94,14 +121,17 @@ class SimConnectInterface {
     AP_SPEED_SLOT_INDEX_SET,
     AP_SPD_VAR_INC,
     AP_SPD_VAR_DEC,
+    AP_SPD_VAR_SET,
     AP_MACH_VAR_INC,
     AP_MACH_VAR_DEC,
     AP_HEADING_SLOT_INDEX_SET,
     HEADING_BUG_INC,
     HEADING_BUG_DEC,
+    HEADING_BUG_SET,
     AP_ALTITUDE_SLOT_INDEX_SET,
     AP_ALT_VAR_INC,
     AP_ALT_VAR_DEC,
+    AP_ALT_VAR_SET,
     AP_VS_SLOT_INDEX_SET,
     AP_VS_VAR_INC,
     AP_VS_VAR_DEC,
@@ -111,6 +141,11 @@ class SimConnectInterface {
     AP_VS_HOLD,
     AP_ATT_HOLD,
     AP_MACH_HOLD,
+    KOHLSMANN_SET,
+    KOHLSMANN_INC,
+    KOHLSMANN_DEC,
+    BAROMETRIC_STD_PRESSURE,
+    BAROMETRIC,
     AUTO_THROTTLE_ARM,
     AUTO_THROTTLE_DISCONNECT,
     AUTO_THROTTLE_TO_GA,
@@ -183,12 +218,11 @@ class SimConnectInterface {
   ~SimConnectInterface() = default;
 
   bool connect(bool clientDataEnabled,
-               bool autopilotStateMachineEnabled,
-               bool autopilotLawsEnabled,
-               bool flyByWireEnabled,
                int elacDisabled,
                int secDisabled,
                int facDisabled,
+               int fmgcDisabled,
+               bool fcuDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                double keyChangeAileron,
@@ -218,17 +252,19 @@ class SimConnectInterface {
 
   bool sendData(SimOutputAltimeter output);
 
+  bool sendData(SimOutputAltimeter output, bool altimeter3);
+
   bool sendEvent(Events eventId);
 
   bool sendEvent(Events eventId, DWORD data);
 
   bool sendEvent(Events eventId, DWORD data, DWORD priority);
 
-  bool setClientDataLocalVariables(ClientDataLocalVariables output);
-
-  bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output);
+  bool sendEventEx1(Events eventId, DWORD priority, DWORD data0, DWORD data1 = 0, DWORD data2 = 0, DWORD data3 = 0, DWORD data4 = 0);
 
   void resetSimInputRudderTrim();
+
+  void resetFcuFrontPanelInputs();
 
   void resetSimInputAutopilot();
 
@@ -240,22 +276,13 @@ class SimConnectInterface {
 
   SimInputAutopilot& getSimInputAutopilot();
 
+  base_fcu_afs_panel_inputs& getFcuAfsPanelInputs();
+
+  base_fcu_efis_panel_inputs& getFcuEfisPanelInputs(int side);
+
   SimInputRudderTrim& getSimInputRudderTrim();
 
   SimInputThrottles& getSimInputThrottles();
-
-  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output);
-  ClientDataAutopilotStateMachine& getClientDataAutopilotStateMachine();
-
-  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws& output);
-  ClientDataAutopilotLaws& getClientDataAutopilotLaws();
-
-  ClientDataAutothrust& getClientDataAutothrust();
-
-  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput& output);
-
-  bool setClientDataFlyByWire(ClientDataFlyByWire& output);
-  ClientDataFlyByWire& getClientDataFlyByWire();
 
   bool setClientDataElacDiscretes(base_elac_discrete_inputs& output);
   bool setClientDataElacAnalog(base_elac_analog_inputs& output);
@@ -281,12 +308,33 @@ class SimConnectInterface {
   base_fac_analog_outputs& getClientDataFacAnalogsOutput();
   base_fac_bus& getClientDataFacBusOutput();
 
+  bool setClientDataFcuBus(base_fcu_bus& output);
+
+  base_fcu_discrete_outputs& getClientDataFcuDiscreteOutput();
+  base_fcu_bus& getClientDataFcuBusOutput();
+
+  bool setClientDataFmgcDiscretes(base_fmgc_discrete_inputs& output);
+  bool setClientDataFmgcFmsData(base_fms_inputs& output);
+  bool setClientDataFmgcABus(base_fmgc_a_bus& output, int fmgcIndex);
+  bool setClientDataFmgcBBus(base_fmgc_b_bus& output, int fmgcIndex);
+
+  base_fmgc_discrete_outputs& getClientDataFmgcDiscretesOutput();
+  base_fmgc_a_bus& getClientDataFmgcABusOutput();
+  base_fmgc_b_bus& getClientDataFmgcBBusOutput();
+
+  bool setClientDataFadecData(athr_data& output);
+  bool setClientDataFadecInput(athr_input& output);
+
+  athr_output& getClientDataFadecOutput();
+
   bool setClientDataAdr(base_adr_bus& output, int adrIndex);
   bool setClientDataIr(base_ir_bus& output, int irIndex);
   bool setClientDataRa(base_ra_bus& output, int raIndex);
   bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
-  bool setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex);
+  bool setClientDataIls(base_ils_bus& output, int ilsIndex);
+  bool setClientDataTcas(base_tcas_bus& output);
+  bool setClientDataFadec(base_ecu_bus& output, int fadecIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -305,9 +353,6 @@ class SimConnectInterface {
 
  private:
   enum ClientData {
-    AUTOPILOT_STATE_MACHINE,
-    AUTOPILOT_LAWS,
-    AUTOTHRUST,
     ELAC_DISCRETE_INPUTS,
     ELAC_ANALOG_INPUTS,
     ELAC_DISCRETE_OUTPUTS,
@@ -326,6 +371,20 @@ class SimConnectInterface {
     FAC_ANALOG_OUTPUTS,
     FAC_1_BUS_OUTPUT,
     FAC_2_BUS_OUTPUT,
+    FCU_DISCRETE_OUTPUT,
+    FCU_BUS_OUTPUT,
+    FMGC_DISCRETE_INPUTS,
+    FMGC_FMS_INPUTS,
+    FMGC_DISCRETE_OUTPUTS,
+    FMGC_1_BUS_A_OUTPUT,
+    FMGC_2_BUS_A_OUTPUT,
+    FMGC_1_BUS_B_OUTPUT,
+    FMGC_2_BUS_B_OUTPUT,
+    FADEC_DATA,
+    FADEC_INPUTS,
+    FADEC_OUTPUTS,
+    FADEC_1_BUS,
+    FADEC_2_BUS,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,
@@ -338,10 +397,9 @@ class SimConnectInterface {
     LGCIU_2_BUS,
     SFCC_1_BUS,
     SFCC_2_BUS,
-    FMGC_1_B_BUS,
-    FMGC_2_B_BUS,
-    LOCAL_VARIABLES,
-    LOCAL_VARIABLES_AUTOTHRUST,
+    ILS_1_BUS,
+    ILS_2_BUS,
+    TCAS_BUS,
   };
 
   bool isConnected = false;
@@ -357,6 +415,8 @@ class SimConnectInterface {
   int elacDisabled = -1;
   int secDisabled = -1;
   int facDisabled = -1;
+  int fmgcDisabled = -1;
+  bool fcuDisabled = false;
 
   long pauseState = 0;
 
@@ -369,16 +429,13 @@ class SimConnectInterface {
   static SimInput simInput;
   SimInputRudderTrim simInputRudderTrim = {};
   SimInputAutopilot simInputAutopilot = {};
+  base_fcu_afs_panel_inputs fcuAfsPanelInputs = {};
+  base_fcu_efis_panel_inputs fcuEfisPanelInputs[2] = {};
 
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-
-  ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
-  ClientDataAutopilotLaws clientDataAutopilotLaws = {};
-  ClientDataAutothrust clientDataAutothrust = {};
-  ClientDataFlyByWire clientDataFlyByWire = {};
 
   base_elac_discrete_outputs clientDataElacDiscreteOutputs = {};
   base_elac_analog_outputs clientDataElacAnalogOutputs = {};
@@ -392,6 +449,15 @@ class SimConnectInterface {
   base_fac_analog_outputs clientDataFacAnalogOutputs = {};
   base_fac_bus clientDataFacBusOutputs = {};
 
+  base_fcu_discrete_outputs clientDataFcuDiscreteOutputs = {};
+  base_fcu_bus clientDataFcuBusOutputs = {};
+
+  base_fmgc_discrete_outputs clientDataFmgcDiscreteOutputs = {};
+  base_fmgc_a_bus clientDataFmgcABusOutputs = {};
+  base_fmgc_b_bus clientDataFmgcBBusOutputs = {};
+
+  athr_output clientDataFadecOutputs = {};
+
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
   double flightControlsKeyChangeElevator = 0.0;
@@ -404,9 +470,7 @@ class SimConnectInterface {
   double rudderLeftAxis = -1;
   double rudderRightAxis = -1;
 
-  std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
-  std::unique_ptr<LocalVariable> idFcuEventSetHDG;
-  std::unique_ptr<LocalVariable> idFcuEventSetVS;
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
 
   bool prepareSimDataSimConnectDataDefinitions();
 
@@ -477,6 +541,8 @@ class SimConnectInterface {
    * @brief Process a SimConnect event with one parameter.
    * @param eventId Specifies the ID of the client event.
    * @param data0 Double word containing any additional number required by the event.
+   * @param data1 Double word containing any additional number required by the event.
+   *                If called by non-EX1 Event Handler, default to 0.
    */
-  void processEventWithOneParam(const DWORD eventId, const DWORD data0);
+  void processEvent(const DWORD eventId, const DWORD data0, const DWORD data1 = 0);
 };
