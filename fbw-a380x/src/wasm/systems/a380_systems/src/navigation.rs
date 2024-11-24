@@ -141,7 +141,7 @@ impl A380RadioAltimeter {
                 Ala52BAircraftInstallationDelay::EightyFeet,
                 powered_by,
             ),
-            transceivers: Ala52BTransceiverPair::new(context, transmitter, receiver),
+            transceivers: Ala52BTransceiverPair::new(context, number, transmitter, receiver),
         }
     }
 

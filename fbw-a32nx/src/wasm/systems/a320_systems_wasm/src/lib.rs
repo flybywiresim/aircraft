@@ -285,6 +285,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (32_150, FailureType::BrakeAccumulatorGasLeak),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
+        (34_010, FailureType::RadioAntennaInterrupted(1)),
+        (34_011, FailureType::RadioAntennaInterrupted(2)),
+        (34_020, FailureType::RadioAntennaDirectCoupling(1)),
+        (34_021, FailureType::RadioAntennaDirectCoupling(2)),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -360,6 +364,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("VELOCITY BODY Y", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY BODY Z", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
+    .provides_aircraft_variable("WHEEL RPM", "RPM", 1)?
+    .provides_aircraft_variable("WHEEL RPM", "RPM", 2)?
     .provides_aircraft_variable("INCIDENCE ALPHA", "degree", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?

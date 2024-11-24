@@ -16,6 +16,7 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
+import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -93,6 +94,21 @@ export class FmcAircraftInterface {
   private readonly speedVfeNext = Subject.create(0);
   private readonly speedVapp = Subject.create(0);
   private readonly speedShortTermManaged = Subject.create(0);
+
+  private readonly tdReached = this.bus
+    .getSubscriber<FmsMfdVars>()
+    .on('tdReached')
+    .whenChanged()
+    .handle((v) => {
+      if (v) {
+        this.fmc.addMessageToQueue(NXSystemMessages.tdReached, undefined, () => {
+          SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'Bool', false);
+        });
+      } else {
+        this.fmc.removeMessageFromQueue(NXSystemMessages.tdReached.text);
+      }
+    });
+
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase').whenChanged(),
     FmgcFlightPhase.Preflight,

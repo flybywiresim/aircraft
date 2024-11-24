@@ -28,6 +28,10 @@ export const A320Failure = Object.freeze({
 
   Fac1Failure: 22000,
   Fac2Failure: 22001,
+  Fmgc1Failure: 22002,
+  Fmgc2Failure: 22003,
+  Fcu1Failure: 22004,
+  Fcu2Failure: 22005,
 
   TransformerRectifier1: 24000,
   TransformerRectifier2: 24001,
@@ -108,6 +112,10 @@ export const A320Failure = Object.freeze({
 
   RadioAltimeter1: 34000,
   RadioAltimeter2: 34001,
+  RadioAntennaInterrupted1: 34010,
+  RadioAntennaInterrupted2: 34011,
+  RadioAntennaDirectCoupling1: 34020,
+  RadioAntennaDirectCoupling2: 34021,
 });
 
 export const A320FailureDefinitions: FailureDefinition[] = [
@@ -134,6 +142,10 @@ export const A320FailureDefinitions: FailureDefinition[] = [
 
   [22, A320Failure.Fac1Failure, 'FAC 1'],
   [22, A320Failure.Fac2Failure, 'FAC 2'],
+  [22, A320Failure.Fmgc1Failure, 'FMGC 1'],
+  [22, A320Failure.Fmgc2Failure, 'FMGC 2'],
+  [22, A320Failure.Fcu1Failure, 'FCU 1'],
+  [22, A320Failure.Fcu2Failure, 'FCU 2'],
 
   [24, A320Failure.TransformerRectifier1, 'TR 1'],
   [24, A320Failure.TransformerRectifier2, 'TR 2'],
@@ -213,4 +225,8 @@ export const A320FailureDefinitions: FailureDefinition[] = [
 
   [34, A320Failure.RadioAltimeter1, 'RA 1'],
   [34, A320Failure.RadioAltimeter2, 'RA 2'],
+  [34, A320Failure.RadioAntennaInterrupted1, 'RA 1 Interrupted'],
+  [34, A320Failure.RadioAntennaInterrupted2, 'RA 2 Interrupted'],
+  [34, A320Failure.RadioAntennaDirectCoupling1, 'RA 1 Direct Coupling'],
+  [34, A320Failure.RadioAntennaDirectCoupling2, 'RA 2 Direct Coupling'],
 ];

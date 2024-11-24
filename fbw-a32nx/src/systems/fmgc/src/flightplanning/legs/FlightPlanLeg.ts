@@ -303,15 +303,24 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return this;
   }
 
-  clearConstraints() {
-    this.definition.verticalAngle = undefined;
+  clearAltitudeConstraints() {
     this.definition.altitudeDescriptor = undefined;
     this.definition.altitude1 = undefined;
     this.definition.altitude2 = undefined;
+    this.pilotEnteredAltitudeConstraint = undefined;
+  }
+
+  clearSpeedConstraints() {
     this.definition.speedDescriptor = undefined;
     this.definition.speed = undefined;
-    this.pilotEnteredAltitudeConstraint = undefined;
     this.pilotEnteredSpeedConstraint = undefined;
+  }
+
+  clearConstraints() {
+    // FIXME should we really clear this? It's not a constraint
+    this.definition.verticalAngle = undefined;
+    this.clearAltitudeConstraints();
+    this.clearSpeedConstraints();
   }
 
   static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {

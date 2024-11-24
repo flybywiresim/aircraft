@@ -1,4 +1,5 @@
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { Arinc429Register, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import {
   AtisMessage,
   AtisType,
@@ -29,6 +30,8 @@ export class DigitalOutputs {
 
   private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] =
     [];
+
+  private static rmpFrequencyArinc: Arinc429Register = Arinc429Register.empty();
 
   constructor(
     private readonly bus: EventBus,
@@ -71,6 +74,7 @@ export class DigitalOutputs {
 
   public powerDown(): void {
     this.publisher.pub('atcResetData', true, true, false);
+    DigitalOutputs.rmpFrequencyArinc = Arinc429Register.empty();
   }
 
   private async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
@@ -117,6 +121,17 @@ export class DigitalOutputs {
       default:
         return new Promise<AtsuStatusCodes>((resolve, _reject) => resolve(AtsuStatusCodes.UnknownMessage));
     }
+  }
+
+  public sendRmpFrequency(frequency: number): void {
+    DigitalOutputs.rmpFrequencyArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    DigitalOutputs.rmpFrequencyArinc.setValue(frequency);
+    DigitalOutputs.rmpFrequencyArinc.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
+  }
+
+  public resetRmpFrequency(): void {
+    DigitalOutputs.rmpFrequencyArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+    DigitalOutputs.rmpFrequencyArinc.writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
   }
 
   public async receiveAtis(

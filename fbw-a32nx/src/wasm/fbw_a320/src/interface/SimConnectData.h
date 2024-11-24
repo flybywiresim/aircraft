@@ -117,6 +117,7 @@ struct SimData {
   unsigned long long aiControlsActive;
   double wheelRpmLeft;
   double wheelRpmRight;
+  double seaLevelPressure;
 };
 
 struct SimInput {
@@ -144,6 +145,15 @@ struct SimInputAutopilot {
   double APPR_push;
   double EXPED_push;
   double DIR_TO_trigger;
+  double mach_mode_activate;
+  double spd_mode_activate;
+  double preset_spd_activate;
+  double baro_left_set;
+  double baro_right_set;
+  double SPD_MACH_set;
+  double HDG_TRK_set;
+  double ALT_set;
+  double VS_FPA_set;
 };
 
 struct SimInputThrottles {
@@ -182,156 +192,4 @@ struct SimOutputSpoilers {
 
 struct SimOutputAltimeter {
   unsigned long long kohlsmanSettingStd_3;
-};
-
-struct ClientDataAutopilotStateMachine {
-  unsigned long long enabled_AP1;
-  unsigned long long enabled_AP2;
-  double lateral_law;
-  double lateral_mode;
-  double lateral_mode_armed;
-  double vertical_law;
-  double vertical_mode;
-  double vertical_mode_armed;
-  double mode_reversion_lateral;
-  double mode_reversion_vertical;
-  double mode_reversion_vertical_target_fpm;
-  double mode_reversion_TRK_FPA;
-  double mode_reversion_triple_click;
-  double mode_reversion_fma;
-  double speed_protection_mode;
-  double autothrust_mode;
-  double Psi_c_deg;
-  double H_c_ft;
-  double H_dot_c_fpm;
-  double FPA_c_deg;
-  double V_c_kn;
-  double ALT_soft_mode_active;
-  double ALT_cruise_mode_active;
-  double EXPED_mode_active;
-  double FD_disconnect;
-  double FD_connect;
-  double nav_e_loc_valid;
-  double nav_e_loc_error_deg;
-  double nav_e_gs_valid;
-  double nav_e_gs_error_deg;
-  unsigned long long TCAS_message_disarm;
-  unsigned long long TCAS_message_RA_inhibit;
-  unsigned long long TCAS_message_TRK_FPA_deselection;
-};
-
-struct ClientDataAutopilotLaws {
-  unsigned long long enableAutopilot;
-  double flightDirectorTheta;
-  double autopilotTheta;
-  double flightDirectorPhi;
-  double autopilotPhi;
-  double autopilotBeta;
-  double locPhiCommand;
-  double nosewheelCommand;
-  unsigned long long conditionFlare;
-};
-
-struct ClientDataAutothrust {
-  double N1_TLA_1_percent;
-  double N1_TLA_2_percent;
-  double is_in_reverse_1;
-  double is_in_reverse_2;
-  double thrust_limit_type;
-  double thrust_limit_percent;
-  double N1_c_1_percent;
-  double N1_c_2_percent;
-  double status;
-  double mode;
-  double mode_message;
-};
-
-struct ClientDataFlyByWireInput {
-  double delta_eta_pos;
-  double delta_xi_pos;
-  double delta_zeta_pos;
-};
-
-struct ClientDataFlyByWire {
-  double eta_pos;
-  double xi_pos;
-  double zeta_pos;
-  double eta_trim_deg_should_write;
-  double eta_trim_deg;
-  double zeta_trim_pos_should_write;
-  double zeta_trim_pos;
-  double alpha_floor_command;
-  double protection_ap_disc;
-  double v_alpha_prot_kn;
-  double v_alpha_max_kn;
-  double beta_target_deg;
-};
-
-struct ClientDataLocalVariables {
-  double flightPhase;
-  double V2;
-  double V_APP;
-  double V_LS;
-  double V_MAX;
-  double flightPlanAvailable;
-  double altitudeConstraint;
-  double thrustReductionAltitude;
-  double thrustReductionAltitudeGoAround;
-  double accelerationAltitude;
-  double accelerationAltitudeEngineOut;
-  double accelerationAltitudeGoAround;
-  double accelerationAltitudeGoAroundEngineOut;
-  double cruiseAltitude;
-  double directToTrigger;
-  double fcuTrkFpaModeActive;
-  double fcuSelectedVs;
-  double fcuSelectedFpa;
-  double fcuSelectedHeading;
-  double flightManagementCrossTrackError;
-  double flightManagementTrackAngleError;
-  double flightManagementPhiCommand;
-  double flightManagementPhiLimit;
-  unsigned long long flightManagementRequestedVerticalMode;
-  double flightManagement_H_c_ft;
-  double flightManagement_H_dot_c_fpm;
-  unsigned long long flightManagement_rnav_app_selected;
-  unsigned long long flightManagement_final_can_engage;
-  double is_SPEED_managed;
-  double locPhiCommand;
-  unsigned long long TCAS_mode_fail;
-  unsigned long long TCAS_mode_available;
-  double TCAS_advisory_state;
-  double TCAS_advisory_target_min_fpm;
-  double TCAS_advisory_target_max_fpm;
-  unsigned long long conditionFlare;
-};
-
-struct ClientDataLocalVariablesAutothrust {
-  double ATHR_push;
-  double ATHR_disconnect;
-  double TLA_1;
-  double TLA_2;
-  double V_c_kn;
-  double V_LS_kn;
-  double V_MAX_kn;
-  double thrust_limit_REV_percent;
-  double thrust_limit_IDLE_percent;
-  double thrust_limit_CLB_percent;
-  double thrust_limit_MCT_percent;
-  double thrust_limit_FLEX_percent;
-  double thrust_limit_TOGA_percent;
-  double flex_temperature_degC;
-  double mode_requested;
-  double is_mach_mode_active;
-  double alpha_floor_condition;
-  double is_approach_mode_active;
-  double is_SRS_TO_mode_active;
-  double is_SRS_GA_mode_active;
-  double is_LAND_mode_active;
-  double thrust_reduction_altitude;
-  double thrust_reduction_altitude_go_around;
-  double flight_phase;
-  double is_soft_alt_mode_active;
-  double is_TCAS_active;
-  double target_TCAS_RA_rate_fpm;
 };

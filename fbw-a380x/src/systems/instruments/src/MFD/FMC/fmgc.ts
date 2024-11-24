@@ -8,7 +8,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
@@ -303,6 +303,17 @@ export class FmgcData {
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  private static readonly DEFAULT_SETTINGS = new FmgcData();
+
+  public reset(): void {
+    for (const key in FmgcData.DEFAULT_SETTINGS) {
+      const prop = key as keyof FmgcData;
+      if (SubscribableUtils.isMutableSubscribable(this[prop])) {
+        this[prop].set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
+      }
+    }
+  }
 }
 
 /**
@@ -383,7 +394,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return 0.8;
+    return 0.84;
   }
 
   /** in feet */
@@ -449,7 +460,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return this.data.cruisePreSelMach.get() ?? 0.82;
+    return this.data.cruisePreSelMach.get() ?? 0.85;
   }
 
   getClimbSpeedLimit(): SpeedLimit {
@@ -502,7 +513,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return 0.8;
+    return 0.84;
   }
 
   /** in knots */
