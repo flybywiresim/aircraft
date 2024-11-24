@@ -1,4 +1,4 @@
-import { GenericAdirsEvents } from './types/GenericAdirsEvents';
+import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 import { GenericSwitchingPanelEvents } from './types/GenericSwitchingPanelEvents';
 
 export type NDSimvars = GenericAdirsEvents &

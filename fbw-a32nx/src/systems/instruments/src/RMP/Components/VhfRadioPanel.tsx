@@ -1,9 +1,16 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
-import { useSplitSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import React, { useEffect } from 'react';
+import {
+  useSplitSimVar,
+  useInteractionEvent,
+  Arinc429Register,
+  Arinc429SignStatusMatrix,
+  RadioUtils,
+  useArinc429Var,
+} from '@flybywiresim/fbw-sdk';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
@@ -58,8 +65,29 @@ const useStandbyVhfFrequency = (side: string, transceiver: number) => {
 export const VhfRadioPanel = (props: Props) => {
   const [active, setActive] = useActiveVhfFrequency(props.vhf);
   const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.vhf);
+  const atsuFrequency = useArinc429Var('L:A32NX_ATSU_RMP_FREQUENCY');
   const [, setValueOppositePanelStandby] =
     props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
+
+  useEffect(() => {
+    let modeId = 0;
+    if (atsuFrequency.ssm === Arinc429SignStatusMatrix.NormalOperation) {
+      modeId = 32;
+    }
+
+    SimVar.SetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum', modeId);
+  }, [atsuFrequency]);
+
+  // handle the load button
+  useInteractionEvent(`A32NX_RMP_${props.side}_LOAD_BUTTON_PRESSED`, () => {
+    const availableMode = SimVar.GetSimVarValue(`L:A32NX_RMP_${props.side}_AVAILABLE_MODE`, 'enum');
+
+    // store the frequency as the new standby frequency
+    if (atsuFrequency.ssm === Arinc429SignStatusMatrix.NormalOperation && availableMode === 32) {
+      setStandby(RadioUtils.unpackVhfComFrequencyFromArincToHz(atsuFrequency.value));
+      Arinc429Register.empty().writeToSimVar('L:A32NX_ATSU_RMP_FREQUENCY');
+    }
+  });
 
   // Handle Transfer Button Pressed.
   useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
