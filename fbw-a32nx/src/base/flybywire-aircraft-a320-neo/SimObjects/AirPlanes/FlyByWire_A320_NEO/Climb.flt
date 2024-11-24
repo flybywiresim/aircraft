@@ -118,6 +118,8 @@ FoldingWingsHandle=False
 FoldingWingsState=0, 0
 
 [LocalVars.0]
+A32NX_IS_READY=0
+A32NX_FLT_FILE_IS_LOADED=1
 A32NX_START_STATE=5
 XMLVAR_RMP_L_On=1
 XMLVAR_RMP_R_On=1
