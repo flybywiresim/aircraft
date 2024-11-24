@@ -158,12 +158,14 @@ export class EngineModel {
     return uncorrectedThrust / delta2;
   }
 
-  static getIdleN1(parameters: EngineModelParameters, altitude: Feet, mach: Mach, tropoAltitude: Feet): number {
+  static getIdleCorrectedN1(
+    parameters: EngineModelParameters,
+    altitude: Feet,
+    mach: Mach,
+    tropoAltitude: Feet,
+  ): number {
     const delta = Common.getDelta(altitude, altitude > tropoAltitude);
     const iap = 1 / delta;
-
-    const theta = Common.getTheta(altitude, 0, altitude > tropoAltitude);
-    const theta2 = Common.getTheta2(theta, mach);
 
     const lowMachCn2 = EngineModel.tableInterpolation(parameters.table1503, 0, iap);
     const highMachCn2 = EngineModel.tableInterpolation(parameters.table1504, 0, iap);
@@ -171,11 +173,10 @@ export class EngineModel {
     const cn2 = Common.interpolate(mach, 0, 0.9, lowMachCn2, highMachCn2);
     const cn1 = EngineModel.tableInterpolation(parameters.table1502, cn2, mach);
 
-    const n1 = cn1 * Math.sqrt(theta2);
-    return n1;
+    return cn1;
   }
 
-  static getClimbThrustN1(parameters: EngineModelParameters, altitude: Feet, totalAirTemperature: number) {
-    return EngineModel.tableInterpolation(parameters.n1ClimbLimit, totalAirTemperature, altitude);
+  static getClimbThrustCorrectedN1(parameters: EngineModelParameters, altitude: Feet, totalAirTemperature: number) {
+    return EngineModel.tableInterpolation(parameters.cn1ClimbLimit, totalAirTemperature, altitude);
   }
 }

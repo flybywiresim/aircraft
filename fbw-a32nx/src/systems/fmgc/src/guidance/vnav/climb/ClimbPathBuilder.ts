@@ -472,7 +472,7 @@ export class ClimbPathBuilder {
       speedTarget,
       managedClimbSpeedMach,
       managedClimbSpeedMach,
-      EngineModel.getClimbThrustN1(config.engineModelParameters, altitude, totalAirTemperature), // TODO
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, altitude, totalAirTemperature),
       zeroFuelWeight,
       fuelWeight,
       0,

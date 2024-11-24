@@ -96,12 +96,12 @@ export interface EngineModelParameters {
   fuelBurnFactor: number;
 
   /**
-   * Maximum N1 in CLB thrust
+   * Maximum corrected N1 in CLB thrust
    * @param i row index (tat) in steps of 4°C
    * @param j col index (pressure altitude, ft)
    * @returns Corrected N1 (CN1)
    */
-  n1ClimbLimit: readonly (readonly number[])[];
+  cn1ClimbLimit: readonly (readonly number[])[];
 
   /**
    * Table 1502 - CN2 vs CN1 @ Mach 0, 0.2, 0.9
