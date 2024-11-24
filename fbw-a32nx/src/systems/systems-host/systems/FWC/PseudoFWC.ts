@@ -2832,8 +2832,11 @@ export class PseudoFWC {
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
-    if (this.auralSingleChimePending && !this.auralCrcActive.get() && !this.auralSingleChimeInhibitTimer.isPending()) {
+    const chimeRequested =
+      (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
+    if (chimeRequested && !this.auralSingleChimeInhibitTimer.isPending()) {
       this.auralSingleChimePending = false;
+      this.requestSingleChimeFromAThrOff = false;
       this.soundManager.enqueueSound('singleChime');
       // there can only be one SC per 2 seconds, non-cumulative, so clear any pending ones at the end of that inhibit period
       this.auralSingleChimeInhibitTimer.schedule(

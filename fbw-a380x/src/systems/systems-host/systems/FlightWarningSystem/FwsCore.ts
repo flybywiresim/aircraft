@@ -4079,7 +4079,8 @@ export class FwsCore {
         !ewdLimitationsApprLdgKeys.length,
     );
 
-    const chimeRequested = this.auralSingleChimePending || this.requestSingleChimeFromAThrOff;
+    const chimeRequested =
+      (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
     if (chimeRequested && !this.auralSingleChimeInhibitTimer.isPending()) {
       this.auralSingleChimePending = false;
       this.requestSingleChimeFromAThrOff = false;
