@@ -108,5 +108,5 @@ fn stop_apu() {
 }
 
 fn supply_bleed(on: bool) {
-    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, action.into());
+    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, on.into());
 }
