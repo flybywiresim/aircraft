@@ -9,7 +9,7 @@ pub(crate) mod legacy {
 
     pub fn execute_calculator_code<T>(_code: &str) {}
 
-    pub fn trigger_key_event(event_id: ID32, value: UINT32) {}
+    pub fn trigger_key_event(_event_id: ID32, _value: UINT32) {}
 
     #[derive(Debug)]
     pub struct AircraftVariable {}

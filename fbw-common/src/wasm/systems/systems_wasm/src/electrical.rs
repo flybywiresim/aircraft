@@ -6,8 +6,8 @@ use msfs::{legacy::execute_calculator_code, legacy::trigger_key_event};
 
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::sys::{
-    KEY_APU_BLEED_AIR_SOURCE_SET, KEY_APU_OFF_SWITCH, KEY_APU_STARTER, KEY_FUELSYSTEM_PUMP_ON,
-    KEY_FUELSYSTEM_VALVE_OPEN,
+    KEY_APU_BLEED_AIR_SOURCE_SET, KEY_APU_OFF_SWITCH, KEY_APU_STARTER, KEY_FUELSYSTEM_PUMP_OFF,
+    KEY_FUELSYSTEM_PUMP_ON, KEY_FUELSYSTEM_VALVE_CLOSE, KEY_FUELSYSTEM_VALVE_OPEN,
 };
 use std::error::Error;
 use systems::shared::{to_bool, ElectricalBusType};
@@ -88,12 +88,12 @@ pub(super) fn auxiliary_power_unit(
 }
 
 fn set_fuel_valve_and_pump(fuel_valve_number: u8, fuel_pump_number: u8, on: bool) {
-    if (on) {
+    if on {
         trigger_key_event(KEY_FUELSYSTEM_VALVE_OPEN, fuel_valve_number.into());
         trigger_key_event(KEY_FUELSYSTEM_PUMP_ON, fuel_pump_number.into());
     } else {
-        trigger_key_event(KEY_FUELSYSTEM_VALVE_OPEN, fuel_valve_number.into());
-        trigger_key_event(KEY_FUELSYSTEM_PUMP_ON, fuel_pump_number.into());
+        trigger_key_event(KEY_FUELSYSTEM_VALVE_CLOSE, fuel_valve_number.into());
+        trigger_key_event(KEY_FUELSYSTEM_PUMP_OFF, fuel_pump_number.into());
     }
 }
 
@@ -110,5 +110,5 @@ fn stop_apu() {
 fn supply_bleed(on: bool) {
     let action: u32 = if on { 1 } else { 0 };
 
-    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, action.into());
+    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, action);
 }
