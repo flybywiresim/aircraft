@@ -232,9 +232,17 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>1 (&gt;L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE)</Action>
         </Step>
 
-        <Step Name="RMP 1 VHF TX On" Type="STEP" Delay="1000">
+        <Step Name="RMP 1 VHF 1 TX On" Type="STEP" Delay="500">
             <Condition>(L:A380X_RMP_1_VHF_TX_1) 1 ==</Condition>
             <Action>1 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 TX On" Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_2_VHF_TX_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_2_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 3 VHF 1 TX On" Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_3_VHF_TX_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_3_VHF_TX_1)</Action>
         </Step>
 
         <Step Name="Await APU Avail" Type="COND" Delay="2000">
