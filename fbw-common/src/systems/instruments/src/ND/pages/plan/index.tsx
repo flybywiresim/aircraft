@@ -12,13 +12,12 @@ import {
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429Register, Arinc429WordData, EfisNdMode } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429WordData, EfisNdMode, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../shared/utils/MapParameters';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericFmsEvents } from '../../types/GenericFmsEvents';
 
