@@ -11,7 +11,7 @@ import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, getStartupState, StartupState } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FmsMfdPublisher } from '../MsfsAvionicsCommon/providers/FmsMfdPublisher';
@@ -104,8 +104,10 @@ class MfdInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    this.backplane.onUpdate();
-    this.failuresConsumer.update();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.failuresConsumer.update();
+      this.backplane.onUpdate();
+    }
   }
 
   public onInteractionEvent(args: string[]): void {

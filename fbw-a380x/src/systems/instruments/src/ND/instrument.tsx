@@ -24,6 +24,8 @@ import {
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
+  getStartupState,
+  StartupState,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 import {
@@ -375,10 +377,12 @@ class NDInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    this.backplane.onUpdate();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
 
-    if (this.oansRef.getOrDefault()) {
-      this.oansRef.instance.Update();
+      if (this.oansRef.getOrDefault()) {
+        this.oansRef.instance.Update();
+      }
     }
   }
 

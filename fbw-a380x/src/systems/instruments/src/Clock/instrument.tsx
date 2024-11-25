@@ -2,6 +2,7 @@ import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
 import { ClockRoot, ClockSimvarPublisher } from '@flybywiresim/clock';
 
 import './Clock.scss';
+import { getStartupState, StartupState } from '@flybywiresim/fbw-sdk';
 
 // eslint-disable-next-line camelcase
 class A380X_Clock extends BaseInstrument {
@@ -11,13 +12,7 @@ class A380X_Clock extends BaseInstrument {
 
   private simVarPublisher: ClockSimvarPublisher;
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
+  private startupState = 0;
 
   constructor() {
     super();
@@ -64,13 +59,12 @@ class A380X_Clock extends BaseInstrument {
   public Update(): void {
     super.Update();
 
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.simVarPublisher.startPublish();
-      }
-      this.gameState = gamestate;
-    } else {
+    this.startupState = getStartupState();
+    if (this.startupState === StartupState.ExtrasHostInitialized) {
+      this.simVarPublisher.startPublish();
+    }
+
+    if (this.startupState >= StartupState.InstrumentsInitialized) {
       this.simVarPublisher.onUpdate();
     }
   }

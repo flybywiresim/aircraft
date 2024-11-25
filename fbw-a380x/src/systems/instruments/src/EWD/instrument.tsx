@@ -9,7 +9,7 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 import '../index.scss';
 import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, getStartupState, StartupState } from '@flybywiresim/fbw-sdk';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -52,7 +52,9 @@ class A380X_EWD extends BaseInstrument {
   public Update(): void {
     super.Update();
 
-    this.backplane.onUpdate();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
+    }
   }
 }
 

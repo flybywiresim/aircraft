@@ -35,9 +35,16 @@
 
 ## Uncategorized
 
-- A32NX_IS_READY
+- A32NX_STARTUP_STATE
     - Bool
-    - Indicates that the JavaScript part is ready
+    - Indicates the startup state of the aircraft systems
+    - State | Value
+            --- | ---
+      Uninitialized | 0
+      FltFileLoaded | 1
+      ExtrasHostInitialized | 2
+      InstrumentsInitialized | 3
+      WasmInitialized | 4
 
 - A32NX_IS_STATIONARY
     - Bool

@@ -13,7 +13,13 @@ import {
   Subject,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { FailuresConsumer, MsfsAutopilotAssitancePublisher, MsfsRadioNavigationPublisher } from '@flybywiresim/fbw-sdk';
+import {
+  FailuresConsumer,
+  getStartupState,
+  MsfsAutopilotAssitancePublisher,
+  MsfsRadioNavigationPublisher,
+  StartupState,
+} from '@flybywiresim/fbw-sdk';
 import { FcuDisplay } from './Components/FcuDisplay';
 import { AltitudeManager } from './Managers/AltitudeManager';
 import { AutopilotManager } from './Managers/AutopilotManager';
@@ -92,7 +98,9 @@ export class FcuFsInstrument implements FsInstrument {
     this.failuresConsumer.update();
     // this.isFailed.set(this.failuresConsumer.isActive(this.isFailedKey));;
 
-    this.backplane.onUpdate();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
+    }
   }
 
   /** @inheritdoc */

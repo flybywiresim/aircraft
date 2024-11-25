@@ -1,5 +1,5 @@
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, EfisSide, getStartupState, StartupState } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -95,7 +95,9 @@ class A380X_PFD extends BaseInstrument {
   public Update(): void {
     super.Update();
 
-    this.backplane.onUpdate();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
+    }
   }
 }
 

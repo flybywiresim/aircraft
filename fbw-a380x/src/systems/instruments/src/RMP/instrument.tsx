@@ -11,7 +11,7 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 
-import { ArincEventBus, VhfComIndices } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, getStartupState, StartupState, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { RmpState, RmpStateControllerEvents, VhfComManager } from '@flybywiresim/rmp';
 
 import { RmpMessages } from './Components/RmpMessages';
@@ -121,7 +121,9 @@ class RmpInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    this.backplane.onUpdate();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
+    }
   }
 
   public onInteractionEvent(args: string[]): void {
