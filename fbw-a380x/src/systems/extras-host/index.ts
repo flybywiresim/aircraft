@@ -139,14 +139,13 @@ class ExtrasHost extends BaseInstrument {
         this.simVarPublisher.startPublish();
         this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
-
-        trySetAircraftReadyState();
       }
       this.gameState = gs;
     } else {
       this.simVarPublisher.onUpdate();
     }
 
+    trySetAircraftReadyState(this.getGameState());
     this.backplane.onUpdate();
   }
 }

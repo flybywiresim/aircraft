@@ -151,8 +151,6 @@ class ExtrasHost extends BaseInstrument {
         this.simVarPublisher.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
-
-        trySetAircraftReadyState();
       }
       this.gameState = gs;
     } else {
@@ -163,6 +161,7 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor.update();
     this.aircraftSync.update();
 
+    trySetAircraftReadyState(this.getGameState());
     this.backplane.onUpdate();
   }
 }
