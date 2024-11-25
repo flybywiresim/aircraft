@@ -1452,7 +1452,7 @@ export class MsfsMapping {
       let iterationCount = 0;
 
       while (previousIcao?.trim() || nextIcao?.trim()) {
-        if (++iterationCount > 100) {
+        if (++iterationCount > 250) {
           throw new Error(`(getAirways) Too many iterations while getting airways: ${previousIcao} ${nextIcao}`);
         }
         if (previousIcao?.trim()) {
