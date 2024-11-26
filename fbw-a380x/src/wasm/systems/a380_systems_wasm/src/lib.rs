@@ -43,9 +43,20 @@ use systems::shared::{
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
+use ::msfs::legacy::NamedVariable;
+
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
+
+    while let Some(_event) = gauge.next_event().await {
+        // Uses deprecated method, FIXME improve
+        let startup_state: f64 = NamedVariable::from("A32NX_STARTUP_STATE").get_value();
+
+        if startup_state >= 3.0 {
+            break;
+        }
+    }
 
     let key_prefix = "A32NX_";
     let (mut simulation, mut handler) = MsfsSimulationBuilder::new(
@@ -617,6 +628,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(fuel)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A380::new)?;
+
+    // FIXME improve
+    NamedVariable::from("A32NX_STARTUP_STATE").set_value(4.0);
 
     while let Some(event) = gauge.next_event().await {
         handler.handle(event, &mut simulation, sim_connect.as_mut().get_mut())?;
