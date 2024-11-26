@@ -7,18 +7,17 @@ export function trySetAircraftReadyState(gameState: GameState) {
   if (gameState === GameState.ingame) {
     // Haven't really thought about the transition here yet, whether it should be a fixed time or in the next frame (as it is here)
     if (getStartupState() === StartupState.ExtrasHostInitialized) {
-      console.log('s3');
       setStartupState(StartupState.InstrumentsInitialized);
     }
 
     if (getStartupState() === StartupState.FltFileLoaded) {
-      console.log('s2');
       setStartupState(StartupState.ExtrasHostInitialized);
       console.log(`EXTRASHOST: Instruments are ready at ${new Date().toLocaleString()}`);
     }
-  } else if (getStartupState() > StartupState.FltFileLoaded) {
-    console.log('s0', gameState);
-    setStartupState(StartupState.Uninitialized);
+  } else if (gameState < GameState.briefing && getStartupState() > StartupState.FltFileLoaded) {
+    // This is dangerous, since this state can only be left by loading in StartupState.FltFileLoaded from the *.flt files
+    // Disable for now, all Vars should be set to 0 on reload anyways
+    // setStartupState(StartupState.Uninitialized);
   }
 }
 
