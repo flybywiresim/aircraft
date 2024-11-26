@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, EventBus, GameStateProvider, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
   FlightDeckBounds,
   NotificationManager,
@@ -156,7 +156,7 @@ class ExtrasHost extends BaseInstrument {
     super.Update();
 
     if (this.gameState !== GameState.ingame) {
-      const gs = this.getGameState();
+      const gs = GameStateProvider.get().get();
       if (gs === GameState.ingame) {
         // Start the modules
         this.hEventPublisher.startPublish();
@@ -168,7 +168,7 @@ class ExtrasHost extends BaseInstrument {
       this.gameState = gs;
     }
 
-    trySetAircraftReadyState(this.getGameState());
+    trySetAircraftReadyState(GameStateProvider.get().get());
     this.backplane.onUpdate();
   }
 }
