@@ -5,7 +5,9 @@
 #define FLYBYWIRE_LOGGING_H
 
 #include <iostream>
+#include "fmt/args.h"
 #include "fmt/core.h"
+#include "fmt/format.h"
 
 /**
  * Simple logging facility for the FlyByWire Simulations C++ WASM framework.
@@ -100,6 +102,12 @@ class Logger {
     return &instance;
   }
 
+ private:
+  template <typename... Args>
+  void logMessage(std::ostream& os, const std::string& level, const std::string& msg, const Args&... args) {
+    fmt::print(os, "{}: {}\n", level, fmt::format("{}", msg, args...));
+  }
+
  public:
   // disallow copies
   Logger(Logger const&)             = delete;  // copy
@@ -107,13 +115,28 @@ class Logger {
   Logger(Logger const&&)            = delete;  // move
   Logger& operator=(const Logger&&) = delete;  // move assignment
 
-  void critical(const std::string& msg) { fmt::print(stderr, "critical: {}\n", msg); }
-  void error(const std::string& msg) { fmt::print(stderr, "error: {}\n", msg); }
-  void warn(const std::string& msg) { fmt::print(stderr, "warn: {}\n", msg); }
-  void info(const std::string& msg) { fmt::print("info: {}\n", msg); }
-  void debug(const std::string& msg) { fmt::print("debug: {}\n", msg); }
-  void verbose(const std::string& msg) { fmt::print("verbose: {}\n", msg); }
-  void trace(const std::string& msg) { fmt::print("trace: {}\n", msg); }
+  static void critical(const std::string& msg, const auto&... args) {
+    fmt::print(stderr, "{}: {}\n", "critical", fmt::format(msg, args...));
+  }
+  static void critical(const std::string& msg) { fmt::print(stderr, "{}: {}\n", "critical", msg); }
+
+  static void error(const std::string& msg, const auto&... args) { fmt::print(stderr, "{}: {}\n", "error", fmt::format(msg, args...)); }
+  static void error(const std::string& msg) { fmt::print(stderr, "{}: {}\n", "error", msg); }
+
+  static void warn(const std::string& msg, const auto&... args) { fmt::print(stderr, "{}: {}\n", "warn", fmt::format(msg, args...)); }
+  static void warn(const std::string& msg) { fmt::print(stderr, "{}: {}\n", "warn", msg); }
+
+  static void info(const std::string& msg, const auto&... args) { fmt::print(stdout, "{}: {}\n", "info", fmt::format(msg, args...)); }
+  static void info(const std::string& msg) { fmt::print(stdout, "{}: {}\n", "info", msg); }
+
+  static void debug(const std::string& msg, const auto&... args) { fmt::print(stdout, "{}: {}\n", "debug", fmt::format(msg, args...)); }
+  static void debug(const std::string& msg) { fmt::print(stdout, "{}: {}\n", "debug", msg); }
+
+  static void verbose(const std::string& msg, const auto&... args) { fmt::print(stdout, "{}: {}\n", "verbose", fmt::format(msg, args...)); }
+  static void verbose(const std::string& msg) { fmt::print(stdout, "{}: {}\n", "verbose", msg); }
+
+  static void trace(const std::string& msg, const auto&... args) { fmt::print(stdout, "{}: {}\n", "trace", fmt::format(msg, args...)); }
+  static void trace(const std::string& msg) { fmt::print(stdout, "{}: {}\n", "trace", msg); }
 };
 
 inline Logger* logger = Logger::instance();
