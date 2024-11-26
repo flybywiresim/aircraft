@@ -363,7 +363,12 @@
             <Component ID="SCREEN_AUTOPILOT" Node="SCREEN_AUTOPILOT">
                 <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
                     <!-- ref FBW-22-06 C/B 5LF -->
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) (L:A32NX_AMBIENT_BRIGHTNESS) 0.05 * 0.005 max (A:LIGHT POTENTIOMETER:87, percent over 100) max *</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>
+                        (L:A32NX_AMBIENT_BRIGHTNESS) * 0.05 * 0.01 max
+                        (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) if{
+                            (A:LIGHT POTENTIOMETER:87, percent over 100) max
+                        }
+                    </EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
             <CameraTitle>PA</CameraTitle>
