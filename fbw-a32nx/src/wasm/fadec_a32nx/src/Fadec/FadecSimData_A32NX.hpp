@@ -212,7 +212,7 @@ class FadecSimData_A32NX {
   NamedVariablePtr packsState[2];
   NamedVariablePtr refuelRate;
   NamedVariablePtr refuelStartedByUser;
-  NamedVariablePtr startState;
+  NamedVariablePtr fltInitState;
   NamedVariablePtr thrustLimitClimb;
   NamedVariablePtr thrustLimitFlex;
   NamedVariablePtr thrustLimitIdle;
@@ -289,7 +289,7 @@ class FadecSimData_A32NX {
   void initLvars(DataManager* dm) {
     // TODO: consider DataDefinition for the groups tha are read/write each tick
 
-    startState = dm->make_named_var("A32NX_START_STATE", UNITS.Number, NO_AUTO_UPDATE);
+    fltInitState = dm->make_named_var("A32NX_FLT_INIT_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
     engineEgt[L] = dm->make_named_var("A32NX_ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
     engineEgt[R] = dm->make_named_var("A32NX_ENGINE_EGT:2", UNITS.Number, AUTO_READ_WRITE);

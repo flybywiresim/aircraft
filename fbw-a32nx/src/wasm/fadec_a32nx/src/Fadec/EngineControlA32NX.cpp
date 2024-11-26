@@ -219,7 +219,7 @@ void EngineControl_A32NX::initializeEngineControlData() {
   const double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux;  // gal
 
   // only loads saved fuel quantity on C/D spawn
-  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
+  if (simData.fltInitState->updateFromSim(timeStamp, tickCounter) == 2) {
     // Load fuel configuration from file
     fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
     fuelConfiguration.loadConfigurationFromIni();

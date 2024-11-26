@@ -86,7 +86,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   if (simData.slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected || simData.cameraState >= 10.0 || !idIsReady->get() || simData.simulationTime < 2) {
+  } else if (pauseDetected || simData.cameraState >= 10.0 || idStartupState->get() < 4 || simData.simulationTime < 2) {
     return result;
   }
 
@@ -283,8 +283,8 @@ void FlyByWireInterface::loadConfiguration() {
 
 void FlyByWireInterface::setupLocalVariables() {
   // regsiter L variable for init state and ready signal
-  idIsReady = std::make_unique<LocalVariable>("A32NX_IS_READY");
-  idStartState = std::make_unique<LocalVariable>("A32NX_START_STATE");
+  idStartupState = std::make_unique<LocalVariable>("A32NX_STARTUP_STATE");
+  idFltInitState = std::make_unique<LocalVariable>("A32NX_FLT_INIT_STATE");
 
   // regsiter L variable for logging
   idLoggingFlightControlsEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
@@ -833,7 +833,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   // init should be run only once and only when is ready is signaled
-  if (wasFcuInitialized || !idIsReady->get()) {
+  if (wasFcuInitialized || idStartupState->get() < 4) {
     return true;
   }
 
@@ -849,7 +849,7 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   auto timeSinceReady = simData.simulationTime - simulationTimeReady;
 
   // determine if we need to run init code
-  if (idStartState->get() >= 5 && timeSinceReady > 6.0) {
+  if (idFltInitState->get() >= 5 && timeSinceReady > 6.0) {
     // init FCU for in flight configuration
     long targetAltitude = simData.H_ind_ft;
     long targetHeading = std::fmod(simData.Psi_magnetic_deg, 360.0);
@@ -860,7 +860,7 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
     wasFcuInitialized = true;
-  } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
+  } else if (idFltInitState->get() == 4 && timeSinceReady > 1.0) {
     // init FCU for on runway -> ready for take-off
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 15000);
     wasFcuInitialized = true;

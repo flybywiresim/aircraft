@@ -206,7 +206,7 @@ void EngineControl_A380X::initializeEngineControlData() {
   const double weightLbsPerGallon = simData.simVarsDataPtr->data().fuelWeightLbsPerGallon;
 
   // only loads saved fuel quantity on C/D spawn
-  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
+  if (simData.fltInitState->updateFromSim(timeStamp, tickCounter) == 2) {
     // Load fuel configuration from file
     fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
     fuelConfiguration.loadConfigurationFromIni();

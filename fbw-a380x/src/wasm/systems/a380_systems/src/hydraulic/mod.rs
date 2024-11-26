@@ -56,8 +56,8 @@ use systems::{
         SurfacesPositions,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
+        FltInitState, InitContext, Read, SimulationElement, SimulationElementVisitor,
+        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -1014,8 +1014,8 @@ impl A380RudderFactory {
     }
 
     fn new_rudder(context: &mut InitContext) -> RudderAssembly {
-        let init_at_center = context.start_state() == StartState::Taxi
-            || context.start_state() == StartState::Runway
+        let init_at_center = context.flt_init_state() == FltInitState::Taxi
+            || context.flt_init_state() == FltInitState::Runway
             || context.is_in_flight();
 
         let upper_assembly = Self::a380_rudder_assembly(
@@ -7590,10 +7590,10 @@ mod tests {
             test_bed: SimulationTestBed<A380HydraulicsTestAircraft>,
         }
         impl A380HydraulicsTestBed {
-            fn new_with_start_state(start_state: StartState) -> Self {
+            fn flt_init_state(flt_init_state: FltInitState) -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new_with_start_state(
-                        start_state,
+                    test_bed: SimulationTestBed::new_with_flt_init_state(
+                        flt_init_state,
                         A380HydraulicsTestAircraft::new,
                     ),
                 }
@@ -8714,11 +8714,11 @@ mod tests {
         }
 
         fn test_bed_on_ground() -> A380HydraulicsTestBed {
-            A380HydraulicsTestBed::new_with_start_state(StartState::Apron)
+            A380HydraulicsTestBed::new_with_flt_init_state(FltInitState::Apron)
         }
 
         fn test_bed_in_flight() -> A380HydraulicsTestBed {
-            A380HydraulicsTestBed::new_with_start_state(StartState::Cruise)
+            A380HydraulicsTestBed::new_with_flt_init_state(FltInitState::Cruise)
         }
 
         fn test_bed_on_ground_with() -> A380HydraulicsTestBed {

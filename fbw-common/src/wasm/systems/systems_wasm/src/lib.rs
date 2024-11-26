@@ -22,7 +22,7 @@ use fxhash::FxHashMap;
 use std::fmt::{Display, Formatter};
 use std::{error::Error, time::Duration};
 use systems::shared::ElectricalBusType;
-use systems::simulation::{InitContext, StartState};
+use systems::simulation::{FltInitState, InitContext};
 use systems::{
     failures::FailureType,
     simulation::{
@@ -35,7 +35,7 @@ use systems::{
 pub struct MsfsSimulationBuilder<'a, 'b> {
     variable_registry: Option<MsfsVariableRegistry>,
     key_prefix: String,
-    start_state: StartState,
+    flt_init_state: FltInitState,
     sim_connect: &'a mut SimConnect<'b>,
     failures: Option<Failures>,
     aspects: Vec<Box<dyn Aspect>>,
@@ -44,14 +44,14 @@ pub struct MsfsSimulationBuilder<'a, 'b> {
 impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     pub fn new(
         key_prefix: &str,
-        start_state_variable: Variable,
+        flt_init_state_variable: Variable,
         sim_connect: &'a mut SimConnect<'b>,
     ) -> Self {
-        let start_state_variable_value: VariableValue = (&start_state_variable).into();
+        let flt_init_state_variable_value: VariableValue = (&flt_init_state_variable).into();
 
         Self {
             variable_registry: Some(MsfsVariableRegistry::new(key_prefix.into())),
-            start_state: start_state_variable_value.read().into(),
+            flt_init_state: flt_init_state_variable_value.read().into(),
             key_prefix: key_prefix.into(),
             sim_connect,
             failures: None,
@@ -64,7 +64,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         aircraft_ctor_fn: U,
     ) -> Result<(Simulation<T>, MsfsHandler), Box<dyn Error>> {
         let mut registry = self.variable_registry.unwrap();
-        let simulation = Simulation::new(self.start_state, aircraft_ctor_fn, &mut registry);
+        let simulation = Simulation::new(self.flt_init_state, aircraft_ctor_fn, &mut registry);
 
         Ok((
             simulation,

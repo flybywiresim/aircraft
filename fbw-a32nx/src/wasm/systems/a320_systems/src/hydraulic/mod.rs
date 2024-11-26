@@ -71,8 +71,8 @@ use systems::{
         ReservoirAirPressure, ReverserPosition, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
+        FltInitState, InitContext, Read, Reader, SimulationElement, SimulationElementVisitor,
+        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -808,8 +808,8 @@ impl A320RudderFactory {
     }
 
     fn new_rudder(context: &mut InitContext) -> RudderAssembly {
-        let init_at_center = context.start_state() == StartState::Taxi
-            || context.start_state() == StartState::Runway
+        let init_at_center = context.flt_init_state() == FltInitState::Taxi
+            || context.flt_init_state() == FltInitState::Runway
             || context.is_in_flight();
 
         let assembly = Self::a320_rudder_assembly(context, init_at_center);
@@ -6619,10 +6619,10 @@ mod tests {
             test_bed: SimulationTestBed<A320HydraulicsTestAircraft>,
         }
         impl A320HydraulicsTestBed {
-            fn new_with_start_state(start_state: StartState) -> Self {
+            fn new_with_flt_init_state(flt_init_state: FltInitState) -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new_with_start_state(
-                        start_state,
+                    test_bed: SimulationTestBed::new_with_flt_init_state(
+                        flt_init_state,
                         A320HydraulicsTestAircraft::new,
                     ),
                 }
@@ -7592,11 +7592,11 @@ mod tests {
         }
 
         fn test_bed_on_ground() -> A320HydraulicsTestBed {
-            A320HydraulicsTestBed::new_with_start_state(StartState::Apron)
+            A320HydraulicsTestBed::new_with_flt_init_state(FltInitState::Apron)
         }
 
         fn test_bed_in_flight() -> A320HydraulicsTestBed {
-            A320HydraulicsTestBed::new_with_start_state(StartState::Cruise)
+            A320HydraulicsTestBed::new_with_flt_init_state(FltInitState::Cruise)
         }
 
         fn test_bed_on_ground_with() -> A320HydraulicsTestBed {
