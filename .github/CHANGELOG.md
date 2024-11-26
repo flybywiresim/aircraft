@@ -43,6 +43,7 @@
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
 1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [GPU] Improved handling of ground power for more immersive use @Maximilian-Reuter (\_chaoz_)
 1. [OANS] Display correct flags when IRS position is not available - @Nufflee (nufflee)
 1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
 1. [RA] Add direct coupling and interrupted antenna cable failures to RAs - @beheh (Benedict Etzel)
@@ -77,6 +78,7 @@
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [MSFS2024] Fix systems initialization behavior for MSFS2024 - @flogross89 (floridude)
+1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 
 ## 0.12.0
 

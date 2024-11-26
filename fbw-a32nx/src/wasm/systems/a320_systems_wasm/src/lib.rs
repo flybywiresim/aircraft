@@ -310,7 +310,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 0)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 1)?
     .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?
-    .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TANK CENTER QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TANK LEFT AUX QUANTITY", "gallons", 0)?
@@ -415,12 +414,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
         );
         builder.copy(
-            Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
+            Variable::named("EXT_PWR_AVAIL:1"),
             Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),
-        );
-        builder.copy(
-            Variable::aircraft("EXTERNAL POWER ON", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON"),
         );
 
         builder.copy(

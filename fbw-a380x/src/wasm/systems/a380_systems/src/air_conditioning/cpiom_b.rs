@@ -1287,7 +1287,11 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 && (altimeter_setting.unwrap_or_default().get::<hectopascal>() - Air::P_0).abs()
                     > f64::EPSILON)
         {
-            altimeter_setting.unwrap()
+            if altimeter_setting.unwrap() == Pressure::default() {
+                Pressure::new::<hectopascal>(Air::P_0)
+            } else {
+                altimeter_setting.unwrap()
+            }
         } else {
             Pressure::new::<hectopascal>(Air::P_0)
         }
