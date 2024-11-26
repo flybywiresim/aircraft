@@ -42,11 +42,11 @@ typedef std::vector<ProcedureStep*> Preset;
  */
 class PresetProcedures {
  private:
-  Preset coldAndDark;       // cold and dark preset - ID 1
-  Preset powered;           // powered preset - ID 2
-  Preset readyForPushback;  // ready for pushback preset - ID 3
-  Preset readyForTaxi;      // ready for taxi preset - ID 4
-  Preset readyForTakeoff;   // ready for takeoff preset - ID 5
+  Preset coldAndDark{};       // cold and dark preset - ID 1
+  Preset powered{};           // powered preset - ID 2
+  Preset readyForPushback{};  // ready for pushback preset - ID 3
+  Preset readyForTaxi{};      // ready for taxi preset - ID 4
+  Preset readyForTakeoff{};   // ready for takeoff preset - ID 5
 
   // The XML document containing the procedure definitions
   tinyxml2::XMLDocument presetProceduresXML;
@@ -65,7 +65,7 @@ class PresetProcedures {
    * @brief Construct a new PresetProcedures object
    * @param configFile the path to the XML file containing the procedure definitions in the MSFS VFS
    */
-  PresetProcedures(std::string&& configFile) : configFile{configFile} { initializeProcedureListMap(); }
+  explicit PresetProcedures(std::string&& configFile) : configFile{configFile} { initializeProcedureListMap(); }
 
   /**
    * @brief Get the procedure for the given configuration.
