@@ -55,7 +55,7 @@
     - Bool
     - Indicates if any GND equipment is visible or not
 
-- A32NX_START_STATE
+- A32NX_FLT_INIT_STATE
     - Enum
     - Indicates the state in which MSFS started
     - State | Value
