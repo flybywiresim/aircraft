@@ -8,6 +8,8 @@
 
 #include <MSFS/MSFS_CommBus.h>
 
+#include <fmt/core.h>
+
 #include "AircraftPresets.h"
 #include "SimUnits.h"
 #include "UpdateMode.h"
@@ -182,9 +184,7 @@ void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const 
   progressAircraftPreset->setAndWriteToSim(loadPercentage);
 
   // send this progress to the flyPad using Comm Bus
-  std::ostringstream oss;
-  oss << loadPercentage << ";" << currentStepPtr->description;
-  std::string buffer = oss.str();
+  std::string buffer = fmt::format("{};{}", loadPercentage, currentStepPtr->description);
   fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer.c_str(), buffer.size() + 1, FsCommBusBroadcast_JS);
 }
 
@@ -226,7 +226,7 @@ void AircraftPresets::handleConditionStep(const ProcedureStep* currentStepPtr) {
   FLOAT64 fvalue = 0.0;
   updateProgress(currentStepPtr);
   if (aircraftPresetVerbose->getAsBool()) {
-    std::cout << "AircraftPresets: Aircraft Preset Step Condition: [" << currentStepPtr->expectedStateCheckCode << "]" << std::endl;
+    fmt::print("AircraftPresets: Aircraft Preset Step Condition: [{}]\n", currentStepPtr->expectedStateCheckCode);
   }
   execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, nullptr, nullptr);
   const bool conditionIsTrue = !helper::Math::almostEqual(0.0, fvalue);
@@ -244,8 +244,8 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
   FLOAT64    fvalue        = 0.0;
   const bool verboseOutput = aircraftPresetVerbose->getAsBool();
   if (verboseOutput) {
-    std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Test: " << currentStepPtr->description << " TEST: ["
-              << currentStepPtr->expectedStateCheckCode << "]" << std::endl;
+    fmt::print("AircraftPresets: Aircraft Preset Step {} Test: {} TEST: [{}]\n", currentStep, currentStepPtr->description,
+               currentStepPtr->expectedStateCheckCode);
   }
 
   execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, nullptr, nullptr);
@@ -253,8 +253,8 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
   const bool conditionIsTrue = !helper::Math::almostEqual(0.0, fvalue);
   if (conditionIsTrue) {
     if (verboseOutput) {
-      std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Skipping: " << currentStepPtr->description << " TEST: ["
-                << currentStepPtr->expectedStateCheckCode << "]" << std::endl;
+      fmt::print("AircraftPresets: Aircraft Preset Step {} Skipping: {} TEST: [{}]\n", currentStep, currentStepPtr->description,
+                 currentStepPtr->expectedStateCheckCode);
     }
     currentDelay = 0;
     currentStep++;
@@ -267,7 +267,7 @@ void AircraftPresets::executeAction(const ProcedureStep* currentStepPtr) {
   LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
            " (delay after: " + std::to_string(static_cast<int>(currentDelay - currentLoadingTime)) + ")");
   if (aircraftPresetVerbose->getAsBool()) {
-    std::cout << "AircraftPresets: Aircraft Preset Step Action: [" << currentStepPtr->actionCode << "]" << std::endl;
+    fmt::print("AircraftPresets: Aircraft Preset Step Action: [{}]\n", currentStepPtr->actionCode);
   }
   execute_calculator_code(currentStepPtr->actionCode.c_str(), nullptr, nullptr, nullptr);
   currentStep++;
