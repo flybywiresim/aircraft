@@ -64,6 +64,8 @@ declare class CoherentNearestSearchSession implements NearestSearchSession<strin
 }
 
 export class MsfsBackend implements DataInterface {
+  private static readonly AIRPORT_LOAD_TIMEOUT = 15_000_000;
+
   /** Duration of an AIRAC cycle (28 days) in milliseconds. */
   public static readonly CYCLE_DURATION = 86400_000 * 28;
 
@@ -171,7 +173,7 @@ export class MsfsBackend implements DataInterface {
     // firstly fetch all the facilities from the MSFS database
     const icaos = idents.map((ident) => `A      ${ident}`);
 
-    const airports = await this.cache.getFacilities(icaos, LoadType.Airport);
+    const airports = await this.cache.getFacilities(icaos, LoadType.Airport, MsfsBackend.AIRPORT_LOAD_TIMEOUT);
 
     return Array.from(airports.values()).map((airport) => this.mapping.mapAirport(airport));
   }
@@ -548,6 +550,6 @@ export class MsfsBackend implements DataInterface {
 
     const icao = `A      ${ident}`;
 
-    return this.cache.getFacility(icao, LoadType.Airport);
+    return this.cache.getFacility(icao, LoadType.Airport, MsfsBackend.AIRPORT_LOAD_TIMEOUT);
   }
 }

@@ -6,10 +6,11 @@ use uom::si::{
     angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
-    length::meter,
+    length::{inch, meter},
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
     velocity::knot,
     volume::{cubic_inch, gallon, liter},
     volume_rate::gallon_per_second,
@@ -20,6 +21,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
+        brake::{BrakeAssembly, BrakeProperties},
         brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
@@ -48,9 +50,10 @@ use systems::{
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
         AdirsMeasurementOutputs, AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked,
-        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
+        ControllerSignal, DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle,
+        LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        SurfacesPositions,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1687,6 +1690,14 @@ pub(super) struct A380Hydraulic {
     gear_system_gravity_extension_controller: A380GravityExtension,
     gear_system_hydraulic_controller: A380GearHydraulicController,
     gear_system: HydraulicGearSystem,
+    brake_properties: BrakeProperties,
+    left_wing_brake_assembly: BrakeAssembly<4>,
+    right_wing_brake_assembly: BrakeAssembly<4>,
+    left_body_brake_assembly: BrakeAssembly<4>,
+    right_body_brake_assembly: BrakeAssembly<4>,
+
+    // FIXME: remove when CPIOM G is implemented
+    brake_temperature_ids: [VariableIdentifier; 16],
 
     ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController,
     ths: TrimmableHorizontalStabilizerActuator,
@@ -2021,7 +2032,46 @@ impl A380Hydraulic {
             gear_system_gravity_extension_controller: A380GravityExtension::new(context),
             gear_system_hydraulic_controller: A380GearHydraulicController::new(),
             gear_system: A380GearSystemFactory::a380_gear_system(context),
+            brake_properties: BrakeProperties::new(
+                // TODO: find more accurate numbers
+                Length::new::<inch>(26.),
+                Length::new::<inch>(20.),
+                Mass::new::<kilogram>(110.),
+            ),
+            left_wing_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:1".to_owned(), // Should be "WHEEL RPM:3" but MSFS has weird definitions...
+                [1, 2, 5, 6],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            right_wing_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(), // Should be "WHEEL RPM:4" but MSFS has weird definitions...
+                [3, 4, 7, 8],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            left_body_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:1".to_owned(),
+                [9, 10, 13, 14],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            right_body_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(),
+                [11, 12, 15, 16],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
 
+            brake_temperature_ids: (1..=16)
+                .map(|index| context.get_identifier(format!("REPORTED_BRAKE_TEMPERATURE_{index}")))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
             ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController::new(
                 context,
             ),
@@ -2400,6 +2450,41 @@ impl A380Hydraulic {
 
         self.pushback_tug.update(context);
         self.bypass_pin.update(&self.pushback_tug);
+
+        for (brake_assembly, braking_pressure_norm, braking_pressure_altn, gear_position) in [
+            (
+                &mut self.left_wing_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.left_body_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.right_body_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+            (
+                &mut self.right_wing_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+        ] {
+            brake_assembly.update(
+                context,
+                &self.brake_properties,
+                braking_pressure_norm.max(braking_pressure_altn),
+                false,
+                gear_position.get::<ratio>() > 0.25,
+            );
+        }
 
         self.braking_force.update_forces(
             context,
@@ -3122,6 +3207,10 @@ impl SimulationElement for A380Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+        self.left_wing_brake_assembly.accept(visitor);
+        self.right_wing_brake_assembly.accept(visitor);
+        self.left_body_brake_assembly.accept(visitor);
+        self.right_body_brake_assembly.accept(visitor);
 
         self.ths_system_controller.accept(visitor);
         self.ths.accept(visitor);
@@ -3131,6 +3220,35 @@ impl SimulationElement for A380Hydraulic {
         self.aux_gear_doors.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let left_wing_brake_temperatures =
+            self.left_wing_brake_assembly.brake_temperature_sensors();
+        let right_wing_brake_temperatures =
+            self.right_wing_brake_assembly.brake_temperature_sensors();
+        let left_body_brake_temperatures =
+            self.left_body_brake_assembly.brake_temperature_sensors();
+        let right_body_brake_temperatures =
+            self.right_body_brake_assembly.brake_temperature_sensors();
+        let brake_temp_sensors = left_wing_brake_temperatures[..2]
+            .iter()
+            .chain(&right_wing_brake_temperatures[..2])
+            .chain(&left_wing_brake_temperatures[2..])
+            .chain(&right_wing_brake_temperatures[2..])
+            .chain(&left_body_brake_temperatures[..2])
+            .chain(&right_body_brake_temperatures[..2])
+            .chain(&left_body_brake_temperatures[2..])
+            .chain(&right_body_brake_temperatures[2..]);
+        for (temp_sensor, id) in brake_temp_sensors.zip(&self.brake_temperature_ids) {
+            writer.write(
+                id,
+                temp_sensor
+                    .signal()
+                    .unwrap_or_default()
+                    .get::<degree_celsius>() as u32,
+            );
+        }
     }
 }
 
@@ -10996,7 +11114,7 @@ mod tests {
             test_bed = test_bed
                 .set_pushback_state(true)
                 .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
-                .run_waiting_for(Duration::from_secs(5));
+                .run_waiting_for(Duration::from_secs(6));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() <= Pressure::new::<psi>(50.));

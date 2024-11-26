@@ -442,6 +442,7 @@ FcuComputer::Parameters_FcuComputer_T FcuComputer::FcuComputer_P{
         false,
         false,
         false,
+        false,
 
         {
           efis_range_selection::RANGE_10,
