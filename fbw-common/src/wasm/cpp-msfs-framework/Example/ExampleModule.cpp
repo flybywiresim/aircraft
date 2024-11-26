@@ -29,6 +29,7 @@ bool ExampleModule::initialize() {
    * default is "false, false, 0, 0"
    */
 
+
 #ifdef LVAR_EXAMPLES
   // LVARS
   // requested multiple times to demonstrate de-duplication - also shows optional parameters
@@ -45,7 +46,7 @@ bool ExampleModule::initialize() {
 
 #if defined(SIM_EVENT_EXAMPLE) || defined(AIRCRAFT_VAR_EXAMPLE) || defined(INDEXED_AIRCRAFT_VAR_EXAMPLE)
   // Sim Events
-  beaconLightSetEventPtr   = dataManager->make_client_event("BEACON_LIGHTS_SET", true, NOTIFICATION_GROUP_0);
+  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", true, NOTIFICATION_GROUP_0);
   beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
@@ -60,10 +61,14 @@ bool ExampleModule::initialize() {
       });
 
   // Event with callback example
-  lightPotentiometerSetEventPtr   = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
-  lightPotentiometerSetCallbackID = lightPotentiometerSetEventPtr->addCallback(
-      [=]([[maybe_unused]] int number, [[maybe_unused]] DWORD param0, [[maybe_unused]] DWORD param1, [[maybe_unused]] DWORD param2,
-          [[maybe_unused]] DWORD param3, [[maybe_unused]] DWORD param4) {
+  lightPotentiometerSetEventPtr = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
+  lightPotentiometerSetCallbackID =
+      lightPotentiometerSetEventPtr->addCallback([=]([[maybe_unused]] int number,
+                                                     [[maybe_unused]] DWORD param0,
+                                                     [[maybe_unused]] DWORD param1,
+                                                     [[maybe_unused]] DWORD param2,
+                                                     [[maybe_unused]] DWORD param3,
+                                                     [[maybe_unused]] DWORD param4) {
         if (param0 == 99)
           return;
         LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number) +
@@ -72,10 +77,14 @@ bool ExampleModule::initialize() {
       });
 
   // Second event with the same name - this should be de-duplicated
-  lightPotentiometerSetEvent2Ptr   = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
-  lightPotentiometerSetCallback2ID = lightPotentiometerSetEvent2Ptr->addCallback(
-      [=]([[maybe_unused]] int number, [[maybe_unused]] DWORD param0, [[maybe_unused]] DWORD param1, [[maybe_unused]] DWORD param2,
-          [[maybe_unused]] DWORD param3, [[maybe_unused]] DWORD param4) {
+  lightPotentiometerSetEvent2Ptr = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
+  lightPotentiometerSetCallback2ID =
+      lightPotentiometerSetEvent2Ptr->addCallback([=]([[maybe_unused]] int number,
+                                                      [[maybe_unused]] DWORD param0,
+                                                      [[maybe_unused]] DWORD param1,
+                                                      [[maybe_unused]] DWORD param2,
+                                                      [[maybe_unused]] DWORD param3,
+                                                      [[maybe_unused]] DWORD param4) {
         if (param0 == 99)
           return;
         LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number) +
@@ -96,7 +105,8 @@ bool ExampleModule::initialize() {
   beaconLightSwitch3Ptr = dataManager->make_simple_aircraft_var("LIGHT BEACON", UNITS.PercentOver100);
 
   // using event name for execute_calculator_code example
-  strobeLightSwitchPtr = dataManager->make_aircraft_var("LIGHT STROBE", 0, "STROBES_SET", nullptr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
+  strobeLightSwitchPtr =
+      dataManager->make_aircraft_var("LIGHT STROBE", 0, "STROBES_SET", nullptr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
 #endif
 
 #ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
@@ -249,7 +259,7 @@ bool ExampleModule::initialize() {
   // client event to system event. When this is set to true (default) the client event
   // will be registered to the sim either as a custom event or a mapped event (if the event name exists) and an
   // error will be thrown if you try to register the system event to the sim.
-  systemEventPtr        = dataManager->make_system_event("A32NX.SYSTEM_EVENT_VIEW", "View");
+  systemEventPtr = dataManager->make_system_event("A32NX.SYSTEM_EVENT_VIEW", "View");
   systemEventCallbackId = systemEventPtr->addCallback(
       [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         std::cout << "--- CALLBACK: A32NX.SYSTEM_EVENT_VIEW" << std::endl;
@@ -262,7 +272,7 @@ bool ExampleModule::initialize() {
 #endif
 
 #ifdef MASK_KEYBOARD_EXAMPLE
-  inputEventPtr        = dataManager->make_custom_event("A32NX.MASK_KEYBOARD", NOTIFICATION_GROUP_0);
+  inputEventPtr = dataManager->make_custom_event("A32NX.MASK_KEYBOARD", NOTIFICATION_GROUP_0);
   inputEventCallbackId = inputEventPtr->addCallback(
       [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         std::cout << "--- CALLBACK: A32NX.MASK_KEYBOARD" << std::endl;
@@ -323,8 +333,8 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
   // Use this to throttle output frequency while you are debugging
   if (msfsHandler.getTickCounter() % 100 == 0) {
-    [[maybe_unused]] const FLOAT64 timeStamp   = msfsHandler.getTimeStamp();
-    [[maybe_unused]] const UINT64  tickCounter = msfsHandler.getTickCounter();
+    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
+    [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
 
@@ -336,8 +346,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // Client Event Tests
 
     if (tickCounter % 2000 == 1000) {
-      if (!clientEventPtr->isRegisteredToSim())
-        clientEventPtr->mapToSimEvent();
+      if (!clientEventPtr->isRegisteredToSim()) clientEventPtr->mapToSimEvent();
       // this will trigger an SimConnect error if the event is already registered to this group
       clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0);
       clientEventCallbackId = clientEventPtr->addCallback(
