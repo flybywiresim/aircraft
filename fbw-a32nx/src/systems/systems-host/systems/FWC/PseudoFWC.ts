@@ -341,6 +341,10 @@ export class PseudoFWC {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
+  public readonly fmgc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord3'));
+
+  public readonly fmgc2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord3'));
+
   public readonly fmgc1DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord4'));
 
   public readonly fmgc2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord4'));
@@ -1563,9 +1567,10 @@ export class PseudoFWC {
     // approach capability downgrade. Debounce first, then suppress for a certain amount of time
     // (to avoid multiple triple clicks, and a delay which is too long)
     let fmgcApproachCapability = 0;
-    const getApproachCapability = (dw4: Arinc429WordData): number => {
+    const getApproachCapability = (dw3: Arinc429WordData, dw4: Arinc429WordData): number => {
       let appCap = 0;
       const landModeActive = dw4.bitValueOr(14, false);
+      const landModeArmed = dw3.bitValueOr(20, false);
       const land2Capacity = dw4.bitValueOr(23, false);
       const land3FailPassiveCapacity = dw4.bitValueOr(24, false);
       const land3FailOperationalCapacity = dw4.bitValueOr(25, false);
@@ -1576,7 +1581,7 @@ export class PseudoFWC {
         appCap = 3;
       } else if (land3FailOperationalCapacity) {
         appCap = 4;
-      } else if (landModeActive) {
+      } else if (landModeActive || landModeArmed) {
         appCap = 1;
       } else {
         appCap = 0;
@@ -1584,10 +1589,10 @@ export class PseudoFWC {
       return appCap;
     };
 
-    if (this.fmgc1DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord4.get());
-    } else if (this.fmgc2DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc2DiscreteWord4.get());
+    if (this.fmgc1DiscreteWord3.get().isNormalOperation() && this.fmgc1DiscreteWord4.get().isNormalOperation()) {
+      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord3.get(), this.fmgc1DiscreteWord4.get());
+    } else if (this.fmgc2DiscreteWord3.get().isNormalOperation() && this.fmgc2DiscreteWord4.get().isNormalOperation()) {
+      fmgcApproachCapability = getApproachCapability(this.fmgc2DiscreteWord3.get(), this.fmgc2DiscreteWord4.get());
     }
 
     const capabilityDowngrade =
