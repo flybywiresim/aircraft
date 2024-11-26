@@ -1177,7 +1177,7 @@
             </Requires>
         </Sound>
 
-        <!-- ROP/ROW warnings =====================================================================-->
+        <!-- V1 callout ===================================================================== -->
         <Sound WwiseEvent="V1" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_V1_CALLOUT" Continuous="false">
             <Range LowerBound="1"/>
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">

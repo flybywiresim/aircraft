@@ -85,9 +85,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private destTimeLabel = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('--.-');
+  private destEfob = Subject.create<string>('---.-');
 
-  private destDistanceLabel = Subject.create<string>('---');
+  private destDistanceLabel = Subject.create<string>('----');
 
   private displayFplnFromLineIndex = Subject.create<number>(0);
 
@@ -167,11 +167,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       if (destEfob) {
         this.destEfob.set(Math.max(0, Units.poundToKilogram(destEfob) / 1_000).toFixed(1));
       } else {
-        this.destEfob.set('--.-');
+        this.destEfob.set('---.-');
       }
 
       this.destDistanceLabel.set(
-        Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---',
+        Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '----',
       );
     }
     this.checkScrollButtons();

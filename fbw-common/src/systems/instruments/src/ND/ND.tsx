@@ -14,6 +14,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
+import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
 import { RwyAheadAdvisory } from './shared/RwyAheadAdvisory';
@@ -23,7 +25,6 @@ import { LnavStatus } from './shared/LnavStatus';
 import { CrossTrackError } from './shared/CrossTrackError';
 import { RadioNeedle } from './shared/RadioNeedle';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
-import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';
 import { ArcModePage } from './pages/arc';
 import { Layer } from '../MsfsAvionicsCommon/Layer';

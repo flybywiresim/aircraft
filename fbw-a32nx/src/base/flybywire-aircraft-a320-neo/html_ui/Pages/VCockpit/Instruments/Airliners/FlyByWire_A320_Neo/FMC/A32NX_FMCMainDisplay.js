@@ -1200,15 +1200,18 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.isAirspeedManaged()) {
             Coherent.call("AP_SPD_VAR_SET", 0, Vtap).catch(console.error);
         }
+
+        // Reset V1/R/2 speed after the TAKEOFF phase
+        if (this.flightPhaseManager.phase > FmgcFlightPhases.TAKEOFF) {
+            this.v1Speed = null;
+            this.vrSpeed = null;
+            this.v2Speed = null;
+        }
     }
 
     activatePreSelSpeedMach(preSel) {
         if (preSel) {
-            if (preSel < 1) {
-                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_MACH", "number", 1);
-            } else {
-                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_SPEED", "number", 1);
-            }
+            SimVar.SetSimVarValue("K:A32NX.FMS_PRESET_SPD_ACTIVATE", "number", 1);
         }
     }
 
@@ -2259,27 +2262,22 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 
-    updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
+    async updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsu.connectToNetworks(flightNo)
-                .then((code) => {
-                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
-                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
-                        this.addNewAtsuMessage(code);
-                        this.flightNo = "";
-                        return callback(false);
-                    }
+        this.flightNumber = flightNo;
+        await SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC");
 
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
-                    this.flightNumber = flightNo;
-                    return callback(true);
-                });
-        });
+        // FIXME move ATSU code to ATSU
+        const code = await this.atsu.connectToNetworks(flightNo);
+        if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
+            this.addNewAtsuMessage(code);
+        }
+
+        return callback(true);
     }
 
     async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
@@ -2555,11 +2553,16 @@ class FMCMainDisplay extends BaseAirliners {
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             const oldCostIndex = this.costIndex;
-            const oldDestination = this.currFlightPlanService.active.destinationAirport.ident;
+            const oldDestination = this.currFlightPlanService.active.destinationAirport
+                ? this.currFlightPlanService.active.destinationAirport.ident
+                : undefined;
             const oldCruiseLevel = this.cruiseLevel;
             this.flightPlanService.temporaryInsert();
             this.checkCostIndex(oldCostIndex);
-            this.checkDestination(oldDestination);
+            // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+            if (oldDestination !== undefined) {
+                this.checkDestination(oldDestination);
+            }
             this.checkCruiseLevel(oldCruiseLevel);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);

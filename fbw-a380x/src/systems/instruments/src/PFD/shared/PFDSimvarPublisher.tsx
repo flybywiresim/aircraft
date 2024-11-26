@@ -94,6 +94,7 @@ export interface PFDSimvars {
   engFourRunning: boolean;
   expediteMode: boolean;
   setHoldSpeed: boolean;
+  tdReached: boolean;
   trkFpaDeselectedTCAS: boolean;
   tcasRaInhibited: boolean;
   groundSpeed: number;
@@ -260,6 +261,7 @@ export enum PFDVars {
   engFourRunning = 'GENERAL ENG COMBUSTION:4',
   expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
+  tdReached = 'L:A32NX_PFD_MSG_TD_REACHED',
   trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
   tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
   groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
@@ -421,8 +423,11 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['tcasFail', { name: PFDVars.tcasFail, type: SimVarValueType.Bool }],
     ['engOneRunning', { name: PFDVars.engOneRunning, type: SimVarValueType.Bool }],
     ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
+    ['engThreeRunning', { name: PFDVars.engThreeRunning, type: SimVarValueType.Bool }],
+    ['engFourRunning', { name: PFDVars.engFourRunning, type: SimVarValueType.Bool }],
     ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
     ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
+    ['tdReached', { name: PFDVars.tdReached, type: SimVarValueType.Bool }],
     ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
     ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
     ['groundSpeed', { name: PFDVars.groundSpeed, type: SimVarValueType.Number }],

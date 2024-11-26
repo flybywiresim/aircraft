@@ -183,11 +183,12 @@ export class FlightManagementComputer implements FmcInterface {
     const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
+    this.flightPlanService.createFlightPlans();
+
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
     if (this.instance === FmcIndex.FmcA) {
       this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanService);
 
-      this.flightPlanService.createFlightPlans();
       this.#guidanceController = new GuidanceController(
         this.bus,
         this.fmgc,
@@ -561,14 +562,8 @@ export class FlightManagementComputer implements FmcInterface {
     ident?: string,
   ): PilotWaypoint {
     return (
-      this.dataManager?.createPlaceBearingPlaceBearingWaypoint(
-        place1 as Waypoint,
-        bearing1,
-        place2 as Waypoint,
-        bearing2,
-        stored,
-        ident,
-      ) ?? null
+      this.dataManager?.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident) ??
+      null
     );
   }
 
@@ -579,9 +574,7 @@ export class FlightManagementComputer implements FmcInterface {
     stored?: boolean,
     ident?: string,
   ): PilotWaypoint {
-    return (
-      this.dataManager?.createPlaceBearingDistWaypoint(place as Waypoint, bearing, distance, stored, ident) ?? null
-    );
+    return this.dataManager?.createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident) ?? null;
   }
 
   getStoredWaypointsByIdent(ident: string): PilotWaypoint[] {
@@ -768,6 +761,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.flightPlanService
           .reset()
           .then(() => {
+            this.fmgc.data.reset();
             this.initSimVars();
             this.deleteAllStoredWaypoints();
             this.clearLatestFmsErrorMessage();
@@ -998,6 +992,7 @@ export class FlightManagementComputer implements FmcInterface {
     // FIXME reset ATSU when it is added to A380X
     // this.atsu.resetAtisAutoUpdate();
     await this.flightPlanService.reset();
+    this.fmgc.data.reset();
     this.initSimVars();
     this.deleteAllStoredWaypoints();
     this.clearLatestFmsErrorMessage();
