@@ -1,5 +1,3 @@
-const { getStartupState, StartupState } = require("../../../../../../../fbw-common/src/systems/shared/src/AircraftReadyState");
-
 class A32NX_TipsManager {
     /* private */constructor() {
         this.notif = new NXNotifManager();
@@ -54,7 +52,7 @@ class A32NX_TipsManager {
 
     checkAssistenceConfiguration() {
         // only check when actually flying, otherwise return
-        if (getStartupState() >= StartupState.InstrumentsInitialized) {
+        if (SimVar.GetSimVarValue('L:A32NX_STARTUP_STATE', 'number') >= 3) {
             this.wasAnyAssistanceActive = false;
             return;
         }
