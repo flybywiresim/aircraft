@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #include <MSFS/MSFS_CommBus.h>
@@ -89,7 +88,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
       // check if procedure ID exists
       if (!requestedProcedure) {
-        LOG_WARN("AircraftPresets: Preset " + std::to_string(loadAircraftPresetRequest->getAsInt64()) + " not found!");
+        LOG_WARN(fmt::format("AircraftPresets: Preset {} not found!", loadAircraftPresetRequest->getAsInt64()));
         finishLoading();
         return true;
       }
@@ -179,10 +178,8 @@ bool AircraftPresets::shutdown() {
 
 void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const {
   const FLOAT64 loadPercentage = static_cast<double>(currentStep) / currentProcedure->size();
-
   // update the progress LVARs
   progressAircraftPreset->setAndWriteToSim(loadPercentage);
-
   // send this progress to the flyPad using Comm Bus
   std::string buffer = fmt::format("{};{}", loadPercentage, currentStepPtr->description);
   fsCommBusCall("AIRCRAFT_PRESET_WASM_CALLBACK", buffer.c_str(), buffer.size() + 1, FsCommBusBroadcast_JS);
@@ -190,7 +187,7 @@ void AircraftPresets::updateProgress(const ProcedureStep* currentStepPtr) const 
 
 bool AircraftPresets::checkCompletion() {
   if (currentStep >= currentProcedure->size()) {
-    LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " done!");
+    LOG_INFO(fmt::format("AircraftPresets: Aircraft Preset {} done!", currentProcedureID));
     finishLoading();
     return true;
   }
@@ -198,7 +195,7 @@ bool AircraftPresets::checkCompletion() {
 }
 
 void AircraftPresets::initializeNewLoadingProcess(const Preset* requestedProcedure) {
-  LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
+  LOG_INFO(fmt::format("AircraftPresets: Aircraft Preset {} starting procedure!", loadAircraftPresetRequest->getAsInt64()));
   currentProcedureID = loadAircraftPresetRequest->getAsInt64();
   currentProcedure   = requestedProcedure;
   currentLoadingTime = 0;
@@ -221,8 +218,8 @@ bool AircraftPresets::checkStepTypeSkipping(const bool expeditedMode, const Proc
 }
 
 void AircraftPresets::handleConditionStep(const ProcedureStep* currentStepPtr) {  // prepare return values for execute_calculator_code
-  LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Condition: " + currentStepPtr->description +
-           " (delay between tests: " + std::to_string(currentStepPtr->delayAfter) + ")");
+  LOG_INFO(fmt::format("AircraftPresets: Aircraft Preset Step {} Condition: {} (delay between tests: {})", currentStep,
+                       currentStepPtr->description, currentStepPtr->delayAfter));
   FLOAT64 fvalue = 0.0;
   updateProgress(currentStepPtr);
   if (aircraftPresetVerbose->getAsBool()) {
@@ -264,8 +261,8 @@ bool AircraftPresets::checkExpectedState(const ProcedureStep* currentStepPtr) {
 }
 
 void AircraftPresets::executeAction(const ProcedureStep* currentStepPtr) {
-  LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Execute: " + currentStepPtr->description +
-           " (delay after: " + std::to_string(static_cast<int>(currentDelay - currentLoadingTime)) + ")");
+  LOG_INFO(fmt::format("AircraftPresets: Aircraft Preset Step {} Execute: {} (delay after: {})", currentStep, currentStepPtr->description,
+                       static_cast<int>(currentDelay - currentLoadingTime)));
   if (aircraftPresetVerbose->getAsBool()) {
     fmt::print("AircraftPresets: Aircraft Preset Step Action: [{}]\n", currentStepPtr->actionCode);
   }
@@ -274,7 +271,7 @@ void AircraftPresets::executeAction(const ProcedureStep* currentStepPtr) {
 }
 
 void AircraftPresets::finishLoading() {
-  LOG_INFO("AircraftPresets:update() Aircraft Preset " + std::to_string(currentProcedureID) + " loading finished or cancelled!");
+  LOG_INFO(fmt::format("AircraftPresets:update() Aircraft Preset {} loading finished or cancelled!", currentProcedureID));
   loadAircraftPresetRequest->set(0);
   progressAircraftPreset->setAndWriteToSim(0);
   aircraftPresetQuickMode->setAndWriteToSim(0);

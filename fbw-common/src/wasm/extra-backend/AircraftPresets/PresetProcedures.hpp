@@ -80,7 +80,7 @@ class PresetProcedures {
    */
   Preset* getProcedure(int pID) {
     if (pID < 1 || pID > 5) {
-      LOG_ERROR("AircraftPresets: The procedure ID " + std::to_string(pID) + " is not valid. Valid IDs are 1-5.");
+      LOG_ERROR(fmt::format("AircraftPresets: The procedure ID {} is not valid. Valid IDs are 1-5.", pID));
       return nullptr;
     }
     if (!loadXMLConfig(configFile)) {
@@ -102,11 +102,11 @@ class PresetProcedures {
   bool loadXMLConfig(const std::string& filePath) {
     presetProceduresXML.LoadFile(filePath.c_str());  // also clears the previous document
     if (presetProceduresXML.Error()) {
-      LOG_ERROR("AircraftPresets: XML config \"" + filePath +
-                "\" parsed with errors. Error description: " + presetProceduresXML.ErrorStr());
+      LOG_ERROR(fmt::format("AircraftPresets: XML config \"{}\" parsed with errors. Error description: {}", filePath,
+                            presetProceduresXML.ErrorStr()));
       return false;
     }
-    LOG_INFO("AircraftPresets: XML config \"" + filePath + "\" parsed without errors.");
+    LOG_INFO(fmt::format("AircraftPresets: XML config \"{}\" parsed without errors.", filePath));
     return true;
   }
 
@@ -127,7 +127,7 @@ class PresetProcedures {
 
       // Check if the procedure name is valid
       if (procedureListMap.find(procedureName) == procedureListMap.end()) {
-        LOG_ERROR("AircraftPresets: The procedure " + procedureName + " is not valid. Skipping the whole procedure.");
+        LOG_ERROR(fmt::format("AircraftPresets: The procedure {} is not valid. Skipping the whole procedure.", procedureName));
         continue;
       }
 
@@ -138,15 +138,15 @@ class PresetProcedures {
 
         // Check if the step type is valid
         if (typeItr == ProcedureStep::StepTypeMap.end()) {
-          LOG_ERROR("AircraftPresets: Invalid step. Skipping the Step.\n Procedure: " + procedureName +
-                    " Step: " + currentStep->Attribute("Name"));
+          LOG_ERROR(fmt::format("AircraftPresets: Invalid step. Skipping the Step.\n Procedure: {} Step: {}", procedureName,
+                                currentStep->Attribute("Name")));
           continue;
         }
 
         // Check if the delay is valid
         if (currentStep->IntAttribute("Delay") < 0) {
-          LOG_ERROR("AircraftPresets: Invalid delay. Skipping the Step.\n Procedure: " + procedureName +
-                    " Step: " + currentStep->Attribute("Name"));
+          LOG_ERROR(fmt::format("AircraftPresets: Invalid delay. Skipping the Step.\n Procedure: {} Step: {}", procedureName,
+                                currentStep->Attribute("Name")));
           continue;
         }
 
