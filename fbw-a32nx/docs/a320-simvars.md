@@ -60,14 +60,14 @@
     - Indicates the state in which MSFS started
     - State | Value
             --- | ---
-      Hangar | 1
-      Apron | 2
-      Taxi | 3
-      Runway | 4
-      Climb | 5
-      Cruise | 6
-      Approach | 7
-      Final | 8
+      Hangar | 0
+      Apron | 1
+      Taxi | 2
+      Runway | 3
+      Climb | 4
+      Cruise | 5
+      Approach | 6
+      Final | 7
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM

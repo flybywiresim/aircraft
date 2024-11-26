@@ -76,15 +76,14 @@ pub enum FltInitState {
 impl From<f64> for FltInitState {
     fn from(value: f64) -> Self {
         match value {
-            x if x < 0.9 => Default::default(),
-            x if x < 1.9 => Self::Hangar,
-            x if x < 2.9 => Self::Apron,
-            x if x < 3.9 => Self::Taxi,
-            x if x < 4.9 => Self::Runway,
-            x if x < 5.9 => Self::Climb,
-            x if x < 6.9 => Self::Cruise,
-            x if x < 7.9 => Self::Approach,
-            x if x < 8.9 => Self::Final,
+            x if x < 0.9 => Self::Hangar,
+            x if x < 1.9 => Self::Apron,
+            x if x < 2.9 => Self::Taxi,
+            x if x < 3.9 => Self::Runway,
+            x if x < 4.9 => Self::Climb,
+            x if x < 5.9 => Self::Cruise,
+            x if x < 6.9 => Self::Approach,
+            x if x < 7.9 => Self::Final,
             _ => Default::default(),
         }
     }
@@ -93,14 +92,14 @@ impl From<f64> for FltInitState {
 impl From<FltInitState> for f64 {
     fn from(state: FltInitState) -> Self {
         match state {
-            FltInitState::Hangar => 1.,
-            FltInitState::Apron => 2.,
-            FltInitState::Taxi => 3.,
-            FltInitState::Runway => 4.,
-            FltInitState::Climb => 5.,
-            FltInitState::Cruise => 6.,
-            FltInitState::Approach => 7.,
-            FltInitState::Final => 8.,
+            FltInitState::Hangar => 0.,
+            FltInitState::Apron => 1.,
+            FltInitState::Taxi => 2.,
+            FltInitState::Runway => 3.,
+            FltInitState::Climb => 4.,
+            FltInitState::Cruise => 5.,
+            FltInitState::Approach => 6.,
+            FltInitState::Final => 7.,
         }
     }
 }
