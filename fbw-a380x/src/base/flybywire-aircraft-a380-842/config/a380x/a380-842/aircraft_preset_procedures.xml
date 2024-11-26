@@ -67,19 +67,19 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         </Step>
 
         <Step Name="EXT PWR 2 On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 3 On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 1 On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 4 On" Type="STEP" Delay="3000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
         </Step>
 
@@ -136,8 +136,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>1 (&gt;K:2:LOGO_LIGHTS_SET) 1 (&gt;K:2:NAV_LIGHTS_SET)</Action>
         </Step>
         <Step Name="SEAT BELTS On" Type="STEP" Delay="1000">
-            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)</Condition>
-            <Action>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }</Action>
+            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 0 == &amp;&amp;</Condition>
+            <Action>
+                0 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)
+                (A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }
+            </Action>
         </Step>
         <Step Name="NO SMOKING Auto" Type="STEP" Delay="1000">
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==</Condition>
@@ -351,8 +354,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
         </Step>
         <Step Name="SEAT BELTS Off" Type="STEP" Delay="2000">
-            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) !</Condition>
-            <Action>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }</Action>
+            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 2 == &amp;&amp;</Condition>
+            <Action>
+                2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)
+                (A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }
+            </Action>
         </Step>
         <Step Name="Nav &amp; Logo Lt Off" Type="STEP" Delay="500">
             <Condition>(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &amp;&amp;</Condition>
@@ -623,8 +629,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             </Condition>
         </Step>
 
-        <Step Name="T.O. Config" Type="STEP" Delay="2000">
-            <Action>1 (&gt;L:A32NX_TO_CONFIG_NORMAL)</Action>
+        <Step Name="T.O. Config Push" Type="NOEX" Delay="200">
+            <Action>1 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
+        </Step>
+        <Step Name="T.O. Config Release" Type="STEP" Delay="2000">
+            <Action>0 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
         </Step>
     </Procedure>
 
@@ -779,4 +788,4 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>0 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
         </Step>
     </Procedure>
-</AircraftPresetProcedures>
+        </AircraftPresetProcedures>
