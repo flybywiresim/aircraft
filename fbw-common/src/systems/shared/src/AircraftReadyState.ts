@@ -7,15 +7,18 @@ export function trySetAircraftReadyState(gameState: GameState) {
   if (gameState === GameState.ingame) {
     // Haven't really thought about the transition here yet, whether it should be a fixed time or in the next frame (as it is here)
     if (getStartupState() === StartupState.ExtrasHostInitialized) {
-      SimVar.SetSimVarValue('L:A32NX_STARTUP_STATE', SimVarValueType.Enum, StartupState.InstrumentsInitialized);
+      console.log('s3');
+      setStartupState(StartupState.InstrumentsInitialized);
     }
 
     if (getStartupState() === StartupState.FltFileLoaded) {
-      SimVar.SetSimVarValue('L:A32NX_STARTUP_STATE', SimVarValueType.Enum, StartupState.ExtrasHostInitialized);
+      console.log('s2');
+      setStartupState(StartupState.ExtrasHostInitialized);
       console.log(`EXTRASHOST: Instruments are ready at ${new Date().toLocaleString()}`);
     }
-  } else if (getStartupState() > StartupState.Uninitialized) {
-    SimVar.SetSimVarValue('L:A32NX_STARTUP_STATE', SimVarValueType.Enum, StartupState.Uninitialized);
+  } else if (getStartupState() > StartupState.FltFileLoaded) {
+    console.log('s0', gameState);
+    setStartupState(StartupState.Uninitialized);
   }
 }
 
@@ -29,4 +32,8 @@ export enum StartupState {
 
 export function getStartupState(): StartupState {
   return SimVar.GetSimVarValue('L:A32NX_STARTUP_STATE', SimVarValueType.Enum);
+}
+
+function setStartupState(state: number) {
+  return SimVar.SetSimVarValue('L:A32NX_STARTUP_STATE', SimVarValueType.Enum, state);
 }

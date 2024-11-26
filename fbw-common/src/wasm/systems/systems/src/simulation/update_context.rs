@@ -590,7 +590,9 @@ impl UpdateContext {
 
         self.delta = delta.into();
         self.simulation_time = simulation_time;
-        self.is_ready = reader.read(&self.startup_state_id) >= 3;
+
+        let raw_startup_state_read: f64 = reader.read(&self.startup_state_id);
+        self.is_ready = raw_startup_state_read >= 3.0;
 
         self.local_acceleration = LocalAcceleration::new(
             reader.read(&self.accel_body_x_id),

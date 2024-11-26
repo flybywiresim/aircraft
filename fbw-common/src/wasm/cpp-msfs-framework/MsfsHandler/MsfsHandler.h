@@ -191,7 +191,7 @@ class MsfsHandler {
   /**
    * @return value of LVAR A32NX_STARTUP_STATE
    */
-  [[nodiscard]] bool getAircraftIsReadyVar() const { return baseSimData->data().aircraftIsReady >= 3; }
+  [[nodiscard]] bool getAircraftIsReadyVar() const { return baseSimData->data().aircraftIsReady >= 1; }
 
   /**
    *

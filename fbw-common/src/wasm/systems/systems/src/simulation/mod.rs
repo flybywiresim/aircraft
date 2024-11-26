@@ -360,11 +360,13 @@ pub trait SimulationElementVisitor {
 }
 
 pub struct Simulation<T: Aircraft> {
+    startup_state_id: VariableIdentifier,
     aircraft: T,
     electricity: Electricity,
     update_context: UpdateContext,
 }
 impl<T: Aircraft> Simulation<T> {
+    pub(crate) const STARTUP_STATE_KEY: &'static str = "STARTUP_STATE";
     pub fn new<U: FnOnce(&mut InitContext) -> T>(
         flt_init_state: FltInitState,
         aircraft_ctor_fn: U,
@@ -374,6 +376,7 @@ impl<T: Aircraft> Simulation<T> {
         let mut context = InitContext::new(flt_init_state, &mut electricity, registry);
         let update_context = UpdateContext::new_for_simulation(&mut context);
         Self {
+            startup_state_id: context.get_identifier(Self::STARTUP_STATE_KEY.to_owned()),
             aircraft: (aircraft_ctor_fn)(&mut context),
             electricity,
             update_context,
@@ -437,9 +440,13 @@ impl<T: Aircraft> Simulation<T> {
         simulation_time: f64,
         reader_writer: &mut impl SimulatorReaderWriter,
     ) {
+        let mut reader = SimulatorReader::new(reader_writer);
+
+        let raw_startup_state_read: f64 = reader.read(&self.startup_state_id);
+        let is_ready = raw_startup_state_read >= 3.0;
+
         self.electricity.pre_tick();
 
-        let mut reader = SimulatorReader::new(reader_writer);
         self.update_context
             .update(&mut reader, delta, simulation_time);
 
@@ -462,6 +469,10 @@ impl<T: Aircraft> Simulation<T> {
         let mut writer = SimulatorWriter::new(reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
         self.aircraft.accept(&mut visitor);
+
+        if raw_startup_state_read == 3.0 {
+            reader_writer.write(&self.startup_state_id, 4.0);
+        }
     }
 
     pub fn activate_failure(&mut self, failure_type: FailureType) {

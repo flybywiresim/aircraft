@@ -70,6 +70,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get sim data
   SimData simData = simConnectInterface.getSimData();
 
+  if (idStartupState->get() < 3) {
+    return result;
+  }
+
   // update performance monitoring
   result &= updatePerformanceMonitoring(sampleTime);
 
@@ -86,7 +90,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   if (simData.slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected || simData.cameraState >= 10.0 || idStartupState->get() < 4 || simData.simulationTime < 2) {
+  } else if (pauseDetected || simData.cameraState >= 10.0 || simData.simulationTime < 2) {
     return result;
   }
 
@@ -833,7 +837,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   // init should be run only once and only when is ready is signaled
-  if (wasFcuInitialized || idStartupState->get() < 4) {
+  if (wasFcuInitialized || idStartupState->get() < 3) {
     return true;
   }
 
