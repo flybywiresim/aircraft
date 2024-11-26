@@ -4,8 +4,6 @@
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 
 export function trySetAircraftReadyState(gameState: GameState) {
-  // Signal that the aircraft is ready via L:A32NX_IS_READY. Wait until FLT file is loaded,
-  // then set to ready once, then reset FLT file status so we won't run into problems on reload
   if (gameState === GameState.ingame) {
     // Haven't really thought about the transition here yet, whether it should be a fixed time or in the next frame (as it is here)
     if (getStartupState() === StartupState.ExtrasHostInitialized) {
