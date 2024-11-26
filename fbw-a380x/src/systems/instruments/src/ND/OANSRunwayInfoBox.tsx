@@ -1,10 +1,9 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subscribable, Unit, UnitFamily, UnitType, VNode } from '@microsoft/msfs-sdk';
 import './oans-style.scss';
 import { EntityTypes } from './OansControlPanel';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 interface OansRunwayInfoBoxProps {
   rwyOrStand: Subscribable<EntityTypes | null>;
@@ -13,6 +12,7 @@ interface OansRunwayInfoBoxProps {
   lda: Subscribable<string | null>;
   ldaIsReduced: Subscribable<boolean>;
   coordinate: Subscribable<string>;
+  unit: Subscribable<Unit<UnitFamily.Distance>>;
 }
 export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> {
   private rwyDivRef = FSComponent.createRef<HTMLDivElement>();
@@ -33,6 +33,10 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
       this.rwyDivRef.instance.style.display = 'none';
       this.standDivRef.instance.style.display = 'none';
     }
+  }
+
+  private distanceUnitFormatter(unit: Unit<UnitFamily.Distance>) {
+    return unit === UnitType.METER ? 'M' : 'FT';
   }
 
   onAfterRender(node: VNode): void {
@@ -62,16 +66,24 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
             TORA:{' '}
           </span>
           <span class="mfd-value smaller">
-            {NXUnits.mToUser(this.props.tora)}
-            <span style="color: rgb(33, 33, 255)">{NXUnits.userDistanceUnit()}</span>
+            {this.props.tora
+              ? Number(this.props.tora)
+                ? this.props.unit.get().convertFrom(Number(this.props.tora), UnitType.METER)
+                : this.props.tora
+              : ''}
+            <span style="color: rgb(33, 33, 255)">{this.props.unit.map((v) => this.distanceUnitFormatter(v))}</span>
           </span>
           <span
             class="mfd-label"
             style="grid-column: span 2; text-align: right; margin-right: 15px;"
           >{`${this.props.ldaIsReduced.get() ? 'REDUCED ' : ''}LDA: `}</span>
           <span class="mfd-value smaller" style={this.props.ldaIsReduced.get() ? 'color: cyan;' : ''}>
-            {NXUnits.mToUser(this.props.lda)}
-            <span style="color: rgb(33, 33, 255)">{NXUnits.userDistanceUnit()}</span>
+            {this.props.lda
+              ? Number(this.props.lda)
+                ? this.props.unit.get().convertFrom(Number(this.props.lda), UnitType.METER)
+                : this.props.lda
+              : ''}
+            <span style="color: rgb(33, 33, 255)">{this.props.unit.map((v) => this.distanceUnitFormatter(v))}</span>
           </span>
         </div>
         <div

@@ -1,6 +1,5 @@
-import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable, Unit, UnitFamily, UnitType } from '@microsoft/msfs-sdk';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
@@ -13,7 +12,17 @@ export interface DataEntryFormat<T> {
    * If modified or notify()ed, triggers format() in the input field (i.e. when dependencies to value have changed)
    */
   reFormatTrigger?: Subscribable<boolean>;
+
+  unitFamily?: Subscribable<Unit<UnitFamily>>;
 }
+
+const distanceUnitFormatter = (unit: Unit<UnitFamily.Distance>) => {
+  return unit === UnitType.METER ? 'M' : 'FT';
+};
+
+const weightUnitFormatter = (unit: Unit<UnitFamily.Weight>) => {
+  return unit === UnitType.KILOGRAM ? 'T' : 'LBS';
+};
 
 export class SpeedKnotsFormat implements DataEntryFormat<number> {
   public placeholder = '---';
@@ -288,19 +297,29 @@ export class LengthFormat implements DataEntryFormat<number> {
 
   private maxValue = Number.POSITIVE_INFINITY;
 
+  public unitFamily?: Subscribable<Unit<UnitFamily.Distance>> = Subject.create(UnitType.METER);
+
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
+    unitFamily?: Subscribable<Unit<UnitFamily.Distance>>,
   ) {
     minValue.sub((val) => (this.minValue = val), true);
     maxValue.sub((val) => (this.maxValue = val), true);
+    this.unitFamily = unitFamily;
   }
 
   public format(value: number) {
+    const unit = this.unitFamily ? distanceUnitFormatter(this.unitFamily.get()) : 'M';
     if (value === null || value === undefined) {
-      return [this.placeholder, null, NXUnits.userDistanceUnit()] as FieldFormatTuple;
+      return [this.placeholder, null, unit] as FieldFormatTuple;
     }
-    return [value.toString(), null, NXUnits.userDistanceUnit()] as FieldFormatTuple;
+
+    if (this.unitFamily) {
+      value = this.unitFamily.get().convertFrom(value, UnitType.METER);
+    }
+
+    return [value.toString(), null, unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -308,7 +327,10 @@ export class LengthFormat implements DataEntryFormat<number> {
       return null;
     }
 
-    const nbr = Number(input);
+    let nbr = Number(input);
+    if (this.unitFamily) {
+      nbr = this.unitFamily.get().convertTo(nbr, UnitType.METER);
+    }
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
@@ -329,19 +351,29 @@ export class WeightFormat implements DataEntryFormat<number> {
 
   private maxValue = Number.POSITIVE_INFINITY;
 
+  public unitFamily?: Subscribable<Unit<UnitFamily.Weight>> = Subject.create(UnitType.KILOGRAM);
+
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
+    unitFamily?: Subscribable<Unit<UnitFamily.Weight>>,
   ) {
     minValue.sub((val) => (this.minValue = val), true);
     maxValue.sub((val) => (this.maxValue = val), true);
+    this.unitFamily = unitFamily;
   }
 
   public format(value: number) {
+    const unit = this.unitFamily ? weightUnitFormatter(this.unitFamily.get()) : 'T';
     if (value === null || value === undefined) {
-      return [this.placeholder, null, NXUnits.userWeightUnitTons()] as FieldFormatTuple;
+      return [this.placeholder, null, unit] as FieldFormatTuple;
     }
-    return [(value / 1000).toFixed(1), null, NXUnits.userWeightUnitTons()] as FieldFormatTuple;
+
+    if (this.unitFamily) {
+      value = this.unitFamily.get().convertFrom(value, UnitType.KILOGRAM);
+    }
+
+    return [(value / 1000).toFixed(1), null, unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -349,7 +381,12 @@ export class WeightFormat implements DataEntryFormat<number> {
       return null;
     }
 
-    const nbr = Number(input) * 1000;
+    let convertedInput = Number(input);
+    if (this.unitFamily) {
+      convertedInput = this.unitFamily.get().convertTo(convertedInput, UnitType.KILOGRAM);
+    }
+
+    const nbr = convertedInput * 1000;
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }

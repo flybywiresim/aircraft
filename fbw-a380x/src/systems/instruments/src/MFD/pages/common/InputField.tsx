@@ -9,13 +9,12 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
 
-export interface InputFieldProps<T> extends ComponentProps {
+interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
@@ -48,8 +47,6 @@ export interface InputFieldProps<T> extends ComponentProps {
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
-  /** Only used for unit conversion in WeightFormat/LengthFormat, lbs to kg - kg to lbs, m to feet - feet to m */
-  unitConversion?: 'unitWeightConversion' | 'unitDistanceConversion';
 }
 
 /**
@@ -90,36 +87,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     true,
   );
 
-  private valueToUserUnit(unitConversion: string | undefined, value: any) {
-    if (!unitConversion) {
-      return value;
-    }
-
-    switch (unitConversion) {
-      case 'unitWeightConversion':
-        return NXUnits.kgToUser(value);
-      case 'unitDistanceConversion':
-        return NXUnits.mToUser(value);
-      default:
-        break;
-    }
-  }
-
-  private userUnitToValue(unitConversion: string | undefined, value: any) {
-    if (!unitConversion) {
-      return value;
-    }
-
-    switch (unitConversion) {
-      case 'unitWeightConversion':
-        return NXUnits.userToKg(value);
-      case 'unitDistanceConversion':
-        return NXUnits.userToM(value);
-      default:
-        break;
-    }
-  }
-
   private onNewValue() {
     // Don't update if field is being edited
     if (this.isFocused.get() || this.isValidating.get()) {
@@ -130,11 +97,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     if (this.modifiedFieldValue.get() !== null) {
       this.modifiedFieldValue.set(null);
     }
-    const valueAsUserUnit = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
-    if (valueAsUserUnit != null) {
+    if (this.props.value.get() != null) {
       if (this.props.canOverflow) {
         // If item was overflowing, check whether overflow is still needed
-        this.overflow((valueAsUserUnit?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
+        this.overflow((this.props.value.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
       if (this.props.mandatory?.get()) {
@@ -150,8 +116,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       if (this.props.value.get() == null) {
         this.populatePlaceholders();
       } else {
-        const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
-        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(userUnitValue);
+        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
         this.textInputRef.instance.innerText = formatted ?? '';
         this.leadingUnit.set(leadingUnit ?? '');
         this.trailingUnit.set(trailingUnit ?? '');
@@ -281,8 +246,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       !this.props.inactive?.get()
     ) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
-        const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
-        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', userUnitValue, false);
+        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
       }
       this.isFocused.set(true);
 
@@ -317,10 +281,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
       if (validateAndUpdate) {
         if (this.modifiedFieldValue.get() == null && this.props.value.get() != null) {
-          const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
           console.log('Enter pressed after no modification');
           // Enter is pressed after no modification
-          const [formatted] = this.props.dataEntryFormat.format(userUnitValue);
+          const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
           await this.validateAndUpdate(formatted ?? '');
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
@@ -354,8 +317,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     let newValue = null;
     try {
-      const convertedInput = this.userUnitToValue(this.props.unitConversion, input);
-      newValue = await this.props.dataEntryFormat.parse(convertedInput);
+      newValue = await this.props.dataEntryFormat.parse(input);
     } catch (msg: unknown) {
       if (msg instanceof FmsError && this.props.errorHandler) {
         this.props.errorHandler(msg.type);
@@ -367,8 +329,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
     if (this.props.dataHandlerDuringValidation) {
       try {
-        const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
-        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, userUnitValue);
+        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.props.value.get());
         const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
         if (validation === false) {
@@ -534,8 +495,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
 
-    this.textInputRef.instance.addEventListener('keypress', this.onKeyPressHandler);
-    this.textInputRef.instance.addEventListener('keydown', this.onKeyDownHandler);
+    if (this.props.dataEntryFormat.unitFamily) {
+      this.subs.push(this.props.dataEntryFormat.unitFamily.sub(() => this.updateDisplayElement()));
+    }
+
+    this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
+    this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
 
     if (!this.props.handleFocusBlurExternally) {
       this.textInputRef.instance.addEventListener('focus', this.onFocusHandler);
@@ -589,8 +554,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       if (key === 'ESC' || key === 'ESC2') {
-        const valueAsUserUnit = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
-        const [formatted] = this.props.dataEntryFormat.format(valueAsUserUnit);
+        const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
         this.modifiedFieldValue.set(formatted);
         this.handleEnter();
       }

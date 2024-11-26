@@ -1,4 +1,14 @@
-import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  FSComponent,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  Unit,
+  UnitFamily,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import './MfdFmsFuelLoad.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -29,34 +39,34 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
-import { NXUnits, Units } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, Units } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
-  private grossWeight = Subject.create<number | null>(null);
+  private grossWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private centerOfGravity = Subject.create<number | null>(null);
 
-  private fuelOnBoard = Subject.create<number | null>(null);
+  private fuelOnBoard = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private fuelPlanningIsDisabled = Subject.create<boolean>(true);
 
-  private tripFuelWeight = Subject.create<number | null>(null);
+  private tripFuelWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private tripFuelTime = Subject.create<number | null>(null);
 
   private costIndex = Subject.create<number | null>(null);
 
-  private takeoffWeight = Subject.create<number | null>(null);
+  private takeoffWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
-  private landingWeight = Subject.create<number | null>(null);
+  private landingWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private destIcao = Subject.create<string>('----');
 
   private destEta = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('---.-');
+  private destEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private destEfobBelowMin = Subject.create(false);
 
@@ -64,15 +74,19 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private altnEta = Subject.create<string>('--:--');
 
-  private altnEfob = Subject.create<string>('---.-');
+  private altnEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private altnEfobBelowMin = Subject.create(false);
 
-  private extraFuelWeight = Subject.create<number | null>(null);
+  private extraFuelWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
 
   private extraFuelTime = Subject.create<number | null>(null);
 
   private blockLineRef = FSComponent.createRef<HTMLDivElement>();
+
+  private unit = Subject.create<Unit<UnitFamily.Weight>>(
+    NXDataStore.get('CONFIG_USING_METRIC_UNIT') === '1' ? UnitType.KILOGRAM : UnitType.POUND,
+  );
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -111,7 +125,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         );
       }
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
-      this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
+      if (destEfob !== null) {
+        this.destEfob.set(destEfob, UnitType.KILOGRAM);
+      } else {
+        this.destEfob.set(NaN);
+      }
       this.destEfobBelowMin.set(
         destEfob * 1_000 < (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
       );
@@ -120,14 +138,25 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     if (this.loadedFlightPlan.alternateDestinationAirport) {
       this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
       this.altnEta.set('--:--');
-      this.altnEfob.set('---.-');
+      this.altnEfob.set(NaN);
       this.altnEfobBelowMin.set(false);
     } else {
       this.altnIcao.set('NONE');
       this.altnEta.set('--:--');
-      this.altnEfob.set('---.-');
+      this.altnEfob.set(NaN);
       this.altnEfobBelowMin.set(false);
     }
+  }
+
+  private weightNumberFormatter(precision: number, nanString: string) {
+    return NumberFormatter.create({
+      nanString: nanString,
+      precision: precision,
+    });
+  }
+
+  private weightUnitFormatter(unit: Unit<UnitFamily.Weight>) {
+    return unit === UnitType.KILOGRAM ? 'T' : 'LBS';
   }
 
   public onAfterRender(node: VNode): void {
@@ -144,23 +173,23 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             return;
           }
 
-          this.landingWeight.set(NXUnits.kgToUser(this.props.fmcService.master.getLandingWeight()));
-          this.takeoffWeight.set(NXUnits.kgToUser(this.props.fmcService.master.getTakeoffWeight()));
+          this.landingWeight.set(this.props.fmcService.master.getLandingWeight() ?? NaN, UnitType.KILOGRAM);
+          this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight() ?? NaN, UnitType.KILOGRAM);
 
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
-            this.grossWeight.set(null);
+            this.grossWeight.set(NaN);
             this.centerOfGravity.set(null);
-            this.fuelOnBoard.set(null);
+            this.fuelOnBoard.set(NaN);
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            this.grossWeight.set(NXUnits.kgToUser(this.props.fmcService.master.fmgc.getGrossWeightKg()));
+            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg() ?? NaN, UnitType.KILOGRAM);
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
             const cg: number = SimVar.GetSimVarValue('CG PERCENT', 'Percent over 100') * 100;
             this.centerOfGravity.set(cg);
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
-            this.fuelOnBoard.set(NXUnits.kgToUser(this.props.fmcService.master.fmgc.getFOB()));
+            this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB() ?? NaN, UnitType.KILOGRAM);
           }
 
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
@@ -169,7 +198,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             const fob = this.props.fmcService.master.fmgc.getFOB() * 1_000;
             const tripFuel =
               fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob);
-            this.tripFuelWeight.set(NXUnits.kgToUser(tripFuel));
+            this.tripFuelWeight.set(tripFuel, UnitType.KILOGRAM);
 
             // Calculate Rte Rsv fuel for 5.0% reserve
             this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
@@ -181,19 +210,18 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
             const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
             this.extraFuelWeight.set(
-              NXUnits.kgToUser(
-                (this.props.fmcService.master.enginesWereStarted.get() ? fob : block) -
-                  (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0) -
-                  (this.tripFuelWeight.get() ?? 0) -
-                  (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
-                  (this.props.fmcService.master.fmgc.data.routeReserveFuelWeight.get() ?? 0),
-              ),
+              (this.props.fmcService.master.enginesWereStarted.get() ? fob : block) -
+                (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0) -
+                (this.tripFuelWeight.get().number ?? 0) -
+                (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
+                (this.props.fmcService.master.fmgc.data.routeReserveFuelWeight.get() ?? 0),
+              UnitType.KILOGRAM,
             );
           } else {
             // EXTRA = FOB - TRIP - MIN FUEL DEST
             this.extraFuelWeight.set(
-              (this.fuelOnBoard.get() ?? 0) -
-                ((this.tripFuelWeight.get() ?? 0) -
+              (this.fuelOnBoard.get().number ?? 0) -
+                ((this.tripFuelWeight.get().number ?? 0) -
                   (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0)),
             );
           }
@@ -211,6 +239,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         }, true),
       );
     }
+
+    NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
+      value === '1' ? this.unit.set(UnitType.KILOGRAM) : this.unit.set(UnitType.POUND);
+    });
   }
 
   render(): VNode {
@@ -223,8 +255,14 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px 25px 10px 25px;">
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">GW</span>
-                <span class="mfd-value">{this.grossWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                <span class="mfd-value">
+                  {this.grossWeight.map((it) =>
+                    this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                  )}
+                </span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.unit.map((v) => this.weightUnitFormatter(v))}
+                </span>
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">CG</span>
@@ -233,16 +271,21 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">FOB</span>
-                <span class="mfd-value">{this.fuelOnBoard.map((it) => (it ? it.toFixed(1) : '---.-'))}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                <span class="mfd-value">
+                  {this.fuelOnBoard.map((it) =>
+                    this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                  )}
+                </span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.unit.map((v) => this.weightUnitFormatter(v))}
+                </span>
               </div>
             </div>
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
+                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), this.unit)}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
-                unitConversion={'unitWeightConversion'}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
                 alignText="flex-end"
@@ -267,9 +310,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel))}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), this.unit)}
                 value={this.props.fmcService.master.fmgc.data.blockFuel}
-                unitConversion={'unitWeightConversion'}
                 mandatory={Subject.create(true)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
@@ -299,13 +341,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel), this.unit)}
                   dataHandlerDuringValidation={async (v) =>
                     this.props.fmcService.master?.fmgc.data.taxiFuelPilotEntry.set(v)
                   }
                   enteredByPilot={this.props.fmcService.master.fmgc.data.taxiFuelIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.taxiFuel}
-                  unitConversion={'unitWeightConversion'}
                   inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
@@ -337,9 +378,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">TRIP</div>
               <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
                 <span class="mfd-value">
-                  {this.tripFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
+                  {this.tripFuelWeight.map((it) =>
+                    this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                  )}
                 </span>
-                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.unit.map((v) => this.weightUnitFormatter(v))}
+                </span>
               </div>
               <div style="display: flex; justify-content: center; margin-bottom: 20px;">
                 <span class="mfd-value">{this.tripFuelTime.map((it) => new TimeHHMMFormat().format(it ?? 0))}</span>
@@ -416,13 +461,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel), this.unit)}
                   dataHandlerDuringValidation={async (v) =>
                     this.props.fmcService.master?.fmgc.data.alternateFuelPilotEntry.set(v)
                   }
                   enteredByPilot={this.props.fmcService.master.fmgc.data.alternateFuelIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.alternateFuel}
-                  unitConversion={'unitWeightConversion'}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -435,20 +479,25 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">TOW</div>
               <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                <span class="mfd-value">{this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                <span class="mfd-value">
+                  {this.takeoffWeight.map((it) =>
+                    this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                  )}
+                </span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.unit.map((v) => this.weightUnitFormatter(v))}
+                </span>
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel), this.unit)}
                   dataHandlerDuringValidation={async (v) => {
                     this.props.fmcService.master?.fmgc.data.finalFuelWeightPilotEntry.set(v);
                     this.props.fmcService.master?.fmgc.data.finalFuelTimePilotEntry.set(v ? v / 200 : null); // assuming 200kg fuel burn per minute FIXME
                   }}
                   enteredByPilot={this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.finalFuelWeight}
-                  unitConversion={'unitWeightConversion'}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -474,8 +523,14 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               </div>
               <div class="mfd-label mfd-spacing-right middleGrid">LW</div>
               <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                <span class="mfd-value">{this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                <span class="mfd-value">
+                  {this.landingWeight.map((it) =>
+                    this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                  )}
+                </span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.unit.map((v) => this.weightUnitFormatter(v))}
+                </span>
               </div>
             </div>
             <div style="flex: 1; display: flex; flex-direction: row; margin-top: 25px;">
@@ -490,9 +545,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destEta}</div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
                     <span class={{ 'mfd-value': true, amber: this.destEfobBelowMin }}>
-                      {NXUnits.kgToUser(this.destEfob)}
+                      {this.destEfob.map((it) =>
+                        this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                      )}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">
+                      {this.unit.map((v) => this.weightUnitFormatter(v))}
+                    </span>
                   </div>
                   <div class="mfd-label" style="text-align: center; align-self: center;">
                     ALTN
@@ -505,9 +564,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
                     <span class={{ 'mfd-value': true, amber: this.altnEfobBelowMin }}>
-                      {NXUnits.kgToUser(this.altnEfob)}
+                      {this.altnEfob.map((it) =>
+                        this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                      )}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">
+                      {this.unit.map((v) => this.weightUnitFormatter(v))}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -517,13 +580,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                   <InputField<number>
-                    dataEntryFormat={new WeightFormat()}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), this.unit)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.fmcService.master?.fmgc.data.minimumFuelAtDestinationPilotEntry.set(v)
                     }
                     enteredByPilot={this.props.fmcService.master.fmgc.data.minimumFuelAtDestinationIsPilotEntered}
                     value={this.props.fmcService.master.fmgc.data.minimumFuelAtDestination}
-                    unitConversion={'unitWeightConversion'}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -537,9 +599,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                   <div class="mfd-label-value-container" style="margin-right: 20px;">
                     <span class="mfd-value">
-                      {this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
+                      {this.extraFuelWeight.map((it) =>
+                        this.weightNumberFormatter(2, '---.-')(it.asUnit(this.unit.get()) / 1000),
+                      )}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userWeightUnitTons()}</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">
+                      {this.unit.map((v) => this.weightUnitFormatter(v))}
+                    </span>
                   </div>
                   <span class="mfd-value">{this.extraFuelTime.map((it) => new TimeHHMMFormat().format(it ?? 0))}</span>
                 </div>

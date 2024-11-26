@@ -1,11 +1,23 @@
-﻿import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+﻿import {
+  FSComponent,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  Unit,
+  UnitFamily,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}
 
@@ -14,7 +26,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
 
   private rwyIdent = Subject.create<string>('');
 
-  private rwyLength = Subject.create<string>('');
+  private rwyLength = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
 
   private rwyCrs = Subject.create<string>('');
 
@@ -40,43 +52,20 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
 
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
+  private unit = Subject.create<Unit<UnitFamily.Distance>>(
+    NXDataStore.get('CONFIG_USING_METRIC_UNIT') === '1' ? UnitType.METER : UnitType.FOOT,
+  );
+
   protected onNewData(): void {
     const isAltn = this.props.fmcService.master?.revisedWaypointIsAltn.get();
     const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan?.originAirport) {
-      this.fromIcao.set(flightPlan.originAirport.ident);
-
-      const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
-      const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
-        return {
-          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${NXUnits.mToUser(rw.length).toFixed(0).padStart(5, ' ')}${NXUnits.userDistanceUnit()} ${rw.lsIdent ? 'ILS' : ''}`,
-          action: async () => {
-            await this.props.fmcService.master?.flightPlanService.setOriginRunway(
-              rw.ident,
-              this.loadedFlightPlanIndex.get(),
-              isAltn ?? false,
-            );
-            await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
-              undefined,
-              this.loadedFlightPlanIndex.get(),
-              isAltn ?? false,
-            );
-            await this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
-              undefined,
-              this.loadedFlightPlanIndex.get(),
-              isAltn ?? false,
-            );
-          },
-        };
-      });
-      this.rwyOptions.set(runways);
+      this.GenerateRunwayOptions(flightPlan, isAltn);
 
       if (flightPlan.originRunway) {
         this.rwyIdent.set(flightPlan.originRunway.ident.substring(4));
-        this.rwyLength.set(
-          flightPlan.originRunway?.length ? NXUnits.mToUser(flightPlan.originRunway.length).toFixed(0) : '----',
-        );
+        this.rwyLength.set(Number(flightPlan.originRunway.length.toFixed(0)), UnitType.METER);
         this.rwyCrs.set(flightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
         this.rwyEoSid.set('NONE');
         this.rwyFreq.set(flightPlan.originRunway.lsFrequencyChannel?.toFixed(2) ?? '---.--');
@@ -122,7 +111,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         }
       } else {
         this.rwyIdent.set('---');
-        this.rwyLength.set('----');
+        this.rwyLength.set(NaN);
         this.rwyCrs.set('---');
         this.rwyEoSid.set('------');
         this.rwyFreq.set('---.--');
@@ -179,6 +168,49 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     }
   }
 
+  private GenerateRunwayOptions(
+    flightPlan: FlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
+    isAltn: boolean | null | undefined,
+  ) {
+    if (flightPlan.originAirport) {
+      this.fromIcao.set(flightPlan.originAirport.ident);
+
+      const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+      const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
+        return {
+          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.unit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.unit.get())} ${rw.lsIdent ? 'ILS' : ''}`,
+          action: async () => {
+            await this.props.fmcService.master?.flightPlanService.setOriginRunway(
+              rw.ident,
+              this.loadedFlightPlanIndex.get(),
+              isAltn ?? false,
+            );
+            await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
+              undefined,
+              this.loadedFlightPlanIndex.get(),
+              isAltn ?? false,
+            );
+            await this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
+              undefined,
+              this.loadedFlightPlanIndex.get(),
+              isAltn ?? false,
+            );
+          },
+        };
+      });
+      this.rwyOptions.set(runways);
+    }
+  }
+
+  private lengthNumberFormatter = NumberFormatter.create({
+    nanString: '----',
+    precision: 1,
+  });
+
+  private distanceUnitFormatter(unit: Unit<UnitFamily.Distance>) {
+    return unit === UnitType.METER ? 'M' : 'FT';
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -190,6 +222,17 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         }
       }, true),
     );
+
+    NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
+      value === '1' ? this.unit.set(UnitType.METER) : this.unit.set(UnitType.FOOT);
+
+      const isAltn = this.props.fmcService.master?.revisedWaypointIsAltn.get();
+      const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
+
+      if (flightPlan?.destinationAirport) {
+        this.GenerateRunwayOptions(flightPlan, isAltn);
+      }
+    });
   }
 
   render(): VNode {
@@ -234,9 +277,11 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {this.rwyLength}
+                  {this.rwyLength.asUnit(this.unit).map((v) => this.lengthNumberFormatter(v))}
                 </span>
-                <span class="mfd-label-unit mfd-unit-trailing">{NXUnits.userDistanceUnit()}</span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.unit.map((v) => this.distanceUnitFormatter(v))}
+                </span>
               </div>
             </div>
             <div class="fc" style="flex: 0.7;">

@@ -2,7 +2,17 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
-import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ClockEvents,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Unit,
+  UnitFamily,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
@@ -36,7 +46,7 @@ import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometr
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
-import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { ApproachType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
@@ -413,6 +423,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private missedEngineOutAccelAlt = Subject.create<number | null>(null);
 
   private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private unit = Subject.create<Unit<UnitFamily.Distance>>(
+    NXDataStore.get('CONFIG_USING_METRIC_UNIT') === '1' ? UnitType.METER : UnitType.FOOT,
+  );
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -969,6 +983,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
         }),
     );
+
+    NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
+      value === '1' ? this.unit.set(UnitType.METER) : this.unit.set(UnitType.FOOT);
+    });
   }
 
   render(): VNode {
@@ -1021,11 +1039,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                     <InputField<number>
-                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
+                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.unit)}
                       dataHandlerDuringValidation={async (v) =>
                         this.props.fmcService.master?.fmgc.data.takeoffShift.set(v)
                       }
-                      unitConversion={'unitWeightConversion'}
                       mandatory={Subject.create(false)}
                       inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                       value={this.toShift}
