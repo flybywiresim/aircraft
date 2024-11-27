@@ -4,6 +4,7 @@
 
 import {
   Clock,
+  ConsumerSubject,
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
@@ -29,8 +30,6 @@ import {
   a380EfisZoomRangeSettings,
   A380EfisZoomRangeValue,
   Oanc,
-  OANC_RENDER_HEIGHT,
-  OANC_RENDER_WIDTH,
   OansControlEvents,
   ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';
@@ -115,8 +114,6 @@ class NDInstrument implements FsInstrument {
 
   private readonly controlPanelVisible = Subject.create(false);
 
-  private readonly oansMessageScreenRef = FSComponent.createRef<HTMLDivElement>();
-
   private oansContextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
     {
       name: 'ADD CROSS',
@@ -184,11 +181,11 @@ class NDInstrument implements FsInstrument {
 
   private oansRef = FSComponent.createRef<Oanc<A380EfisZoomRangeValue>>();
 
-  private oansContainerRef = FSComponent.createRef<HTMLDivElement>();
-
-  private oansControlPanelContainerRef = FSComponent.createRef<HTMLDivElement>();
-
   private cursorVisible = Subject.create<boolean>(true);
+
+  private readonly oansNotAvailable = ConsumerSubject.create(null, true);
+
+  private readonly oansShown = Subject.create(false);
 
   constructor() {
     const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
@@ -252,23 +249,36 @@ class NDInstrument implements FsInstrument {
           failed={Subject.create(false)}
         >
           <div
-            ref={this.oansContainerRef}
             class="oanc-container"
-            style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}
+            style={{
+              display: this.oansShown.map((v) => (v ? 'block' : 'none')),
+            }}
           >
-            <div ref={this.oansMessageScreenRef} class="oanc-message-screen" style="visibility: hidden;">
-              PLEASE WAIT
+            {/* This flag is rendered by the CDS so it lives here instead of in the OANC */}
+            <div
+              class="oanc-flag-container amber FontLarge"
+              style={{
+                visibility: this.oansNotAvailable.map((v) => (v ? 'inherit' : 'hidden')),
+              }}
+            >
+              NOT AVAIL
             </div>
-            <Oanc
-              bus={this.bus}
-              side={this.efisSide}
-              ref={this.oansRef}
-              messageScreenRef={this.oansMessageScreenRef}
-              contextMenuVisible={this.contextMenuVisible}
-              contextMenuX={this.contextMenuX}
-              contextMenuY={this.contextMenuY}
-              zoomValues={a380EfisZoomRangeSettings}
-            />
+
+            <div
+              style={{
+                display: this.oansNotAvailable.map((v) => (v ? 'none' : 'block')),
+              }}
+            >
+              <Oanc
+                bus={this.bus}
+                side={this.efisSide}
+                ref={this.oansRef}
+                contextMenuVisible={this.contextMenuVisible}
+                contextMenuX={this.contextMenuX}
+                contextMenuY={this.contextMenuY}
+                zoomValues={a380EfisZoomRangeSettings}
+              />
+            </div>
           </div>
           <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a380EfisRangeSettings} />
           <ContextMenu
@@ -277,7 +287,11 @@ class NDInstrument implements FsInstrument {
             idPrefix="contextMenu"
             values={this.oansContextMenuItems}
           />
-          <div ref={this.oansControlPanelContainerRef}>
+          <div
+            style={{
+              display: this.oansShown.map((v) => (v ? 'block' : 'none')),
+            }}
+          >
             <OansControlPanel
               ref={this.controlPanelRef}
               bus={this.bus}
@@ -328,6 +342,8 @@ class NDInstrument implements FsInstrument {
 
     const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents>();
 
+    this.oansNotAvailable.setConsumer(sub.on('oansNotAvail'));
+
     sub
       .on('ndMode')
       .whenChanged()
@@ -346,16 +362,12 @@ class NDInstrument implements FsInstrument {
   }
 
   private updateNdOansVisibility() {
-    if (this.oansContainerRef.getOrDefault()) {
-      if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-        this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true);
-        this.oansContainerRef.instance.style.display = 'block';
-        this.oansControlPanelContainerRef.instance.style.display = 'block';
-      } else {
-        this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false);
-        this.oansContainerRef.instance.style.display = 'none';
-        this.oansControlPanelContainerRef.instance.style.display = 'none';
-      }
+    if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
+      this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true);
+      this.oansShown.set(true);
+    } else {
+      this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false);
+      this.oansShown.set(false);
     }
   }
 

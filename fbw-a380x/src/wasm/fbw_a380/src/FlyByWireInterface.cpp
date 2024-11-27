@@ -1797,11 +1797,16 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.yaw_damper_has_hyd_press =
       facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
 
+  double spoilersLeftMaxDeflection =
+      std::max({idLeftSpoilerPosition[5]->get(), idLeftSpoilerPosition[6]->get(), idLeftSpoilerPosition[7]->get()});
+  double spoilersRightMaxDeflection =
+      std::max({idRightSpoilerPosition[5]->get(), idRightSpoilerPosition[6]->get(), idRightSpoilerPosition[7]->get()});
+
   facs[facIndex].modelInputs.in.analog_inputs.yaw_damper_position_deg = 0;
   facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = idRudderTrimActualPosition->get();
   facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = rudderTravelLimiterPosition;
-  facs[facIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * idLeftSpoilerPosition[5]->get();
-  facs[facIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * idRightSpoilerPosition[5]->get();
+  facs[facIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * spoilersLeftMaxDeflection;
+  facs[facIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * spoilersRightMaxDeflection;
 
   facs[facIndex].modelInputs.in.bus_inputs.fac_opp_bus = facsBusOutputs[oppFacIndex];
   facs[facIndex].modelInputs.in.bus_inputs.adr_own_bus = facIndex == 0 ? adrBusOutputs[0] : adrBusOutputs[1];

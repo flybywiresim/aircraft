@@ -6914,7 +6914,7 @@ mod tests {
             }
 
             fn external_power(mut self, is_connected: bool) -> Self {
-                self.write_by_name("EXTERNAL POWER AVAILABLE:1", is_connected);
+                self.write_by_name("EXT_PWR_AVAIL:1", is_connected);
 
                 if is_connected {
                     self = self.on_the_ground();
