@@ -234,7 +234,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE) 1 ==</Condition>
             <Action>1 (&gt;L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE)</Action>
         </Step>
-
         <Step Name="RMP 1 VHF 1 TX On" Type="STEP" Delay="500">
             <Condition>(L:A380X_RMP_1_VHF_TX_1) 1 ==</Condition>
             <Action>1 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
@@ -265,7 +264,24 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
         </Step>
-            <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
+
+        <Step Name="RMP 3 VHF 1 TX Off" Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_3_VHF_TX_1) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_RMP_3_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 TX Off" Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_2_VHF_TX_1) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_RMP_2_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 1 TX Off" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_TX_1) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="NSS DATA TO AVNCS Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE)</Action>
+        </Step>
+        <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
@@ -428,11 +444,9 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !</Condition>
         </Step>
         <Step Name="ENG 1 Fire Test Reset" Type="STEP" Delay="0">
-
             <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
         </Step>
         <Step Name="FWC Init Reset" Type="STEP" Delay="0">
-
             <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)</Action>
         </Step>
     </Procedure>
@@ -585,25 +599,13 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(A:LIGHT TAXI, Number) 1 ==</Condition>
             <Action>1 (&gt;K:TAXI_LIGHTS_ON)</Action>
         </Step>
+        <Step Name="RWY TURN OFF Lt On" Type="STEP" Delay="200">
+            <Condition>(A:LIGHT TAXI:2, Number) 1 ==</Condition>
+            <Action>2 (&gt;K:TAXI_LIGHTS_ON)</Action>
+        </Step>
         <Step Name="RWY TURN OFF Lt On" Type="STEP" Delay="1000">
-            <Condition>(A:LIGHT TAXI:2, Number) 1 == (A:LIGHT TAXI:3, Number) 1 == &amp;&amp;</Condition>
-            <Action>2 (&gt;K:TAXI_LIGHTS_ON) 3 (&gt;K:TAXI_LIGHTS_ON)</Action>
-        </Step>
-        <Step Name="PWS Auto" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_SWITCH_RADAR_PWS_POSITION)</Action>
-        </Step>
-        <Step Name="Transponder On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_TRANSPONDER_MODE) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
-        </Step>
-        <Step Name="ATC ALT RPTG On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_ATC_ALT) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_SWITCH_ATC_ALT)</Action>
-        </Step>
-        <Step Name="TCAS TRAFFIC Abv" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
+            <Condition>(A:LIGHT TAXI:3, Number) 1 == &amp;&amp;</Condition>
+            <Action>3 (&gt;K:TAXI_LIGHTS_ON)</Action>
         </Step>
         <Step Name="Autobrake RTO" Type="STEP" Delay="200">
             <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==</Condition>
@@ -653,21 +655,9 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
         </Step>
-        <Step Name="TCAS TRAFFIC Abv" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
-        </Step>
-        <Step Name="ATC ALT RPTG Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_ATC_ALT) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_SWITCH_ATC_ALT)</Action>
-        </Step>
         <Step Name="Transponder Off" Type="STEP" Delay="1000">
             <Condition>(L:A32NX_TRANSPONDER_MODE) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
-        </Step>
-        <Step Name="PWS Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_RADAR_PWS_POSITION) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_SWITCH_RADAR_PWS_POSITION)</Action>
         </Step>
         <Step Name="RWY TURN OFF Lt Off" Type="STEP" Delay="2000">
             <Condition>(A:LIGHT TAXI:2, Number) 0 == (A:LIGHT TAXI:3, Number) 0 == &amp;&amp;</Condition>
@@ -741,10 +731,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!--  =========================================================  -->
     <Procedure Name="TAKEOFF_CONFIG_ON">
         <!-- SOP: TAXI -->
-        <Step Name="TCAS Switch TA/RA" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_SWITCH_TCAS_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
-        </Step>
         <Step Name="Strobe On" Type="STEP" Delay="1000">
             <Condition>(L:LIGHTING_STROBE_0) 0 ==</Condition>
             <Action>0 (&gt;L:LIGHTING_STROBE_0)</Action>
@@ -783,9 +769,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:LIGHTING_STROBE_0) 1 ==</Condition>
             <Action>1 (&gt;L:LIGHTING_STROBE_0)</Action>
         </Step>
-        <Step Name="TCAS Switch TA/RA" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_TCAS_POSITION) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
-        </Step>
     </Procedure>
-        </AircraftPresetProcedures>
+
+</AircraftPresetProcedures>
