@@ -24,7 +24,6 @@ export class FCUComponent extends DisplayComponent<FCUProps> {
   private readonly fcuHealthy = ConsumerSubject.create(this.sub.on('fcuHealthy'), false);
 
   private readonly isBacklightPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_1_bus_is_powered'), false);
-  private readonly isLcdPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_1_bus_is_powered'), false);
 
   render(): VNode {
     return (
@@ -39,13 +38,13 @@ export class FCUComponent extends DisplayComponent<FCUProps> {
         <svg
           class={{
             'fcu-svg': true,
-            Hide: this.isLcdPowered.map(SubscribableMapFunctions.not()),
+            Hide: this.fcuHealthy.map(SubscribableMapFunctions.not()),
           }}
           version="1.1"
           viewBox="0 0 1280 640"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g class={{ Hide: this.fcuHealthy.map(SubscribableMapFunctions.not()) }}>
+          <g>
             <AfsDisplay bus={this.props.bus} />
             <EisDisplay isCaptSide x={0} y={438} bus={this.props.bus} />
             <EisDisplay isCaptSide={false} x={920} y={438} bus={this.props.bus} />
