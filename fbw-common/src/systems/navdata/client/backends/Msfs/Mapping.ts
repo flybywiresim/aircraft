@@ -1449,7 +1449,12 @@ export class MsfsMapping {
       // eslint-disable-next-line prefer-destructuring
       let nextIcao: string | undefined = route.nextIcao;
 
+      let iterationCount = 0;
+
       while (previousIcao?.trim() || nextIcao?.trim()) {
+        if (++iterationCount > 250) {
+          throw new Error(`(getAirways) Too many iterations while getting airways: ${previousIcao} ${nextIcao}`);
+        }
         if (previousIcao?.trim()) {
           const fac: JS_FacilityIntersection | undefined = await this.cache.getFacility(
             previousIcao,
