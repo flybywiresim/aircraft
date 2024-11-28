@@ -5,6 +5,7 @@
 #define FLYBYWIRE_AIRCRAFT_PRESET_PROCEDURES
 
 #include <algorithm>
+#include <fstream>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -104,6 +105,8 @@ class PresetProcedures {
     if (presetProceduresXML.Error()) {
       LOG_ERROR(fmt::format("AircraftPresets: XML config \"{}\" parsed with errors. Error description: {}", filePath,
                             presetProceduresXML.ErrorStr()));
+      LOG_ERROR("AircraftPresets: XML config:");
+      printFileWithLineNumbers(filePath);
       return false;
     }
     LOG_INFO(fmt::format("AircraftPresets: XML config \"{}\" parsed without errors.", filePath));
@@ -219,6 +222,25 @@ class PresetProcedures {
           back_inserter(dest),                        //
           [](auto& procedure) { return &procedure; }  //
       );                                              //
+    }
+  }
+
+  /**
+   * @brief Print the file with line numbers for debugging purposes
+   * @param filePath the path to the file to print
+   */
+  void printFileWithLineNumbers(const std::string& filePath) {
+    std::ifstream fileStream(filePath);
+    if (!fileStream.is_open()) {
+      std::cerr << "Failed to open file: " << filePath << std::endl;
+      return;
+    }
+
+    std::string line;
+    int         lineNumber = 1;
+    while (std::getline(fileStream, line)) {
+      std::cerr << lineNumber << ": " << line << std::endl;
+      ++lineNumber;
     }
   }
 };
