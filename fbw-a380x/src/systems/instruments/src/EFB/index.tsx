@@ -9,6 +9,7 @@ import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a380xSyncedSettings } from 'instruments/src/EFB/settingsSync';
 
 import './Efb.scss';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 function aircraftEfbSetup(): void {
   syncSettingsFromPersistentStorage(a380xSyncedSettings);
@@ -73,6 +74,6 @@ render(
       },
     }}
   >
-    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} />
+    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />
   </AircraftContext.Provider>,
 );

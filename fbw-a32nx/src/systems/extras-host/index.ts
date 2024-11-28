@@ -7,8 +7,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { FlightDeckBounds, NotificationManager, PilotSeatManager } from '@flybywiresim/fbw-sdk';
-import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
+import {
+  ExtrasSimVarPublisher,
+  FlightDeckBounds,
+  GPUManagement,
+  GroundSupportPublisher,
+  MsfsElectricsPublisher,
+  MsfsFlightModelPublisher,
+  MsfsMiscPublisher,
+  NotificationManager,
+  PilotSeatManager,
+} from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
@@ -58,6 +67,14 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly simVarPublisher: ExtrasSimVarPublisher;
 
+  private readonly msfsElectricsPublisher: MsfsElectricsPublisher;
+
+  private readonly msfsFlightModelPublisher: MsfsFlightModelPublisher;
+
+  private readonly msfsMiscPublisher: MsfsMiscPublisher;
+
+  private readonly groundSupportPublisher: GroundSupportPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
@@ -71,6 +88,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   public readonly xmlConfig: Document;
+  /**interactionpoint 8 is GPU connection and 1 GPU in total */
+  private readonly gpuManagement = new GPUManagement(this.bus, 8, 1);
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
 
@@ -85,9 +104,12 @@ class ExtrasHost extends BaseInstrument {
   constructor() {
     super();
 
-    this.bus = new EventBus();
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
+    this.msfsElectricsPublisher = new MsfsElectricsPublisher(this.bus);
+    this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
+    this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
+    this.groundSupportPublisher = new GroundSupportPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
@@ -98,8 +120,15 @@ class ExtrasHost extends BaseInstrument {
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
-    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
+    this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
+    this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
+    this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+    this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
+    this.backplane.addInstrument('GPUManagement', this.gpuManagement);
+    this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('LightSync', this.lightSync);
 
     console.log('A32NX_EXTRASHOST: Created');
@@ -143,13 +172,10 @@ class ExtrasHost extends BaseInstrument {
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
-        this.simVarPublisher.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
       }
       this.gameState = gs;
-    } else {
-      this.simVarPublisher.onUpdate();
     }
 
     this.versionCheck.update();

@@ -2792,8 +2792,8 @@ export class FwsCore {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
     }
 
-    let cpcsDiscreteWordToUse;
-    let cpcsToUseId;
+    let cpcsDiscreteWordToUse: Arinc429Register;
+    let cpcsToUseId: number;
 
     if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
       cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
@@ -2932,10 +2932,10 @@ export class FwsCore {
     const outflowValve3OpenAmount = Arinc429Register.empty();
     const outflowValve4OpenAmount = Arinc429Register.empty();
 
-    outflowValve1OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve2OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve3OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve4OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
 
     this.allOutflowValvesOpen.set(
       outflowValve1OpenAmount.value > 99 &&
