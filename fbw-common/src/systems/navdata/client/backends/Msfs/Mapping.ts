@@ -71,6 +71,7 @@ import {
   VorType,
   LandingSystemCategory,
   SpeedRestrictionDescriptor,
+  JS_ICAO,
 } from './FsTypes';
 import { FacilityCache, LoadType } from './FacilityCache';
 import { Gate } from '../../../shared/types/Gate';
@@ -810,6 +811,71 @@ export class MsfsMapping {
         location,
       };
     });
+  }
+
+  public static mapIcaoStructToIcao(icaoStruct: JS_ICAO): string {
+    return `${icaoStruct.type}${icaoStruct.region.padEnd(2)}${icaoStruct.airport.padEnd(4)}${icaoStruct.ident.padEnd(5)}`;
+  }
+
+  public async mapHolds(msAirport: JS_FacilityAirport): Promise<ProcedureLeg[]> {
+    // FIXME cache
+    const ret: ProcedureLeg[] = [];
+    // Not in MSFS2020
+    if (msAirport.holdingPatterns) {
+      for (const hold of msAirport.holdingPatterns) {
+        const rawFix = await this.cache.getFacility(
+          MsfsMapping.mapIcaoStructToIcao(hold.icaoStruct),
+          LoadType.Intersection,
+        );
+        if (!rawFix) {
+          console.warn('Failed to load fix for hold', hold);
+          continue;
+        }
+        const waypoint = this.mapFacilityToWaypoint(rawFix);
+
+        let altitudeDescriptor: ProcedureLeg['altitudeDescriptor'] = undefined;
+        let altitude1: ProcedureLeg['altitude1'] = undefined;
+        let altitude2: ProcedureLeg['altitude1'] = undefined;
+        switch (true) {
+          case hold.minAltitude > 0 && hold.maxAltitude > 0:
+            altitudeDescriptor = AltitudeDescriptor.BetweenAlt1Alt2;
+            altitude1 = hold.maxAltitude;
+            altitude2 = hold.minAltitude;
+            break;
+          case hold.minAltitude > 0:
+            altitudeDescriptor = AltitudeDescriptor.AtOrAboveAlt1;
+            altitude1 = hold.minAltitude;
+            break;
+          case hold.maxAltitude > 0:
+            altitudeDescriptor = AltitudeDescriptor.AtOrBelowAlt1;
+            altitude1 = hold.maxAltitude;
+            break;
+        }
+
+        const speedDescriptor: ProcedureLeg['speedDescriptor'] = hold.speed > 0 ? SpeedDescriptor.Maximum : undefined;
+        const speed: ProcedureLeg['speed'] = hold.speed > 0 ? hold.speed : undefined;
+
+        ret.push({
+          type: LegType.HM,
+          procedureIdent: hold.name,
+          overfly: true,
+          waypoint,
+          arcRadius: hold.radius > 0 ? hold.radius / 1852 : undefined,
+          length: hold.legLength > 0 ? hold.legLength / 1852 : undefined,
+          lengthTime: hold.legTime,
+          rnp: hold.rnp > 0 ? hold.rnp / 1852 : undefined,
+          altitudeDescriptor,
+          altitude1,
+          altitude2,
+          speedDescriptor,
+          speed,
+          turnDirection: hold.turnRight ? TurnDirection.Right : TurnDirection.Left,
+          magneticCourse: hold.inboundCourse,
+        });
+      }
+    }
+
+    return ret;
   }
 
   private async loadFacilitiesFromProcedures(procedures: JS_Procedure[]): Promise<Map<string, JS_Facility>> {
