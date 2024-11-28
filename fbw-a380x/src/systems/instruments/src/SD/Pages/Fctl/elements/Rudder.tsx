@@ -23,9 +23,6 @@ export const Rudder: FC<RudderProps> = ({ x, y, position, onGround }) => {
     100,
   );
 
-  const powerSource1Avail = true;
-  const powerSource2Avail = true;
-
   const [hydGreenAvailable]: [boolean, (v: boolean) => void] = useSimVar(
     `L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH`,
     'boolean',
@@ -51,6 +48,15 @@ export const Rudder: FC<RudderProps> = ({ x, y, position, onGround }) => {
     'boolean',
     1000,
   );
+
+  const powerSource1Avail =
+    position === RudderPosition.Upper
+      ? elecAcEssAvailable || hydYellowAvailable
+      : elecAcEssAvailable || hydGreenAvailable;
+  const powerSource2Avail =
+    position === RudderPosition.Upper
+      ? elecAcEhaAvailable || hydGreenAvailable
+      : elecAc1Available || hydYellowAvailable;
 
   return (
     <g id={`rudder-${position}`} transform={`translate(${x} ${y})`}>
