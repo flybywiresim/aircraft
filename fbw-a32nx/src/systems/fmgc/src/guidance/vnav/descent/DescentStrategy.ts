@@ -216,7 +216,9 @@ export class IdleDescentStrategy implements DescentStrategy {
 
     const midwayAltitude = (initialAltitude + finalAltitude) / 2;
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed), mach);
-    const predictedN1 = EngineModel.getIdleN1(midwayAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
+    const predictedN1 =
+      EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, midwayAltitude, computedMach, tropoPause) +
+      VnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.altitudeStep(
       this.acConfig,
@@ -250,7 +252,9 @@ export class IdleDescentStrategy implements DescentStrategy {
     const { flapConfig, gearExtended, speedbrakesExtended } = { ...this.defaultConfig, ...config };
 
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
-    const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
+    const predictedN1 =
+      EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
+      VnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.distanceStep(
       this.acConfig,
@@ -284,7 +288,9 @@ export class IdleDescentStrategy implements DescentStrategy {
     const { flapConfig, gearExtended, speedbrakesExtended } = { ...this.defaultConfig, ...config };
 
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
-    const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
+    const predictedN1 =
+      EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
+      VnavConfig.IDLE_N1_MARGIN;
 
     const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const finalMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, finalSpeed), mach);

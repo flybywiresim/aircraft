@@ -37,6 +37,8 @@
 1. [A380X/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
 1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
+1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 1. [A380X/FADEC] Add N1 fan protection measures (METOTS, KOZ) - @flogross89 (floridude)
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
@@ -79,6 +81,9 @@
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
+1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
+1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENGINES] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
