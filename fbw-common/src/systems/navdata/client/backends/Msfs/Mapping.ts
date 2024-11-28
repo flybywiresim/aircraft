@@ -1140,6 +1140,7 @@ export class MsfsMapping {
           ident: runwayIdent,
           location: runway.thresholdLocation,
           area: WaypointArea.Terminal,
+          airportIdent,
         };
       }
     }
@@ -1205,8 +1206,9 @@ export class MsfsMapping {
   }
 
   public mapFacilityToWaypoint<T extends JS_Facility>(facility: T): FacilityType<T> {
+    const airportIdent = facility.icao.substring(3, 7).trim();
     // TODO this is a hack
-    const isTerminalVsEnroute = facility.icao.substring(3, 7).trim().length > 0;
+    const isTerminalVsEnroute = airportIdent.length > 0;
 
     const databaseItem = {
       databaseId: facility.icao,
@@ -1215,6 +1217,7 @@ export class MsfsMapping {
       name: Utils.Translate(facility.name),
       location: { lat: facility.lat, long: facility.lon },
       area: isTerminalVsEnroute ? WaypointArea.Terminal : WaypointArea.Enroute,
+      airportIdent: isTerminalVsEnroute ? airportIdent : undefined,
     };
 
     // TODO: VORs are also stored as intersections in the database. In this case, their ICAO starts with "V" but they are of type
