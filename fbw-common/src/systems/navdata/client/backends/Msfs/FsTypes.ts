@@ -102,6 +102,8 @@ export interface JS_FacilityAirport {
   gates: JS_Gate[];
   /** the MSFS database identifier, not 4 letter icao code! */
   icao: string;
+  /** The MSFS database identifier in object form; MSFS2024 only. */
+  icaoStruct?: JS_ICAO;
   /** airport reference point latitude */
   lat: number;
   /** airport reference point longitude */
