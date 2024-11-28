@@ -2217,7 +2217,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
         std::cout << "WASM: event triggered: AUTOPILOT_DISENGAGE_SET" << std::endl;
 
         // Re emitting masked event for autopilot disconnection
-        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_AUTOPILOT_DISENGAGE);
+        this->sendEvent(SimConnectInterface::Events::A32NX_AUTOPILOT_DISENGAGE);
       }
       break;
     }

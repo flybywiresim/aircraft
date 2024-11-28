@@ -33,7 +33,7 @@ export class EisDisplay extends DisplayComponent<EisDisplayProps> {
       } else if (baroValueMode === 0) {
         return 'Std';
       } else if (baroValueMode === 1) {
-        return Math.round(baroValue).toString();
+        return Math.round(baroValue).toString().padStart(4, '0');
       } else {
         return baroValue.toFixed(2);
       }

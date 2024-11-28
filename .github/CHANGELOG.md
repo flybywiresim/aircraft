@@ -75,6 +75,7 @@
 1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
 1. [A380X/FWS] Improve landing capability downgrade triple click logic (#9008) - @flogross89 (floridude)
 1. [A32NX/FWS] Add "auto brake off" callout, improve AP/ATHR disconnect aural alert logic - @flogross89 (floridude)
+1. [A32NX/FCU] The FCU LCD is now still visible with ambient light when the backlight is off @tracernz (Mike)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
