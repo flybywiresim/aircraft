@@ -50,7 +50,7 @@ const DELAY_REFUEL_RESTART = 2000;
 const DELAY_RATE_RESTORE = DELAY_REFUEL_RESTART + 1000;
 const DELAY_FUEL_START = 500;
 const DEFUEL_DIFF_TARGET_A320 = 125;
-const DEFUEL_DIFF_TARGET_A380 = 5000;
+const DEFUEL_DIFF_TARGET_A380 = 250;
 
 abstract class GsxSync implements Instrument {
   protected readonly sub = this.bus.getSubscriber<GroundSupportEvents & GsxSimVarEvents & MsfsFlightModelEvents>();
@@ -102,7 +102,7 @@ abstract class GsxSync implements Instrument {
     //   this.stateRefuel.sub(this.onRefuelState.bind(this));
     this.refuelStartedByUser.sub(this.onRefuelStartedByUser.bind(this));
 
-    this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
+    //this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));

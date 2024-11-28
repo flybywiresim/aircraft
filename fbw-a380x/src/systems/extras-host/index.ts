@@ -72,6 +72,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly groundSupportPublisher: GroundSupportPublisher;
 
+  private readonly gsxSimVarPublusher: GsxSimVarPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
@@ -107,6 +109,7 @@ class ExtrasHost extends BaseInstrument {
     this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
     this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
     this.groundSupportPublisher = new GroundSupportPublisher(this.bus);
+    this.gsxSimVarPublusher = new GsxSimVarPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
@@ -120,6 +123,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+    this.backplane.addPublisher('GsxSimVarPublisher', this.gsxSimVarPublusher);
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
