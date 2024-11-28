@@ -79,9 +79,9 @@
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
+1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
 1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
 1. [EFB] Fuel Page: Added Total and ETA for A380, Improved State Label on both Aircraft - @Fragtality (Fragtality)
-1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
 
 ## 0.12.0
 
