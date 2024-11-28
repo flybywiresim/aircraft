@@ -495,8 +495,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
 
-    this.textInputRef.instance.addEventListener('keypress', this.onKeyPressHandler);
-    this.textInputRef.instance.addEventListener('keydown', this.onKeyDownHandler);
+    if (this.props.dataEntryFormat.unitFamily) {
+      this.subs.push(this.props.dataEntryFormat.unitFamily.sub(() => this.updateDisplayElement()));
+    }
+
+    this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
+    this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
 
     if (!this.props.handleFocusBlurExternally) {
       this.textInputRef.instance.addEventListener('focus', this.onFocusHandler);

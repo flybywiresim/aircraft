@@ -11,6 +11,9 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  Unit,
+  UnitFamily,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -55,6 +58,7 @@ import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
 import { OansControlEvents } from '../OANC';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -150,6 +154,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private showOans = Subject.create<boolean>(false);
 
+  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -226,6 +232,14 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
       .on('ndShowOans')
       .whenChanged()
       .handle((show) => this.showOans.set(show));
+
+    NXDataStore.getAndSubscribe(
+      'CONFIG_USING_METRIC_UNIT',
+      (key, value) => {
+        this.lengthUnit.set(value === '0' ? UnitType.FOOT : UnitType.METER);
+      },
+      '1',
+    );
   }
 
   // eslint-disable-next-line arrow-body-style
@@ -354,7 +368,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-              <BtvRunwayInfo bus={this.props.bus} />
+              <BtvRunwayInfo bus={this.props.bus} lengthUnit={this.lengthUnit} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>
