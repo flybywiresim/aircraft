@@ -608,12 +608,12 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>3 (&gt;K:TAXI_LIGHTS_ON)</Action>
         </Step>
         <Step Name="Autobrake RTO" Type="STEP" Delay="200">
-            <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==</Condition>
+            <Condition>(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==</Condition>
             <Action>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
         </Step>
         <Step Name="TERR ON ND Capt. On" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
+            <Condition>(L:A380X_EFIS_L_ACTIVE_OVERLAY) 2 ==</Condition>
+            <Action>2 (&gt;L:A380X_EFIS_L_ACTIVE_OVERLAY)</Action>
         </Step>
 
         <Step Name="Await Flaps 1+F" Type="COND" Delay="1000">
@@ -644,12 +644,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!--  =========================================================  -->
     <Procedure Name="TAXI_CONFIG_OFF">
         <Step Name="TERR ON ND Capt. Off" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
-        </Step>
-        <Step Name="Autobrake RTO Off" Type="STEP" Delay="200">
-            <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 0 ==</Condition>
-            <Action>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
+            <Condition>(L:A380X_EFIS_L_ACTIVE_OVERLAY) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_EFIS_L_ACTIVE_OVERLAY)</Action>
         </Step>
         <Step Name="Autobrake RTO Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==</Condition>
@@ -659,9 +655,13 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A32NX_TRANSPONDER_MODE) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
         </Step>
+        <Step Name="RWY TURN OFF Lt Off" Type="STEP" Delay="200">
+            <Condition>(A:LIGHT TAXI:2, Number) 0 ==</Condition>
+            <Action>2 (&gt;K:TAXI_LIGHTS_OFF)</Action>
+        </Step>
         <Step Name="RWY TURN OFF Lt Off" Type="STEP" Delay="2000">
-            <Condition>(A:LIGHT TAXI:2, Number) 0 == (A:LIGHT TAXI:3, Number) 0 == &amp;&amp;</Condition>
-            <Action>2 (&gt;K:TAXI_LIGHTS_OFF) 3 (&gt;K:TAXI_LIGHTS_OFF)</Action>
+            <Condition>(A:LIGHT TAXI:3, Number) 0 ==</Condition>
+            <Action>3 (&gt;K:TAXI_LIGHTS_OFF)</Action>
         </Step>
         <Step Name="NOSE Lt Taxi" Type="STEP" Delay="1000">
             <Condition>(A:LIGHT TAXI, Number) 0 ==</Condition>
@@ -772,3 +772,44 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     </Procedure>
 
 </AircraftPresetProcedures>
+
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
+        <!-- test -->
