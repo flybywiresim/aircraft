@@ -497,10 +497,12 @@ export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentP
         y: this.props.y + valueMaxDir.y * this.props.radius,
       };
 
+      const diffAngle = valueMaxDir.angle - valueIdleDir.angle;
+
       return [
-        `M ${this.props.x},${this.props.y} L ${valueIdleEnd.x},${valueIdleEnd.y}`,
-        `A ${this.props.radius} ${this.props.radius} 0 ${this.props.reverse ? '0' : '1'} 1 ${valueMaxEnd.x} ${valueMaxEnd.y}`,
-        `M ${valueMaxEnd.x} ${valueMaxEnd.y} L ${this.props.x},${this.props.y}`,
+        `M ${this.props.x},${this.props.y} L ${valueIdleEnd.x.toFixed(2)},${valueIdleEnd.y.toFixed(2)}`,
+        `A ${this.props.radius} ${this.props.radius} 0 ${Math.abs(diffAngle) < 180 || this.props.reverse ? '0' : '1'} 1 ${valueMaxEnd.x.toFixed(2)} ${valueMaxEnd.y.toFixed(2)}`,
+        `M ${valueMaxEnd.x.toFixed(2)} ${valueMaxEnd.y.toFixed(2)} L ${this.props.x},${this.props.y}`,
       ].join(' ');
     },
     this.valueIdleSub,
