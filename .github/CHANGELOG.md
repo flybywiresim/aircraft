@@ -72,6 +72,7 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
+1. [A32NX/FCU] The FCU LCD is now still visible with ambient light when the backlight is off @tracernz (Mike)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
@@ -80,6 +81,7 @@
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
 1. [EFB] Fuel Page: Added Total and ETA for A380, Improved State Label on both Aircraft - @Fragtality (Fragtality)
+1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
 
 ## 0.12.0
 
