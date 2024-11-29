@@ -684,10 +684,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         const thresholdFeature = this.data.features.filter(
           (it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text,
         );
-        // Handle single-digit runway identifiers: Pad with 0
-        const paddedRunwayQfu = label.text.replace(/[^0-9]/g, '').length < 2 ? `0${label.text}` : label.text;
         this.btvUtils.selectRunwayFromOans(
-          `${this.dataAirportIcao.get()}${paddedRunwayQfu}`,
+          `${this.dataAirportIcao.get()}${label.text}`,
           label.associatedFeature,
           thresholdFeature[0],
         );
