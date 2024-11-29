@@ -575,7 +575,29 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     );
 
     const features = Object.values(data).reduce(
-      (acc, it) => [...acc, ...it.features],
+      (acc, it) => {
+        const features = it.features.map((f) => {
+          // FeatureCollection
+          if (f.properties.idthr || f.properties.idrwy) {
+            const nf = Object.assign({}, f);
+            if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
+              nf.properties.idthr = `0${nf.properties.idthr}`;
+            }
+
+            if (nf.properties.idrwy) {
+              nf.properties.idrwy = nf.properties.idrwy
+                .split('.')
+                .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
+                .join('.');
+            }
+
+            return nf;
+          }
+          return f;
+        });
+
+        return [...acc, ...features];
+      },
       [] as Feature<Geometry, AmdbProperties>[],
     );
     const airportMap: AmdbFeatureCollection = featureCollection(features);
