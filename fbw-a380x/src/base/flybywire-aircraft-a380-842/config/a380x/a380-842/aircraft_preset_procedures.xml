@@ -230,10 +230,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
-        <Step Name="NSS DATA TO AVNCS ON" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE)</Action>
-        </Step>
         <Step Name="RMP 1 VHF 1 TX On" Type="STEP" Delay="500">
             <Condition>(L:A380X_RMP_1_VHF_TX_1) 1 ==</Condition>
             <Action>1 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
