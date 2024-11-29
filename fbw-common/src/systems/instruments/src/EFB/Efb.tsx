@@ -4,17 +4,17 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
   ChecklistJsonDefinition,
+  ChecklistProvider,
   FailureDefinition,
-  UniversalConfigProvider,
   NXDataStore,
   SENTRY_CONSENT_KEY,
   SentryConsentState,
+  UniversalConfigProvider,
   useInteractionEvent,
   useInterval,
   usePersistentNumberProperty,
   usePersistentProperty,
   useSimVar,
-  ChecklistProvider,
 } from '@flybywiresim/fbw-sdk';
 
 import { Provider } from 'react-redux';
@@ -52,7 +52,7 @@ import { Presets } from './Presets/Presets';
 import { clearEfbState, store, useAppDispatch, useAppSelector } from './Store/store';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
-import { setAircraftChecklists, addTrackingChecklists } from './Store/features/checklists';
+import { addTrackingChecklists, setAircraftChecklists } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 // './Assets/Efb.scss' is imported by the aircraft EFB instrument the wraps this file
@@ -399,6 +399,23 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
     }
   }, [nwStrgDisc]);
 
+  // Check if the aircraft is on the ground, tug not attached and stationary if not close all doors
+  const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
+  const [aircraftIsStationary] = useSimVar('L:A32NX_IS_STATIONARY', 'bool', 250);
+  const [pushBackAttached] = useSimVar('Pushback Attached', 'enum', 250);
+  const closedDoorsState = !simOnGround || !aircraftIsStationary || pushBackAttached;
+  const numberOfInteractivePoints = 20; // 19 is the highest used door index
+  useEffect(() => {
+    if (closedDoorsState) {
+      console.log('Closing all doors due to tug, aircraft movement or aircraft not on ground');
+      for (let i = 0; i <= numberOfInteractivePoints; i++) {
+        const doorOpen = SimVar.GetSimVarValue(`A:INTERACTIVE POINT OPEN:${i}`, 'percent over 100');
+        if (doorOpen >= 0.99) {
+          SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', i + 1);
+        }
+      }
+    }
+  }, [closedDoorsState]);
   // </Pushback>
   // =========================================================================
 
