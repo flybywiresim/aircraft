@@ -400,11 +400,13 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
   }, [nwStrgDisc]);
 
   // Check if the aircraft is on the ground, tug not attached and stationary if not close all doors
+  // This uses all available interactive point indices to close all doors - on the A80X there are 20 doors.
+  // Triggering an interaction point that is not defined is ignored therefore we can also use this for the A32NX.
   const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
   const [aircraftIsStationary] = useSimVar('L:A32NX_IS_STATIONARY', 'bool', 250);
   const [pushBackAttached] = useSimVar('Pushback Attached', 'enum', 250);
   const closedDoorsState = !simOnGround || !aircraftIsStationary || pushBackAttached;
-  const numberOfInteractivePoints = 20; // 19 is the highest used door index
+  const numberOfInteractivePoints = 20;
   useEffect(() => {
     if (closedDoorsState) {
       console.log('Closing all doors due to tug, aircraft movement or aircraft not on ground');
