@@ -385,7 +385,7 @@ pub(super) struct A380AirConditioningSystem {
 }
 
 impl A380AirConditioningSystem {
-    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 550.; // litres/sec
+    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 1250.; // litres/sec
 
     fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
@@ -1109,6 +1109,7 @@ impl PressurizationConstants for A380PressurizationConstants {
     const OUTFLOW_VALVE_SIZE: f64 = 0.28; // m2 This is total opening area (4 OFV)
     const SAFETY_VALVE_SIZE: f64 = 0.1; // m2
     const DOOR_OPENING_AREA: f64 = 1.5; // m2
+    const HULL_BREACH_AREA: f64 = 0.2; // m2
 
     const MAX_CLIMB_RATE: f64 = 1000.; // fpm
     const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm

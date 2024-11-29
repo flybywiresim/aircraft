@@ -71,15 +71,15 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     true,
   );
 
-  clickHandler(i: number, thisArg: DropdownMenu) {
+  private onClick(i: number) {
     if (!this.props.inactive?.get()) {
       this.freeTextEntered = false;
-      if (thisArg.props.onModified) {
-        thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
+      if (this.props.onModified) {
+        this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
       } else {
-        thisArg.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
+        this.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
       }
-      thisArg.dropdownIsOpened.set(false);
+      this.dropdownIsOpened.set(false);
       this.filterList('');
     }
   }
@@ -102,7 +102,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private filterList(text: string) {
     const arr = this.props.values.getArray();
-    this.renderedDropdownOptionsIndices = arr.map((val, idx) => idx).filter((val, idx) => arr[idx].startsWith(text));
+    this.renderedDropdownOptionsIndices = arr.map((val, idx) => idx).filter((_, idx) => arr[idx].startsWith(text));
     this.renderedDropdownOptions.set(arr.filter((val) => val.startsWith(text)));
   }
 
@@ -134,7 +134,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
             document
               .getElementById(`${this.props.idPrefix}_${i}`)
-              ?.removeEventListener('click', () => this.clickHandler(i, this));
+              ?.removeEventListener('click', this.onClick.bind(this, i));
           }
         });
 
@@ -158,9 +158,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
         // Add click handlers
         array.forEach((val, i) => {
-          document
-            .getElementById(`${this.props.idPrefix}_${i}`)
-            ?.addEventListener('click', () => this.clickHandler(i, this));
+          document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', this.onClick.bind(this, i));
         });
       }),
     );
@@ -186,18 +184,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       }),
     );
 
-    this.dropdownSelectorRef.instance.addEventListener('click', () => {
-      if (!this.props.inactive?.get()) {
-        this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
-      }
-    });
+    this.dropdownSelectorRef.instance.addEventListener('click', this.onOpenCloseClickHandler);
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
-        this.dropdownIsOpened.set(false);
-      }
-    });
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onClickedOutsideHandler);
 
     this.subs.push(
       this.dropdownIsOpened.sub((val) => {
@@ -233,6 +223,22 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // TODO add KCCU events
   }
 
+  private onOpenCloseClick() {
+    if (!this.props.inactive?.get()) {
+      this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+    }
+  }
+
+  private onOpenCloseClickHandler = this.onOpenCloseClick.bind(this);
+
+  private onClickedOutside(e: MouseEvent) {
+    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
+      this.dropdownIsOpened.set(false);
+    }
+  }
+
+  private onClickedOutsideHandler = this.onClickedOutside.bind(this);
+
   /**
    * Scrolls the dropdown list to the given index
    *
@@ -251,6 +257,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseClickHandler);
+    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
 
     super.destroy();
   }

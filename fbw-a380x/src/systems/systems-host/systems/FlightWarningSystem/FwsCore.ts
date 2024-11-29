@@ -249,8 +249,6 @@ export class FwsCore {
 
   public readonly masterCaution = Subject.create(false);
 
-  public readonly fireActive = Subject.create(false);
-
   private nonCancellableWarningCount = 0;
 
   public readonly stallWarning = Subject.create(false);
@@ -262,17 +260,15 @@ export class FwsCore {
   );
 
   public readonly masterWarningOutput = MappedSubject.create(
-    ([mw, fire, stall, startup]) => (mw || fire || stall) && startup,
+    ([mw, stall, startup]) => (mw || stall) && startup,
     this.masterWarning,
-    this.fireActive,
     this.stallWarning,
     this.startupCompleted,
   );
 
   public readonly auralCrcOutput = MappedSubject.create(
-    ([auralCrc, fireActive, startup]) => (auralCrc || fireActive) && startup,
+    ([auralCrc, startup]) => auralCrc && startup,
     this.auralCrcActive,
-    this.fireActive,
     this.startupCompleted,
   );
 
@@ -419,9 +415,39 @@ export class FwsCore {
 
   public readonly apuBleedValveOpen = Subject.create(false);
 
-  public readonly excessPressure = Subject.create(false);
-
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
+
+  public readonly excessCabinAltitude = Subject.create(false);
+
+  public readonly excessDiffPressure = Subject.create(false);
+
+  public readonly allOutflowValvesOpen = Subject.create(false);
+
+  public readonly ocsm1AutoFailure = Subject.create(false);
+
+  public readonly ocsm2AutoFailure = Subject.create(false);
+
+  public readonly ocsm3AutoFailure = Subject.create(false);
+
+  public readonly ocsm4AutoFailure = Subject.create(false);
+
+  public readonly ocsmAutoCtlFault = Subject.create(false);
+
+  public readonly ocsm1Failure = Subject.create(false);
+
+  public readonly ocsm2Failure = Subject.create(false);
+
+  public readonly ocsm3Failure = Subject.create(false);
+
+  public readonly ocsm4Failure = Subject.create(false);
+
+  public readonly pressRedundLost = Subject.create(false);
+
+  public readonly pressSysFault = Subject.create(false);
+
+  public readonly flowSelectorKnob = Subject.create(0);
+
+  public readonly manCabinAltMode = Subject.create(false);
 
   /* 22 - AUTOFLIGHT */
 
@@ -555,6 +581,16 @@ export class FwsCore {
   public readonly eng3FireDetected = Subject.create(false);
 
   public readonly eng4FireDetected = Subject.create(false);
+
+  public readonly apuFireDetectedAural = Subject.create(false);
+
+  public readonly eng1FireDetectedAural = Subject.create(false);
+
+  public readonly eng2FireDetectedAural = Subject.create(false);
+
+  public readonly eng3FireDetectedAural = Subject.create(false);
+
+  public readonly eng4FireDetectedAural = Subject.create(false);
 
   public readonly mlgFireDetected = Subject.create(false);
 
@@ -1053,6 +1089,11 @@ export class FwsCore {
   public readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
   public readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
+
+  /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
+  public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
+
+  public readonly v1CalloutOutput = Subject.create(false);
 
   /* LANDING GEAR AND LIGHTS */
 
@@ -1570,6 +1611,8 @@ export class FwsCore {
       SimVar.SetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum, volume);
     }, true);
 
+    this.v1CalloutOutput.sub((c) => SimVar.SetSimVarValue('L:A32NX_AUDIO_V1_CALLOUT', SimVarValueType.Bool, c), true);
+
     // L/G lever red arrow sinking outputs
     this.lgLeverRedArrow.sub((on) => {
       // TODO FWCs need to be powered...
@@ -1645,17 +1688,6 @@ export class FwsCore {
   healthInjector(): void {
     SimVar.SetSimVarValue('L:A32NX_NO_SMOKING_MEMO', SimVarValueType.Bool, true);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', SimVarValueType.Bool, true);
-
-    const empty = Arinc429Register.empty();
-    empty.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_COND_ACSC_2_DISCRETE_WORD_2', empty.value, empty.ssm);
-
-    Arinc429Word.toSimVarValue('L:A32NX_PRESS_CPC_1_DISCRETE_WORD', empty.value, empty.ssm);
-    Arinc429Word.toSimVarValue('L:A32NX_PRESS_CPC_2_DISCRETE_WORD', empty.value, empty.ssm);
 
     [1, 2].forEach((i) => {
       const dw = Arinc429Register.empty();
@@ -2284,6 +2316,18 @@ export class FwsCore {
 
     this.trueNorthRef.set(SimVar.GetSimVarValue('L:A32NX_PUSH_TRUE_REF', 'number'));
 
+    /* V1 callout */
+    const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', SimVarValueType.Knots);
+    const v1Threshold = v1 - 4;
+    this.v1SpeedConfirmNode.write(
+      v1 &&
+        (this.adr1Cas.get().valueOr(0) > v1Threshold ||
+          this.adr2Cas.get().valueOr(0) > v1Threshold ||
+          this.adr3Cas.get().valueOr(0) > v1Threshold),
+      deltaTime,
+    );
+    this.v1CalloutOutput.set(this.fwcFlightPhase.get() === 4 && this.v1SpeedConfirmNode.read());
+
     /* LANDING GEAR AND LIGHTS acquisition */
 
     this.antiSkidSwitchOff.set(!SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
@@ -2673,7 +2717,7 @@ export class FwsCore {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-    this.flightLevel.set(Math.round(pressureAltitude / 100) * 100);
+    this.flightLevel.set(Math.round(pressureAltitude / 100));
 
     this.phase8ConfirmationNode60.write(this.fwcFlightPhase.get() === 8, deltaTime);
 
@@ -2714,6 +2758,16 @@ export class FwsCore {
     cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
     cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
 
+    const cpiomBCpcsAppDiscreteWord1 = Arinc429Register.empty();
+    const cpiomBCpcsAppDiscreteWord2 = Arinc429Register.empty();
+    const cpiomBCpcsAppDiscreteWord3 = Arinc429Register.empty();
+    const cpiomBCpcsAppDiscreteWord4 = Arinc429Register.empty();
+
+    cpiomBCpcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
+    cpiomBCpcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
+    cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
+    cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
+
     let vcsDiscreteWordToUse;
 
     if (cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
@@ -2736,6 +2790,23 @@ export class FwsCore {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord3;
     } else {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
+    }
+
+    let cpcsDiscreteWordToUse: Arinc429Register;
+    let cpcsToUseId: number;
+
+    if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
+      cpcsToUseId = 1;
+    } else if (cpiomBCpcsAppDiscreteWord2.isNormalOperation()) {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord2;
+      cpcsToUseId = 2;
+    } else if (cpiomBCpcsAppDiscreteWord3.isNormalOperation()) {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord3;
+      cpcsToUseId = 3;
+    } else {
+      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord4;
+      cpcsToUseId = 4;
     }
 
     this.oneTcsAppFailed.set(
@@ -2844,14 +2915,82 @@ export class FwsCore {
       !cpiomBVcsAppDiscreteWord2.isNormalOperation() || !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
     );
 
-    this.excessPressure.set(false); // TODO: Connect to CPCS FWS warnings
-
     const engNotRunning =
       !this.engine1Running.get() &&
       !this.engine2Running.get() &&
       !this.engine3Running.get() &&
       !this.engine4Running.get();
     this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // FIXME eng running should use core speed at above min idle
+
+    const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
+    this.excessCabinAltitude.set(cpcsDiscreteWordToUse.bitValueOr(13, false) || manExcessAltitude);
+
+    this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
+
+    const outflowValve1OpenAmount = Arinc429Register.empty();
+    const outflowValve2OpenAmount = Arinc429Register.empty();
+    const outflowValve3OpenAmount = Arinc429Register.empty();
+    const outflowValve4OpenAmount = Arinc429Register.empty();
+
+    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+
+    this.allOutflowValvesOpen.set(
+      outflowValve1OpenAmount.value > 99 &&
+        outflowValve2OpenAmount.value > 99 &&
+        outflowValve3OpenAmount.value > 99 &&
+        outflowValve4OpenAmount.value > 99,
+    );
+
+    this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm2AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm3AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
+
+    this.ocsmAutoCtlFault.set(
+      (cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
+        cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
+        (this.ocsm1AutoFailure.get() &&
+          this.ocsm2AutoFailure.get() &&
+          this.ocsm3AutoFailure.get() &&
+          this.ocsm4AutoFailure.get()),
+    );
+
+    const ocsm1Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_1_FAILURE', 'bool');
+    const ocsm1Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_2_FAILURE', 'bool');
+    const ocsm2Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_1_FAILURE', 'bool');
+    const ocsm2Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_2_FAILURE', 'bool');
+    const ocsm3Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_1_FAILURE', 'bool');
+    const ocsm3Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_2_FAILURE', 'bool');
+    const ocsm4Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_1_FAILURE', 'bool');
+    const ocsm4Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_2_FAILURE', 'bool');
+
+    this.ocsm1Failure.set(ocsm1Channel1Failure && ocsm1Channel2Failure);
+    this.ocsm2Failure.set(ocsm2Channel1Failure && ocsm2Channel2Failure);
+    this.ocsm3Failure.set(ocsm3Channel1Failure && ocsm3Channel2Failure);
+    this.ocsm4Failure.set(ocsm4Channel1Failure && ocsm4Channel2Failure);
+
+    const numberOfCpcsFaults = [
+      cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
+      cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
+    ].filter((cpcs) => cpcs === true).length;
+
+    this.pressRedundLost.set(numberOfCpcsFaults > 1);
+
+    this.pressSysFault.set(
+      this.ocsm1Failure.get() && this.ocsm2Failure.get() && this.ocsm3Failure.get() && this.ocsm4Failure.get(),
+    );
+
+    // 0: Man, 1: Low, 2: Norm, 3: High
+    this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
+
+    this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
     /* 23 - COMMUNICATION */
     this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal
@@ -3188,14 +3327,14 @@ export class FwsCore {
     );
 
     // rudder trim not takeoff
-    const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
-    const fac2RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_2_RUDDER_TRIM_POS');
-    const fac1Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_1_HEALTHY', 'boolean') > 0;
-    const fac2Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_2_HEALTHY', 'boolean') > 0;
+    const sec1RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_1_RUDDER_ACTUAL_POSITION');
+    const sec3RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION');
+    const sec1Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'boolean') > 0;
+    const sec3Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'boolean') > 0;
 
     const rudderTrimConfig =
-      (fac1Healthy && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
-      (fac2Healthy && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
+      (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
+      (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
 
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
@@ -3490,6 +3629,12 @@ export class FwsCore {
         this.fireButtonAPU.get(),
     );
 
+    this.apuFireDetectedAural.set(this.apuFireDetected.get() && !this.fireButtonAPU.get());
+    this.eng1FireDetectedAural.set(this.eng1FireDetected.get() && !this.fireButtonEng1.get());
+    this.eng2FireDetectedAural.set(this.eng2FireDetected.get() && !this.fireButtonEng2.get());
+    this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
+    this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
+
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
 
     this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
@@ -3606,19 +3751,6 @@ export class FwsCore {
           this.mlgFireDetected.get() ||
           this.emergencyGeneratorOn.get() ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0)),
-    );
-
-    // fire always forces the master warning and SC aural on
-    this.fireActive.set(
-      [
-        this.apuFireDetected.get(),
-        this.eng1FireDetected.get(),
-        this.eng2FireDetected.get(),
-        this.eng3FireDetected.get(),
-        this.eng4FireDetected.get(),
-        this.mlgFireDetected.get(),
-        this.cargoFireTest.get(),
-      ].some((e) => e),
     );
 
     const flightPhase = this.fwcFlightPhase.get();

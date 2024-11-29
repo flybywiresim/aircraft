@@ -567,6 +567,8 @@
     },
     "Title": "Greiti valdikliai"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Apie"
@@ -740,6 +742,7 @@
       "Blue": "Mėlyna",
       "Brightness": "Ryškumas",
       "Dark": "Tamsi",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Kalba",
       "Light": "Šviesi",
       "Local": "Vietinis",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC ir vietinis"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Bal",
     "Aug": "Rgp",

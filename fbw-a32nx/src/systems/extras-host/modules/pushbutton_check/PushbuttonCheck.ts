@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DebounceTimer, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
-import { NotificationManager, NotificationTheme } from '@flybywiresim/fbw-sdk';
-import { ExtrasSimVarEvents } from 'extras-host/modules/common/ExtrasSimVarPublisher';
+import { NotificationManager, NotificationTheme, ExtrasSimVarEvents } from '@flybywiresim/fbw-sdk';
 
 /**
  * Monitors cockpit pushbuttons that may be written externally to ensure they are not "stuck" because

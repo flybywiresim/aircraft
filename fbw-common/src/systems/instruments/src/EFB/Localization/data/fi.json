@@ -567,6 +567,8 @@
     },
     "Title": "Pika-asetukset"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Tietoja"
@@ -740,6 +742,7 @@
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Kieli",
       "Light": "Vaalea",
       "Local": "Paikallinen",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC ja paikallinen"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Huhti",
     "Aug": "Elo",

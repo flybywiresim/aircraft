@@ -14,6 +14,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
+import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
 import { RwyAheadAdvisory } from './shared/RwyAheadAdvisory';
@@ -23,7 +25,6 @@ import { LnavStatus } from './shared/LnavStatus';
 import { CrossTrackError } from './shared/CrossTrackError';
 import { RadioNeedle } from './shared/RadioNeedle';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
-import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';
 import { ArcModePage } from './pages/arc';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -149,8 +150,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private showOans = Subject.create<boolean>(false);
 
-  private showOansRunwayInfo = Subject.create<boolean>(false);
-
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -217,7 +216,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
       .whenChanged()
       .handle((mode) => {
         this.handleNewMapPage(mode);
-        this.shouldShowOansRunwayInfo();
       });
 
     this.mapRecomputing.sub((recomputing) => {
@@ -344,21 +342,17 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     }
   }
 
-  private shouldShowOansRunwayInfo() {
-    this.showOansRunwayInfo.set(true); // Maybe only active when this.currentPageMode.get() === EfisNdMode.PLAN ?
-  }
-
   render(): VNode | null {
     return (
       <>
         <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
-          <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'none' : 'block')) }}>
+          <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'none' : 'block')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>
-          <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'block' : 'none')) }}>
+          <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <BtvRunwayInfo bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />

@@ -25,6 +25,14 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
+  private changeEventHandler(i: number) {
+    if (this.props.onModified) {
+      this.props.onModified(i);
+    } else {
+      this.props.selectedIndex.set(i);
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -36,13 +44,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     }
 
     for (let i = 0; i < this.props.values.length; i++) {
-      document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('change', () => {
-        if (this.props.onModified) {
-          this.props.onModified(i);
-        } else {
-          this.props.selectedIndex.set(i);
-        }
-      });
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.addEventListener('change', this.changeEventHandler.bind(this, i));
     }
 
     this.subs.push(
@@ -86,6 +90,12 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    for (let i = 0; i < this.props.values.length; i++) {
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.removeEventListener('change', this.changeEventHandler.bind(this, i));
+    }
 
     super.destroy();
   }

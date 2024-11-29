@@ -7,7 +7,7 @@ use crate::{
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe, PneumaticValveSignal,
     },
     shared::{
-        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, AverageExt, CabinSimulation,
+        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, AverageExt, CabinSimulation, Clamp,
         ConsumePower, ControllerSignal, ElectricalBusType, ElectricalBuses,
     },
     simulation::{
@@ -452,6 +452,7 @@ pub trait PressurizationConstants {
     const OUTFLOW_VALVE_SIZE: f64;
     const SAFETY_VALVE_SIZE: f64;
     const DOOR_OPENING_AREA: f64;
+    const HULL_BREACH_AREA: f64;
 
     const MAX_CLIMB_RATE: f64;
     const MAX_CLIMB_RATE_IN_DESCENT: f64;
@@ -533,10 +534,15 @@ impl CabinFan {
         let mass_flow: f64 = (self.outlet_air.pressure().get::<pascal>()
             * self.design_flow_rate.get::<cubic_meter_per_second>())
             / (Air::R * self.outlet_air.temperature().get::<kelvin>());
+        let max_mass_flow = mass_flow * Self::FAN_EFFICIENCY;
         // If we have flow demand calculated, we assign this directly to the fan flow
         // This is a simplification, we could model the fans, send the signal and read the output
         recirculation_flow_demand
-            .unwrap_or(MassRate::new::<kilogram_per_second>(mass_flow) * Self::FAN_EFFICIENCY)
+            .unwrap_or(MassRate::new::<kilogram_per_second>(max_mass_flow))
+            .clamp(
+                MassRate::default(),
+                MassRate::new::<kilogram_per_second>(max_mass_flow),
+            )
     }
 
     pub fn has_fault(&self) -> bool {

@@ -567,6 +567,8 @@
     },
     "Title": "クイックコントロール"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "flyPadについて"
@@ -740,6 +742,7 @@
       "Blue": "ブルー",
       "Brightness": "明るさ",
       "Dark": "ダーク",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "言語",
       "Light": "ライト",
       "Local": "ローカル",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",

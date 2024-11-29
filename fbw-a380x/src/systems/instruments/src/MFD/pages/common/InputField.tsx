@@ -195,6 +195,8 @@ export class InputField<
     }
   }
 
+  private onKeyDownHandler = this.onKeyDown.bind(this);
+
   private handleBackspace() {
     if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get()) {
       this.modifiedFieldValue.set('');
@@ -207,7 +209,7 @@ export class InputField<
     this.onInput();
   }
 
-  private onKeyPress(ev: KeyboardEvent) {
+  private onKeyPress = (ev: KeyboardEvent) => {
     if (!this.isFocused.get()) {
       return;
     }
@@ -229,9 +231,11 @@ export class InputField<
     if (key === ',') {
       this.handleKeyInput('.');
     }
-  }
+  };
 
-  private handleKeyInput(key: string) {
+  private onKeyPressHandler = this.onKeyPress.bind(this);
+
+  private handleKeyInput = (key: string) => {
     if (this.modifiedFieldValue.get() === null) {
       this.modifiedFieldValue.set('');
       this.spanningDivRef.instance.style.justifyContent = 'flex-start';
@@ -243,7 +247,7 @@ export class InputField<
     }
 
     this.onInput();
-  }
+  };
 
   private handleEnter() {
     if (this.props.handleFocusBlurExternally) {
@@ -281,6 +285,8 @@ export class InputField<
       this.updateDisplayElement();
     }
   }
+
+  private onFocusHandler = this.onFocus.bind(this);
 
   public async onBlur(validateAndUpdate: boolean = true) {
     if (!this.props.disabled?.get() && !this.props.inactive?.get() && this.isFocused.get()) {
@@ -379,6 +385,12 @@ export class InputField<
     this.modifiedFieldValue.set(null);
     this.isValidating.set(false);
   }
+
+  private onFocusTextInput() {
+    this.textInputRef.instance.focus();
+  }
+
+  private onFocusTextInputHandler = this.onFocusTextInput.bind(this);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -511,23 +523,15 @@ export class InputField<
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
 
-    this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
-    this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
+    this.textInputRef.instance.addEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.instance.addEventListener('keydown', this.onKeyDownHandler);
 
     if (!this.props.handleFocusBlurExternally) {
-      this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
-      this.textInputRef.instance.addEventListener('blur', () => {
-        this.onBlur();
-      });
-      this.spanningDivRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.leadingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.trailingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
+      this.textInputRef.instance.addEventListener('focus', this.onFocusHandler);
+      this.textInputRef.instance.addEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.instance.addEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
     }
 
     this.props.hEventConsumer.handle((key) => {
@@ -594,6 +598,24 @@ export class InputField<
                 }
             }));
         } */
+  }
+
+  destroy(): void {
+    // Destroy all subscriptions to remove all references to this instance.
+    this.subs.forEach((x) => x.destroy());
+
+    this.textInputRef.getOrDefault()?.removeEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.getOrDefault()?.removeEventListener('keydown', this.onKeyDownHandler);
+
+    if (!this.props.handleFocusBlurExternally) {
+      this.textInputRef.getOrDefault()?.removeEventListener('focus', this.onFocusHandler);
+      this.textInputRef.getOrDefault()?.removeEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+    }
+
+    super.destroy();
   }
 
   render(): VNode {

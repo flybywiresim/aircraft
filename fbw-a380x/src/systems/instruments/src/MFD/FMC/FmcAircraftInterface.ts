@@ -16,6 +16,7 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
+import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -93,6 +94,21 @@ export class FmcAircraftInterface {
   private readonly speedVfeNext = Subject.create(0);
   private readonly speedVapp = Subject.create(0);
   private readonly speedShortTermManaged = Subject.create(0);
+
+  private readonly tdReached = this.bus
+    .getSubscriber<FmsMfdVars>()
+    .on('tdReached')
+    .whenChanged()
+    .handle((v) => {
+      if (v) {
+        this.fmc.addMessageToQueue(NXSystemMessages.tdReached, undefined, () => {
+          SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'Bool', false);
+        });
+      } else {
+        this.fmc.removeMessageFromQueue(NXSystemMessages.tdReached.text);
+      }
+    });
+
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase').whenChanged(),
     FmgcFlightPhase.Preflight,
@@ -307,6 +323,7 @@ export class FmcAircraftInterface {
 
     const taxiFuel = this.fmgc.data.taxiFuel.get() ?? 0;
     const tow = (this.fmc.fmgc.getGrossWeightKg() ?? maxGw) - (this.fmgc.isAnEngineOn() ? 0 : taxiFuel);
+    const flapConf = this.fmgc.data.takeoffFlapsSetting.get();
 
     return (
       (this.flightPlanService.active.performanceData.v1 ?? Infinity) < Math.trunc(A380SpeedsUtils.getVmcg(zp)) ||
@@ -314,7 +331,7 @@ export class FmcAircraftInterface {
       (this.flightPlanService.active.performanceData.v2 ?? Infinity) < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp)) ||
       (Number.isFinite(tow) &&
         (this.flightPlanService.active.performanceData.v2 ?? Infinity) <
-          Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow / 1000, this.fmgc.data.takeoffFlapsSetting.get(), true)))
+          Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, flapConf > 1 ? flapConf + 1 : flapConf, true)))
     );
   }
 
@@ -851,7 +868,9 @@ export class FmcAircraftInterface {
     if (!Vtap) {
       // Overspeed protection
       const vMax = this.speedVmax.get();
-      Vtap = Math.min(this.managedSpeedTarget ?? Vmo - 5, vMax - 5);
+      const greenDot = this.fmgc.data.greenDotSpeed.get();
+      const vMin = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 0 && greenDot ? greenDot : 0;
+      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin), vMax - 5);
     }
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
@@ -1142,7 +1161,7 @@ export class FmcAircraftInterface {
 
     // Calculate approach speeds. Independent from ADR data
     const approachSpeeds = new A380OperatingSpeeds(
-      ldgWeight / 1000,
+      ldgWeight,
       0,
       this.fmgc.data.approachFlapConfig.get(),
       FmgcFlightPhase.Approach,
@@ -1171,7 +1190,7 @@ export class FmcAircraftInterface {
         flaps = 5; // CONF 1
       }
       const speeds = new A380OperatingSpeeds(
-        grossWeight / 1000,
+        grossWeight,
         cas,
         flaps,
         this.flightPhase.get(),

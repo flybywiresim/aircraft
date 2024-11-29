@@ -1,0 +1,35 @@
+{
+  "extends": "../../../tsconfig.json",
+
+  "compilerOptions": {
+    "incremental": false /* Enables incremental builds */,
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
+    "module": "es2015" /* Ensures that modules are at least es2015 */,
+    "strict": false /* Enables strict type checking, highly recommended but optional */,
+    "esModuleInterop": true /* Emits additional JS to work with CommonJS modules */,
+    "skipLibCheck": true /* Skip type checking on library .d.ts files */,
+    "forceConsistentCasingInFileNames": true /* Ensures correct import casing */,
+    "moduleResolution": "node" /* Enables compatibility with MSFS SDK bare global imports */,
+    "jsxFactory": "FSComponent.buildComponent" /* Required for FSComponent framework JSX */,
+    "jsxFragmentFactory": "FSComponent.Fragment" /* Required for FSComponent framework JSX */,
+    "jsx": "react", /* Required for FSComponent framework JSX */
+    "paths": {
+      "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
+      "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
+      "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
+      "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
+      "@failures": ["./failures/src/index.ts"],
+      "@fmgc/*": ["./fmgc/src/*"],
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@localization/*": ["../localization/*"],
+      "@sentry/*": ["./sentry-client/src/*"],
+      "@simbridge/*": ["./simbridge-client/src/*"],
+      "@shared/*": ["./shared/src/*"],
+      "@tcas/*": ["./tcas/src/*"],
+      "@typings/*": ["../../../fbw-common/src/typings/*"],
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],
+      "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"],
+      "@flybywiresim/msfs-avionics-common": ["../../../fbw-common/src/systems/instruments/src/MsfsAvionicsCommon/index.ts"]
+    }
+  }
+}

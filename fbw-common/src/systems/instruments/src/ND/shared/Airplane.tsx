@@ -11,11 +11,10 @@ import {
   MappedSubject,
   Subscribable,
 } from '@microsoft/msfs-sdk';
-import { EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, Arinc429ConsumerSubject, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { NDControlEvents } from '../NDControlEvents';
 import { LubberLine } from '../pages/arc/LubberLine';
-import { GenericAdirsEvents } from '../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 

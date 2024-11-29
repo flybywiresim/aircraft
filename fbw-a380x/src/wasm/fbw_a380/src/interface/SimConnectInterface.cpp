@@ -653,7 +653,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_SET, "A32NX.FCU_VS_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PUSH, "A32NX.FCU_VS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PULL, "A32NX.FCU_VS_PULL", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_VS_PUSH, "A32NX.FCU_TO_AP_VS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_VS_PULL, "A32NX.FCU_TO_AP_VS_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_LOC_PUSH, "A32NX.FCU_LOC_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_APPR_PUSH, "A32NX.FCU_APPR_PUSH", false);
@@ -1005,7 +1004,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_OUTPUTS, sizeof(base_prim_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 19; i++) {
+  for (int i = 0; i < 18; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -1041,7 +1040,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_prim_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 52; i++) {
+    for (int i = 0; i < 54; i++) {
       result &=
           SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
     }
@@ -1153,7 +1152,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_INPUTS, sizeof(base_sec_discrete_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 13; i++) {
+  for (int i = 0; i < 15; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -1216,7 +1215,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_sec_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 26; i++) {
       result &=
           SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
     }
@@ -2012,6 +2011,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::RUDDER_TRIM_LEFT: {
       simInputRudderTrim.rudderTrimSwitchLeft = true;
+      execute_calculator_code("(>H:A32NX.RUDDER_TRIM_MANUALLY_MOVED)", nullptr, nullptr, nullptr);
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_TRIM_LEFT: ";
         std::cout << "(no data)";
@@ -2022,6 +2022,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::RUDDER_TRIM_RESET: {
       simInputRudderTrim.rudderTrimReset = true;
+      execute_calculator_code("(>H:A32NX.RUDDER_TRIM_MANUALLY_MOVED)", nullptr, nullptr, nullptr);
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_TRIM_RESET: ";
         std::cout << "(no data)";
@@ -2032,6 +2033,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
 
     case Events::RUDDER_TRIM_RIGHT: {
       simInputRudderTrim.rudderTrimSwitchRight = true;
+      execute_calculator_code("(>H:A32NX.RUDDER_TRIM_MANUALLY_MOVED)", nullptr, nullptr, nullptr);
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_TRIM_RIGHT: ";
         std::cout << "(no data)";
@@ -2490,11 +2492,6 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       break;
     }
 
-    case Events::A32NX_FCU_TO_AP_VS_PUSH: {
-      simInputAutopilot.VS_push = 1;
-      std::cout << "WASM: event triggered: A32NX_FCU_TO_AP_VS_PUSH" << std::endl;
-      break;
-    }
     case Events::A32NX_FCU_TO_AP_VS_PULL: {
       simInputAutopilot.VS_pull = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_TO_AP_VS_PULL" << std::endl;

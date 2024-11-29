@@ -9,7 +9,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
@@ -57,6 +57,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private setHoldSpeed = false;
 
+  private tdReached = false;
+
   private tcasRaInhibited = Subject.create(false);
 
   private trkFpaDeselected = Subject.create(false);
@@ -80,6 +82,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.setHoldSpeed,
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
+        this.tdReached,
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -162,6 +165,14 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       .whenChanged()
       .handle((trk) => {
         this.trkFpaDeselected.set(trk);
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('tdReached')
+      .whenChanged()
+      .handle((tdr) => {
+        this.tdReached = tdr;
         this.handleFMABorders();
       });
   }
@@ -784,9 +795,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       case VerticalMode.TCAS:
         text = 'TCAS';
         break;
-      /*  case 9:
-            text = 'FINAL';
-            break; */
       case VerticalMode.DES:
         text = 'DES';
         break;
@@ -815,7 +823,12 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         }
         break;
       case VerticalMode.ALT_CPT:
-        text = 'ALT*';
+        if (this.crzAltMode) {
+          // TODO hook to new FG var if necessary
+          text = 'ALT CRZ *';
+        } else {
+          text = 'ALT*';
+        }
         break;
       case VerticalMode.ALT_CST_CPT:
         text = 'ALT CST*';
@@ -823,9 +836,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       case VerticalMode.ALT_CST:
         text = 'ALT CST';
         break;
-      /* case 18:
-            text = 'ALT CRZ';
-            break; */
       case VerticalMode.FPA: {
         const FPAText = `${this.FPA > 0 ? '+' : ''}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
@@ -1011,10 +1021,16 @@ class B2Cell extends DisplayComponent<CellProps> {
         const desArmed = (fmv >> 3) & 1;
         const gsArmed = (fmv >> 4) & 1;
 
+        // TODO hook to FG once implemented
+        const openClimbArmed = false;
+        const altCruiseArmed = false;
+
         let text1: string;
         let color1 = 'Cyan';
         let vertModeActive = true;
-        if (clbArmed) {
+        if (openClimbArmed) {
+          text1 = '      OP CLB';
+        } else if (clbArmed) {
           text1 = '      CLB';
         } else if (desArmed) {
           text1 = gsArmed ? 'DES ' : '      DES';
@@ -1023,6 +1039,8 @@ class B2Cell extends DisplayComponent<CellProps> {
           color1 = 'Magenta';
         } else if (altArmed) {
           text1 = gsArmed ? 'ALT ' : '      ALT';
+        } else if (altCruiseArmed) {
+          text1 = '      ALT CRZ';
         } else {
           text1 = '';
           vertModeActive = false;
@@ -1067,10 +1085,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
   private activeLateralMode = 0;
 
-  private activeVerticalMode = 0;
-
-  private armedVerticalMode = 0;
-
   constructor(props: CellProps) {
     super(props, 10);
   }
@@ -1094,41 +1108,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           this.displayModeChangedPath(true);
         }
       });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.activeVerticalMode = lm;
-
-        const isShown = this.updateText();
-
-        if (isShown) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((va) => {
-        this.armedVerticalMode = va;
-
-        const hasChanged = this.updateText();
-
-        if (hasChanged) {
-          this.displayModeChangedPath();
-        } else {
-          this.displayModeChangedPath(true);
-        }
-      });
   }
 
   private updateText(): boolean {
-    const finalArmed = (this.armedVerticalMode >> 5) & 1;
-
     let text: string;
     this.isShown = true;
     if (this.activeLateralMode === LateralMode.GA_TRACK) {
@@ -1145,18 +1127,8 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'TRACK';
     } else if (this.activeLateralMode === LateralMode.LOC_TRACK) {
       text = 'LOC';
-    } else if (
-      this.activeLateralMode === LateralMode.NAV &&
-      !finalArmed &&
-      this.activeVerticalMode !== VerticalMode.FINAL
-    ) {
+    } else if (this.activeLateralMode === LateralMode.NAV) {
       text = 'NAV';
-    } else if (
-      this.activeLateralMode === LateralMode.NAV &&
-      finalArmed &&
-      this.activeVerticalMode !== VerticalMode.FINAL
-    ) {
-      text = 'APP NAV';
     } else {
       text = '';
       this.isShown = false;
@@ -1211,17 +1183,12 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 class C2Cell extends DisplayComponent<CellProps> {
   private fmaLateralArmed: number = 0;
 
-  private fmaVerticalArmed: number = 0;
-
-  private activeVerticalMode: number = 0;
-
   private textSub = Subject.create('');
 
   private getText() {
     const navArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.NAV);
     const locArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LOC);
-
-    const finalArmed = isArmed(this.fmaVerticalArmed, ArmedVerticalMode.FINAL);
+    const runwayArmed = false;
 
     let text: string = '';
     if (locArmed) {
@@ -1232,8 +1199,8 @@ class C2Cell extends DisplayComponent<CellProps> {
       // case 3:
       //     text = 'F-LOC';
       //     break;
-    } else if (navArmed && (finalArmed || this.activeVerticalMode === VerticalMode.FINAL)) {
-      text = 'APP NAV';
+    } else if (runwayArmed) {
+      text = 'RWY' + (navArmed ? '  NAV' : '');
     } else if (navArmed) {
       text = 'NAV';
     }
@@ -1252,27 +1219,11 @@ class C2Cell extends DisplayComponent<CellProps> {
         this.fmaLateralArmed = fla;
         this.getText();
       });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((fva) => {
-        this.fmaVerticalArmed = fva;
-        this.getText();
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((avm) => {
-        this.activeVerticalMode = avm;
-        this.getText();
-      });
   }
 
   render(): VNode {
     return (
-      <text class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
+      <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
         {this.textSub}
       </text>
     );
@@ -1280,8 +1231,6 @@ class C2Cell extends DisplayComponent<CellProps> {
 }
 
 class BC1Cell extends ShowForSecondsComponent<CellProps> {
-  private lastLateralMode = 0;
-
   private lastVerticalMode = 0;
 
   private textSub = Subject.create('');
@@ -1299,8 +1248,6 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'FLARE';
     } else if (this.lastVerticalMode === VerticalMode.LAND) {
       text = 'LAND';
-    } else if (this.lastVerticalMode === VerticalMode.FINAL && this.lastLateralMode === LateralMode.NAV) {
-      text = 'FINAL APP';
     } else {
       text = '';
     }
@@ -1323,14 +1270,6 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((v) => {
         this.lastVerticalMode = v;
-        this.setText();
-      });
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((l) => {
-        this.lastLateralMode = l;
         this.setText();
       });
   }
@@ -1358,17 +1297,16 @@ const getBC3Message = (
   setHoldSpeed: boolean,
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
+  tdReached: boolean,
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
 
   let text: string;
   let className: string;
+
   // All currently unused message are set to false
   if (false) {
-    text = 'MAN PITCH TRIM ONLY';
-    className = 'Red Blink9Seconds';
-  } else if (false) {
     text = 'USE MAN PITCH TRIM';
     className = 'PulseAmber9Seconds Amber';
   } else if (false) {
@@ -1377,41 +1315,29 @@ const getBC3Message = (
   } else if (TCASArmed && !isAttExcessive) {
     text = 'TCAS           ';
     className = 'FontMediumSmaller Cyan';
-  } else if (false) {
-    text = 'DISCONNECT AP FOR LDG';
-    className = 'PulseAmber9Seconds Amber';
   } else if (tcasRaInhibited && !isAttExcessive) {
     text = 'TCAS RA INHIBITED';
-    className = 'White';
+    className = 'FontMedium White';
   } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
     text = 'TRK FPA DESELECTED';
-    className = 'White';
-  } else if (false) {
-    text = 'SET GREEN DOT SPEED';
-    className = 'White';
-  } else if (false) {
+    className = 'FontMedium White';
+  } else if (tdReached) {
     text = 'T/D REACHED';
+    className = 'FontMedium White';
+  } else if (false) {
+    text = 'EXTEND SPD BRK';
     className = 'White';
   } else if (false) {
-    text = 'MORE DRAG';
+    text = 'RETRACT SPD BRK';
     className = 'White';
   } else if (false) {
-    text = 'CHECK SPEED MODE';
-    className = 'White';
-  } else if (false) {
-    text = 'CHECK APPR SELECTION';
-    className = 'White';
-  } else if (false) {
-    text = 'TURN AREA EXCEEDANCE';
+    text = 'CHECK APPR SEL';
     className = 'White';
   } else if (setHoldSpeed) {
-    text = 'SET HOLD SPEED';
-    className = 'White';
+    text = 'SET HOLD SPD';
+    className = 'FontMedium White';
   } else if (false) {
-    text = 'VERT DISCONT AHEAD';
-    className = 'Amber';
-  } else if (false) {
-    text = 'FINAL APP SELECTED';
+    text = 'EXIT MISSED';
     className = 'White';
   } else {
     return [null, null];
@@ -1435,6 +1361,8 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private trkFpaDeselected = false;
 
+  private tdReached = false;
+
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
       this.isAttExcessive,
@@ -1442,6 +1370,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       this.setHoldSpeed,
       this.trkFpaDeselected,
       this.tcasRaInhibited,
+      this.tdReached,
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1490,6 +1419,14 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       .whenChanged()
       .handle((trk) => {
         this.trkFpaDeselected = trk;
+        this.fillBC3Cell();
+      });
+
+    sub
+      .on('tdReached')
+      .whenChanged()
+      .handle((tdr) => {
+        this.tdReached = tdr;
         this.fillBC3Cell();
       });
   }

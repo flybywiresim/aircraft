@@ -567,6 +567,8 @@
     },
     "Title": "קיצורי דרך"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "אודות"
@@ -740,6 +742,7 @@
       "Blue": "כחול",
       "Brightness": "בהירות",
       "Dark": "כהה",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "שפה",
       "Light": "מואר",
       "Local": "מקומי",
@@ -756,6 +759,8 @@
       "UtcAndLocal": "UTC ומקומי"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "אפריל",
     "Aug": "אוגוסט",
