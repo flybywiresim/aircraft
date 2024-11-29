@@ -273,10 +273,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A380X_RMP_1_VHF_TX_1) 0 ==</Condition>
             <Action>0 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
         </Step>
-        <Step Name="NSS DATA TO AVNCS Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE)</Action>
-        </Step>
         <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
@@ -768,44 +764,3 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     </Procedure>
 
 </AircraftPresetProcedures>
-
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
-        <!-- test -->
