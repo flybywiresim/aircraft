@@ -694,6 +694,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_AUTO_THROTTLE_DISCONNECT, "A32NX.AUTO_THROTTLE_DISCONNECT", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_TO_GA, "AUTO_THROTTLE_TO_GA", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_ATHR_RESET_DISABLE, "A32NX.ATHR_RESET_DISABLE", false);
 
@@ -2217,7 +2218,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
         std::cout << "WASM: event triggered: AUTOPILOT_DISENGAGE_SET" << std::endl;
 
         // Re emitting masked event for autopilot disconnection
-        this->sendEvent(SimConnectInterface::Events::A32NX_AUTOPILOT_DISENGAGE);
+        sendEvent(SimConnectInterface::Events::A32NX_AUTOPILOT_DISENGAGE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       }
       break;
     }
@@ -2679,7 +2680,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       std::cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << std::endl;
 
       // Re emitting masked event for autobrake disconnection
-      execute_calculator_code("(>K:A32NX.AUTO_THROTTLE_DISCONNECT)", nullptr, nullptr, nullptr);
+      sendEvent(Events::A32NX_AUTO_THROTTLE_DISCONNECT, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       break;
     }
 
