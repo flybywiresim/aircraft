@@ -2,6 +2,9 @@ import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
 import { getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks } from './fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 import { getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks } from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 
+const isCiBuild = process.env.CI === 'true';
+const resolutionIs8k = process.env.TEXTURE_RESOLUTION_8K === 'true';
+
 export default new TaskOfTasks('all', [
     // A32NX Task
     new TaskOfTasks('a32nx', [
@@ -133,45 +136,14 @@ export default new TaskOfTasks('all', [
             'preparation',
             [
                 new TaskOfTasks(
-                    'ci-build',
+                    isCiBuild ? 'ci-build' : 'local-build',
                     [
-                        new ExecTask('copy-base-files (8K)', [
-                            'npm run build-a380x:link-base-files',
+                        new ExecTask(`copy-base-files (${resolutionIs8k ? 8 : 4}K)`, [
+                            isCiBuild ? 'npm run build-a380x:link-base-files' : 'npm run build-a380x:copy-base-files',
                             'npm run unchunkLargeFiles',
-                            'npm run build-a380x:link-large-files',
-                            'npm run build-a380x:link-large-files-texture-8k',
-                            // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
-                        ]),
-                        new ExecTask('copy-base-files (4K)', [
-                            'npm run build-a380x:link-base-files',
-                            'npm run unchunkLargeFiles',
-                            'npm run build-a380x:link-large-files',
-                            'npm run build-a380x:link-large-files-texture-4k',
-                            // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
-                        ]),
-                    ],
-                    false,
-                ),
-                new TaskOfTasks(
-                    'local-build',
-                    [
-                        new ExecTask('copy-base-files (8K)', [
-                            'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles',
-                            'npm run build-a380x:copy-large-files',
-                            'npm run build-a380x:copy-large-files-texture-8k',
-                            'npm run chunkLargeFiles',
-                            // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
-                        ]),
-                        new ExecTask('copy-base-files (4K)', [
-                            'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles',
-                            'npm run build-a380x:copy-large-files',
-                            'npm run build-a380x:copy-large-files-texture-4k',
-                            'npm run chunkLargeFiles',
+                            isCiBuild ? 'npm run build-a380x:link-large-files' : 'npm run build-a380x:copy-large-files',
+                            isCiBuild ? `npm run build-a380x:link-large-files-texture-${resolutionIs8k ? 8 : 4}k` : `npm run build-a380x:copy-large-files-texture-${resolutionIs8k ? 8 : 4}k`,
+                            ...(isCiBuild ? [] : ['npm run chunkLargeFiles']),
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
