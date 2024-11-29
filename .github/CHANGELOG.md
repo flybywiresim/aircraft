@@ -55,6 +55,7 @@
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
+1. [A380X/FWS] Fix green dot speed for high weights and altitudes, fix FMS speed target for GD > climb speed limit - @flogross89 (floridude)
 1. [A380X/PRIM] Fix max. spoiler deflection based on flap conf - @flogross89 (floridude)
 1. [A380X/PERF] Changed managed speeds to more realistic numbers - @slightlyclueles (abnormaltoast)
 1. [A380X/MFD] Add ATCCOM connect page - @heclak (heclak)
