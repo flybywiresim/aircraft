@@ -327,7 +327,7 @@ export class PseudoFWC {
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
 
-  // public readonly autoPilotOffSendTripleClickAfterFirstCavalryCharge = new NXLogicPulseNode(false);
+  public readonly autoPilotOffVoluntaryFirstCavalryChargeActivePulse = new NXLogicPulseNode(false);
 
   public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
 
@@ -1518,6 +1518,10 @@ export class PseudoFWC {
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
+    this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.write(
+      this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
+      deltaTime,
+    );
 
     this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.write(
       this.autoPilotInstinctiveDiscPressedPulse.read() &&
@@ -1553,7 +1557,7 @@ export class PseudoFWC {
       this.requestMasterWarningFromApOff = true;
       this.soundManager.enqueueSound('cavalryChargeOnce'); // On the A320, play first cav charge completely no matter what
     }
-    if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
+    if (this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.read()) {
       this.soundManager.dequeueSound('cavalryChargeOnce');
     }
     if (!this.autoPilotOffVoluntaryMemory.read() && !this.autoPilotOffInvoluntaryMemory.read()) {

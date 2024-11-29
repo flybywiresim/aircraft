@@ -474,6 +474,8 @@ export class FwsCore {
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
 
+  public readonly autoPilotOffVoluntaryFirstCavalryChargeActivePulse = new NXLogicPulseNode(false);
+
   public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
 
   public readonly autoPilotOffVoluntaryMemory = new NXLogicMemoryNode(true);
@@ -2436,6 +2438,10 @@ export class FwsCore {
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
+    this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.write(
+      this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
+      deltaTime,
+    );
 
     this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.write(
       this.autoPilotInstinctiveDiscPressedPulse.read() &&
@@ -2472,7 +2478,7 @@ export class FwsCore {
       this.soundManager.setVolume(FwsAuralVolume.Attenuated);
       this.soundManager.enqueueSound('cavalryChargeCont'); // On the A380, first cav charge can be cancelled early
     }
-    if (!this.autoPilotOffVoluntaryFirstCavalryChargeActive.read()) {
+    if (this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.read()) {
       this.soundManager.dequeueSound('cavalryChargeCont');
       this.soundManager.setVolume(FwsAuralVolume.Full);
     }

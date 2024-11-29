@@ -366,6 +366,7 @@ export class FwsSoundManager {
     this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
     this.soundQueue.delete(soundKey);
   }
+
   /** Find most important sound from soundQueue and play */
   private selectAndPlayMostImportantSound(): keyof typeof FwsAuralsList | null {
     if (!this.startupCompleted.get()) {
