@@ -3588,7 +3588,7 @@ mod a380_electrical_circuit_tests {
 
         fn connected_external_power(mut self) -> Self {
             for i in 1..=4 {
-                self.write_by_name(&format!("EXTERNAL POWER AVAILABLE:{i}"), true);
+                self.write_by_name(&format!("EXT_PWR_AVAIL:{i}"), true);
             }
 
             self.without_triggering_emergency_elec(|x| x.run())
