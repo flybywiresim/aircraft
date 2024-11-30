@@ -1468,7 +1468,7 @@ export class RadialFormat implements DataEntryFormat<number> {
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, '°'] as FieldFormatTuple;
+      return [this.placeholder, null, null] as FieldFormatTuple;
     }
 
     return [value.toFixed(0).padStart(3, '0'), null, '°'] as FieldFormatTuple;
@@ -1496,7 +1496,7 @@ export class RadialFormat implements DataEntryFormat<number> {
  * FIX INFO radius
  */
 export class RadiusFormat implements DataEntryFormat<number> {
-  public readonly placeholder = '---';
+  public readonly placeholder = '----';
 
   public readonly maxDigits = 4;
 
@@ -1506,7 +1506,7 @@ export class RadiusFormat implements DataEntryFormat<number> {
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, 'NM'] as FieldFormatTuple;
+      return [this.placeholder, null, null] as FieldFormatTuple;
     }
 
     return [value.toFixed(0), null, 'NM'] as FieldFormatTuple;

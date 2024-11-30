@@ -96,6 +96,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
                     <InputField<number, number, false>
                       class="mfd-fms-fpln-fix-info-radial-1"
+                      disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map(
                         (it) => it?.radials?.[0]?.magneticBearing ?? null,
                       )}
@@ -125,6 +126,9 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
                     <InputField<number, number, false>
                       class="mfd-fms-fpln-fix-info-radial-2"
+                      disabled={this.flightPlan.fixInfos[value].map(
+                        (it) => it?.fix === undefined || (it.radials?.length ?? 0) < 1,
+                      )}
                       readonlyValue={this.flightPlan.fixInfos[value].map(
                         (it) => it?.radials?.[1]?.magneticBearing ?? null,
                       )}
@@ -163,6 +167,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
                     <InputField<number, number, false>
                       class="mfd-fms-fpln-fix-info-radius-1"
+                      disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.radii?.[0]?.radius ?? null)}
                       onModified={(radius) => {
                         if (radius === null) {
@@ -192,7 +197,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                     <Button
                       disabled
                       label="ABEAM"
-                      buttonStyle="width: 127px; margin-top: 1rem; margin-left: 1.35rem;"
+                      buttonStyle="width: 123px; margin-top: .6rem; margin-left: 1.35rem;"
                       onClick={() => {}}
                     />
                   </span>

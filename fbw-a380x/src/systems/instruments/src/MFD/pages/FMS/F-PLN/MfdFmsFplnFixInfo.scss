@@ -45,13 +45,13 @@
   }
 
   .mfd-fms-fpln-fix-info-table-col-left {
-    width: 23%;
+    width: 22%;
 
     border-right: 2px solid $display-dark-grey;
   }
 
   .mfd-fms-fpln-fix-info-table-col-right {
-    width: 77%;
+    width: 78%;
   }
 
   /* Individual cells */
@@ -76,39 +76,55 @@
   .mfd-fms-fpln-fix-info-radial-header {
     font-size: 20px;
     margin-left: 1.45rem;
-    margin-top: .6rem;
+    margin-top: .9rem;
     margin-bottom: .9rem;
   }
 
   .mfd-fms-fpln-fix-info-radial-1 {
+    width: 6.6rem;
+
     margin-left: 1.5rem;
     margin-bottom: 1rem;
+
+    .mfd-input-field-container {
+      width: 100%;
+    }
   }
 
   .mfd-fms-fpln-fix-info-radial-2 {
+    width: 6.6rem;
+
     margin-left: 1.5rem;
     margin-top: 1.25rem;
     margin-bottom: 1rem;
+
+    .mfd-input-field-container {
+      width: 100%;
+    }
   }
 
   .mfd-fms-fpln-fix-info-radius-header {
     font-size: 20px;
     margin-left: 1.45rem;
-    margin-top: .75rem;
+    margin-top: .9rem;
     margin-bottom: .9rem;
   }
 
   .mfd-fms-fpln-fix-info-radius-1 {
-    width: 6rem;
+    width: 8rem;
 
     margin-left: 1.5rem;
     margin-bottom: 1rem;
+
+    .mfd-input-field-container {
+      width: 100%;
+    }
   }
 
   .mfd-fms-fpln-fix-info-intercept-row {
     height: min-content;
 
-    margin-top: 2.1rem;
+    margin-top: 2.3rem;
     &:nth-child(2) {
       margin-top: .7rem;
     }
@@ -130,7 +146,7 @@
     }
 
     .mfd-fms-fpln-fix-info-alt {
-      width: 10rem;
+      width: 8rem;
 
       justify-content: flex-end;
 

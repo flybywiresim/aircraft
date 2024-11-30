@@ -254,7 +254,7 @@ export class Button extends DisplayComponent<ButtonProps> {
   private onCloseDropdownHandler = this.onCloseDropdown.bind(this);
 
   private onButtonClick() {
-    if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled?.get()) {
+    if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.disabled.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
     }
   }
