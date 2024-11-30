@@ -1,6 +1,9 @@
 import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
 import { getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks } from './fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 import { getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks } from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
+import buildUtils from './build-utils.js'
+
+buildUtils.defineEnvVars();
 
 const isCiBuild = process.env.CI === 'true';
 const resolutionIs8k = process.env.TEXTURE_RESOLUTION_8K === 'true';
