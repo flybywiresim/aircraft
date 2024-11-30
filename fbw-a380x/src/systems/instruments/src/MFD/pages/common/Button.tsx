@@ -104,7 +104,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     this.subs.push(
       this.visible.sub((val) => {
-        this.topRef.instance.style.visibility = val ? 'visible' : 'hidden';
+        this.topRef.instance.style.visibility = val ? 'inherit' : 'hidden';
       }, true),
     );
 

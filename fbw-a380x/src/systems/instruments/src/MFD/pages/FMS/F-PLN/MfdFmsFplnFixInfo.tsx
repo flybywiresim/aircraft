@@ -25,6 +25,7 @@ import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 import './MfdFmsFplnFixInfo.scss';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
+import { FlightPlanFooter } from '../../common/FlightPlanFooter';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
@@ -105,6 +106,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
                     <InputField<number, number, false>
                       class="mfd-fms-fpln-fix-info-radial-1"
+                      alignText="flex-start"
                       disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map(
                         (it) => it?.radials?.[0]?.magneticBearing ?? null,
@@ -136,6 +138,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
                     <InputField<number, number, false>
                       class="mfd-fms-fpln-fix-info-radial-2"
+                      alignText="flex-start"
                       disabled={this.flightPlan.fixInfos[value].map(
                         (it) => it?.fix === undefined || (it.radials?.length ?? 0) < 1,
                       )}
@@ -178,6 +181,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
                     <InputField<number, number, false>
                       class="mfd-fms-fpln-fix-info-radius-1"
+                      alignText="flex-start"
                       disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.radii?.[0]?.radius ?? null)}
                       onModified={(radius) => {
@@ -220,13 +224,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
           ))}
         </TopTabNavigator>
 
-        <Button
-          label="RETURN"
-          onClick={() => {
-            this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
-          }}
-          buttonStyle="width: 130px; margin-left: 12px;"
-        />
+        <FlightPlanFooter bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
 
         {/* end page content */}
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
