@@ -209,7 +209,7 @@ export class FwsCore {
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
 
-  private readonly startupCompleted = Subject.create(false);
+  public readonly startupCompleted = Subject.create(false);
 
   /** Keys/IDs of all failures currently active, irrespective they are already cleared or not */
   public readonly allCurrentFailures: string[] = [];
@@ -567,6 +567,12 @@ export class FwsCore {
   public readonly engine4Running = Subject.create(false);
 
   public readonly allBatteriesOff = Subject.create(false);
+
+  public readonly dcEssOrDc2Powered = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.dcESSBusPowered,
+    this.dc2BusPowered,
+  );
 
   /* 26 - FIRE */
 
@@ -1034,7 +1040,6 @@ export class FwsCore {
   public readonly yellowElecAandBPumpOff = Subject.create(false);
 
   /* 31 - FWS */
-
   public readonly fwcFlightPhase = Subject.create(-1);
 
   public readonly flightPhase128 = Subject.create(false);
@@ -1050,6 +1055,8 @@ export class FwsCore {
   public readonly flightPhase89 = Subject.create(false);
 
   public readonly flightPhase910 = Subject.create(false);
+
+  private readonly previousFlightPhase = Subject.create(-1);
 
   public readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
 
@@ -1089,6 +1096,16 @@ export class FwsCore {
   public readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
   public readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
+
+  private readonly shutDownFor40MinutesConfNode = new NXLogicConfirmNode(340);
+
+  private readonly shutDownFor40Minutes = Subject.create(false);
+
+  public readonly resetAllCl = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.startupCompleted,
+    this.shutDownFor40Minutes,
+  );
 
   /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
   public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
@@ -1663,7 +1680,7 @@ export class FwsCore {
       FwsCore.AURAL_SC_INHIBIT_TIME,
     );
 
-    this.acESSBusPowered.sub((v) => {
+    this.dcEssOrDc2Powered.sub((v) => {
       if (v) {
         this.startupTimer.schedule(() => {
           this.startupCompleted.set(true);
@@ -1845,6 +1862,9 @@ export class FwsCore {
 
     // Inputs update
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
+
+    this.previousFlightPhase.set(this.fwcFlightPhase.get());
+
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const phase3 = this.fwcFlightPhase.get() === 3;
     const phase6 = this.fwcFlightPhase.get() === 6;
@@ -1864,6 +1884,13 @@ export class FwsCore {
 
     this.phase815MinConfNode.write(this.fwcFlightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
+
+    this.shutDownFor40Minutes.set(
+      this.shutDownFor40MinutesConfNode.write(
+        this.fwcFlightPhase.get() == 12 || (this.fwcFlightPhase.get() === 1 && this.previousFlightPhase.get() == 12),
+        deltaTime,
+      ),
+    );
 
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
@@ -1913,13 +1940,13 @@ export class FwsCore {
     );
 
     /* ELECTRICAL acquisition */
-    this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
-    this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
-    this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
-    this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
-    this.ac3BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_3_BUS_IS_POWERED', 'bool'));
-    this.ac4BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_4_BUS_IS_POWERED', 'bool'));
-    this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
+    this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool') > 0);
+    this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool') > 0);
+    this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool') > 0);
+    this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool') > 0);
+    this.ac3BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_3_BUS_IS_POWERED', 'bool') > 0);
+    this.ac4BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_4_BUS_IS_POWERED', 'bool') > 0);
+    this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
 
     /* ENGINE AND THROTTLE acquisition */
 

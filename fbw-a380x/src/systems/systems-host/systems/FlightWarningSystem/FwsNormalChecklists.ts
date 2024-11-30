@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { MapSubject, SimVarValueType, Subject, SubscribableMapEventType } from '@microsoft/msfs-sdk';
+import { MappedSubject, MapSubject, SimVarValueType, Subject, SubscribableMapEventType, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
@@ -57,6 +57,13 @@ export class FwsNormalChecklists {
     this.checklistId.sub((id) => this.pub.pub('fws_normal_checklists_id', id, true), true);
     this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line + 1, true), true); // Start at second line, headline not selectable
     this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
+
+    this.fws.resetAllCl.sub((v) => {
+      if (v) {
+        this.reset(null);
+      }
+
+    });
 
     // Populate checklistState
     const keys = this.getNormalProceduresKeysSorted();
@@ -189,23 +196,7 @@ export class FwsNormalChecklists {
 
       // Reset all following checklists
       const fromId = this.getNormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get());
-      const ids = this.getNormalProceduresKeysSorted();
-
-      if (fromId !== -1) {
-        for (let id = fromId + 1; id < ids.length; id++) {
-          const idFollowing = ids[id];
-          const clFollowing = this.checklistState.getValue(idFollowing);
-          const procFollowing = EcamNormalProcedures[idFollowing];
-          const clStateFollowing: ChecklistState = {
-            id: idFollowing,
-            checklistCompleted: procFollowing.deferred ? true : false,
-            itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
-              procFollowing.items[index].sensed ? val : false,
-            ),
-          };
-          this.checklistState.setValue(idFollowing, clStateFollowing);
-        }
-      }
+      this.reset(fromId);
       this.checklistState.setValue(this.checklistId.get(), clState);
       this.selectFirst();
     }
@@ -276,6 +267,25 @@ export class FwsNormalChecklists {
       };
       if (changed) {
         this.checklistState.setValue(procId, clState);
+      }
+    }
+  }
+
+  private reset(fromId: number | null) {
+    if (fromId !== -1) {
+      const ids = this.getNormalProceduresKeysSorted();
+      for (let id = fromId === null ? 0 : fromId + 1; id < ids.length; id++) {
+        const idFollowing = ids[id];
+        const clFollowing = this.checklistState.getValue(idFollowing);
+        const procFollowing = EcamNormalProcedures[idFollowing];
+        const clStateFollowing: ChecklistState = {
+          id: idFollowing,
+          checklistCompleted: procFollowing.deferred ? true : false,
+          itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
+            procFollowing.items[index].sensed ? val : false,
+          ),
+        };
+        this.checklistState.setValue(idFollowing, clStateFollowing);
       }
     }
   }
