@@ -629,7 +629,7 @@ export class InputField<
           <div
             ref={this.spanningDivRef}
             class="mfd-input-field-text-input-container"
-            style={`justify-content: ${this.props.alignText};`}
+            style={`justify-content: ${this.alignTextSub.get()};`}
           >
             <span ref={this.textInputRef} tabIndex={-1} class="mfd-input-field-text-input">
               .
