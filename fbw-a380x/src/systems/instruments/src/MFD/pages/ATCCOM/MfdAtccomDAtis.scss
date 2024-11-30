@@ -5,12 +5,11 @@
   width: 100%;
   padding: 5px 5px 0 5px;
   height: 250px;
+  position: relative;
 
   .d-atis-icon {
-    // border: 1px solid #fff;
-    width: 60px;
     height: 40px;
-    position: relative;
+    position: absolute;
 
     svg {
       position: absolute;
@@ -20,13 +19,32 @@
     }
   }
   .atis-time {
-    margin: 0 10px;
+    position: absolute;
+    left: 264px;
+    top: 20px;
     font-size: 22px;
   }
   .atis-version {
-    margin: 0 5px;
+    position: absolute;
     font-size: 22px;
+    top: 20px;
+    left: 232px;
   }
+}
+
+.d-atis-icon.new-atis-symbol {
+  left: 340px;
+  top: 12px;
+}
+
+.d-atis-icon.auto-update-symbol {
+  left: 386px;
+  top: 12px;
+}
+
+.d-atis-icon.auto-print-symbol {
+  left: 429px;
+  top: 12px;
 }
 
 .mfd-atccom-datis-block-header-row {
@@ -37,7 +55,9 @@
 .mfd-atccom-datis-block-msgarea {
   font-size: 27px;
   line-height: 38px;
-  padding-left: 15px;
+  padding: 0 7px;
+  position: absolute;
+  top: 60px;
 }
 
 .mfd-atccom-datis-footer {
