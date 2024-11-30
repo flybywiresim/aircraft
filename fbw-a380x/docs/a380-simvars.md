@@ -1085,3 +1085,9 @@
     |-------|-------------|
     | 0     | Left Seat   |
     | 1     | Right Seat  |
+
+- `L:A32NX_EXT_PWR_AVAIL:{number}`
+  - Bool
+  - If ground power is avail or not
+  - {number}
+        - 1 - 4
