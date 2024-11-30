@@ -5,7 +5,7 @@ import buildUtils from './build-utils.js'
 
 buildUtils.defineEnvVars();
 
-const isCiBuild = process.env.CI === 'true';
+const isCiBuild = process.env.GITHUB_ACTIONS === 'true';
 const resolutionIs8k = process.env.TEXTURE_RESOLUTION_8K === 'true';
 
 export default new TaskOfTasks('all', [
