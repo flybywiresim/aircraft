@@ -42,6 +42,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   handleFocusBlurExternally?: boolean;
   containerStyle?: string;
   alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
+  /** Whether the temporary flight plan is active and should color this field yellow */
   tmpyActive?: Subscribable<boolean>;
   /** Only handles KCCU input for respective side, receives key name only */
   hEventConsumer: Consumer<string>;

@@ -4,11 +4,13 @@ import { FmsPage } from '../../common/FmsPage';
 import { ObservableFlightPlan } from '@fmgc/flightplanning/plans/ObservableFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
+  ComponentProps,
   DateTimeFormatter,
   DisplayComponent,
   FSComponent,
   NumberFormatter,
   Subject,
+  Subscribable,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -22,8 +24,14 @@ import { Button } from '../../common/Button';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 import './MfdFmsFplnFixInfo.scss';
+import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
+  private readonly flightPlanManager = new ObservableFlightPlanManager(
+    this.props.bus,
+    this.props.fmcService.master!.flightPlanService,
+  );
+
   private flightPlan = new ObservableFlightPlan(
     this.props.bus,
     this.props.fmcService.master!.flightPlanService,
@@ -74,6 +82,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                   }}
                   errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                   dataEntryFormat={new FixFormat()}
+                  tmpyActive={this.flightPlanManager.temporaryPlanExists}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -120,6 +129,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       }}
                       errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                       dataEntryFormat={new RadialFormat()}
+                      tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -152,13 +162,14 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       }}
                       errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                       dataEntryFormat={new RadialFormat()}
+                      tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
                   </span>
                   <span class="fc mfd-fms-fpln-fix-info-table-col-right">
-                    <FixInfoPredictionRow />
-                    <FixInfoPredictionRow />
+                    <FixInfoPredictionRow tmpyActive={this.flightPlanManager.temporaryPlanExists} />
+                    <FixInfoPredictionRow tmpyActive={this.flightPlanManager.temporaryPlanExists} />
                   </span>
                 </div>
                 <div class="fr mfd-fms-fpln-fix-info-table-row-3">
@@ -186,6 +197,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       }}
                       errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
                       dataEntryFormat={new RadiusFormat()}
+                      tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -223,7 +235,12 @@ export class MfdFmsFplnFixInfo extends FmsPage {
   }
 }
 
-class FixInfoPredictionRow extends DisplayComponent<any> {
+interface FixInfoPredictionRowProps extends ComponentProps {
+  /** Whether a temporary flight plan is active */
+  tmpyActive: Subscribable<boolean>;
+}
+
+class FixInfoPredictionRow extends DisplayComponent<FixInfoPredictionRowProps> {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly buttonRef = FSComponent.createRef<Button>();
@@ -264,7 +281,14 @@ class FixInfoPredictionRow extends DisplayComponent<any> {
 
   public render(): VNode | null {
     return (
-      <span class="fr aic mfd-fms-fpln-fix-info-intercept-row">
+      <span
+        class={{
+          fr: true,
+          ac: true,
+          'mfd-fms-fpln-fix-info-intercept-row': true,
+          tmpy: this.props.tmpyActive,
+        }}
+      >
         <span class="fr aic mfd-fms-fpln-fix-info-eta">
           <span class="mfd-value bigger">{this.eteText}</span>
         </span>
