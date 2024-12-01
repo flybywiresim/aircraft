@@ -46,6 +46,8 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
     SubscribableUtils.toSubscribable(this.props.className2 ?? 'HiddenElement', true),
   );
 
+  private prevClass = '';
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -62,9 +64,20 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
           : this.flashingMtrig.write(visible && shouldFlash, dt),
       );
     });
+
+    this.class.sub((value) => {
+      this.props.children.forEach((child) => {
+        const classList = ((child as VNode).instance as HTMLElement).classList;
+
+        classList.remove(...FSComponent.parseCssClassesFromString(this.prevClass));
+        classList.add(...FSComponent.parseCssClassesFromString(value));
+      });
+
+      this.prevClass = value;
+    }, true);
   }
 
   render(): VNode {
-    return <g class={this.class}>{this.props.children}</g>;
+    return <>{this.props.children}</>;
   }
 }

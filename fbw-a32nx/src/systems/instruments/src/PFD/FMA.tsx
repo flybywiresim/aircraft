@@ -1092,7 +1092,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             flashDuration={Infinity}
             flashing={this.inSpeedProtection}
             className1={'Cyan'}
-            className2={'DimmendCyan Fill'}
+            className2={'DimmedCyan Fill'}
           >
             <tspan xml:space="preserve">{this.additionalText}</tspan>
           </FlashOneHertz>
