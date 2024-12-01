@@ -81,6 +81,7 @@
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
+1. [A380X/FWS] Add automatic ECL checklist reset - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
