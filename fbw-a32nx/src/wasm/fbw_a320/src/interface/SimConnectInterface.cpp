@@ -2103,8 +2103,8 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
 
     case Events::KOHLSMANN_SET: {
       if (data1 == 0 || data1 == 1) {
-        simInputAutopilot.baro_left_set = data0;
-        simInputAutopilot.baro_right_set = data0;
+        simInputAutopilot.baro_left_set = data0 / 16.;
+        simInputAutopilot.baro_right_set = data0 / 16.;
       }
       if (data1 != 1) {
         sendEventEx1(KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
