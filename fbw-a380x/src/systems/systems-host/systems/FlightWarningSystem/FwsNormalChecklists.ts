@@ -1,7 +1,14 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { MappedSubject, MapSubject, SimVarValueType, Subject, SubscribableMapEventType, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import {
+  MappedSubject,
+  MapSubject,
+  SimVarValueType,
+  Subject,
+  SubscribableMapEventType,
+  SubscribableMapFunctions,
+} from '@microsoft/msfs-sdk';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
@@ -58,12 +65,33 @@ export class FwsNormalChecklists {
     this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line + 1, true), true); // Start at second line, headline not selectable
     this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
 
-    this.fws.resetAllCl.sub((v) => {
+    this.fws.startupCompleted.sub((v) => {
       if (v) {
         this.reset(null);
       }
-
     });
+
+    this.fws.shutDownFor50MinutesCheckListReset.sub((v) => {
+      if (v) {
+        this.reset(null);
+      }
+    });
+
+    this.fws.fwcFlightPhase.sub((phase) => {
+      if (phase !== 1) {
+        this.fws.manualCheckListReset.set(false);
+      }
+    });
+
+    MappedSubject.create(SubscribableMapFunctions.or(), this.fws.eng1Or2TakeoffPower, this.fws.eng3Or4TakeoffPower).sub(
+      (v) => {
+        if (v) {
+          this.reset(
+            this.getNormalProceduresKeysSorted().findIndex((i) => i === 1000005), // reset starting at line up,
+          );
+        }
+      },
+    );
 
     // Populate checklistState
     const keys = this.getNormalProceduresKeysSorted();
@@ -274,6 +302,7 @@ export class FwsNormalChecklists {
   private reset(fromId: number | null) {
     if (fromId !== -1) {
       const ids = this.getNormalProceduresKeysSorted();
+      this.fws.manualCheckListReset.set(fromId !== null);
       for (let id = fromId === null ? 0 : fromId + 1; id < ids.length; id++) {
         const idFollowing = ids[id];
         const clFollowing = this.checklistState.getValue(idFollowing);

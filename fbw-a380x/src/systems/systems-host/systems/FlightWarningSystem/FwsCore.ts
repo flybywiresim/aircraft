@@ -567,13 +567,6 @@ export class FwsCore {
   public readonly engine4Running = Subject.create(false);
 
   public readonly allBatteriesOff = Subject.create(false);
-
-  public readonly dcEssOrDc2Powered = MappedSubject.create(
-    SubscribableMapFunctions.or(),
-    this.dcESSBusPowered,
-    this.dc2BusPowered,
-  );
-
   /* 26 - FIRE */
 
   public readonly fduDiscreteWord = Arinc429Register.empty();
@@ -1056,8 +1049,6 @@ export class FwsCore {
 
   public readonly flightPhase910 = Subject.create(false);
 
-  private readonly previousFlightPhase = Subject.create(-1);
-
   public readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
 
   public readonly toInhibitTimer = new NXLogicConfirmNode(3);
@@ -1097,15 +1088,13 @@ export class FwsCore {
 
   public readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
 
-  private readonly shutDownFor40MinutesConfNode = new NXLogicConfirmNode(340);
+  public readonly manualCheckListReset = Subject.create(false);
 
-  private readonly shutDownFor40Minutes = Subject.create(false);
+  private readonly phase12ShutdownMemoryNode = new NXLogicMemoryNode();
 
-  public readonly resetAllCl = MappedSubject.create(
-    SubscribableMapFunctions.or(),
-    this.startupCompleted,
-    this.shutDownFor40Minutes,
-  );
+  private readonly shutDownFor50MinutesClResetConfNode = new NXLogicConfirmNode(3000);
+
+  public readonly shutDownFor50MinutesCheckListReset = Subject.create(false);
 
   /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
   public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
@@ -1680,18 +1669,24 @@ export class FwsCore {
       FwsCore.AURAL_SC_INHIBIT_TIME,
     );
 
-    this.dcEssOrDc2Powered.sub((v) => {
-      if (v) {
-        this.startupTimer.schedule(() => {
-          this.startupCompleted.set(true);
-          console.log('PseudoFWC startup completed.');
-        }, FwsCore.FWC_STARTUP_TIME);
-      } else {
-        this.startupTimer.clear();
-        this.startupCompleted.set(false);
-        console.log('PseudoFWC shut down.');
-      }
-    });
+    if (this.fwsNumber === 1) {
+      this.dcESSBusPowered.sub((v) => this.handlePowerChange(v));
+    } else {
+      this.dc2BusPowered.sub((v) => this.handlePowerChange(v));
+    }
+  }
+
+  private handlePowerChange(powered: boolean) {
+    if (powered) {
+      this.startupTimer.schedule(() => {
+        this.startupCompleted.set(true);
+        console.log('PseudoFWC startup completed.');
+      }, FwsCore.FWC_STARTUP_TIME);
+    } else {
+      this.startupTimer.clear();
+      this.startupCompleted.set(false);
+      console.log('PseudoFWC shut down.');
+    }
   }
 
   private registerKeyEvents() {
@@ -1862,10 +1857,8 @@ export class FwsCore {
 
     // Inputs update
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
-
-    this.previousFlightPhase.set(this.fwcFlightPhase.get());
-
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
+
     const phase3 = this.fwcFlightPhase.get() === 3;
     const phase6 = this.fwcFlightPhase.get() === 6;
     this.flightPhase3PulseNode.write(phase3, deltaTime);
@@ -1885,9 +1878,11 @@ export class FwsCore {
     this.phase815MinConfNode.write(this.fwcFlightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
 
-    this.shutDownFor40Minutes.set(
-      this.shutDownFor40MinutesConfNode.write(
-        this.fwcFlightPhase.get() == 12 || (this.fwcFlightPhase.get() === 1 && this.previousFlightPhase.get() == 12),
+    this.phase12ShutdownMemoryNode.write(this.fwcFlightPhase.get() == 12, !this.phase112.get());
+
+    this.shutDownFor50MinutesCheckListReset.set(
+      this.shutDownFor50MinutesClResetConfNode.write(
+        !this.manualCheckListReset.get() && this.phase12ShutdownMemoryNode.read(),
         deltaTime,
       ),
     );
