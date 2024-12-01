@@ -335,7 +335,9 @@ export class PseudoFWC {
 
   public readonly autoPilotOffInvoluntaryMemory = new NXLogicMemoryNode(false);
 
-  public readonly autoPilotOffInvoluntary = Subject.create(false);
+  public readonly autoPilotOffAlertShown = Subject.create(false);
+
+  public readonly autoPilotOffAlertShownMemory = new NXLogicMemoryNode(false);
 
   public readonly autoPilotOffUnacknowledged = new NXLogicMemoryNode(false);
 
@@ -1506,7 +1508,7 @@ export class PseudoFWC {
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
     // AP OFF
-    const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
+    const apEngaged: boolean = !!SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
@@ -1549,7 +1551,12 @@ export class PseudoFWC {
       !apEngaged && !this.autoPilotOffVoluntaryMemory.read() && this.autoPilotOffUnacknowledged.read(),
       !this.autoPilotOffUnacknowledged.read(),
     );
-    this.autoPilotOffInvoluntary.set(this.autoPilotOffInvoluntaryMemory.read());
+
+    this.autoPilotOffAlertShownMemory.write(
+      this.autoPilotOffInvoluntaryMemory.read(),
+      this.fwcFlightPhase.get() === 1 || apEngaged,
+    );
+    this.autoPilotOffAlertShown.set(this.autoPilotOffAlertShownMemory.read());
     this.autoPilotOffShowMemo.set(this.autoPilotOffVoluntaryMemory.read() || this.autoPilotOffInvoluntaryMemory.read());
 
     if (this.autoPilotDisengagedInstantPulse.read()) {
@@ -2922,8 +2929,8 @@ export class PseudoFWC {
     220800001: {
       // AP OFF involuntary
       flightPhaseInhib: [],
-      simVarIsActive: this.autoPilotOffInvoluntary,
-      auralWarning: this.autoPilotOffInvoluntary.map((a) => (a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None)),
+      simVarIsActive: this.autoPilotOffAlertShown,
+      auralWarning: this.autoPilotOffAlertShown.map((a) => (a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None)),
       whichCodeToReturn: () => [0],
       codesToReturn: ['220800001'],
       memoInhibit: () => false,
