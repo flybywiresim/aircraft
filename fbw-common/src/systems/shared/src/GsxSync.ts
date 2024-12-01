@@ -45,6 +45,12 @@ enum DoorTarget {
   OPEN = 1,
 }
 
+enum PowerAction {
+  NOOP = -1,
+  DISCONNECT = 0,
+  CONNECT = 1,
+}
+
 const DELAY_CARGO_CLOSE = 60000;
 const DELAY_REFUEL_RESTART = 2000;
 const DELAY_RATE_RESTORE = DELAY_REFUEL_RESTART + 1000;
@@ -66,7 +72,6 @@ abstract class GsxSync implements Instrument {
   protected readonly rateTimer = new DebounceTimer();
   protected desiredFuel = 0;
   protected readonly fuelHose = ConsumerSubject.create(null, 0);
-  //   protected readonly stateRefuel = ConsumerSubject.create(null, 1);
   protected readonly refuelStartedByUser = ConsumerSubject.create(null, false);
   protected initialIngameFrame = false;
 
@@ -95,14 +100,11 @@ abstract class GsxSync implements Instrument {
     this.stateDeparture.setConsumer(this.sub.on('gsx_departure_state'));
     this.stateGpu.setConsumer(this.sub.on('gsx_gpu_state'));
     this.fuelHose.setConsumer(this.sub.on('gsx_fuelhose_connected'));
-    //   this.stateRefuel.setConsumer(this.sub.on('gsx_refuel_state'));
     this.refuelStartedByUser.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
 
     this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
-    //   this.stateRefuel.sub(this.onRefuelState.bind(this));
     this.refuelStartedByUser.sub(this.onRefuelStartedByUser.bind(this));
 
-    //this.stateBoard.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
     this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
@@ -133,11 +135,10 @@ abstract class GsxSync implements Instrument {
 
   protected onCouatlStarted(state: number): void {
     if (state === GsxStates.TRUE) {
+      //gsx-ism: we don't want gsx progressive fuel when the aircraft progressively refuels
       SimVar.SetSimVarValue('L:FSDT_GSX_SET_PROGRESS_REFUEL', SimVarValueType.Number, -1);
     }
   }
-
-  //   protected onRefuelState(state: number): void {}
 
   protected abstract getFob(): number;
 
@@ -154,9 +155,12 @@ abstract class GsxSync implements Instrument {
       return;
     }
 
+    //start De/Refuel when Hose is connected
     if (hose === GsxStates.CONNECTED && !this.refuelStartedByUser.get() && !this.isRefuelActive) {
       this.desiredFuel = this.getDesiredFuel();
       this.isDefuel = this.needsDefuel();
+
+      //need an Fuel Increase later, so target is lowered for desired >= FOB Cases
       if (this.isDefuel) {
         if (this.desiredFuel >= this.DEFUEL_DIFF_TARGET) {
           this.setDesiredFuel(this.desiredFuel - this.DEFUEL_DIFF_TARGET);
@@ -170,23 +174,14 @@ abstract class GsxSync implements Instrument {
       }, DELAY_FUEL_START);
     }
 
+    //something bad happend, hose disconnected while still refueling - cleanup
     if (hose === GsxStates.DISCONNECTED && (this.refuelStartedByUser.get() || this.isRefuelActive)) {
-      if (this.refuelStartedByUser.get()) {
-        this.setRefuelStartedState(false);
+      if (this.isDefuel) {
+        this.setDesiredFuel(this.desiredFuel);
       }
 
-      this.setDesiredFuel(this.desiredFuel);
-      const refuelRate = this.getRefuelRate();
-      this.setRefuelRate(RefuelRate.INSTANT);
-
-      this.setRefuelStartedState(true);
       this.isDefuel = false;
       this.desiredFuel = 0;
-
-      this.rateTimer.schedule(() => {
-        this.setRefuelRate(refuelRate);
-      }, DELAY_RATE_RESTORE);
-
       this.isRefuelActive = false;
     }
   }
@@ -196,6 +191,7 @@ abstract class GsxSync implements Instrument {
       return;
     }
 
+    //defuel has finished - instant refuel to desired to get the truck triggered to leave
     if (!refuel && this.fuelHose.get() === GsxStates.CONNECTED && this.isDefuel) {
       this.setDesiredFuel(this.desiredFuel);
       const refuelRate = this.getRefuelRate();
@@ -227,36 +223,42 @@ abstract class GsxSync implements Instrument {
     const gpuState = this.stateGpu.get();
     const boardState = this.stateBoard.get();
     const departureState = this.stateDeparture.get();
-    let action = -1;
+    let action = PowerAction.NOOP;
 
+    //external is available (as of internal State) - check if disconnect is needed
     if (extAvail) {
+      //pushback was requested (when boarding not running)
       if (
         boardState !== GsxServiceStates.REQUESTED &&
         boardState !== GsxServiceStates.ACTIVE &&
         departureState >= GsxServiceStates.REQUESTED
       ) {
-        action = 0;
+        action = PowerAction.DISCONNECT;
+        //pushback is active (in it wasn't catched before)
       } else if (departureState === GsxServiceStates.ACTIVE) {
-        action = 0;
+        action = PowerAction.DISCONNECT;
+        //jetway and gpu both not connected
       } else if (
         jetwayState >= GsxServiceStates.CALLABLE &&
         jetwayState <= GsxServiceStates.REQUESTED &&
         gpuState !== GsxServiceStates.ACTIVE
       ) {
-        action = 0;
+        action = PowerAction.DISCONNECT;
       }
+      //external is not available - check if connect is needed
     } else {
       if (
+        //jetway or gpu connected
         (jetwayState === GsxServiceStates.ACTIVE || gpuState === GsxServiceStates.ACTIVE) &&
         departureState < GsxServiceStates.REQUESTED
       ) {
-        action = 1;
+        action = PowerAction.CONNECT;
       }
     }
 
-    if (action == 1) {
+    if (action == PowerAction.CONNECT) {
       this.setExtPower(true);
-    } else if (action == 0) {
+    } else if (action == PowerAction.DISCONNECT) {
       this.setExtPower(false);
     }
   }
@@ -307,8 +309,6 @@ export class GsxSyncA320 extends GsxSync {
 }
 
 export class GsxSyncA380 extends GsxSync {
-  protected cargoFwdToggled = false;
-  protected cargoAftToggled = false;
   protected readonly toggleCargo1 = ConsumerSubject.create(null, 0);
   protected readonly toggleCargo2 = ConsumerSubject.create(null, 0);
   protected readonly stateDeboard = ConsumerSubject.create(null, 1);
@@ -330,12 +330,13 @@ export class GsxSyncA380 extends GsxSync {
     this.cargoPercentDeboard.setConsumer(this.sub.on('gsx_deboarding_cargo_percent'));
     this.cargoDoorTarget.setConsumer(this.sub.on('msfs_interactive_point_goal_16'));
 
-    this.toggleCargo1.sub(this.onToggleCargo1.bind(this));
-    this.toggleCargo2.sub(this.onToggleCargo2.bind(this));
+    this.toggleCargo1.sub(this.onToggleCargo.bind(this));
+    this.toggleCargo2.sub(this.onToggleCargo.bind(this));
     this.stateBoard.sub(this.onBoardingCompleted.bind(this));
     this.stateDeboard.sub(this.onBoardingCompleted.bind(this));
     this.cargoPercentBoard.sub(this.onCargoBoardCompleted.bind(this));
     this.cargoPercentDeboard.sub(this.onCargoDeboardCompleted.bind(this));
+    this.stateDeparture.sub(this.onPushbackActive.bind(this));
   }
 
   protected getFob(): number {
@@ -362,33 +363,10 @@ export class GsxSyncA380 extends GsxSync {
     SimVar.SetSimVarValue(`A:INTERACTIVE POINT GOAL:${index}`, SimVarValueType.PercentOver100, goal);
   }
 
-  protected toggleCargo(): void {
-    if (!this.isCargoOpen()) {
+  protected onToggleCargo(toggle: number) {
+    //received first toggle from gsx - only used for opening the doors
+    if (toggle !== GsxStates.FALSE && !this.isCargoOpen()) {
       this.setCargoDoor(DoorTarget.OPEN);
-    } else {
-      this.setCargoDoor(DoorTarget.CLOSED);
-    }
-    this.cargoFwdToggled = false;
-    this.cargoAftToggled = false;
-  }
-
-  protected onToggleCargo1(toggle: number): void {
-    if (toggle !== GsxStates.FALSE) {
-      this.cargoFwdToggled = true;
-    }
-
-    if (toggle !== GsxStates.FALSE && this.cargoFwdToggled && this.cargoAftToggled) {
-      this.toggleCargo();
-    }
-  }
-
-  protected onToggleCargo2(toggle: number): void {
-    if (toggle !== GsxStates.FALSE) {
-      this.cargoAftToggled = true;
-    }
-
-    if (toggle !== GsxStates.FALSE && this.cargoFwdToggled && this.cargoAftToggled) {
-      this.toggleCargo();
     }
   }
 
@@ -401,6 +379,7 @@ export class GsxSyncA380 extends GsxSync {
   }
 
   protected startCargoTimer(percent: number, delay: number): void {
+    //close doors with a certain delay, after (un)loading was completed (==100%)
     if (percent === 100 && !this.cargoTimer.isPending() && this.isCargoOpen()) {
       this.fuelTimer.schedule(() => {
         this.setCargoDoor(DoorTarget.CLOSED);
@@ -409,7 +388,19 @@ export class GsxSyncA380 extends GsxSync {
   }
 
   protected onBoardingCompleted(state: number): void {
+    //just to be safe, check again when boarding was completed
     if (state === GsxServiceStates.COMPLETED && this.isCargoOpen()) {
+      this.setCargoDoor(DoorTarget.CLOSED);
+    }
+  }
+
+  protected onPushbackActive(pushState: number): void {
+    //just to be safe, check again when pushback is active - maybe something bad happened on boarding
+    if (
+      this.isCargoOpen() &&
+      (pushState === GsxServiceStates.ACTIVE ||
+        (pushState === GsxServiceStates.REQUESTED && this.stateBoard.get() !== GsxServiceStates.ACTIVE))
+    ) {
       this.setCargoDoor(DoorTarget.CLOSED);
     }
   }
