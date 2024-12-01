@@ -87,7 +87,7 @@ export class FwsNormalChecklists {
       (v) => {
         if (v) {
           this.reset(
-            this.getNormalProceduresKeysSorted().findIndex((i) => i === 1000005), // reset starting at line up,
+            this.getNormalProceduresKeysSorted().findIndex((i) => i === 1000006), // reset starting at departure change,
           );
         }
       },
