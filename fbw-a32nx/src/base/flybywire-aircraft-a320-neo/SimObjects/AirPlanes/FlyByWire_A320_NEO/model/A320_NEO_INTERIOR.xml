@@ -250,20 +250,20 @@
 
             <!-- FCU INTEG LT -->
             <Component ID="FCU_INTEG">
-                <UseTemplate Name="FBW_Stepless_Potentiometer">
-                    <NODE_ID>LIGHTING_Knob_Glareshield_2</NODE_ID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
-                    <POTENTIOMETER>84</POTENTIOMETER>
-                </UseTemplate>
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
+                <NODE_ID>LIGHTING_Knob_Glareshield_2</NODE_ID>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
+                <POTENTIOMETER>84</POTENTIOMETER>
+            </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                    <NODE_ID>LIGHTS_AUTOPILOT</NODE_ID>
-                    <SIMVAR_INDEX>2</SIMVAR_INDEX>
-                    <POTENTIOMETER>84</POTENTIOMETER>
-                    <!-- ref FBW-22-06 C/B 5LF -->
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
-                </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>LIGHTS_AUTOPILOT</NODE_ID>
+                <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <!-- ref FBW-22-06 C/B 5LF -->
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                     <NODE_ID>A32NX_FCU_DECAL_NEW</NODE_ID>
@@ -683,6 +683,7 @@
             <!-- EMERGENCY GEAR EXTENSION -->
             <UseTemplate Name="FBW_HANDLING_GRAVITYGEAR_Template">
                 <NODE_ID>LEVER_GRAVITYGEAR</NODE_ID>
+                <PART_ID>LEVER_GRAVITYGEAR</PART_ID>
             </UseTemplate>
 
             <CameraTitle>PedestalAft</CameraTitle>
@@ -1461,6 +1462,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Airbus_Engine_Generator_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_GEN1</NODE_ID>
+                    <PART_ID>PUSH_OVHD_ELEC_GEN1</PART_ID>
                     <ID>1</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1473,6 +1475,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Airbus_Engine_Generator_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_GEN2</NODE_ID>
+                    <PART_ID>PUSH_OVHD_ELEC_GEN2</PART_ID>
                     <ID>2</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1510,6 +1513,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Airbus_Engine_Bleed_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG1BLEED</NODE_ID>
+                    <PART_ID>PUSH_OVHD_AIRCOND_ENG1BLEED</PART_ID>
                     <ID>1</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1522,6 +1526,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Airbus_Engine_Bleed_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG2BLEED</NODE_ID>
+                    <PART_ID>PUSH_OVHD_AIRCOND_ENG2BLEED</PART_ID>
                     <ID>2</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1546,6 +1551,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
+                    <PART_ID>PUSH_OVHD_ELEC_COMMERCIAL</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_CODE>(L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool) !</SEQ2_CODE>
@@ -1561,6 +1567,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
+                    <PART_ID>PUSH_OVHD_ELEC_GALYCAB</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ1_CODE>(L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_HAS_FAULT, Bool)</SEQ1_CODE>
@@ -1606,6 +1613,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
+                    <PART_ID>PUSH_OVHD_ELEC_BUSTIE</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <SEQ2_CODE>(L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO, Bool) !</SEQ2_CODE>
@@ -1620,6 +1628,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
+                    <PART_ID>PUSH_OVHD_ELEC_ACESSFEED</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ1_CODE>(L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT, Bool)</SEQ1_CODE>
@@ -2177,6 +2186,7 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Airbus_Fuel_Crossfeed</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
+                    <PART_ID>PUSH_OVHD_FUEL_XFEED</PART_ID>
                     <ID>3</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2323,6 +2333,7 @@
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_AIRBUS_Push_ELAC_Template</ANIM_TEMPLATE>
+                    <PART_ID>OVHD_FLTCTL_ELAC1</PART_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <ID>1</ID>
                 </UseTemplate>
@@ -2331,6 +2342,7 @@
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
+                    <PART_ID>OVHD_FLTCTL_SEC1</PART_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <ID>1</ID>
                 </UseTemplate>
@@ -2339,6 +2351,7 @@
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_AIRBUS_Push_FAC_Template</ANIM_TEMPLATE>
+                    <PART_ID>OVHD_FLTCTL_FAC1</PART_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <ID>1</ID>
                 </UseTemplate>
@@ -2378,6 +2391,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
+                        <PART_ID>PUSH_OVHD_COCKPITDOORVIDEO</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_CODE>(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool) !</SEQ2_CODE>
@@ -2405,6 +2419,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Airbus_ADIRS_IR_Button</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_ADIRS_IR1</PART_ID>
                             <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
@@ -2412,6 +2427,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Airbus_ADIRS_IR_Button</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_ADIRS_IR2</PART_ID>
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
@@ -2419,6 +2435,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Airbus_ADIRS_IR_Button</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_ADIRS_IR3</PART_ID>
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
@@ -2482,6 +2499,7 @@
                             <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
+                            <PART_ID>PUSH_OVHD_EVAC_COMMAND</PART_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
                             <LEFT_SINGLE_CODE>0 (&gt;L:PUSH_OVHD_EVAC_HORN) (L:A32NX_EVAC_COMMAND_TOGGLE) ! (&gt;L:A32NX_EVAC_COMMAND_TOGGLE)</LEFT_SINGLE_CODE>
@@ -2585,6 +2603,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
+                        <PART_ID>PUSH_OVHD_HYD_ENG1PUMP</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT, Bool)</SEQ1_CODE>
@@ -2600,6 +2619,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_ENG2PUMP</NODE_ID>
+                        <PART_ID>PUSH_OVHD_HYD_ENG2PUMP</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT, Bool)</SEQ1_CODE>
@@ -2645,6 +2665,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_PTU</NODE_ID>
+                        <PART_ID>PUSH_OVHD_HYD_PTU</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_OVHD_HYD_PTU_PB_HAS_FAULT, Bool)</SEQ1_CODE>
@@ -2708,6 +2729,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
+                        <PART_ID>PUSH_OVHD_AIRCOND_HOTAIR</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT, Bool)</SEQ1_CODE>
@@ -2723,6 +2745,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_RAMAIR</NODE_ID>
+                        <PART_ID>PUSH_OVHD_AIRCOND_RAMAIR</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_AIRCOND_RAMAIR</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_RAMAIR_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2788,6 +2811,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OXYGEN_TWRRESET</NODE_ID>
+                        <PART_ID>PUSH_OXYGEN_TWRRESET</PART_ID>
                         <LEFT_SINGLE_CODE>
                             (L:A32NX_OXYGEN_TMR_RESET, Bool) ! (&gt;L:A32NX_OXYGEN_TMR_RESET, Bool)
                             (L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool) ! (&gt;L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool)
@@ -2806,6 +2830,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_SVGEINT</NODE_ID>
+                        <PART_ID>PUSH_OVHD_SVGEINT</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_SVGEINT_OVRD_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_CODE>(L:A32NX_SVGEINT_OVRD_ON, Bool)</SEQ2_CODE>
@@ -2820,6 +2845,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
+                        <PART_ID>PUSH_OVHD_AVIONICS_COMPLT</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AVIONICS_COMPLT_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_CODE>(L:A32NX_AVIONICS_COMPLT_ON, Bool)</SEQ2_CODE>
@@ -2908,6 +2934,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_AIRBUS_Push_ELAC_Template</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_FLTCTL_ELAC2</PART_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <ID>2</ID>
                         </UseTemplate>
@@ -2916,6 +2943,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_FLTCTL_SEC2</PART_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <ID>2</ID>
                         </UseTemplate>
@@ -2924,6 +2952,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_FLTCTL_SEC3</PART_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <ID>3</ID>
                         </UseTemplate>
@@ -2932,6 +2961,7 @@
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_AIRBUS_Push_FAC_Template</ANIM_TEMPLATE>
+                            <PART_ID>OVHD_FLTCTL_FAC2</PART_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <ID>2</ID>
                         </UseTemplate>
@@ -2944,6 +2974,7 @@
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_BLOWER</NODE_ID>
+                            <PART_ID>PUSH_OVHD_VENTILATION_BLOWER</PART_ID>
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_BLOWER_TOGGLE</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                             <SEQ1_CODE>(L:A32NX_VENTILATION_BLOWER_FAULT, Bool)</SEQ1_CODE>
@@ -2959,6 +2990,7 @@
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_EXTRACT</NODE_ID>
+                            <PART_ID>PUSH_OVHD_VENTILATION_EXTRACT</PART_ID>
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_EXTRACT_TOGGLE</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                             <SEQ1_CODE>(L:A32NX_VENTILATION_EXTRACT_FAULT, Bool)</SEQ1_CODE>
@@ -2974,6 +3006,7 @@
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
+                            <PART_ID>PUSH_OVHD_VENTILATION_CABFANS</PART_ID>
                             <TOGGLE_SIMVAR>L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <SEQ2_CODE>(L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool) !</SEQ2_CODE>
@@ -3244,6 +3277,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Airbus_Probes_Window_Heat</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_PROBESWINDOW</NODE_ID>
+                        <PART_ID>PUSH_OVHD_PROBESWINDOW</PART_ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -3531,6 +3565,7 @@
                                 <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
+                                <PART_ID>PUSH_OVHD_GPWS_TERR</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3544,6 +3579,7 @@
                                 <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
+                                <PART_ID>PUSH_OVHD_GPWS_SYS</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) !</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3557,6 +3593,7 @@
                                 <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
+                                <PART_ID>PUSH_OVHD_GPWS_GSMODE</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_GS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_GS_OFF, Bool) !</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3651,6 +3688,7 @@
                             <!-- OXYGEN PASSENGER -->
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
+                                <PART_ID>PUSH_OVHD_OXYGEN_PASSENGER</PART_ID>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ1_CODE>(L:A32NX_OXYGEN_PASSENGER_LIGHT_ON, Bool)</SEQ1_CODE>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -3712,6 +3750,7 @@
                                 <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
+                                <PART_ID>PUSH_OVHD_CALLS_EMER</PART_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_CALLS_EMER</LOCK_NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_CALLS_EMER_ON</TOGGLE_SIMVAR>
                                 <TOOLTIPID>%((L:A32NX_CALLS_EMER_ON, Bool))%{if}Turn OFF emergency call%{else}Turn ON emergency call%{end}</TOOLTIPID>
@@ -3778,6 +3817,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
+                        <PART_ID>OVHD_HYD_BLUEPUMP</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_SINGLE_CODE>
                         <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_LEAVE_CODE>
@@ -3793,6 +3833,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
+                        <PART_ID>PUSH_OVHD_HYD_G</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_G</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3808,6 +3849,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
+                        <PART_ID>PUSH_OVHD_HYD_B</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_B</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3823,6 +3865,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
+                        <PART_ID>PUSH_OVHD_HYD_Y</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_Y</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3838,6 +3881,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
+                        <PART_ID>PUSH_OVHD_ENG_FADEC1</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3852,6 +3896,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
+                        <PART_ID>PUSH_OVHD_ENG_FADEC2</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -3866,6 +3911,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
+                        <PART_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_APU_AUTOEXITING_TEST_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_APU_AUTOEXITING_TEST_OK)</SEQ1_CODE>
@@ -3918,6 +3964,7 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
+                        <PART_ID>PUSH_OVHD_CABINPRESS_MODESEL</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <DOWN_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO, Bool) !</DOWN_CODE>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -3933,6 +3980,7 @@
                         <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
+                        <PART_ID>PUSH_OVHD_CABINPRESS_DITCHING</PART_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -4202,6 +4250,7 @@
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>A32NX_AUTOPILOT_Push_FlightDirector_Template</ANIM_TEMPLATE>
+                <PART_ID>AUTOPILOT_PUSH_FLIGHTDIRECTOR</PART_ID>
                 <SIDE>L</SIDE>
                 <ID>1</ID>
             </UseTemplate>
@@ -4210,6 +4259,7 @@
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_ILS_Template</ANIM_TEMPLATE>
+                <PART_ID>LS_BUTTON_L</PART_ID>
                 <SIDE>L</SIDE>
                 <ID>1</ID>
             </UseTemplate>
@@ -4319,6 +4369,7 @@
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>A32NX_AUTOPILOT_Push_FlightDirector_Template</ANIM_TEMPLATE>
+                <PART_ID>AUTOPILOT_PUSH_FLIGHTDIRECTOR</PART_ID>
                 <SIDE>R</SIDE>
                 <ID>2</ID>
             </UseTemplate>
@@ -4327,6 +4378,7 @@
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRBUS_Push_ILS_Template</ANIM_TEMPLATE>
+                <PART_ID>LS_BUTTON_R</PART_ID>
                 <SIDE>R</SIDE>
                 <ID>2</ID>
             </UseTemplate>
@@ -5096,7 +5148,7 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
             </UseTemplate>
-        </Component>
+                </Component>
 
         <Component ID="DOOR_PANEL">
             <DefaultTemplateParameters>
@@ -5109,11 +5161,13 @@
                 <ANIM_TYPE>SWITCH</ANIM_TYPE>
                 <ANIM_TEMPLATE>A32NX_SWITCH_DOORPANEL_LOCK</ANIM_TEMPLATE>
                 <NODE_ID>SWITCH_DOORPANEL_LOCK</NODE_ID>
+                <PART_ID>SWITCH_DOORPANEL_LOCK</PART_ID>
                 <ANIM_NAME>SWITCH_DOORPANEL_LOCK</ANIM_NAME>
                 <INVERT_ANIM>1</INVERT_ANIM>
             </UseTemplate>
             <UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
                 <NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
+                <PART_ID>PUSH_DOORPANEL_OPEN</PART_ID>
                 <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
@@ -5623,6 +5677,6 @@
                 <SIDE>FO</SIDE>
                 <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
             </UseTemplate>
-        </Component>
+            </Component>
     </Behaviors>
 </ModelInfo>
