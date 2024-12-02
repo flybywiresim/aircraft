@@ -71,29 +71,23 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private AB3Message = Subject.create(false);
 
-  private readonly radioHeightConsumer = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
+  private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private readonly altitudeConsumer = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
+  private readonly altitude = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
 
-  private readonly landingElevation = ConsumerSubject.create(
-    this.sub.on('landingElevation').whenChanged(),
-    Arinc429Word.empty(),
-  );
+  private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
 
-  private readonly ap1Consumer = ConsumerSubject.create(this.sub.on('ap1Active').whenChanged(), false);
+  private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active'), false);
 
-  private readonly ap2Consumer = ConsumerSubject.create(this.sub.on('ap2Active').whenChanged(), false);
+  private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active'), false);
 
-  private readonly verticalModeConsumer = ConsumerSubject.create(this.sub.on('activeVerticalMode').whenChanged(), 0);
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
-  private readonly selectedVerticalSpeed = ConsumerSubject.create(this.sub.on('apVsSelected').whenChanged(), null);
+  private readonly selectedVerticalSpeed = ConsumerSubject.create(this.sub.on('apVsSelected'), null);
 
-  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa').whenChanged(), null);
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), null);
 
-  private readonly approachCapabilityConsumer = ConsumerSubject.create(
-    this.sub.on('approachCapability').whenChanged(),
-    0,
-  );
+  private readonly approachCapability = ConsumerSubject.create(this.sub.on('approachCapability'), 0);
 
   private disconnectApForLdg = MappedSubject.create(
     ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, approachCapability]) => {
@@ -110,15 +104,15 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
           (verticalMode === VerticalMode.VS && selectedVs <= 0))
       );
     },
-    this.ap1Consumer,
-    this.ap2Consumer,
-    this.radioHeightConsumer,
-    this.altitudeConsumer,
+    this.ap1Active,
+    this.ap2Active,
+    this.radioHeight,
+    this.altitude,
     this.landingElevation,
-    this.verticalModeConsumer,
+    this.activeVerticalMode,
     this.selectedFpa,
     this.selectedVerticalSpeed,
-    this.approachCapabilityConsumer,
+    this.approachCapability,
   );
 
   private handleFMABorders() {
@@ -126,7 +120,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       this.activeLateralMode === 32 ||
       this.activeLateralMode === 33 ||
       this.activeLateralMode === 34 ||
-      (this.activeLateralMode === 20 && this.verticalModeConsumer.get() === 24);
+      (this.activeLateralMode === 20 && this.activeVerticalMode.get() === 24);
     const BC3Message =
       getBC3Message(
         this.props.isAttExcessive.get(),
@@ -190,7 +184,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    this.verticalModeConsumer.sub(() => this.handleFMABorders());
+    this.activeVerticalMode.sub(() => this.handleFMABorders());
 
     this.sub
       .on('setHoldSpeed')
