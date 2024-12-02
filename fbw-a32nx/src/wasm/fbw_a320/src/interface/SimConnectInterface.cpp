@@ -2103,8 +2103,8 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
 
     case Events::KOHLSMANN_SET: {
       if (data1 == 0 || data1 == 1) {
-        simInputAutopilot.baro_left_set = data0;
-        simInputAutopilot.baro_right_set = data0;
+        simInputAutopilot.baro_left_set = data0 / 16.;
+        simInputAutopilot.baro_right_set = data0 / 16.;
       }
       if (data1 != 1) {
         sendEventEx1(KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
@@ -2114,8 +2114,8 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_SET: {
-      simInputAutopilot.baro_left_set = static_cast<long>(data0);
-      simInputAutopilot.baro_right_set = static_cast<long>(data0);
+      simInputAutopilot.baro_left_set = static_cast<long>(data0) / 16.;
+      simInputAutopilot.baro_right_set = static_cast<long>(data0) / 16.;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
@@ -2210,8 +2210,8 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_SET: {
-      simInputAutopilot.baro_left_set = static_cast<long>(data0);
-      simInputAutopilot.baro_right_set = static_cast<long>(data0);
+      simInputAutopilot.baro_left_set = static_cast<long>(data0) / 16.;
+      simInputAutopilot.baro_right_set = static_cast<long>(data0) / 16.;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
