@@ -1,3 +1,4 @@
+export * from './MsfsAircraftSystemPublisher';
 export * from './MsfsAutopilotAssistancePublisher';
 export * from './MsfsRadioNavigationPublisher';
 export * from './MsfsElectricsPublisher';

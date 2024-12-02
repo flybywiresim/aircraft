@@ -55,6 +55,7 @@
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
+1. [A380X/FWS] Fix green dot speed for high weights and altitudes, fix FMS speed target for GD > climb speed limit - @flogross89 (floridude)
 1. [A380X/PRIM] Fix max. spoiler deflection based on flap conf - @flogross89 (floridude)
 1. [A380X/PERF] Changed managed speeds to more realistic numbers - @slightlyclueles (abnormaltoast)
 1. [A380X/MFD] Add ATCCOM connect page - @heclak (heclak)
@@ -72,12 +73,14 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
+1. [A32NX/FCU] The FCU LCD is now still visible with ambient light when the backlight is off @tracernz (Mike)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
+1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
 1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
 
 ## 0.12.0
