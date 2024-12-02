@@ -37,12 +37,14 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
               disabled={Subject.create(false)}
               onClick={() => {}}
               buttonStyle="width: 190px;"
+              containerStyle="position:absolute; top: 3px; right:190px"
             />
             <Button
               label="UPDATE<br/>ALL"
               disabled={Subject.create(false)}
               onClick={() => {}}
               buttonStyle="width: 190px;"
+              containerStyle="position:absolute; top: 3px; right:0px"
             />
           </div>
         </div>

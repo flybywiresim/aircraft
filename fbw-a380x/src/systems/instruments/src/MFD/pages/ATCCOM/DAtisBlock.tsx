@@ -88,7 +88,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         <Button
           label=">>>"
           disabled={Subject.create(false)}
-          onClick={() => {}}
+          onClick={() => this.props.mfd.uiService.navigateTo('atccom/d-atis-received')}
           buttonStyle="width: 61px; height:33px; padding-left: 16px; position: absolute; right: 55px; top: 213px;"
           containerStyle="position: absolute; top: 0px; width: 100%;"
         />
