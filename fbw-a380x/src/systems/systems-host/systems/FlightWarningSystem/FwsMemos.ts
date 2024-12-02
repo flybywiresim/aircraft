@@ -500,11 +500,11 @@ export class FwsMemos {
     },
     '335000003': {
       // NO MOBILE
-      flightPhaseInhib: [2, 9, 10],
+      flightPhaseInhib: [],
       simVarIsActive: this.fws.noMobileSwitchPosition.map((pos) => pos === 0),
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000003'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
       failure: 0,
       sysPage: SdPages.None,
       side: 'RIGHT',
