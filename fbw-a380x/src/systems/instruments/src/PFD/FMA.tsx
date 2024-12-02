@@ -71,27 +71,27 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private AB3Message = Subject.create(false);
 
-  private readonly radioHeightConsumer = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
+  private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private readonly altitudeConsumer = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
+  private readonly altitude = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
 
   private readonly landingElevation = ConsumerSubject.create(
-    this.sub.on('landingElevation').whenChanged(),
+    this.sub.on('landingElevation'),
     Arinc429Word.empty(),
   );
 
-  private readonly ap1Consumer = ConsumerSubject.create(this.sub.on('ap1Active').whenChanged(), false);
+  private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active'), false);
 
-  private readonly ap2Consumer = ConsumerSubject.create(this.sub.on('ap2Active').whenChanged(), false);
+  private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active'), false);
 
-  private readonly verticalModeConsumer = ConsumerSubject.create(this.sub.on('activeVerticalMode').whenChanged(), 0);
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
-  private readonly selectedVerticalSpeed = ConsumerSubject.create(this.sub.on('apVsSelected').whenChanged(), null);
+  private readonly selectedVerticalSpeed = ConsumerSubject.create(this.sub.on('apVsSelected'), null);
 
-  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa').whenChanged(), null);
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), null);
 
-  private readonly approachCapabilityConsumer = ConsumerSubject.create(
-    this.sub.on('approachCapability').whenChanged(),
+  private readonly approachCapability = ConsumerSubject.create(
+    this.sub.on('approachCapability'),
     0,
   );
 
