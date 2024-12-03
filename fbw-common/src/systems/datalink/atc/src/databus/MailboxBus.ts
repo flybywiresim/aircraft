@@ -51,6 +51,8 @@ export class MailboxBus {
 
   private lastClosedMessage: [MailboxMessage[], number] = null;
 
+  private recallMessageId: number | undefined = undefined;
+
   private atcRingInterval: number = null;
 
   private poweredUp: boolean = false;
@@ -273,6 +275,8 @@ export class MailboxBus {
           });
 
           messages[0].CloseAutomatically = false;
+          this.recallMessageId = messages[0].UniqueMessageID;
+
           this.uploadMessagesToMailbox(messages);
           if (this.lastClosedMessage[0][0].Direction === AtsuMessageDirection.Downlink) {
             this.downlinkMessages.push(this.lastClosedMessage[0]);
@@ -302,6 +306,12 @@ export class MailboxBus {
         UplinkMessageStateMachine.update(this.atc, message as CpdlcMessage, true, false);
         this.uploadMessagesToMailbox([message as CpdlcMessage]);
       }
+    });
+
+    this.subscriber.on('visibleMessage').handle((uid: number) => {
+      if (!this.poweredUp) return;
+
+      this.atc.updateShownMessageInMailbox(uid, uid === this.recallMessageId);
     });
   }
 
@@ -360,14 +370,17 @@ export class MailboxBus {
   }
 
   public powerUp(): void {
+    this.recallMessageId = undefined;
     this.poweredUp = true;
   }
 
   public powerDown(): void {
+    this.recallMessageId = undefined;
     this.poweredUp = false;
   }
 
   public reset() {
+    this.recallMessageId = undefined;
     this.publisher.pub('resetSystem', true, true, false);
   }
 

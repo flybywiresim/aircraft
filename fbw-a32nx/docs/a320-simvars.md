@@ -4236,6 +4236,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
     | 0     | Left Seat   |
     | 1     | Right Seat  |
 
+- `L:A32NX_EXT_PWR_AVAIL:{number}`
+  - Bool
+  - If ground power is avail or not
+  - {number}
+        - 1
+
 # Deprecated
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE

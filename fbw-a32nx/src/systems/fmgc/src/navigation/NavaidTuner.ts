@@ -351,7 +351,7 @@ export class NavaidTuner {
 
   private handleKeyEvent(key: string, value1?: number, value0?: number, value2?: number): void {
     if (NavaidTuner.TUNING_EVENT_INTERCEPTS.includes(key)) {
-      if (this.rmpTuningActive) {
+      if (this.rmpTuningActive || !this.isInit) {
         // pass the tuning event through to the sim
         Coherent.call('TRIGGER_KEY_EVENT', key, true, value0 ?? 0, value1 ?? 0, value2 ?? 0);
       } else if (!this.blockEventMessageShown) {
