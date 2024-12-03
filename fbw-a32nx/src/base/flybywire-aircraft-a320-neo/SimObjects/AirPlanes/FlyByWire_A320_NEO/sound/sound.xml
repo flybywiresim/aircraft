@@ -2152,9 +2152,7 @@
 
         <Sound WwiseData="true" WwiseEvent="CRC" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
             <Range LowerBound="0.5" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <!-- Passengers ==================================================================================== -->
@@ -2279,69 +2277,51 @@
 
         <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_MASTER_CAUTION" Continuous="false">
             <Range LowerBound="0.5" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <!-- Altitude deviation warning =====================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
             <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="cchordshort" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION_SHORT" Continuous="false">
             <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FMA_TRIPLE_CLICK" Continuous="false">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <!-- Stall warning =====================================================================-->
         <Sound WwiseEvent="aural_stall_new" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_AUDIO_STALL_WARNING" Continuous="true">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <!-- ROP/ROW warnings =====================================================================-->
         <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_MAX_BRAKING" Continuous="true">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_SET_MAX_REVERSE" Continuous="true">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_KEEP_MAX_REVERSE" Continuous="false">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_RWY_TOO_SHORT" Continuous="true">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
     </SimVarSounds>
