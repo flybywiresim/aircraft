@@ -2509,7 +2509,7 @@ export class FwsAbnormalSensed {
     },
     281800076: {
       // NO ZFW OR ZFWCG DATA
-      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: this.fws.fmsZfwOrZfwCgNotSet,
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [false],
