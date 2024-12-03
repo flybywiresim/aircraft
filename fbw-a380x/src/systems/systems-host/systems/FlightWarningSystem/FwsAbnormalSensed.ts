@@ -1550,8 +1550,28 @@ export class FwsAbnormalSensed {
     },
     221800007: {
       // TO SPEEDS NOT INSERTED
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
       simVarIsActive: this.fws.toSpeedsNotInsertedWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800008: {
+      // TO SPEEDS TOO LOW
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.toSpeedsTooLowWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800009: {
+      // TO V1/VR/V2 DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.toV2VRV2DisagreeWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
