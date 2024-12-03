@@ -363,7 +363,7 @@ export class FmcAircraftInterface {
       this.toSpeedsNotInserted = toSpeedsNotInserted;
     }
 
-    const toSpeedsTooLow = this.getToSpeedsTooLow();
+    const toSpeedsTooLow = false; // FIXME revert once speeds are checked this.getToSpeedsTooLow();
     if (toSpeedsTooLow !== this.toSpeedsTooLow) {
       this.toSpeedsTooLow = toSpeedsTooLow;
       if (toSpeedsTooLow) {
