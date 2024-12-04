@@ -158,10 +158,10 @@ void FcuComputer::FcuComputer_MATLABFunction_e_Reset(rtDW_MATLABFunction_FcuComp
 void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T rtu_qfe_avail,
   boolean_T *rty_std, boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW)
 {
+  boolean_T tmp;
   if (rtu_knob_push && localDW->std_active) {
     localDW->std_active = false;
   } else {
-    boolean_T tmp;
     tmp = !localDW->std_active;
     if (rtu_knob_push && tmp) {
       localDW->qnh_active = !localDW->qnh_active;
@@ -177,8 +177,9 @@ void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_
   }
 
   *rty_std = localDW->std_active;
-  *rty_qnh = localDW->qnh_active;
-  *rty_qfe = localDW->qfe_active;
+  tmp = !localDW->std_active;
+  *rty_qnh = (localDW->qnh_active && tmp);
+  *rty_qfe = (localDW->qfe_active && tmp);
 }
 
 void FcuComputer::FcuComputer_MATLABFunction1_n_Init(rtDW_MATLABFunction1_FcuComputer_j_T *localDW)

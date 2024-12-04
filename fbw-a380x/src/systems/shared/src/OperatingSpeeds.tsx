@@ -116,7 +116,7 @@ export class SpeedsLookupTables {
   };
 
   static getApproachVls(conf: number, cg: number, weight: number): number {
-    if (conf === 1) {
+    if (conf === 0) {
       return SpeedsLookupTables.VLS_CONF_0.get(0, weight);
     } else {
       return SpeedsLookupTables.VLS_APPR_CONF[conf].get(cg, weight);
