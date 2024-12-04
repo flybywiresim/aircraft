@@ -55,6 +55,7 @@
 1. [A380X/PFD] Add T/D Reached PFD message - @BravoMike99 (bruno_pt99)
 1. [A380X/CAMERA] Showcase & pilot view camera fixes @LunakisDev (LunakisLeaks)
 1. [A380X/LIGHTS] Added cockpit ambient bounce lights - @ImenesFBW (Imenes)
+1. [A380X/FWS] Fix green dot speed for high weights and altitudes, fix FMS speed target for GD > climb speed limit - @flogross89 (floridude)
 1. [A380X/PRIM] Fix max. spoiler deflection based on flap conf - @flogross89 (floridude)
 1. [A380X/PERF] Changed managed speeds to more realistic numbers - @slightlyclueles (abnormaltoast)
 1. [A380X/MFD] Add ATCCOM connect page - @heclak (heclak)
@@ -81,6 +82,8 @@
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 1. [A32NX/EWD] Corrected fuel flow step to 20kg/40lbs per hour - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
+1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
+1. [A380X/FWS] Fix "NO ZFW OR ZFWCG DATA" ECAM alert after landing - @flogross89 (floridude)
 
 ## 0.12.0
 
