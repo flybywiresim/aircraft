@@ -335,8 +335,6 @@ export class FwsSoundManager {
 
   /**
    * Convenience function for FWS: If condition true and sound not already playing, add to queue. If not, dequeue sound
-   * @param [stopSoundImmediately=true] If set to true, the sound currently playing is stopped immediately, if
-   * condition is false (when working with FWS logic nodes, this should be mostly set to false)
    * */
   handleSoundCondition(soundKey: keyof typeof FwsAuralsList, condition: boolean) {
     if (condition && this.currentSoundPlaying !== soundKey) {
@@ -429,11 +427,10 @@ export class FwsSoundManager {
       this.soundQueue.forEach((sk) => {
         const s = FwsAuralsList[sk];
         if (
-          (s &&
-            this.currentSoundPlaying &&
-            FwsAuralsList[this.currentSoundPlaying]?.continuous &&
-            s.type > FwsAuralsList[this.currentSoundPlaying].type) ||
-          s.continuous
+          s &&
+          this.currentSoundPlaying &&
+          FwsAuralsList[this.currentSoundPlaying]?.continuous &&
+          s.type > FwsAuralsList[this.currentSoundPlaying].type
         ) {
           shouldInterrupt = true;
         }
