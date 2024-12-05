@@ -1616,6 +1616,7 @@ export class PseudoFWC {
     this.approachCapabilityDowngradeSuppress.write(this.approachCapabilityDowngradeDebouncePulse.read(), deltaTime);
     // Capability downgrade after debounce --> triple click
     if (this.approachCapabilityDowngradeDebouncePulse.read()) {
+      this.soundManager.enqueueSound('pause0p8s');
       this.soundManager.enqueueSound('tripleClick');
     }
     this.fmgcApproachCapability.set(fmgcApproachCapability);

@@ -71,6 +71,13 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.AuralWarning,
     continuous: false,
   },
+  pause0p8s: {
+    localVarName: 'A32NX_AUDIO_PAUSE',
+    length: 0.8,
+    priority: 4,
+    type: FwsAuralWarningType.AuralWarning,
+    continuous: false,
+  },
   autoBrakeOff: {
     localVarName: 'A32NX_AUDIO_AUTOBRAKE_OFF',
     length: 1.5,
