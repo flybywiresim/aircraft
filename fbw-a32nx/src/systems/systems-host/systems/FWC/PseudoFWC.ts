@@ -315,15 +315,15 @@ export class PseudoFWC {
   public readonly autoPilotDisengagedInstantPulse = new NXLogicPulseNode(false);
 
   /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotInstinctiveDiscPressedInLast1p9Sec = new NXLogicTriggeredMonostableNode(1.9, true);
+  public readonly autoPilotInstinctiveDiscPressedInLast1p5Sec = new NXLogicTriggeredMonostableNode(1.5, true);
 
   /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec = new NXLogicTriggeredMonostableNode(1.9, true);
+  public readonly autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec = new NXLogicTriggeredMonostableNode(1.5, true);
 
   public readonly autoPilotInstinctiveDiscPressedPulse = new NXLogicPulseNode(true);
 
   /** Stay in first warning stage for 1.8s. Raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotOffVoluntaryEndAfter1p9s = new NXLogicTriggeredMonostableNode(1.9, true);
+  public readonly autoPilotOffVoluntaryEndAfter1p5s = new NXLogicTriggeredMonostableNode(1.5, true);
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
 
@@ -1511,12 +1511,12 @@ export class PseudoFWC {
     const apEngaged: boolean = !!SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
-    const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
-    this.autoPilotInstinctiveDiscPressedInLast1p9Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
+    const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p5Sec.read();
+    this.autoPilotInstinctiveDiscPressedInLast1p5Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
 
     const voluntaryApDisc =
-      this.autoPilotDisengagedInstantPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
-    this.autoPilotOffVoluntaryEndAfter1p9s.write(voluntaryApDisc, deltaTime);
+      this.autoPilotDisengagedInstantPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p5Sec.read();
+    this.autoPilotOffVoluntaryEndAfter1p5s.write(voluntaryApDisc, deltaTime);
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
@@ -1525,7 +1525,7 @@ export class PseudoFWC {
       deltaTime,
     );
 
-    this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.write(
+    this.autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec.write(
       this.autoPilotInstinctiveDiscPressedPulse.read() &&
         (this.autoPilotInstinctiveDiscCountSinceLastFwsCycle > 1 || apDiscPressedInLast1p8SecBeforeThisCycle),
       deltaTime,
@@ -1534,8 +1534,8 @@ export class PseudoFWC {
     this.autoPilotOffVoluntaryMemory.write(
       this.autoPilotOffVoluntaryDiscPulse.read(),
       apEngaged ||
-        this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.read() ||
-        !this.autoPilotOffVoluntaryEndAfter1p9s.read(),
+        this.autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec.read() ||
+        !this.autoPilotOffVoluntaryEndAfter1p5s.read(),
     );
 
     const discPbPressedAfterDisconnection =
@@ -1544,7 +1544,7 @@ export class PseudoFWC {
 
     this.autoPilotOffUnacknowledged.write(
       this.autoPilotDisengagedInstantPulse.read(),
-      apEngaged || this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.read() || discPbPressedAfterDisconnection,
+      apEngaged || this.autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec.read() || discPbPressedAfterDisconnection,
     );
 
     this.autoPilotOffInvoluntaryMemory.write(
