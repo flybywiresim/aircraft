@@ -2148,9 +2148,7 @@
 
         <Sound WwiseData="true" WwiseEvent="CRC" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_FWC_CRC">
             <Range LowerBound="0.5" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
+
         </Sound>
 
         <!-- Passengers ==================================================================================== -->
