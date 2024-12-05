@@ -899,7 +899,7 @@ export class PseudoFWC {
 
   private readonly autoThrustStatus = Subject.create(0);
 
-  public readonly autoThrustMode = Subject.create(0);
+  private readonly atsDiscreteWord = Arinc429Register.empty();
 
   private readonly autothrustLeverWarningFlex = Subject.create(false);
 
@@ -1367,7 +1367,7 @@ export class PseudoFWC {
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
-    this.autoThrustMode.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'enum'));
+    this.atsDiscreteWord.setFromSimVar('L:A32NX_FCU_ATS_DISCRETE_WORD');
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
     this.allThrottleIdle.set(this.throttle1Position.get() < 1 && this.throttle2Position.get() < 1);
@@ -1621,7 +1621,7 @@ export class PseudoFWC {
     this.fmgcApproachCapability.set(fmgcApproachCapability);
 
     // A/THR OFF
-    const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
+    const aThrEngaged = this.atsDiscreteWord.bitValueOr(13, false);
     this.autoThrustDisengagedInstantPulse.write(aThrEngaged, deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 
