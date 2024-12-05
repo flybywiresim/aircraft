@@ -901,6 +901,12 @@ export class PseudoFWC {
 
   private readonly atsDiscreteWord = Arinc429Register.empty();
 
+  private readonly ecu1MaintenanceWord6 = Arinc429Register.empty();
+
+  private readonly ecu2MaintenanceWord6 = Arinc429Register.empty();
+
+  private readonly thrLocked = Subject.create(false);
+
   private readonly autothrustLeverWarningFlex = Subject.create(false);
 
   private readonly autothrustLeverWarningToga = Subject.create(false);
@@ -1368,6 +1374,8 @@ export class PseudoFWC {
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.atsDiscreteWord.setFromSimVar('L:A32NX_FCU_ATS_DISCRETE_WORD');
+    this.ecu1MaintenanceWord6.setFromSimVar('L:A32NX_ECU_1_MAINTENANCE_WORD_6');
+    this.ecu2MaintenanceWord6.setFromSimVar('L:A32NX_ECU_2_MAINTENANCE_WORD_6');
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
     this.allThrottleIdle.set(this.throttle1Position.get() < 1 && this.throttle2Position.get() < 1);
@@ -1643,6 +1651,9 @@ export class PseudoFWC {
     // Voluntary A/THR disconnect
     this.autoThrustOffVoluntaryMemoNode.write(voluntaryAThrDisc && !aThrEngaged, deltaTime);
     this.autoThrustOffVoluntaryCautionNode.write(voluntaryAThrDisc && !aThrEngaged, deltaTime);
+    this.thrLocked.set(
+      this.ecu1MaintenanceWord6.bitValueOr(12, false) || this.ecu2MaintenanceWord6.bitValueOr(12, false),
+    );
 
     if (!this.autoThrustOffVoluntaryMemoNode.read()) {
       this.autoThrustInhibitCaution = false;
@@ -2945,7 +2956,7 @@ export class PseudoFWC {
       // A/THR OFF involuntary
       flightPhaseInhib: [3, 4, 8],
       simVarIsActive: this.autoThrustOffInvoluntary,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => [0, this.thrLocked.get() ? 1 : null],
       codesToReturn: ['220800004', '220800005'],
       memoInhibit: () => false,
       failure: 2,

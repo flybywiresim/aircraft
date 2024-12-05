@@ -346,6 +346,7 @@ export class FwsSoundManager {
     }
   }
 
+  /** This only has an effect on sounds defining WwiseRTPC behavior/var for volume */
   setVolume(volume: FwsAuralVolume) {
     SimVar.SetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum, volume);
   }
