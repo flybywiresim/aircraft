@@ -1,4 +1,12 @@
-import { DisplayComponent, FSComponent, Subscribable, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  Subscribable,
+  Subject,
+  VNode,
+  MappedSubject,
+  SubscribableUtils,
+} from '@microsoft/msfs-sdk';
 
 import './gauges.scss';
 
@@ -451,61 +459,63 @@ interface GaugeThrustComponentProps {
   endAngle: number;
   class: string;
   visible: Subscribable<boolean>;
-  valueIdle: number;
-  valueMax: number;
+  valueIdle: number | Subscribable<number>;
+  valueMax: number | Subscribable<number>;
   reverse?: boolean;
 }
 export class GaugeThrustComponent extends DisplayComponent<GaugeThrustComponentProps> {
-  private thrustPath = Subject.create('');
-
   constructor(props: GaugeThrustComponentProps) {
     super(props);
-
-    this.update();
   }
 
-  update(): void {
-    const valueIdleDir = valueRadianAngleConverter(
-      this.props.valueIdle,
-      this.props.min,
-      this.props.max,
-      this.props.endAngle,
-      this.props.startAngle,
-    );
-    const valueIdleEnd = {
-      x: this.props.x + valueIdleDir.x * this.props.radius,
-      y: this.props.y + valueIdleDir.y * this.props.radius,
-    };
-    const valueMaxDir = valueRadianAngleConverter(
-      this.props.valueMax,
-      this.props.min,
-      this.props.max,
-      this.props.endAngle,
-      this.props.startAngle,
-    );
-    const valueMaxEnd = {
-      x: this.props.x + valueMaxDir.x * this.props.radius,
-      y: this.props.y + valueMaxDir.y * this.props.radius,
-    };
+  private readonly valueIdleSub = SubscribableUtils.toSubscribable(this.props.valueIdle, true);
 
-    this.thrustPath.set(
-      [
-        `M ${this.props.x},${this.props.y} L ${valueIdleEnd.x},${valueIdleEnd.y}`,
-        `A ${this.props.radius} ${this.props.radius} 0 ${this.props.reverse ? '0' : '1'} 1 ${valueMaxEnd.x} ${valueMaxEnd.y}`,
-        `M ${valueMaxEnd.x} ${valueMaxEnd.y} L ${this.props.x},${this.props.y}`,
-      ].join(' '),
-    );
-  }
+  private readonly valueMaxSub = SubscribableUtils.toSubscribable(this.props.valueMax, true);
+
+  private readonly thrustPath = MappedSubject.create(
+    ([valueIdle, valueMax]) => {
+      const valueIdleDir = valueRadianAngleConverter(
+        valueIdle,
+        this.props.min,
+        this.props.max,
+        this.props.endAngle,
+        this.props.startAngle,
+      );
+      const valueIdleEnd = {
+        x: this.props.x + valueIdleDir.x * this.props.radius,
+        y: this.props.y + valueIdleDir.y * this.props.radius,
+      };
+      const valueMaxDir = valueRadianAngleConverter(
+        valueMax,
+        this.props.min,
+        this.props.max,
+        this.props.endAngle,
+        this.props.startAngle,
+      );
+      const valueMaxEnd = {
+        x: this.props.x + valueMaxDir.x * this.props.radius,
+        y: this.props.y + valueMaxDir.y * this.props.radius,
+      };
+
+      const diffAngle = valueMaxDir.angle - valueIdleDir.angle;
+
+      return [
+        `M ${this.props.x},${this.props.y} L ${valueIdleEnd.x.toFixed(2)},${valueIdleEnd.y.toFixed(2)}`,
+        `A ${this.props.radius} ${this.props.radius} 0 ${Math.abs(diffAngle) < 180 || this.props.reverse ? '0' : '1'} 1 ${valueMaxEnd.x.toFixed(2)} ${valueMaxEnd.y.toFixed(2)}`,
+        `M ${valueMaxEnd.x.toFixed(2)} ${valueMaxEnd.y.toFixed(2)} L ${this.props.x},${this.props.y}`,
+      ].join(' ');
+    },
+    this.valueIdleSub,
+    this.valueMaxSub,
+  );
 
   render(): VNode {
     return (
-      <>
-        <g class="GaugeComponent">
-          <g class={this.props.visible.map((it) => (it ? 'Show' : 'Hide'))}>
-            <path d={this.thrustPath} class={this.props.class} />
-          </g>
+      <g class="GaugeComponent">
+        <g class={this.props.visible.map((it) => (it ? 'Show' : 'Hide'))}>
+          <path d={this.thrustPath} class={this.props.class} />
         </g>
-      </>
+      </g>
     );
   }
 }
