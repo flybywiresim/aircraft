@@ -88,28 +88,6 @@ export class FwsAbnormalSensed {
           }),
         );
         this.pub.pub('fws_abn_sensed_procedures', flattened, true);
-        SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', flattened[0] ? flattened[0].id : '');
-
-        console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
-        // Debug output for ABN sensed procedures
-        this.fws.activeAbnormalSensedList.get().forEach((val, key) => {
-          const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
-          console.log('%c' + proc.title, 'font-family:monospace; font-weight: bold');
-          proc.items.forEach((it, itemIdx) => {
-            if (val.itemsToShow[itemIdx]) {
-              const cpl = isChecklistAction(it)
-                ? val.itemsChecked[itemIdx]
-                  ? it.labelNotCompleted
-                  : ` .......... ${it.labelNotCompleted}`
-                : '';
-              console.log(
-                `%c${'  '.repeat(it.level ?? 0)} ${val.itemsChecked[itemIdx] ? 'X' : 'O'} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
-                'font-family:monospace; font-weight: bold',
-              );
-            }
-          });
-        });
-        console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
       },
       true,
     );
