@@ -1295,7 +1295,8 @@
             </Condition>
         </UseTemplate>
     </Template>
-     <Template Name="FBW_GT_Interaction_NoInteraction">
+
+    <Template Name="FBW_GT_Interaction_NoInteraction">
 
         <UseTemplate Name="ASOBO_GT_MouseRect">
             <CALLBACKCODE>0</CALLBACKCODE>
