@@ -84,6 +84,8 @@
 1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
 1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
 1. [A380X/FWS] Fix "NO ZFW OR ZFWCG DATA" ECAM alert after landing - @flogross89 (floridude)
+1. [A380X/SD] Add brake temperature color change to amber when brakes are hot - @heclak (Heclak)
+
 
 ## 0.12.0
 
