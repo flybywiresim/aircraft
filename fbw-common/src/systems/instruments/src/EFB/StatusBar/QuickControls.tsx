@@ -176,7 +176,7 @@ export const QuickControlsPane = ({
 
   const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
   const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
-  const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
+  const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 1);
   const [cabinAutoBrightness] = useSimVar('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 500);
   const [cabinManualBrightness, setCabinManualBrightness] = usePersistentNumberProperty('CABIN_MANUAL_BRIGHTNESS', 0);
   const [usingCabinAutobrightness, setUsingCabinAutobrightness] = usePersistentNumberProperty(
