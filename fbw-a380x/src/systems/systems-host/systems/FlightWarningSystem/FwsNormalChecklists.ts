@@ -295,12 +295,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
     },
     1000003: {
-      whichItemsChecked: () => [
-        null,
-        !this.fws.pitchTrimNotTo.get(),
-        Math.abs(SimVar.GetSimVarValue('L:RUDDER_TRIM_1_COMMANDED_POSITION', SimVarValueType.Number)) < 0.35 &&
-          Math.abs(SimVar.GetSimVarValue('L:RUDDER_TRIM_2_COMMANDED_POSITION', SimVarValueType.Number)) < 0.35,
-      ],
+      whichItemsChecked: () => [null, !this.fws.pitchTrimNotTo.get(), this.fws.rudderTrimPosition.get() < 0.35],
     },
     1000004: {
       whichItemsChecked: () => [

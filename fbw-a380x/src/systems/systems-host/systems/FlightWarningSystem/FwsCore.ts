@@ -809,6 +809,8 @@ export class FwsCore {
 
   public readonly rudderTrimNotToWarning = Subject.create(false);
 
+  public readonly rudderTrimPosition = Subject.create(0);
+
   public readonly flapsLeverNotZeroWarning = Subject.create(false);
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
@@ -3350,6 +3352,8 @@ export class FwsCore {
     const rudderTrimConfig =
       (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
       (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
+
+    this.rudderTrimPosition.set(sec1Healthy ? sec1RudderTrimActualPos.valueOr(0) : sec3RudderTrimActualPos.valueOr(0));
 
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
