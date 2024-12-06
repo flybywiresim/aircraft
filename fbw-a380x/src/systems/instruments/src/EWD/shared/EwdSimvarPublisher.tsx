@@ -40,7 +40,6 @@ export interface BaseEwdSimvars {
   limitations_all: number;
   memo_left: number;
   memo_right: number;
-  abnormal_debug_line: number;
   nose_gear_compressed: boolean;
   engine_fire_pb: boolean;
   cas: number;
@@ -119,7 +118,6 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ],
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
-      ['abnormal_debug_line', { name: 'L:A32NX_EWD_DEBUG_ABNORMAL', type: SimVarValueType.Number }],
       [
         'nose_gear_compressed',
         { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },

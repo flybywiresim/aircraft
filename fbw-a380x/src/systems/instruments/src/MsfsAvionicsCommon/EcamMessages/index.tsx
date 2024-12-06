@@ -564,6 +564,7 @@ export enum ChecklistLineStyle {
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
   CompletedChecklist = 'CompletedChecklist',
+  OmissionDots = 'OmissionDots',
 }
 
 interface AbstractChecklistItem {

@@ -290,6 +290,26 @@ text, tspan, span {
   height: 40px;
 }
 
+.FailurePendingBox {
+  display: inline;
+  position: relative;
+  left: 40px;
+  top: 0px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.StsBox {
+  display: inline;
+  position: relative;
+  left: 150px;
+  top: 0px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
 .MemosContainer {
   display: flex;
   flex-direction: column;
@@ -413,6 +433,10 @@ text, tspan, span {
 .EclLine.Headline {
   color: $display-white !important;
   text-decoration: underline;
+}
+
+.EclLine.OmissionDots {
+  color: $display-cyan !important;
 }
 
 .EclLineCheckboxArea {

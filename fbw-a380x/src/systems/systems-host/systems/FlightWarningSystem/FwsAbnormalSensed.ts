@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  AbnormalProcedure,
-  EcamAbnormalSensedProcedures,
-  isChecklistAction,
-} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbnormalSensedProcedures } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
   Subject,
@@ -61,7 +57,9 @@ export interface EwdAbnormalDict {
 export class FwsAbnormalSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  public readonly showAbnormalSensed = Subject.create(false);
+  public readonly abnormalShown = Subject.create(false);
+
+  public readonly showAbnormalSensedRequested = Subject.create(false);
 
   /** Marked with cyan box */
   public readonly selectedLine = Subject.create(1);
@@ -70,7 +68,6 @@ export class FwsAbnormalSensed {
   public readonly showFromLine = Subject.create(0);
 
   constructor(private fws: FwsCore) {
-    this.showAbnormalSensed.sub((v) => this.pub.pub('fws_show_abn_sensed', v, true), true);
     this.fws.activeAbnormalSensedList.sub(
       (
         map: ReadonlyMap<string, FwsEwdAbnormalSensedEntry>,
@@ -87,12 +84,14 @@ export class FwsAbnormalSensed {
             itemsToShow: val.itemsToShow,
           }),
         );
-        this.pub.pub('fws_abn_sensed_procedures', flattened, true);
+        // Sort by decreasing importance
+        const sortedAbnormalsFlattened = flattened.sort(
+          (a, b) => this.ewdAbnormalSensed[b.id].failure - this.ewdAbnormalSensed[a.id].failure,
+        );
+        this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
       },
       true,
     );
-    this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line, true), true);
-    this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
   }
 
   getAbnormalProceduresKeysSorted() {
@@ -207,8 +206,7 @@ export class FwsAbnormalSensed {
    */
   update() {
     if (this.fws.activeAbnormalSensedList.get().size > 0) {
-      this.showAbnormalSensed.set(true);
-      this.fws.normalChecklists.showChecklist.set(false);
+      this.showAbnormalSensedRequested.set(true);
 
       // Update selected line: CLEAR of first procedure
       const firstKey = this.fws.activeAbnormalSensedList.get().keys().next().value;
@@ -217,7 +215,7 @@ export class FwsAbnormalSensed {
         .itemsToShow.filter((v) => v === true).length;
       this.selectedLine.set(numItems + 1);
     } else {
-      this.showAbnormalSensed.set(false);
+      this.showAbnormalSensedRequested.set(false);
     }
 
     /*if (this.fws.clDownPulseNode.read()) {
@@ -235,7 +233,7 @@ export class FwsAbnormalSensed {
     }*/
 
     if (this.fws.clCheckPulseNode.read()) {
-      if (!this.showAbnormalSensed.get()) {
+      if (!this.abnormalShown.get()) {
         return;
       }
 

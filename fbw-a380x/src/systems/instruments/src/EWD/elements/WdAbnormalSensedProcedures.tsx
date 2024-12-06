@@ -28,41 +28,43 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
           lastLine: procIndex !== 0 ? true : false,
         });
 
-        cl.items.forEach((item, itemIndex) => {
-          if (procState.itemsToShow[itemIndex] === false) {
-            return;
-          }
-
-          let text = item.level ? '\xa0'.repeat(item.level * 2) : '';
-          if (isChecklistAction(item)) {
-            text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
-            text += item.name;
-            if (procState.itemsChecked[itemIndex] && item.labelCompleted) {
-              text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-            } else if (procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
-              text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-            } else if (!procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
-              // Pad to 39 characters max
-              const paddingNeeded = 39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);
-              text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
-            }
-          } else {
-            text += `${item.name.substring(0, 3) === 'IF' ? '.' : ''}${item.name}`;
-          }
-
-          this.lineData.push({
-            abnormalProcedure: true,
-            activeProcedure: procIndex === 0,
-            sensed: item.sensed,
-            checked: procState.itemsChecked[itemIndex],
-            text: text,
-            style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
-            firstLine: procIndex !== 0 ? true : false,
-            lastLine: procIndex !== 0 ? true : false,
-          });
-        });
-
         if (procIndex === 0) {
+          // If first and most important procedure: Display in full
+          cl.items.forEach((item, itemIndex) => {
+            if (procState.itemsToShow[itemIndex] === false) {
+              return;
+            }
+
+            let text = item.level ? '\xa0'.repeat(item.level * 2) : '';
+            if (isChecklistAction(item)) {
+              text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
+              text += item.name;
+              if (procState.itemsChecked[itemIndex] && item.labelCompleted) {
+                text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
+              } else if (procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
+                text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
+              } else if (!procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
+                // Pad to 39 characters max
+                const paddingNeeded =
+                  39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);
+                text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
+              }
+            } else {
+              text += `${item.name.substring(0, 2) === 'IF' ? '.' : ''}${item.name}`;
+            }
+
+            this.lineData.push({
+              abnormalProcedure: true,
+              activeProcedure: procIndex === 0,
+              sensed: item.sensed,
+              checked: procState.itemsChecked[itemIndex],
+              text: text,
+              style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
+              firstLine: procIndex !== 0 ? true : false,
+              lastLine: procIndex !== 0 ? true : false,
+            });
+          });
+
           this.lineData.push({
             abnormalProcedure: true,
             activeProcedure: true,
@@ -71,6 +73,18 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
             text: `${'\xa0'.repeat(34)}CLEAR`,
             style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
+            lastLine: true,
+          });
+        } else {
+          // Only three dots for following procedures
+          this.lineData.push({
+            abnormalProcedure: true,
+            activeProcedure: false,
+            sensed: true,
+            checked: false,
+            text: '...',
+            style: ChecklistLineStyle.OmissionDots,
+            firstLine: true,
             lastLine: true,
           });
         }

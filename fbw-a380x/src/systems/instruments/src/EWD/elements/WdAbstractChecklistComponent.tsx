@@ -151,6 +151,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),
+            OmissionDots: this.props.data.map((d) => d.style === ChecklistLineStyle.OmissionDots),
           }}
           style={{
             display: this.props.data.map((d) => (d.style === ChecklistLineStyle.SeparationLine ? 'none' : 'flex')),
@@ -163,7 +164,9 @@ export class EclLine extends DisplayComponent<EclLineProps> {
                 (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
               ),
               Checked: this.props.data.map((d) => d.checked),
-              HiddenElement: this.props.data.map((d) => d.style === ChecklistLineStyle.Headline),
+              HiddenElement: this.props.data.map(
+                (d) => d.style === ChecklistLineStyle.Headline || d.style === ChecklistLineStyle.OmissionDots,
+              ),
               Invisible: this.props.data.map(
                 (d) => d.sensed || (d.firstLine && d.lastLine) || d.specialLine === WdSpecialLine.Empty,
               ),

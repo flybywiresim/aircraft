@@ -31,4 +31,9 @@ export interface FwsEwdEvents {
   fws_show_abn_sensed: boolean;
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
   fws_abn_sensed_procedures: FwsEwdAbnormalSensedEntry[];
+
+  /** (FWS -> EWD) Show FAILURE PENDING indication at bottom of page */
+  fws_show_failure_pending: boolean;
+  /** (FWS -> EWD) Show STS indication at bottom of page */
+  fws_show_sts_indication: boolean;
 }
