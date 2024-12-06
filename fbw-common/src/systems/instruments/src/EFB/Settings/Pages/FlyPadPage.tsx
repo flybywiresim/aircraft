@@ -30,6 +30,7 @@ export const FlyPadPage = () => {
   const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
   const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
   const [batteryLifeEnabled, setBatteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
+  const [pushbackNoConflictWarning, setPushbackNoConflictWarning] = usePersistentNumberProperty('PUSHBACK_CONFLICTWARN_DISABLED', 0);
 
   // the tt() is a special case to update the page with the correct language after user
   // changes the language. the change to simvar hooks changed timing/order of updates.
@@ -136,6 +137,10 @@ export const FlyPadPage = () => {
 
       <SettingItem name={tt('Settings.flyPad.BatteryLifeEnabled', language)}>
         <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
+      </SettingItem>
+
+      <SettingItem name={tt('Settings.flyPad.DisablePushbackConflictWarning', language)}>
+        <Toggle value={!!pushbackNoConflictWarning} onToggle={(value) => setPushbackNoConflictWarning(value ? 1 : 0)} />
       </SettingItem>
 
       <SettingItem name={tt('Settings.flyPad.ShowStatusBarFlightProgressIndicator', language)}>
