@@ -85,7 +85,8 @@
 1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
 1. [A380X/FWS] Fix "NO ZFW OR ZFWCG DATA" ECAM alert after landing - @flogross89 (floridude)
 1. [A380X/SD] Add brake temperature color change to amber when brakes are hot - @heclak (Heclak)
-
+1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
+1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
 ## 0.12.0
 

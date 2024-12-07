@@ -134,6 +134,7 @@
       "EstimatedDuration": "Estimated duration (minutes)",
       "EstimatedTime": "Estimated Time",
       "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "GSXFuelRequested": "GSX Refuel requested",
       "LeftInnerTank": "Left Inner Tank",
       "LeftOuterTank": "Left Outer Tank",
       "ReadyToStart": "Ready to Start",
@@ -705,6 +706,7 @@
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxPowerEnabled": "GSX External Power Synchronization",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {

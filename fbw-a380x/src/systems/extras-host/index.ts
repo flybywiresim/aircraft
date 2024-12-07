@@ -8,6 +8,8 @@ import {
   PilotSeatManager,
   ExtrasSimVarPublisher,
   GPUManagement,
+  GsxSimVarPublisher,
+  GsxSyncA380X,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
@@ -70,6 +72,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly groundSupportPublisher: GroundSupportPublisher;
 
+  private readonly gsxSimVarPublusher: GsxSimVarPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
@@ -85,6 +89,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly gpuManagement = new GPUManagement(this.bus, 19, 4);
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
+
+  private readonly gsxSync = new GsxSyncA380X(this.bus);
 
   /**
    * "mainmenu" = 0
@@ -103,6 +109,7 @@ class ExtrasHost extends BaseInstrument {
     this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
     this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
     this.groundSupportPublisher = new GroundSupportPublisher(this.bus);
+    this.gsxSimVarPublusher = new GsxSimVarPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
@@ -116,11 +123,13 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+    this.backplane.addPublisher('GsxSimVarPublisher', this.gsxSimVarPublusher);
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('LightSync', this.lightSync);
+    this.backplane.addInstrument('GsxSync', this.gsxSync);
 
     console.log('A380X_EXTRASHOST: Created');
   }

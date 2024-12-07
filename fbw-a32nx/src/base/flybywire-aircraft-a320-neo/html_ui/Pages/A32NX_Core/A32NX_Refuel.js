@@ -5,6 +5,12 @@
 const WING_FUELRATE_GAL_SEC = 4.01;
 const CENTER_MODIFIER = 0.4528;
 
+const RefuelRate = {
+    REAL: '0',
+    FAST: '1',
+    INSTANT: '2',
+};
+
 class A32NX_Refuel {
     constructor() {}
 
@@ -38,12 +44,7 @@ class A32NX_Refuel {
 
     update(_deltaTime) {
         const refuelStartedByUser = SimVar.GetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool");
-        const gsxFuelHose = SimVar.GetSimVarValue("L:FSDT_GSX_FUELHOSE_CONNECTED", "Number");
-        if (!refuelStartedByUser && gsxFuelHose == 0) {
-            return;
-        }
-        if (!refuelStartedByUser && gsxFuelHose == 1) {
-            SimVar.SetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool", true);
+        if (!refuelStartedByUser) {
             return;
         }
         const busDC2 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool");
@@ -52,8 +53,8 @@ class A32NX_Refuel {
         const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
         const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
         const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
-        const refuelRate = NXDataStore.get("REFUEL_RATE_SETTING", "0"); // default = real
-        if (refuelRate !== '2') {
+        const refuelRate = SimVar.GetSimVarValue("L:A32NX_EFB_REFUEL_RATE_SETTING", "number");
+        if (refuelRate !== RefuelRate.INSTANT) {
             if (!onGround || eng1Running || eng2Running || gs > 0.1 || (!busDC2 && !busDCHot1)) {
                 return;
             }
@@ -78,7 +79,7 @@ class A32NX_Refuel {
         const LOutTarget = LOutTargetSimVar;
         const RInnTarget = RInnTargetSimVar;
         const ROutTarget = ROutTargetSimVar;
-        if (refuelRate == '2') { // instant
+        if (refuelRate == RefuelRate.INSTANT) {
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
@@ -86,7 +87,7 @@ class A32NX_Refuel {
             SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
         } else {
             let multiplier = 1;
-            if (refuelRate == '1') { // fast
+            if (refuelRate == RefuelRate.FAST) {
                 multiplier = 5;
             }
             multiplier *= _deltaTime / 1000;
@@ -172,7 +173,6 @@ class A32NX_Refuel {
         if (centerCurrent == centerTarget && LInnCurrent == LInnTarget && LOutCurrent == LOutTarget && RInnCurrent == RInnTarget && ROutCurrent == ROutTarget) {
             // DONE FUELING
             SimVar.SetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool", false);
-            SimVar.SetSimVarValue("L:FSDT_GSX_FUELHOSE_CONNECTED", "Number", 0);
         }
     }
 }
