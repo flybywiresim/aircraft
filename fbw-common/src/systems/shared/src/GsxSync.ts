@@ -281,7 +281,7 @@ abstract class GsxSync implements Instrument {
   }
 }
 
-export class GsxSyncA320 extends GsxSync {
+export class GsxSyncA32NX extends GsxSync {
   constructor(bus: EventBus) {
     super(bus, 1, DEFUEL_DIFF_TARGET_A320);
   }
