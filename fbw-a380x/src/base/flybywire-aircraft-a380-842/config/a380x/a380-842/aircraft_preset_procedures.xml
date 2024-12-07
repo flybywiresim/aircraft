@@ -230,18 +230,59 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
+
+        <!-- Get RMPs in a default state based on real-world SOP -->
+        <!--
+            RMP1 and 2 with
+            - VHF1 RX on, VHF1 TX on - high volume
+            - VHF2 RX on, low volume
+            - RMP3 would have usually just PA RX on low (about the 9 o clock position)
+        -->
+        <Step Name="RMP 1 VHF 1 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 1 RX Set Vol " Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_1) 80 ==</Condition>
+            <Action>80 (&gt;L:A380X_RMP_1_VHF_VOL_1)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 2 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 2 RX Set Vol " Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_2) 20 ==</Condition>
+            <Action>20 (&gt;L:A380X_RMP_1_VHF_VOL_2)</Action>
+        </Step>
         <Step Name="RMP 1 VHF 1 TX On" Type="STEP" Delay="500">
             <Condition>(L:A380X_RMP_1_VHF_TX_1) 1 ==</Condition>
             <Action>1 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
         </Step>
-        <Step Name="RMP 2 VHF 1 TX On" Type="STEP" Delay="1000">
+        <Step Name="RMP 2 VHF 1 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 RX Set Vol " Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_1) 63 ==</Condition>
+            <Action>63 (&gt;L:A380X_RMP_2_VHF_VOL_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 2 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 2 RX Set Vol " Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_2) 15 ==</Condition>
+            <Action>15 (&gt;L:A380X_RMP_2_VHF_VOL_2)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 TX On" Type="STEP" Delay="500">
             <Condition>(L:A380X_RMP_2_VHF_TX_1) 1 ==</Condition>
             <Action>1 (&gt;L:A380X_RMP_2_VHF_TX_1)</Action>
         </Step>
-        <Step Name="RMP 3 VHF 1 TX On" Type="STEP" Delay="1000">
-            <Condition>(L:A380X_RMP_3_VHF_TX_1) 1 ==</Condition>
-            <Action>1 (&gt;L:A380X_RMP_3_VHF_TX_1)</Action>
+        <Step Name="RMP 3 PA RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_3_PA_VOL_RX_SWITCH) 15 ==</Condition>
+            <Action>15 (&gt;L:A380X_RMP_3_PA_VOL_RX_SWITCH)</Action>
         </Step>
+        <!-- /RMP -->
 
         <Step Name="Await APU Avail" Type="COND" Delay="2000">
             <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||</Condition>
@@ -273,6 +314,9 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:A380X_RMP_1_VHF_TX_1) 0 ==</Condition>
             <Action>0 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
         </Step>
+
+
+
         <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
