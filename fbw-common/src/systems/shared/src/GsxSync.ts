@@ -225,19 +225,19 @@ abstract class GsxSync implements Instrument {
     const departureState = this.stateDeparture.get();
     let action = PowerAction.NOOP;
 
-    //external is available (as of internal State) - check if disconnect is needed
+    // external is available (as of internal State) - check if disconnect is needed
     if (extAvail) {
-      //pushback was requested (when boarding not running)
+      // pushback was requested (when boarding not running)
       if (
         boardState !== GsxServiceStates.REQUESTED &&
         boardState !== GsxServiceStates.ACTIVE &&
         departureState >= GsxServiceStates.REQUESTED
       ) {
         action = PowerAction.DISCONNECT;
-        //pushback is active (in it wasn't catched before)
+        // pushback is active (in it wasn't catched before)
       } else if (departureState === GsxServiceStates.ACTIVE) {
         action = PowerAction.DISCONNECT;
-        //jetway and gpu both not connected
+        // jetway and gpu both not connected
       } else if (
         jetwayState >= GsxServiceStates.CALLABLE &&
         jetwayState <= GsxServiceStates.REQUESTED &&
@@ -245,7 +245,7 @@ abstract class GsxSync implements Instrument {
       ) {
         action = PowerAction.DISCONNECT;
       }
-      //external is not available - check if connect is needed
+      // external is not available - check if connect is needed
     } else if (
       //jetway or gpu connected
       (jetwayState === GsxServiceStates.ACTIVE || gpuState === GsxServiceStates.ACTIVE) &&
