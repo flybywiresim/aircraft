@@ -246,14 +246,12 @@ abstract class GsxSync implements Instrument {
         action = PowerAction.DISCONNECT;
       }
       //external is not available - check if connect is needed
-    } else {
-      if (
-        //jetway or gpu connected
-        (jetwayState === GsxServiceStates.ACTIVE || gpuState === GsxServiceStates.ACTIVE) &&
-        departureState < GsxServiceStates.REQUESTED
-      ) {
-        action = PowerAction.CONNECT;
-      }
+    } else if (
+      //jetway or gpu connected
+      (jetwayState === GsxServiceStates.ACTIVE || gpuState === GsxServiceStates.ACTIVE) &&
+      departureState < GsxServiceStates.REQUESTED
+    ) {
+      action = PowerAction.CONNECT;
     }
 
     if (action == PowerAction.CONNECT) {
