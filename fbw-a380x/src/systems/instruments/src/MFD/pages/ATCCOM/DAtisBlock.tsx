@@ -11,14 +11,14 @@ import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPri
 
 interface DAtisBlockProps extends AbstractMfdPageProps {
   readonly index: 1 | 2 | 3;
-  atisIcao: Subject<string | null> | Subscribable<string | null>;
-  atisMessage?: Subject<string | null> | Subscribable<string | null>;
+  atisIcao: Subscribable<string | null>;
+  atisMessage?: Subscribable<string | null>;
   atisType?: '' | 'ARR' | 'DEP';
-  atisTime?: Subject<string | null> | Subscribable<string | null>;
-  atisCode?: Subject<string | null> | Subscribable<string | null>;
-  isAtisNew?: Subject<boolean>;
-  isAutoUpdateEnabled?: Subject<boolean>;
-  isAutoPrintEnabled?: Subject<boolean>;
+  atisTime?: Subscribable<string | null>;
+  atisCode?: Subscribable<string | null>;
+  isAtisNew?: Subscribable<boolean>;
+  isAutoUpdateEnabled?: Subscribable<boolean>;
+  isAutoPrintEnabled?: Subscribable<boolean>;
   atisStatus?: 'RECEIVED' | 'PENDING';
 }
 export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {

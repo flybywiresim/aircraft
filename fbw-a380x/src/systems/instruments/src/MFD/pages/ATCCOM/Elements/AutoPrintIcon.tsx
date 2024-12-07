@@ -1,7 +1,7 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 interface AutoPrintIconProps extends ComponentProps {
-  visible: Subject<boolean> | undefined;
+  visible: Subscribable<boolean> | undefined;
 }
 
 export class AutoPrintIcon extends DisplayComponent<AutoPrintIconProps> {

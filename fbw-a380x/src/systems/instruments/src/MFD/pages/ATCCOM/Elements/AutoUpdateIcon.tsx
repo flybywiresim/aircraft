@@ -1,7 +1,7 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 interface AutoUpdateIconProps extends ComponentProps {
-  visible: Subject<boolean> | undefined;
+  visible: Subscribable<boolean> | undefined;
 }
 
 export class AutoUpdateIcon extends DisplayComponent<AutoUpdateIconProps> {
