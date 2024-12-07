@@ -565,6 +565,8 @@ export enum ChecklistLineStyle {
   ChecklistItem = 'ChecklistItem',
   CompletedChecklist = 'CompletedChecklist',
   OmissionDots = 'OmissionDots',
+  LandAsap = 'LandAsap',
+  LandAnsa = 'LandAnsa',
 }
 
 interface AbstractChecklistItem {
@@ -642,6 +644,7 @@ export interface WdLineData {
   lastLine: boolean;
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
+  originalItemIndex?: number;
 }
 
 export enum WdSpecialLine {

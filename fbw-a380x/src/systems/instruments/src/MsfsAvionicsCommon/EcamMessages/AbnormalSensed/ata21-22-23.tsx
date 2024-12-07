@@ -201,6 +201,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   },
   211800021: {
     title: '\x1b<4m\x1b4mAIR\x1bm PACK 1+2 FAULT',
+    recommendation: 'LAND ANSA',
     sensed: true,
     // If at least one door is not closed or is not locked, and at least one engine is running:
     items: [

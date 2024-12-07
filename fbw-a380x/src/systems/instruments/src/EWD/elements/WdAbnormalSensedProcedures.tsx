@@ -29,9 +29,21 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         });
 
         if (procIndex === 0) {
+          if (cl.recommendation) {
+            this.lineData.push({
+              abnormalProcedure: true,
+              activeProcedure: procIndex === 0,
+              sensed: true,
+              checked: false,
+              text: cl.recommendation,
+              style: cl.recommendation === 'LAND ASAP' ? ChecklistLineStyle.LandAsap : ChecklistLineStyle.LandAnsa,
+              firstLine: false,
+              lastLine: false,
+            });
+          }
           // If first and most important procedure: Display in full
           cl.items.forEach((item, itemIndex) => {
-            if (procState.itemsToShow[itemIndex] === false) {
+            if (!procState.itemsToShow[itemIndex]) {
               return;
             }
 
@@ -62,6 +74,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
               style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
               firstLine: procIndex !== 0 ? true : false,
               lastLine: procIndex !== 0 ? true : false,
+              originalItemIndex: itemIndex,
             });
           });
 
@@ -74,6 +87,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
             style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
             lastLine: true,
+            originalItemIndex: cl.items.length,
           });
         } else {
           // Only three dots for following procedures

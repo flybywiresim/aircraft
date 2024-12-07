@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamAbnormalSensedProcedures } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  ChecklistLineStyle,
+  EcamAbnormalSensedProcedures,
+  WD_NUM_LINES,
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
   Subject,
@@ -61,8 +65,11 @@ export class FwsAbnormalSensed {
 
   public readonly showAbnormalSensedRequested = Subject.create(false);
 
+  /** ID of active abnormal procedure */
+  public readonly activeProcedureId = Subject.create<string | null>(null);
+
   /** Marked with cyan box */
-  public readonly selectedLine = Subject.create(1);
+  public readonly selectedItem = Subject.create(1);
 
   /** For overflowing checklists */
   public readonly showFromLine = Subject.create(0);
@@ -88,116 +95,164 @@ export class FwsAbnormalSensed {
         const sortedAbnormalsFlattened = flattened.sort(
           (a, b) => this.ewdAbnormalSensed[b.id].failure - this.ewdAbnormalSensed[a.id].failure,
         );
+        this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
         this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
       },
       true,
     );
+
+    this.abnormalShown.sub((shown) => {
+      if (shown) {
+        this.selectFirst();
+      }
+    });
+
+    this.activeProcedureId.sub((id) => {
+      if (id) {
+        this.selectFirst();
+      }
+    });
+
+    this.selectedItem.sub(() => this.scrollToSelectedLine());
   }
 
   getAbnormalProceduresKeysSorted() {
-    return Object.keys(EcamAbnormalSensedProcedures).map((v) => v);
+    return Array.from(this.fws.activeAbnormalSensedList.get().keys());
+  }
+
+  selectFirst() {
+    const clState = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get());
+    const selectableAndNotChecked = this.selectableItems(false);
+    this.selectedItem.set(
+      selectableAndNotChecked[0] !== undefined ? selectableAndNotChecked[0] - 1 : clState.itemsChecked.length - 1,
+    );
+    this.moveDown(false);
   }
 
   moveUp() {
-    /* const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
-    const selectable = EcamNormalProcedures[this.checklistId.get()].items
-      .map((item, index) => (item.sensed === false ? index : null))
-      .filter((v) => v !== null);
+    const selectable = this.selectableItems(true);
 
-    if (this.selectedLine.get() == numItems + 1) {
-      // RESET
-      this.selectedLine.set(this.selectedLine.get() - 1);
-    } else {
-      if (selectable.length === 0) {
-        return;
-      }
-      const previousElement = () => {
-        for (let i = selectable.length - 1; i >= 0; i--) {
-          if (selectable[i] < this.selectedLine.get()) {
-            return selectable[i];
-          }
-        }
-        return -1;
-      };
-      const pEl = previousElement();
-
-      if (pEl >= 0) {
-        this.selectedLine.set(Math.max(pEl, 0));
-      }
+    if (selectable.length === 0) {
+      return;
     }
-    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));*/
+    const previousElement = () => {
+      for (let i = selectable.length - 1; i >= 0; i--) {
+        if (selectable[i] < this.selectedItem.get()) {
+          return selectable[i];
+        }
+      }
+      return -1;
+    };
+    const pEl = previousElement();
+
+    if (pEl >= 0) {
+      this.selectedItem.set(Math.max(pEl, 0));
+    }
   }
 
-  moveDown() {
-    /* if (this.checklistId.get() === 0) {
-      this.selectedLine.set(
-        Math.min(this.selectedLine.get() + 1, this.getAbnormalProceduresKeysSorted().length - 1, WD_NUM_LINES - 1),
-      );
+  static readonly nonSelectableItemStyles = [
+    ChecklistLineStyle.Headline,
+    ChecklistLineStyle.OmissionDots,
+    ChecklistLineStyle.SeparationLine,
+    ChecklistLineStyle.SubHeadline,
+    ChecklistLineStyle.Amber,
+    ChecklistLineStyle.Cyan,
+    ChecklistLineStyle.Green,
+  ];
+
+  /**
+   * Used for up/down navigation, to skip not selectable items
+   * @param skipCompletedSensed Whether sensed item is only selectable if unchecked. Not sensed items can't be skipped.
+   * @returns Procedure item is selectable with arrow keys
+   */
+  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean): boolean {
+    const procId = this.activeProcedureId.get();
+    const clState = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get());
+    return (
+      (!EcamAbnormalSensedProcedures[procId].items[itemIndex].sensed ||
+        (!skipCompletedSensed && !clState.itemsChecked[itemIndex])) &&
+      clState.itemsActive[itemIndex] &&
+      clState.itemsToShow[itemIndex] &&
+      !FwsAbnormalSensed.nonSelectableItemStyles.includes(EcamAbnormalSensedProcedures[procId].items[itemIndex].style)
+    );
+  }
+
+  private selectableItems(skipCompletedSensed: boolean) {
+    return EcamAbnormalSensedProcedures[this.activeProcedureId.get()].items
+      .map((_, index) => (this.itemIsSelectable(index, skipCompletedSensed) ? index : null))
+      .filter((v) => v !== null);
+  }
+
+  /** Returns the index from selectedItem amongst the displayed items */
+  private lineInDisplay(selectedItem: number) {
+    return this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get())
+      ? this.fws.activeAbnormalSensedList
+          .getValue(this.activeProcedureId.get())
+          .itemsToShow.map((value, index) => (value ? index : null))
+          .filter(Boolean)
+          .findIndex((v) => v === selectedItem)
+      : -1;
+  }
+
+  moveDown(skipCompletedSensed = true) {
+    const numItems = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow.length;
+    const selectable = this.selectableItems(skipCompletedSensed);
+    if (selectable.length == 0 || this.selectedItem.get() >= selectable[selectable.length - 1]) {
+      // Last element before CLEAR
+      this.selectedItem.set(numItems);
     } else {
-      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
-      const selectable = EcamNormalProcedures[this.checklistId.get()].items
-        .map((item, index) => (item.sensed === false ? index : null))
-        .filter((v) => v !== null);
-      if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
-        // Last element before C/L complete
-        this.selectedLine.set(Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1)));
-      } else {
-        this.selectedLine.set(
-          Math.min(
-            selectable.find((v) => v > this.selectedLine.get()),
-            numItems - 1,
-          ),
-        );
-      }
+      this.selectedItem.set(
+        Math.min(selectable.find((v) => v > this.selectedItem.get()) ?? numItems - 1, numItems - 1),
+      );
     }
-    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));*/
   }
 
   checkCurrentItem() {
-    /* const cl = this.checklistState.getValue(this.checklistId.get());
-    const clState: ChecklistState = {
+    const cl = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get());
+    const clState: FwsEwdAbnormalSensedEntry = {
       id: cl.id,
-      checklistCompleted: cl.checklistCompleted,
-      itemsCompleted: [...cl.itemsCompleted],
+      itemsToShow: [...cl.itemsToShow],
+      itemsChecked: [...cl.itemsChecked],
+      itemsActive: [...cl.itemsActive],
     };
-    if (this.selectedLine.get() < clState.itemsCompleted.length) {
-      clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
-      this.checklistState.setValue(this.checklistId.get(), clState);
-    } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
-      // C/L complete
-      clState.checklistCompleted = true;
-      const proc = EcamNormalProcedures[this.checklistId.get()];
-      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.showChecklist.set(false);
-    } else if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
-      // RESET
-      clState.checklistCompleted = false;
-      const proc = EcamNormalProcedures[this.checklistId.get()];
-      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : false));
-
-      // Reset all following checklists
-      const fromId = this.getAbnormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get());
-      const ids = this.getAbnormalProceduresKeysSorted();
-
-      if (fromId !== -1) {
-        for (let id = fromId + 1; id < ids.length; id++) {
-          const idFollowing = ids[id];
-          const clFollowing = this.checklistState.getValue(idFollowing);
-          const procFollowing = EcamNormalProcedures[idFollowing];
-          const clStateFollowing: ChecklistState = {
-            id: idFollowing,
-            checklistCompleted: false,
-            itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
-              procFollowing.items[index].sensed ? val : false,
-            ),
-          };
-          this.checklistState.setValue(idFollowing, clStateFollowing);
-        }
+    const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
+    if (
+      this.selectedItem.get() < clState.itemsChecked.length &&
+      proc.items[this.selectedItem.get()]?.sensed === false
+    ) {
+      clState.itemsChecked[this.selectedItem.get()] = !clState.itemsChecked[this.selectedItem.get()];
+      this.fws.activeAbnormalSensedList.setValue(this.activeProcedureId.get(), clState);
+      if (clState.itemsChecked[this.selectedItem.get()]) {
+        this.moveDown(false);
       }
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.selectFirst();
-    }*/
+    } else if (this.selectedItem.get() === clState.itemsChecked.length) {
+      this.clearActiveProcedure();
+    }
+  }
+
+  private clearActiveProcedure() {
+    this.fws.presentedFailures.splice(0, 1);
+    this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
+  }
+
+  private scrollToSelectedLine() {
+    if (
+      this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get()) &&
+      this.selectedItem.get() >=
+        this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow.length
+    ) {
+      // CLEAR
+      this.showFromLine.set(
+        Math.max(
+          0,
+          this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow.length -
+            WD_NUM_LINES +
+            2,
+        ),
+      );
+    } else {
+      this.showFromLine.set(Math.max(0, this.lineInDisplay(this.selectedItem.get()) - WD_NUM_LINES + 2));
+    }
   }
 
   /**
@@ -207,41 +262,44 @@ export class FwsAbnormalSensed {
   update() {
     if (this.fws.activeAbnormalSensedList.get().size > 0) {
       this.showAbnormalSensedRequested.set(true);
-
-      // Update selected line: CLEAR of first procedure
-      const firstKey = this.fws.activeAbnormalSensedList.get().keys().next().value;
-      const numItems = this.fws.activeAbnormalSensedList
-        .getValue(firstKey)
-        .itemsToShow.filter((v) => v === true).length;
-      this.selectedLine.set(numItems + 1);
     } else {
       this.showAbnormalSensedRequested.set(false);
     }
 
-    /*if (this.fws.clDownPulseNode.read()) {
-      if (!this.showAbnormalSensed.get()) {
-        return;
-      }
-      this.moveDown();
+    if (!this.abnormalShown.get()) {
+      return;
+    }
+
+    if (this.fws.clDownPulseNode.read()) {
+      this.moveDown(true);
     }
 
     if (this.fws.clUpPulseNode.read()) {
-      if (!this.showAbnormalSensed.get()) {
-        return;
-      }
       this.moveUp();
-    }*/
+    }
 
     if (this.fws.clCheckPulseNode.read()) {
-      if (!this.abnormalShown.get()) {
-        return;
+      this.checkCurrentItem();
+    }
+
+    // Auto-move-down if currently marked item was sensed as completed
+    const ids = this.getAbnormalProceduresKeysSorted();
+
+    for (let id = 0; id < ids.length; id++) {
+      const procId = ids[id];
+
+      if (!this.ewdAbnormalSensed[procId] || !this.fws.abnormalUpdatedItems.has(procId)) {
+        continue;
       }
 
-      // Only CLEAR implemented atm
-      this.fws.presentedFailures.splice(0, 1);
-      this.fws.recallFailures = this.fws.allCurrentFailures.filter(
-        (item) => !this.fws.presentedFailures.includes(item),
-      );
+      const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
+      if (
+        changedEntries &&
+        changedEntries.includes(this.selectedItem.get()) &&
+        this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsChecked[this.selectedItem.get()]
+      ) {
+        this.moveDown(false);
+      }
     }
   }
 

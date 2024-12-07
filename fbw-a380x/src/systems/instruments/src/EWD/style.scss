@@ -439,6 +439,16 @@ text, tspan, span {
   color: $display-cyan !important;
 }
 
+.EclLine.LandAnsa {
+  color: $display-amber !important;
+  justify-content: flex-end;
+}
+
+.EclLine.LandAsap {
+  color: $display-red !important;
+  justify-content: flex-end;
+}
+
 .EclLineCheckboxArea {
   text-align: center;
   justify-content: center;

@@ -2,13 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ChecklistState } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
-
 export interface FwsEwdAbnormalSensedEntry {
   id: string;
   itemsToShow: boolean[];
   itemsChecked: boolean[];
   itemsActive: boolean[];
+}
+
+export interface NormalChecklistState {
+  id: number;
+  checklistCompleted: boolean;
+  itemsCompleted: boolean[];
 }
 
 /**
@@ -23,7 +27,7 @@ export interface FwsEwdEvents {
   /** (FWS -> EWD) Show normal procedures / ECL */
   fws_show_normal_checklists: boolean;
   /** (FWS -> EWD) List of all normal checklists, including checked state */
-  fws_normal_checklists: ChecklistState[];
+  fws_normal_checklists: NormalChecklistState[];
   /** (FWS -> EWD) Which checklist to display */
   fws_normal_checklists_id: number;
 

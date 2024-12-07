@@ -223,6 +223,9 @@ export class FwsCore {
   /** Map to hold all failures which are currently active */
   public readonly activeAbnormalSensedList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
+  /** Indices of items which were updated */
+  public readonly abnormalUpdatedItems = new Map<string, number[]>();
+
   public recallFailures: string[] = [];
 
   private requestMasterCautionFromFaults = false;
@@ -3803,6 +3806,7 @@ export class FwsCore {
 
     // Abnormal sensed procedures
     const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.abnormalSensed.ewdAbnormalSensed);
+    this.abnormalUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
@@ -3826,7 +3830,7 @@ export class FwsCore {
         if (overridden) {
           continue;
         }
-        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : v));
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
 
@@ -3873,31 +3877,28 @@ export class FwsCore {
           });
         } else if (this.activeAbnormalSensedList.has(key)) {
           // Update internal map
-          const prevEl = this.activeAbnormalSensedList.get().get(key);
-          const itemUpdated = proc.items.some((item, idx) => {
+          const prevEl = this.activeAbnormalSensedList.getValue(key);
+          this.abnormalUpdatedItems.set(key, []);
+          proc.items.forEach((item, idx) => {
             if (item.sensed === true) {
               if (
                 prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
                 prevEl.itemsActive[idx] !== itemsActive[idx] ||
                 prevEl.itemsChecked[idx] !== itemsChecked[idx]
               ) {
-                return true;
+                this.abnormalUpdatedItems.get(key).push(idx);
               }
             }
           });
 
-          if (itemUpdated) {
+          if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
             this.activeAbnormalSensedList.setValue(key, {
               id: key,
               itemsChecked: [...prevEl.itemsChecked].map((val, index) =>
-                proc.items[index].sensed ? itemsChecked[index] : val,
+                proc.items[index].sensed ? itemsChecked[index] : !!val,
               ),
-              itemsActive: [...prevEl.itemsActive].map((val, index) =>
-                proc.items[index].sensed ? itemsActive[index] : val,
-              ),
-              itemsToShow: [...prevEl.itemsToShow].map((val, index) =>
-                proc.items[index].sensed ? itemsToShow[index] : val,
-              ),
+              itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
+              itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
             });
           }
         }
@@ -4137,7 +4138,7 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(true);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_line', this.normalChecklists.selectedLine.get() + 1, true);
+      pub.pub('fws_active_line', this.normalChecklists.selectedLine.get(), true);
       pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
     } else if (
@@ -4147,7 +4148,7 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(true);
 
-      pub.pub('fws_active_line', this.abnormalSensed.selectedLine.get(), true);
+      pub.pub('fws_active_line', this.abnormalSensed.selectedItem.get(), true);
       pub.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else {
