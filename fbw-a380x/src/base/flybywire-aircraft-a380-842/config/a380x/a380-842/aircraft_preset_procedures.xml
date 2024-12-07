@@ -263,8 +263,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>1 (&gt;L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1)</Action>
         </Step>
         <Step Name="RMP 2 VHF 1 RX Set Vol " Type="STEP" Delay="500">
-            <Condition>(L:A380X_RMP_2_VHF_VOL_1) 63 ==</Condition>
-            <Action>63 (&gt;L:A380X_RMP_2_VHF_VOL_1)</Action>
+            <Condition>(L:A380X_RMP_2_VHF_VOL_1) 80 ==</Condition>
+            <Action>80 (&gt;L:A380X_RMP_2_VHF_VOL_1)</Action>
         </Step>
         <Step Name="RMP 2 VHF 2 RX On" Type="STEP" Delay="500">
             <Condition>(L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2) 1 ==</Condition>
