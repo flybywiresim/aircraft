@@ -119,7 +119,7 @@ export class CDUFlightPlanPage {
 
       const wp = targetPlan.allLegs[i];
 
-      if (wp.isDiscontinuity) {
+      if (wp.isDiscontinuity === true) {
         waypointsAndMarkers.push({
           marker: Markers.FPLN_DISCONTINUITY,
           fpIndex: i,
@@ -170,6 +170,10 @@ export class CDUFlightPlanPage {
         distanceFromLastLine,
         isActive: isActiveLeg && pseudoWaypointsOnLeg.length === 0,
       });
+
+      if (wp.calculated && wp.calculated.endsInTooSteepPath) {
+        waypointsAndMarkers.push({ marker: Markers.TOO_STEEP_PATH, fpIndex: i, inAlternate: false, inMissedApproach });
+      }
 
       if (i === targetPlan.destinationLegIndex) {
         destinationAirportOffset = Math.max(waypointsAndMarkers.length - 4, 0);
@@ -716,7 +720,12 @@ export class CDUFlightPlanPage {
         scrollWindow[rowI] = waypointsAndMarkers[winI];
         addLskAt(rowI, 0, (value, scratchpadCallback) => {
           if (value === Keypad.clrValue) {
-            CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+            if (marker.marker === Markers.FPLN_DISCONTINUITY) {
+              CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+            } else {
+              mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+              scratchpadCallback();
+            }
             return;
           } else if (value === '') {
             return;
