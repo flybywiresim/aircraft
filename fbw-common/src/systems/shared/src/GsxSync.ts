@@ -306,7 +306,7 @@ export class GsxSyncA32NX extends GsxSync {
   }
 }
 
-export class GsxSyncA380 extends GsxSync {
+export class GsxSyncA380X extends GsxSync {
   protected readonly toggleCargo1 = ConsumerSubject.create(null, 0);
   protected readonly toggleCargo2 = ConsumerSubject.create(null, 0);
   protected readonly stateDeboard = ConsumerSubject.create(null, 1);
