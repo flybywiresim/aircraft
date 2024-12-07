@@ -84,7 +84,7 @@
 1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
 1. [A380X/FWS] Fix "NO ZFW OR ZFWCG DATA" ECAM alert after landing - @flogross89 (floridude)
 1. [GSX] Automatic Refuel start and Cargo Door Synch for A380, External Power Avail Synch with GSX for A380/A320 - @Fragtality (Fragtality)
-1. [EFB] Fuel Page: Added Total and ETA for A380, Improved State Label on both Aircraft - @Fragtality (Fragtality)
+1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
 ## 0.12.0
 
