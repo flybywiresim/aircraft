@@ -1,7 +1,7 @@
-import { FSComponent, DisplayComponent, VNode, ComponentProps } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 interface NewAtisIconProps extends ComponentProps {
-  visible: boolean;
+  visible: Subject<boolean> | undefined;
 }
 
 export class NewAtisIcon extends DisplayComponent<NewAtisIconProps> {

@@ -35,26 +35,31 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
           <TopTabNavigator
             pageTitles={Subject.create(['LAST', 'PREVIOUS'])}
             selectedPageIndex={Subject.create(0)}
-            // pageChangeCallback={(val) => this.flightPhasesSelectedPageIndex.set(val)}
+            // pageChangeCallback={() => {}}
             selectedTabTextColor="white"
+            tabBarSlantedEdgeAngle={27}
           >
             <TopTabNavigatorPage containerStyle="position:relative">
               {/* LAST */}
               <div class="mfd-label atis-message-full">{this.ATISMessage}</div>
-              <div id="datis-nav-buttons" style="position: absolute; top:20px; right:15px;">
+              <div id="datis-nav-buttons" style="position: absolute; top:37px; right:16px;">
                 <IconButton
                   icon="double-up"
                   onClick={() => {}}
                   disabled={Subject.create(true)}
-                  containerStyle="width: 40px; height: 40px; padding:5px"
+                  containerStyle="width: 40px; height: 40px; padding:4px"
                 />
                 <IconButton
                   icon="double-down"
                   onClick={() => {}}
-                  containerStyle="width: 40px; height: 40px; padding:5px"
+                  containerStyle="width: 40px; height: 40px; padding:4px"
                 />
               </div>
-              <div id="datis-page-number" class="mfd-label" style="position:absolute; bottom:20px; right:15px;">
+              <div
+                id="datis-page-number"
+                class="mfd-label"
+                style="position:absolute; bottom:12px; right:17px; font-size:21px;"
+              >
                 <span>
                   PGE
                   <br />
@@ -81,7 +86,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
           </div>
         </div>
         <div style="position: absolute; top: 36px; opacity: 0.3; visibility: hidden;">
-          <img src="/Images/fbw-a380x/d-atis-list.png" alt="" />
+          <img src="/Images/fbw-a380x/d-atis-received.png" alt="" />
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>

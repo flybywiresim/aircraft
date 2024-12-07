@@ -28,9 +28,37 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
         />
         {/* begin page content */}
         <div class="mfd-page-container">
-          <DAtisBlock bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
-          <DAtisBlock bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
-          <DAtisBlock bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+          <DAtisBlock
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            index={1}
+            atisIcao={Subject.create('LFBO')}
+            atisType="DEP"
+            atisMessage={Subject.create(
+              'LFBO DEP ATIS K 1005Z RWY 32L ILS RWY 32L RWY 32R CLOSED TRANS LVL 5000FT TWY N1 N2 N6 M2 CLSD EXPECT TKOF FROM M4 2700M AVLB IF UNABLE ADV PREFLIGHT WIND 34009KT VIS 10 KM CLOUD FEW011 BKN041 OVC054 TEMP ......',
+            )}
+            atisCode={Subject.create('K')}
+            atisTime={Subject.create('1005Z')}
+            isAtisNew={Subject.create(true)}
+            isAutoUpdateEnabled={Subject.create(true)}
+            isAutoPrintEnabled={Subject.create(true)}
+            atisStatus="RECEIVED"
+          />
+          <DAtisBlock
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            index={2}
+            atisIcao={Subject.create('')}
+          />
+          <DAtisBlock
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            index={3}
+            atisIcao={Subject.create('')}
+          />
           <div class="mfd-atccom-datis-footer">
             <Button
               label="PRINT<br/>ALL"
