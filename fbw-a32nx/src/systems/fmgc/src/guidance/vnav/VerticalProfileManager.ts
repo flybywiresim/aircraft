@@ -747,6 +747,21 @@ export class VerticalProfileManager {
         return managedClimbSpeedMach;
     }
   }
+
+  shouldShowTooSteepPathAhead(): boolean {
+    const isManagedLateralMode = this.fcuModes.isLatAutoControlActive();
+    const flightPhase = this.observer.get().flightPhase;
+    const isDesOrApprPhase = flightPhase === FmgcFlightPhase.Descent || flightPhase === FmgcFlightPhase.Approach;
+    const isCruisePhase = flightPhase === FmgcFlightPhase.Cruise;
+    const isCloseToDestination =
+      ((this.constraintReader.distanceToEnd ?? Infinity) > 150 && isCruisePhase) || isDesOrApprPhase;
+
+    if (!isManagedLateralMode || !isCloseToDestination) {
+      return false;
+    }
+
+    return this.flightPlanService.active?.hasTooSteepPathAhead();
+  }
 }
 
 class FcuModeObserver {
@@ -754,7 +769,9 @@ class FcuModeObserver {
     LateralMode.NAV,
     LateralMode.LOC_CPT,
     LateralMode.LOC_TRACK,
+    LateralMode.LAND,
     LateralMode.RWY,
+    LateralMode.GA_TRACK,
   ];
 
   private VERT_CLIMB_MODES: VerticalMode[] = [

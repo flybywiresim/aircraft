@@ -630,6 +630,10 @@ export class VnavDriver implements GuidanceComponent {
       ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
       : undefined;
   }
+
+  shouldShowTooSteepPathAhead(): boolean {
+    return this.profileManager.shouldShowTooSteepPathAhead();
+  }
 }
 
 /// To check whether the value changed from old to new, but not if both values are NaN. (NaN !== NaN in JS)

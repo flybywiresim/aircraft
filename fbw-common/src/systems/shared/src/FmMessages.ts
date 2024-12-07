@@ -218,4 +218,10 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     color: 'White',
     clearable: true,
   },
+  TooSteepPathAhead: {
+    id: 20,
+    text: 'TOO STEEP PATH AHEAD',
+    color: 'Amber',
+    clearable: true,
+  },
 };
