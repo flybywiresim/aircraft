@@ -76,7 +76,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
             />
           </div>
         </div>
-        {/* <div
+        <div
           id="atccom-inop"
           style="
     position: absolute;
@@ -91,9 +91,6 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
     color: #e68000"
         >
           <span>NOT YET IMPLEMENTED</span>
-        </div> */}
-        <div style="position: absolute; top: 36px; opacity: 0.3; visibility: hidden;">
-          <img src="/Images/fbw-a380x/d-atis-list.png" alt="" />
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>

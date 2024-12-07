@@ -71,7 +71,6 @@
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
 1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
-1. [A380X/MFD] Add ATCCOM D-ATIS page - @heclak (Heclak)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 1. [A32NX/FCU] The FCU LCD is now still visible with ambient light when the backlight is off @tracernz (Mike)
@@ -82,6 +81,7 @@
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
+1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
 
 ## 0.12.0
 
