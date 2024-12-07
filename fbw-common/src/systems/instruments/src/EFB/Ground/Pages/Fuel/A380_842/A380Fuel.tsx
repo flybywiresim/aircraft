@@ -113,11 +113,11 @@ const ValueUnitDisplay: React.FC<NumberUnitDisplayProps> = ({ value, padTo, unit
   );
 };
 
-const RefuelRate = {
-  REAL: '0',
-  FAST: '1',
-  INSTANT: '2',
-};
+enum RefuelRate {
+  REAL = '0',
+  FAST = '1',
+  INSTANT = '2',
+}
 
 interface FuelProps {
   simbriefDataLoaded: boolean;

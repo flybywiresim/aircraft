@@ -3,8 +3,6 @@
 
 import { EventBus, PublishPacer, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
-/* eslint-disable camelcase */
-
 export interface GsxSimVarEvents {
   /** FWD Cargo Door Toggle - true => non-zero*/
   gsx_aircraft_cargo_1_toggle: number;

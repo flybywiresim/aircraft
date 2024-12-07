@@ -9,7 +9,7 @@ import {
   ExtrasSimVarPublisher,
   GPUManagement,
   GsxSimVarPublisher,
-  GsxSyncA380,
+  GsxSyncA380X,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
@@ -90,7 +90,7 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
 
-  private readonly gsxSync = new GsxSyncA380(this.bus);
+  private readonly gsxSync = new GsxSyncA380X(this.bus);
 
   /**
    * "mainmenu" = 0
