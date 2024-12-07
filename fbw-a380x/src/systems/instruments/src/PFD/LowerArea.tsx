@@ -507,6 +507,8 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     w.bitValueOr(28, false),
   );
 
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
   private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
 
   private readonly engine1Running = ConsumerSubject.create(this.sub.on('engOneRunning'), true);
@@ -595,9 +597,10 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         const rt = this.rudderTrimOrder.get();
 
         const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
-        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(0) < 60 && Math.abs(rt) > 0.3;
+        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(61) < 60 && Math.abs(rt) > 0.3;
 
         if (
+          this.fwcFlightPhase.get() >= 2 &&
           !gnd &&
           (!this.engine1Running.get() ||
             !this.engine2Running.get() ||
@@ -605,6 +608,8 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             !this.engine4Running.get())
         ) {
           this.engineHasFailed = true;
+        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 2) {
+          this.engineHasFailed = false;
         }
 
         const visCondition =
