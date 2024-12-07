@@ -344,7 +344,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       tropoPause,
       config.speedbrakesExtended,
       config.flapConfig,
-      config.speedbrakesExtended,
+      config.gearExtended,
       perfFactor,
     );
   }

@@ -100,7 +100,7 @@ export interface AircraftConfiguration {
   gearExtended: boolean;
 }
 
-export const DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG: AircraftConfiguration = {
+export const DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG: Readonly<AircraftConfiguration> = {
   flapConfig: FlapConf.CLEAN,
   speedbrakesExtended: false,
   gearExtended: false,
@@ -125,7 +125,7 @@ export const DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG: AircraftConfiguration = {
  * assert(config === config2);
  */
 export class AircraftConfigurationRegister {
-  private readonly config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG;
+  private readonly config: AircraftConfiguration = { ...DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG };
 
   setFromSpeed(speed: Knots, parameters: VerticalProfileComputationParameters, useSpeedbrakes = false) {
     this.config.flapConfig = FlapConfigurationProfile.getBySpeed(speed, parameters);
