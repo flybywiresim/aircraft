@@ -5,6 +5,7 @@
 import {
   ChecklistLineStyle,
   EcamAbnormalSensedProcedures,
+  isChecklistCondition,
   WD_NUM_LINES,
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
@@ -183,12 +184,26 @@ export class FwsAbnormalSensed {
       .filter((v) => v !== null);
   }
 
+  getActualShownItems() {
+    const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
+    const lines = [...this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow];
+    proc.items.forEach((v, i) => {
+      if (isChecklistCondition(v) && !v.sensed) {
+        // CONFIRM line
+        lines.splice(i + 1, 0, lines[i]);
+      }
+    });
+    if (proc.recommendation) {
+      lines.splice(0, 0, true);
+    }
+    return lines;
+  }
+
   /** Returns the index from selectedItem amongst the displayed items */
   private lineInDisplay(selectedItem: number) {
     return this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get())
-      ? this.fws.activeAbnormalSensedList
-          .getValue(this.activeProcedureId.get())
-          .itemsToShow.map((value, index) => (value ? index : null))
+      ? this.getActualShownItems()
+          .map((value, index) => (value ? index : null))
           .filter(Boolean)
           .findIndex((v) => v === selectedItem)
       : -1;
@@ -217,7 +232,7 @@ export class FwsAbnormalSensed {
     };
     const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
     if (
-      this.selectedItem.get() < clState.itemsChecked.length &&
+      this.selectedItem.get() < this.getActualShownItems().length &&
       proc.items[this.selectedItem.get()]?.sensed === false
     ) {
       clState.itemsChecked[this.selectedItem.get()] = !clState.itemsChecked[this.selectedItem.get()];
@@ -236,20 +251,13 @@ export class FwsAbnormalSensed {
   }
 
   private scrollToSelectedLine() {
+    const itemsShown = this.getActualShownItems();
     if (
       this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get()) &&
-      this.selectedItem.get() >=
-        this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow.length
+      this.selectedItem.get() >= itemsShown.length
     ) {
       // CLEAR
-      this.showFromLine.set(
-        Math.max(
-          0,
-          this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow.length -
-            WD_NUM_LINES +
-            2,
-        ),
-      );
+      this.showFromLine.set(Math.max(0, itemsShown.length - WD_NUM_LINES + 2));
     } else {
       this.showFromLine.set(Math.max(0, this.lineInDisplay(this.selectedItem.get()) - WD_NUM_LINES + 2));
     }

@@ -563,18 +563,20 @@ export enum ChecklistLineStyle {
   SubHeadline = 'SubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
+  ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
   OmissionDots = 'OmissionDots',
   LandAsap = 'LandAsap',
   LandAnsa = 'LandAnsa',
+  ChecklistCondition = 'ChecklistCondition',
 }
 
 interface AbstractChecklistItem {
-  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
+  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. For conditions, don't include the leading "IF" */
   name: string;
   /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
   sensed: boolean;
-  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
+  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. Important for items subordinated to conditions. */
   level?: number;
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
@@ -588,7 +590,20 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
-interface ChecklistCondition extends AbstractChecklistItem {}
+interface ChecklistCondition extends AbstractChecklistItem {
+  /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
+  condition: true;
+}
+
+interface ChecklistSpecialItem extends AbstractChecklistItem {}
+
+export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistAction {
+  return (c as ChecklistAction).labelNotCompleted !== undefined;
+}
+
+export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
+  return (c as ChecklistCondition).condition !== undefined;
+}
 
 export interface AbnormalProcedure {
   /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
@@ -596,7 +611,7 @@ export interface AbnormalProcedure {
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition)[];
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }
@@ -608,10 +623,6 @@ export interface NormalProcedure {
   items: ChecklistAction[];
   /** Checklist is deferred, i.e. only activated by request */
   deferred?: boolean;
-}
-
-export function isChecklistAction(element: ChecklistAction | ChecklistCondition): element is ChecklistAction {
-  return 'labelNotCompleted' in element;
 }
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */

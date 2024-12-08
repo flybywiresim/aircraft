@@ -409,6 +409,10 @@ text, tspan, span {
   color: $display-white;
 }
 
+.EclLine.ChecklistItemInactive {
+  color: $display-grey !important;
+}
+
 .EclLine.ChecklistCompleted {
   color: $display-grey !important;
 }
@@ -433,6 +437,10 @@ text, tspan, span {
 .EclLine.Headline {
   color: $display-white !important;
   text-decoration: underline;
+}
+
+.EclLine.ChecklistCondition {
+  color: $display-white !important;
 }
 
 .EclLine.OmissionDots {
@@ -469,6 +477,14 @@ text, tspan, span {
 
 .EclLineCheckboxArea.AbnormalItem.Checked {
   color: $display-white;
+}
+
+.EclLineCheckboxArea.ChecklistCondition {
+  color: $display-white !important;
+}
+
+.EclLineCheckboxArea.AbnormalItem.ChecklistItemInactive {
+  color: $display-grey;
 }
 
 .EclLineText {

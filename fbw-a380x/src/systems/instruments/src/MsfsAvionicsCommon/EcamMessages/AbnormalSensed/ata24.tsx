@@ -809,6 +809,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
       {
         name: 'WHEN APU NOT RQRD:',
         sensed: false,
+        condition: true,
       },
       {
         name: 'APU BAT',

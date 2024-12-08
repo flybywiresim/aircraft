@@ -39,6 +39,7 @@ import {
   AbnormalProcedure,
   EcamAbnormalSensedProcedures,
   EcamMemos,
+  isChecklistCondition,
   pfdMemoDisplay,
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
@@ -3833,6 +3834,7 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
+        this.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -3878,20 +3880,20 @@ export class FwsCore {
         } else if (this.activeAbnormalSensedList.has(key)) {
           // Update internal map
           const prevEl = this.activeAbnormalSensedList.getValue(key);
+          this.conditionalActiveItems(proc, prevEl.itemsChecked, itemsActive);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
-            if (item.sensed === true) {
-              if (
-                prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
-                prevEl.itemsActive[idx] !== itemsActive[idx] ||
-                prevEl.itemsChecked[idx] !== itemsChecked[idx]
-              ) {
-                this.abnormalUpdatedItems.get(key).push(idx);
-              }
+            if (
+              prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+              prevEl.itemsActive[idx] !== itemsActive[idx] ||
+              (prevEl.itemsChecked[idx] !== itemsChecked[idx] && item.sensed)
+            ) {
+              this.abnormalUpdatedItems.get(key).push(idx);
             }
           });
 
           if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
+            console.log(this.abnormalUpdatedItems);
             this.activeAbnormalSensedList.setValue(key, {
               id: key,
               itemsChecked: [...prevEl.itemsChecked].map((val, index) =>
@@ -4170,6 +4172,26 @@ export class FwsCore {
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
+  }
+
+  conditionalActiveItems(proc: AbnormalProcedure, itemsChecked: boolean[], itemsActive: boolean[]) {
+    // Additional logic for conditions: Modify itemsActive based on condition activation status
+    if (proc.items.some((v) => isChecklistCondition(v))) {
+      proc.items.forEach((v, i) => {
+        if (v.level) {
+          // Look for parent condition(s)
+          let active = true;
+          for (let recI = i; recI > 0; recI--) {
+            active =
+              (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
+                ? itemsChecked[recI]
+                : active;
+          }
+          itemsActive[i] = active;
+        }
+      });
+    }
+    return itemsActive;
   }
 
   updateRowRopWarnings() {

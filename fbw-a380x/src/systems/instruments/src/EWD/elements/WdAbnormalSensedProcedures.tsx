@@ -3,6 +3,7 @@ import {
   ChecklistLineStyle,
   EcamAbnormalSensedProcedures,
   isChecklistAction,
+  isChecklistCondition,
   WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
@@ -47,35 +48,63 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
               return;
             }
 
-            let text = item.level ? '\xa0'.repeat(item.level * 2) : '';
+            let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
+            let text = item.level ? '\xa0'.repeat(item.level) : '';
             if (isChecklistAction(item)) {
-              text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
+              text += clStyle !== ChecklistLineStyle.SubHeadline ? '-' : '';
               text += item.name;
+              if (!procState.itemsActive[itemIndex] && clStyle === ChecklistLineStyle.ChecklistItem) {
+                clStyle = ChecklistLineStyle.ChecklistItemInactive;
+              }
               if (procState.itemsChecked[itemIndex] && item.labelCompleted) {
                 text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
               } else if (procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
                 text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
               } else if (!procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
                 // Pad to 39 characters max
-                const paddingNeeded =
-                  39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);
+                const paddingNeeded = Math.max(
+                  0,
+                  39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 1 + 2),
+                );
+
                 text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
               }
+            } else if (isChecklistCondition(item)) {
+              clStyle = ChecklistLineStyle.ChecklistCondition;
+              text += procState.itemsChecked[itemIndex]
+                ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
+                : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
             } else {
-              text += `${item.name.substring(0, 2) === 'IF' ? '.' : ''}${item.name}`;
+              text += item.name;
             }
 
             this.lineData.push({
               abnormalProcedure: true,
               activeProcedure: procIndex === 0,
-              sensed: item.sensed,
+              sensed: isChecklistCondition(item) ? true : item.sensed,
               checked: procState.itemsChecked[itemIndex],
               text: text,
-              style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
+              style: clStyle,
               firstLine: procIndex !== 0 ? true : false,
               lastLine: procIndex !== 0 ? true : false,
-              originalItemIndex: itemIndex,
+              originalItemIndex: isChecklistCondition(item) ? undefined : itemIndex,
             });
+
+            if (isChecklistCondition(item) && !item.sensed) {
+              // Insert CONFIRM <condition>
+              const confirmText = `CONFIRM ${item.name}`;
+              this.lineData.push({
+                abnormalProcedure: true,
+                activeProcedure: procIndex === 0,
+                sensed: item.sensed,
+                checked: procState.itemsChecked[itemIndex],
+                text: confirmText,
+                style: clStyle,
+                firstLine: procIndex !== 0 ? true : false,
+                lastLine: procIndex !== 0 ? true : false,
+                originalItemIndex: itemIndex,
+              });
+            }
           });
 
           this.lineData.push({

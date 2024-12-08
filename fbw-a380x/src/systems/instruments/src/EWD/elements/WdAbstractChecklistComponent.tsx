@@ -137,6 +137,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             ChecklistItem: this.props.data.map(
               (d) => !d.abnormalProcedure && d.style === ChecklistLineStyle.ChecklistItem,
             ),
+            ChecklistItemInactive: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistItemInactive),
             AbnormalItem: this.props.data.map(
               (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
             ),
@@ -145,6 +146,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             ),
             Checked: this.props.data.map((d) => d.checked),
             ChecklistCompleted: this.props.data.map((d) => d.style === ChecklistLineStyle.CompletedChecklist),
+            ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
             Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),
@@ -159,9 +161,9 @@ export class EclLine extends DisplayComponent<EclLineProps> {
           <div
             class={{
               EclLineCheckboxArea: true,
-              AbnormalItem: this.props.data.map(
-                (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
-              ),
+              AbnormalItem: this.props.data.map((d) => d.abnormalProcedure === true),
+              ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
+              ChecklistItemInactive: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistItemInactive),
               Checked: this.props.data.map((d) => d.checked),
               HiddenElement: this.props.data.map(
                 (d) =>
