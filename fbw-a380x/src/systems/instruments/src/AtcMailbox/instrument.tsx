@@ -7,7 +7,7 @@ import {
   FsBaseInstrument,
   ClockPublisher,
 } from '@microsoft/msfs-sdk';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, getStartupState, StartupState } from '@flybywiresim/fbw-sdk';
 import { AtcMailbox } from 'instruments/src/AtcMailbox/AtcMailbox';
 
 class AtcMailboxInstrument implements FsInstrument {
@@ -45,8 +45,10 @@ class AtcMailboxInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    this.backplane.onUpdate();
-    this.failuresConsumer.update();
+    if (getStartupState() >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
+      this.failuresConsumer.update();
+    }
   }
 
   public onInteractionEvent(args: string[]): void {

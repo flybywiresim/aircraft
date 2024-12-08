@@ -5,7 +5,7 @@ use crate::{
         pid::PidController, random_from_normal_distribution, random_from_range, HydraulicColor,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, StartState, UpdateContext,
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, FltInitState, UpdateContext,
         Write,
     },
 };
@@ -45,9 +45,9 @@ impl BrakeActuator {
             base_speed: BrakeActuator::ACTUATOR_BASE_SPEED,
             // Here we consider brakes are applied on spawn where park brake should be applied
             // This avoids actuator movement on spawn that would mess hydraulic quantities on init
-            current_position: if context.start_state() == StartState::Hangar
-                || context.start_state() == StartState::Apron
-                || context.start_state() == StartState::Runway
+            current_position: if context.flt_init_state() == FltInitState::Hangar
+                || context.flt_init_state() == FltInitState::Apron
+                || context.flt_init_state() == FltInitState::Runway
             {
                 1.
             } else {

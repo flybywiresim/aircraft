@@ -168,8 +168,8 @@ class FlyByWireInterface {
 
   bool wasFcuInitialized = false;
   double simulationTimeReady = 0.0;
-  std::unique_ptr<LocalVariable> idIsReady;
-  std::unique_ptr<LocalVariable> idStartState;
+  std::unique_ptr<LocalVariable> idStartupState;
+  std::unique_ptr<LocalVariable> idFltInitState;
 
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;

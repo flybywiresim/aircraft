@@ -1516,7 +1516,7 @@ mod tests {
     use std::time::Duration;
 
     use crate::simulation::{
-        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, StartState,
+        Aircraft, FltInitState, InitContext, SimulationElement, SimulationElementVisitor,
         UpdateContext,
     };
 
@@ -1667,10 +1667,10 @@ mod tests {
         test_bed: SimulationTestBed<TestGearAircraft>,
     }
     impl LgciusTestBed {
-        fn new(start_state: StartState) -> Self {
+        fn new(flt_init_state: FltInitState) -> Self {
             Self {
-                test_bed: SimulationTestBed::new_with_start_state(
-                    start_state,
+                test_bed: SimulationTestBed::new_with_flt_init_state(
+                    flt_init_state,
                     TestGearAircraft::new,
                 ),
             }
@@ -1734,16 +1734,16 @@ mod tests {
         }
     }
 
-    fn test_bed(start_state: StartState) -> LgciusTestBed {
-        LgciusTestBed::new(start_state)
+    fn test_bed(flt_init_state: FltInitState) -> LgciusTestBed {
+        LgciusTestBed::new(flt_init_state)
     }
 
     fn test_bed_on_ground_with() -> LgciusTestBed {
-        test_bed(StartState::Apron)
+        test_bed(FltInitState::Apron)
     }
 
     fn test_bed_in_flight_with() -> LgciusTestBed {
-        test_bed(StartState::Cruise)
+        test_bed(FltInitState::Cruise)
     }
 
     #[test]
