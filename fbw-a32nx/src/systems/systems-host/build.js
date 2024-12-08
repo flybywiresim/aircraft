@@ -12,4 +12,4 @@ const outFile = 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpi
 
 // process.env.FBW_TYPECHECK = "1";
 
-esbuild.build(createModuleBuild('fbw-a32nx', undefined, path.join(__dirname, './index.ts'), outFile, __dirname));
+esbuild.build(createModuleBuild('fbw-a32nx', undefined, path.join(__dirname, 'index.ts'), outFile, __dirname));
