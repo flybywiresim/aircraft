@@ -3880,25 +3880,25 @@ export class FwsCore {
         } else if (this.activeAbnormalSensedList.has(key)) {
           // Update internal map
           const prevEl = this.activeAbnormalSensedList.getValue(key);
-          this.conditionalActiveItems(proc, prevEl.itemsChecked, itemsActive);
+          const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
+            proc.items[index].sensed ? itemsChecked[index] : !!val,
+          );
+          this.conditionalActiveItems(proc, fusedChecked, itemsActive);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
               prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
               prevEl.itemsActive[idx] !== itemsActive[idx] ||
-              (prevEl.itemsChecked[idx] !== itemsChecked[idx] && item.sensed)
+              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
             ) {
               this.abnormalUpdatedItems.get(key).push(idx);
             }
           });
 
           if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
-            console.log(this.abnormalUpdatedItems);
             this.activeAbnormalSensedList.setValue(key, {
               id: key,
-              itemsChecked: [...prevEl.itemsChecked].map((val, index) =>
-                proc.items[index].sensed ? itemsChecked[index] : !!val,
-              ),
+              itemsChecked: fusedChecked,
               itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
               itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
             });
@@ -4184,7 +4184,7 @@ export class FwsCore {
           for (let recI = i; recI > 0; recI--) {
             active =
               (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
-                ? itemsChecked[recI]
+                ? active && itemsChecked[recI]
                 : active;
           }
           itemsActive[i] = active;

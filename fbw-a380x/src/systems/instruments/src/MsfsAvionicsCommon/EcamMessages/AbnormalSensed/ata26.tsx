@@ -308,7 +308,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -332,7 +332,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC NOT RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -408,7 +408,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -432,7 +432,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC NOT RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -508,7 +508,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -532,7 +532,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC NOT RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -608,7 +608,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -632,7 +632,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'EVAC NOT RQRD :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -722,17 +722,17 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'L/G : KEEP DOWN',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'ATC',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'NOTIFY',
       },
       {
         name: 'MAX SPEED : 250/.55',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Cyan,
       },
       // On ground

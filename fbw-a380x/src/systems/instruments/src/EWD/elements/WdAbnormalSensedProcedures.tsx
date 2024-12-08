@@ -71,9 +71,13 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
               }
             } else if (isChecklistCondition(item)) {
               clStyle = ChecklistLineStyle.ChecklistCondition;
-              text += procState.itemsChecked[itemIndex]
-                ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
-                : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
+              if (item.name.substring(0, 4) === 'WHEN') {
+                text += `.${item.name}`;
+              } else {
+                text += procState.itemsChecked[itemIndex]
+                  ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
+                  : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
+              }
             } else {
               text += item.name;
             }
@@ -92,7 +96,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
             if (isChecklistCondition(item) && !item.sensed) {
               // Insert CONFIRM <condition>
-              const confirmText = `CONFIRM ${item.name}`;
+              const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name}`;
               this.lineData.push({
                 abnormalProcedure: true,
                 activeProcedure: procIndex === 0,

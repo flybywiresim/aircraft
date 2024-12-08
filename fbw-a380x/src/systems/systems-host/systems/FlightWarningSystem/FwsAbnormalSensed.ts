@@ -184,28 +184,29 @@ export class FwsAbnormalSensed {
       .filter((v) => v !== null);
   }
 
-  getActualShownItems() {
+  private getActualShownItems() {
     const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
-    const lines = [...this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow];
+    const lines = [...this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow]
+      .map((value, index) => (value ? index : null))
+      .filter((v) => v !== null);
     proc.items.forEach((v, i) => {
       if (isChecklistCondition(v) && !v.sensed) {
         // CONFIRM line
-        lines.splice(i + 1, 0, lines[i]);
+        lines.splice(i, 0, lines[i]);
+        lines[i] = NaN;
       }
     });
     if (proc.recommendation) {
-      lines.splice(0, 0, true);
+      lines.splice(0, 0, NaN);
     }
+
     return lines;
   }
 
   /** Returns the index from selectedItem amongst the displayed items */
   private lineInDisplay(selectedItem: number) {
     return this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get())
-      ? this.getActualShownItems()
-          .map((value, index) => (value ? index : null))
-          .filter(Boolean)
-          .findIndex((v) => v === selectedItem)
+      ? this.getActualShownItems().findIndex((v) => v === selectedItem)
       : -1;
   }
 
@@ -231,13 +232,15 @@ export class FwsAbnormalSensed {
       itemsActive: [...cl.itemsActive],
     };
     const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
-    if (
-      this.selectedItem.get() < this.getActualShownItems().length &&
-      proc.items[this.selectedItem.get()]?.sensed === false
-    ) {
+    const procItem = proc.items[this.selectedItem.get()];
+    if (this.selectedItem.get() < this.getActualShownItems().length && !procItem?.sensed) {
       clState.itemsChecked[this.selectedItem.get()] = !clState.itemsChecked[this.selectedItem.get()];
       this.fws.activeAbnormalSensedList.setValue(this.activeProcedureId.get(), clState);
       if (clState.itemsChecked[this.selectedItem.get()]) {
+        if (isChecklistCondition(procItem) && procItem.condition) {
+          // Force 'active' status update
+          this.fws.conditionalActiveItems(proc, clState.itemsChecked, clState.itemsActive);
+        }
         this.moveDown(false);
       }
     } else if (this.selectedItem.get() === clState.itemsChecked.length) {
@@ -252,9 +255,10 @@ export class FwsAbnormalSensed {
 
   private scrollToSelectedLine() {
     const itemsShown = this.getActualShownItems();
+    const lastItemIndex = itemsShown[itemsShown.length - 1];
     if (
       this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get()) &&
-      this.selectedItem.get() >= itemsShown.length
+      this.selectedItem.get() === lastItemIndex + 1
     ) {
       // CLEAR
       this.showFromLine.set(Math.max(0, itemsShown.length - WD_NUM_LINES + 2));
@@ -1898,7 +1902,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng1.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -1949,7 +1953,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng2.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -2000,7 +2004,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng3.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -2051,7 +2055,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng4.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
