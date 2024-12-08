@@ -11,6 +11,16 @@ pub(crate) mod legacy {
 
     pub fn trigger_key_event(_event_id: ID32, _value: UINT32) {}
 
+    pub fn trigger_key_event_ex1(
+        _event_id: ID32,
+        _value0: UINT32,
+        _value1: UINT32,
+        _value2: UINT32,
+        _value3: UINT32,
+        _value4: UINT32,
+    ) {
+    }
+
     #[derive(Debug)]
     pub struct AircraftVariable {}
 

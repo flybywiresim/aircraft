@@ -6,15 +6,15 @@ edition = "2021"
 
 [dependencies]
 uom = "0.36.0"
-nalgebra = "0.25.0"
-ntest = "0.7.2"
+nalgebra = "0.33.0"
+ntest = "0.9.3"
 fxhash = "0.2.1"
 rand = "0.8.0"
-serde = { version = "1.0.210", features = ["derive"] }
-serde_with = { version = "3.9.0", features = ["std"] }
+serde = { version = "1.0.215", features = ["derive"] }
+serde_with = { version = "3.11.0", features = ["std"] }
 toml = { version = "0.8.19", features = ["parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
-rstest = "0.10.0"
+rstest = "0.12.0"
 rand_pcg = "0.3.1"

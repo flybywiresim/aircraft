@@ -93,7 +93,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     /// as a power source for the other buses which will all be connected to it.
     pub fn with_electrical_buses<const N: usize>(
         self,
-        buses: [(ElectricalBusType, usize); N],
+        buses: [(ElectricalBusType, u32); N],
     ) -> Result<Self, Box<dyn Error>> {
         self.with_aspect(electrical_buses(buses))
     }
