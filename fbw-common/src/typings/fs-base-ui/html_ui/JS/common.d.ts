@@ -868,8 +868,10 @@ declare global {
     let g_AtlasMgr: AltasElementsMgr;
 
     namespace InputBar {
-        const MENU_BUTTON_A: 'MENU_VALID';
-        const MENU_BUTTON_B: 'MENU_BACK';
+        /** MSFS2020 = MENU_VALID, MSFS2024 = KEY_MENU_SR_VALID */
+        const MENU_BUTTON_A: 'MENU_VALID' | 'KEY_MENU_SR_VALID';
+        /** MSFS2020 = MENU_BACK, MSFS2024 = KEY_MENU_SR_BACK */
+        const MENU_BUTTON_B: 'MENU_BACK' | 'KEY_MENU_SR_BACK';
         const MENU_BUTTON_X: 'MENU_VALI2';
         const MENU_BUTTON_Y: 'MENU_CANCEL';
         const MENU_BUTTON_START: 'MENU_START';

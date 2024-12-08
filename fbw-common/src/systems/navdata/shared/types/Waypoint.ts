@@ -21,6 +21,7 @@ export interface EnrouteWaypoint extends BaseWaypoint<SectionCode.Enroute> {
 
 export interface TerminalWaypoint extends BaseWaypoint<SectionCode.Airport> {
   area: WaypointArea.Terminal;
+  airportIdent: string;
 }
 
 interface BaseWaypoint<T extends SectionCode> extends BaseFix<T> {
