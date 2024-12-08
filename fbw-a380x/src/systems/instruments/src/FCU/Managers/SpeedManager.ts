@@ -207,7 +207,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       }
       this.lightsTest = _lightsTest;
       if (this.lightsTest) {
-        this.textValueContent = '.8.8.8';
+        this.textValueContent = '8.8.8';
         this.setTextElementActive(this.textSPD, true);
         this.setTextElementActive(this.textMACH, true);
         this.setTextElementActive(this.textKNOTS, true);
