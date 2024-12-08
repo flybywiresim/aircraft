@@ -47,7 +47,7 @@ export class Baro extends DisplayComponent<BaroProps> {
   private readonly baroText = MappedSubject.create(
     ([mode, correction, isLightTest]) => {
       if (isLightTest) {
-        return '88.88';
+        return '8.8.8.8';
       }
       switch (mode) {
         case 'STD':
@@ -66,10 +66,18 @@ export class Baro extends DisplayComponent<BaroProps> {
   );
 
   private readonly preSelBaroText = MappedSubject.create(
-    ([correction, isVisible]) =>
-      isVisible ? (correction < 100 ? correction.toFixed(2) : correction.toFixed(0).padStart(4, '0')) : '',
+    ([correction, isVisible, isLightTest]) => {
+      if (isLightTest) {
+        return '8.8.8.8';
+      } else if (isVisible) {
+        return correction < 100 ? correction.toFixed(2) : correction.toFixed(0).padStart(4, '0');
+      } else {
+        return '';
+      }
+    },
     this.correction,
     this.isPreSelVisible,
+    this.isLightTestActive,
   );
 
   onAfterRender(_node: VNode): void {
@@ -97,7 +105,8 @@ export class Baro extends DisplayComponent<BaroProps> {
             >
               QNH
             </text>
-            <text
+            {/* Removed QFE label as QFE systems are INOP */}
+            {/* <text
               id="QFE"
               x="40%"
               y="26%"
@@ -108,7 +117,7 @@ export class Baro extends DisplayComponent<BaroProps> {
               }}
             >
               QFE
-            </text>
+            </text> */}
             <text id="PreSelBaroValue" class="Common Active" x="100%" y="26%" text-anchor="end">
               {this.preSelBaroText}
             </text>
