@@ -71,237 +71,232 @@ impl A380Fuel {
         FuelInfo {
             // LEFT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_1",
-            fuel_tank_pumps: &[(
-                9,
-                FuelPumpProperties {
-                    powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
-                    consumption_current_ampere: 8.,
-                },
-            )],
             position: (-25., -100.0, 8.5),
             total_capacity_gallons: 2731.5,
         },
         FuelInfo {
             // FEED_ONE - Capacity: 7299.6
             fuel_tank_id: "FUEL_TANK_QUANTITY_2",
-            fuel_tank_pumps: &[
-                (
-                    1,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(4),
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-                (
-                    2,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(2),
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-            ],
             position: (-7.45, -71.0, 7.3),
             total_capacity_gallons: 7299.6,
         },
         FuelInfo {
             // LEFT_MID - Capacity: 9632
             fuel_tank_id: "FUEL_TANK_QUANTITY_3",
-            fuel_tank_pumps: &[
-                (
-                    // FWD
-                    10,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-                (
-                    // AFT
-                    11,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-            ],
             position: (7.1, -46.4, 5.9),
             total_capacity_gallons: 9632.,
         },
         FuelInfo {
             // LEFT_INNER - Capacity: 12189.4
             fuel_tank_id: "FUEL_TANK_QUANTITY_4",
-            fuel_tank_pumps: &[
-                (
-                    // FWD
-                    12,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-                (
-                    // AFT
-                    17,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-            ],
             position: (16.5, -24.7, 3.2),
             total_capacity_gallons: 12189.4,
         },
         FuelInfo {
             // FEED_TWO - Capacity: 7753.2
             fuel_tank_id: "FUEL_TANK_QUANTITY_5",
-            fuel_tank_pumps: &[
-                (
-                    3,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-                (
-                    4,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(3),
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-            ],
             position: (27.3, -18.4, 1.0),
             total_capacity_gallons: 7753.2,
         },
         FuelInfo {
             // FEED_THREE - Capacity: 7753.2
             fuel_tank_id: "FUEL_TANK_QUANTITY_6",
-            fuel_tank_pumps: &[
-                (
-                    5,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(3),
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-                (
-                    6,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-            ],
             position: (27.3, 18.4, 1.0),
             total_capacity_gallons: 7753.2,
         },
         FuelInfo {
             // RIGHT_INNER - Capacity: 12189.4
             fuel_tank_id: "FUEL_TANK_QUANTITY_7",
-            fuel_tank_pumps: &[
-                (
-                    // FWD
-                    13,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-                (
-                    // AFT
-                    18,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-            ],
             position: (16.5, 24.7, 3.2),
             total_capacity_gallons: 12189.4,
         },
         FuelInfo {
             // RIGHT_MID - Capacity: 9632
             fuel_tank_id: "FUEL_TANK_QUANTITY_8",
-            fuel_tank_pumps: &[
-                (
-                    // FWD
-                    15,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-                (
-                    // AFT
-                    16,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
-                        consumption_current_ampere: 8.,
-                    },
-                ),
-            ],
             position: (7.1, 46.4, 5.9),
             total_capacity_gallons: 9632.,
         },
         FuelInfo {
             // FEED_FOUR - Capacity: 7299.6
             fuel_tank_id: "FUEL_TANK_QUANTITY_9",
-            fuel_tank_pumps: &[
-                (
-                    7,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(2),
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-                (
-                    8,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(4),
-                        consumption_current_ampere: 9.,
-                    },
-                ),
-            ],
             position: (-7.45, 71., 7.3),
             total_capacity_gallons: 7299.6,
         },
         FuelInfo {
             // RIGHT_OUTER - Capacity: 2731.5
             fuel_tank_id: "FUEL_TANK_QUANTITY_10",
-            fuel_tank_pumps: &[(
-                14,
-                FuelPumpProperties {
-                    powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
-                    consumption_current_ampere: 8.,
-                },
-            )],
             position: (-25., 100., 8.5),
             total_capacity_gallons: 2731.5,
         },
         FuelInfo {
             // TRIM - Capacity: 6260.3
             fuel_tank_id: "FUEL_TANK_QUANTITY_11",
-            fuel_tank_pumps: &[
-                (
-                    // Left
-                    19,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
-                        consumption_current_ampere: 5.,
-                    },
-                ),
-                (
-                    // Right
-                    20,
-                    FuelPumpProperties {
-                        powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
-                        consumption_current_ampere: 5.,
-                    },
-                ),
-            ],
             position: (-87.14, 0., 12.1),
             total_capacity_gallons: 6260.3,
         },
+    ];
+
+    const FUEL_PUMPS: [(usize, FuelPumpProperties); 20] = [
+        (
+            // Feed 1 main pump
+            1,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 1 stby pump
+            2,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 2 main pump
+            3,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 2 stby pump
+            4,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 3 main pump
+            5,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 3 stby pump
+            6,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 4 main pump
+            7,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 4 stby pump
+            8,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Left outer pump
+            9,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left mid fwd pump
+            10,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left mid aft pump
+            11,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left inner fwd pump
+            12,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left inner aft pump
+            17,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right outer pump
+            14,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right mid fwd pump
+            15,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right mid aft pump
+            16,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right inner fwd pump
+            13,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right inner aft pump
+            18,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Trim left pump
+            19,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                consumption_current_ampere: 5.,
+            },
+        ),
+        (
+            // Trim right pump
+            20,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 5.,
+            },
+        ),
     ];
 
     pub fn new(context: &mut InitContext) -> Self {
@@ -309,6 +304,7 @@ impl A380Fuel {
             fuel_quantity_management_system: A380FuelQuantityManagementSystem::new(
                 context,
                 Self::A380_FUEL,
+                Self::FUEL_PUMPS,
             ),
         }
     }
@@ -317,7 +313,7 @@ impl A380Fuel {
         self.fuel_quantity_management_system.update(context);
     }
 
-    fn fuel_system(&self) -> &FuelSystem<11> {
+    fn fuel_system(&self) -> &FuelSystem<11, 20> {
         self.fuel_quantity_management_system.fuel_system()
     }
 

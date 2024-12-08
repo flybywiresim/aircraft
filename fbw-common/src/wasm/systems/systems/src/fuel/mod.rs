@@ -50,21 +50,14 @@ pub struct FuelPumpProperties {
 #[derive(Debug)]
 pub struct FuelInfo<'a> {
     pub fuel_tank_id: &'a str,
-    pub fuel_tank_pumps: &'a [(usize, FuelPumpProperties)],
     pub position: (f64, f64, f64),
     pub total_capacity_gallons: f64,
 }
 impl FuelInfo<'_> {
-    pub fn into_fuel_tank(&self, context: &mut InitContext, write: bool) -> FuelTank {
-        let pumps = self
-            .fuel_tank_pumps
-            .iter()
-            .map(|(id, properties)| FuelPump::new(context, *id, *properties))
-            .collect();
+    pub fn into_fuel_tank(self, context: &mut InitContext, write: bool) -> FuelTank {
         FuelTank::new(
             context,
             self.fuel_tank_id,
-            pumps,
             Vector3::new(self.position.0, self.position.1, self.position.2),
             write,
         )
@@ -74,22 +67,14 @@ impl FuelInfo<'_> {
 #[derive(Debug)]
 pub struct FuelTank {
     fuel_id: VariableIdentifier,
-    pumps: Vec<FuelPump>,
     location: Vector3<f64>,
     quantity: Mass,
     write: bool,
 }
 impl FuelTank {
-    pub fn new(
-        context: &mut InitContext,
-        id: &str,
-        pumps: Vec<FuelPump>,
-        location: Vector3<f64>,
-        write: bool,
-    ) -> Self {
+    pub fn new(context: &mut InitContext, id: &str, location: Vector3<f64>, write: bool) -> Self {
         FuelTank {
             fuel_id: context.get_identifier(id.to_owned()),
-            pumps,
             location,
             quantity: Mass::default(),
             write,
@@ -126,14 +111,9 @@ impl SimulationElement for FuelTank {
             );
         }
     }
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.pumps, visitor);
-
-        visitor.visit(self);
-    }
 }
 
-pub struct FuelSystem<const N: usize> {
+pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize> {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
@@ -141,15 +121,21 @@ pub struct FuelSystem<const N: usize> {
     fuel_total_weight: Mass,
 
     fuel_tanks: [FuelTank; N],
+    fuel_pumps: [FuelPump; PUMP_COUNT],
 }
-impl<const N: usize> FuelSystem<N> {
-    pub fn new(context: &mut InitContext, fuel_tanks: [FuelTank; N]) -> Self {
+impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
+    pub fn new(
+        context: &mut InitContext,
+        fuel_tanks: [FuelTank; N],
+        fuel_pumps: [FuelPump; PUMP_COUNT],
+    ) -> Self {
         FuelSystem {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             unlimited_fuel: false,
             fuel_total_weight_id: context.get_identifier("FUEL TOTAL QUANTITY WEIGHT".to_owned()),
             fuel_total_weight: Mass::default(),
             fuel_tanks,
+            fuel_pumps,
         }
     }
 
@@ -186,9 +172,10 @@ impl<const N: usize> FuelSystem<N> {
         self.fuel_tanks[t].quantity()
     }
 }
-impl<const N: usize> SimulationElement for FuelSystem<N> {
+impl<const N: usize, const PUMP_COUNT: usize> SimulationElement for FuelSystem<N, PUMP_COUNT> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.fuel_tanks, visitor);
+        accept_iterable!(self.fuel_pumps, visitor);
         visitor.visit(self);
     }
 
