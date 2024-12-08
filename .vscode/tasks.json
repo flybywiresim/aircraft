@@ -20,13 +20,67 @@
       }
     },
     {
-      "label": "Build",
+      "label": "Build A32NX and A380X(8K)",
       "type": "shell",
       "command": "${workspaceFolder}/scripts/dev-env/run.sh",
       "args": ["./scripts/build.sh"],
       "windows": {
         "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
         "args": ["./scripts/build.sh"]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Build A32NX",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
+      "args": ["./scripts/build_a32nx.sh"],
+      "windows": {
+        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
+        "args": ["./scripts/build_a32nx.sh"]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Build A380X(4K)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
+      "args": ["./scripts/build_a380x.sh", "-4k"],
+      "windows": {
+        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
+        "args": ["./scripts/build_a380x.sh", "-4k"]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Build A380X(8K)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
+      "args": ["./scripts/build_a380x.sh"],
+      "windows": {
+        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
+        "args": ["./scripts/build_a380x.sh"]
       },
       "options": {
         "cwd": "${workspaceFolder}"
