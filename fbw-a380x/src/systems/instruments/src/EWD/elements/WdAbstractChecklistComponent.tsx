@@ -67,7 +67,9 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
     this.lineData.forEach((ld, index) => {
       if (index >= this.showFromLine.get() && lineIdx < WD_NUM_LINES) {
         this.lineDataSubject[lineIdx].set(ld);
-        this.lineSelected[lineIdx].set(index === this.activeLine.get());
+        this.lineSelected[lineIdx].set(
+          ld.originalItemIndex !== undefined ? ld.originalItemIndex === this.activeLine.get() : false,
+        );
         lineIdx++;
       }
     });
@@ -110,11 +112,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
         </div>
         <div class="WarningsColumn">
           {Array.from(Array(WD_NUM_LINES), () => '').map((_, index) => (
-            <EclLine
-              data={this.lineDataSubject[index]}
-              selected={this.lineSelected[index]}
-              abnormal={this.props.abnormal}
-            />
+            <EclLine data={this.lineDataSubject[index]} selected={this.lineSelected[index]} />
           ))}
         </div>
         <EclSoftKeys bus={this.props.bus} />
@@ -126,7 +124,6 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
 interface EclLineProps {
   data: Subscribable<WdLineData>;
   selected: Subscribable<boolean>;
-  abnormal: boolean;
 }
 
 export class EclLine extends DisplayComponent<EclLineProps> {
@@ -140,6 +137,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             ChecklistItem: this.props.data.map(
               (d) => !d.abnormalProcedure && d.style === ChecklistLineStyle.ChecklistItem,
             ),
+            ChecklistItemInactive: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistItemInactive),
             AbnormalItem: this.props.data.map(
               (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
             ),
@@ -148,9 +146,13 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             ),
             Checked: this.props.data.map((d) => d.checked),
             ChecklistCompleted: this.props.data.map((d) => d.style === ChecklistLineStyle.CompletedChecklist),
+            ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
             Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),
+            OmissionDots: this.props.data.map((d) => d.style === ChecklistLineStyle.OmissionDots),
+            LandAnsa: this.props.data.map((d) => d.style === ChecklistLineStyle.LandAnsa),
+            LandAsap: this.props.data.map((d) => d.style === ChecklistLineStyle.LandAsap),
           }}
           style={{
             display: this.props.data.map((d) => (d.style === ChecklistLineStyle.SeparationLine ? 'none' : 'flex')),
@@ -159,11 +161,17 @@ export class EclLine extends DisplayComponent<EclLineProps> {
           <div
             class={{
               EclLineCheckboxArea: true,
-              AbnormalItem: this.props.data.map(
-                (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
-              ),
+              AbnormalItem: this.props.data.map((d) => d.abnormalProcedure === true),
+              ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
+              ChecklistItemInactive: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistItemInactive),
               Checked: this.props.data.map((d) => d.checked),
-              HiddenElement: this.props.data.map((d) => d.style === ChecklistLineStyle.Headline),
+              HiddenElement: this.props.data.map(
+                (d) =>
+                  d.style === ChecklistLineStyle.Headline ||
+                  d.style === ChecklistLineStyle.OmissionDots ||
+                  d.style === ChecklistLineStyle.LandAnsa ||
+                  d.style === ChecklistLineStyle.LandAsap,
+              ),
               Invisible: this.props.data.map(
                 (d) => d.sensed || (d.firstLine && d.lastLine) || d.specialLine === WdSpecialLine.Empty,
               ),

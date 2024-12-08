@@ -36,14 +36,12 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -81,14 +79,12 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -115,32 +111,27 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'WXR & TAWS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'XDPR & TCAS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -167,32 +158,27 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'WXR & TAWS',
         sensed: true,
         labelNotCompleted: 'SYS 2',
-        level: 1,
       },
       {
         name: 'XDPR & TCAS',
         sensed: true,
         labelNotCompleted: 'SYS 2',
-        level: 1,
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -219,32 +205,27 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'WXR & TAWS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'XDPR & TCAS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },

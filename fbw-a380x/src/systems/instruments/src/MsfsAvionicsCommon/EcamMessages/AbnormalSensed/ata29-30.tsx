@@ -235,6 +235,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         name: 'IF G SYS PRESSURE FLUCTUATES',
         sensed: false,
+        condition: true,
       },
       {
         name: 'G ENG 1 PMP A AND B',
@@ -264,6 +265,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
       {
         name: 'IF Y SYS PRESSURE FLUCTUATES',
         sensed: false,
+        condition: true,
       },
       {
         name: 'Y ENG 3 PMP A AND B',
@@ -287,7 +289,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800021: {
-    title: '\x1b<4m\x1b4mHYD\x1bm G  RSVR LEVEL LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm G RSVR LEVEL LO',
     sensed: true,
     items: [
       {
@@ -320,7 +322,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800022: {
-    title: '\x1b<4m\x1b4mHYD\x1bm Y  RSVR LEVEL LO',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y RSVR LEVEL LO',
     sensed: true,
     items: [
       {
@@ -373,12 +375,12 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   290800027: {
-    title: '\x1b<4m\x1b4mHYD\x1bm G  SYS COOLING FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm G SYS COOLING FAULT',
     sensed: true,
     items: [],
   },
   290800028: {
-    title: '\x1b<4m\x1b4mHYD\x1bm Y  SYS COOLING FAULT',
+    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS COOLING FAULT',
     sensed: true,
     items: [],
   },
