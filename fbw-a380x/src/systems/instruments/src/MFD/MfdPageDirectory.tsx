@@ -17,6 +17,7 @@ import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFms
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
 import { MfdAtccomConnect } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomConnect';
 import { MfdAtccomMsgRecord } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecord';
+import { MfdAtccomMsgRecordAll } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordAll';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
@@ -101,6 +102,8 @@ export function pageForUrl(
       return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'atccom/msg-record':
       return <MfdAtccomMsgRecord pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/msg-record-all':
+      return <MfdAtccomMsgRecordAll pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;
