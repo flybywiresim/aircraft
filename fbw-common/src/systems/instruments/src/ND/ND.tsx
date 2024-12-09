@@ -965,7 +965,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     return (
       <Layer x={690} y={25} visible={this.visibleSub}>
         {/* This is always visible */}
-        <text x={-13} y={0} class="White FontIntermediate EndAlign">
+        <text class="White FontIntermediate EndAlign WaypointIndicator" transform="translate(-13, 0)">
           {this.toWptIdentValue}
         </text>
 
