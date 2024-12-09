@@ -187,12 +187,12 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               ),
             }}
           >
-            {this.props.data.map((d) => d.text)}
+            {this.props.data.map((d) => d.text.substring(0, 39))}
           </span>
           <svg
             version="1.1"
             xmlns="http://www.w3.org/2000/svg"
-            width="600"
+            width="680"
             height="33"
             style={{
               display: this.props.data.map((d) =>

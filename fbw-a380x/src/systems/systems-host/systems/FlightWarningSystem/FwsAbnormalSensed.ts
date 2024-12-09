@@ -76,7 +76,7 @@ export class FwsAbnormalSensed {
   public readonly showFromLine = Subject.create(0);
 
   constructor(private fws: FwsCore) {
-    this.fws.activeAbnormalSensedList.sub(
+    this.fws.activeAbnormalProceduresList.sub(
       (
         map: ReadonlyMap<string, FwsEwdAbnormalSensedEntry>,
         _type: SubscribableMapEventType,
@@ -118,11 +118,11 @@ export class FwsAbnormalSensed {
   }
 
   getAbnormalProceduresKeysSorted() {
-    return Array.from(this.fws.activeAbnormalSensedList.get().keys());
+    return Array.from(this.fws.activeAbnormalProceduresList.get().keys());
   }
 
   selectFirst() {
-    const clState = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get());
+    const clState = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get());
     const selectableAndNotChecked = this.selectableItems(false);
     this.selectedItem.set(
       selectableAndNotChecked[0] !== undefined ? selectableAndNotChecked[0] - 1 : clState.itemsChecked.length - 1,
@@ -168,7 +168,7 @@ export class FwsAbnormalSensed {
    */
   private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean): boolean {
     const procId = this.activeProcedureId.get();
-    const clState = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get());
+    const clState = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get());
     return (
       (!EcamAbnormalSensedProcedures[procId].items[itemIndex].sensed ||
         (!skipCompletedSensed && !clState.itemsChecked[itemIndex])) &&
@@ -186,7 +186,7 @@ export class FwsAbnormalSensed {
 
   private getActualShownItems() {
     const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
-    const lines = [...this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow]
+    const lines = [...this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get()).itemsToShow]
       .map((value, index) => (value ? index : null))
       .filter((v) => v !== null);
     proc.items.forEach((v, i) => {
@@ -205,13 +205,13 @@ export class FwsAbnormalSensed {
 
   /** Returns the index from selectedItem amongst the displayed items */
   private lineInDisplay(selectedItem: number) {
-    return this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get())
+    return this.fws.activeAbnormalProceduresList.has(this.activeProcedureId.get())
       ? this.getActualShownItems().findIndex((v) => v === selectedItem)
       : -1;
   }
 
   moveDown(skipCompletedSensed = true) {
-    const numItems = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsToShow.length;
+    const numItems = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get()).itemsToShow.length;
     const selectable = this.selectableItems(skipCompletedSensed);
     if (selectable.length == 0 || this.selectedItem.get() >= selectable[selectable.length - 1]) {
       // Last element before CLEAR
@@ -224,7 +224,7 @@ export class FwsAbnormalSensed {
   }
 
   checkCurrentItem() {
-    const cl = this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get());
+    const cl = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get());
     const clState: FwsEwdAbnormalSensedEntry = {
       id: cl.id,
       itemsToShow: [...cl.itemsToShow],
@@ -235,7 +235,7 @@ export class FwsAbnormalSensed {
     const procItem = proc.items[this.selectedItem.get()];
     if (this.selectedItem.get() < this.getActualShownItems().length && !procItem?.sensed) {
       clState.itemsChecked[this.selectedItem.get()] = !clState.itemsChecked[this.selectedItem.get()];
-      this.fws.activeAbnormalSensedList.setValue(this.activeProcedureId.get(), clState);
+      this.fws.activeAbnormalProceduresList.setValue(this.activeProcedureId.get(), clState);
       if (clState.itemsChecked[this.selectedItem.get()]) {
         if (isChecklistCondition(procItem) && procItem.condition) {
           // Force 'active' status update
@@ -257,7 +257,7 @@ export class FwsAbnormalSensed {
     const itemsShown = this.getActualShownItems();
     const lastItemIndex = itemsShown[itemsShown.length - 1];
     if (
-      this.fws.activeAbnormalSensedList.has(this.activeProcedureId.get()) &&
+      this.fws.activeAbnormalProceduresList.has(this.activeProcedureId.get()) &&
       this.selectedItem.get() === lastItemIndex + 1
     ) {
       // CLEAR
@@ -272,7 +272,7 @@ export class FwsAbnormalSensed {
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
    */
   update() {
-    if (this.fws.activeAbnormalSensedList.get().size > 0) {
+    if (this.fws.activeAbnormalProceduresList.get().size > 0) {
       this.showAbnormalSensedRequested.set(true);
     } else {
       this.showAbnormalSensedRequested.set(false);
@@ -308,7 +308,9 @@ export class FwsAbnormalSensed {
       if (
         changedEntries &&
         changedEntries.includes(this.selectedItem.get()) &&
-        this.fws.activeAbnormalSensedList.getValue(this.activeProcedureId.get()).itemsChecked[this.selectedItem.get()]
+        this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get()).itemsChecked[
+          this.selectedItem.get()
+        ]
       ) {
         this.moveDown(false);
       }

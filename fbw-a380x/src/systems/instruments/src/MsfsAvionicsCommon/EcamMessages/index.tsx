@@ -3,6 +3,7 @@
 
 export const WD_NUM_LINES = 17;
 
+import { AbnormalNonSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { EcamAbnormalSensedAta212223 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
@@ -15,6 +16,7 @@ import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/
 import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
+import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -625,6 +627,13 @@ export interface NormalProcedure {
   deferred?: boolean;
 }
 
+export interface AbnormalNonSensedProcedure {
+  /** Title of the checklist, e.g. "BEFORE START".  */
+  title: string;
+  /** An array of possible checklist items.. */
+  items: ChecklistAction[];
+}
+
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = {
   ...EcamAbnormalSensedAta212223,
@@ -642,7 +651,16 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 };
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
-export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
+export const EcamAbnormalNonSensedProcedures = AbnormalNonSensedProcedures;
+
+export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
+  'ENG',
+  'F/CTL',
+  'L/G',
+  'NAV',
+  'FUEL',
+  'MISCELLANEOUS',
+];
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {

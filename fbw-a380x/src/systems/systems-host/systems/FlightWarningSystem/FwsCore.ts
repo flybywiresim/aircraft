@@ -207,6 +207,7 @@ export class FwsCore {
   public readonly clCheckInputBuffer = new NXLogicMemoryNode(false);
   public readonly clUpInputBuffer = new NXLogicMemoryNode(false);
   public readonly clDownInputBuffer = new NXLogicMemoryNode(false);
+  public readonly abnProcInputBuffer = new NXLogicMemoryNode(false);
   public readonly aThrDiscInputBuffer = new NXLogicMemoryNode(false);
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
 
@@ -221,8 +222,11 @@ export class FwsCore {
   /** Keys/IDs of only the failures which are currently presented on the EWD */
   public readonly presentedFailures: string[] = [];
 
+  /** Keys/IDs of the active abnormal non-sensed procedures */
+  public readonly activeAbnormalNonSensedKeys: number[] = [];
+
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalSensedList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
+  public readonly activeAbnormalProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   /** Indices of items which were updated */
   public readonly abnormalUpdatedItems = new Map<string, number[]>();
@@ -1097,6 +1101,8 @@ export class FwsCore {
 
   public readonly clDownPulseNode = new NXLogicPulseNode();
 
+  public readonly abnProcPulseNode = new NXLogicPulseNode();
+
   public readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
   public readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
@@ -1845,6 +1851,10 @@ export class FwsCore {
       this.clDownInputBuffer.write(true, false);
     }
 
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_ABNPROC', 'bool')) {
+      this.abnProcInputBuffer.write(true, false);
+    }
+
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
     if (deltaTime === -1 || _deltaTime === 0) {
       return;
@@ -1861,6 +1871,7 @@ export class FwsCore {
     this.clCheckPulseNode.write(this.clCheckInputBuffer.read(), deltaTime);
     this.clUpPulseNode.write(this.clUpInputBuffer.read(), deltaTime);
     this.clDownPulseNode.write(this.clDownInputBuffer.read(), deltaTime);
+    this.abnProcPulseNode.write(this.abnProcInputBuffer.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
     this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
 
@@ -3806,7 +3817,9 @@ export class FwsCore {
     this.nonCancellableWarningCount = 0;
 
     // Abnormal sensed procedures
-    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.abnormalSensed.ewdAbnormalSensed);
+    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(
+      this.abnormalSensed.ewdAbnormalSensed,
+    ).concat(Object.entries(this.abnormalNonSensed.ewdAbnormalNonSensed));
     this.abnormalUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
@@ -3817,7 +3830,7 @@ export class FwsCore {
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
 
-      if (value.simVarIsActive.get()) {
+      if (value.simVarIsActive.get() || this.activeAbnormalNonSensedKeys.includes(parseInt(key))) {
         // Skip if other fault overrides this one
         let overridden = false;
         value.notActiveWhenFaults.forEach((val) => {
@@ -3847,7 +3860,7 @@ export class FwsCore {
           }
         }
 
-        if (!this.activeAbnormalSensedList.has(key) && !this.recallFailures.includes(key)) {
+        if (!this.activeAbnormalProceduresList.has(key) && !this.recallFailures.includes(key)) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -3871,15 +3884,15 @@ export class FwsCore {
               'ECAM alert definition error: whichItemsChecked() not the same size as number of procedure items',
             );
           }
-          this.activeAbnormalSensedList.setValue(key, {
+          this.activeAbnormalProceduresList.setValue(key, {
             id: key,
             itemsActive: itemsActive,
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
           });
-        } else if (this.activeAbnormalSensedList.has(key)) {
+        } else if (this.activeAbnormalProceduresList.has(key)) {
           // Update internal map
-          const prevEl = this.activeAbnormalSensedList.getValue(key);
+          const prevEl = this.activeAbnormalProceduresList.getValue(key);
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
@@ -3896,7 +3909,7 @@ export class FwsCore {
           });
 
           if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
-            this.activeAbnormalSensedList.setValue(key, {
+            this.activeAbnormalProceduresList.setValue(key, {
               id: key,
               itemsChecked: fusedChecked,
               itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
@@ -3965,9 +3978,9 @@ export class FwsCore {
     }
 
     // Delete inactive failures from internal map
-    this.activeAbnormalSensedList.get().forEach((_, key) => {
+    this.activeAbnormalProceduresList.get().forEach((_, key) => {
       if (!allFailureKeys.includes(key.toString()) || this.recallFailures.includes(key)) {
-        this.activeAbnormalSensedList.delete(key);
+        this.activeAbnormalProceduresList.delete(key);
       }
     });
 
@@ -4131,22 +4144,31 @@ export class FwsCore {
 
     this.normalChecklists.update();
     this.abnormalSensed.update();
+    this.abnormalNonSensed.update();
     this.updateRowRopWarnings();
 
     // Orchestrate display of normal or abnormal proc display
     const pub = this.bus.getPublisher<FwsEwdEvents>();
-    if (this.normalChecklists.showChecklistRequested.get()) {
+    if (this.abnormalNonSensed.showAbnProcRequested.get()) {
+      // ABN PROC always shown
+      this.abnormalNonSensed.abnProcShown.set(true);
+      this.normalChecklists.checklistShown.set(false);
+      this.abnormalSensed.abnormalShown.set(false);
+
+      pub.pub('fws_active_line', this.abnormalNonSensed.selectedItem.get(), true);
+      pub.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
+      this.ecamEwdShowFailurePendingIndication.set(false);
+    } else if (this.normalChecklists.showChecklistRequested.get()) {
       // ECL always shown
+      this.abnormalNonSensed.abnProcShown.set(false);
       this.normalChecklists.checklistShown.set(true);
       this.abnormalSensed.abnormalShown.set(false);
 
       pub.pub('fws_active_line', this.normalChecklists.selectedLine.get(), true);
       pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
-    } else if (
-      this.abnormalSensed.showAbnormalSensedRequested.get() &&
-      !this.normalChecklists.showChecklistRequested.get()
-    ) {
+    } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
+      this.abnormalNonSensed.abnProcShown.set(false);
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(true);
 
@@ -4154,10 +4176,12 @@ export class FwsCore {
       pub.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else {
+      this.abnormalNonSensed.abnProcShown.set(false);
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(false);
       this.ecamEwdShowFailurePendingIndication.set(false);
     }
+    pub.pub('fws_show_abn_non_sensed', this.abnormalNonSensed.abnProcShown.get(), true);
     pub.pub('fws_show_abn_sensed', this.abnormalSensed.abnormalShown.get(), true);
     pub.pub('fws_show_normal_checklists', this.normalChecklists.checklistShown.get(), true);
 
@@ -4169,6 +4193,7 @@ export class FwsCore {
     this.clCheckInputBuffer.write(false, true);
     this.clUpInputBuffer.write(false, true);
     this.clDownInputBuffer.write(false, true);
+    this.abnProcInputBuffer.write(false, true);
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;

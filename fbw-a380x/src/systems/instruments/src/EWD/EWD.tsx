@@ -20,6 +20,7 @@ import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
+import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
@@ -57,15 +58,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     Subject.create(false),
   ];
 
-  private readonly normalChecklistsRequested = ConsumerSubject.create(this.sub.on('fws_show_normal_checklists'), false);
+  private readonly normalChecklistsVisible = ConsumerSubject.create(this.sub.on('fws_show_normal_checklists'), false);
 
-  private readonly abnormalSensedRequested = ConsumerSubject.create(this.sub.on('fws_show_abn_sensed'), false);
+  private readonly abnormalSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_sensed'), false);
 
-  private readonly abnormalSensedVisible = MappedSubject.create(
-    ([ecl, abn]) => abn && !ecl,
-    this.normalChecklistsRequested,
-    this.abnormalSensedRequested,
-  );
+  private readonly abnormalNonSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_non_sensed'), false);
 
   // Todo: This logic should be handled by the FADEC
   private readonly engFirePb: ConsumerSubject<boolean>[] = [
@@ -77,8 +74,9 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly memosLimitationVisible = MappedSubject.create(
     SubscribableMapFunctions.nor(),
-    this.normalChecklistsRequested,
-    this.abnormalSensedRequested,
+    this.normalChecklistsVisible,
+    this.abnormalSensedVisible,
+    this.abnormalNonSensedVisible,
   );
 
   private readonly failurePendingIndicationRequested = ConsumerSubject.create(
@@ -237,8 +235,13 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
           <div class="WarningDisplayArea">
             <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
-            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsRequested} abnormal={false} />
+            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} abnormal={false} />
             <WdAbnormalSensedProcedures bus={this.props.bus} visible={this.abnormalSensedVisible} abnormal={true} />
+            <WdAbnormalNonSensedProcedures
+              bus={this.props.bus}
+              visible={this.abnormalNonSensedVisible}
+              abnormal={true}
+            />
             <div class="StsArea">
               <div
                 class="FailurePendingBox"

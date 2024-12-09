@@ -11,7 +11,8 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -786,5 +787,20 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mSURV\x1bm XPDR STBY',
     sensed: true,
     items: [],
+  },
+  340900001: {
+    title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE',
+    sensed: false,
+    items: [], // TODO
+  },
+  340900002: {
+    title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED',
+    sensed: false,
+    items: [], // TODO
+  },
+  340900003: {
+    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',
+    sensed: false,
+    items: [], // TODO
   },
 };

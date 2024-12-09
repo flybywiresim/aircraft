@@ -11,7 +11,8 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -2016,8 +2017,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
     ],
   },
-  260800097: {
-    title: '\x1b<2m\x1b2mFIRE\x1bm SMOKE/FUMES',
+  260900097: {
+    title: '\x1b<2m\x1b4mFIRE\x1bm SMOKE / FUMES',
     sensed: false,
     items: [
       {
@@ -2031,12 +2032,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OFF',
       },
       {
-        name: 'CKPT / CABIN COM',
-        sensed: false,
-        labelNotCompleted: 'ESTABLISH',
-      },
-      {
-        name: 'GALLEY',
+        name: 'ELEC GALLEY',
         sensed: true,
         labelNotCompleted: 'OFF',
       },

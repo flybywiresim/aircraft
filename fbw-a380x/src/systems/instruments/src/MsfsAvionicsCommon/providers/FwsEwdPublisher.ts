@@ -15,6 +15,13 @@ export interface NormalChecklistState {
   itemsCompleted: boolean[];
 }
 
+export type AbnormalNonSensedCategory = null | 'ENG' | 'F/CTL' | 'L/G' | 'NAV' | 'FUEL' | 'MISCELLANEOUS';
+export interface AbnormalNonSensedList {
+  /** Refers to abnormal proc id */
+  id: number;
+  category: AbnormalNonSensedCategory;
+}
+
 /**
  * Transmitted from FWS to EWD
  */
@@ -35,6 +42,11 @@ export interface FwsEwdEvents {
   fws_show_abn_sensed: boolean;
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
   fws_abn_sensed_procedures: FwsEwdAbnormalSensedEntry[];
+
+  /** (FWS -> EWD) Show abnormal non-sensed procedures selection menu */
+  fws_show_abn_non_sensed: boolean;
+  /** (FWS -> EWD) Which checklist to display. 0-10 special overview (sub-)pages, other IDs refer to the respective procedure */
+  fws_abn_non_sensed_id: number;
 
   /** (FWS -> EWD) Show FAILURE PENDING indication at bottom of page */
   fws_show_failure_pending: boolean;
