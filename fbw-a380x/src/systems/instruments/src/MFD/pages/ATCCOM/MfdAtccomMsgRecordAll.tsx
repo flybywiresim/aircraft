@@ -7,6 +7,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { MessageElement } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElement';
 
 interface MfdAtccomMsgRecordAllProps extends AbstractMfdPageProps {}
 
@@ -30,43 +31,33 @@ export class MfdAtccomMsgRecordAll extends DisplayComponent<MfdAtccomMsgRecordAl
         <div class="mfd-page-container">
           <div style="display:flex; flex: 1 1 auto; width:100%">
             <div id="msg-record-list">
-              <div class="msg-record-msg-element mfd-label green">
-                <div>
-                  <span class="msg-time">1323Z</span>
-                  <span class="msg-origin-dest">FROM LFBO</span>
-                  <span class="msg-status">UNABLE</span>
-                </div>
-                <div class="msg-body">MAINTAIN M.77</div>
-                <div>
-                  <span class="msg-expand-button">...... &gt;&gt;&gt;</span>
-                </div>
-              </div>
-              <div class="msg-record-msg-element mfd-label green">
-                <div>
-                  <span class="msg-time">1320Z</span>
-                  <span class="msg-origin-dest">FROM LFDG</span>
-                  <span class="msg-status">WILCO</span>
-                </div>
-                <div class="msg-body">
-                  AT <span class="msg-highlight-magenta">1400Z</span> CLB TO FL350
-                </div>
-                <div>
-                  <span class="msg-expand-button">&gt;&gt;&gt;</span>
-                </div>
-              </div>
-              <div class="msg-record-msg-element mfd-label green">
-                <div>
-                  <span class="msg-time">1319Z</span>
-                  <span class="msg-origin-dest">FROM LFDG</span>
-                  <span class="msg-status">WILCO</span>
-                </div>
-                <div class="msg-body">
-                  AT <span class="msg-highlight-magenta">AAA/180&deg;/512KILOMETER</span> OFFSET 64NM LEFT OF ROUTE
-                </div>
-                <div>
-                  <span class="msg-expand-button">&gt;&gt;&gt;</span>
-                </div>
-              </div>
+              <MessageElement
+                msgTime="1323Z"
+                msgOriginDest="LFBO"
+                msgStatus="UNABLE"
+                msgBody="MAINTAIN M.77"
+                onClick={() => {
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record');
+                }}
+              />
+              <MessageElement
+                msgTime="1320Z"
+                msgOriginDest="LFDG"
+                msgStatus="WILCO"
+                msgBody='AT <span class="msg-highlight-magenta">1400Z</span> CLB TO FL350'
+                onClick={() => {
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record');
+                }}
+              />
+              <MessageElement
+                msgTime="1319Z"
+                msgOriginDest="LFDG"
+                msgStatus="WILCO"
+                msgBody='AT <span class="msg-highlight-magenta">AAA/180&deg;/512KILOMETER</span> OFFSET 64NM LEFT OF ROUTE'
+                onClick={() => {
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record');
+                }}
+              />
               <div style="flex-grow: 1;" />
               {/* fill space vertically */}
             </div>
@@ -85,7 +76,6 @@ export class MfdAtccomMsgRecordAll extends DisplayComponent<MfdAtccomMsgRecordAl
                 disabled={Subject.create(false)}
                 onClick={() => {}}
                 buttonStyle="width: 190px; height:64px;"
-                // containerStyle="position:absolute; top: 3px; right:190px"
               />
             </div>
             <div style="position:absolute; top: 0px; right:0px">
@@ -94,7 +84,6 @@ export class MfdAtccomMsgRecordAll extends DisplayComponent<MfdAtccomMsgRecordAl
                 disabled={Subject.create(false)}
                 onClick={() => {}}
                 buttonStyle="width: 190px; height:64px;"
-                // containerStyle="position:absolute; top: 3px; right:0px"
               />
             </div>
           </div>
