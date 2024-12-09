@@ -18,6 +18,7 @@ import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/Mf
 import { MfdAtccomConnect } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomConnect';
 import { MfdAtccomMsgRecord } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecord';
 import { MfdAtccomMsgRecordAll } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordAll';
+import { MfdAtccomMsgRecordMonitored } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordMonitored';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
@@ -101,9 +102,13 @@ export function pageForUrl(
     case 'atccom/connect':
       return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'atccom/msg-record':
-      return <MfdAtccomMsgRecord pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'atccom/msg-record-all':
-      return <MfdAtccomMsgRecordAll pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return <MfdAtccomMsgRecord pageTitle="MSG RECORD" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/msg-record/all-msg':
+      return <MfdAtccomMsgRecordAll pageTitle="MSG RECORD/ALL MSG" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/msg-record/monitored-msg':
+      return (
+        <MfdAtccomMsgRecordMonitored pageTitle="MSG RECORD/MONITORED MSG" bus={bus} mfd={mfd} fmcService={fmcService} />
+      );
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;

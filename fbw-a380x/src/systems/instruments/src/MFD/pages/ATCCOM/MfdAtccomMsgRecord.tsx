@@ -33,7 +33,7 @@ export class MfdAtccomMsgRecord extends DisplayComponent<MfdAtccomMsgRecordProps
                 label="ALL MSG"
                 buttonStyle="width:205px; height:64px"
                 onClick={() => {
-                  this.props.mfd.uiService.navigateTo('atccom/msg-record-all');
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record/all-msg');
                 }}
               />
             </div>
@@ -42,7 +42,7 @@ export class MfdAtccomMsgRecord extends DisplayComponent<MfdAtccomMsgRecordProps
                 label="MONITORED MSG"
                 buttonStyle="width:205px; height:64px"
                 onClick={() => {
-                  this.props.mfd.uiService.navigateTo('atccom/msg-record-monitored');
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record/monitored-msg');
                 }}
               />
             </div>

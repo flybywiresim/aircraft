@@ -14,6 +14,7 @@
   font-size: 26px;
   padding: 16px;
   line-height: 30px;
+  min-height: 124px;
 
   .msg-time {
     font-size: 22px;
@@ -40,8 +41,12 @@
   .msg-body {
     width: 470px;
 
-    .msg-highlight {
+    .msg-highlight-magenta {
       color: $display-magenta;
+    }
+
+    .msg-highlight-cyan {
+      color: $display-cyan;
     }
   }
 }
@@ -67,4 +72,30 @@
   position: relative;
   flex-flow: row;
   padding: 3px 0;
+  min-height: 64px;
+}
+
+.monitored-msg {
+  .msg-status {
+    position: absolute;
+    top: 19px;
+    right: 190px;
+    width: 155px;
+    text-align: center;
+    font-size: 26px;
+    color: #000;
+    background: $display-cyan;
+    line-height: 25px;
+  }
+
+  .msg-body {
+    color: $display-white;
+  }
+}
+
+.msg-expand-button {
+  position: absolute;
+  right: 115px;
+  bottom: 15px;
+  color: #fff;
 }
