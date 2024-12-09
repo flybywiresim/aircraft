@@ -119,6 +119,9 @@ export class SpeedsLookupTables {
     if (conf === 0) {
       return SpeedsLookupTables.VLS_CONF_0.get(0, weight);
     } else {
+      if (conf > 5) {
+        throw new Error('Invalid flap config for approach VLS computation');
+      }
       return SpeedsLookupTables.VLS_APPR_CONF[conf].get(cg, weight);
     }
   }
