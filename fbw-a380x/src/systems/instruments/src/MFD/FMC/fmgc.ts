@@ -564,7 +564,7 @@ export class FmgcDataService implements Fmgc {
     return this.data.approachTemperature.get() ?? 0;
   }
 
-  /** in kilograms */
+  /** in tons */
   getDestEFOB(useFob: boolean): number {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
@@ -574,7 +574,7 @@ export class FmgcDataService implements Fmgc {
     return 0;
   }
 
-  /** in kilograms */
+  /** in tons */
   getAltEFOB(useFOB = false): number {
     // TODO estimate alternate fuel
     if (this.getDestEFOB(useFOB) === 0) {
