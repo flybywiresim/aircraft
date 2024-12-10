@@ -194,7 +194,7 @@ export enum PFDVars {
   fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
   AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
   apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
-  approachCapability = 'L:A32NX_ApproachCapability',
+  approachCapability = 'L:A32NX_APPROACH_CAPABILITY',
   ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
   ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
   fmaVerticalArmed = 'L:A32NX_FMA_VERTICAL_ARMED',
