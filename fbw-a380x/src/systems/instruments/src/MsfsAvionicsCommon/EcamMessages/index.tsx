@@ -4,7 +4,10 @@
 export const WD_NUM_LINES = 17;
 
 import { AbnormalNonSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
-import { EcamAbnormalSensedAta212223 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
+import {
+  EcamAbnormalSensedAta212223,
+  EcamDeferredProcAta212223,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
 import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
@@ -634,6 +637,22 @@ export interface AbnormalNonSensedProcedure {
   items: ChecklistAction[];
 }
 
+export enum DeferredProcedureType {
+  ALL_PHASES,
+  AT_TOP_OF_DESCENT,
+  FOR_APPROACH,
+  FOR_LANDING,
+}
+export interface DeferredProcedure {
+  /** Which abnormal procedure triggers this deferred procedure */
+  fromAbnormalProc: string;
+  /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
+  title: string;
+  /** An array of possible checklist items. */
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  type: DeferredProcedureType;
+}
+
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = {
   ...EcamAbnormalSensedAta212223,
@@ -661,6 +680,11 @@ export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
   'FUEL',
   'MISCELLANEOUS',
 ];
+
+/** All abnormal sensed procedures (alerts, via ECL) should be here. */
+export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
+  ...EcamDeferredProcAta212223,
+};
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {

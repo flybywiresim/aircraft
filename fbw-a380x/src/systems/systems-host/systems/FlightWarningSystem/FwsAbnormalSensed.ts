@@ -3567,4 +3567,16 @@ export class FwsAbnormalSensed {
       sysPage: -1,
     },
   };
+
+  public ewdDeferredProcs: EwdAbnormalDict = {
+    221700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+  };
 }

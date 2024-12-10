@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -802,5 +807,14 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',
     sensed: false,
     items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta34: { [n: number]: DeferredProcedure } = {
+  340700001: {
+    fromAbnormalProc: '340800008',
+    title: '\x1b<4mLDG ELEVN',
+    type: DeferredProcedureType.AT_TOP_OF_DESCENT,
+    items: [],
   },
 };

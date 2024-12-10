@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -2118,5 +2123,25 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mCOM\x1bm VHF 3 DATALINK FAULT',
     sensed: true,
     items: [],
+  },
+};
+
+export const EcamDeferredProcAta212223: { [n: number]: DeferredProcedure } = {
+  221700001: {
+    fromAbnormalProc: '221800006',
+    title: '\x1b<4mLDG ELEVN',
+    type: DeferredProcedureType.AT_TOP_OF_DESCENT,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        sensed: false,
+        labelNotCompleted: 'MAN',
+      },
+      {
+        name: 'CABIN ALT TRGT',
+        sensed: false,
+        labelNotCompleted: 'LDG ELEVN',
+      },
+    ],
   },
 };

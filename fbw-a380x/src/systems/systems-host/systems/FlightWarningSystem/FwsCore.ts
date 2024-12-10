@@ -38,6 +38,7 @@ import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/F
 import {
   AbnormalProcedure,
   EcamAbnormalSensedProcedures,
+  EcamDeferredProcedures,
   EcamMemos,
   isChecklistCondition,
   pfdMemoDisplay,
@@ -227,6 +228,9 @@ export class FwsCore {
 
   /** Map to hold all failures which are currently active */
   public readonly activeAbnormalProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
+
+  /** Map to hold all deferred procs which are currently active */
+  public readonly activeDeferredProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   /** Indices of items which were updated */
   public readonly abnormalUpdatedItems = new Map<string, number[]>();
@@ -3820,6 +3824,7 @@ export class FwsCore {
     const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(
       this.abnormalSensed.ewdAbnormalSensed,
     ).concat(Object.entries(this.abnormalNonSensed.ewdAbnormalNonSensed));
+    const ewdDeferredEntries = Object.entries(this.abnormalSensed.ewdDeferredProcs);
     this.abnormalUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
@@ -3890,6 +3895,24 @@ export class FwsCore {
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
           });
+
+          for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
+            if (
+              EcamDeferredProcedures[deferredKey].fromAbnormalProc === key &&
+              this.abnormalSensed.ewdDeferredProcs[deferredKey]
+            ) {
+              this.activeDeferredProceduresList.setValue(deferredKey, {
+                id: key,
+                itemsActive: deferredValue.whichItemsActive(),
+                itemsChecked: deferredValue.whichItemsChecked
+                  ? deferredValue.whichItemsChecked()
+                  : Array(deferredValue.whichItemsActive().length).fill(true),
+                itemsToShow: deferredValue.whichItemsToShow
+                  ? deferredValue.whichItemsToShow()
+                  : Array(deferredValue.whichItemsActive().length).fill(true),
+              });
+            }
+          }
         } else if (this.activeAbnormalProceduresList.has(key)) {
           // Update internal map
           const prevEl = this.activeAbnormalProceduresList.getValue(key);
@@ -3979,8 +4002,17 @@ export class FwsCore {
 
     // Delete inactive failures from internal map
     this.activeAbnormalProceduresList.get().forEach((_, key) => {
-      if (!allFailureKeys.includes(key.toString()) || this.recallFailures.includes(key)) {
+      if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
         this.activeAbnormalProceduresList.delete(key);
+      }
+
+      if (!allFailureKeys.includes(key) && !this.recallFailures.includes(key)) {
+        // Delete associated deferred procedure
+        for (const [deferredKey, _] of ewdDeferredEntries) {
+          if (EcamDeferredProcedures[deferredKey].fromAbnormalProc === key) {
+            this.activeDeferredProceduresList.delete(key);
+          }
+        }
       }
     });
 
