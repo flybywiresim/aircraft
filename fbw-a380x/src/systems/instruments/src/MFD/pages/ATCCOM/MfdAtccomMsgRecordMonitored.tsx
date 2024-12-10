@@ -36,7 +36,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
                 msgStatus="WILCO"
                 msgBody='AT <span class="msg-highlight-magenta">1400Z</span> CLB TO <span class="msg-highlight-cyan">FL350</span>'
                 onClick={() => {
-                  this.props.mfd.uiService.navigateTo('atccom/msg-record');
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record/all-msg-expand');
                 }}
               />
               <MessageElementMonitored
@@ -45,7 +45,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
                 msgStatus="WILCO"
                 msgBody='AT <span class="msg-highlight-magenta">AAA/180&deg;/512KILOMETER</span> O'
                 onClick={() => {
-                  this.props.mfd.uiService.navigateTo('atccom/msg-record');
+                  this.props.mfd.uiService.navigateTo('atccom/msg-record/all-msg-expand');
                 }}
               />
               <div style="flex-grow: 1;" />
