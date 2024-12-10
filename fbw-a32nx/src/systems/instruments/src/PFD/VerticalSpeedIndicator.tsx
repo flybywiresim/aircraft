@@ -16,6 +16,7 @@ import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -39,7 +40,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   private radioAlt = new Arinc429Word(0);
 
-  private vsFailed = FSComponent.createRef<SVGGElement>();
+  private readonly vsFlagVisible = Subject.create(false);
 
   private vsNormal = FSComponent.createRef<SVGGElement>();
 
@@ -127,10 +128,10 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         const absVSpeed = Math.abs(filteredVS);
 
         if (!vs.isNormalOperation()) {
-          this.vsFailed.instance.style.visibility = 'visible';
+          this.vsFlagVisible.set(true);
           this.vsNormal.instance.style.visibility = 'hidden';
         } else {
-          this.vsFailed.instance.style.visibility = 'hidden';
+          this.vsFlagVisible.set(false);
           this.vsNormal.instance.style.visibility = 'visible';
         }
 
@@ -177,17 +178,17 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       <g>
         <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
 
-        <g id="VSpeedFailText" ref={this.vsFailed}>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13206" y="77.501472">
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.vsFlagVisible}>
+          <text class="FontLargest Red EndAlign" x="153.13206" y="77.501472">
             V
           </text>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13406" y="83.211388">
+          <text class="FontLargest Red EndAlign" x="153.13406" y="83.211388">
             /
           </text>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="152.99374" y="88.870819">
+          <text class="FontLargest Red EndAlign" x="152.99374" y="88.870819">
             S
           </text>
-        </g>
+        </FlashOneHertz>
 
         <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} />
 
