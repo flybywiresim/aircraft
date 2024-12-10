@@ -1116,7 +1116,7 @@ export class FmcAircraftInterface {
     const altActive = false;
     const landingWeight =
       this.fmgc.data.zeroFuelWeight.get() ??
-      NaN + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
+      NaN + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true)) * 1_000;
 
     return Number.isFinite(landingWeight) ? landingWeight : NaN;
   }
@@ -1128,7 +1128,7 @@ export class FmcAircraftInterface {
     /** in kg */
     const estLdgWeight = this.tryEstimateLandingWeight();
     let ldgWeight = estLdgWeight;
-    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB();
+    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB() * 1_000;
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.flightPhase.get() >= FmgcFlightPhase.Approach || !Number.isFinite(estLdgWeight)) {
@@ -1178,14 +1178,10 @@ export class FmcAircraftInterface {
       // Only update speeds if ADR data valid
 
       const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
-      let flaps = flapLever;
-      if (flapLever === 1 && SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'Enum') === 1) {
-        flaps = 5; // CONF 1
-      }
       const speeds = new A380OperatingSpeeds(
         grossWeight,
         cas,
-        flaps,
+        flapLever,
         this.flightPhase.get(),
         this.fmgc.getV2Speed(),
         alt,
@@ -1199,10 +1195,10 @@ export class FmcAircraftInterface {
         const f = Math.max(speeds.f2, Vmcl + 5);
         this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
       } else {
-        if (flaps === 2) {
+        if (flapLever === 2) {
           const f = Math.max(speeds.f2, Vmcl + 15);
           this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
-        } else if (flaps === 3) {
+        } else if (flapLever === 3) {
           const f = Math.max(speeds.f3, Vmcl + 10);
           this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
         }
