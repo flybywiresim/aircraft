@@ -23,6 +23,7 @@ export interface ButtonProps extends ComponentProps {
   disabled?: Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
   buttonStyle?: string;
+  containerStyle?: string;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
 }
@@ -258,7 +259,11 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   public render(): VNode {
     return (
-      <div class="mfd-dropdown-container" ref={this.topRef}>
+      <div
+        class="mfd-dropdown-container"
+        ref={this.topRef}
+        style={this.props.containerStyle ? this.props.containerStyle : ''}
+      >
         <span
           ref={this.buttonRef}
           class="mfd-button"
