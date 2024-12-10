@@ -6,7 +6,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, EventBus, GameStateProvider, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
   ExtrasSimVarPublisher,
   FlightDeckBounds,
@@ -17,6 +17,7 @@ import {
   MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
+  trySetAircraftReadyState,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
@@ -167,7 +168,7 @@ class ExtrasHost extends BaseInstrument {
     super.Update();
 
     if (this.gameState !== GameState.ingame) {
-      const gs = this.getGameState();
+      const gs = GameStateProvider.get().get();
       if (gs === GameState.ingame) {
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
@@ -182,6 +183,7 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor.update();
     this.aircraftSync.update();
 
+    trySetAircraftReadyState(GameStateProvider.get().get());
     this.backplane.onUpdate();
   }
 }

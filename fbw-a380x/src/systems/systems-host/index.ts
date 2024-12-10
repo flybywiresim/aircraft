@@ -22,7 +22,9 @@ import {
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
+  getStartupState,
   PilotSeatPublisher,
+  StartupState,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
@@ -102,13 +104,7 @@ class SystemsHost extends BaseInstrument {
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
+  private startupState = 0;
 
   constructor() {
     super();
@@ -188,15 +184,14 @@ class SystemsHost extends BaseInstrument {
 
     this.failuresConsumer.update();
 
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.hEventPublisher.startPublish();
-      }
-      this.gameState = gamestate;
+    this.startupState = getStartupState();
+    if (this.startupState === StartupState.ExtrasHostInitialized) {
+      this.hEventPublisher.startPublish();
     }
 
-    this.backplane.onUpdate();
+    if (this.startupState >= StartupState.InstrumentsInitialized) {
+      this.backplane.onUpdate();
+    }
   }
 }
 

@@ -26,7 +26,7 @@ use crate::landing_gear::LandingGear;
 use crate::shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus};
 use crate::simulation::update_context::Delta;
 use crate::simulation::{
-    DeltaContext, InitContext, StartState, VariableIdentifier, VariableRegistry,
+    DeltaContext, FltInitState, InitContext, VariableIdentifier, VariableRegistry,
 };
 
 pub trait TestBed {
@@ -240,17 +240,17 @@ pub struct SimulationTestBed<T: Aircraft> {
 }
 impl<T: Aircraft> SimulationTestBed<T> {
     pub fn new<U: FnOnce(&mut InitContext) -> T>(aircraft_ctor_fn: U) -> Self {
-        Self::new_with_start_state(Default::default(), aircraft_ctor_fn)
+        Self::new_with_flt_init_state(Default::default(), aircraft_ctor_fn)
     }
 
-    pub fn new_with_start_state<U: FnOnce(&mut InitContext) -> T>(
-        start_state: StartState,
+    pub fn new_with_flt_init_state<U: FnOnce(&mut InitContext) -> T>(
+        flt_init_state: FltInitState,
         aircraft_ctor_fn: U,
     ) -> Self {
         let mut variable_registry = TestVariableRegistry::default();
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            simulation: Simulation::new(start_state, aircraft_ctor_fn, &mut variable_registry),
+            simulation: Simulation::new(flt_init_state, aircraft_ctor_fn, &mut variable_registry),
             variable_registry,
         };
 
@@ -357,7 +357,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn set_is_ready(&mut self, is_ready: bool) {
-        self.write_by_name(UpdateContext::IS_READY_KEY, is_ready);
+        self.write_by_name(
+            UpdateContext::STARTUP_STATE_KEY,
+            if is_ready == true { 3 } else { 0 },
+        );
     }
 
     fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {

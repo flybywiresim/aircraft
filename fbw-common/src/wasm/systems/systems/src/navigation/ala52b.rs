@@ -477,7 +477,7 @@ mod tests {
     use crate::electrical::{ElectricalBus, Electricity};
     use crate::shared::{PotentialOrigin, PowerConsumptionReport};
     use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
-    use crate::simulation::{Aircraft, InitContext, SimulationElementVisitor, StartState};
+    use crate::simulation::{Aircraft, FltInitState, InitContext, SimulationElementVisitor};
     use ntest::assert_about_eq;
     use uom::si::electric_potential::volt;
     use uom::si::f64::ElectricPotential;
@@ -585,8 +585,8 @@ mod tests {
     impl RadioAltimeterTestBed {
         fn new() -> Self {
             let mut ra_test_bed = Self {
-                test_bed: SimulationTestBed::new_with_start_state(
-                    StartState::Cruise,
+                test_bed: SimulationTestBed::new_with_flt_init_state(
+                    FltInitState::Cruise,
                     TestAircraft::new,
                 ),
             };
