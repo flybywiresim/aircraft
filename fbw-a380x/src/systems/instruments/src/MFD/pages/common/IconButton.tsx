@@ -11,7 +11,16 @@ import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
   containerStyle?: string;
-  icon: 'double-up' | 'double-down' | 'ecl-single-up' | 'ecl-single-down' | 'ecl-check' | '' | null;
+  icon:
+    | 'double-up'
+    | 'double-down'
+    | 'single-up'
+    | 'single-down'
+    | 'ecl-single-up'
+    | 'ecl-single-down'
+    | 'ecl-check'
+    | ''
+    | null;
   disabled?: Subscribable<boolean>;
   onClick?: () => void;
 }
@@ -88,6 +97,20 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
             <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
               <polygon points="0,17.5 17.5,0 35,17.5" />
               <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'single-up' && (
+          <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor}>
+              <polygon points="7.5,0 15,15 0,15" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'single-down' && (
+          <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor}>
+              <polygon points="0,0 15,0 7.5,15" />
             </g>
           </svg>
         )}
