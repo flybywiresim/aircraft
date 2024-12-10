@@ -141,7 +141,7 @@ class AircraftPresets : public Module {
    * @param currentStepPtr Pointer to the current step being evaluated.
    * @return True if the step should be skipped, false otherwise.
    */
-  bool checkStepTypeSkipping(const bool expeditedMode, const ProcedureStep* currentStepPtr);
+  bool checkStepTypeSkipping(bool expeditedMode, const ProcedureStep* currentStepPtr);
 
   /**
    * @brief Handles the execution of a condition step in the loading process.
