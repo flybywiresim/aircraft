@@ -30,6 +30,7 @@
   font-size: 20px;
   color: $display-white;
   font-family: "Ecam", monospace;
+  white-space: pre;
 }
 
 .mfd-label.green {
@@ -55,6 +56,7 @@
 .mfd-label-unit {
   color: $display-dark-blue;
   font-size: 20px;
+  white-space: pre;
 }
 
 .mfd-value {
@@ -276,6 +278,10 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+}
+
+.mfd-spacing-right-small {
+  margin-right: 10px;
 }
 
 .mfd-spacing-right {
@@ -729,10 +735,16 @@
   flex-direction: row;
 }
 
+.fr.space-between {
+  justify-content: space-between;
+}
+
 .fc {
   display: flex;
   flex-direction: column;
 }
+
+
 
 .aic {
   align-items: center;
