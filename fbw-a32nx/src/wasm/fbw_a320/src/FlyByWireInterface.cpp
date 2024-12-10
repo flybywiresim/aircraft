@@ -2116,6 +2116,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   fcu.modelInputs.in.discrete_inputs.fd_2_engaged = fmgcsDiscreteOutputs[1].fd_own_engaged;
   fcu.modelInputs.in.discrete_inputs.athr_2_engaged = fmgcsDiscreteOutputs[1].athr_own_engaged;
   fcu.modelInputs.in.discrete_inputs.lights_test = idLightsTest->get();
+  fcu.modelInputs.in.discrete_inputs.pin_prog_qfe_avail = false;
 
   fcu.modelInputs.in.discrete_inputs.capt_efis_inputs = simConnectInterface.getFcuEfisPanelInputs(0);
   fcu.modelInputs.in.discrete_inputs.capt_efis_inputs.efis_mode = static_cast<efis_mode_selection>(idFcuEisPanelEfisMode[0]->get());

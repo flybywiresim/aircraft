@@ -5,7 +5,11 @@ pub(crate) mod legacy {
     use std::cell::Cell;
     use std::rc::Rc;
 
+    use msfs::sys::{ID32, UINT32};
+
     pub fn execute_calculator_code<T>(_code: &str) {}
+
+    pub fn trigger_key_event(_event_id: ID32, _value: UINT32) {}
 
     #[derive(Debug)]
     pub struct AircraftVariable {}

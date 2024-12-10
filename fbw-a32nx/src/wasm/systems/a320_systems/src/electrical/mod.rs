@@ -2601,7 +2601,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn connected_external_power(mut self) -> Self {
-            self.write_by_name("EXTERNAL POWER AVAILABLE:1", true);
+            self.write_by_name("EXT_PWR_AVAIL:1", true);
 
             self.without_triggering_emergency_elec(|x| x.run())
         }
