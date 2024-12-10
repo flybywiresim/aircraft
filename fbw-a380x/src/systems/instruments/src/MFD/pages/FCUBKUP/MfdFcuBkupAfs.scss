@@ -1,0 +1,155 @@
+@import "../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fcubkup-box-one{
+    border: 1px solid white;
+    width: 99%;
+    margin-top: 25px;
+}
+
+.mfd-fcubkup-first-line {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-left: -200px;
+}
+
+.mfd-fcubkup-second-line {
+    margin-top: 17px;
+    font-size: 20px;
+    text-align: center;
+    margin-left: -200px;
+}
+
+.mfd-fcubkup-box-one-first-line {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.mfd-fcubkup-box-one-second-line {
+    display: flex;
+    flex-direction: row;
+}
+
+.mfd-fcubkup-box-one-lines {
+    background-color: white;
+    width: 1px;
+    height: 60px;
+    display: flex;
+    flex-direction: row;
+}
+
+.mfd-fcubkup-box-one-shortlines {
+    background-color: white;
+    width: 1px;
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+}
+
+.mfd-fcubkup-box-one-levelline {
+    background-color: white;
+    width: 135px;
+    height: 1px;
+    display: flex;
+    flex-direction: row;
+}
+
+.mfd-fcubkup-box-one-label-line {
+    display: flex;
+    flex-direction: row;
+}
+
+.spd {
+    margin-left: 70px;
+    margin-right: 130px;
+    margin-top: 15px;
+    font-size: 20px;
+}
+
+.mag {
+    margin-right: 65px;
+    margin-top: 15px;
+    font-size: 20px;
+}
+
+.hdg {
+    margin-right: 100px;
+    margin-top: 15px;
+    font-size: 20px;
+}
+
+.alt {
+    margin-right: 155px;
+    margin-top: 15px;
+    font-size: 20px;
+}
+
+.vs{
+    margin-right: 50px;
+    margin-top: 15px;
+    font-size: 20px;
+}
+
+.mfd-fcubkup-box-one-fourth-line {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+
+}
+
+.mfd-fcubkup-box-one-fifth-line {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+}
+
+.mfd-fcubkup-box-one-sixth-line {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row;
+}
+
+.mfd-fcubkup-box-one-ils {
+    margin-top: 50px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-left: 200px;
+}
+
+.mfd-fcubkup-ap-box {
+    width: 60%;
+    height: 350px;
+    border: 1px solid white;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    margin-left: 150px;
+}
+
+.mfd-fcubkup-ap-box-first-line {
+    margin-top: 35px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.mfd-fcubkup-ap-box-second-line {
+    margin-top: -30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.mfd-fcubkup-ap-box-third-line {
+    margin-top: -20px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
