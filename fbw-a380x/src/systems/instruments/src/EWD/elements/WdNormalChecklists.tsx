@@ -39,6 +39,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
             style: state.checklistCompleted ? ChecklistLineStyle.CompletedChecklist : ChecklistLineStyle.ChecklistItem,
             firstLine: false,
             lastLine: index === sorted.length - 1,
+            originalItemIndex: index,
           });
         }
       });
@@ -78,6 +79,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
           style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
           firstLine: false,
           lastLine: false,
+          originalItemIndex: index,
         });
       });
 
@@ -89,6 +91,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         style: ChecklistLineStyle.ChecklistItem,
         firstLine: false,
         lastLine: false,
+        originalItemIndex: cl.items.length,
       });
 
       this.lineData.push({
@@ -99,6 +102,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         style: ChecklistLineStyle.ChecklistItem,
         firstLine: false,
         lastLine: true,
+        originalItemIndex: cl.items.length + 1,
       });
     }
     super.updateChecklists();

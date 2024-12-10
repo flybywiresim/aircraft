@@ -11,7 +11,8 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -1105,5 +1106,35 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE PRESS LO',
     sensed: true,
     items: [],
+  },
+  320900001: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH ABNORM NOSE L/G',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900002: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM L/Gs ON SAME SIDE',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900003: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 1 ABNORM WING OR BODY L/G',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900004: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM BODY L/Gs',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900005: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM WING L/Gs',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900006: {
+    title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE DAMAGE SUSPECTED',
+    sensed: false,
+    items: [], // TODO
   },
 };

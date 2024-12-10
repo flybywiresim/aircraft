@@ -3,7 +3,11 @@
 
 export const WD_NUM_LINES = 17;
 
-import { EcamAbnormalSensedAta212223 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
+import { AbnormalNonSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
+import {
+  EcamAbnormalSensedAta212223,
+  EcamDeferredProcAta212223,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
 import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
@@ -15,6 +19,7 @@ import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/
 import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
+import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -563,15 +568,20 @@ export enum ChecklistLineStyle {
   SubHeadline = 'SubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
+  ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
+  OmissionDots = 'OmissionDots',
+  LandAsap = 'LandAsap',
+  LandAnsa = 'LandAnsa',
+  ChecklistCondition = 'ChecklistCondition',
 }
 
 interface AbstractChecklistItem {
-  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
+  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. For conditions, don't include the leading "IF" */
   name: string;
   /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
   sensed: boolean;
-  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
+  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. Important for items subordinated to conditions. */
   level?: number;
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
@@ -585,7 +595,20 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
-interface ChecklistCondition extends AbstractChecklistItem {}
+interface ChecklistCondition extends AbstractChecklistItem {
+  /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
+  condition: true;
+}
+
+interface ChecklistSpecialItem extends AbstractChecklistItem {}
+
+export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistAction {
+  return (c as ChecklistAction).labelNotCompleted !== undefined;
+}
+
+export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
+  return (c as ChecklistCondition).condition !== undefined;
+}
 
 export interface AbnormalProcedure {
   /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
@@ -593,7 +616,7 @@ export interface AbnormalProcedure {
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition)[];
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }
@@ -607,8 +630,27 @@ export interface NormalProcedure {
   deferred?: boolean;
 }
 
-export function isChecklistAction(element: ChecklistAction | ChecklistCondition): element is ChecklistAction {
-  return 'labelNotCompleted' in element;
+export interface AbnormalNonSensedProcedure {
+  /** Title of the checklist, e.g. "BEFORE START".  */
+  title: string;
+  /** An array of possible checklist items.. */
+  items: ChecklistAction[];
+}
+
+export enum DeferredProcedureType {
+  ALL_PHASES,
+  AT_TOP_OF_DESCENT,
+  FOR_APPROACH,
+  FOR_LANDING,
+}
+export interface DeferredProcedure {
+  /** Which abnormal procedure triggers this deferred procedure */
+  fromAbnormalProc: string;
+  /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
+  title: string;
+  /** An array of possible checklist items. */
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  type: DeferredProcedureType;
 }
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
@@ -628,7 +670,21 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 };
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
-export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
+export const EcamAbnormalNonSensedProcedures = AbnormalNonSensedProcedures;
+
+export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
+  'ENG',
+  'F/CTL',
+  'L/G',
+  'NAV',
+  'FUEL',
+  'MISCELLANEOUS',
+];
+
+/** All abnormal sensed procedures (alerts, via ECL) should be here. */
+export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
+  ...EcamDeferredProcAta212223,
+};
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
@@ -641,6 +697,7 @@ export interface WdLineData {
   lastLine: boolean;
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
+  originalItemIndex?: number;
 }
 
 export enum WdSpecialLine {
