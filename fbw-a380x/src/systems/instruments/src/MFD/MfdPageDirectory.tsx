@@ -16,6 +16,10 @@ import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/MfdFmsPerf';
 import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionIrs';
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
 import { MfdAtccomConnect } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomConnect';
+import { MfdAtccomMsgRecord } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecord';
+import { MfdAtccomMsgRecordAll } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordAll';
+import { MfdAtccomMsgRecordMonitored } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordMonitored';
+import { MfdAtccomMsgRecordExpand } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordExpand';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
@@ -98,6 +102,18 @@ export function pageForUrl(
       return <MfdSurvStatusSwitching pageTitle="STATUS & SWITCHING" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'atccom/connect':
       return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/msg-record':
+      return <MfdAtccomMsgRecord pageTitle="MSG RECORD" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/msg-record/all-msg':
+      return <MfdAtccomMsgRecordAll pageTitle="MSG RECORD/ALL MSG" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/msg-record/monitored-msg':
+      return (
+        <MfdAtccomMsgRecordMonitored pageTitle="MSG RECORD/MONITORED MSG" bus={bus} mfd={mfd} fmcService={fmcService} />
+      );
+    case 'atccom/msg-record/all-msg-expand':
+      return (
+        <MfdAtccomMsgRecordExpand pageTitle="MSG RECORD/ALL MSG/EXPAND" bus={bus} mfd={mfd} fmcService={fmcService} />
+      );
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;
