@@ -64,16 +64,15 @@ Use React-based implementation for now, hence no dev. effort needed here.
 
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
-| 🟥 | atccom/connect/notification | 6 |
-| 🟥 | atccom/connect/connection-status | 6 |
+| 2️⃣ | atccom/connect | 6 |
 | 🟥 | atccom/connect/max-uplink-delay | 6 |
 | 🟥 | atccom/request | 6 |
 | 🟥 | atccom/report-modify/position | 6 |
 | 🟥 | atccom/report-modify/modify | 6 |
 | 🟥 | atccom/report-modify/other-reports | 6 |
 | 🟥 | atccom/msg-record | 6 |
-| 🟥 | atccom/atis | 6 |
-| 🟥 | atccom/atis/list | 6 |
+| 2️⃣ | atccom/d-atis/list | 6 |
+| 2️⃣ | atccom/d-atis/received | 6 |
 | 🟥 | atccom/emer | 6 |
 
 ### SURV
