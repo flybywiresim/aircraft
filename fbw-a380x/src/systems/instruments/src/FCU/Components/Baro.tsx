@@ -108,10 +108,10 @@ export class Baro extends DisplayComponent<BaroProps> {
             >
               QNH
             </text>
-            <text id="PreSelBaroValue" class="Common Active" x="97%" y="25%" text-anchor="end">
+            <text id="PreSelBaroValue" class="Common Active" x="97%" y="30%" text-anchor="end">
               {this.preSelBaroText}
             </text>
-            <text id="Value" class="Common Value" x="4%" y="86%">
+            <text id="Value" class="Common Value" x="4%" y="95%">
               {this.baroText}
             </text>
           </svg>
