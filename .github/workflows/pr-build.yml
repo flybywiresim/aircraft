@@ -13,19 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
-      - name: Maximize build space
-        uses: AdityaGarg8/remove-unwanted-software@v4.1
-        with:
-          remove-android: 'true'
-          remove-dotnet: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-large-packages: 'true'
-          remove-cached-tools: 'true'
       - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - name: install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm run lint
