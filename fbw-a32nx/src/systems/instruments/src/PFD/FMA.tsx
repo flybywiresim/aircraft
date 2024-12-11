@@ -1737,6 +1737,10 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     this.dh,
     this.mda,
   );
+  private readonly DhModexPos = MappedSubject.create(
+    ([noDhSelected]) => (noDhSelected ? 118.38384 : 104.75),
+    this.noDhSelected,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -1754,17 +1758,19 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
         ref={this.textRef}
         class={{
           FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+          StartAlign: this.noDhSelected.map(SubscribableMapFunctions.not()),
           FontMedium: this.noDhSelected,
-          MiddleAlign: true,
+          MiddleAlign: this.noDhSelected,
           White: true,
         }}
-        x="118.38384"
+        x={this.DhModexPos}
         y="21.104172"
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
-          class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
-          style="white-space: pre"
+          class={{ EndAlign: true, Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
+          x="132.25"
+          y="21.104172"
         >
           {this.mdaDhValueText}
         </tspan>
