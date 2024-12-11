@@ -100,9 +100,9 @@ export function pageForUrl(
       return <MfdSurvStatusSwitching pageTitle="STATUS & SWITCHING" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'atccom/connect':
       return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'atccom/d-atis':
+    case 'atccom/d-atis/list':
       return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'atccom/d-atis-received':
+    case 'atccom/d-atis/received':
       return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:

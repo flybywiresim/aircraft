@@ -73,7 +73,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
             <Button
               label="RETURN<br />TO LIST"
               disabled={Subject.create(false)}
-              onClick={() => this.props.mfd.uiService.navigateTo('atccom/d-atis')}
+              onClick={() => this.props.mfd.uiService.navigateTo('atccom/d-atis/list')}
               buttonStyle="width: 190px; height:62px"
             />
             <Button

@@ -78,7 +78,7 @@ export class AtccomHeader extends AbstractHeader {
           <PageSelectorDropdownMenu
             isActive={this.atisIsSelected}
             label="D-ATIS"
-            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/d-atis') }]}
+            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/d-atis/list') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorAtis`}
             containerStyle="flex: 1"
           />
