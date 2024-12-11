@@ -28,8 +28,16 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
                 <span class="msg-origin-dest">FROM KZWY</span>
                 <span class="msg-status">WILCO</span>
               </div>
-              <div class="msg-body">
-                {'CLEARED TO DEVIATE\nUP TO 10NM LEFT OF ROUTE//\nREJOIN ROUTE BY 0148Z//\nREPORT BACK ON ROUTE//'}
+              <div class="msg-body-expand">
+                {`WSXX99 EBBR 092010 SIGA0M KZWY SIGMET
+                FOXTROT 13 VALID 092100/100300 KKCI - NEW //
+                  YORK OCEANIC FIR TC GABRIELLE OBS AT
+                  2100Z NR N4042 W04524 MOV NE 18KT. NC. //
+                  EMBED TS TOP FL470 WI N4500 W04100 -
+                  N4230 W04145 - N3930 W04615 - N4145
+                  W04900 //
+                  - N4500 W04715 - N4500 W04100. FCST 0300Z
+                  TC CENTER N4158 W04324.//`}
               </div>
             </div>
             <div style="flex-grow: 1;" />
