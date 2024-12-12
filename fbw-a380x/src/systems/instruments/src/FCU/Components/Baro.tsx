@@ -66,9 +66,11 @@ export class Baro extends DisplayComponent<BaroProps> {
   );
 
   private readonly preSelBaroText = MappedSubject.create(
-    ([correction, isVisible, isLightTest]) => {
+    ([correction, isVisible, isLightTest, mode]) => {
       if (isLightTest) {
-        return '8.8.8.8';
+        return '8p88'; // p is used as a standin character for the Q test character
+      } else if (mode === 'QFE') {
+        return 'qfe';
       } else if (isVisible) {
         return correction < 100 ? correction.toFixed(2) : correction.toFixed(0).padStart(4, '0');
       } else {
@@ -78,6 +80,7 @@ export class Baro extends DisplayComponent<BaroProps> {
     this.correction,
     this.isPreSelVisible,
     this.isLightTestActive,
+    this.mode,
   );
 
   onAfterRender(_node: VNode): void {
@@ -95,8 +98,8 @@ export class Baro extends DisplayComponent<BaroProps> {
           <svg width="100%" height="100%" class="Baro">
             <text
               id="QNH"
-              x="5%"
-              y="26%"
+              x="6%"
+              y="23%"
               class={{
                 Common: true,
                 Label: true,
@@ -105,23 +108,10 @@ export class Baro extends DisplayComponent<BaroProps> {
             >
               QNH
             </text>
-            {/* Removed QFE label as QFE systems are INOP */}
-            {/* <text
-              id="QFE"
-              x="40%"
-              y="26%"
-              class={{
-                Common: true,
-                Label: true,
-                Visible: this.isQfeLabelVisible,
-              }}
-            >
-              QFE
-            </text> */}
-            <text id="PreSelBaroValue" class="Common Active" x="100%" y="26%" text-anchor="end">
+            <text id="PreSelBaroValue" class="Common Active" x="97%" y="30%" text-anchor="end">
               {this.preSelBaroText}
             </text>
-            <text id="Value" class="Common Value" x="4%" y="86%">
+            <text id="Value" class="Common Value" x="4%" y="95%">
               {this.baroText}
             </text>
           </svg>
