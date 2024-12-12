@@ -1738,7 +1738,7 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     this.mda,
   );
   private readonly DhModexPos = MappedSubject.create(
-    ([noDhSelected]) => (noDhSelected ? 118.38384 : 104.75),
+    ([noDhSelected]) => (noDhSelected ? 118.38384 : 103.47),
     this.noDhSelected,
   );
 
@@ -1764,13 +1764,13 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
           White: true,
         }}
         x={this.DhModexPos}
-        y="21.104172"
+        y="20.75"
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
           class={{ EndAlign: true, Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
-          x="132.25"
-          y="21.104172"
+          x="133.425"
+          y="20.75"
         >
           {this.mdaDhValueText}
         </tspan>
