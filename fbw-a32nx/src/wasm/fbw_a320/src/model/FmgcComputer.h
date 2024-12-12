@@ -171,6 +171,7 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_ppu;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_k4v;
     rtDW_MATLABFunction_FmgcComputer_k_T sf_MATLABFunction_k0;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_p2o;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_jc;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_bbb;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_fed;
@@ -410,11 +411,13 @@ class FmgcComputer final
     real_T BitfromLabel2_bit_px;
     real_T BitfromLabel1_bit_g3;
     real_T BitfromLabel2_bit_is;
+    real_T BitfromLabel4_bit_b;
     real_T BitfromLabel3_bit_p;
     real_T BitfromLabel_bit_cq;
     real_T BitfromLabel2_bit_nq;
     real_T BitfromLabel1_bit_mi;
     real_T BitfromLabel2_bit_j;
+    real_T BitfromLabel4_bit_f;
     real_T BitfromLabel3_bit_a;
     real_T BitfromLabel1_bit_nv;
     real_T BitfromLabel2_bit_i1;
@@ -449,7 +452,7 @@ class FmgcComputer final
     real_T BitfromLabel1_bit_i5;
     real_T BitfromLabel2_bit_o;
     real_T BitfromLabel3_bit_l;
-    real_T BitfromLabel4_bit_f;
+    real_T BitfromLabel4_bit_fw;
     real_T BitfromLabel_bit_cb;
     real_T BitfromLabel_bit_b2;
     real_T BitfromLabel_bit_al;
@@ -884,6 +887,7 @@ class FmgcComputer final
     boolean_T PulseNode4_isRisingEdge;
     boolean_T PulseNode5_isRisingEdge;
     boolean_T ConfirmNode3_isRisingEdge;
+    boolean_T PulseNode3_isRisingEdge_f;
     boolean_T PulseNode1_isRisingEdge_l;
     boolean_T ConfirmNode_isRisingEdge_h;
     boolean_T PulseNode_isRisingEdge_p;
