@@ -37,6 +37,7 @@ import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/P
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import {
   AbnormalProcedure,
+  DeferredProcedure,
   EcamAbnormalSensedProcedures,
   EcamDeferredProcedures,
   EcamMemos,
@@ -45,6 +46,7 @@ import {
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import {
+  DeferredProcedureState,
   FwsEwdAbnormalSensedEntry,
   FwsEwdEvents,
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -230,10 +232,13 @@ export class FwsCore {
   public readonly activeAbnormalProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   /** Map to hold all deferred procs which are currently active */
-  public readonly activeDeferredProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
+  public readonly activeDeferredProceduresList = MapSubject.create<string, DeferredProcedureState>();
 
   /** Indices of items which were updated */
   public readonly abnormalUpdatedItems = new Map<string, number[]>();
+
+  /** Indices of items which were updated */
+  public readonly deferredUpdatedItems = new Map<string, number[]>();
 
   public recallFailures: string[] = [];
 
@@ -2750,6 +2755,8 @@ export class FwsCore {
     this.fmcCFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
     this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
     this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
+    this.fms1Fault.set(true);
+    this.fms2Fault.set(true);
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -3826,6 +3833,7 @@ export class FwsCore {
     ).concat(Object.entries(this.abnormalNonSensed.ewdAbnormalNonSensed));
     const ewdDeferredEntries = Object.entries(this.abnormalSensed.ewdDeferredProcs);
     this.abnormalUpdatedItems.clear();
+    this.deferredUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
@@ -3852,7 +3860,7 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
-        this.conditionalActiveItems(proc, itemsChecked, itemsActive);
+        FwsCore.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -3903,6 +3911,7 @@ export class FwsCore {
             ) {
               this.activeDeferredProceduresList.setValue(deferredKey, {
                 id: key,
+                checklistCompleted: false,
                 itemsActive: deferredValue.whichItemsActive(),
                 itemsChecked: deferredValue.whichItemsChecked
                   ? deferredValue.whichItemsChecked()
@@ -3919,7 +3928,7 @@ export class FwsCore {
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
-          this.conditionalActiveItems(proc, fusedChecked, itemsActive);
+          FwsCore.conditionalActiveItems(proc, fusedChecked, itemsActive);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
@@ -3978,6 +3987,40 @@ export class FwsCore {
 
         if (value.sysPage > -1) {
           SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
+        }
+      }
+
+      // Update deferred procedures
+      for (const [key, value] of Object.values(this.activeDeferredProceduresList.get())) {
+        const proc = EcamDeferredProcedures[key];
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+        const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
+        const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
+        FwsCore.conditionalActiveItems(proc, itemsChecked, itemsActive);
+
+        const prevEl = value;
+        const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
+          proc.items[index].sensed ? itemsChecked[index] : !!val,
+        );
+        FwsCore.conditionalActiveItems(proc, fusedChecked, itemsActive);
+        this.deferredUpdatedItems.set(key, []);
+        proc.items.forEach((item, idx) => {
+          if (
+            prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+            prevEl.itemsActive[idx] !== itemsActive[idx] ||
+            (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+          ) {
+            this.deferredUpdatedItems.get(key).push(idx);
+          }
+        });
+
+        if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
+          value.setValue(key, {
+            id: key,
+            itemsChecked: fusedChecked,
+            itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
+            itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
+          });
         }
       }
 
@@ -4231,7 +4274,11 @@ export class FwsCore {
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
   }
 
-  conditionalActiveItems(proc: AbnormalProcedure, itemsChecked: boolean[], itemsActive: boolean[]) {
+  static conditionalActiveItems(
+    proc: AbnormalProcedure | DeferredProcedure,
+    itemsChecked: boolean[],
+    itemsActive: boolean[],
+  ) {
     // Additional logic for conditions: Modify itemsActive based on condition activation status
     if (proc.items.some((v) => isChecklistCondition(v))) {
       proc.items.forEach((v, i) => {

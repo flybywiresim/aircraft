@@ -86,6 +86,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly stsIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_sts_indication'), false);
 
+  private readonly advIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_adv_indication'), false);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
   }
@@ -255,8 +257,13 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
               >
                 STS
               </div>
+              <div
+                class="AdvBox"
+                style={{ visibility: this.advIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+              >
+                ADV
+              </div>
             </div>
-            {/* Reserved for STS */}
           </div>
         </div>
       </CdsDisplayUnit>

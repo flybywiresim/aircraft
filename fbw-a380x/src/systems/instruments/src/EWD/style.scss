@@ -310,6 +310,16 @@ text, tspan, span {
   padding: 2px;
 }
 
+.AdvBox {
+  display: inline;
+  position: relative;
+  left: 80px;
+  top: 0px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
 .MemosContainer {
   display: flex;
   flex-direction: column;
@@ -415,6 +425,14 @@ text, tspan, span {
 
 .EclLine.ChecklistCompleted {
   color: $display-grey !important;
+}
+
+.EclLine.DeferredProcedure {
+  color: $display-amber !important;
+}
+
+.EclLine.CompletedDeferredProcedure {
+  color: $display-white !important;
 }
 
 .EclLine.Green {

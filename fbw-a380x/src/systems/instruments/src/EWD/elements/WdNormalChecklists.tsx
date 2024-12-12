@@ -1,12 +1,30 @@
 import { ConsumerSubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
-import { ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  ChecklistLineStyle,
+  DeferredProcedureType,
+  EcamDeferredProcedures,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
 
 export class WdNormalChecklists extends WdAbstractChecklistComponent {
   private readonly checklists = ConsumerSubject.create(this.sub.on('fws_normal_checklists'), []);
 
+  /** Special indices:
+   * -1 : all phases
+   * -2 : at top of descent
+   * -3 : for approach
+   * -4 : for landing
+   */
   private readonly checklistId = ConsumerSubject.create(this.sub.on('fws_normal_checklists_id'), 0);
+
+  private readonly deferred = ConsumerSubject.create(this.sub.on('fws_deferred_procedures'), []);
+
+  /** ALL PHASES, TOP OF DESCENT, FOR APPROACH, FOR LANDING */
+  private readonly hasDeferred = [false, false, false, false];
+
+  /** ALL PHASES, TOP OF DESCENT, FOR APPROACH, FOR LANDING */
+  private readonly deferredIsCompleted = [false, false, false, false];
 
   public updateChecklists() {
     this.lineData.length = 0;
@@ -16,6 +34,39 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
       .filter((v) => v.id !== 0)
       .sort((a, b) => a.id - b.id);
     const clState = sorted.find((v) => v.id === this.checklistId.get());
+
+    if (this.deferred.get().length > 0) {
+      // Status of deferred procedures
+      this.hasDeferred[0] = this.deferred
+        .get()
+        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.ALL_PHASES);
+      this.hasDeferred[1] = this.deferred
+        .get()
+        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.AT_TOP_OF_DESCENT);
+      this.hasDeferred[2] = this.deferred
+        .get()
+        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_APPROACH);
+      this.hasDeferred[3] = this.deferred
+        .get()
+        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING);
+
+      this.deferredIsCompleted[0] = this.deferred
+        .get()
+        .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.ALL_PHASES && p.checklistCompleted);
+      this.deferredIsCompleted[1] = this.deferred
+        .get()
+        .every(
+          (p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.AT_TOP_OF_DESCENT && p.checklistCompleted,
+        );
+      this.deferredIsCompleted[2] = this.deferred
+        .get()
+        .every(
+          (p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_APPROACH && p.checklistCompleted,
+        );
+      this.deferredIsCompleted[3] = this.deferred
+        .get()
+        .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING && p.checklistCompleted);
+    }
 
     if (this.checklistId.get() === 0) {
       // Render overview page
@@ -42,8 +93,72 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
             originalItemIndex: index,
           });
         }
+
+        switch (state.id) {
+          case 1000006:
+            if (this.hasDeferred[0]) {
+              this.lineData.push({
+                activeProcedure: true,
+                sensed: true,
+                checked: this.deferredIsCompleted[0],
+                text: 'ALL PHASES : DEFERRED PROCEDURE',
+                style: this.deferredIsCompleted[0]
+                  ? ChecklistLineStyle.CompletedDeferredProcedure
+                  : ChecklistLineStyle.DeferredProcedure,
+                firstLine: false,
+                lastLine: false,
+                originalItemIndex: -1,
+              });
+            }
+            if (this.hasDeferred[1]) {
+              this.lineData.push({
+                activeProcedure: true,
+                sensed: true,
+                checked: this.deferredIsCompleted[1],
+                text: 'AT TOP OF DESCENT : DEFERRED PROCEDURE',
+                style: this.deferredIsCompleted[1]
+                  ? ChecklistLineStyle.CompletedDeferredProcedure
+                  : ChecklistLineStyle.DeferredProcedure,
+                firstLine: false,
+                lastLine: false,
+                originalItemIndex: -2,
+              });
+            }
+
+            if (this.hasDeferred[2]) {
+              this.lineData.push({
+                activeProcedure: true,
+                sensed: true,
+                checked: this.deferredIsCompleted[2],
+                text: 'FOR APPROACH : DEFERRED PROCEDURE',
+                style: this.deferredIsCompleted[2]
+                  ? ChecklistLineStyle.CompletedDeferredProcedure
+                  : ChecklistLineStyle.DeferredProcedure,
+                firstLine: false,
+                lastLine: false,
+                originalItemIndex: -3,
+              });
+            }
+            break;
+          case 1000007:
+            if (this.hasDeferred[3]) {
+              this.lineData.push({
+                activeProcedure: true,
+                sensed: true,
+                checked: this.deferredIsCompleted[3],
+                text: 'FOR LANDING : DEFERRED PROCEDURE',
+                style: this.deferredIsCompleted[3]
+                  ? ChecklistLineStyle.CompletedDeferredProcedure
+                  : ChecklistLineStyle.DeferredProcedure,
+                firstLine: false,
+                lastLine: false,
+                originalItemIndex: -4,
+              });
+            }
+            break;
+        }
       });
-      this.totalLines.set(sorted.length + 1);
+      this.totalLines.set(sorted.length + this.hasDeferred.reduce((acc, val) => acc + (val ? 1 : 0), 0) + 1);
     } else if (clState && EcamNormalProcedures[clState.id]) {
       const cl = EcamNormalProcedures[clState.id];
 
@@ -104,6 +219,8 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         lastLine: true,
         originalItemIndex: cl.items.length + 1,
       });
+    } else if (this.checklistId.get() < 0) {
+      // Deferred procedures
     }
     super.updateChecklists();
   }
@@ -113,6 +230,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
 
     this.checklists.sub(() => this.updateChecklists(), true);
     this.checklistId.sub(() => this.updateChecklists());
+    this.deferred.sub(() => this.updateChecklists());
   }
 
   // 17 lines

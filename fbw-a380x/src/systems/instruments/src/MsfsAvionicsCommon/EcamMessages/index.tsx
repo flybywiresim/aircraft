@@ -570,6 +570,8 @@ export enum ChecklistLineStyle {
   ChecklistItem = 'ChecklistItem',
   ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
+  CompletedDeferredProcedure = 'CompletedDeferredProcedure',
+  DeferredProcedure = 'DeferredProcedure',
   OmissionDots = 'OmissionDots',
   LandAsap = 'LandAsap',
   LandAnsa = 'LandAnsa',

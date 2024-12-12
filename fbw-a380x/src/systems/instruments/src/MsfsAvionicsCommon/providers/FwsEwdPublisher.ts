@@ -15,6 +15,14 @@ export interface NormalChecklistState {
   itemsCompleted: boolean[];
 }
 
+export interface DeferredProcedureState {
+  id: string;
+  checklistCompleted: boolean;
+  itemsToShow: boolean[];
+  itemsChecked: boolean[];
+  itemsActive: boolean[];
+}
+
 export type AbnormalNonSensedCategory = null | 'ENG' | 'F/CTL' | 'L/G' | 'NAV' | 'FUEL' | 'MISCELLANEOUS';
 export interface AbnormalNonSensedList {
   /** Refers to abnormal proc id */
@@ -42,6 +50,8 @@ export interface FwsEwdEvents {
   fws_show_abn_sensed: boolean;
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
   fws_abn_sensed_procedures: FwsEwdAbnormalSensedEntry[];
+  /** (FWS -> EWD) List of deferred procedures to be displayed */
+  fws_deferred_procedures: DeferredProcedureState[];
 
   /** (FWS -> EWD) Show abnormal non-sensed procedures selection menu */
   fws_show_abn_non_sensed: boolean;
@@ -52,4 +62,6 @@ export interface FwsEwdEvents {
   fws_show_failure_pending: boolean;
   /** (FWS -> EWD) Show STS indication at bottom of page */
   fws_show_sts_indication: boolean;
+  /** (FWS -> EWD) Show ADV indication at bottom of page */
+  fws_show_adv_indication: boolean;
 }

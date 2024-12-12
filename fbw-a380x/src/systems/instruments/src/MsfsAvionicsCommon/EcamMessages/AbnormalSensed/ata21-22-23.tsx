@@ -794,7 +794,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       {
         name: 'CABIN CREW',
         sensed: false,
-        labelNotCompleted: 'ADVICE',
+        labelNotCompleted: 'ADVISE',
       },
       {
         name: 'DESCENT',
