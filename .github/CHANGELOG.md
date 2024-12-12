@@ -88,6 +88,7 @@
 1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
 1. [A380X/FMS] Fix VLS computation error for CONF 1, might have lead to FMS crashes during climb out - @flogross89 (floridude)
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
+1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
@@ -208,7 +209,6 @@
 1. [FMS] Run vertical predictions without V-speeds - @BlueberryKing (BlueberryKing)
 1. [ELEC] Use ADIRU and LGCIU signals for speed and in flight determination - @Gurgel100 (Pascal)
 1. [FMS] Do not transmit bearing information to ND on manual legs - @BravoMike99 (bruno_pt99)
-1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific. - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 
