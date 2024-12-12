@@ -19,10 +19,10 @@ export class Heading extends DisplayComponent<HeadingProps> {
           <text id="TRK" class="Common Inactive" x="68%" y="20%">
             TRK
           </text>
-          <text id="Value" class="Common Value" x="47%" y="86%">
+          <text id="Value" class="Common Value" x="47%" y="97%">
             ---
           </text>
-          <text id="DEGREES" class="Common Value" x="89%" y="86%">
+          <text id="DEGREES" class="Common Value" x="89%" y="97%">
             &#176;
           </text>
         </svg>
