@@ -3337,6 +3337,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         | 27  | FD 2 Button off                   |
         |28-29| Spare                             |
 
+- `A32NX_FCU_{1|2}_DISCRETE_WORD_4`
+    - FCU 1A/1B/2A/2B Discrete word 4.
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 24  | FCU 1 Healthy                     |
+      | 25  | FCU 2 Healthy                     |
+
 ### Flight Augmentation Computer (FAC)
 
 - A32NX_FAC_{number}_PUSHBUTTON_PRESSED

@@ -781,6 +781,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuDiscreteWord1 = std::make_unique<LocalVariable>("A32NX_FCU_DISCRETE_WORD_1");
   idFcuDiscreteWord2 = std::make_unique<LocalVariable>("A32NX_FCU_DISCRETE_WORD_2");
 
+  idFcu1DiscreteWord4 = std::make_unique<LocalVariable>("A32NX_FCU_1_DISCRETE_WORD_4");
+  idFcu2DiscreteWord4 = std::make_unique<LocalVariable>("A32NX_FCU_2_DISCRETE_WORD_4");
+
   for (int i = 0; i < 2; i++) {
     std::string idString = i == 0 ? "L" : "R";
 
@@ -2142,12 +2145,16 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
 
   base_fcu_discrete_outputs discreteOutputs = fcu.getDiscreteOutputs();
 
+  bool fcu1IsFailed = failuresConsumer.isActive(Failures::Fcu1);
+  bool fcu2IsFailed = failuresConsumer.isActive(Failures::Fcu2);
+  bool fcu1IsPowered = idElecDcEssBusPowered->get();
+  bool fcu2IsPowered = idElecDcBus2Powered->get();
+
   if (fcuDisabled) {
     fcuBusOutputs = simConnectInterface.getClientDataFcuBusOutput();
     discreteOutputs = simConnectInterface.getClientDataFcuDiscreteOutput();
   } else {
-    fcu.update(sampleTime, simData.simulationTime, failuresConsumer.isActive(Failures::Fcu1), failuresConsumer.isActive(Failures::Fcu2),
-               idElecDcEssBusPowered->get(), idElecDcBus2Powered->get());
+    fcu.update(sampleTime, simData.simulationTime, fcu1IsFailed, fcu2IsFailed, fcu1IsPowered, fcu2IsPowered);
     fcuBusOutputs = fcu.getBusOutputs();
   }
 
@@ -2158,6 +2165,23 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   }
 
   idFcuHealthy->set(discreteOutputs.fcu_healthy);
+
+  bool fcu1Healthy = fcu1IsPowered && !fcu1IsFailed;
+  bool fcu2Healthy = fcu2IsPowered && !fcu2IsFailed;
+  fcuDiscreteWord4.setBit(24, fcu1Healthy);
+  fcuDiscreteWord4.setBit(25, fcu2Healthy);
+  fcuDiscreteWord4.setSsm(Arinc429SignStatus::NormalOperation);
+
+  if (fcu1Healthy) {
+    idFcu1DiscreteWord4->set(fcuDiscreteWord4.toSimVar());
+  } else {
+    idFcu1DiscreteWord4->set(0);
+  }
+  if (fcu2Healthy) {
+    idFcu2DiscreteWord4->set(fcuDiscreteWord4.toSimVar());
+  } else {
+    idFcu2DiscreteWord4->set(0);
+  }
 
   idFcuSelectedHeading->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_hdg_deg));
   idFcuSelectedAltitude->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_alt_ft));

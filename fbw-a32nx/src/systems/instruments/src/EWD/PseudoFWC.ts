@@ -16,6 +16,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import {
+  Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
@@ -30,6 +31,7 @@ import {
 import { VerticalMode } from '@shared/autopilot';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -71,7 +73,8 @@ enum FwcAuralWarning {
 }
 
 export class PseudoFWC {
-  private readonly sub = this.bus.getSubscriber<EwdSimvars & StallWarningEvents>();
+  private readonly sub = this.bus.getSubscriber<A32NXFcuBusEvents & EwdSimvars & StallWarningEvents>();
+
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
 
@@ -288,6 +291,17 @@ export class PseudoFWC {
   private toSpeedsTooLowWarning = Subject.create(false);
 
   private toV2VRV2DisagreeWarning = Subject.create(false);
+
+  private readonly fcu1DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_1_discrete_word_4'),
+  );
+  private readonly fcu2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_2_discrete_word_4'),
+  );
+
+  private readonly fcu12Fault = Subject.create(false);
+  private readonly fcu1Fault = Subject.create(false);
+  private readonly fcu2Fault = Subject.create(false);
 
   /* 24 - ELECTRICAL */
 
@@ -1088,7 +1102,6 @@ export class PseudoFWC {
     const deltaTime = this.instrument.deltaTime;
 
     // Inputs update
-
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
@@ -1378,6 +1391,16 @@ export class PseudoFWC {
     }
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     this.overspeedWarning.set(overspeedWarning);
+
+    // In reality FWC1 takes 1B, and FWC2 2B.
+    const fcu1Healthy =
+      this.fcu1DiscreteWord4.get().bitValueOr(24, false) || this.fcu2DiscreteWord4.get().bitValueOr(24, false);
+    const fcu2Healthy =
+      this.fcu1DiscreteWord4.get().bitValueOr(25, false) || this.fcu2DiscreteWord4.get().bitValueOr(25, false);
+
+    this.fcu12Fault.set(!fcu1Healthy && !fcu2Healthy && this.dcESSBusPowered.get() && this.dc2BusPowered.get());
+    this.fcu1Fault.set(!fcu1Healthy && fcu2Healthy && this.dcESSBusPowered.get());
+    this.fcu2Fault.set(fcu1Healthy && !fcu2Healthy && this.dc2BusPowered.get());
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
@@ -2525,6 +2548,39 @@ export class PseudoFWC {
 
   ewdMessageFailures: EWDMessageDict = {
     // 22 - AUTOFLIGHT
+    2200202: {
+      // FCU 1+2 FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.fcu12Fault,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['220020201', '220020202'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    2200210: {
+      // FCU 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.fcu1Fault,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['220021001', '220021002'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    2200215: {
+      // FCU 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.fcu2Fault,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['220021501', '220021502'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: -1,
+      side: 'LEFT',
+    },
     2210700: {
       // TO SPEEDS TOO LOW
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],

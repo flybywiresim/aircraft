@@ -618,6 +618,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuDiscreteWord1;
   std::unique_ptr<LocalVariable> idFcuDiscreteWord2;
 
+  std::unique_ptr<LocalVariable> idFcu1DiscreteWord4;
+  std::unique_ptr<LocalVariable> idFcu2DiscreteWord4;
+
   std::unique_ptr<LocalVariable> idFcuEisPanelEfisMode[2];
   std::unique_ptr<LocalVariable> idFcuEisPanelEfisRange[2];
   std::unique_ptr<LocalVariable> idFcuEisPanelNavaid1Mode[2];
@@ -659,6 +662,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuHealthy;
 
   std::unique_ptr<LocalVariable> idEcuMaintenanceWord6[2];
+
+  Arinc429DiscreteWord fcuDiscreteWord4{};
 
   void loadConfiguration();
   void setupLocalVariables();
