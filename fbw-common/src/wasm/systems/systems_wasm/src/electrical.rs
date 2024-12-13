@@ -4,10 +4,7 @@ use crate::msfs::{legacy::trigger_key_event, legacy::trigger_key_event_ex1};
 #[cfg(target_arch = "wasm32")]
 use msfs::{legacy::trigger_key_event, legacy::trigger_key_event_ex1};
 
-use crate::{
-    aspects::{VariableToEventMapping, VariableToEventWriteOn},
-    ExecuteOn, MsfsAspectBuilder, Variable,
-};
+use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::sys::{
     KEY_APU_BLEED_AIR_SOURCE_SET, KEY_APU_OFF_SWITCH, KEY_APU_STARTER,
     KEY_ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE, KEY_FUELSYSTEM_PUMP_OFF, KEY_FUELSYSTEM_PUMP_ON,
