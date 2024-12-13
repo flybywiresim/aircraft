@@ -660,8 +660,6 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idEcuMaintenanceWord6[2];
 
-  Arinc429DiscreteWord fcuDiscreteWord4{};
-
   void loadConfiguration();
   void setupLocalVariables();
 

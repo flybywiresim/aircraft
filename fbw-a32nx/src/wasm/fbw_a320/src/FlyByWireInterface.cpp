@@ -2142,16 +2142,12 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
 
   base_fcu_discrete_outputs discreteOutputs = fcu.getDiscreteOutputs();
 
-  bool fcu1IsFailed = failuresConsumer.isActive(Failures::Fcu1);
-  bool fcu2IsFailed = failuresConsumer.isActive(Failures::Fcu2);
-  bool fcu1IsPowered = idElecDcEssBusPowered->get();
-  bool fcu2IsPowered = idElecDcBus2Powered->get();
-
   if (fcuDisabled) {
     fcuBusOutputs = simConnectInterface.getClientDataFcuBusOutput();
     discreteOutputs = simConnectInterface.getClientDataFcuDiscreteOutput();
   } else {
-    fcu.update(sampleTime, simData.simulationTime, fcu1IsFailed, fcu2IsFailed, fcu1IsPowered, fcu2IsPowered);
+    fcu.update(sampleTime, simData.simulationTime, failuresConsumer.isActive(Failures::Fcu1), failuresConsumer.isActive(Failures::Fcu2),
+               idElecDcEssBusPowered->get(), idElecDcBus2Powered->get());
     fcuBusOutputs = fcu.getBusOutputs();
   }
 
