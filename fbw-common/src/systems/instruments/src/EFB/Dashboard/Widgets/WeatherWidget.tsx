@@ -78,7 +78,7 @@ interface WeatherWidgetProps {
 }
 
 export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
-  const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+  const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const dispatch = useAppDispatch();
   const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
   const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
