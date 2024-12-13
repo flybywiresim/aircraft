@@ -195,6 +195,7 @@ export default new TaskOfTasks('all', [
                 new ExecTask('extras-host', 'npm run build-a380x:extras-host', [
                     'fbw-a380x/src/systems/extras-host',
                     'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/ExtrasHost',
+                    'fbw-common/src/systems/shared/src/extras',
                 ]),
                 new ExecTask('systems-host', 'npm run build-a380x:systems-host', [
                     'fbw-a380x/src/systems/systems-host',
