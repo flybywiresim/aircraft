@@ -50,6 +50,7 @@ export default new TaskOfTasks('all', [
                 new ExecTask('extras-host', 'npm run build-a32nx:extras-host', [
                     'fbw-a32nx/src/systems/extras-host',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost',
+                    'fbw-common/src/systems/shared/src/extras',
                 ]),
                 new ExecTask('failures', 'npm run build-a32nx:failures', [
                     'fbw-a32nx/src/systems/failures',
