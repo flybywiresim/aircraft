@@ -8,6 +8,7 @@ import {
   Instrument,
   MappedSubject,
   SimVarValueType,
+  Subject,
   Wait,
 } from '@microsoft/msfs-sdk';
 import { GroundSupportEvents, MsfsElectricsEvents, MsfsFlightModelEvents, MsfsMiscEvents } from '@flybywiresim/fbw-sdk';
@@ -28,7 +29,7 @@ export class GPUManagement implements Instrument {
 
   private readonly groundVelocity = ConsumerSubject.create(this.sub.on('msfs_ground_velocity'), 0);
 
-  private readonly cameraState = ConsumerSubject.create(this.sub.on('msfs_camera_state'), 0);
+  private readonly cameraState = Subject.create(-1);
 
   private readonly msfsExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
@@ -78,6 +79,8 @@ export class GPUManagement implements Instrument {
         this.setEXTpower(true);
       }
       this.initialIngameFrame = false;
+    } else {
+      this.cameraState.set(SimVar.GetSimVarValue('CAMERA STATE', 'enum'));
     }
   }
 

@@ -10,7 +10,6 @@ import {
 interface MsfsMiscBaseEvents {
   /** Gets the speed relative to the earths surface in knots */
   msfs_ground_velocity: number;
-  msfs_camera_state: number;
 }
 
 type IndexedTopics = null;
@@ -37,7 +36,6 @@ export class MsfsMiscPublisher extends SimVarPublisher<MsfsMiscEvents> {
   public constructor(bus: EventBus, pacer?: PublishPacer<MsfsMiscEvents>) {
     const simvars = new Map<keyof MsfsMiscEvents, SimVarPublisherEntry<any>>([
       ['msfs_ground_velocity', { name: `GROUND VELOCITY`, type: SimVarValueType.Knots }],
-      ['msfs_camera_state', { name: `CAMERA STATE`, type: SimVarValueType.Enum }],
     ]);
 
     super(simvars, bus, pacer);
