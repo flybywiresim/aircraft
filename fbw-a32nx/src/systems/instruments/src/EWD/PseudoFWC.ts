@@ -292,12 +292,8 @@ export class PseudoFWC {
 
   private toV2VRV2DisagreeWarning = Subject.create(false);
 
-  private readonly fcu1DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a32nx_fcu_1_discrete_word_4'),
-  );
-  private readonly fcu2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a32nx_fcu_2_discrete_word_4'),
-  );
+  private readonly fcu1DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_discrete_word_2'));
+  private readonly fcu2DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_discrete_word_2'));
 
   private readonly fcu12Fault = Subject.create(false);
   private readonly fcu1Fault = Subject.create(false);
@@ -1393,10 +1389,8 @@ export class PseudoFWC {
     this.overspeedWarning.set(overspeedWarning);
 
     // In reality FWC1 takes 1B, and FWC2 2B.
-    const fcu1Healthy =
-      this.fcu1DiscreteWord4.get().bitValueOr(24, false) || this.fcu2DiscreteWord4.get().bitValueOr(24, false);
-    const fcu2Healthy =
-      this.fcu1DiscreteWord4.get().bitValueOr(25, false) || this.fcu2DiscreteWord4.get().bitValueOr(25, false);
+    const fcu1Healthy = this.fcu1DiscreteWord2.get().bitValueOr(24, false);
+    const fcu2Healthy = this.fcu1DiscreteWord2.get().bitValueOr(25, false);
 
     this.fcu12Fault.set(!fcu1Healthy && !fcu2Healthy && this.dcESSBusPowered.get() && this.dc2BusPowered.get());
     this.fcu1Fault.set(!fcu1Healthy && fcu2Healthy && this.dcESSBusPowered.get());

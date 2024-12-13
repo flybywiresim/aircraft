@@ -203,30 +203,14 @@ interface A32NXFcuBusBaseEvents {
    * |15-19| Spare                             |
    * | 20  | FMGC 1 selected (has priority)    |
    * | 21  | FMGC 2 selected (has priority)    |
-   * |22-25| Spare                             |
+   * |22-23| Spare                             |
+   * | 24  | FCU 1 Healthy                     |
+   * | 25  | FCU 2 Healthy                     |
    * | 26  | FD 1 Button off                   |
    * | 27  | FD 2 Button off                   |
    * |28-29| Spare                             |
    */
   a32nx_fcu_discrete_word_2: number;
-  /**
-   * FCU 1A/1B Discrete word 4.
-   * Raw ARINC word.
-   * | Bit |            Description            |
-   * |:---:|:---------------------------------:|
-   * | 24  | FCU 1 Healthy                     |
-   * | 25  | FCU 2 Healthy                     |
-   */
-  a32nx_fcu_1_discrete_word_4: number;
-  /**
-   * FCU 2A/2B Discrete word 4.
-   * Raw ARINC word.
-   * | Bit |            Description            |
-   * |:---:|:---------------------------------:|
-   * | 24  | FCU 1 Healthy                     |
-   * | 25  | FCU 2 Healthy                     |
-   */
-  a32nx_fcu_2_discrete_word_4: number;
 }
 
 type IndexedTopics = null;
@@ -286,8 +270,6 @@ export class A32NXFcuBusPublisher extends SimVarPublisher<A32NXFcuBusPublisherEv
       ['a32nx_fcu_eis_baro_hpa_right', { name: 'L:A32NX_FCU_RIGHT_EIS_BARO_HPA', type: SimVarValueType.Enum }],
       ['a32nx_fcu_discrete_word_1', { name: 'L:A32NX_FCU_DISCRETE_WORD_1', type: SimVarValueType.Enum }],
       ['a32nx_fcu_discrete_word_2', { name: 'L:A32NX_FCU_DISCRETE_WORD_2', type: SimVarValueType.Enum }],
-      ['a32nx_fcu_1_discrete_word_4', { name: 'L:A32NX_FCU_1_DISCRETE_WORD_4', type: SimVarValueType.Enum }],
-      ['a32nx_fcu_2_discrete_word_4', { name: 'L:A32NX_FCU_2_DISCRETE_WORD_4', type: SimVarValueType.Enum }],
     ]);
 
     super(simvars, bus, pacer);
