@@ -77,7 +77,7 @@ export class Arinc429Word implements Arinc429WordData {
    * Returns the value when normal operation, the supplied default value otherwise.
    */
   valueOr(defaultValue: number | undefined | null) {
-    return this.isNormalOperation() ? this.value : defaultValue;
+    return this.isNormalOperation() || this.isFunctionalTest() ? this.value : defaultValue;
   }
 
   bitValue(bit: number): boolean {
@@ -85,7 +85,7 @@ export class Arinc429Word implements Arinc429WordData {
   }
 
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    return this.isNormalOperation() || this.isFunctionalTest() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 
   setBitValue(bit: number, value: boolean): void {
@@ -177,7 +177,7 @@ export class Arinc429Register implements Arinc429WordData {
    * Returns the value when normal operation, the supplied default value otherwise.
    */
   valueOr(defaultValue: number | undefined | null): number {
-    return this.isNormalOperation() ? this.value : defaultValue;
+    return this.isNormalOperation() || this.isFunctionalTest() ? this.value : defaultValue;
   }
 
   bitValue(bit: number): boolean {
@@ -185,7 +185,7 @@ export class Arinc429Register implements Arinc429WordData {
   }
 
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    return this.isNormalOperation() || this.isFunctionalTest() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 }
 
