@@ -37,7 +37,7 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fmcService: FmcServiceInterface;
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
     this.simVarPublisher = new MfdSimvarPublisher(this.bus);

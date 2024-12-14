@@ -87,5 +87,5 @@ const activateSimVarName = getActivateFailureSimVarName(prefix);
 const deactivateSimVarName = getDeactivateFailureSimVarName(prefix);
 
 function consumer() {
-  return new FailuresConsumer(prefix);
+  return new FailuresConsumer();
 }
