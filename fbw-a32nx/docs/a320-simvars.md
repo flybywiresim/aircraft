@@ -1685,7 +1685,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_BARO_CORRECTED_ALTITUDE_{side}
     - Arinc429Word<Feet>
     - The baro corrected altitude in feet.
-    - TODO currently returns pressure altitude when STD mode is selected
     - {side}
         - 1: Captain
         - 2: First Officer
