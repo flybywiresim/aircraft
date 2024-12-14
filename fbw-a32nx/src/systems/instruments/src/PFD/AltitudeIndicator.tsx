@@ -705,11 +705,11 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private flightPhase = 0;
 
-  private stdGroup = FSComponent.createRef<SVGGElement>();
+  private stdVisible = Subject.create(false);
 
-  private altimeterGroup = FSComponent.createRef<SVGGElement>();
+  private altiSettingVisible = Subject.create(false);
 
-  private qfeBorder = FSComponent.createRef<SVGGElement>();
+  private qfeBorderHidden = Subject.create(true);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -810,20 +810,15 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private getText() {
     if (this.baroInStd) {
       this.mode.set('STD');
-      this.stdGroup.instance.classList.remove('HiddenElement');
-      this.altimeterGroup.instance.classList.add('HiddenElement');
-      this.qfeBorder.instance.classList.add('HiddenElement');
     } else if (this.baroInQnh) {
       this.mode.set('QNH');
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.altimeterGroup.instance.classList.remove('HiddenElement');
-      this.qfeBorder.instance.classList.add('HiddenElement');
     } else {
       this.mode.set('QFE');
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.altimeterGroup.instance.classList.remove('HiddenElement');
-      this.qfeBorder.instance.classList.remove('HiddenElement');
     }
+
+    this.stdVisible.set(this.baroInStd);
+    this.altiSettingVisible.set(!this.baroInStd);
+    this.qfeBorderHidden.set(this.baroInStd || this.baroInQnh);
 
     if (!this.baroInInhg) {
       this.text.set(Math.round(this.baroHpa.value).toString());
@@ -834,18 +829,34 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   render(): VNode {
     return (
-      <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
-        <g>
-          <g ref={this.stdGroup} id="STDAltimeterModeGroup">
+      <>
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.stdVisible}
+        >
+          <g id="STDAltimeterModeGroup">
             <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
             <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
               STD
             </text>
           </g>
-          <g ref={this.altimeterGroup} id="AltimeterGroup">
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.altiSettingVisible}
+        >
+          <g id="AltimeterGroup">
             <path
-              ref={this.qfeBorder}
-              class="NormalStroke White"
+              class={{
+                NormalStroke: true,
+                White: true,
+                HiddenElement: this.qfeBorderHidden,
+              }}
               d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
             />
             <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">
@@ -855,8 +866,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
               {this.text}
             </text>
           </g>
-        </g>
-      </FlashOneHertz>
+        </FlashOneHertz>
+      </>
     );
   }
 }
