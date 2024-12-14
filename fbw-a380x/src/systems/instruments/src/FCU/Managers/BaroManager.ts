@@ -1,7 +1,16 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Instrument, MathUtils, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
+import {
+  DebounceTimer,
+  EventBus,
+  Instrument,
+  MappedSubject,
+  MathUtils,
+  SimVarValueType,
+  Subject,
+  UnitType,
+} from '@microsoft/msfs-sdk';
 
 export enum BaroMode {
   Std,
@@ -20,7 +29,7 @@ interface BaroBaseEvents {
   baro_mode: BaroMode;
   baro_unit: BaroUnit;
   baro_correction: number;
-  baro_preselect_changed: unknown;
+  baro_preselect_visible: boolean;
 }
 
 export type BaroEvents = {
@@ -32,6 +41,7 @@ export class BaroManager implements Instrument {
   private static readonly MAX_CORRECTION_HG = 32.48;
   private static readonly MIN_CORRECTION_HPA = 745;
   private static readonly MIN_CORRECTION_HG = 22.0;
+  private static readonly PRESEL_TIME = 4_000;
 
   private readonly publisher = this.bus.getPublisher<BaroEvents>();
 
@@ -46,12 +56,21 @@ export class BaroManager implements Instrument {
   private readonly modeEventKey: keyof BaroEvents = `baro_mode_${this.index}`;
   private readonly unitEventKey: keyof BaroEvents = `baro_unit_${this.index}`;
   private readonly correctionEventKey: keyof BaroEvents = `baro_correction_${this.index}`;
-  private readonly preselectChangedEventKey: keyof BaroEvents = `baro_preselect_changed_${this.index}`;
+  private readonly preselectVisibleEventKey: keyof BaroEvents = `baro_preselect_visible_${this.index}`;
 
   private readonly unitSelectorVarId = SimVar.GetRegisteredId(
     `L:XMLVAR_Baro_Selector_HPA_1`, // FIXME split
     SimVarValueType.Bool,
     'FCU',
+  );
+
+  private readonly preselectLocalVarName = `L:A380X_EFIS_${this.index === 2 ? 'R' : 'L'}_BARO_PRESELECTED`;
+  private readonly preSelectVisibileTimer = new DebounceTimer();
+  private readonly isPreSelectVisible = Subject.create(false);
+  private readonly preselectLocalVarValue = MappedSubject.create(
+    ([isVisible, correction]) => (isVisible ? correction : 0),
+    this.isPreSelectVisible,
+    this.correction,
   );
 
   constructor(
@@ -63,6 +82,16 @@ export class BaroManager implements Instrument {
     this.mode.sub(this.onBaroModeChanged.bind(this), true);
     this.unit.sub(this.onBaroUnitChanged.bind(this), true);
     this.correction.sub(this.onBaroCorrectionChanged.bind(this), true);
+
+    this.mode.sub((v) => v !== BaroMode.Std && this.isPreSelectVisible.set(false));
+    this.isPreSelectVisible.sub((v) => {
+      this.publisher.pub(this.preselectVisibleEventKey, v);
+    }, true);
+
+    this.preselectLocalVarValue.sub(
+      (v) => SimVar.SetSimVarValue(this.preselectLocalVarName, SimVarValueType.Number, v),
+      true,
+    );
   }
 
   public onUpdate(): void {
@@ -100,6 +129,11 @@ export class BaroManager implements Instrument {
     } else {
       this.correction.set(MathUtils.round(correction, unit === BaroUnit.Hg ? 0.01 : 1));
     }
+
+    if (this.mode.get() === BaroMode.Std) {
+      this.isPreSelectVisible.set(true);
+      this.preSelectVisibileTimer.schedule(() => this.isPreSelectVisible.set(false), BaroManager.PRESEL_TIME);
+    }
   }
 
   private incrementCorrection(direction: 1 | -1): void {
@@ -115,7 +149,8 @@ export class BaroManager implements Instrument {
       ),
     );
     if (mode === BaroMode.Std) {
-      this.publisher.pub(this.preselectChangedEventKey, null);
+      this.isPreSelectVisible.set(true);
+      this.preSelectVisibileTimer.schedule(() => this.isPreSelectVisible.set(false), BaroManager.PRESEL_TIME);
     }
   }
 

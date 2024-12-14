@@ -1,16 +1,7 @@
 //  Copyright (c) 2023-2024 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import {
-  ConsumerSubject,
-  DebounceTimer,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPublisher';
 import { BaroEvents, BaroMode } from '../Managers/BaroManager';
 
@@ -19,8 +10,6 @@ export interface BaroProps {
 }
 
 export class Baro extends DisplayComponent<BaroProps> {
-  private static readonly PRESEL_TIME = 4_000;
-
   private readonly sub = this.props.bus.getSubscriber<BaroEvents & OverheadEvents>();
 
   private readonly mode = ConsumerSubject.create(this.sub.on('baro_mode_1'), BaroMode.Qnh);
@@ -35,8 +24,7 @@ export class Baro extends DisplayComponent<BaroProps> {
     this.isLightTestActive,
   );
 
-  private readonly isPreSelVisible = Subject.create(false);
-  private readonly preSelVisibileTimer = new DebounceTimer();
+  private readonly isPreSelVisible = ConsumerSubject.create(this.sub.on('baro_preselect_visible_1'), false);
 
   private readonly baroText = MappedSubject.create(
     ([mode, correction, isLightTest]) => {
@@ -76,14 +64,6 @@ export class Baro extends DisplayComponent<BaroProps> {
     this.isLightTestActive,
     this.mode,
   );
-
-  onAfterRender(_node: VNode): void {
-    this.sub.on('baro_preselect_changed_1').handle(() => {
-      this.isPreSelVisible.set(true);
-      this.preSelVisibileTimer.schedule(() => this.isPreSelVisible.set(false), Baro.PRESEL_TIME);
-    });
-    this.mode.sub((v) => v !== BaroMode.Std && this.isPreSelVisible.set(false));
-  }
 
   render(): VNode | null {
     return (

@@ -964,7 +964,8 @@
 
 - A380X_EFIS_{side}_BARO_PRESELECTED
     - Number (hPa or inHg)
-    - Pre-selected QNH when in STD mode
+    - Pre-selected QNH when in STD mode, or 0 when not displayed.
+    - Not for FBW systems use!
     - {side} = L or R
 
 ## Bleed Air ATA 36
