@@ -14,6 +14,7 @@ import {
   NXDataStore,
   LocalSimVar,
   Arinc429Register,
+  AirDataSwitchingKnob,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
@@ -215,11 +216,7 @@ export class LegacyTcasComputer implements Instrument {
 
   private ppos: LatLongData; // Plane PPOS
 
-  private baroCorrectedAltitude1: Arinc429Word | null; // ADR1/2 Altitude
-
-  private adr3BaroCorrectedAltitude1: Arinc429Word | null; // ADR3 Altitude
-
-  private pressureAlt: number | null; // Pressure Altitude
+  private pressureAlt: Arinc429Word | null; // Pressure Altitude
 
   private planeAlt: number | null; // Plane Altitude
 
@@ -318,15 +315,23 @@ export class LegacyTcasComputer implements Instrument {
     this.verticalSpeed = SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per minute');
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
 
     this.tcasPower =
       SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'boolean') ||
       SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'boolean');
     this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_SYSTEM', 'number');
     this.xpdrStatus = SimVar.GetSimVarValue(`TRANSPONDER STATE:${this.activeXpdr + 1}`, 'number');
-    // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
-    this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
-    this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+
+    const alternateAirDataSourceSelect =
+      SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum') ===
+      (this.activeXpdr === 0 ? AirDataSwitchingKnob.Capt : AirDataSwitchingKnob.Fo);
+    this.pressureAlt = Arinc429Word.fromSimVarValue(
+      alternateAirDataSourceSelect
+        ? `L:A32NX_ADIRS_ADR_3_ALTITUDE`
+        : `L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`,
+    );
+
     const radioAlt1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioAlt2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
     this.radioAlt =
@@ -335,12 +340,8 @@ export class LegacyTcasComputer implements Instrument {
         ? radioAlt2
         : radioAlt1;
 
-    this.baroCorrectedAltitude1 = Arinc429Word.fromSimVarValue(
-      `L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_BARO_CORRECTED_ALTITUDE_1`,
-    );
     const irSwitchingKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
     const irToUse = irSwitchingKnob === 1 ? this.activeXpdr + 1 : 3;
-    this.adr3BaroCorrectedAltitude1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_BARO_CORRECTED_ALTITUDE_1');
     this.irTrueheading.setFromSimVar(`L:A32NX_ADIRS_IR_${irToUse}_TRUE_HEADING`);
     this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
     this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
@@ -381,7 +382,7 @@ export class LegacyTcasComputer implements Instrument {
       this.inhibitions = Inhibit.ALL_DESC_RA;
     } else if (!this.radioAlt.isNoComputedData() && this.radioAlt.value < 1550) {
       this.inhibitions = Inhibit.ALL_INCR_DESC_RA;
-    } else if (this.pressureAlt > 39000) {
+    } else if (this.pressureAlt.value > 39000) {
       this.inhibitions = Inhibit.ALL_CLIMB_RA;
     } else {
       this.inhibitions = Inhibit.NONE;
@@ -397,12 +398,9 @@ export class LegacyTcasComputer implements Instrument {
       !this.irTrueheading ||
       !this.irTrueheading.isNormalOperation() ||
       this.irTrueheading.isNoComputedData() ||
-      !this.baroCorrectedAltitude1 ||
-      !this.adr3BaroCorrectedAltitude1 ||
-      !this.baroCorrectedAltitude1.isNormalOperation() ||
-      !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
+      !this.pressureAlt ||
+      (!this.pressureAlt.isNormalOperation() && !this.pressureAlt.isFunctionalTest()) ||
       this.radioAlt.isFailureWarning() ||
-      this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
       !this.tcasPower
     ) {
       this.resetDisplay();
@@ -448,13 +446,25 @@ export class LegacyTcasComputer implements Instrument {
         this.radioAlt.value <= TCAS.SENSE[3][Limits.MAX]
       ) {
         this.sensitivity.setVar(3);
-      } else if (this.pressureAlt > TCAS.SENSE[4][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[4][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[4][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[4][Limits.MAX]
+      ) {
         this.sensitivity.setVar(4);
-      } else if (this.pressureAlt > TCAS.SENSE[5][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[5][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[5][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[5][Limits.MAX]
+      ) {
         this.sensitivity.setVar(5);
-      } else if (this.pressureAlt > TCAS.SENSE[6][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[6][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[6][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[6][Limits.MAX]
+      ) {
         this.sensitivity.setVar(6);
-      } else if (this.pressureAlt > TCAS.SENSE[7][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[7][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[7][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[7][Limits.MAX]
+      ) {
         this.sensitivity.setVar(7);
       } else {
         this.sensitivity.setVar(8);
@@ -510,7 +520,7 @@ export class LegacyTcasComputer implements Instrument {
             traffic.alt,
             this.ppos.lat,
             this.ppos.long,
-            this.pressureAlt,
+            this.planeAlt,
           );
           const newClosureRate = ((traffic.slantDistance - newSlantDist) / (_deltaTime / 1000)) * 3600; // knots = nautical miles per hour
           traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
