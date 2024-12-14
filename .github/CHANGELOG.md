@@ -90,6 +90,7 @@
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
+1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 
 ## 0.12.0
 

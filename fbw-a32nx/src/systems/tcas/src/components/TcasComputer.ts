@@ -489,7 +489,7 @@ export class TcasComputer implements TcasComponent {
             traffic.alt,
             this.ppos.lat,
             this.ppos.long,
-            this.pressureAlt.value,
+            this.planeAlt,
           );
           const newClosureRate = ((traffic.slantDistance - newSlantDist) / (_deltaTime / 1000)) * 3600; // knots = nautical miles per hour
           traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
