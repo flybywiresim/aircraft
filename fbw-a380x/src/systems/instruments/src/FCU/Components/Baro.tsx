@@ -12,7 +12,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPublisher';
-import { BaroEvents } from '../Managers/BaroManager';
+import { BaroEvents, BaroMode } from '../Managers/BaroManager';
 
 export interface BaroProps {
   readonly bus: EventBus;
@@ -23,20 +23,14 @@ export class Baro extends DisplayComponent<BaroProps> {
 
   private readonly sub = this.props.bus.getSubscriber<BaroEvents & OverheadEvents>();
 
-  private readonly mode = ConsumerSubject.create(this.sub.on('baro_mode_1'), 'STD');
+  private readonly mode = ConsumerSubject.create(this.sub.on('baro_mode_1'), BaroMode.Qnh);
 
   private readonly correction = ConsumerSubject.create(this.sub.on('baro_correction_1'), 1013);
 
   private readonly isLightTestActive = ConsumerSubject.create(this.sub.on('ovhd_ann_lt_test_active'), false);
 
   private readonly isQnhLabelVisible = MappedSubject.create(
-    ([mode, isLightTest]) => isLightTest || mode === 'QNH',
-    this.mode,
-    this.isLightTestActive,
-  );
-
-  private readonly isQfeLabelVisible = MappedSubject.create(
-    ([mode, isLightTest]) => isLightTest || mode === 'QFE',
+    ([mode, isLightTest]) => isLightTest || mode === BaroMode.Qnh,
     this.mode,
     this.isLightTestActive,
   );
@@ -50,10 +44,10 @@ export class Baro extends DisplayComponent<BaroProps> {
         return '8.8.8.8';
       }
       switch (mode) {
-        case 'STD':
+        case BaroMode.Std:
           return 'Std';
-        case 'QNH':
-        case 'QFE':
+        case BaroMode.Qnh:
+        case BaroMode.Qfe:
           if (correction < 100) {
             return correction.toFixed(2);
           }
@@ -69,7 +63,7 @@ export class Baro extends DisplayComponent<BaroProps> {
     ([correction, isVisible, isLightTest, mode]) => {
       if (isLightTest) {
         return '8p88'; // p is used as a standin character for the Q test character
-      } else if (mode === 'QFE') {
+      } else if (mode === BaroMode.Qfe) {
         return 'qfe';
       } else if (isVisible) {
         return correction < 100 ? correction.toFixed(2) : correction.toFixed(0).padStart(4, '0');
@@ -88,7 +82,7 @@ export class Baro extends DisplayComponent<BaroProps> {
       this.isPreSelVisible.set(true);
       this.preSelVisibileTimer.schedule(() => this.isPreSelVisible.set(false), Baro.PRESEL_TIME);
     });
-    this.mode.sub((v) => v !== 'STD' && this.isPreSelVisible.set(false));
+    this.mode.sub((v) => v !== BaroMode.Std && this.isPreSelVisible.set(false));
   }
 
   render(): VNode | null {
