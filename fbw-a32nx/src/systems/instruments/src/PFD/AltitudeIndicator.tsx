@@ -707,7 +707,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private stdGroup = FSComponent.createRef<SVGGElement>();
 
-  private qfeGroup = FSComponent.createRef<SVGGElement>();
+  private altimeterGroup = FSComponent.createRef<SVGGElement>();
 
   private qfeBorder = FSComponent.createRef<SVGGElement>();
 
@@ -811,17 +811,17 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     if (this.baroInStd) {
       this.mode.set('STD');
       this.stdGroup.instance.classList.remove('HiddenElement');
-      this.qfeGroup.instance.classList.add('HiddenElement');
+      this.altimeterGroup.instance.classList.add('HiddenElement');
       this.qfeBorder.instance.classList.add('HiddenElement');
     } else if (this.baroInQnh) {
       this.mode.set('QNH');
       this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.remove('HiddenElement');
+      this.altimeterGroup.instance.classList.remove('HiddenElement');
       this.qfeBorder.instance.classList.add('HiddenElement');
     } else {
       this.mode.set('QFE');
       this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.remove('HiddenElement');
+      this.altimeterGroup.instance.classList.remove('HiddenElement');
       this.qfeBorder.instance.classList.remove('HiddenElement');
     }
 
@@ -835,14 +835,14 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   render(): VNode {
     return (
       <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
-        <g ref={this.stdGroup} id="STDAltimeterModeGroup">
-          <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
-          <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
-            STD
-          </text>
-        </g>
-        <g id="AltimeterGroup">
-          <g ref={this.qfeGroup} id="QFEGroup">
+        <g>
+          <g ref={this.stdGroup} id="STDAltimeterModeGroup">
+            <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
+            <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
+              STD
+            </text>
+          </g>
+          <g ref={this.altimeterGroup} id="AltimeterGroup">
             <path
               ref={this.qfeBorder}
               class="NormalStroke White"
