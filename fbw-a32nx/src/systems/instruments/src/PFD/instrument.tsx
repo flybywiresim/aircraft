@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,6 +14,7 @@ import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
+import { PseudoDmc } from './PseudoDmc';
 
 import './style.scss';
 
@@ -48,6 +49,8 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly fwcPublisher = new FwcPublisher(this.bus);
 
+  private readonly pseudoDmc = new PseudoDmc(this.bus, this);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -68,6 +71,7 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('Dmc', this.dmcPublisher);
     this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
     this.backplane.addPublisher('Fwc', this.fwcPublisher);
+    this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
   }
 
   get templateID(): string {
