@@ -126,6 +126,12 @@ export class Arinc429Register implements Arinc429WordData {
 
   setValue(value: typeof this.value): void {
     this.value = value;
+    this.updateRawWord();
+  }
+
+  private updateRawWord(): void {
+    this.f32View[0] = this.value;
+    this.rawWord = this.u32View[0] + Math.trunc(this.ssm) * 2 ** 32;
   }
 
   setBitValue(bit: number, value: boolean): void {
@@ -134,10 +140,12 @@ export class Arinc429Register implements Arinc429WordData {
     } else {
       this.value &= ~(1 << (bit - 1));
     }
+    this.updateRawWord();
   }
 
   setSsm(ssm: typeof this.ssm): void {
     this.ssm = ssm;
+    this.updateRawWord();
   }
 
   setFromSimVar(name: string): Arinc429Register {
