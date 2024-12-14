@@ -2,13 +2,22 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import {
   ArincEventBus,
   Arinc429Register,
   Arinc429Word,
   Arinc429WordData,
   Arinc429RegisterSubject,
+  Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
@@ -17,6 +26,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { A32NXFwcBusEvents } from '@shared/publishers/A32NXFwcBusPublisher';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -206,7 +216,6 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       .on('altitudeAr')
       .withArinc429Precision(0)
       .handle((a) => {
-        // TODO filtered alt
         this.altitude = a.value;
         this.updateIndication();
       });
@@ -292,6 +301,22 @@ enum TargetAltitudeColor {
 }
 
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps> {
+  private readonly sub = this.props.bus.getSubscriber<A32NXFwcBusEvents>();
+
+  private readonly fwc1DiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fwc_discrete_word_124_1'),
+  );
+  private readonly fwc2DiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fwc_discrete_word_124_2'),
+  );
+
+  private isCheckAltHidden = MappedSubject.create(
+    ([fwc1Word, fwc2Word]) =>
+      !(fwc1Word.bitValue(24) || fwc1Word.bitValue(25) || fwc2Word.bitValue(24) || fwc2Word.bitValue(25)),
+    this.fwc1DiscreteWord,
+    this.fwc2DiscreteWord,
+  );
+
   private abnormal = FSComponent.createRef<SVGGElement>();
 
   private tcasFailed = FSComponent.createRef<SVGGElement>();
@@ -394,6 +419,40 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
           </text>
           <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="115">
             S
+          </text>
+        </g>
+        <g
+          id="CheckAltWarning"
+          class={{
+            HiddenElement: this.isCheckAltHidden,
+            Blink9Seconds: true,
+            FontSmall: true,
+            MiddleAlign: true,
+          }}
+        >
+          <text class="Amber" x="133.7" y="43.6">
+            C
+          </text>
+          <text class="Amber" x="133.7" y="47.85">
+            H
+          </text>
+          <text class="Amber" x="133.7" y="52.1">
+            E
+          </text>
+          <text class="Amber" x="133.7" y="56.35">
+            C
+          </text>
+          <text class="Amber" x="133.7" y="60.6">
+            K
+          </text>
+          <text class="Amber" x="137.8" y="64.3">
+            A
+          </text>
+          <text class="Amber" x="137.8" y="68.55">
+            L
+          </text>
+          <text class="Amber" x="137.8" y="72.8">
+            T
           </text>
         </g>
         <g ref={this.normal} style="display: none">

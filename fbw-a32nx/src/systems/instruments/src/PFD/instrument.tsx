@@ -14,6 +14,9 @@ import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
+import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
+import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
+import { A32NXFwcBusPublisher } from '@shared/publishers/A32NXFwcBusPublisher';
 import { PseudoDmc } from './PseudoDmc';
 
 import './style.scss';
@@ -49,6 +52,10 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly fwcPublisher = new FwcPublisher(this.bus);
 
+  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly fwcBusPublisher = new A32NXFwcBusPublisher(this.bus);
+  private readonly elecSystemPublisher = new A32NXElectricalSystemPublisher(this.bus);
+
   private readonly pseudoDmc = new PseudoDmc(this.bus, this);
 
   /**
@@ -71,6 +78,9 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('Dmc', this.dmcPublisher);
     this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
     this.backplane.addPublisher('Fwc', this.fwcPublisher);
+    this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
+    this.backplane.addPublisher('ElectricalSystem', this.elecSystemPublisher);
+    this.backplane.addPublisher('FwcBus', this.fwcBusPublisher);
     this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
   }
 
