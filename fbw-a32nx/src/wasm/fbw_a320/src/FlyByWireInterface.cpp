@@ -124,6 +124,58 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   result &= updateFcu(calculatedSampleTime);
 
+  if (idSyncFoEfisEnabled->get()) {
+    const auto& fcuBusOutput = fcu.getBusOutputs();
+    bool isLeftStd = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_left, 28, false);
+    bool isRightStd = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_right, 28, false);
+    bool isLeftQnh = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_left, 29, false);
+    bool isRightQnh = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_right, 29, false);
+
+    if (simConnectInterface.wasLastBaroInputRightSide()) {
+      if (idFcuEisPanelBaroIsInhg[1]->get()) {
+        if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
+          const DWORD kohlsman = fcuBusOutput.baro_setting_right_inhg.Data * 541.822186666672;
+          simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+          std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_inhg.Data << std::endl;
+        }
+      } else if (fcuBusOutput.baro_setting_left_hpa.Data != fcuBusOutput.baro_setting_right_hpa.Data) {
+        const DWORD kohlsman = fcuBusOutput.baro_setting_right_hpa.Data * 16.;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_hpa.Data << std::endl;
+      }
+
+      // FIXME need to handle QFE and we won't be able to do it this way
+      if (!isLeftStd && isRightStd) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
+        std::cout << "FBWInterface: Syncing left baro to STD" << std::endl;
+      } else if (!isLeftQnh && isRightQnh) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
+        std::cout << "FBWInterface: Syncing left baro to QNH" << std::endl;
+      }
+    } else {
+      if (idFcuEisPanelBaroIsInhg[1]->get()) {
+        if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
+          const DWORD kohlsman = fcuBusOutput.baro_setting_left_inhg.Data * 541.822186666672;
+          simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+          std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_inhg.Data << std::endl;
+        }
+      } else if (fcuBusOutput.baro_setting_left_hpa.Data != fcuBusOutput.baro_setting_right_hpa.Data) {
+        const DWORD kohlsman = fcuBusOutput.baro_setting_left_hpa.Data * 16.;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_hpa.Data << std::endl;
+      }
+
+      // FIXME need to handle QFE and we won't be able to do it this way
+      if (isLeftStd && !isRightStd) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
+        std::cout << "FBWInterface: Syncing right baro to STD" << std::endl;
+      } else if (isLeftQnh && !isRightQnh) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
+        std::cout << "FBWInterface: Syncing right baro to QNH" << std::endl;
+      }
+    }
+  }
+
   result &= updateFcuShim();
 
   for (int i = 0; i < 2; i++) {
@@ -2355,6 +2407,8 @@ bool FlyByWireInterface::updateFcuShim() {
   }
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_left_hpa, 1013) * 16, 1);
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_right_hpa, 1013) * 16, 2);
   SimOutputAltimeter altiOutput = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
   simConnectInterface.sendData(altiOutput, false);
   idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true),
@@ -2726,7 +2780,7 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
 
   // determine if change is needed
-  if (simData.kohlsmanSettingStd_3 == 0) {
+  if (simData.kohlsmanSettingStd_4 == 0) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }

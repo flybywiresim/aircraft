@@ -2065,84 +2065,94 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    // TODO Unsync EFIS baro
     case Events::KOHLSMANN_INC: {
-      if (data1 == 0 || data1 == 1) {
-        fcuEfisPanelInputs[0].baro_knob.turns = 1;
-        fcuEfisPanelInputs[1].baro_knob.turns = 1;
-      }
-      if (data1 != 1) {
+      // Match the MSFS behaviour here; 0 only sets altimeter 1
+      const DWORD altimeterIndex = data0 == 0 ? 1 : data0;
+      if (altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_INC, 0, 0);
+      } else if (altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_INC, 0, 0);
+      } else {
         sendEventEx1(KOHLSMANN_INC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_INC, index " << data1 << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMANN_INC, index " << altimeterIndex << std::endl;
       break;
     }
     case Events::A32NX_FCU_EFIS_L_BARO_INC: {
-      fcuEfisPanelInputs[0].baro_knob.turns = 1;
-      fcuEfisPanelInputs[1].baro_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_INC" << std::endl;
+      fcuEfisPanelInputs[0].baro_knob.turns = 1;
+      lastBaroInputWasRightSide = false;
       break;
     }
 
     case Events::KOHLSMANN_DEC: {
-      if (data1 == 0 || data1 == 1) {
-        fcuEfisPanelInputs[0].baro_knob.turns = -1;
-        fcuEfisPanelInputs[1].baro_knob.turns = -1;
-      }
-      if (data1 != 1) {
+      // Match the MSFS behaviour here; 0 only sets altimeter 1
+      const DWORD altimeterIndex = data0 == 0 ? 1 : data0;
+      if (altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_DEC, 0, 0);
+      } else if (altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_DEC, 0, 0);
+      } else {
         sendEventEx1(KOHLSMANN_DEC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_DEC, index " << data1 << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMANN_DEC, index " << altimeterIndex << std::endl;
       break;
     }
     case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
-      fcuEfisPanelInputs[0].baro_knob.turns = -1;
-      fcuEfisPanelInputs[1].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_DEC" << std::endl;
+      fcuEfisPanelInputs[0].baro_knob.turns = -1;
+      lastBaroInputWasRightSide = false;
       break;
     }
 
     case Events::KOHLSMANN_SET: {
-      if (data1 == 0 || data1 == 1) {
-        simInputAutopilot.baro_left_set = data0 / 16.;
-        simInputAutopilot.baro_right_set = data0 / 16.;
+      const DWORD kohlsmanValue = data0;
+      const DWORD altimeterIndex = data1;
+      if (altimeterIndex == 0 || altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_SET, kohlsmanValue, 0);
       }
-      if (data1 != 1) {
+      if (altimeterIndex == 0 || altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_SET, kohlsmanValue, 0);
+      }
+      if (altimeterIndex != 1 && altimeterIndex != 2) {
         sendEventEx1(KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_SET, index " << data1 << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMANN_SET, index " << altimeterIndex << "value" << kohlsmanValue << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_SET: {
       simInputAutopilot.baro_left_set = static_cast<long>(data0) / 16.;
-      simInputAutopilot.baro_right_set = static_cast<long>(data0) / 16.;
+      lastBaroInputWasRightSide = false;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::BAROMETRIC_STD_PRESSURE: {
-      if (data0 == 0 || data0 == 1) {
-        simInputAutopilot.baro_left_set = 1013;
-        simInputAutopilot.baro_right_set = 1013;
+      const DWORD altimeterIndex = data0;
+      if (altimeterIndex == 0 || altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_PULL, 0, 0);
       }
-      if (data0 != 1) {
+      if (altimeterIndex == 0 || altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_PULL, 0, 0);
+      }
+      if (altimeterIndex != 1 && altimeterIndex != 2) {
         sendEvent(BAROMETRIC_STD_PRESSURE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       }
-      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE, index " << data0 << std::endl;
+      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE, index " << altimeterIndex << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_PUSH: {
       fcuEfisPanelInputs[0].baro_knob.pushed = true;
-      fcuEfisPanelInputs[1].baro_knob.pushed = true;
+      lastBaroInputWasRightSide = false;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_PULL: {
       fcuEfisPanelInputs[0].baro_knob.pulled = true;
-      fcuEfisPanelInputs[1].baro_knob.pulled = true;
+      lastBaroInputWasRightSide = false;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PULL" << std::endl;
       break;
     }
@@ -2195,38 +2205,37 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    // TODO Unsync EFIS baro
     case Events::A32NX_FCU_EFIS_R_BARO_INC: {
-      fcuEfisPanelInputs[1].baro_knob.turns = 1;
-      fcuEfisPanelInputs[0].baro_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_INC" << std::endl;
+      fcuEfisPanelInputs[1].baro_knob.turns = 1;
+      lastBaroInputWasRightSide = true;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_DEC: {
-      fcuEfisPanelInputs[1].baro_knob.turns = -1;
-      fcuEfisPanelInputs[0].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_DEC" << std::endl;
+      fcuEfisPanelInputs[1].baro_knob.turns = -1;
+      lastBaroInputWasRightSide = true;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_SET: {
-      simInputAutopilot.baro_left_set = static_cast<long>(data0) / 16.;
       simInputAutopilot.baro_right_set = static_cast<long>(data0) / 16.;
+      lastBaroInputWasRightSide = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_PUSH: {
       fcuEfisPanelInputs[1].baro_knob.pushed = true;
-      fcuEfisPanelInputs[0].baro_knob.pushed = true;
+      lastBaroInputWasRightSide = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_PULL: {
       fcuEfisPanelInputs[1].baro_knob.pulled = true;
-      fcuEfisPanelInputs[0].baro_knob.pulled = true;
+      lastBaroInputWasRightSide = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PULL" << std::endl;
       break;
     }

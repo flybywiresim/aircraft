@@ -351,6 +351,8 @@ class SimConnectInterface {
   bool isSimInActivePause();
   bool isSimInPause();
 
+  bool wasLastBaroInputRightSide() const { return lastBaroInputWasRightSide; }
+
  private:
   enum ClientData {
     ELAC_DISCRETE_INPUTS,
@@ -471,6 +473,8 @@ class SimConnectInterface {
   double rudderRightAxis = -1;
 
   std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
+  bool lastBaroInputWasRightSide = false;
 
   bool prepareSimDataSimConnectDataDefinitions();
 
