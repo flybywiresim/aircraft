@@ -2129,7 +2129,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
 export const EcamDeferredProcAta212223: { [n: number]: DeferredProcedure } = {
   221700001: {
     fromAbnormalProc: '221800006',
-    title: '\x1b<4mLDG ELEVN',
+    title: '\x1b<4m> LDG ELEVN',
     type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [
       {

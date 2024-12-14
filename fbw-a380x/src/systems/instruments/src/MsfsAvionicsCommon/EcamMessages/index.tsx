@@ -612,6 +612,10 @@ export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCo
   return (c as ChecklistCondition).condition !== undefined;
 }
 
+export function isAbnormalSensedProcedure(c: AbnormalProcedure | DeferredProcedure): c is AbnormalProcedure {
+  return (c as AbnormalProcedure).recommendation !== undefined;
+}
+
 export interface AbnormalProcedure {
   /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
   title: string;

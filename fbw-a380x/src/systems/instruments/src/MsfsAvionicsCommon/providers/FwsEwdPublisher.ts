@@ -4,6 +4,8 @@
 
 export interface FwsEwdAbnormalSensedEntry {
   id: string;
+  procedureCompleted?: boolean;
+  procedureActivated?: boolean;
   itemsToShow: boolean[];
   itemsChecked: boolean[];
   itemsActive: boolean[];
@@ -12,14 +14,8 @@ export interface FwsEwdAbnormalSensedEntry {
 export interface NormalChecklistState {
   id: number;
   checklistCompleted: boolean;
-  itemsCompleted: boolean[];
-}
-
-export interface DeferredProcedureState {
-  id: string;
-  checklistCompleted: boolean;
-  itemsToShow: boolean[];
   itemsChecked: boolean[];
+  itemsToShow: boolean[];
   itemsActive: boolean[];
 }
 
@@ -41,7 +37,7 @@ export interface FwsEwdEvents {
 
   /** (FWS -> EWD) Show normal procedures / ECL */
   fws_show_normal_checklists: boolean;
-  /** (FWS -> EWD) List of all normal checklists, including checked state */
+  /** (FWS -> EWD) List of all normal checklists including deferred procedures */
   fws_normal_checklists: NormalChecklistState[];
   /** (FWS -> EWD) Which checklist to display */
   fws_normal_checklists_id: number;
@@ -50,8 +46,11 @@ export interface FwsEwdEvents {
   fws_show_abn_sensed: boolean;
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
   fws_abn_sensed_procedures: FwsEwdAbnormalSensedEntry[];
+
+  /** (FWS -> EWD) All deferred procedures to be displayed */
+  fws_deferred_procedures: FwsEwdAbnormalSensedEntry[];
   /** (FWS -> EWD) List of deferred procedures to be displayed */
-  fws_deferred_procedures: DeferredProcedureState[];
+  fws_deferred_procedures_show_tod: boolean;
 
   /** (FWS -> EWD) Show abnormal non-sensed procedures selection menu */
   fws_show_abn_non_sensed: boolean;

@@ -16,11 +16,7 @@ import {
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
-import {
-  DeferredProcedureState,
-  FwsEwdAbnormalSensedEntry,
-  FwsEwdEvents,
-} from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FwsEwdAbnormalSensedEntry, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem {
@@ -102,28 +98,6 @@ export class FwsAbnormalSensed {
         );
         this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
         this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
-      },
-      true,
-    );
-
-    this.fws.activeDeferredProceduresList.sub(
-      (
-        map: ReadonlyMap<string, DeferredProcedureState>,
-        _type: SubscribableMapEventType,
-        _key: string,
-        _value: DeferredProcedureState,
-      ) => {
-        const flattened: DeferredProcedureState[] = [];
-        map.forEach((val, key) =>
-          flattened.push({
-            id: key,
-            checklistCompleted: val.checklistCompleted,
-            itemsChecked: val.itemsChecked,
-            itemsActive: val.itemsActive,
-            itemsToShow: val.itemsToShow,
-          }),
-        );
-        this.pub.pub('fws_deferred_procedures', flattened, true);
       },
       true,
     );
@@ -3599,8 +3573,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [],
       simVarIsActive: Subject.create(true),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.manCabinAltMode.get(), false],
       failure: 0,
       sysPage: SdPages.None,
     },

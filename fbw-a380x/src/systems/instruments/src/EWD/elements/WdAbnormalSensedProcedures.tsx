@@ -2,11 +2,15 @@ import { ConsumerSubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import {
   ChecklistLineStyle,
   EcamAbnormalSensedProcedures,
+  EcamDeferredProcedures,
+  isAbnormalSensedProcedure,
   isChecklistAction,
   isChecklistCondition,
+  WdLineData,
   WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
+import { FwsEwdAbnormalSensedEntry } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly procedures = ConsumerSubject.create(this.sub.on('fws_abn_sensed_procedures'), []);
@@ -14,24 +18,40 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   public updateChecklists() {
     this.lineData.length = 0;
 
-    this.procedures.get().forEach((procState, procIndex, array) => {
-      if (procState && EcamAbnormalSensedProcedures[procState.id]) {
-        const cl = EcamAbnormalSensedProcedures[procState.id];
+    WdAbnormalSensedProcedures.generateProcedureLineData(this.procedures.get(), this.lineData);
+    super.updateChecklists();
+  }
 
-        this.lineData.push({
+  public static generateProcedureLineData(
+    procedures: FwsEwdAbnormalSensedEntry[],
+    lineData: WdLineData[],
+    showOnlyFirst = true,
+    deferredProcedure = false,
+  ) {
+    procedures.forEach((procState, procIndex, array) => {
+      if (
+        procState &&
+        ((!deferredProcedure && EcamAbnormalSensedProcedures[procState.id]) ||
+          (deferredProcedure && EcamDeferredProcedures[procState.id]))
+      ) {
+        const cl = deferredProcedure
+          ? EcamDeferredProcedures[procState.id]
+          : EcamAbnormalSensedProcedures[procState.id];
+
+        lineData.push({
           abnormalProcedure: true,
-          activeProcedure: procIndex === 0,
+          activeProcedure: procIndex === 0 || deferredProcedure,
           sensed: true,
           checked: false,
           text: cl.title,
           style: ChecklistLineStyle.Headline,
-          firstLine: true,
+          firstLine: !deferredProcedure,
           lastLine: procIndex !== 0 ? true : false,
         });
 
-        if (procIndex === 0) {
-          if (cl.recommendation) {
-            this.lineData.push({
+        if (showOnlyFirst || procIndex === 0) {
+          if (isAbnormalSensedProcedure(cl) && cl.recommendation) {
+            lineData.push({
               abnormalProcedure: true,
               activeProcedure: procIndex === 0,
               sensed: true,
@@ -42,6 +62,21 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
               lastLine: false,
             });
           }
+
+          if (deferredProcedure) {
+            lineData.push({
+              abnormalProcedure: true,
+              activeProcedure: procIndex === 0 || deferredProcedure,
+              sensed: false,
+              checked: procState.procedureCompleted ?? false,
+              text: `${'\xa0'.repeat(31)}ACTIVATE`,
+              style: ChecklistLineStyle.ChecklistItem,
+              firstLine: procIndex !== 0 ? true : false,
+              lastLine: procIndex !== 0 ? true : false,
+              originalItemIndex: -1,
+            });
+          }
+
           // If first and most important procedure: Display in full
           cl.items.forEach((item, itemIndex) => {
             if (!procState.itemsToShow[itemIndex]) {
@@ -82,9 +117,9 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
               text += item.name;
             }
 
-            this.lineData.push({
+            lineData.push({
               abnormalProcedure: true,
-              activeProcedure: procIndex === 0,
+              activeProcedure: procIndex === 0 || deferredProcedure,
               sensed: isChecklistCondition(item) ? true : item.sensed,
               checked: procState.itemsChecked[itemIndex],
               text: text,
@@ -97,9 +132,9 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
             if (isChecklistCondition(item) && !item.sensed) {
               // Insert CONFIRM <condition>
               const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name}`;
-              this.lineData.push({
+              lineData.push({
                 abnormalProcedure: true,
-                activeProcedure: procIndex === 0,
+                activeProcedure: procIndex === 0 || deferredProcedure,
                 sensed: item.sensed,
                 checked: procState.itemsChecked[itemIndex],
                 text: confirmText,
@@ -111,7 +146,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
             }
           });
 
-          this.lineData.push({
+          lineData.push({
             abnormalProcedure: true,
             activeProcedure: true,
             sensed: false,
@@ -124,7 +159,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
           });
         } else {
           // Only three dots for following procedures
-          this.lineData.push({
+          lineData.push({
             abnormalProcedure: true,
             activeProcedure: false,
             sensed: true,
@@ -138,9 +173,9 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
         // Empty line after procedure
         if (procIndex < array.length - 1) {
-          this.lineData.push({
+          lineData.push({
             abnormalProcedure: true,
-            activeProcedure: procIndex === 0,
+            activeProcedure: procIndex === 0 || deferredProcedure,
             sensed: true,
             checked: false,
             text: '',
@@ -152,7 +187,6 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         }
       }
     });
-    super.updateChecklists();
   }
 
   public onAfterRender(node: VNode): void {

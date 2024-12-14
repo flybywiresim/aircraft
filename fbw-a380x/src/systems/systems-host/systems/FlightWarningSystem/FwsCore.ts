@@ -46,7 +46,6 @@ import {
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import {
-  DeferredProcedureState,
   FwsEwdAbnormalSensedEntry,
   FwsEwdEvents,
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -232,7 +231,7 @@ export class FwsCore {
   public readonly activeAbnormalProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   /** Map to hold all deferred procs which are currently active */
-  public readonly activeDeferredProceduresList = MapSubject.create<string, DeferredProcedureState>();
+  public readonly activeDeferredProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
 
   /** Indices of items which were updated */
   public readonly abnormalUpdatedItems = new Map<string, number[]>();
@@ -3910,15 +3909,18 @@ export class FwsCore {
               this.abnormalSensed.ewdDeferredProcs[deferredKey]
             ) {
               this.activeDeferredProceduresList.setValue(deferredKey, {
-                id: key,
-                checklistCompleted: false,
-                itemsActive: deferredValue.whichItemsActive(),
+                id: deferredKey,
+                procedureCompleted: false,
+
                 itemsChecked: deferredValue.whichItemsChecked
                   ? deferredValue.whichItemsChecked()
-                  : Array(deferredValue.whichItemsActive().length).fill(true),
+                  : Array(deferredValue.whichItemsChecked().length).fill(true),
+                itemsActive: deferredValue.whichItemsActive
+                  ? deferredValue.whichItemsActive()
+                  : Array(deferredValue.whichItemsChecked().length).fill(true),
                 itemsToShow: deferredValue.whichItemsToShow
                   ? deferredValue.whichItemsToShow()
-                  : Array(deferredValue.whichItemsActive().length).fill(true),
+                  : Array(deferredValue.whichItemsChecked().length).fill(true),
               });
             }
           }

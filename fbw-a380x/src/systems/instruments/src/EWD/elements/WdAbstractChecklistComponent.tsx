@@ -146,6 +146,10 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             ),
             Checked: this.props.data.map((d) => d.checked),
             ChecklistCompleted: this.props.data.map((d) => d.style === ChecklistLineStyle.CompletedChecklist),
+            DeferredProcedure: this.props.data.map((d) => d.style === ChecklistLineStyle.DeferredProcedure),
+            CompletedDeferredProcedure: this.props.data.map(
+              (d) => d.style === ChecklistLineStyle.CompletedDeferredProcedure,
+            ),
             ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
             Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),

@@ -129,7 +129,7 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
         style: ChecklistLineStyle.ChecklistItem,
         firstLine: false,
         lastLine: abn.items.length === 0 ? true : false,
-        originalItemIndex: 0,
+        originalItemIndex: -1,
       });
 
       abn.items.forEach((item, index) => {
