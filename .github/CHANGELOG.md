@@ -90,6 +90,12 @@
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWC] Add FCU faults - @tracernz (Mike)
+1. [ADR] Implement accurate altimetry computations - @tracernz (Mike)
+1. [A32NX] Split EIS baro corrections between captain and first officer side - @tracernz (Mike)
+1. [A32NX] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
+1. [A32NX/FWC] Add baro ref and altitude discrepancy warnings - @tracernz (Mike)
+1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
+1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 
 ## 0.12.0
 
