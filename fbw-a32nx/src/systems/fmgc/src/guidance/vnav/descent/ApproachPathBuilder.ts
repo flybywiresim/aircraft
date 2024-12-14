@@ -369,8 +369,6 @@ export class ApproachPathBuilder {
           reason: VerticalCheckpointReason.AltitudeConstraint,
           altitude: minimumAltitude,
         });
-        // Ensure TOO STEEP PATH marker is shown after the waypoint
-        sequence.checkpoints[sequence.length - 2].distanceFromStart += 1e-4;
 
         constraint.leg.calculated.endsInTooSteepPath = true;
 

@@ -82,7 +82,7 @@ export class TemporaryCheckpointSequence {
       return this.checkpoints[0].altitude;
     }
 
-    for (let i = 1; i < this.checkpoints.length - 1; i++) {
+    for (let i = 1; i < this.checkpoints.length; i++) {
       if (distanceFromStart >= this.checkpoints[i].distanceFromStart) {
         return Common.interpolate(
           distanceFromStart,
