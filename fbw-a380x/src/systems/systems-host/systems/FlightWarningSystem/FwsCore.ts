@@ -36,19 +36,14 @@ import { VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import {
-  AbnormalProcedure,
-  DeferredProcedure,
   EcamAbnormalProcedures,
   EcamDeferredProcedures,
   EcamMemos,
-  isChecklistCondition,
   pfdMemoDisplay,
-} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
-import {
-  FwsEwdAbnormalSensedEntry,
-  FwsEwdEvents,
-} from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
 import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
 import {
@@ -232,10 +227,10 @@ export class FwsCore {
   public readonly activeAbnormalNonSensedKeys: number[] = [];
 
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
+  public readonly activeAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
 
   /** Map to hold all deferred procs which are currently active */
-  public readonly activeDeferredProceduresList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
+  public readonly activeDeferredProceduresList = MapSubject.create<string, ChecklistState>();
 
   /** Indices of items which were updated */
   public readonly abnormalUpdatedItems = new Map<string, number[]>();
@@ -3867,7 +3862,7 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
-        FwsCore.conditionalActiveItems(proc, itemsChecked, itemsActive);
+        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -3941,7 +3936,7 @@ export class FwsCore {
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
-          FwsCore.conditionalActiveItems(proc, fusedChecked, itemsActive);
+          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
@@ -4009,13 +4004,13 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
-        FwsCore.conditionalActiveItems(proc, itemsChecked, itemsActive);
+        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         const prevEl = value;
         const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
           proc.items[index].sensed ? itemsChecked[index] : !!val,
         );
-        FwsCore.conditionalActiveItems(proc, fusedChecked, itemsActive);
+        ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
         this.deferredUpdatedItems.set(key, []);
         proc.items.forEach((item, idx) => {
           if (
@@ -4243,7 +4238,7 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_line', this.abnormalNonSensed.selectedItem.get(), true);
+      pub.pub('fws_active_item', this.abnormalNonSensed.selectedItem.get(), true);
       pub.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else if (this.normalChecklists.showChecklistRequested.get()) {
@@ -4252,7 +4247,7 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(true);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_line', this.normalChecklists.selectedLine.get(), true);
+      pub.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
       pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
     } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
@@ -4260,7 +4255,8 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(true);
 
-      pub.pub('fws_active_line', this.abnormalSensed.selectedItem.get(), true);
+      pub.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
+      pub.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
       pub.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else {
@@ -4285,30 +4281,6 @@ export class FwsCore {
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
-  }
-
-  static conditionalActiveItems(
-    proc: AbnormalProcedure | DeferredProcedure,
-    itemsChecked: boolean[],
-    itemsActive: boolean[],
-  ) {
-    // Additional logic for conditions: Modify itemsActive based on condition activation status
-    if (proc.items.some((v) => isChecklistCondition(v))) {
-      proc.items.forEach((v, i) => {
-        if (v.level) {
-          // Look for parent condition(s)
-          let active = true;
-          for (let recI = i; recI > 0; recI--) {
-            active =
-              (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
-                ? active && itemsChecked[recI]
-                : active;
-          }
-          itemsActive[i] = active;
-        }
-      });
-    }
-    return itemsActive;
   }
 
   updateRowRopWarnings() {

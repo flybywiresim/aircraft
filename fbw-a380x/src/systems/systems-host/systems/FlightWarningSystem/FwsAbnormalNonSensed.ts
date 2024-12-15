@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MapSubject, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
-import { NormalChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import {
   EcamAbnormalNonSensedProcedures,
@@ -28,7 +28,7 @@ export class FwsAbnormalNonSensed {
   /** For overflowing checklists */
   public readonly showFromLine = Subject.create(0);
 
-  public readonly checklistState = MapSubject.create<number, NormalChecklistState>();
+  public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
   constructor(private fws: FwsCore) {
     this.checklistId.sub((id) => this.pub.pub('fws_abn_non_sensed_id', id, true), true);

@@ -597,12 +597,12 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
-interface ChecklistCondition extends AbstractChecklistItem {
+export interface ChecklistCondition extends AbstractChecklistItem {
   /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
   condition: true;
 }
 
-interface ChecklistSpecialItem extends AbstractChecklistItem {}
+export interface ChecklistSpecialItem extends AbstractChecklistItem {}
 
 export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistAction {
   return (c as ChecklistAction)?.labelNotCompleted !== undefined;
@@ -612,7 +612,9 @@ export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCo
   return (c as ChecklistCondition)?.condition !== undefined;
 }
 
-export function isAbnormalSensedProcedure(c: AbnormalProcedure | DeferredProcedure): c is AbnormalProcedure {
+export function isAbnormalSensedProcedure(
+  c: AbnormalProcedure | DeferredProcedure | NormalProcedure,
+): c is AbnormalProcedure {
   return (c as AbnormalProcedure)?.recommendation !== undefined;
 }
 

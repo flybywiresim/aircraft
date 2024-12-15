@@ -1,4 +1,4 @@
-import { ConsumerSubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import {
   deferredProcedureIds,
   EcamNormalProcedures,
@@ -9,7 +9,10 @@ import {
   EcamDeferredProcedures,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
-import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
+import {
+  ProcedureLinesGenerator,
+  ProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 
 export class WdNormalChecklists extends WdAbstractChecklistComponent {
   private readonly checklists = ConsumerSubject.create(this.sub.on('fws_normal_checklists'), []);
@@ -29,9 +32,9 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
 
     const sorted = this.checklists
       .get()
-      .filter((v) => v.id !== 0)
-      .sort((a, b) => a.id - b.id);
-    const clState = sorted.find((v) => v.id === this.checklistId.get());
+      .filter((v) => v.id !== '0')
+      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    const clState = sorted.find((v) => parseInt(v.id) === this.checklistId.get());
 
     if (this.deferred.get().length > 0) {
       // Status of deferred procedures
@@ -79,23 +82,23 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
       });
 
       sorted.forEach((state, index) => {
-        if (EcamNormalProcedures[state.id]) {
+        if (EcamNormalProcedures[parseInt(state.id)]) {
           let lineStyle: ChecklistLineStyle;
           let checked = false;
           let display = true;
-          if (deferredProcedureIds.includes(state.id)) {
-            lineStyle = state.checklistCompleted
+          if (deferredProcedureIds.includes(parseInt(state.id))) {
+            lineStyle = state.procedureCompleted
               ? ChecklistLineStyle.CompletedDeferredProcedure
               : ChecklistLineStyle.DeferredProcedure;
-            if (deferredProcedureIds.findIndex((p) => p === state.id) >= 0) {
-              checked = this.deferredIsCompleted[deferredProcedureIds.findIndex((p) => p === state.id)];
-              display = this.hasDeferred[deferredProcedureIds.findIndex((p) => p === state.id)];
+            if (deferredProcedureIds.findIndex((p) => p === parseInt(state.id)) >= 0) {
+              checked = this.deferredIsCompleted[deferredProcedureIds.findIndex((p) => p === parseInt(state.id))];
+              display = this.hasDeferred[deferredProcedureIds.findIndex((p) => p === parseInt(state.id))];
             }
           } else {
-            lineStyle = state.checklistCompleted
+            lineStyle = state.procedureCompleted
               ? ChecklistLineStyle.CompletedChecklist
               : ChecklistLineStyle.ChecklistItem;
-            checked = state.checklistCompleted;
+            checked = state.procedureCompleted ?? false;
           }
 
           if (display) {
@@ -103,7 +106,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
               activeProcedure: true,
               sensed: true,
               checked: checked,
-              text: EcamNormalProcedures[state.id].title,
+              text: EcamNormalProcedures[parseInt(state.id)].title,
               style: lineStyle,
               firstLine: false,
               lastLine: index === sorted.length - 1,
@@ -113,74 +116,21 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         }
       });
       this.totalLines.set(sorted.length + this.hasDeferred.reduce((acc, val) => acc + (val ? 1 : 0), 0) + 1);
-    } else if (clState && EcamNormalProcedures[clState.id] && !deferredProcedureIds.includes(clState.id)) {
-      const cl = EcamNormalProcedures[clState.id];
-
-      this.lineData.push({
-        activeProcedure: true,
-        sensed: true,
-        checked: false,
-        text: cl.title,
-        style: ChecklistLineStyle.Headline,
-        firstLine: true,
-        lastLine: false,
-      });
-
-      cl.items.forEach((item, index) => {
-        let text = item.level ? '\xa0'.repeat(item.level * 2) : '';
-        text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
-        text += item.name;
-        if (clState.itemsChecked[index] && item.labelCompleted) {
-          text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-        } else if (clState.itemsChecked[index] && item.labelNotCompleted) {
-          text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-        } else if (!clState.itemsChecked[index] && item.labelNotCompleted) {
-          // Pad to 39 characters max
-          const paddingNeeded = 39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);
-          text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
-        }
-
-        this.lineData.push({
-          activeProcedure: true,
-          sensed: item.sensed,
-          checked: clState.itemsChecked[index],
-          text: text.substring(0, 39),
-          style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
-          firstLine: false,
-          lastLine: false,
-          originalItemIndex: index,
-        });
-      });
-
-      this.lineData.push({
-        activeProcedure: true,
-        sensed: false,
-        checked: clState.checklistCompleted,
-        text: `${'\xa0'.repeat(27)}C/L COMPLETE`,
-        style: ChecklistLineStyle.ChecklistItem,
-        firstLine: false,
-        lastLine: false,
-        originalItemIndex: cl.items.length,
-      });
-
-      this.lineData.push({
-        activeProcedure: true,
-        sensed: false,
-        checked: false,
-        text: `${'\xa0'.repeat(34)}RESET`,
-        style: ChecklistLineStyle.ChecklistItem,
-        firstLine: false,
-        lastLine: true,
-        originalItemIndex: cl.items.length + 1,
-      });
-    } else if (clState && deferredProcedureIds.includes(clState.id)) {
+    } else if (
+      clState &&
+      EcamNormalProcedures[parseInt(clState.id)] &&
+      !deferredProcedureIds.includes(parseInt(clState.id))
+    ) {
+      const procGen = new ProcedureLinesGenerator(clState.id, Subject.create(true), ProcedureType.Normal, clState);
+      this.lineData.push(...procGen.toLineData());
+    } else if (clState && deferredProcedureIds.includes(parseInt(clState.id))) {
       // Deferred procedures
       this.lineData.push({
         activeProcedure: true,
         abnormalProcedure: true,
         sensed: true,
         checked: false,
-        text: `\x1b4m${clState.checklistCompleted ? '\x1b<4m' : ''}${EcamNormalProcedures[clState.id].title} \x1bm`,
+        text: `\x1b4m${clState.procedureCompleted ? '\x1b<4m' : ''}${EcamNormalProcedures[parseInt(clState.id)].title} \x1bm`,
         style: ChecklistLineStyle.Headline,
         firstLine: true,
         lastLine: false,
@@ -195,7 +145,11 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         firstLine: false,
         lastLine: false,
       });
-      WdAbnormalSensedProcedures.generateProcedureLineData(this.deferred.get(), this.lineData, false, true);
+
+      this.deferred.get().forEach((proc, index) => {
+        const procGen = new ProcedureLinesGenerator(proc.id, Subject.create(index === 0), ProcedureType.Deferred, proc);
+        this.lineData.push(...procGen.toLineData());
+      });
     }
     super.updateChecklists();
   }

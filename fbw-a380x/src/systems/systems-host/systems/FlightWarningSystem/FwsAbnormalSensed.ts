@@ -2,12 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  ChecklistLineStyle,
-  EcamAbnormalSensedProcedures,
-  isChecklistCondition,
-  WD_NUM_LINES,
-} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbnormalSensedProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
   Subject,
@@ -16,7 +11,11 @@ import {
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
-import { FwsEwdAbnormalSensedEntry, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import {
+  ProcedureLinesGenerator,
+  ProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem {
@@ -70,20 +69,24 @@ export class FwsAbnormalSensed {
   public readonly activeProcedureId = Subject.create<string | null>(null);
 
   /** Marked with cyan box */
-  public readonly selectedItem = Subject.create(1);
+  public readonly selectedItemIndex = Subject.create(1);
 
   /** For overflowing checklists */
   public readonly showFromLine = Subject.create(0);
 
+  private procedures: ProcedureLinesGenerator[] = [];
+
+  private activeProcedure: ProcedureLinesGenerator;
+
   constructor(private fws: FwsCore) {
     this.fws.activeAbnormalProceduresList.sub(
       (
-        map: ReadonlyMap<string, FwsEwdAbnormalSensedEntry>,
-        _type: SubscribableMapEventType,
-        _key: string,
-        _value: FwsEwdAbnormalSensedEntry,
+        map: ReadonlyMap<string, ChecklistState>,
+        type: SubscribableMapEventType,
+        key: string,
+        value: ChecklistState,
       ) => {
-        const flattened: FwsEwdAbnormalSensedEntry[] = [];
+        const flattened: ChecklistState[] = [];
         map.forEach((val, key) =>
           flattened.push({
             id: key,
@@ -93,10 +96,42 @@ export class FwsAbnormalSensed {
           }),
         );
         // Sort by decreasing importance
-        console.log(flattened);
         const sortedAbnormalsFlattened = flattened.sort(
           (a, b) => this.fws.ewdAbnormal[b.id].failure - this.fws.ewdAbnormal[a.id].failure,
         );
+
+        if (type === SubscribableMapEventType.Added) {
+          const procGen = new ProcedureLinesGenerator(
+            value.id,
+            Subject.create(value.id === this.activeProcedureId.get()),
+            ProcedureType.Abnormal,
+            value,
+            (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
+            this.clearActiveProcedure.bind(this),
+            () => {},
+            EcamAbnormalSensedProcedures[value.id].recommendation,
+          );
+          this.procedures.push(procGen);
+        } else if (type === SubscribableMapEventType.Changed) {
+          const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
+          if (procGenIndex !== -1) {
+            this.procedures[procGenIndex].checklistState = value;
+          }
+        } else if (type === SubscribableMapEventType.Deleted) {
+          const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
+          this.procedures.splice(procGenIndex, 1);
+        }
+
+        sortedAbnormalsFlattened.forEach((val) => {
+          if (val.id === this.activeProcedureId.get()) {
+            const procGenIndex = this.procedures.findIndex((v) => v.procedureId === val.id);
+            if (procGenIndex !== -1) {
+              this.activeProcedure = this.procedures[procGenIndex];
+              this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+            }
+          }
+        });
+
         this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
         this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
       },
@@ -105,156 +140,31 @@ export class FwsAbnormalSensed {
 
     this.abnormalShown.sub((shown) => {
       if (shown) {
-        this.selectFirst();
+        this.activeProcedure.selectFirst();
       }
     });
 
     this.activeProcedureId.sub((id) => {
       if (id) {
-        this.selectFirst();
+        this.procedures.forEach((val) => {
+          val.procedureIsActive.set(val.procedureId === id);
+          if (val.procedureId === id) {
+            this.activeProcedure = val;
+            this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+          }
+        });
+        this.activeProcedure.selectFirst();
       }
     });
 
-    this.selectedItem.sub(() => this.scrollToSelectedLine());
+    this.selectedItemIndex.sub(() => this.scrollToSelectedLine());
   }
 
   getAbnormalProceduresKeysSorted() {
     return Array.from(this.fws.activeAbnormalProceduresList.get().keys());
   }
 
-  selectFirst() {
-    const clState = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get());
-    const selectableAndNotChecked = this.selectableItems(false);
-    this.selectedItem.set(
-      selectableAndNotChecked[0] !== undefined ? selectableAndNotChecked[0] - 1 : clState.itemsChecked.length - 1,
-    );
-    this.moveDown(false);
-  }
-
-  moveUp() {
-    const selectable = this.selectableItems(true);
-
-    if (selectable.length === 0) {
-      return;
-    }
-    const previousElement = () => {
-      for (let i = selectable.length - 1; i >= 0; i--) {
-        if (selectable[i] < this.selectedItem.get()) {
-          return selectable[i];
-        }
-      }
-      return -1;
-    };
-    const pEl = previousElement();
-
-    if (pEl >= 0) {
-      this.selectedItem.set(Math.max(pEl, 0));
-    }
-  }
-
-  static readonly nonSelectableItemStyles = [
-    ChecklistLineStyle.Headline,
-    ChecklistLineStyle.OmissionDots,
-    ChecklistLineStyle.SeparationLine,
-    ChecklistLineStyle.SubHeadline,
-    ChecklistLineStyle.Amber,
-    ChecklistLineStyle.Cyan,
-    ChecklistLineStyle.Green,
-  ];
-
-  /**
-   * Used for up/down navigation, to skip not selectable items
-   * @param skipCompletedSensed Whether sensed item is only selectable if unchecked. Not sensed items can't be skipped.
-   * @returns Procedure item is selectable with arrow keys
-   */
-  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean): boolean {
-    const procId = this.activeProcedureId.get();
-    const clState = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get());
-    return (
-      (!EcamAbnormalSensedProcedures[procId].items[itemIndex].sensed ||
-        (!skipCompletedSensed && !clState.itemsChecked[itemIndex])) &&
-      clState.itemsActive[itemIndex] &&
-      clState.itemsToShow[itemIndex] &&
-      !FwsAbnormalSensed.nonSelectableItemStyles.includes(EcamAbnormalSensedProcedures[procId].items[itemIndex].style)
-    );
-  }
-
-  private selectableItems(skipCompletedSensed: boolean) {
-    return EcamAbnormalSensedProcedures[this.activeProcedureId.get()].items
-      .map((_, index) => (this.itemIsSelectable(index, skipCompletedSensed) ? index : null))
-      .filter((v) => v !== null);
-  }
-
-  private getActualShownItems() {
-    const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
-    const lines = [...this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get()).itemsToShow]
-      .map((value, index) => (value ? index : null))
-      .filter((v) => v !== null);
-    proc.items.forEach((v, i) => {
-      if (isChecklistCondition(v) && !v.sensed) {
-        // CONFIRM line
-        lines.splice(i, 0, lines[i]);
-        lines[i] = NaN;
-      }
-    });
-    if (proc.recommendation) {
-      lines.splice(0, 0, NaN);
-    }
-
-    return lines;
-  }
-
-  /** Returns the index from selectedItem amongst the displayed items */
-  private lineInDisplay(selectedItem: number) {
-    return this.fws.activeAbnormalProceduresList.has(this.activeProcedureId.get())
-      ? this.getActualShownItems().findIndex((v) => v === selectedItem)
-      : -1;
-  }
-
-  moveDown(skipCompletedSensed = true) {
-    const numItems = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get()).itemsToShow.length;
-    const selectable = this.selectableItems(skipCompletedSensed);
-    if (selectable.length == 0 || this.selectedItem.get() >= selectable[selectable.length - 1]) {
-      // Last element before CLEAR
-      this.selectedItem.set(numItems);
-    } else {
-      this.selectedItem.set(
-        Math.min(selectable.find((v) => v > this.selectedItem.get()) ?? numItems - 1, numItems - 1),
-      );
-    }
-  }
-
-  checkCurrentItem() {
-    const cl = this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get());
-    const clState: FwsEwdAbnormalSensedEntry = {
-      id: cl.id,
-      itemsToShow: [...cl.itemsToShow],
-      itemsChecked: [...cl.itemsChecked],
-      itemsActive: [...cl.itemsActive],
-    };
-    const proc = EcamAbnormalSensedProcedures[this.activeProcedureId.get()];
-    const procItem = proc.items[this.selectedItem.get()];
-    if (this.selectedItem.get() < this.getActualShownItems().length && !procItem?.sensed) {
-      clState.itemsChecked[this.selectedItem.get()] = !clState.itemsChecked[this.selectedItem.get()];
-      this.fws.activeAbnormalProceduresList.setValue(this.activeProcedureId.get(), clState);
-      if (clState.itemsChecked[this.selectedItem.get()]) {
-        if (isChecklistCondition(procItem) && procItem.condition) {
-          // Force 'active' status update
-          FwsCore.conditionalActiveItems(proc, clState.itemsChecked, clState.itemsActive);
-        }
-        this.moveDown(false);
-      }
-    } else if (this.selectedItem.get() === clState.itemsChecked.length) {
-      this.clearActiveProcedure();
-    }
-  }
-
   public clearActiveProcedure() {
-    console.log(
-      this.fws.presentedFailures,
-      parseInt(this.activeProcedureId.get()),
-      this.fws.activeAbnormalNonSensedKeys.includes(parseInt(this.activeProcedureId.get())),
-    );
     this.fws.presentedFailures.splice(0, 1);
     this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
 
@@ -267,17 +177,7 @@ export class FwsAbnormalSensed {
   }
 
   private scrollToSelectedLine() {
-    const itemsShown = this.getActualShownItems();
-    const lastItemIndex = itemsShown[itemsShown.length - 1];
-    if (
-      this.fws.activeAbnormalProceduresList.has(this.activeProcedureId.get()) &&
-      this.selectedItem.get() === lastItemIndex + 1
-    ) {
-      // CLEAR
-      this.showFromLine.set(Math.max(0, itemsShown.length - WD_NUM_LINES + 2));
-    } else {
-      this.showFromLine.set(Math.max(0, this.lineInDisplay(this.selectedItem.get()) - WD_NUM_LINES + 2));
-    }
+    this.showFromLine.set(Math.max(0, this.activeProcedure.numLinesUntilSelected() - WD_NUM_LINES + 2));
   }
 
   /**
@@ -296,15 +196,15 @@ export class FwsAbnormalSensed {
     }
 
     if (this.fws.clDownPulseNode.read()) {
-      this.moveDown(true);
+      this.activeProcedure.moveDown(true);
     }
 
     if (this.fws.clUpPulseNode.read()) {
-      this.moveUp();
+      this.activeProcedure.moveUp();
     }
 
     if (this.fws.clCheckPulseNode.read()) {
-      this.checkCurrentItem();
+      this.activeProcedure.checkSelected();
     }
 
     // Auto-move-down if currently marked item was sensed as completed
@@ -317,15 +217,12 @@ export class FwsAbnormalSensed {
         continue;
       }
 
-      const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
-      if (
-        changedEntries &&
-        changedEntries.includes(this.selectedItem.get()) &&
-        this.fws.activeAbnormalProceduresList.getValue(this.activeProcedureId.get()).itemsChecked[
-          this.selectedItem.get()
-        ]
-      ) {
-        this.moveDown(false);
+      if (procId === this.activeProcedureId.get()) {
+        const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
+        const sii = this.activeProcedure.selectedItemIndex.get();
+        if (changedEntries && changedEntries.includes(sii) && this.activeProcedure.checklistState.itemsChecked[sii]) {
+          this.activeProcedure.moveDown(false);
+        }
       }
     }
   }

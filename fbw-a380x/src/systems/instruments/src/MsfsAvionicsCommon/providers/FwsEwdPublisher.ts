@@ -2,18 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-export interface FwsEwdAbnormalSensedEntry {
+export interface ChecklistState {
   id: string;
   procedureCompleted?: boolean;
   procedureActivated?: boolean;
-  itemsToShow: boolean[];
-  itemsChecked: boolean[];
-  itemsActive: boolean[];
-}
-
-export interface NormalChecklistState {
-  id: number;
-  checklistCompleted: boolean;
   itemsChecked: boolean[];
   itemsToShow: boolean[];
   itemsActive: boolean[];
@@ -30,27 +22,27 @@ export interface AbnormalNonSensedList {
  * Transmitted from FWS to EWD
  */
 export interface FwsEwdEvents {
-  /** (FWS -> EWD) Which line to mark as next */
-  fws_active_line: number;
+  /** (FWS -> EWD) Which item from procedure to mark as selected */
+  fws_active_item: number;
+  /** (FWS -> EWD) Which procedure is currently active */
+  fws_active_procedure: string;
   /** (FWS -> EWD) From which line on to show the items, for overflowing procedures */
   fws_show_from_line: number;
 
   /** (FWS -> EWD) Show normal procedures / ECL */
   fws_show_normal_checklists: boolean;
   /** (FWS -> EWD) List of all normal checklists including deferred procedures */
-  fws_normal_checklists: NormalChecklistState[];
+  fws_normal_checklists: ChecklistState[];
   /** (FWS -> EWD) Which checklist to display */
   fws_normal_checklists_id: number;
 
   /** (FWS -> EWD) Show abnormal sensed procedures */
   fws_show_abn_sensed: boolean;
   /** (FWS -> EWD) List of abnormal sensed procedures to be displayed */
-  fws_abn_sensed_procedures: FwsEwdAbnormalSensedEntry[];
+  fws_abn_sensed_procedures: ChecklistState[];
 
   /** (FWS -> EWD) All deferred procedures to be displayed */
-  fws_deferred_procedures: FwsEwdAbnormalSensedEntry[];
-  /** (FWS -> EWD) List of deferred procedures to be displayed */
-  fws_deferred_procedures_show_tod: boolean;
+  fws_deferred_procedures: ChecklistState[];
 
   /** (FWS -> EWD) Show abnormal non-sensed procedures selection menu */
   fws_show_abn_non_sensed: boolean;

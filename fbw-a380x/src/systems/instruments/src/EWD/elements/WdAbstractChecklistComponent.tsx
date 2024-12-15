@@ -31,7 +31,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
 
   protected readonly lineData: WdLineData[] = [];
 
-  protected readonly activeLine = ConsumerSubject.create(this.sub.on('fws_active_line'), 0);
+  protected readonly activeLine = ConsumerSubject.create(this.sub.on('fws_active_item'), 0);
 
   protected readonly showFromLine = ConsumerSubject.create(this.sub.on('fws_show_from_line'), 0);
   protected readonly totalLines = Subject.create(0);
