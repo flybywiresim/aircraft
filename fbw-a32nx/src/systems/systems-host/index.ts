@@ -14,6 +14,7 @@ import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
 import { PseudoFWC } from 'systems-host/systems/FWC/PseudoFWC';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 
 class SystemsHost extends BaseInstrument {
@@ -32,6 +33,8 @@ class SystemsHost extends BaseInstrument {
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
+
+  private readonly a32nxFcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
@@ -53,6 +56,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
+    this.backplane.addPublisher('a32nxFcuBusPublisher', this.a32nxFcuBusPublisher);
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
 
     this.pseudoFwc.init();
