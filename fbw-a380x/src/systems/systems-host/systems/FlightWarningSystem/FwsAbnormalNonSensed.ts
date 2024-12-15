@@ -3,7 +3,7 @@
 
 import { MapSubject, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { NormalChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import {
   EcamAbnormalNonSensedProcedures,
   EcamAbNormalSensedSubMenuVector,
@@ -96,7 +96,7 @@ export class FwsAbnormalNonSensed {
         } else if (this.selectedItem.get() < skipProcsFromTopMenu) {
           // Preview non-sensed procedure
           this.checklistId.set(EcamAbnormalNonSensedProcedures[this.selectedItem.get()]?.id ?? 0);
-          this.selectedItem.set(0);
+          this.selectedItem.set(-1);
         }
       } else if (this.checklistId.get() > 0 && this.checklistId.get() <= 10) {
         // Sub menu
@@ -105,8 +105,9 @@ export class FwsAbnormalNonSensed {
         );
         // Preview non-sensed procedure
         this.checklistId.set(EcamAbnormalNonSensedProcedures[subMenuProcsStartAt + this.selectedItem.get()].id);
-        this.selectedItem.set(0);
+        this.selectedItem.set(-1);
       } else {
+        console.log('---');
         // Activate non-sensed procedure (add to ECAM faults) and close dialog, i.e. return to abnormal procs
         this.fws.activeAbnormalNonSensedKeys.push(this.checklistId.get());
         this.selectedItem.set(0);
@@ -130,7 +131,8 @@ export class FwsAbnormalNonSensed {
         false,
         false,
       ],
-      failure: 1,
+      failure: 3,
+      auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
       redundLoss: () => [],
     },

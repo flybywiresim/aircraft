@@ -38,7 +38,7 @@ import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/F
 import {
   AbnormalProcedure,
   DeferredProcedure,
-  EcamAbnormalSensedProcedures,
+  EcamAbnormalProcedures,
   EcamDeferredProcedures,
   EcamMemos,
   isChecklistCondition,
@@ -51,7 +51,11 @@ import {
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
 import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
-import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
+import {
+  EwdAbnormalDict,
+  EwdAbnormalItem,
+  FwsAbnormalSensed,
+} from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { FwsAbnormalNonSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalNonSensed';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
@@ -1502,13 +1506,20 @@ export class FwsCore {
 
   public readonly memos = new FwsMemos(this);
   public readonly normalChecklists = new FwsNormalChecklists(this);
-  public readonly abnormalSensed = new FwsAbnormalSensed(this);
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
+  public readonly abnormalSensed = new FwsAbnormalSensed(this);
+  public ewdAbnormal: EwdAbnormalDict;
 
   constructor(
     public readonly fwsNumber: 1 | 2,
     public readonly bus: EventBus,
   ) {
+    this.ewdAbnormal = Object.assign(
+      {},
+      this.abnormalSensed.ewdAbnormalSensed,
+      this.abnormalNonSensed.ewdAbnormalNonSensed,
+    );
+
     this.ewdMessageLinesLeft.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
@@ -3773,8 +3784,7 @@ export class FwsCore {
     /* CLEAR AND RECALL */
     if (this.clrPulseNode.read()) {
       // delete the first failure
-      this.presentedFailures.splice(0, 1);
-      this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
+      this.abnormalSensed.clearActiveProcedure();
     }
 
     if (this.rclUpPulseNode.read()) {
@@ -3815,7 +3825,7 @@ export class FwsCore {
     const auralScKeys: string[] = [];
 
     // Update memos and failures list in case failure has been resolved
-    for (const [key, value] of Object.entries(this.abnormalSensed.ewdAbnormalSensed)) {
+    for (const [key, value] of Object.entries(this.ewdAbnormal)) {
       if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
@@ -3827,9 +3837,7 @@ export class FwsCore {
     this.nonCancellableWarningCount = 0;
 
     // Abnormal sensed procedures
-    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(
-      this.abnormalSensed.ewdAbnormalSensed,
-    ).concat(Object.entries(this.abnormalNonSensed.ewdAbnormalNonSensed));
+    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.ewdAbnormal);
     const ewdDeferredEntries = Object.entries(this.abnormalSensed.ewdDeferredProcs);
     this.abnormalUpdatedItems.clear();
     this.deferredUpdatedItems.clear();
@@ -3840,14 +3848,14 @@ export class FwsCore {
 
       // new warning?
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
-      const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
+      const proc = EcamAbnormalProcedures[key];
 
       if (value.simVarIsActive.get() || this.activeAbnormalNonSensedKeys.includes(parseInt(key))) {
         // Skip if other fault overrides this one
         let overridden = false;
         value.notActiveWhenFaults.forEach((val) => {
-          if (val && this.abnormalSensed.ewdAbnormalSensed[val]) {
-            const otherFault = this.abnormalSensed.ewdAbnormalSensed[val] as EwdAbnormalItem;
+          if (val && this.ewdAbnormal[val]) {
+            const otherFault = this.ewdAbnormal[val] as EwdAbnormalItem;
             if (otherFault.simVarIsActive.get()) {
               overridden = true;
             }
@@ -3927,6 +3935,9 @@ export class FwsCore {
         } else if (this.activeAbnormalProceduresList.has(key)) {
           // Update internal map
           const prevEl = this.activeAbnormalProceduresList.getValue(key);
+          if (!proc.items) {
+            console.log(proc, prevEl);
+          }
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
@@ -4074,7 +4085,7 @@ export class FwsCore {
 
     const failOrder: string[] = [];
 
-    for (const [key] of Object.entries(this.abnormalSensed.ewdAbnormalSensed)) {
+    for (const [key] of Object.entries(this.ewdAbnormal)) {
       failOrder.push(...key);
     }
 

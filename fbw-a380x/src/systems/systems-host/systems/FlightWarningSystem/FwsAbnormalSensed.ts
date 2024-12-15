@@ -93,8 +93,9 @@ export class FwsAbnormalSensed {
           }),
         );
         // Sort by decreasing importance
+        console.log(flattened);
         const sortedAbnormalsFlattened = flattened.sort(
-          (a, b) => this.ewdAbnormalSensed[b.id].failure - this.ewdAbnormalSensed[a.id].failure,
+          (a, b) => this.fws.ewdAbnormal[b.id].failure - this.fws.ewdAbnormal[a.id].failure,
         );
         this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
         this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
@@ -248,9 +249,21 @@ export class FwsAbnormalSensed {
     }
   }
 
-  private clearActiveProcedure() {
+  public clearActiveProcedure() {
+    console.log(
+      this.fws.presentedFailures,
+      parseInt(this.activeProcedureId.get()),
+      this.fws.activeAbnormalNonSensedKeys.includes(parseInt(this.activeProcedureId.get())),
+    );
     this.fws.presentedFailures.splice(0, 1);
     this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
+
+    if (this.fws.activeAbnormalNonSensedKeys.includes(parseInt(this.activeProcedureId.get()))) {
+      this.fws.activeAbnormalNonSensedKeys.splice(
+        this.fws.activeAbnormalNonSensedKeys.indexOf(parseInt(this.activeProcedureId.get())),
+        1,
+      );
+    }
   }
 
   private scrollToSelectedLine() {
@@ -300,7 +313,7 @@ export class FwsAbnormalSensed {
     for (let id = 0; id < ids.length; id++) {
       const procId = ids[id];
 
-      if (!this.ewdAbnormalSensed[procId] || !this.fws.abnormalUpdatedItems.has(procId)) {
+      if (!this.fws.ewdAbnormal[procId] || !this.fws.abnormalUpdatedItems.has(procId)) {
         continue;
       }
 

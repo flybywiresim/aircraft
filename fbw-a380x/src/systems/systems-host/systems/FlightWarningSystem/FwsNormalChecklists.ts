@@ -147,7 +147,7 @@ export class FwsNormalChecklists {
         }
       });
       this.selectedLine.set(firstIncompleteChecklist - 1);
-    } else {
+    } else if (!deferredProcedureIds.includes(this.checklistId.get())) {
       const clState = this.checklistState.getValue(this.checklistId.get());
       const selectableAndNotChecked = EcamNormalProcedures[this.checklistId.get()].items
         .map((_, index) => (clState.itemsChecked[index] === false ? index : null))
@@ -155,6 +155,9 @@ export class FwsNormalChecklists {
       this.selectedLine.set(
         selectableAndNotChecked[0] !== undefined ? selectableAndNotChecked[0] - 1 : clState.itemsChecked.length - 1,
       );
+    } else {
+      // Deferred procedure
+      this.selectedLine.set(-2);
     }
     this.moveDown(false);
   }
@@ -237,7 +240,7 @@ export class FwsNormalChecklists {
           this.getNormalProceduresKeysSorted(true).length,
         ),
       );
-    } else {
+    } else if (!deferredProcedureIds.includes(this.checklistId.get())) {
       const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
       const selectable = this.selectableItems(skipCompletedSensed);
       if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
@@ -251,6 +254,8 @@ export class FwsNormalChecklists {
           ),
         );
       }
+    } else {
+      //...
     }
   }
 

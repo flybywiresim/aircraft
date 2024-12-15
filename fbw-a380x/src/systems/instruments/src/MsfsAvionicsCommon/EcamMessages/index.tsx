@@ -605,15 +605,15 @@ interface ChecklistCondition extends AbstractChecklistItem {
 interface ChecklistSpecialItem extends AbstractChecklistItem {}
 
 export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistAction {
-  return (c as ChecklistAction).labelNotCompleted !== undefined;
+  return (c as ChecklistAction)?.labelNotCompleted !== undefined;
 }
 
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
-  return (c as ChecklistCondition).condition !== undefined;
+  return (c as ChecklistCondition)?.condition !== undefined;
 }
 
 export function isAbnormalSensedProcedure(c: AbnormalProcedure | DeferredProcedure): c is AbnormalProcedure {
-  return (c as AbnormalProcedure).recommendation !== undefined;
+  return (c as AbnormalProcedure)?.recommendation !== undefined;
 }
 
 export interface AbnormalProcedure {
@@ -677,6 +677,8 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
 
 /** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
 export const EcamAbnormalNonSensedProcedures = AbnormalNonSensedProcedures;
+
+export const EcamAbnormalProcedures = { ...EcamAbnormalSensedProcedures, ...EcamAbnormalNonSensedProcedures };
 
 export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
   'ENG',

@@ -18,7 +18,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   public updateChecklists() {
     this.lineData.length = 0;
 
-    WdAbnormalSensedProcedures.generateProcedureLineData(this.procedures.get(), this.lineData);
+    WdAbnormalSensedProcedures.generateProcedureLineData(this.procedures.get(), this.lineData, true, false);
     super.updateChecklists();
   }
 
@@ -49,7 +49,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
           lastLine: procIndex !== 0 ? true : false,
         });
 
-        if (showOnlyFirst || procIndex === 0) {
+        if (!showOnlyFirst || procIndex === 0) {
           if (isAbnormalSensedProcedure(cl) && cl.recommendation) {
             lineData.push({
               abnormalProcedure: true,
