@@ -3930,9 +3930,6 @@ export class FwsCore {
         } else if (this.activeAbnormalProceduresList.has(key)) {
           // Update internal map
           const prevEl = this.activeAbnormalProceduresList.getValue(key);
-          if (!proc.items) {
-            console.log(proc, prevEl);
-          }
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );

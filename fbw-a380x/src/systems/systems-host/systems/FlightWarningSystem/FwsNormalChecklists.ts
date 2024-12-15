@@ -51,6 +51,11 @@ export class FwsNormalChecklists {
   /** ALL PHASES, TOP OF DESCENT, FOR APPROACH, FOR LANDING */
   private readonly deferredIsCompleted = [false, false, false, false];
 
+  /** ID of active deferred procedure */
+  public readonly activeDeferredProcedureId = Subject.create<string | null>(null);
+
+  private deferredProcedures: ProcedureLinesGenerator[] = [];
+
   private activeProcedure: ProcedureLinesGenerator;
 
   constructor(private fws: FwsCore) {
@@ -76,7 +81,7 @@ export class FwsNormalChecklists {
       true,
     );
     this.checklistId.sub((id) => {
-      if (id !== 0) {
+      if (id !== 0 && !deferredProcedureIds.includes(id)) {
         const clState = this.checklistState.getValue(id);
         const procGen = new ProcedureLinesGenerator(
           clState.id,
@@ -96,6 +101,25 @@ export class FwsNormalChecklists {
           },
         );
         this.activeProcedure = procGen;
+        this.activeProcedure.selectedItemIndex.pipe(this.selectedLine);
+      } else if (deferredProcedureIds.includes(id)) {
+        this.deferredProcedures = [];
+        const firstProcedureKey = Object.keys(this.fws.activeDeferredProceduresList.get())[0];
+        this.fws.activeDeferredProceduresList.get().forEach((proc, key) => {
+          const procGen = new ProcedureLinesGenerator(
+            proc.id,
+            Subject.create(proc.id === firstProcedureKey),
+            ProcedureType.Deferred,
+            proc,
+            (newState) => {
+              this.fws.activeDeferredProceduresList.setValue(key, newState);
+            },
+          );
+          this.deferredProcedures.push(procGen);
+        });
+
+        this.activeDeferredProcedureId.set(firstProcedureKey);
+        this.activeProcedure = this.deferredProcedures[0];
         this.activeProcedure.selectedItemIndex.pipe(this.selectedLine);
       }
       this.pub.pub('fws_normal_checklists_id', id, true);
@@ -129,7 +153,7 @@ export class FwsNormalChecklists {
       const proc = EcamNormalProcedures[k] as NormalProcedure;
       this.checklistState.setValue(k, {
         id: k.toString(),
-        procedureCompleted: false,
+        procedureCompleted: proc.deferred ? true : false,
         itemsChecked: Array(proc.items.length).fill(false),
         itemsActive: Array(proc.items.length).fill(true),
         itemsToShow: Array(proc.items.length).fill(true),

@@ -419,10 +419,10 @@ export class ProcedureLinesGenerator {
             activeProcedure: true,
             sensed: false,
             checked: this.checklistState.procedureCompleted ?? false,
-            text: `${'\xa0'.repeat(5)}DEFERRED PROC COMPLETE`,
+            text: `${'\xa0'.repeat(17)}DEFERRED PROC COMPLETE`,
             style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
-            lastLine: false,
+            lastLine: true,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
           });
         } else {
@@ -430,7 +430,7 @@ export class ProcedureLinesGenerator {
             activeProcedure: true,
             sensed: false,
             checked: false,
-            text: `${'\xa0'.repeat(5)}DEFERRED PROC RECALL`,
+            text: `${'\xa0'.repeat(18)}DEFERRED PROC RECALL`,
             style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
             lastLine: true,
