@@ -337,6 +337,8 @@ export class PseudoFWC {
 
   public readonly autoPilotOffAlertShown = Subject.create(false);
 
+  public readonly autoPilotOffInvoluntary = Subject.create(false);
+
   public readonly autoPilotOffAlertShownMemory = new NXLogicMemoryNode(false);
 
   public readonly autoPilotOffUnacknowledged = new NXLogicMemoryNode(false);
@@ -1567,6 +1569,7 @@ export class PseudoFWC {
       this.fwcFlightPhase.get() === 1 || apEngaged,
     );
     this.autoPilotOffAlertShown.set(this.autoPilotOffAlertShownMemory.read());
+    this.autoPilotOffInvoluntary.set(this.autoPilotOffInvoluntaryMemory.read());
     this.autoPilotOffShowMemo.set(this.autoPilotOffVoluntaryMemory.read() || this.autoPilotOffInvoluntaryMemory.read());
 
     if (this.autoPilotDisengagedInstantPulse.read()) {
@@ -2944,7 +2947,7 @@ export class PseudoFWC {
       // AP OFF involuntary
       flightPhaseInhib: [],
       simVarIsActive: this.autoPilotOffAlertShown,
-      auralWarning: this.autoPilotOffAlertShown.map((a) => (a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None)),
+      auralWarning: this.autoPilotOffInvoluntary.map((a) => (a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None)),
       whichCodeToReturn: () => [0],
       codesToReturn: ['220800001'],
       memoInhibit: () => false,
