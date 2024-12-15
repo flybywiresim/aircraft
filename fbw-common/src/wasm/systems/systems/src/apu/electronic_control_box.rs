@@ -1,9 +1,11 @@
-use super::ApuConstants;
-use super::{
-    air_intake_flap::AirIntakeFlapSignal, AirIntakeFlap, ApuStartMotor,
-    AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch,
-    Turbine, TurbineSignal, TurbineState,
+use std::marker::PhantomData;
+use std::time::Duration;
+
+use uom::si::{
+    f64::*, mass_concentration::kilogram_per_liter, power::watt, pressure::bar, pressure::psi,
+    ratio::percent, thermodynamic_temperature::degree_celsius, volume_rate::gallon_per_minute,
 };
+
 use crate::shared::{EngineCorrectedN1, LgciuWeightOnWheels};
 use crate::simulation::{InitContext, SimulatorReader, VariableIdentifier};
 use crate::{
@@ -14,11 +16,12 @@ use crate::{
     },
     simulation::{Read, SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
-use std::marker::PhantomData;
-use std::time::Duration;
-use uom::si::{
-    f64::*, mass_concentration::kilogram_per_liter, power::watt, pressure::bar, pressure::psi,
-    ratio::percent, thermodynamic_temperature::degree_celsius, volume_rate::gallon_per_minute,
+
+use super::ApuConstants;
+use super::{
+    air_intake_flap::AirIntakeFlapSignal, AirIntakeFlap, ApuStartMotor,
+    AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch,
+    Turbine, TurbineSignal, TurbineState,
 };
 
 pub(super) struct ElectronicControlBox<C: ApuConstants> {
@@ -35,7 +38,6 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     apu_is_auto_shutdown_id: VariableIdentifier,
     apu_is_emergency_shutdown_id: VariableIdentifier,
     apu_bleed_air_pressure_id: VariableIdentifier,
-
     apu_fuel_line_flow_id: VariableIdentifier,
 
     powered_by: ElectricalBusType,
@@ -62,6 +64,10 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     on_ground: bool,
     /** Absolute air pressure sensor in the air intake assembly. */
     inlet_pressure: Pressure,
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown
+    /// of the aircraft.
+    /// In the context of the ecb this means that the APU cooldown is skipped.
+    aircraft_preset_quick_mode: bool,
 
     constants: PhantomData<C>,
 }
@@ -86,7 +92,6 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             apu_is_emergency_shutdown_id: context
                 .get_identifier("APU_IS_EMERGENCY_SHUTDOWN".to_owned()),
             apu_bleed_air_pressure_id: context.get_identifier("APU_BLEED_AIR_PRESSURE".to_owned()),
-
             apu_fuel_line_flow_id: context
                 .get_identifier(format!("FUELSYSTEM LINE FUEL FLOW:{}", C::FUEL_LINE_ID)),
 
@@ -115,6 +120,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             engines_on: false,
             on_ground: false,
             inlet_pressure: Pressure::new::<bar>(0.94),
+            aircraft_preset_quick_mode: false,
 
             constants: PhantomData,
         }
@@ -174,6 +180,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     }
 
     pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
+        self.aircraft_preset_quick_mode = context.aircraft_preset_quick_mode();
+
         self.update_air_intake_state(context);
         self.update_fuel_used(context);
 
@@ -354,6 +362,34 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     fn fuel_used(&self) -> Mass {
         self.fuel_used
     }
+
+    /// Determines if a cooldown is required for the APU.
+    ///
+    /// This method checks if the APU is in quick mode (for Aircraft Presets) or not.
+    /// If it is in quick mode, cooldown is not required and the method returns false.
+    /// If the APU is not in quick mode, the method checks if the bleed air valve was open
+    /// in the last cooldown duration or if the APU is in a cooldown period.
+    /// If either of these conditions is true, the method returns true indicating that
+    /// a cooldown is required.
+    /// Otherwise, it returns false.
+    ///
+    /// # Returns
+    ///
+    /// * `bool` - True if a cooldown is required, false otherwise.
+    fn is_cooldown_required(&self) -> bool {
+        let cool_down_required: bool;
+        // this allows the Aircraft Presets to immediately power off the aircraft
+        // without waiting for the APU to cool down
+        if self.aircraft_preset_quick_mode {
+            cool_down_required = false;
+            println!("apu/electronic_control_box.rs: Aircraft Preset Quick Mode is active. APU cooldown is skipped.");
+        } else {
+            cool_down_required = self
+                .bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
+                || self.is_cooldown_period();
+        };
+        cool_down_required
+    }
 }
 /// APU start Motor contactors controller
 impl<C: ApuConstants> ControllerSignal<ContactorSignal> for ElectronicControlBox<C> {
@@ -416,8 +452,7 @@ impl<C: ApuConstants> ControllerSignal<TurbineSignal> for ElectronicControlBox<C
             || self.is_emergency_shutdown()
             || (!self.master_is_on
                 && self.turbine_state != TurbineState::Starting
-                && !self.bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
-                && !self.is_cooldown_period())
+                && !self.is_cooldown_required())
         {
             Some(TurbineSignal::Stop)
         } else if self.start_motor_is_powered
@@ -429,6 +464,7 @@ impl<C: ApuConstants> ControllerSignal<TurbineSignal> for ElectronicControlBox<C
         }
     }
 }
+
 /// Bleed air valve controller
 impl<C: ApuConstants> ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox<C> {
     fn signal(&self) -> Option<ApuBleedAirValveSignal> {

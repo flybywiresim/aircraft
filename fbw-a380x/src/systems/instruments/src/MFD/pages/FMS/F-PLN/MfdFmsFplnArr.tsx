@@ -1,11 +1,12 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-
-import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { ApproachType } from '@fmgc/index';
+import { ApproachType, LandingSystemUtils } from '@fmgc/index';
+import { getApproachName } from '../../../shared/utils';
+
+import './MfdFmsFpln.scss';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,
@@ -35,17 +36,17 @@ interface MfdFmsFplnArrProps extends AbstractMfdPageProps {}
 export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
   private toIcao = Subject.create<string>('');
 
-  private rwyLs = Subject.create<string>('');
-
   private rwyIdent = Subject.create<string>('');
 
   private rwyLength = Subject.create<string>('');
 
   private rwyCrs = Subject.create<string>('');
 
-  private appr = Subject.create<string>('');
+  private readonly approachName = Subject.create<string>('');
 
-  private rwyFreq = Subject.create<string>('');
+  private readonly approachLsFrequencyChannel = Subject.create<string>('');
+
+  private readonly approachLsIdent = Subject.create('');
 
   private via = Subject.create<string>('');
 
@@ -82,8 +83,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       return;
     }
 
-    console.time('ARRIVAL:onNewData');
-
     const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get() ?? false;
     const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
@@ -117,12 +116,10 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       this.rwyOptions.set(runways);
 
       if (flightPlan.destinationRunway) {
-        this.rwyLs.set(flightPlan.destinationRunway.lsIdent);
         this.rwyIdent.set(flightPlan.destinationRunway.ident.substring(4));
         this.rwyLength.set(flightPlan.destinationRunway.length.toFixed(0) ?? '----');
         this.rwyCrs.set(flightPlan.destinationRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
       } else {
-        this.rwyLs.set('----');
         this.rwyIdent.set('---');
         this.rwyLength.set('----');
         this.rwyCrs.set('---');
@@ -148,14 +145,26 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         ];
 
         // Sort approaches by runway
-        const sortedApproaches = flightPlan.availableApproaches.sort(
-          (a, b) =>
-            a.runwayIdent?.localeCompare(b.runwayIdent ?? '') || ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type],
-        );
+        // FIXME add runway-by-itself
+        const sortedApproaches = flightPlan.availableApproaches
+          .filter(
+            (a) =>
+              a.type !== ApproachType.Tacan &&
+              a.type !== ApproachType.Mls &&
+              a.type !== ApproachType.MlsTypeA &&
+              a.type !== ApproachType.MlsTypeBC &&
+              a.runwayIdent !== undefined && // circling approaches
+              a.type !== ApproachType.LocBackcourse, // FIXME remove when supported
+          )
+          .sort(
+            (a, b) =>
+              a.runwayIdent?.localeCompare(b.runwayIdent ?? '') ||
+              ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type],
+          );
         let isFirstMatch = true;
         sortedApproaches.forEach((el, idx) => {
           appr.push({
-            label: el.ident,
+            label: getApproachName(el),
             action: async () => {
               await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
                 el.runwayIdent ?? '',
@@ -187,8 +196,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }
 
       if (flightPlan.approach) {
-        this.appr.set(flightPlan.approach.ident);
-        this.rwyFreq.set(flightPlan.destinationRunway.lsFrequencyChannel?.toFixed(2) ?? '');
+        this.approachName.set(getApproachName(flightPlan.approach, false));
+        const ls = flightPlan.approach ? LandingSystemUtils.getLsFromApproach(flightPlan.approach) : undefined;
+        // FIXME handle non-localizer types
+        this.approachLsFrequencyChannel.set(ls?.frequency.toFixed(2) ?? '');
+        this.approachLsIdent.set(ls?.ident ?? '');
 
         if (flightPlan.availableApproachVias.length > 0) {
           const vias: ButtonMenuItem[] = [
@@ -233,12 +245,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           this.viaDisabled.set(true);
         }
       } else if (flightPlan.availableApproaches?.length > 0) {
-        this.appr.set('------');
-        this.rwyFreq.set('---.--');
+        this.approachName.set('------');
+        this.approachLsFrequencyChannel.set('---.--');
+        this.approachLsIdent.set('');
         this.viaDisabled.set(true);
       } else {
-        this.appr.set('NONE');
-        this.rwyFreq.set('---.--');
+        this.approachName.set('NONE');
+        this.approachLsFrequencyChannel.set('---.--');
+        this.approachLsIdent.set('');
         this.viaDisabled.set(true);
       }
 
@@ -362,8 +376,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     } else {
       this.toIcao.set('----');
     }
-
-    console.timeEnd('ARRIVAL:onNewData');
   }
 
   public onAfterRender(node: VNode): void {
@@ -415,7 +427,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   sec: this.secActive,
                 }}
               >
-                {this.rwyLs}
+                {this.approachLsIdent}
               </span>
             </div>
             <div class="fc" style="flex: 0.2;">
@@ -473,7 +485,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   sec: this.secActive,
                 }}
               >
-                {this.appr}
+                {this.approachName}
               </span>
             </div>
             <div class="fc" style="flex: 0.2;">
@@ -485,7 +497,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   sec: this.secActive,
                 }}
               >
-                {this.rwyFreq}
+                {this.approachLsFrequencyChannel}
               </span>
             </div>
             <div class="fc" style="flex: 0.2;">

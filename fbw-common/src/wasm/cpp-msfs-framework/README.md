@@ -438,7 +438,7 @@ a new module (classes/headers) to the project.
 The framework code is split into three parts:
 
 - the common c++ framework code which lives in  <span style="color:cyan">/fbw-common/src/wasm/cpp-msfs-framework</span>
-- the instance of a coomon backend using the c++ framework is in <span style="color:cyan">/fbw-common/src/wasm/extra-backend</span>
+- the instance of a common backend using the c++ framework is in <span style="color:cyan">/fbw-common/src/wasm/extra-backend</span>
 - the aircraft specific gauge and modules which live in <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a32nx</span>
   and <span style="color:cyan">/fbw-a380x/src/wasm/extra-backend-a380x</span>
 

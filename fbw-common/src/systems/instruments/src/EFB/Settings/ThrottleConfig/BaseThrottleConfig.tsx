@@ -4,15 +4,16 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { t } from '../../Localization/translation';
+import { t } from '@flybywiresim/flypad';
 import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
 /**
  * BaseThrottleConfigProps are the props for the BaseThrottleConfig component.
  * @param className             css class pass through
- * @param axisNumber            number of the current axis
- * @param numberOfAxis          number of axis that are mapped
+ * @param userAxis              number of the current axis
+ * @param inputThrottle         throttle input to be used for this axis (MSFS mapped)
+ * @param numberOfAxes          number of axes available per user selection
  * @param numberOfThrottles     number of throttles that are mapped
  * @param throttleSimvarsSet1   array of throttle simvars to map the axis values to
  * @param throttleSimvarsSet2   array of throttle simvars to map the axis values to
@@ -23,8 +24,9 @@ import { ThrottleSimvar } from './ThrottleSimVar';
  */
 interface BaseThrottleConfigProps {
   className?: string;
-  axisNumber: number;
-  numberOfAxis: number;
+  userAxis: number;
+  inputThrottle: number;
+  numberOfUserAxes: number;
   numberOfThrottles: number;
   throttleSimvarsSet1?: ThrottleSimvar[];
   throttleSimvarsSet2?: ThrottleSimvar[];
@@ -43,8 +45,9 @@ interface BaseThrottleConfigProps {
  */
 export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
   className,
-  axisNumber,
-  numberOfAxis,
+  userAxis,
+  inputThrottle,
+  numberOfUserAxes,
   numberOfThrottles,
   throttleSimvarsSet1,
   throttleSimvarsSet2,
@@ -53,7 +56,8 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
   activeDetent,
   reverseDisabled,
 }) => {
-  const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${axisNumber}`, 'number', 30);
+  const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${inputThrottle}`, 'number', 30);
+
   const [expertMode, setExpertMode] = useState(false);
 
   let throttleNumberString = '';
@@ -73,9 +77,9 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
   // A320 Case
   if (numberOfThrottles === 2) {
     // case when only one hardware axis is mapped
-    if (numberOfAxis === 1) {
+    if (numberOfUserAxes === 1) {
       throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [
-        { axis: axisNumber.toString() },
+        { axis: userAxis.toString() },
         { throttles: '1 + 2' },
       ]);
       // all two throttles are mapped from one axis
@@ -92,10 +96,10 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
       // eslint-disable-next-line brace-style
     }
     // case when two axes are mapped to throttle 1 and 2
-    else if (numberOfAxis === 2) {
+    else if (numberOfUserAxes === 2) {
       throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [
-        { axis: axisNumber.toString() },
-        { throttles: axisNumber.toString() },
+        { axis: userAxis.toString() },
+        { throttles: userAxis.toString() },
       ]);
       // throttle 1-2 is mapped from axis 1-2
       upperBoundDetentSetter = [throttleSimvarsSet1[activeDetent].getHiSetter()];
@@ -103,16 +107,16 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
       lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
       upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
     } else {
-      throw new Error(`Invalid number of axis: ${numberOfAxis}`);
+      throw new Error(`Invalid number of axis: ${numberOfUserAxes}`);
     }
     // eslint-disable-next-line brace-style
   }
   // A380 Case
   else if (numberOfThrottles === 4) {
     // case when only one hardware axis is mapped
-    if (numberOfAxis === 1) {
+    if (numberOfUserAxes === 1) {
       throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [
-        { axis: axisNumber.toString() },
+        { axis: userAxis.toString() },
         { throttles: '1 + 2 + 3 + 4' },
       ]);
       // all four throttles are mapped from one axis
@@ -133,10 +137,10 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
       // eslint-disable-next-line brace-style
     }
     // case when two axes are mapped and this setting is for axis 1 for throttle 1 and 2
-    else if (numberOfAxis === 2) {
-      const throttlesString = axisNumber === 1 ? '1 + 2' : '3 + 4';
+    else if (numberOfUserAxes === 2) {
+      const throttlesString = userAxis === 1 ? '1 + 2' : '3 + 4';
       throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [
-        { axis: axisNumber.toString() },
+        { axis: userAxis.toString() },
         { throttles: throttlesString },
       ]);
       // throttle 1 and 2 are mapped from axis 1, 3 and 4 are mapped from axis 2
@@ -153,10 +157,10 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
       // eslint-disable-next-line brace-style
     }
     // case when four axes are mapped to four throttles
-    else if (numberOfAxis === 4) {
+    else if (numberOfUserAxes === 4) {
       throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [
-        { axis: axisNumber.toString() },
-        { throttles: axisNumber.toString() },
+        { axis: userAxis.toString() },
+        { throttles: userAxis.toString() },
       ]);
       // throttle 1-4 is mapped from axis 1-4
       upperBoundDetentSetter = [throttleSimvarsSet1[activeDetent].getHiSetter()];
@@ -164,7 +168,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
       lowerBoundDetentGetter = throttleSimvarsSet1[activeDetent].getLowGetter();
       upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
     } else {
-      throw new Error(`Invalid number of axis: ${numberOfAxis}`);
+      throw new Error(`Invalid number of axis: ${numberOfUserAxes}`);
     }
   } else {
     throw new Error(`Invalid number of throttles: ${numberOfThrottles}`);
@@ -201,7 +205,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
 
   return (
     <div className={className}>
-      {numberOfAxis === 4 ? (
+      {numberOfUserAxes === 4 ? (
         <h2 className="mb-2 text-center">{throttleNumberString}</h2>
       ) : (
         <h1 className="mb-2 text-center">{throttleNumberString}</h1>

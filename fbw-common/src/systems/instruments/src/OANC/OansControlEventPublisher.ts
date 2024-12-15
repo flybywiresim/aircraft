@@ -7,4 +7,5 @@ export interface OansControlEvents {
   oansDisplayAirport: string;
   oansZoomIn: number;
   oansZoomOut: number;
+  oansNotAvail: boolean;
 }

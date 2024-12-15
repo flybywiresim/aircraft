@@ -81,12 +81,12 @@
       "CostIndex": "Maliyet Endeksi",
       "CruiseAlt": "Seyir İrtifası",
       "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
-      "NoImportDueToBoardingOrRefuel": "No import possible due to boarding or refuel in progress!",
+      "NoImportDueToBoardingOrRefuel": "Biniş veya yakıt ikmali devam ettiği için indirme mümkün değildir!",
       "Route": "Rota",
       "SimBriefDataNotYetLoaded": "SimBrief verileri henüz yüklenmedi.",
       "Title": "Uçuşunuz",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
-      "ToastWrongAircraftType": "SimBrief - Invalid aircraft type detected. Check that aircraft type in SimBrief OFP is correct.",
+      "ToastFuelPayloadImported": "Yakıt ve Yük ithal edildi!",
+      "ToastWrongAircraftType": "SimBrief - Geçersiz uçak tipi tespit edildi. SimBrief OFP'deki uçak tipinin doğru olup olmadığını kontrol edin.",
       "ZFW": "ZFW"
     }
   },
@@ -101,7 +101,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Henüz herhangi bir SimBrief verisini içe aktarmadınız."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "Asıl GW",
       "Engines": "Motorlar",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -114,7 +114,7 @@
       "Range": "Menzil",
       "Title": "Genel Bakış"
     },
-    "Title": "Harekat"
+    "Title": "Sevkiyat"
   },
   "Failures": {
     "Comfort": {
@@ -134,7 +134,7 @@
       "Defueling": "Yakıt Boşaltma",
       "EstimatedDuration": "Tahmini süre (dakika)",
       "EstimatedTime": "Tahmini süre",
-      "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "GSXFuelSyncEnabled": "GSX Yakıt Senkronizasyonu Etkin",
       "LeftInnerTank": "Sol İç Tank",
       "LeftOuterTank": "Sol Dış Tank",
       "ReadyToStart": "Başlamaya Hazır",
@@ -160,16 +160,16 @@
       "DeboardConfirmationConfirm": "Yolcuları İndir",
       "DeboardConfirmationTitle": "Tüm yolcular indirilsin mi?",
       "EstimatedDurationUnit": "dakika",
-      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
+      "GSXPayloadSyncEnabled": "GSX Yük Senkronizasyonu Etkin",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
       "SelectItem": {
-        "CargoDeck": "Cargo",
-        "MainDeck": "Main",
-        "UpperDeck": "Upper"
+        "CargoDeck": "Kargo",
+        "MainDeck": "Ana",
+        "UpperDeck": "Üst"
       },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
@@ -178,12 +178,12 @@
         "MaxGW": "Maxsimum Gw",
         "MaxGWCG": "Maksimum GW CG",
         "MaxPassengers": "Maksimum Yolcu",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
+        "MaxZFW": "Maksimum ZFW",
+        "MaxZFWCG": "Maksimum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Uçaktan indirmeye başla"
+        "StartBoarding": "Yolcu Bindirmeyi Başlat",
+        "StartDeboarding": "Yolcu İndirmeyi Başlat"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -193,7 +193,7 @@
       "Title": "Geri itme"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "Hava Başlatıcı Ünitesi",
       "BaggageTruck": "Bagaj Kamyonu",
       "CateringTruck": "Yemek Servis Aracı",
       "Cones": "Emniyet Konileri",
@@ -234,10 +234,10 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "Havaalanı Mevcut Değil",
-      "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
+      "AuthenticateWithNavigraph": "Navigraph ile Giriş Yap",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "3. Parti Ayarları",
+        "Title": "Navigraph hesabını bağlamak için 3. Taraf Seçenekleri'ne gidin"
       },
       "InsufficientEnv": "Yetersiz .env dosyası",
       "IntoYourBrowserAndEnterTheCodeBelow": "tarayıcınıza girin ve aşağıdaki kodu girin\n",
@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Eşitle",
+    "Takeoff": {
+      "Airport": "Havalimanı",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Hesapla",
+      "CentreOfGravity": "Kalkış Ağırlık Merkezi (TOCG)",
+      "Clear": "Temizle",
+      "CoGPosition": "CG Pozisyonu",
+      "CoGPositions": {
+        "Forward": "İleri (< %27)",
+        "Standard": "Standart"
+      },
+      "Configuration": "Konfigürasyon",
+      "CrosswindAboveLimitMessage": "Hesaplamayı {actual_crosswind} knot ile yapmak istiyor musunuz?",
+      "CrosswindAboveLimitTitle": "Maksimum Yan Rüzgar {max_crosswind} Knot",
+      "EnterManually": "Elle Girin",
+      "EntryAngle": "Giriş Açısı",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG Kalkış Zarfının Dışında",
+        "FlexNotPossible": "Flex Mümkün Değil",
+        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "InvalidData": "Geçersiz Veriler",
+        "MaximumPressureAlt": "Maksimum Basınç İrtifasının Üstünde ({max_zp} ft)",
+        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
+        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumTemperature": "Dışarı Hava Sucaklığının Üstünde ({tmax}° C)",
+        "MaximumTireSpeed": "Maksimum Lastik Hızı Tatmin Edilmedi",
+        "OperatingEmptyWeight": "İşletimsel Boş Ağırlığının (OEW) Altında ({oew}{weight_unit})",
+        "StructuralMtow": "Azami Kalkış Ağırlığının (MTOW) Üstünde ({structural_mtow}\n{weight_unit})\n",
+        "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
+        "TooLight": "Below Minimum Takeoff Weight",
+        "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
+      },
+      "Packs": "Packs",
+      "Qnh": "QNH",
+      "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Runway Condition",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Dry Snow - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Slush - 12.7 mm/½\"",
+        "Contaminated13mmWater": "Water - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "Wet Snow - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Wet Snow - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Wet Snow - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Compacted Snow",
+        "Dry": "Dry",
+        "Wet": "Wet"
+      },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Runway Slope",
+      "Temperature": "Temperature",
+      "Thrust": "Thrust",
+      "Title": "Takeoff",
+      "Tora": "TORA",
+      "Weight": "Takeoff Weight",
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
+    },
     "Title": "Performans",
     "TopOfDescent": {
       "Data": {
@@ -384,7 +454,7 @@
       "ColdDark": "Cold & Dark",
       "ConfirmationDialogMsg": "Lütfen hazır ayarın yüklenmesini onaylayın.",
       "CurrentProcedureStep": "Mevcut Prosedür Adımı",
-      "ExpediteLoading": "Fast loading (unrealistic):",
+      "ExpediteLoading": "Hızlı yükleme (gerçekçi değil):",
       "PleaseConfirmLoadingOfPreset": "Lütfen hazır ayarın yüklenmesini onaylayın.",
       "Powered": "Elektrikli",
       "ReadyPushback": "Pushback için hazır",
@@ -472,31 +542,33 @@
     "AlignAdirs": "ADIRS'i Hizala",
     "FinishBoarding": "Uçağa binmeyi bitir",
     "OnScreenKeyboard": "Ekran Klavyesi",
-    "PauseAtTod": "Pause at Top of Descent",
-    "PauseAtTodArmed": "Armed",
-    "PauseAtTodInactive": "Inactive",
-    "PauseAtTodStandby": "Standby",
+    "PauseAtTod": "Top of Descent Noktasında Durdur",
+    "PauseAtTodArmed": "Hazır",
+    "PauseAtTodInactive": "Aktif değil",
+    "PauseAtTodStandby": "Beklemede",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Bağlandı",
     "SimBridgeConnecting": "Bağlanıyor...",
     "SimBridgeOff": "Kapalı",
     "SimBridgeOffline": "Mevcut değil",
-    "Simrate": "Simrate",
+    "Simrate": "Sim Hızı",
     "TT": {
       "AlignAdirs": "ADIRS'i anında hizalayın",
       "AutoBrightness": "Otomatik Parlaklığı Açma/Kapatma",
       "Brightness": "flyPad parlaklığını ayarla",
       "FinishBoarding": "Uçağa binmeyi anında bitir",
       "OnScreenKeyboard": "Ekran Klavyesini Açma/Kapatma",
-      "PauseAtTod": "Arm or Disarm Pause at Top of Descent",
+      "PauseAtTod": "Top of Descent Noktasını Hazırla",
       "PowerButton": "Gücü Kapat",
       "Settings": "flyPad Ayarlar sayfasına git",
       "SimBridge": "SimBridge Bağlantısını Kontrol Et",
-      "Simrate": "Increase or Decrease Simulation Rate",
+      "Simrate": "Simülasyon Oranını Artırma veya Azaltma",
       "Sleep": "Beklemede"
     },
     "Title": "Hızlı Kontroller"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Hakkında"
@@ -510,14 +582,14 @@
       "PaxSigns": "Yolcu İşaretleri",
       "RmpVhfSpacing": "RMP VHF Aralığı",
       "Satcom": "Satcom",
-      "Select": "Select",
+      "Select": "Seç",
       "ThrustReductionHeight": "İtki Azaltma İrtifası (ft)",
       "Title": "Uçak Seçenekleri / Pin Programları",
       "WeightUnit": "Ağırlık Birimi"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Kaynağı",
-      "AutomaticallyImportSimBriefData": "SimBrief Verilerini Otomatik Olarak Al",
+      "AutomaticallyImportSimBriefData": "SimBrief Verilerini Otomatik Olarak İndir",
       "Enable": "Etkinleştir",
       "EnableTelex": "TELEX'i Etkinleştir",
       "ErrorReporting": "Hata Raporlama",
@@ -549,19 +621,20 @@
       "WindInteriorVolume": "Rüzgar iç ses seviyesi"
     },
     "AutomaticCallOuts": {
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "Reset": "Reset",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Title": "Automatic Call Outs"
+      "FiveHundredGlide": "Glideslope Yakalandığında Engellenir",
+      "Reset": "Sıfırla",
+      "ResetStandardConfig": "Standart Yapılandırmaya Sıfırla",
+      "Title": "Otomatik Çağrılar"
     },
     "Fast": "Hızlı",
     "Instant": "Anında",
     "Real": "Gerçek",
     "Realism": {
-      "AdirsAlignTime": "ADIRS Hizalama Zamanı",
+      "AdirsAlignTime": "ADIRS Hizalama Süresi",
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Yardımcı Pilot Avatarını Göster",
       "HomeCockpitMode": "Ev Kokpit Modu",
       "McduFocusTimeout": "MCDU Focus Zaman Aşımı (saniye)",
@@ -570,7 +643,7 @@
       "PauseAtTodDistance": "T/D Noktasında Duraklatma Mesafesi (nm)",
       "PilotAvatar": "Pilot Avatarını Göster",
       "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
-      "SyncEfis": "EFIS kontrollerini Kaptan'dan FO'ya senkronize edin",
+      "SyncEfis": "Kaptan ve İkinci Pilotun EFIS ve ses ayarlarını eş zamanla",
       "Title": "Gerçekçilik"
     },
     "SimOptions": {
@@ -587,19 +660,23 @@
       "EnableSimBridge": "SimBridge Bağlantısını Etkinleştir (Başarılı bir bağlantı yoksa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Sunucu Bağlantısını Etkinleştir (Başarılı bağlantı olmazsa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
       "ExternalMcduServerPort": "Harici MCDU Sunucu Bağlantı Noktası",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "Etkin değil",
+      "Left": "Left",
       "LoadOnly": "Yalnızca Yükle",
       "None": "Hiçbiri",
       "Off": "Kapalı",
+      "PilotSeat": "Pilot Seat for Control",
+      "Right": "Right",
       "Save": "Kaydet",
       "Side": "Side",
       "SimBridgeIp": "Harici SimBridge Ana Bilgisayar Adresi",
       "SimBridgePort": "Harici SimBridge Bağlantı Noktası",
-      "SimbridgeEmptyAddress": "SimBridge Remote IP Address cannot be empty!",
-      "SimbridgeLocal": "This PC",
-      "SimbridgeMachine": "Simbridge Host Machine",
-      "SimbridgeRemote": "Remote PC",
+      "SimbridgeEmptyAddress": "SimBridge Uzak IP Adresi boş bırakılamaz!",
+      "SimbridgeLocal": "Bu Bilgisayar",
+      "SimbridgeMachine": "Simbridge Ana Bilgisayar",
+      "SimbridgeRemote": "Uzak Bilgisayar",
       "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
       "ThrottleDetents": "Gaz Mandalları",
       "Title": "Simülasyon Seçenekleri",
@@ -611,39 +688,39 @@
       "GsxFuelEnabled": "GSX Yakıt Senkronizasyonu",
       "GsxPayloadEnabled": "GSX Yük Senkronizasyonu",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "Bağlandı",
+        "Link": "Hesabı bağla",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Navigraph Hesap Girişi"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Navigraph Hesap Bağlantısı",
         "SubscriptionStatus": {
-          "None": "None",
-          "Unknown": "Unknown",
+          "None": "Yok",
+          "Unknown": "Bilinmeyen",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Hesaptan Çıkış Yap"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "SimBrief Kullanıcı Kimliğini geçersiz kıl",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Lütfen SimBrief kullanıcı adınızı veya pilot ID'nizi doğru girdiğinizden emin olun.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "Bağlı Navigraph Hesabı yerine kullanılacak alternatif SimBrief kullanıcı kimliği"
       },
       "Title": "3. Parti Ayarları",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief PilotID geçersiz kılma doğrulandı ve şu şekilde güncellendi"
     },
     "ThrottleConfig": {
       "Apply": "Uygula",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Geçerli gaz yapılandırma ayarlarınızı varsayılan durumlarına sıfırlamak istediğinizden emin misiniz? Bu eylem geri döndürülemez.",
       "Axis": "Eksen",
-      "AxisDescription": "Axis $axis for Throttle $throttles",
+      "AxisDescription": "Gaz Kelebeği için Eksen $axis $throttles",
       "Back": "Geri",
-      "ConfigureEnd": "Sonu Yapılandır",
-      "ConfigureStart": "Başlat",
+      "ConfigureEnd": "Kalibre Etmeyi Sonlandır",
+      "ConfigureStart": "Kalibre Etmeyi Başlat",
       "CurrentValue": "Geçerli Değer",
       "Deadband": "Ölü bant",
       "ErrorOverlapMsg": "ile örtüşen",
-      "FourThrottleWarning": "Remember to configure MSFS to use Axis 1 for Throttle 1+2 and Axis 2 for Throttle 3+4.",
+      "FourThrottleWarning": "MSFS'yi Gaz Kelebeği 1+2 için Eksen 1'i ve Gaz Kelebeği 3+4 için Eksen 2'yi kullanacak şekilde yapılandırmayı unutmayın.",
       "IndependentAxis": "Bağımsız Eksen",
       "LoadFromFile": "Dosyadan Yükle",
       "PleaseEnterAValidDeadzone": "Lütfen geçerli bir ölü bölge girin",
@@ -654,10 +731,10 @@
       "SaveAndApply": "Kaydet ve Uygula",
       "SetFromThrottle": "Throttle'dan ayarla",
       "ThrottleConfigurationReset": "Throttle Yapılandırmasını Sıfırla",
-      "TogaOnAxis": "TOGA On Axis"
+      "TogaOnAxis": "TOGA Eksende"
     },
     "Title": "Ayarlar",
-    "Unrealistic": "Gerçekçi olmayan",
+    "Unrealistic": "Gerçekçi Değil",
     "flyPad": {
       "AutoBrightness": "Otomatik Parlaklık",
       "AutomaticallyShowOnscreenKeyboard": "Ekran Klavyesini Otomatik Olarak Göster",
@@ -665,6 +742,7 @@
       "Blue": "Mavi",
       "Brightness": "Parlaklık",
       "Dark": "Koyu",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Dil",
       "Light": "Açık",
       "Local": "Yerel",
@@ -675,12 +753,14 @@
       "Theme": "Tema",
       "TimeDisplayed": "Gösterilen Süre",
       "Title": "flyPad",
-      "TwelveHours": "12h",
+      "TwelveHours": "12 saat",
       "TwentyFourHours": "24 saat",
       "Utc": "UTC",
       "UtcAndLocal": "UTC ve Yerel"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Nis",
     "Aug": "Ağu",

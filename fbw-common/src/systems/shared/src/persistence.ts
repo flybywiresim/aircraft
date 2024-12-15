@@ -5,6 +5,7 @@ type SubscribeCancellation = () => void;
  * Allows interacting with the persistent storage
  */
 export class NXDataStore {
+  private static aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX.toUpperCase();
   private static mListener: ViewListener.ViewListener;
 
   private static get listener() {
@@ -22,7 +23,7 @@ export class NXDataStore {
   static get(key: string, defaultVal: string): string;
   static get(key: string, defaultVal?: string): string | undefined;
   static get(key: string, defaultVal?: string): any {
-    const val = GetStoredData(`A32NX_${key}`);
+    const val = GetStoredData(`${this.aircraftProjectPrefix}_${key}`);
     // GetStoredData returns null on error, or empty string for keys that don't exist (why isn't that an error??)
     // We could use SearchStoredData, but that spams the console with every key (somebody left their debug print in)
     if (val === null || val.length === 0) {
@@ -38,12 +39,12 @@ export class NXDataStore {
    * @param val The value to assign to the property
    */
   static set(key: string, val: string): void {
-    SetStoredData(`A32NX_${key}`, val);
-    this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
+    SetStoredData(`${this.aircraftProjectPrefix}_${key}`, val);
+    this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, val);
   }
 
   static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {
-    return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
+    return Coherent.on('FBW_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
       if (key === '*' || key === updatedKey) {
         callback(updatedKey, value);
       }

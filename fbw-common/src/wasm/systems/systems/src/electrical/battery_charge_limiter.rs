@@ -2,13 +2,14 @@ use super::{
     AlternatingCurrentElectricalSystem, BatteryPushButtons, ElectricalElement, Electricity,
     ElectricitySource, EmergencyElectrical, ProvideCurrent, ProvidePotential,
 };
+use crate::shared::AdirsDiscreteOutputs;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LgciuWeightOnWheels},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
-use uom::si::{electric_current::ampere, electric_potential::volt, f64::*, velocity::knot};
+use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
 
 enum State {
     Off(Off),
@@ -38,6 +39,7 @@ impl State {
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> State {
         match self {
             State::Off(observer) => observer.update(context, battery_number, battery_push_buttons),
@@ -54,6 +56,7 @@ impl State {
                 apu,
                 apu_overhead,
                 ac_electrical_system,
+                adirs,
             ),
             State::Closed(observer) => observer.update(
                 context,
@@ -66,6 +69,7 @@ impl State {
                 apu,
                 apu_overhead,
                 ac_electrical_system,
+                adirs,
             ),
         }
     }
@@ -107,6 +111,7 @@ impl BatteryChargeLimiter {
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.arrow.update(context, battery);
 
@@ -124,6 +129,7 @@ impl BatteryChargeLimiter {
                 apu,
                 apu_overhead,
                 ac_electrical_system,
+                adirs,
             ));
         }
     }
@@ -236,7 +242,6 @@ impl Open {
 
     fn should_close(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
@@ -244,6 +249,7 @@ impl Open {
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> bool {
         !self.open_due_to_exceeding_emergency_elec_closing_time_allowance
             && !self.emergency_elec_inhibited(
@@ -255,9 +261,10 @@ impl Open {
             && !self.open_due_to_discharge_protection
             && (self.should_get_ready_for_apu_start(apu, apu_overhead)
                 || on_ground_at_low_speed_with_unpowered_ac_buses(
-                    context,
                     electricity,
                     ac_electrical_system,
+                    lgciu1,
+                    adirs,
                 )
                 || self.should_charge_battery())
     }
@@ -318,13 +325,13 @@ impl Open {
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> State {
         self.update_state(context, electricity, battery, battery_bus, apu_overhead);
 
         if !battery_push_buttons.bat_is_auto(battery_number) {
             State::Off(Off::new())
         } else if self.should_close(
-            context,
             electricity,
             emergency_elec,
             emergency_generator,
@@ -332,6 +339,7 @@ impl Open {
             apu,
             apu_overhead,
             ac_electrical_system,
+            adirs,
         ) {
             State::Closed(Closed::from_open(emergency_elec.is_active()))
         } else {
@@ -402,8 +410,8 @@ impl Closed {
         }
     }
 
-    fn should_open_due_to_discharge_protection(&self, context: &UpdateContext) -> bool {
-        context.is_on_ground()
+    fn should_open_due_to_discharge_protection(&self, lgciu1: &impl LgciuWeightOnWheels) -> bool {
+        lgciu1.left_and_right_gear_compressed(false)
             && self.below_23_volt_duration
                 >= Duration::from_secs(Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS)
     }
@@ -417,26 +425,27 @@ impl Closed {
 
     fn should_open(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         lgciu1: &impl LgciuWeightOnWheels,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> bool {
         if emergency_elec.is_active() {
             !apu_overhead.master_sw_is_on() || self.emergency_elec_inhibited(lgciu1)
         } else {
             !self.awaiting_apu_start(apu, apu_overhead)
                 && !on_ground_at_low_speed_with_unpowered_ac_buses(
-                    context,
                     electricity,
                     ac_electrical_system,
+                    lgciu1,
+                    adirs,
                 )
-                && (self.beyond_charge_duration_on_ground_without_apu_start(context)
+                && (self.beyond_charge_duration_on_ground_without_apu_start(lgciu1)
                     || self
-                        .beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(context))
+                        .beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(adirs))
         }
     }
 
@@ -453,17 +462,20 @@ impl Closed {
         apu_overhead.master_sw_is_on() && !apu.is_available()
     }
 
-    fn beyond_charge_duration_on_ground_without_apu_start(&self, context: &UpdateContext) -> bool {
-        (!self.had_apu_start && context.is_on_ground())
+    fn beyond_charge_duration_on_ground_without_apu_start(
+        &self,
+        lgciu1: &impl LgciuWeightOnWheels,
+    ) -> bool {
+        (!self.had_apu_start && lgciu1.left_and_right_gear_compressed(false))
             && self.below_4_ampere_charging_duration
                 >= Duration::from_secs(Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS)
     }
 
     fn beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(
         &self,
-        context: &UpdateContext,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> bool {
-        (context.indicated_airspeed() >= Velocity::new::<knot>(100.) || self.had_apu_start)
+        (adirs.low_speed_warning_1(1) || self.had_apu_start)
             && self.below_4_ampere_charging_duration
                 >= Duration::from_secs(
                     Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
@@ -482,25 +494,26 @@ impl Closed {
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> State {
         self.update_state(context, battery, apu_overhead);
 
         if !battery_push_buttons.bat_is_auto(battery_number) {
             State::Off(Off::new())
-        } else if self.should_open_due_to_discharge_protection(context) {
+        } else if self.should_open_due_to_discharge_protection(lgciu1) {
             State::Open(Open::due_to_discharge_protection())
         } else if self
             .should_open_due_to_exceeding_emergency_elec_closed_time_allowance(emergency_elec)
         {
             State::Open(Open::due_to_exceeding_emergency_elec_closing_time_allowance())
         } else if self.should_open(
-            context,
             electricity,
             emergency_elec,
             lgciu1,
             apu,
             apu_overhead,
             ac_electrical_system,
+            adirs,
         ) {
             State::Open(Open::from_closed())
         } else {
@@ -510,13 +523,14 @@ impl Closed {
 }
 
 fn on_ground_at_low_speed_with_unpowered_ac_buses(
-    context: &UpdateContext,
     electricity: &Electricity,
     ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    lgciu1: &impl LgciuWeightOnWheels,
+    adirs: &impl AdirsDiscreteOutputs,
 ) -> bool {
     !ac_electrical_system.any_non_essential_bus_powered(electricity)
-        && context.is_on_ground()
-        && context.indicated_airspeed() < Velocity::new::<knot>(100.)
+        && lgciu1.left_and_right_gear_compressed(false)
+        && !adirs.low_speed_warning_1(1)
 }
 
 struct ArrowBetweenBatteryAndBatBus {
@@ -562,7 +576,7 @@ mod tests {
     mod battery_charge_limiter_tests {
         use std::time::Duration;
 
-        use uom::si::{length::foot, power::watt};
+        use uom::si::{length::foot, power::watt, velocity::knot};
 
         use crate::{
             electrical::{
@@ -595,8 +609,7 @@ mod tests {
             fn on_the_ground(mut self) -> Self {
                 self.set_on_ground(true);
                 self.set_indicated_altitude(Length::new::<foot>(0.));
-
-                self
+                self.gear_down()
             }
 
             fn indicated_airspeed_of(mut self, indicated_airspeed: Velocity) -> Self {
@@ -956,6 +969,38 @@ mod tests {
             }
         }
 
+        struct TestAdirs {
+            indicated_airspeed: Velocity,
+        }
+        impl TestAdirs {
+            fn new(context: &UpdateContext) -> Self {
+                Self {
+                    indicated_airspeed: context.indicated_airspeed(),
+                }
+            }
+        }
+        impl AdirsDiscreteOutputs for TestAdirs {
+            fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
+                assert_eq!(adiru_number, 1);
+                self.indicated_airspeed.get::<knot>() >= 100.
+            }
+
+            fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
+                assert_eq!(adiru_number, 1);
+                todo!()
+            }
+
+            fn low_speed_warning_3(&self, adiru_number: usize) -> bool {
+                assert_eq!(adiru_number, 1);
+                todo!()
+            }
+
+            fn low_speed_warning_4(&self, adiru_number: usize) -> bool {
+                assert_eq!(adiru_number, 1);
+                todo!()
+            }
+        }
+
         struct TestAircraft {
             battery_bus_electricity_source: TestElectricitySource,
             battery: Battery,
@@ -1109,6 +1154,7 @@ mod tests {
                     &TestAlternatingCurrentElectricalSystem::new(
                         self.any_non_essential_bus_powered,
                     ),
+                    &TestAdirs::new(context),
                 );
 
                 self.battery_contactor

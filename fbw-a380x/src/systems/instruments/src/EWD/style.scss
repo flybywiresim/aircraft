@@ -39,6 +39,9 @@
     display: none;
 }
 
+.Invisible {
+  visibility: hidden;
+}
 
 .EWDWarningTextLeft {
     fill: white;
@@ -110,8 +113,7 @@ tspan {
     font-size: 36px !important;
 }
 
-text, tspan {
-    fill: $display-white;
+text, tspan, span {
     stroke: none !important;
 
     &.EWDWarn {
@@ -279,6 +281,11 @@ text, tspan {
   margin: 0px 8px 0px 8px;
 }
 
+.VerticalFill {
+    display: flex;
+    flex-grow: 1;
+}
+
 .StsArea {
   height: 40px;
 }
@@ -286,6 +293,7 @@ text, tspan {
 .MemosContainer {
   display: flex;
   flex-direction: column;
+  flex: 1;
   padding: 12px 0px 12px 0px;
 }
 
@@ -317,7 +325,7 @@ text, tspan {
   padding-left: 8px;
 }
 
-.MemosFillArea {
+.FillArea {
   flex-grow: 1;
 }
 
@@ -331,4 +339,151 @@ text, tspan {
 
 .LimitationsHeading.Underline {
   text-decoration: underline;
+}
+
+.ProceduresContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.OverflowIndicatorColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  padding: 50px 0px 12px 0px;
+}
+
+.WarningsColumn {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0px 12px 0px;
+  height: 100%;
+  flex: 1;
+}
+
+.EclLine {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  padding: 4px 0px 4px 0px;
+  margin-left: 10px;
+  align-items: center;
+  border: 3px solid transparent;
+  color: $display-cyan;
+}
+
+.EclLine.ChecklistItem {
+  color: $display-cyan;
+}
+
+.EclLine.ChecklistItem.Checked {
+  color: $display-green;
+}
+
+.EclLine.AbnormalItem {
+  color: $display-cyan;
+}
+
+.EclLine.AbnormalItem.Checked {
+  color: $display-white;
+}
+
+.EclLine.ChecklistCompleted {
+  color: $display-grey !important;
+}
+
+.EclLine.Green {
+  color: $display-green !important;
+}
+
+.EclLine.Cyan {
+  color: $display-cyan !important;
+}
+
+.EclLine.Amber {
+  color: $display-amber !important;
+}
+
+.EclLine.Selected {
+  border: 3px solid $display-cyan;
+  border-right: 3px solid transparent;
+}
+
+.EclLine.Headline {
+  color: $display-white !important;
+  text-decoration: underline;
+}
+
+.EclLineCheckboxArea {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  padding-top: 2px;
+  width: 32px;
+  font-size: 26px;
+  color: $display-cyan;
+}
+
+.EclLineCheckboxArea.Checked {
+  color: $display-green;
+}
+
+.EclLineCheckboxArea.AbnormalItem {
+  color: $display-cyan;
+}
+
+.EclLineCheckboxArea.AbnormalItem.Checked {
+  color: $display-white;
+}
+
+.EclLineText {
+  margin: 0px 10px 0px 10px;
+  font-size: 26px;
+}
+
+.EclSeparationLine {
+  flex: 1;
+  border-bottom: 2px solid $display-white;
+  padding-top: 16px;
+  margin-bottom: 16px;
+  align-self: center;
+  justify-self: center;
+  margin-right: 10px;
+}
+
+.EclLineContainer {
+  height: 34px;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.EclLineEndMarker {
+  content: ' ';
+  width: 28px;
+  height: 34px;
+  border-right: 3px solid $display-white;
+  border-left: 3px solid $display-white;
+  margin-left: -5px;
+}
+
+.EclLineEndMarker.Selected {
+  border-left: 3px solid transparent;
+}
+
+.EclLineEndMarker.First {
+  border-top: 3px solid $display-white;
+}
+
+.EclLineEndMarker.Last {
+  border-bottom: 3px solid $display-white;
+}
+
+.EclSoftKeys {
+  position: absolute;
+  top: 965px;
+  right: 3px;
+  display: flex;
+  flex-direction: row;
 }

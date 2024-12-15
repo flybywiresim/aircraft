@@ -59,9 +59,15 @@ function decimalToDms(deg: number, lng: boolean) {
   };
 }
 
-export function coordinateToString(coordinate: Coordinates, shortVersion: boolean): string {
-  const dmsLat = decimalToDms(coordinate.lat, false);
-  const dmsLon = decimalToDms(coordinate.long, true);
+export function coordinateToString(coordinate: Coordinates, shortVersion: boolean): string;
+export function coordinateToString(lat: number, lon: number, shortVersion: boolean): string;
+export function coordinateToString(arg0: number | Coordinates, arg1: number | boolean, arg2?: boolean): string {
+  const lat = typeof arg0 === 'object' ? arg0.lat : arg0;
+  const lon = typeof arg0 === 'object' ? arg0.long : (arg1 as number);
+  const shortVersion = typeof arg0 === 'object' ? !!arg1 : !!arg2;
+
+  const dmsLat = decimalToDms(lat, false);
+  const dmsLon = decimalToDms(lon, true);
 
   dmsLon.deg = Number(dmsLon.deg);
   dmsLat.sec = Math.ceil(Number(dmsLat.sec / 100));
@@ -80,7 +86,12 @@ export function coordinateToString(coordinate: Coordinates, shortVersion: boolea
     return `${dmsLat.deg}W${dmsLon.deg}`;
   }
 
-  const lat = `${dmsLat.deg}°${dmsLat.min}.${dmsLat.sec}${dmsLat.dir}`;
-  const lon = `${dmsLon.deg}°${dmsLon.min}.${dmsLon.sec}${dmsLon.dir}`;
-  return `${lat}/${lon}`;
+  const latDegStr = dmsLat.deg.toString().padStart(2, '0');
+  const lonDegStr = dmsLon.deg.toString().padStart(3, '0');
+  const latMinStr = dmsLat.min.toString().padStart(2, '0');
+  const lonMinStr = dmsLon.min.toString().padStart(2, '0');
+
+  const latStr = `${latDegStr}°${latMinStr}.${dmsLat.sec}${dmsLat.dir}`;
+  const lonStr = `${lonDegStr}°${lonMinStr}.${dmsLon.sec}${dmsLon.dir}`;
+  return `${latStr}/${lonStr}`;
 }

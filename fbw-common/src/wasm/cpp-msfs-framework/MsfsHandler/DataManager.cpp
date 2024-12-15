@@ -120,8 +120,8 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
   const std::string prefixedVarName = noPrefix ? varName : NamedVariable::addPrefixToVarName(varName);
   const std::string uniqueName{prefixedVarName + ":" + unit.name};
 
-  // Check if variable already exists
-  // Check which update method and frequency to use - if two variables are the same
+  // Check if variable already exists.
+  // Check which update method and frequency to use - if two variables are the same,
   // then use the update method and frequency of the automated one with faster
   // update frequency
   const auto pair = variables.find(uniqueName);

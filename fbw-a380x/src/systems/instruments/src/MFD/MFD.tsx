@@ -20,8 +20,6 @@ import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
 import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
@@ -201,9 +199,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   public async onAfterRender(node: VNode): Promise<void> {
     super.onAfterRender(node);
 
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
-    NavigationDatabaseService.activeDatabase = db;
-
     const isCaptainSide = this.props.captOrFo === 'CAPT';
 
     this.props.bus
@@ -251,7 +246,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
               this.uiService.navigateTo('surv/controls');
               break;
             case 'ATCCOM':
-              this.uiService.navigateTo('atccom/connect/notification');
+              this.uiService.navigateTo('atccom/connect');
               break;
             case 'ND': // Move cursor to ND
               break;
@@ -268,10 +263,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
       this.activeUriChanged(uri);
     });
 
-    this.topRef.instance.addEventListener('mousemove', (ev) => {
-      this.mouseCursorRef.getOrDefault()?.updatePosition(ev.clientX, ev.clientY);
-    });
+    this.topRef.instance.addEventListener('mousemove', this.onMouseMoveHandler);
   }
+
+  private onMouseMove(ev: MouseEvent) {
+    this.mouseCursorRef.getOrDefault()?.updatePosition(ev.clientX, ev.clientY);
+  }
+
+  private onMouseMoveHandler = this.onMouseMove.bind(this);
 
   private activeUriChanged(uri: ActiveUriInformation) {
     if (!this.props.fmcService.master) {
@@ -328,6 +327,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
   fmcChanged() {
     // Will be called if the FMC providing all the data has changed.
+  }
+
+  destroy(): void {
+    this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
+
+    super.destroy();
   }
 
   render(): VNode {

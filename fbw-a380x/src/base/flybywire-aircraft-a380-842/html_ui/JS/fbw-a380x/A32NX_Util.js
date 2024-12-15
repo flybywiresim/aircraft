@@ -262,6 +262,8 @@ class NXPopUp {
 
     _showPopUp(params) {
         try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD'); // Needed to return focus back to camera if it has been taken elsewhere.
+            SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
             Coherent.trigger("SHOW_POP_UP", params);
         } catch (e) {
             console.error(e);

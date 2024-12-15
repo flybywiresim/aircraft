@@ -85,7 +85,7 @@ export class FixedRadiusTransition extends Transition {
 
   recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue) {
     if (this.isFrozen) {
-      if (DEBUG) {
+      if (LnavConfig.DEBUG_GEOMETRY) {
         console.log('[FMS/Geometry] Not recomputing Type I transition as it is frozen.');
       }
       return;

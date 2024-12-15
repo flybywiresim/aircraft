@@ -1,13 +1,5 @@
-import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-
-import './MfdFmsPositionNavaids.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import {
   FrequencyILSFormat,
   FrequencyVORDMEFormat,
@@ -15,12 +7,39 @@ import {
   LsCourseFormat,
   NavaidIdentFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
-import { NavigationDatabaseService } from '@fmgc/index';
+import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+
+import { coordinateToString, NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
+import { NavigationDatabaseService, SelectedNavaidType } from '@fmgc/index';
 import { NavRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
+import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
+
+import './MfdFmsPositionNavaids.scss';
 
 interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {}
+
+interface SelectedNavaid {
+  ident: Subject<string>;
+  frequencyOrChannel: Subject<string>;
+  class: Subject<string>;
+}
+
+const NAVAID_TYPE_STRINGS: Record<SelectedNavaidType, string> = {
+  [SelectedNavaidType.None]: '',
+  [SelectedNavaidType.Dme]: 'DME',
+  [SelectedNavaidType.Vor]: 'VOR',
+  [SelectedNavaidType.VorDme]: 'VOR/DME',
+  [SelectedNavaidType.VorTac]: 'VOR/TAC',
+  [SelectedNavaidType.Tacan]: 'TACAN',
+  [SelectedNavaidType.Ils]: 'ILS/DME',
+  [SelectedNavaidType.Gls]: 'GLS',
+  [SelectedNavaidType.Mls]: 'MLS',
+};
 
 export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
   private navaidsSelectedPageIndex = Subject.create<number>(0);
@@ -65,25 +84,15 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   private lsCourseEnteredByPilot = Subject.create<boolean>(false);
 
-  private firstRowIdent = Subject.create<string | null>(null);
+  private readonly selectedNavaids: SelectedNavaid[] = Array.from({ length: 3 }, () => ({
+    ident: Subject.create(''),
+    frequencyOrChannel: Subject.create(''),
+    class: Subject.create(''),
+  }));
 
-  private firstRowFrequency = Subject.create<string | null>(null);
+  private readonly radioNavMode = Subject.create('');
 
-  private firstRowClass = Subject.create<string | null>(null);
-
-  private secondRowIdent = Subject.create<string | null>(null);
-
-  private secondRowFrequency = Subject.create<string | null>(null);
-
-  private secondRowClass = Subject.create<string | null>(null);
-
-  private thirdRowIdentRef = FSComponent.createRef<HTMLDivElement>();
-
-  private thirdRowIdent = Subject.create<string | null>(null);
-
-  private thirdRowFrequency = Subject.create<string | null>(null);
-
-  private thirdRowClass = Subject.create<string | null>(null);
+  private readonly radioNavPosition = Subject.create('');
 
   private deselectedNavaids = [
     Subject.create<string | null>(null),
@@ -106,8 +115,6 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     if (!this.props.fmcService.master) {
       return;
     }
-
-    //console.time('POSITION/NAVAIDS:onNewData');
 
     const vor1 = this.props.fmcService.master.navaidTuner.getVorRadioTuningStatus(1);
     this.vor1Ident.set(vor1.ident ?? null);
@@ -139,19 +146,67 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
     this.deselectedNavaids.forEach((v, i) => {
       if (this.props.fmcService.master?.navaidTuner.deselectedNavaids[i]) {
-        v.set(this.props.fmcService.master.navaidTuner.deselectedNavaids[i]);
+        // FIXME pass full navaid objects to deselected navaids so we can get the ident.
+        // Taking it from the databaseId is not safe but all we can do for now.
+        v.set(this.props.fmcService.master.navaidTuner.deselectedNavaids[i].substring(7).trim());
       } else {
         v.set(null);
       }
     });
 
-    // Third line for selected navaids table: Display LS if set
-    this.thirdRowFrequency.set(mmr.frequency ? mmr.frequency.toFixed(2) : '');
-    this.thirdRowClass.set(mmr.ident ? 'ILS/DME' : '');
-    this.thirdRowIdent.set(mmr.ident ?? null);
-    this.thirdRowIdentRef.instance.style.visibility = mmr.ident ? 'visible' : 'hidden';
+    const selectedNavaids = this.props.fmcService.master?.navigation.getSelectedNavaids();
 
-    //console.timeEnd('POSITION/NAVAIDS:onNewData');
+    if (selectedNavaids) {
+      for (const [i, navaid] of selectedNavaids.entries()) {
+        if (i === 0) {
+          // display vor is not shown on this page on A380
+          continue;
+        }
+        this.selectedNavaids[i - 1].ident.set(navaid.ident ?? '');
+        this.selectedNavaids[i - 1].frequencyOrChannel.set(
+          navaid.facility === null || navaid.frequency === null ? '' : navaid.frequency.toFixed(2),
+        );
+        this.selectedNavaids[i - 1].class.set(navaid.facility !== null ? NAVAID_TYPE_STRINGS[navaid.type] : '');
+      }
+      // fake it until we make it
+      if (selectedNavaids[1].facility !== null && selectedNavaids[2].facility !== null) {
+        this.radioNavMode.set('DME/DME');
+        this.radioNavPosition.set(
+          coordinateToString(
+            SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree),
+            SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree),
+            false,
+          ),
+        );
+      } else if (selectedNavaids[1].facility !== null) {
+        this.radioNavMode.set('VOR/DME');
+        this.radioNavPosition.set(
+          coordinateToString(
+            SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree),
+            SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree),
+            false,
+          ),
+        );
+      } else {
+        this.radioNavMode.set('');
+      }
+    } else {
+      for (const sel of this.selectedNavaids) {
+        sel.ident.set('');
+        sel.frequencyOrChannel.set('');
+        sel.class.set('');
+      }
+      this.radioNavMode.set('');
+      this.radioNavPosition.set('');
+    }
+  }
+
+  private async parseNavaid(navaid: string, onlyVor = false) {
+    const navaids = await (onlyVor
+      ? NavigationDatabaseService.activeDatabase.searchVor(navaid)
+      : NavigationDatabaseService.activeDatabase.searchAllNavaid(navaid));
+
+    return this.props.mfd.deduplicateFacilities(navaids);
   }
 
   private deselectGlide() {
@@ -167,21 +222,21 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       }
     } else {
-      const navaids = await NavigationDatabaseService.activeDatabase.searchVor(ident);
-      // FIXME need to handle duplicate navaids and pilot navaid page if no result
-      if (navaids.length > 0) {
+      const navaid = await this.parseNavaid(ident, true);
+
+      if (navaid && navaid.subSectionCode === NavaidSubsectionCode.VhfNavaid) {
         if (
           this.props.fmcService.master?.navaidTuner.deselectedNavaids.find(
-            (databaseId) => databaseId === navaids[0].databaseId,
+            (databaseId) => databaseId === navaid.databaseId,
           )
         ) {
           this.props.fmcService.master.addMessageToQueue(
-            NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaids[0].ident),
+            NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaid.ident),
             undefined,
             undefined,
           );
         } else {
-          this.props.fmcService.master?.navaidTuner.setManualVor(index, navaids[0]);
+          this.props.fmcService.master?.navaidTuner.setManualVor(index, navaid);
         }
       }
     }
@@ -216,9 +271,9 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       }
     } else {
       const ils = await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([ident]);
-      // FIXME need to handle duplicate navaids and pilot navaid page if no result
-      if (ils.length > 0) {
-        await this.props.fmcService.master?.navaidTuner.setManualIls(ils[0]);
+      const deduplicatedIls = await this.props.mfd.deduplicateFacilities(ils);
+      if (deduplicatedIls) {
+        await this.props.fmcService.master?.navaidTuner.setManualIls(deduplicatedIls);
       }
     }
     this.onNewData();
@@ -234,6 +289,21 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       }
     } else {
       this.props.fmcService.master?.navaidTuner.setManualIls(freq);
+    }
+    this.onNewData();
+  }
+
+  async deselectionHandler(nV: string | null, oV: string | null | undefined) {
+    if (nV) {
+      const navaid = await this.parseNavaid(nV);
+      if (navaid) {
+        this.props.fmcService.master?.navaidTuner.deselectNavaid(navaid.databaseId);
+      }
+    } else if (oV) {
+      const navaid = await this.parseNavaid(oV);
+      if (navaid) {
+        this.props.fmcService.master?.navaidTuner.reselectNavaid(navaid.databaseId);
+      }
     }
     this.onNewData();
   }
@@ -392,16 +462,10 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-label br bb">IDENT</div>
                 <div class="mfd-label br bb">FREQ/CHAN</div>
                 <div class="mfd-label bb">CLASS</div>
-                <div class="mfd-label br">{this.firstRowIdent}</div>
-                <div class="mfd-value br">{this.firstRowFrequency}</div>
-                <div class="mfd-value">{this.firstRowClass}</div>
-                <div class="mfd-label br">{this.secondRowIdent}</div>
-                <div class="mfd-value br">{this.secondRowFrequency}</div>
-                <div class="mfd-value">{this.secondRowClass}</div>
                 <div class="mfd-label br">
-                  <div ref={this.thirdRowIdentRef}>
+                  <div class={{ invisible: this.selectedNavaids[0].ident.map((v) => v.length === 0) }}>
                     <Button
-                      label={this.thirdRowIdent.map((it) => (
+                      label={this.selectedNavaids[0].ident.map((it) => (
                         <>{it}</>
                       ))}
                       onClick={() => {}}
@@ -409,17 +473,60 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
                       disabled={Subject.create(true)}
+                      buttonStyle="min-width: 107px;"
                     />
                   </div>
                 </div>
-                <div class="mfd-value br">{this.thirdRowFrequency}</div>
-                <div class="mfd-value">{this.thirdRowClass}</div>
+                <div class="mfd-value br">{this.selectedNavaids[0].frequencyOrChannel}</div>
+                <div class="mfd-value">{this.selectedNavaids[0].class}</div>
+                <div class="mfd-label br">
+                  <div class={{ invisible: this.selectedNavaids[1].ident.map((v) => v.length === 0) }}>
+                    <Button
+                      label={this.selectedNavaids[1].ident.map((it) => (
+                        <>{it}</>
+                      ))}
+                      onClick={() => {}}
+                      showArrow
+                      menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
+                      disabled={Subject.create(true)}
+                      buttonStyle="min-width: 107px;"
+                    />
+                  </div>
+                </div>
+                <div class="mfd-value br">{this.selectedNavaids[1].frequencyOrChannel}</div>
+                <div class="mfd-value">{this.selectedNavaids[1].class}</div>
+                <div class="mfd-label br">
+                  <div class={{ invisible: this.selectedNavaids[2].ident.map((v) => v.length === 0) }}>
+                    <Button
+                      label={this.selectedNavaids[2].ident.map((it) => (
+                        <>{it}</>
+                      ))}
+                      onClick={() => {}}
+                      showArrow
+                      menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
+                      disabled={Subject.create(true)}
+                      buttonStyle="min-width: 107px;"
+                    />
+                  </div>
+                </div>
+                <div class="mfd-value br">{this.selectedNavaids[2].frequencyOrChannel}</div>
+                <div class="mfd-value">{this.selectedNavaids[2].class}</div>
               </div>
-              <div class="mfd-label" style="padding-left: 30px; margin-bottom: 20px;">
-                RADIO NAV MODE
-              </div>
-              <div class="mfd-label" style="padding-left: 30px; margin-bottom: 10px;">
-                RADIO POSITION
+              <div style="display: grid; grid-template-columns: 190px 320px; margin-left: 80px;">
+                <div class="mfd-label" style="justify-content: right; margin-bottom: 20px;">
+                  RADIO NAV MODE
+                </div>
+                <div class="mfd-value" style="justify-content: left; margin-left: 20px; margin-bottom: 20px;">
+                  {this.radioNavMode}
+                </div>
+                <div class="mfd-label" style="justify-content: right; margin-bottom: 20px;">
+                  RADIO POSITION
+                </div>
+                <div class="mfd-value" style="justify-content: left; margin-left: 20px; margin-bottom: 20px;">
+                  {this.radioNavPosition}
+                </div>
               </div>
               <div style="border-bottom: 1px solid lightgrey; width: 100%; height: 3px; margin-bottom: 15px;" />
               <div class="mfd-label" style="padding-left: 15px; margin-bottom: 10px;">
@@ -428,17 +535,8 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
               <div style="width: 45%; display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <div>
                   <InputField<string>
-                    // FIXME all these need to handle duplicate names, and actually validate the navaid exists
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[0]}
                     alignText="center"
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -449,15 +547,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[1]}
                     alignText="center"
                     disabled={this.deselectedNavaids[0].map((it) => it === null)}
@@ -469,15 +559,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[2]}
                     alignText="center"
                     disabled={this.deselectedNavaids[1].map((it) => it === null)}
@@ -491,15 +573,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[3]}
                     alignText="center"
                     disabled={this.deselectedNavaids[2].map((it) => it === null)}
@@ -511,15 +585,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[4]}
                     alignText="center"
                     disabled={this.deselectedNavaids[3].map((it) => it === null)}
@@ -531,15 +597,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div>
                   <InputField<string>
                     dataEntryFormat={new NavaidIdentFormat('-')}
-                    dataHandlerDuringValidation={async (nV, oV) => {
-                      // FIXME these functions require a databaseId to uniquely id the navaid, not an ident
-                      if (nV) {
-                        this.props.fmcService.master?.navaidTuner.deselectNavaid(nV);
-                      } else if (oV) {
-                        this.props.fmcService.master?.navaidTuner.reselectNavaid(oV);
-                      }
-                      this.onNewData();
-                    }}
+                    dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[5]}
                     alignText="center"
                     disabled={this.deselectedNavaids[4].map((it) => it === null)}
@@ -594,7 +652,10 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <InputField<number>
                   dataEntryFormat={new LsCourseFormat()}
                   dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.navaidTuner.setIlsCourse(v || null);
+                    this.props.fmcService.master?.navaidTuner.setIlsCourse(
+                      v !== null ? Math.abs(v) : null,
+                      v && v < 0 ? true : false,
+                    );
                   }}
                   mandatory={Subject.create(false)}
                   enteredByPilot={this.lsCourseEnteredByPilot}

@@ -3,9 +3,15 @@
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT="${DIR}/out/terronnd.wasm"
+if [ "$1" == "--a380x" ]; then
+  AIRCRAFT_FLAG="A380X"
+else
+  AIRCRAFT_FLAG="A32NX"
+fi
 
-if [ "$1" == "--debug" ]; then
+OUTPUT="${DIR}/out/terronnd_${AIRCRAFT_FLAG}.wasm"
+
+if [ "$2" == "--debug" ]; then
   CLANG_ARGS="-g"
 else
   WASMLD_ARGS="--strip-debug"
@@ -14,8 +20,8 @@ fi
 set -e
 
 # create temporary folder for o files
-mkdir -p "${DIR}/obj"
-pushd "${DIR}/obj"
+mkdir -p "${DIR}/obj/${AIRCRAFT_FLAG}"
+pushd "${DIR}/obj/${AIRCRAFT_FLAG}"
 
 # compile c++ code
 clang++ \
@@ -41,6 +47,7 @@ clang++ \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -D${AIRCRAFT_FLAG} \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
@@ -55,6 +62,7 @@ clang++ \
   -O2 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
+  -I "${DIR}/../cpp-msfs-framework/lib/" \
   "${DIR}/src/main.cpp" \
   "${DIR}/src/nanovg/nanovg.cpp" \
   "${DIR}/src/navigationdisplay/collection.cpp" \
@@ -88,5 +96,5 @@ wasm-ld \
   ${WASMLD_ARGS} \
   -O2 \
   -lc++ -lc++abi \
-  ${DIR}/obj/*.o \
+  ${DIR}/obj/${AIRCRAFT_FLAG}/*.o \
   -o $OUTPUT

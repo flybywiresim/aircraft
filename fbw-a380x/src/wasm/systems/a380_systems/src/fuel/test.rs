@@ -164,30 +164,40 @@ impl FuelTestBed {
     #[allow(dead_code)]
     fn desired_fuel_max(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 260059.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_min(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 0.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_50000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 50000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_100000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 100000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
     #[allow(dead_code)]
     fn desired_fuel_200000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 200000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
     }
 
@@ -266,70 +276,58 @@ fn assert_fuel_quantity_0(test_bed: &FuelTestBed) {
 
 fn assert_fuel_quantity_50000(test_bed: &FuelTestBed) {
     let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(3000.));
     expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(4000.));
     expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(4000.));
     expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(5500.));
     expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(5500.));
-    expected_quantities.insert(
-        A380FuelTankType::FeedOne,
-        Mass::new::<kilogram>(7000. + 3000. * 20558. / 84788.),
-    );
-    expected_quantities.insert(
-        A380FuelTankType::FeedTwo,
-        Mass::new::<kilogram>(7000. + 3000. * 21836. / 84788.),
-    );
-    expected_quantities.insert(
-        A380FuelTankType::FeedThree,
-        Mass::new::<kilogram>(7000. + 3000. * 21836. / 84788.),
-    );
-    expected_quantities.insert(
-        A380FuelTankType::FeedFour,
-        Mass::new::<kilogram>(7000. + 3000. * 20558. / 84788.),
-    );
-    expected_quantities.insert(A380FuelTankType::Trim, Mass::default());
+    expected_quantities.insert(A380FuelTankType::FeedOne, Mass::new::<kilogram>(7000.));
+    expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(7000.));
+    expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(7000.));
+    expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(7000.));
     assert_fuel_quantity(test_bed, expected_quantities);
 }
 
 fn assert_fuel_quantity_100000(test_bed: &FuelTestBed) {
     let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(8500.));
     expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(4000.));
     expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(4000.));
     expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(5500.));
     expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(5500.));
     expected_quantities.insert(
         A380FuelTankType::FeedOne,
-        Mass::new::<kilogram>(7000. + 53000. * 20558. / 84788.),
+        Mass::new::<kilogram>(7000. + 44500. * 20558. / 84788.),
     );
     expected_quantities.insert(
         A380FuelTankType::FeedTwo,
-        Mass::new::<kilogram>(7000. + 53000. * 21836. / 84788.),
+        Mass::new::<kilogram>(7000. + 44500. * 21836. / 84788.),
     );
     expected_quantities.insert(
         A380FuelTankType::FeedThree,
-        Mass::new::<kilogram>(7000. + 53000. * 21836. / 84788.),
+        Mass::new::<kilogram>(7000. + 44500. * 21836. / 84788.),
     );
     expected_quantities.insert(
         A380FuelTankType::FeedFour,
-        Mass::new::<kilogram>(7000. + 53000. * 20558. / 84788.),
+        Mass::new::<kilogram>(7000. + 44500. * 20558. / 84788.),
     );
-    expected_quantities.insert(A380FuelTankType::Trim, Mass::default());
 
     assert_fuel_quantity(test_bed, expected_quantities);
 }
 
 fn assert_fuel_quantity_200000(test_bed: &FuelTestBed) {
     let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(13500.));
     expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(4000.));
     expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(4000.));
     expected_quantities.insert(A380FuelTankType::LeftMid, Mass::new::<kilogram>(27127.));
     expected_quantities.insert(A380FuelTankType::RightMid, Mass::new::<kilogram>(27127.));
-    expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(24479.));
-    expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(24479.));
+    expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(19729.));
+    expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(19729.));
     expected_quantities.insert(A380FuelTankType::FeedOne, Mass::new::<kilogram>(20558.));
     expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(21836.));
     expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(21836.));
     expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(20558.));
-    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(4000.));
 
     assert_fuel_quantity(test_bed, expected_quantities);
 }

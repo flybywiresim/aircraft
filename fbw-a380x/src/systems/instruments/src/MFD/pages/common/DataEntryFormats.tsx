@@ -109,29 +109,31 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
 
   private maxValue = maxCertifiedAlt;
 
-  private transAlt: number = 18_000;
+  private transAlt: number | null = null;
 
   reFormatTrigger = Subject.create(false);
 
   constructor(
-    transAlt: Subscribable<number> = Subject.create(18_000),
+    transAlt: Subscribable<number | null> | null = null,
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
     minValue.sub((val) => (this.minValue = val), true);
     maxValue.sub((val) => (this.maxValue = val), true);
 
-    transAlt.sub((val) => {
-      this.transAlt = val;
-      this.reFormatTrigger.notify();
-    });
+    if (transAlt !== null) {
+      transAlt.sub((val) => {
+        this.transAlt = val;
+        this.reFormatTrigger.notify();
+      });
+    }
   }
 
   public format(value: number) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     }
-    if (value >= this.transAlt) {
+    if (this.transAlt !== null && value >= this.transAlt) {
       return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
@@ -780,14 +782,14 @@ export class AirportFormat implements DataEntryFormat<string> {
   public maxDigits = 4;
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -801,14 +803,14 @@ export class NavaidIdentFormat implements DataEntryFormat<string> {
   constructor(public placeholder = '----') {}
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -822,14 +824,14 @@ export class AirwayFormat implements DataEntryFormat<string> {
   public maxDigits = 5;
 
   public format(value: string) {
-    if (value === null || value === undefined) {
+    if (!value) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
     return [value, null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -855,7 +857,7 @@ export class DropdownFieldFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -876,7 +878,7 @@ export class WaypointFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -897,7 +899,7 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
   }
 
   public async parse(input: string) {
-    if (input === '') {
+    if (input === '' || input === this.placeholder) {
       return null;
     }
 
@@ -1349,12 +1351,13 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
 }
 
 // Still need to find a way to store whether course is true or magnetic
+/** Negative number indicates back course */
 export class LsCourseFormat implements DataEntryFormat<number> {
   public placeholder = '----';
 
   public maxDigits = 4;
 
-  private minValue = 0;
+  private minValue = -360;
 
   private maxValue = 360.0;
 
@@ -1362,7 +1365,7 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     if (value === null || value === undefined) {
       return [this.placeholder, null, '°'] as FieldFormatTuple;
     }
-    return [`F${value.toFixed(0).padStart(3, '0')}`, null, '°'] as FieldFormatTuple;
+    return [`${value < 0 ? 'B' : 'F'}${Math.abs(value).toFixed(0).padStart(3, '0')}`, null, '°'] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -1371,16 +1374,22 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     }
 
     let numberPart = input;
+    let sign = +1;
     if (input.length === 4) {
       if (input[0] === 'F' || input[0] === 'B') {
-        numberPart = input.substring(1, 3);
+        sign = input[0] === 'B' ? -1 : +1;
+        numberPart = input.substring(1, 4);
       } else {
-        numberPart = input.substring(0, 2);
+        numberPart = input.substring(0, 3);
       }
     }
+
+    // FIXME Delete next line as soon as back course is implemented
+    if (input[0] === 'B') throw new FmsError(FmsErrorType.FormatError);
+
     const nbr = Number(numberPart);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
+      return sign * nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
@@ -1395,10 +1404,6 @@ export class SquawkFormat implements DataEntryFormat<number> {
 
   public maxDigits = 4;
 
-  private minValue = 0;
-
-  private maxValue = 7777;
-
   public format(value: number) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, null] as FieldFormatTuple;
@@ -1412,10 +1417,10 @@ export class SquawkFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && /^[0-7]{4}$/.test(input)) {
       return nbr;
     }
-    if (nbr > this.maxValue || nbr < this.minValue) {
+    if (!/^[0-7]{4}$/.test(input)) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw new FmsError(FmsErrorType.FormatError);

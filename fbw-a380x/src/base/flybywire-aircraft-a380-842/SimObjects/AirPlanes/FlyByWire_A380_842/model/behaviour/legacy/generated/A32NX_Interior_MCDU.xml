@@ -5,7 +5,7 @@
     <Template Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
         <DefaultTemplateParameters>
             <POTENTIOMETER>85</POTENTIOMETER>
-            <BUTTON_LIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BUTTON_LIGHTS_POWERED>
+            <BUTTON_LIGHTS_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BUTTON_LIGHTS_POWERED>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_MCDU_SCREEN_Template"/>

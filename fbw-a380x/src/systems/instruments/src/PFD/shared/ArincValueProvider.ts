@@ -1,8 +1,7 @@
 import { ConsumerSubject, EventBus, Instrument, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { PfdSpeedsDropInSimvars } from 'instruments/src/PFD/shared/PfdSpeedsDropInPublisher';
 
 export interface Arinc429Values {
   slatsFlapsStatus: Arinc429Word;
@@ -103,21 +102,12 @@ export class ArincValueProvider implements Instrument {
 
   private readonly fm2Subs: Subscription[] = [];
 
-  // FIXME delete these when PRIM FE implemented
-  private alphaProtSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private alphaMaxSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private stallWarnSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private vManSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private v3Ssm = Arinc429SignStatusMatrix.NoComputedData;
-  private v4Ssm = Arinc429SignStatusMatrix.NoComputedData;
-  private vLsSsm = Arinc429SignStatusMatrix.NoComputedData;
-
   constructor(private readonly bus: EventBus) {}
 
   /** @inheritdoc */
   public init(): void {
     const publisher = this.bus.getPublisher<Arinc429Values>();
-    const subscriber = this.bus.getSubscriber<PFDSimvars & PfdSpeedsDropInSimvars>();
+    const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
     subscriber.on('slatsFlapsStatusRaw').handle((w) => {
       publisher.pub('slatsFlapsStatus', new Arinc429Word(w));
@@ -232,42 +222,13 @@ export class ArincValueProvider implements Instrument {
       this.determineFacToUse(publisher);
     });
 
-    // FIXME when PRIM FE is implemented, delete the following block and un-comment the rest
-    subscriber.on('alphaMaxRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.alphaMaxSsm;
-      word.value = speed;
-      publisher.pub('vAlphaMax', word);
-    });
-    subscriber.on('alphaProtRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.alphaProtSsm;
-      word.value = speed;
-      publisher.pub('vAlphaProt', word);
-    });
-    subscriber.on('stallWarnRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.stallWarnSsm;
-      word.value = speed;
-      publisher.pub('vStallWarn', word);
-    });
-    subscriber.on('fac1VAlphaMaxRaw').handle((word) => {
-      this.alphaMaxSsm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1VAlphaProtRaw').handle((word) => {
-      this.alphaProtSsm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1VStallWarnRaw').handle((word) => {
-      this.stallWarnSsm = new Arinc429Word(word).ssm;
-    });
-
     subscriber.on('fac1VAlphaMaxRaw').handle((word) => {
       this.fac1VAlphaMax = new Arinc429Word(word);
       this.determineFacToUse(publisher);
       if (this.facToUse === 1) {
-        // publisher.pub('vAlphaMax', this.fac1VAlphaMax);
+        publisher.pub('vAlphaMax', this.fac1VAlphaMax);
       } else if (this.facToUse === 0) {
-        // publisher.pub('vAlphaMax', new Arinc429Word(0));
+        publisher.pub('vAlphaMax', new Arinc429Word(0));
       }
     });
 
@@ -275,10 +236,10 @@ export class ArincValueProvider implements Instrument {
       this.fac2VAlphaMax = new Arinc429Word(word);
       this.determineFacToUse(publisher);
       if (this.facToUse === 2) {
-        // publisher.pub('vAlphaMax', this.fac2VAlphaMax);
+        publisher.pub('vAlphaMax', this.fac2VAlphaMax);
       }
     });
-    /*
+
     subscriber.on('fac1VAlphaProtRaw').handle((word) => {
       if (this.facToUse === 1) {
         publisher.pub('vAlphaProt', new Arinc429Word(word));
@@ -306,7 +267,6 @@ export class ArincValueProvider implements Instrument {
         publisher.pub('vStallWarn', new Arinc429Word(word));
       }
     });
-    */
 
     subscriber.on('fac1VMaxRaw').handle((word) => {
       if (this.facToUse === 1) {
@@ -350,44 +310,6 @@ export class ArincValueProvider implements Instrument {
       }
     });
 
-    // FIXME when PRIM FE is implemented, delete the following block and un-comment the rest
-    subscriber.on('vManRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.vManSsm;
-      word.value = speed;
-      publisher.pub('vMan', word);
-    });
-    subscriber.on('v4Raw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.v4Ssm;
-      word.value = speed;
-      publisher.pub('v4', word);
-    });
-    subscriber.on('v3Raw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.v3Ssm;
-      word.value = speed;
-      publisher.pub('v3', word);
-    });
-    subscriber.on('vLsRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.vLsSsm;
-      word.value = speed;
-      publisher.pub('vLs', word);
-    });
-    subscriber.on('fac1VManRaw').handle((word) => {
-      this.vManSsm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1V3Raw').handle((word) => {
-      this.v3Ssm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1V4Raw').handle((word) => {
-      this.v4Ssm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1VLsRaw').handle((word) => {
-      this.vLsSsm = new Arinc429Word(word).ssm;
-    });
-    /*
     subscriber.on('fac1VManRaw').handle((word) => {
       if (this.facToUse === 1) {
         publisher.pub('vMan', new Arinc429Word(word));
@@ -443,7 +365,6 @@ export class ArincValueProvider implements Instrument {
         publisher.pub('vLs', new Arinc429Word(word));
       }
     });
-    */
 
     subscriber.on('fac1EstimatedBetaRaw').handle((word) => {
       if (this.facToUse === 1) {

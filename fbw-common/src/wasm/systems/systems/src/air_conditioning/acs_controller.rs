@@ -693,8 +693,8 @@ impl ZoneController {
         pressurization: &impl CabinAltitude,
         zone_measured_temperature: ThermodynamicTemperature,
     ) -> ThermodynamicTemperature {
-        let altitude_correction: f64 =
-            pressurization.altitude().get::<foot>() * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
+        let altitude_correction: f64 = pressurization.altitude().get::<foot>().max(0.)
+            * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
         let corrected_selected_temp: f64 =
             self.zone_selected_temperature.get::<kelvin>() + altitude_correction;
 
@@ -2205,6 +2205,7 @@ mod acs_controller_tests {
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
         const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
         const DOOR_OPENING_AREA: f64 = 1.5; // m2
+        const HULL_BREACH_AREA: f64 = 0.02; // m2
 
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
@@ -2630,6 +2631,11 @@ mod acs_controller_tests {
 
         fn one_engine_on(mut self) -> Self {
             self.command(|a| a.set_engine_1_n1(Ratio::new::<percent>(15.)));
+            self
+        }
+
+        fn both_engines_off(mut self) -> Self {
+            self.command(|a| a.set_engine_n1(Ratio::new::<percent>(0.)));
             self
         }
 
@@ -3179,6 +3185,23 @@ mod acs_controller_tests {
                 .iterate(1000);
 
             assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
+        }
+
+        #[test]
+        fn duct_temperature_does_not_jump_on_instant_engine_off() {
+            let test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .iterate(1000)
+                .both_engines_off()
+                .both_packs_off()
+                .cab_fans_pb_on(false)
+                .iterate(2);
+
+            assert!(test_bed.duct_temperature()[1].get::<degree_celsius>() < 80.);
         }
 
         #[test]

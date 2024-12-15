@@ -11,21 +11,21 @@ import { Page as PositionReport } from './Report/PositionReport';
 import { Page as Request } from './Request';
 
 export const Pages = {
-    Atis,
-    Connect: {
-        MaxUplinkDelay,
-        Connect,
-    },
-    Emergency,
-    MsgRecord: {
-        MsgRecord,
-        AllMsg,
-        MonitoredMsg,
-    },
-    Report: {
-        Other,
-        PositionReport,
-        Report,
-    },
-    Request,
+  Atis,
+  Connect: {
+    MaxUplinkDelay,
+    Connect,
+  },
+  Emergency,
+  MsgRecord: {
+    MsgRecord,
+    AllMsg,
+    MonitoredMsg,
+  },
+  Report: {
+    Other,
+    PositionReport,
+    Report,
+  },
+  Request,
 };

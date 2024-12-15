@@ -1,0 +1,71 @@
+@font-face {
+  font-family: "Poppins-SemiBold";
+  src: url("/Fonts/fbw-a32nx/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Digital";
+  src: url("/Fonts/fbw-a32nx/AirbusFCU.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+:root {
+  --main-display-colour: hsl(36, 100%, 45%);
+  --main-display-colour-inactive: hsl(53, 82%, 0%);
+  --main-background-opacity: 0;
+  --main-text-shadow-colour: rgba(207, 110, 0, 0);
+
+  // text-shadow places the shadow in the wrong position, seems to be a coherent bug,
+  // so this remains commented out for now.
+  //text-shadow: var(--main-text-shadow-colour) 0 0 12px;
+}
+
+#fcu-background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: var(--main-background-opacity);
+}
+
+.fcu-svg {
+  position: absolute;
+  width: 1280px;
+  height: 640px;
+}
+
+text.Active {
+  font-family: "Poppins-SemiBold";
+  font-size: 56px;
+  fill: var(--main-display-colour);
+}
+
+text.Inactive {
+  font-family: "Poppins-SemiBold";
+  font-size: 56px;
+  fill: var(--main-display-colour-inactive);
+  opacity: 0.1;
+}
+
+text.Value {
+  font-family: Digital;
+  font-size: 110px;
+  text-anchor: start;
+  fill: var(--main-display-colour);
+  letter-spacing: 0px;
+}
+
+line {
+  stroke: var(--main-display-colour);
+  stroke-width: 7;
+}
+
+circle {
+  fill: var(--main-display-colour);
+}
+
+.Hide {
+  visibility: hidden !important;
+}

@@ -566,8 +566,7 @@ impl A380MainPowerSources {
             overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
         });
 
-        // TODO: should really be "low speed warning 1" in the A380
-        let in_flight = adirs.low_speed_warning_2_54kts(1) || adirs.low_speed_warning_2_54kts(3);
+        let in_flight = adirs.low_speed_warning_1(1) || adirs.low_speed_warning_1(3);
         let apu_gen_available = if !in_flight {
             apu_gen_available
         } else {

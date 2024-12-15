@@ -1,4 +1,4 @@
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { TurnDirection, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlanIndex } from '@fmgc/index';
@@ -24,6 +24,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     return [];
   }
 
+  const previousLeg = fpln.loadedFlightPlan?.maybeElementAt(legIndex - 1);
+  const revisedLeg = fpln.loadedFlightPlan?.elementAt(legIndex);
+
   return [
     {
       name: 'FROM P.POS DIR TO',
@@ -32,7 +35,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity) ||
         planIndex === FlightPlanIndex.Temporary ||
         [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
-        !fpln.loadedFlightPlan?.legElementAt(legIndex).isXF(),
+        revisedLeg?.isDiscontinuity ||
+        !revisedLeg?.isXF(),
       onPressed: () => {
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
@@ -58,6 +62,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'DELETE *',
       disabled:
         [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        (revisedLeg?.isDiscontinuity && !previousLeg?.isDiscontinuity && previousLeg?.isVectors()) ||
         planIndex === FlightPlanIndex.Temporary,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
@@ -85,18 +90,17 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'HOLD',
       disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: async () => {
-        const waypoint = fpln.props.fmcService.master?.flightPlanService.active.legElementAt(legIndex);
-        if (waypoint && !waypoint.isHX()) {
-          const alt = waypoint.definition.altitude1
-            ? waypoint.definition.altitude1
+        if (revisedLeg && !revisedLeg.isDiscontinuity && !revisedLeg.isHX()) {
+          const alt = revisedLeg.definition.altitude1
+            ? revisedLeg.definition.altitude1
             : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
           const previousLeg = fpln.props.fmcService.master?.flightPlanService.active.maybeElementAt(legIndex - 1);
 
           let inboundMagneticCourse = 100;
           const prevTerm = previousLeg?.isDiscontinuity === false && previousLeg?.terminationWaypoint();
-          const wptTerm = waypoint.terminationWaypoint();
-          if (previousLeg && previousLeg.isDiscontinuity === false && previousLeg.isXF() && prevTerm && wptTerm) {
+          const wptTerm = revisedLeg.terminationWaypoint();
+          if (previousLeg && !previousLeg.isDiscontinuity && previousLeg.isXF() && prevTerm && wptTerm) {
             inboundMagneticCourse = Avionics.Utils.computeGreatCircleHeading(prevTerm.location, wptTerm.location);
           }
 
@@ -122,7 +126,13 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     },
     {
       name: 'AIRWAYS',
-      disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+      disabled:
+        [
+          FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath,
+        ].includes(type) ||
+        revisedLeg?.isDiscontinuity ||
+        revisedLeg?.waypointDescriptor === WaypointDescriptor.Airport ||
+        revisedLeg?.waypointDescriptor === WaypointDescriptor.Runway,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.startAirwayEntry(legIndex);
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-airways`);
@@ -132,7 +142,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name:
         !altnFlightPlan &&
         ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) &&
-        fpln.loadedFlightPlan?.legElementAt(legIndex).definition.overfly
+        !revisedLeg?.isDiscontinuity &&
+        revisedLeg?.definition.overfly
           ? 'DELETE OVERFLY *'
           : 'OVERFLY *',
       disabled:
@@ -163,9 +174,11 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         ),
     },
     {
-      name: 'CMS',
+      name: '(N/A) CMS',
       disabled:
-        altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        true ||
+        altnFlightPlan ||
+        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/cms`,
@@ -184,10 +197,14 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: '(N/A) WIND',
       disabled: true,
       onPressed: () => {
+        if (!revisedLeg || revisedLeg.isDiscontinuity) {
+          return;
+        }
+
         // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
-        if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Arrival) {
+        if (revisedLeg?.segment?.class === SegmentClass.Arrival) {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/des`);
-        } else if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Enroute) {
+        } else if (revisedLeg?.segment?.class === SegmentClass.Enroute) {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/crz`);
         } else {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/clb`);

@@ -71,7 +71,7 @@ void EngineControl_A380X::update() {
 
     const bool   simOnGround   = msfsHandlerPtr->getSimOnGround();
     const double engineTimer   = simData.engineTimer[engineIdx]->get();
-    const double simCN1        = simData.simVarsDataPtr->data().simEngineCorrectedN1[engineIdx];
+    const double simCN1        = simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1;
     const double simN1         = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
     const double simN3         = simData.simVarsDataPtr->data().simEngineN2[engineIdx];  // as the sim does not have N3, we use N2
     prevSimEngineN3[engineIdx] = simN3;
@@ -385,8 +385,22 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
   const double idleFF  = simData.engineIdleFF->get();
   const double idleEGT = simData.engineIdleEGT->get();
 
+  // Quick Start for expedited engine start for Aircraft Presets
+  if (simData.fadecQuickMode->getAsBool() && simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 < idleN3) {
+    LOG_INFO("Fadec::EngineControl_A380X::engineStartProcedure() - Quick Start");
+    simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = idleN3;
+    simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
+    simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1 = idleN1;
+    simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN3[engineIdx]->set(idleN3);
+    simData.engineN1[engineIdx]->set(idleN1);
+    simData.engineFF[engineIdx]->set(idleFF);
+    simData.engineEgt[engineIdx]->set(idleEGT);
+    simData.engineState[engineIdx]->set(ON);
+    return;
+  }
   // delay to simulate the delay between master-switch setting and actual engine start
-  if (engineTimer < 1.7) {
+  else if (engineTimer < 1.7) {
     if (msfsHandlerPtr->getSimOnGround()) {
       simData.engineFuelUsed[engineIdx]->set(0);
     }
@@ -407,7 +421,7 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
     const double shutdownEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
 
     simData.engineN3[engineIdx]->set(newN3Fbw);
-    simData.engineN2[engineIdx]->set(newN3Fbw + 0.7);  // 0.7 seems to be an arbitrary offset to get N2 from N3
+    simData.engineN2[engineIdx]->set(newN3Fbw == 0 ? 0 : newN3Fbw + 0.7);  // 0.7 seems to be an arbitrary offset to get N2 from N3
     simData.engineN1[engineIdx]->set(startN1Fbw);
     simData.engineFF[engineIdx]->set(startFfFbw);
 
@@ -446,8 +460,23 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
 
   const int engineIdx = engine - 1;
 
+  // Quick Shutdown for expedited engine shutdown for Aircraft Presets
+  if (simData.fadecQuickMode->getAsBool() && simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 > 0.0) {
+    LOG_INFO("Fadec::EngineControl_A380X::engineShutdownProcedure() - Quick Shutdown");
+    simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = 0;
+    simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
+    simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1 = 0;
+    simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN1[engineIdx]->set(0.0);
+    simData.engineN2[engineIdx]->set(0.0);
+    simData.engineN3[engineIdx]->set(0.0);
+    simData.engineFF[engineIdx]->set(0.0);
+    simData.engineEgt[engineIdx]->set(ambientTemperature);
+    simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
+    return;
+  }
   // delay to simulate the delay between master-switch setting and actual engine shutdown
-  if (engineTimer < 1.8) {
+  else if (engineTimer < 1.8) {
     simData.engineTimer[engineIdx]->set(engineTimer + deltaTime);
   } else {
     const double preN1Fbw  = simData.engineN1[engineIdx]->get();
@@ -462,7 +491,7 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
     const double newEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
 
     simData.engineN1[engineIdx]->set(newN1Fbw);
-    simData.engineN2[engineIdx]->set(newN3Fbw + 0.7);
+    simData.engineN2[engineIdx]->set(newN3Fbw == 0 ? 0 : newN3Fbw + 0.7);
     simData.engineN3[engineIdx]->set(newN3Fbw);
     simData.engineEgt[engineIdx]->set(newEgtFbw);
   }

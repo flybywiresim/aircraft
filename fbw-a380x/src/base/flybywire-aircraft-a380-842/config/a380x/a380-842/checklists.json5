@@ -22,12 +22,14 @@
 // | 2      | 1ST ENG STARTED  |
 // | 3      | 1ST ENG TO PWR   |
 // | 4      | 80 kt            |
-// | 5      | LIFTOFF          |
-// | 6      | 1500ft (in clb)  |
-// | 7      | 800 ft (in desc) |
-// | 8      | TOUCHDOWN        |
-// | 9      | 80 kt            |
-// | 10     | 2nd ENG SHUTDOWN |
+// | 5      | V1
+// | 6      | LIFTOFF          |
+// | 7      | 400ft (in clb)
+// | 8      | 1500ft (in clb)  |
+// | 9      | 800 ft (in desc) |
+// | 10      | TOUCHDOWN        |
+// | 11      | 80 kt            |
+// | 12     | 2nd ENG SHUTDOWN |
 // | &gt; 1 | 5 MIN AFTER      |
 //
 // OBS: It is not recommended to override these default checklists yet as they are still being improved and the format
@@ -35,41 +37,44 @@
 {
   "checklists": [
     {
+    // cockpitPrepChecklistA380X =================================================",
+    "name": "COCKPIT PREPARATION",
+    "flightphase": 1,
+    "items": [
+      {
+        "item": "GEAR PINS & COVERS",
+        "action": "REMOVE",
+        "result": "REMOVED"
+      },
+      {
+        "item": "FUEL QTY",
+        "result": "___KG"
+      },
+      {
+        "item": "SEAT BELTS",
+        "result": "ON",
+        "condition": [
+          {
+            "varName": "A:CABIN SEATBELTS ALERT SWITCH",
+            "result": 1,
+          },
+        ],
+      },
+      {
+        "item": "BARO REF",
+        "action": "____ (BOTH)",
+        "result": "SET"
+      },
+    ]
+    },
+    {
       // beforeStartChecklistA380X =================================================",
       "name": "BEFORE START",
       "flightphase": 1,
       "items": [
         {
-          "item": "CKPT PREP",
-          "action": "COMPLETE",
-          "result": "COMPLETED"
-        },
-        {
-          "item": "OXYGEN",
-          "result": "___ SET"
-        },
-        {
-          "item": "GEAR PINGS & COVERS",
-          "action": "REMOVE",
-          "result": "REMOVED"
-        },
-        {
-          "item": "FUEL QTY",
-          "action": "CHECK",
-          "result": "CHECKED"
-        },
-        {
-          "item": "TAKEOFF DATA",
-          "result": "SET"
-        },
-        {
-          "item": "ALTIMETERS",
-          "action": "QNH___ COMPARE (BOTH)",
-          "result": "SET"
-        },
-        {
-          "item": "PARK BRK",
-          "result": "ON",
+          "item": "PARKING BRAKE",
+          "result": "___",
           "condition": [
             {
               varName: "L:A32NX_PARK_BRAKE_LEVER_POS",
@@ -78,53 +83,9 @@
           ],
         },
         {
-          "item": "SIGNS",
-          "result": "ON",
-          "condition": [
-            {
-              varName: "CABIN SEATBELTS ALERT SWITCH",
-              result: 1
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION",
-              result: 2,
-              comp: "NE"
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION",
-              result: 2,
-              comp: "NE"
-            },
-          ]
-        },
-        {
-          "item": "ADIRS NAV",
-          "action": "SET TO NAV",
-          "result": "NAV",
-          "condition": [
-            {
-              varName: "L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB",
-              result: 1
-            },
-            {
-              varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
-              result: 1,
-            },
-            {
-              varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
-              result: 1,
-            },
-          ]
-        },
-        {
-          "type": "LINE",
-          "item": "",
-          "result": ""
-        },
-        {
-          "item": "WINDOWS & DOORS",
-          "action": "CLOSE (BOTH)",
-          "result": "CLOSED"
+          "item": "T.O SPEEDS & THRUST",
+          "action": "CHECK (BOTH)",
+          "result": "CHECKED"
         },
         {
           "item": "BEACON",
@@ -145,12 +106,11 @@
       "items": [
         {
           "item": "ANTI ICE",
-          "result": "AS RQRD"
+          "result": "___"
         },
         {
-          "item": "F/CTL",
-          "action": "CHECK",
-          "result": "CHECKED"
+          "item": "PITCH TRIM",
+          "result": "T.O"
         },
         {
           "item": "RUDDER TRIM",
@@ -167,37 +127,26 @@
 //            }
 //          ]
         },
-        {
-          "item": "PITCH TRIM",
-          "action": "CHECK",
-          "result": "CHECKED"
-        },
-        {
-          "item": "GROUND EQUIPMENT",
-          "action": "CLEAR",
-          "result": "CLEARED"
-        }
       ]
     },
     {
-      // beforeTakeoffChecklistA380X =================================================",
-      "name": "BEFORE TAKEOFF",
+      // taxiChecklistA380X =================================================",
+      "name": "TAXI",
       "flightphase": 2,
       "items": [
         {
-          "item": "FLIGHT INSTRUMENTS",
-          "action": "CHECK",
+          "item": "FLIGHT CONTROLS",
+          "action": "CHECKED (BOTH)",
           "result": "CHECKED"
         },
         {
-          "item": "BRIEFING",
-          "action": "CONFIRM",
-          "result": "CONFIRMED"
+          "item": "FLAPS SETTING",
+          "action": "CONF ___ (BOTH)",
+          "result": "CONF ___"
         },
         {
-          "item": "V1 /VR / V2 / THR RATING",
-          "action": "CHECK (BOTH)",
-          "result": "CHECKED"
+          "item": "RADAR",
+          "result": "ON"
         },
         {
           "type": "SUBLISTHEADER",
@@ -206,28 +155,18 @@
         },
         {
           "type": "SUBLISTITEM",
-          "item": "SIGNS",
+          "item": "SEAT BELTS",
           "result": "ON",
           "condition": [
             {
-              varName: "CABIN SEATBELTS ALERT SWITCH",
+              varName: "A:CABIN SEATBELTS ALERT SWITCH",
               result: 1
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION",
-              result: 2,
-              comp: "NE"
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION",
-              result: 2,
-              comp: "NE"
             },
           ]
         },
         {
           "type": "SUBLISTITEM",
-          "item": "SPLRS",
+          "item": "GND SPLRs",
           "action": "ARM",
           "result": "ARMED",
           condition: [
@@ -244,7 +183,7 @@
         },
         {
           "type": "SUBLISTITEM",
-          "item": "AUTO BRK",
+          "item": "AUTO BRAKE",
           "result": "RTO",
           "condition": [
             {
@@ -259,169 +198,92 @@
           "action": "TEST",
           "result": "TESTED"
         },
-        {
-          "type": "LINE",
-          "item": "",
-          "result": ""
-        },
-        {
-          "item": "CABIN CREW",
-          "result": "READY"
-        },
-        {
-          "item": "PACK 1+2",
-          "result": "AS REQUIRED"
-        },
-        {
-          "item": "EXTERIOR LIGHTS",
-          "result": "SET"
-        }
       ]
     },
     {
-      // afterTakeoffChecklistA380X =================================================",
-      "name": "AFTER TAKEOFF / CLIMB",
-      "flightphase": 6,
+      // lineUpChecklistA380X =================================================",
+      "name": "LINE-UP",
+      "flightphase": 2,
       "items": [
         {
-          "item": "LDG GEAR",
-          "result": "UP",
-          condition: [
-            {
-              varName: "L:A32NX_GEAR_CENTER_SMALL_POSITION",
-              result: 0
-            },
-            {
-              varName: "L:A32NX_GEAR_CENTER_POSITION",
-              result: 0
-            },
-            {
-              varName: "L:A32NX_GEAR_LEFT_POSITION",
-              result: 0
-            },
-            {
-              varName: "L:A32NX_GEAR_RIGHT_POSITION",
-              result: 0
-            }
-          ]
+          "item": "T.O RWY",
+          "action": "___ (BOTH)",
+          "result": "CONFIRMED"
         },
         {
-          "item": "FLAPS",
-          "result": "0",
-          condition: [
-            {
-              varName: "L:A32NX_FLAPS_HANDLE_INDEX",
-              result: 0
-            }
-          ]
+          "item": "CABIN CREW",
+          "action": "ADVISE",
+          "result": "ADVISED",
         },
         {
           "item": "PACKS 1+2",
-          "result": "AS RQRD"
+          "result": "ON"
+        },
+      ]
+    },
+    {
+      // departureChangeChecklistA380X =================================================",
+      "name": "<<DEPARTURE CHANGE>>",
+      "flightphase": 2,
+      "items": [
+        {
+          "item": "RWY & SID",
+          "result": "___",
         },
         {
-          "item": "APU MASTER",
-          "result": "OFF",
-          condition: [
-            {
-              varName: "L:L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON",
-              result: 0
-            }
-          ]
+          "item": "FLAPS SETTING",
+          "action": "CONF ___ (BOTH)",
+          "result": "CONF ___",
         },
         {
-          "type": "LINE",
-          "item": "",
-          "result": ""
+          "item": "T.O SPEEDS & THRUST",
+          "action": "CHECK (BOTH)",
+          "result": "CHECKED"
         },
         {
-          "item": "LANDING LIGHTS",
-          "result": "OFF",
-          condition: [
-            {
-              varName: "L:LIGHTING_LANDING_1",
-              result: 0,
-              comp: "NE"
-            },
-            {
-              varName: "L:LIGHTING_LANDING_2",
-              result: 0,
-              comp: "NE"
-            }
-          ]
-        },
-        {
-          "item": "BARO REF STD",
-          "result": "SET (BOTH)",
-          condition: [
-            {
-              varName: "L:XMLVAR_Baro1_Mode",
-              result: 3
-            },
-          ]
+          "item": "FCU ALT",
+          "action": "___",
+          "result": "SET"
         }
       ]
     },
     {
       // approachChecklistA380X =================================================",
       "name": "APPROACH",
-      "flightphase": 6,
+      "flightphase": 8,
       "items": [
         {
-          "item": "CABIN CREW",
-          "action": "ADVISE",
-          "result": "ADVISED"
-        },
-        {
-          "item": "LANDING DATA",
-          "result": "SET"
-        },
-        {
-          "item": "AUTOBRAKE/BTV",
-          "result": "AS REQUIRED"
-        },
-        {
-          "item": "LANDING BRIEFING",
-          "action": "CONFIRM",
-          "result": "CONFIRMED"
-        },
-        {
-          "item": "ECAM STS",
-          "result": "NORMAL"
-        },
-        {
-          "item": "ALTIMETER",
-          "result": "___ QNH/HPA SET"
-        },
-        {
-          "item": "LANDING LIGHT",
-          "result": "ON"
-        },
-        {
-          "item": "MINIMA",
+          "item": "BARO REF",
+          "action": "____ (BOTH)",
           "result": "SET"
         },
         {
           "item": "SEAT BELTS",
           "result": "ON",
-          condition: [
+          "condition": [
             {
-              varName: "CABIN SEATBELTS ALERT SWITCH",
-              result: 1
-            }
-          ]
-        }
+              "varName": "A:CABIN SEATBELTS ALERT SWITCH",
+              "result": 1,
+            },
+          ],
+        },
+        {
+          "item": "MINIMUM",
+          "action": "___",
+          "result": "SET"
+        },
+        {
+          "item": "AUTO BRAKE",
+          "action": "___",
+          "result": "SET"
+        },
       ]
     },
     {
       // landingChecklistA380X =================================================",
       "name": "LANDING",
-      "flightphase": 7,
+      "flightphase": 9,
       "items": [
-        {
-          "item": "A/THR MODE",
-          "result": "SPEED/OFF"
-        },
         {
           "type": "SUBLISTHEADER",
           "item": "LDG",
@@ -429,22 +291,12 @@
         },
         {
           "type": "SUBLISTITEM",
-          "item": "SIGNS",
+          "item": "SEAT BELTS",
           "result": "ON",
           condition: [
             {
-              varName: "CABIN SEATBELTS ALERT SWITCH",
+              varName: "A:CABIN SEATBELTS ALERT SWITCH",
               result: 1
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION",
-              result: 2,
-              comp: "NE"
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION",
-              result: 2,
-              comp: "NE"
             },
           ]
         },
@@ -473,12 +325,7 @@
         },
         {
           "type": "SUBLISTITEM",
-          "item": "FLAPS",
-          "result": "LDG"
-        },
-        {
-          "type": "SUBLISTITEM",
-          "item": "SPLRs",
+          "item": "GND SPLRs",
           "result": "ARM",
           condition: [
             {
@@ -486,115 +333,33 @@
               result: 1
             }
           ]
-        }
-      ]
-    },
-    {
-      // afterLandingChecklistA380X =================================================",
-      "name": "AFTER LANDING",
-      "flightphase": 9,
-      "items": [
-        {
-          "item": "EXTERIOR LIGHTS",
-          "result": "SET"
         },
         {
-          "item": "SPLRS",
-          "action": "DISARM",
-          "result": "DISARMED",
-          condition: [
-            {
-              varName: "L:A32NX_SPOILERS_ARMED",
-              result: 0
-            }
-          ]
-        },
-        {
+          "type": "SUBLISTITEM",
           "item": "FLAPS",
-          "result": "0",
-          condition: [
-            {
-              varName: "L:A32NX_FLAPS_HANDLE_INDEX",
-              result: 0
-            }
-          ]
+          "result": "LDG"
         },
-        {
-          "item": "APU",
-          "action": "START",
-          "result": "STARTED",
-          condition: [
-            {
-              varName: "L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON",
-              result: 1
-            },
-            {
-              varName: "L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE",
-              result: 1
-            }
-          ]
-        }
       ]
     },
     {
       // parkingChecklistA380X =================================================",
       "name": "PARKING",
-      "flightphase": 10,
+      "flightphase": 12,
       "items": [
         {
-          "item": "PARK BRK or CHOCKS",
+          "item": "PARK BRAKE OR CHOCKS",
           "result": "AS RQRD"
         },
         {
-          "item": "EXT LT",
-          "result": "AS RQRD"
+          "item": "ENGINES",
+          "result": "OFF"
         },
         {
-          "item": "APU BLEED",
-          "result": "ON",
-          condition: [
-            {
-              varName: "L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON",
-              result: 1
-            },
-            {
-              varName: "L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE",
-              result: 1
-            },
-            {
-              varName: "L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON",
-              result: 1
-            }
-          ]
-        },
-        {
-          "item": "ALL ENGs OFF",
+          "item": "WING LIGHTS",
           "result": "OFF",
-          condition: [
-            {
-              varName: "L:A32NX_ENGINE_N1:1",
-              result: 3,
-              comp: "LE"
-            },
-            {
-              varName: "L:A32NX_ENGINE_N1:2",
-              result: 3,
-              comp: "LE"
-            },
-            {
-              varName: "L:A32NX_ENGINE_N1:3",
-              result: 3,
-              comp: "LE"
-            },
-            {
-              varName: "L:A32NX_ENGINE_N1:4",
-              result: 3,
-              comp: "LE"
-            }
-          ]
         },
         {
-          "item": "FUEL PMPs",
+          "item": "FUEL PUMPs",
           "result": "OFF",
           condition: [
             {
@@ -679,63 +444,27 @@
             },
           ]
         },
-        {
-          "item": "SEAT BELTS",
-          "result": "OFF",
-          condition: [
-            {
-              varName: "CABIN SEATBELTS ALERT SWITCH",
-              result: 0
-            }
-          ]
-        }
       ]
     },
     {
       // securingAircraftChecklistA380X =================================================",
       "name": "SECURING AIRCRAFT",
-      "flightphase": 10,
+      "flightphase": 12,
       "items": [
-        {
-          "item": "ADIRS",
-          "result": "OFF",
-          condition: [
-            {
-              varName: "L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB",
-              result: 0
-            },
-            {
-              varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
-              result: 0,
-            },
-            {
-              varName: "L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB",
-              result: 0,
-            },
-          ]
-        },
         {
           "item": "OXYGEN",
           "result": "OFF",
           condition: [
             {
               varName: "L:PUSH_OVHD_OXYGEN_CREW",
-              result: 0
+              result: 1
             }
           ]
         },
         {
-          "item": "SIGNS",
+          "item": "EMER EXIT LT",
           "result": "OFF",
           condition: [
-            {
-              varName: "CABIN SEATBELTS ALERT SWITCH",
-              result: 0
-            },
-            {
-              varName: "L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION",
-              result: 2
-            },
             {
               varName: "L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION",
               result: 2
@@ -743,17 +472,7 @@
           ]
         },
         {
-          "item": "APU",
-          "result": "OFF",
-          condition: [
-            {
-              varName: "L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON",
-              result: 0
-            }
-          ]
-        },
-        {
-          "item": "LAPTOPS",
+          "item": "EFBs",
           "result": "OFF"
         },
         {

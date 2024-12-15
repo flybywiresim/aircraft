@@ -8,7 +8,7 @@ const BASE_DELAY_MS = 1_000;
 const DIGIT_REFRESH_INTERVAL_MS = 130;
 const FULL_DISPLAY_REFRESH_INTERVAL_MS = BASE_DELAY_MS + 2 * DIGIT_REFRESH_INTERVAL_MS;
 
-export const BatDisplay = ({ batteryNumber, x, y }) => {
+export const BatDisplay = ({ batteryNumber, blankWhenOff = false, x, y }) => {
   const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 100);
   const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 100);
   const [voltage] = useSimVar(`L:A32NX_ELEC_BAT_${batteryNumber}_POTENTIAL`, 'Volts', 100);
@@ -76,7 +76,7 @@ export const BatDisplay = ({ batteryNumber, x, y }) => {
   if (batteryNumber === 0) {
     return (
       <text x={x} y={y}>
-        00.0V
+        {blankWhenOff ? '' : '00.0V'}
       </text>
     );
   }

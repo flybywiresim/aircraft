@@ -30,19 +30,19 @@ class Table1502_A380X {
    * @return A 2D array representing the CN2 - correctedN1 pairs.
    */
   static constexpr double table1502[13][4] = {
-      {16.012,  0.000,   0.000,   17.000 }, // CN3 = 18.20, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
-      {19.355,  1.845,   1.845,   17.345 }, // CN3 = 22.00, correctedN1 = [1.90, 1.90] at Mach 0.2, correctedN1 = 17.40 at Mach 0.9
-      {22.874,  2.427,   2.427,   18.127 }, // CN3 = 26.00, correctedN1 = [2.50, 2.50] at Mach 0.2, correctedN1 = 18.20 at Mach 0.9
-      {50.147,  12.427,  12.427,  26.627 }, // CN3 = 57.00, correctedN1 = [12.80, 12.80] at Mach 0.2, correctedN1 = 27.00 at Mach 0.9
-      {60.000,  18.500,  18.500,  33.728 }, // CN3 = 68.20, correctedN1 = [19.60, 19.60] at Mach 0.2, correctedN1 = 34.83 at Mach 0.9
-      {67.742,  25.243,  25.243,  40.082 }, // CN3 = 77.00, correctedN1 = [26.00, 26.00] at Mach 0.2, correctedN1 = 40.84 at Mach 0.9
-      {73.021,  30.505,  30.505,  43.854 }, // CN3 = 83.00, correctedN1 = [31.42, 31.42] at Mach 0.2, correctedN1 = 44.77 at Mach 0.9
-      {78.299,  39.779,  39.779,  48.899 }, // CN3 = 89.00, correctedN1 = [40.97, 40.97] at Mach 0.2, correctedN1 = 50.09 at Mach 0.9
-      {81.642,  49.515,  49.515,  53.557 }, // CN3 = 92.80, correctedN1 = [51.00, 51.00] at Mach 0.2, correctedN1 = 55.04 at Mach 0.9
-      {85.337,  63.107,  63.107,  63.107 }, // CN3 = 97.00, correctedN1 = [65.00, 65.00] at Mach 0.2, correctedN1 = 65.00 at Mach 0.9
-      {87.977,  74.757,  74.757,  74.757 }, // CN3 = 100.00, correctedN1 = [77.00, 77.00] at Mach 0.2, correctedN1 = 77.00 at Mach 0.9
-      {97.800,  97.200,  97.200,  97.200 }, // CN3 = 104.00, correctedN1 = [85.00, 85.00] at Mach 0.2, correctedN1 = 85.50 at Mach 0.9
-      {118.000, 115.347, 115.347, 115.347}  // CN3 = 116.50, correctedN1 = [101.00, 101.00] at Mach 0.2, correctedN1 = 101.00 at Mach 0.9
+      {16.012,  0.000,   0.000,   17.000 }, // CN3 = 16.012, correctedN1 = [0.00, 0.00] at Mach 0.2, correctedN1 = 17.00 at Mach 0.9
+      {19.355,  1.6253,  1.6253,  17.345 },
+      {22.874,  2.1385,  2.1385,  18.127 },
+      {50.147,  10.949,  10.949,  26.627 },
+      {60.000,  16.299,  16.299,  33.728 },
+      {67.742,  22.240,  22.240,  40.082 },
+      {73.021,  26.877,  26.877,  43.854 },
+      {78.299,  35.047,  35.047,  48.899 },
+      {81.642,  43.625,  43.625,  53.557 },
+      {85.337,  63.107,  63.107,  63.107 },
+      {87.977,  74.757,  74.757,  74.757 },
+      {97.800,  97.200,  97.200,  97.200 },
+      {118.000, 115.347, 115.347, 115.347}
   };
 
  public:
@@ -56,7 +56,7 @@ class Table1502_A380X {
   static double iCN3(double pressureAltitude, double mach) {
     // The specific values are likely derived from empirical data or a mathematical model of the engine's behavior.
     // The original source code does not provide any information on the origin of these values.
-    return 68.2 / ((std::sqrt)((288.15 - (1.98 * pressureAltitude / 1000)) / 288.15) * (std::sqrt)(1 + (0.2 * (std::pow)(mach, 2))));
+    return 63 / ((std::sqrt)((288.15 - (1.98 * pressureAltitude / 1000)) / 288.15) * (std::sqrt)(1 + (0.2 * (std::pow)(mach, 2))));
   }
 
   /**

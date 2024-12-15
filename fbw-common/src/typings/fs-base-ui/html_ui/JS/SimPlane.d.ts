@@ -273,9 +273,9 @@ declare global {
         function getDesignSpeeds(): DesignSpeeds;
         function getTrueSpeed(): Knots;
         function getIndicatedSpeed(): Knots;
-        function getVerticalSpeed(): FeetPerMinute | null;
+        function getVerticalSpeed(): number;
         function getGroundSpeed(): Knots | null;
-        function getMachSpeed(): Mach | null;
+        function getMachSpeed(): number;
 
         /**
          * Gets the V1 speed up during and before takeoff, -1 after.
@@ -321,7 +321,11 @@ declare global {
         function getStallSpeedPredicted(flapIndex: number): Knots | null;
         function getWindDirection(): Degrees | null;
         function getWindStrength(): Knots | null;
-        function getAutoPilotActive(apIndex: number): boolean | null;
+        /**
+         * Checks autopilot master status.
+         * @param apIndex Defaults to 0 if undefined.
+         */
+        function getAutoPilotActive(apIndex?: number): boolean;
         function getAutoPilotAirspeedManaged(): boolean;
         function getAutoPilotAirspeedSelected(): boolean;
         function getAutoPilotAirspeedHoldActive(isManaged?: boolean): boolean | null;
@@ -353,7 +357,7 @@ declare global {
         /**
          * @param units Default = feet.
          */
-        function getAutoPilotDisplayedAltitudeLockValue(units?: string): number | null;
+        function getAutoPilotDisplayedAltitudeLockValue(units?: string): number;
         function getAutoPilotAltitudeLockUnits(): 'feet';
         function getAutoPilotVerticalSpeedHoldActive(): boolean | null;
         function getAutoPilotVerticalSpeedHoldValue(): FeetPerMinute | null;
@@ -421,7 +425,7 @@ declare global {
         function getInclinometer(): Position | null;
         function getAngleOfAttack(): Angl16 | null;
         function getOrientationAxis(): XYZ | null;
-        function getAltitude(): Feet | null;
+        function getAltitude(): number;
         function getGroundReference(): Feet | null;
         function getTurnRate(): RadiansPerSecond | null;
         function getHeadingMagnetic(): Heading | null;
@@ -450,8 +454,8 @@ declare global {
         function getTotalFuel(): Kilograms | null;
         function getFuelUsed(engineIndex: number): Kilograms | null;
         function getCompassAngle(): Radians | null;
-        function getPressureValue(): InchesOfMercury | null;
-        function getPressureValue(units?: 'inches of mercury' | 'millibar'): InchesOfMercury | Millibar | null;
+        function getPressureValue(): number;
+        function getPressureValue(units?: 'inches of mercury' | 'millibar'): number;
         function getPressureSelectedUnits(): 'inches of mercury' | 'millibar';
         function getPressureSelectedMode(aircraft: Aircraft): 'QFE' | 'QNH' | 'STD' | '';
         function getHasGlassCockpit(): boolean | null;

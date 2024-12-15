@@ -40,8 +40,6 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    console.time('DEPARTURE:onNewData');
-
     const isAltn = this.props.fmcService.master?.revisedWaypointIsAltn.get();
     const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
 
@@ -176,8 +174,6 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     } else {
       this.fromIcao.set('----');
     }
-
-    console.timeEnd('DEPARTURE:onNewData');
   }
 
   public onAfterRender(node: VNode): void {

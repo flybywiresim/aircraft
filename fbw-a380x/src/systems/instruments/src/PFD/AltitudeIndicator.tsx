@@ -11,9 +11,10 @@ import { VerticalMode } from '@shared/autopilot';
 import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 const DisplayRange = 600;
 const ValueSpacing = 100;
@@ -36,7 +37,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
     const delta = this.altitude - this.landingElevation.value;
     const offset = ((delta - DisplayRange) * DistanceSpacing) / ValueSpacing;
     this.delta = delta;
-    if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
+    if (delta > DisplayRange || (this.flightPhase !== 9 && this.flightPhase !== 10) || !landingElevationValid) {
       this.landingElevationIndicator.instance.classList.add('HiddenElement');
     } else {
       this.landingElevationIndicator.instance.classList.remove('HiddenElement');
@@ -55,7 +56,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
       .handle((fp) => {
         this.flightPhase = fp;
 
-        if ((fp !== 7 && fp !== 8) || this.delta > DisplayRange) {
+        if ((fp !== 9 && fp !== 10) || this.delta > DisplayRange) {
           this.landingElevationIndicator.instance.classList.add('HiddenElement');
         } else {
           this.landingElevationIndicator.instance.classList.remove('HiddenElement');
@@ -214,7 +215,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.inLandingPhases = fp === 7 || fp === 8;
+        this.inLandingPhases = fp === 9 || fp === 10;
         this.updateIndication();
       });
 
@@ -687,7 +688,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private transLvlAr = Arinc429Register.empty();
 
-  private flightPhase = 0;
+  private fmgcFlightPhase = 0;
 
   private stdGroup = FSComponent.createRef<SVGGElement>();
 
@@ -732,7 +733,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.flightPhase = fp;
+        this.fmgcFlightPhase = fp;
 
         this.handleBlink();
       });
@@ -781,7 +782,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private handleBlink() {
     if (this.mode.get() === 'STD') {
       if (
-        this.flightPhase > 3 &&
+        this.fmgcFlightPhase > FmgcFlightPhase.Cruise &&
         this.transLvlAr.isNormalOperation() &&
         100 * this.transLvlAr.value > this.props.altitude.get()
       ) {
@@ -790,7 +791,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.stdGroup.instance.classList.remove('BlinkInfinite');
       }
     } else if (
-      this.flightPhase <= 3 &&
+      this.fmgcFlightPhase <= FmgcFlightPhase.Cruise &&
       this.transAltAr.isNormalOperation() &&
       this.transAltAr.value < this.props.altitude.get()
     ) {

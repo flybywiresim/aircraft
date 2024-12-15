@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 @import "../MsfsAvionicsCommon/definitions.scss";
-@import "animations";
+@import "../../../../../../fbw-common/src/systems/instruments/src/ND/style.scss";
 
 @font-face {
   font-family: "Ecam";
@@ -20,215 +20,10 @@
   font-style: normal;
 }
 
-.nd-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 768px;
-  height: 768px;
+.vd-svg {
   background: transparent;
   font-family: "Ecam", monospace !important;
   pointer-events: none;
-}
-
-.nd-canvas-map {
-  transform: rotateX(0deg);
-}
-
-.nd-top-layer {
-  transform: rotateX(0deg);
-  background: none;
-}
-
-.TextOutline {
-  paint-order: stroke fill markers;
-
-  stroke-width: 0.05mm;
-  stroke: $display-background !important;
-}
-
-$font-factor: 5;
-
-.FontLargest {
-  font-size: #{7px * $font-factor};
-}
-
-.FontLarge {
-  font-size: #{6.5px * $font-factor};
-}
-
-.FontMedium {
-  font-size: #{6px * $font-factor};
-}
-
-.FontIntermediate {
-  font-size: #{5.5px * $font-factor};
-}
-
-.FontSmall {
-  font-size: #{5px * $font-factor};
-}
-
-.FontSmallest {
-  font-size: #{4.5px * $font-factor};
-}
-
-.FontTiny {
-  font-size: #{4px * $font-factor};
-}
-
-.StartAlign {
-  text-align: start;
-  text-anchor: start;
-}
-.MiddleAlign {
-  text-align: center;
-  text-anchor: middle;
-}
-.EndAlign {
-  text-align: end;
-  text-anchor: end;
-}
-
-.Magenta {
-  fill: none;
-  stroke: $display-magenta;
-}
-text.Magenta,
-tspan.Magenta,
-.Magenta text,
-.Magenta tspan {
-  fill: $display-magenta;
-  stroke: none;
-}
-
-.Cyan {
-  fill: none;
-  stroke: $display-cyan;
-}
-text.Cyan,
-tspan.Cyan,
-.Cyan text,
-.Cyan tspan {
-  fill: $display-cyan;
-  stroke: none;
-}
-
-/* .None {
-  fill: none;
-  stroke: none;
-} */
-
-.White {
-  fill: none;
-  stroke: $display-white;
-}
-.White.Fill {
-  fill: $display-white;
-  stroke: none;
-}
-text.White,
-tspan.White,
-.White text,
-.White tspan {
-  fill: $display-white;
-  stroke: none;
-}
-
-.Green {
-  stroke: $display-green;
-  fill: none;
-}
-
-.Green.Fill {
-  fill: $display-green;
-  stroke: none;
-}
-
-text.Green,
-tspan.Green,
-.Green text,
-.Green tspan {
-  fill: $display-green;
-  stroke: none;
-}
-
-.Amber {
-  stroke: $display-amber;
-  fill: none;
-}
-text.Amber,
-tspan.Amber,
-.Amber text,
-.Amber tspan {
-  fill: $display-amber;
-  stroke: none;
-}
-
-.Yellow {
-  stroke: $display-yellow;
-  fill: none;
-}
-.Yellow.Fill {
-  fill: $display-yellow;
-  stroke: none;
-}
-text.Yellow,
-tspan.Yellow,
-.Yellow text,
-.Yellow tspan {
-  fill: $display-yellow;
-  stroke: none;
-}
-
-.Red {
-  stroke: $display-red;
-  fill: none;
-}
-.Red.Fill {
-  fill: $display-red;
-  stroke: none;
-}
-text.Red,
-tspan.Red,
-.Red text,
-.Red tspan {
-  fill: $display-red;
-  stroke: none;
-}
-
-.Grey {
-  stroke: $display-grey;
-  fill: none;
-}
-.Grey.Fill {
-  fill: $display-grey;
-  stroke: none;
-}
-
-
-.BackgroundFill {
-  fill: $display-background;
-  fill-rule: evenodd;
-}
-
-text.shadow {
-  stroke: $display-background;
-  stroke-width: 1px;
-  paint-order: stroke;
-}
-
-circle.shadow,
-line.shadow,
-path.shadow,
-rect.shadow {
-  stroke: $display-background;
-  fill: none;
-}
-
-
-.chrono {
-  font-family: "NDChrono", monospace !important;
 }
 
 .nd-inverted-map-area {
@@ -236,7 +31,6 @@ rect.shadow {
   fill: rgb(0,0,0);
 }
 
-path.rounded {
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.a380xInvisible {
+  display: none;
 }

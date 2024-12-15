@@ -51,7 +51,7 @@ bool MsfsHandler::initialize() {
   // Register as key event handler
   register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);
 
-  // base sim data mainly for pause detection
+  // base sim data commonly used by many modules
   std::vector<DataDefinition> baseDataDef = {
       {"SIMULATION TIME",                                             0, UNITS.Number},
       {"SIMULATION RATE",                                             0, UNITS.Number},

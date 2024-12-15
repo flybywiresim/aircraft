@@ -89,7 +89,10 @@ export class CpdlcMessage extends AtsuMessage {
       if (format === AtsuMessageSerializationFormat.Network) {
         content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
       } else if (entry.Value !== '') {
-        if (
+        if (element.TypeId === 'UM169' || element.TypeId === 'UM183') {
+          // do not add '@' to freetext messages as we keep the
+          content = entry.Value;
+        } else if (
           this.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring &&
           format === AtsuMessageSerializationFormat.FmsDisplayMonitored
         ) {

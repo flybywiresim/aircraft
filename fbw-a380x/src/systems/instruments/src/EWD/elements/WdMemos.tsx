@@ -5,14 +5,16 @@ import {
   EventBus,
   FSComponent,
   Subject,
+  Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import EWDMessages from '@instruments/common/EWDMessages';
+import { EcamMemos } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdMemosProps {
   bus: EventBus;
+  visible: Subscribable<boolean>;
 }
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
@@ -40,21 +42,18 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
     this.memosLeftFormatString.set(
       this.memosLeft
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamMemos[padEWDCode(val.get())])
         .join('\r'),
     );
     this.memosRightFormatString.set(
       this.memosRight
         .filter((v) => !!v.get())
-        .map((val) => EWDMessages[padEWDCode(val.get())])
+        .map((val) => EcamMemos[padEWDCode(val.get())])
         .join('\r'),
     );
 
-    // Weirdly enough, we have to wait for the SVG to be rendered to get its bounding box
-    setTimeout(() => {
-      this.memosLeftSvgRef.instance.style.height = `${(this.memosLeftSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-      this.memosRightSvgRef.instance.style.height = `${(this.memosRightSvgRef.instance.getBBox().height + 12).toFixed(1)}px`;
-    }, 100);
+    this.memosLeftSvgRef.instance.style.height = `${this.memosLeft.filter((v) => !!v.get()).length * 30 + 3}px`;
+    this.memosRightSvgRef.instance.style.height = `${this.memosRight.filter((v) => !!v.get()).length * 30 + 3}px`;
   }
 
   public onAfterRender(node: VNode): void {
@@ -62,12 +61,17 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
 
     this.memosLeft.forEach((el) => el.sub(() => this.update(), true));
     this.memosRight.forEach((el) => el.sub(() => this.update(), true));
+
+    this.sub
+      .on('realTime')
+      .atFrequency(0.05)
+      .handle(() => this.update());
   }
 
   render() {
     return (
       <>
-        <div class="MemosContainer">
+        <div class="MemosContainer" style={{ display: this.props.visible.map((it) => (it ? 'block' : 'none')) }}>
           <div class="MemosDividedArea">
             <div class="MemosLeft">
               <svg ref={this.memosLeftSvgRef} version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -80,7 +84,7 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
               </svg>
             </div>
           </div>
-          <div class="MemosFillArea" />
+          <div class="FillArea" />
         </div>
       </>
     );

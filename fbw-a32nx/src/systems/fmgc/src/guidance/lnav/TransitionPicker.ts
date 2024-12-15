@@ -26,6 +26,7 @@ import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 
 export class TransitionPicker {
   static forLegs(from: Leg, to: Leg): Transition | null {
@@ -107,7 +108,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence CALeg -> ${to.constructor.name}`);
     }
 
@@ -182,7 +183,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence AFLEg -> ${to.constructor.name}`);
     }
 
@@ -234,7 +235,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence CFLeg -> ${to.constructor.name}`);
     }
 
@@ -259,7 +260,7 @@ export class TransitionPicker {
       return new FixedRadiusTransition(from, to);
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence CILeg -> ${to.constructor.name}`);
     }
 
@@ -476,7 +477,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence CRLeg -> ${to.constructor.name}`);
     }
 
@@ -502,7 +503,7 @@ export class TransitionPicker {
       case to instanceof DFLeg:
         return new DirectToFixTransition(from, to);
       default:
-        if (DEBUG) {
+        if (LnavConfig.DEBUG_GEOMETRY) {
           console.error(`Illegal sequence FMLeg -> ${to.constructor.name}`);
         }
         return null;
@@ -538,7 +539,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence FDLEg -> ${to.constructor.name}`);
     }
 
@@ -565,7 +566,7 @@ export class TransitionPicker {
       case to instanceof DFLeg:
         return new DirectToFixTransition(from, to);
       default:
-        if (DEBUG) {
+        if (LnavConfig.DEBUG_GEOMETRY) {
           console.error(`Illegal sequence FMLeg -> ${to.constructor.name}`);
         }
         return null;
@@ -592,7 +593,7 @@ export class TransitionPicker {
       return null;
     }
 
-    if (DEBUG) {
+    if (LnavConfig.DEBUG_GEOMETRY) {
       console.error(`Illegal sequence VMLeg -> ${to.constructor.name}`);
     }
 

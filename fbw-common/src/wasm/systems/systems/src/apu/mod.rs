@@ -94,6 +94,7 @@ impl FuelPressureSwitch {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum TurbineSignal {
     StartOrContinue,
     Stop,

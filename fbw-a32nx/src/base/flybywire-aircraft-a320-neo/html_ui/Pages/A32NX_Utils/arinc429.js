@@ -42,11 +42,11 @@ class Arinc429Word {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
 
-    getBitValue(bit) {
+    bitValue(bit) {
         return ((this.value >> (bit - 1)) & 1) !== 0;
     }
 
-    getBitValueOr(bit, defaultValue) {
+    bitValueOr(bit, defaultValue) {
         return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
     }
 

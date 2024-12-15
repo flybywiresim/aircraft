@@ -71,13 +71,23 @@
   display: grid;
   grid-template-columns: auto auto auto auto auto;
   grid-auto-rows: 50px;
-  margin: 20px 20px 20px 0px;
-  height: 150px;
+  margin: 10px 20px 10px 0px;
 }
 
 .mfd-fms-perf-to-thrred-noise-grid-cell {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+}
+.mfd-fms-perf-to-thrred-noise-grid-cell-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.mfd-fms-perf-to-thrred-noise-grid-cell-centered {
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 

@@ -1,4 +1,5 @@
 use crate::hydraulic::linear_actuator::Actuator;
+use crate::shared::Clamp;
 use crate::shared::{interpolation, low_pass_filter::LowPassFilter, SectionPressure};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -111,6 +112,8 @@ pub struct SteeringActuator {
     actuator_area: Area,
 
     reference_pressure_for_max_speed: Pressure,
+
+    is_steered_by_tug: bool,
 }
 impl SteeringActuator {
     const MIN_PRESSURE_ALLOWING_STEERING_PSI: f64 = 300.;
@@ -121,18 +124,20 @@ impl SteeringActuator {
     // Formula is speed_coefficient = POSITION_ERROR_TO_MAX_SPEED_GAIN * position_error^2
     // Then max speed will be max_speed = nominal_speed * speed_coefficient
     // Note this is open loop: it will overshoot or undershoot depending on this factor
-    const POSITION_ERROR_TO_MAX_SPEED_GAIN: f64 = 0.06;
+    const POSITION_ERROR_TO_MAX_SPEED_GAIN: f64 = 0.18;
 
     pub fn new(
         context: &mut InitContext,
+        wheel_id: &str,
         max_half_angle: Angle,
         nominal_speed: AngularVelocity,
         actuator_diameter: Length,
         angular_to_linear_ratio: Ratio,
         reference_pressure_for_max_speed: Pressure,
+        is_steered_by_tug: bool,
     ) -> Self {
         Self {
-            position_id: context.get_identifier("NOSE_WHEEL_POSITION_RATIO".to_owned()),
+            position_id: context.get_identifier(format!("{}_POSITION_RATIO", wheel_id)),
 
             current_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::CURRENT_SPEED_FILTER_TIMECONST,
@@ -152,6 +157,8 @@ impl SteeringActuator {
                 * (actuator_diameter / 2.),
 
             reference_pressure_for_max_speed,
+
+            is_steered_by_tug,
         }
     }
 
@@ -163,11 +170,10 @@ impl SteeringActuator {
         pushback_tug: &impl Pushback,
         bypass_pin: &BypassPin,
     ) {
-        if !bypass_pin.is_nose_wheel_steering_pin_inserted() {
+        if !bypass_pin.is_nose_wheel_steering_pin_inserted() || !self.is_steered_by_tug {
             let limited_requested_angle = steering_controller
                 .requested_position()
-                .min(self.max_half_angle)
-                .max(-self.max_half_angle);
+                .clamp(-self.max_half_angle, self.max_half_angle);
 
             self.update_current_speed(context, section_pressure, limited_requested_angle);
 
@@ -200,7 +206,7 @@ impl SteeringActuator {
         let current_pressure = section_pressure.pressure_downstream_priority_valve();
 
         let max_speed_for_current_hydraulics_pressure =
-            self.max_speed_for_current_hydraulics_pressure(current_pressure);
+            self.max_speed_for_current_hydraulics_pressure(context, current_pressure);
 
         let max_speed_closing_to_requested_position =
             self.max_speed_for_position_error(requested_angle);
@@ -221,13 +227,15 @@ impl SteeringActuator {
 
     fn max_speed_for_current_hydraulics_pressure(
         &self,
+        context: &UpdateContext,
         current_pressure: Pressure,
     ) -> AngularVelocity {
         (if current_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWING_STEERING_PSI {
             self.nominal_speed * current_pressure.get::<psi>().sqrt()
                 / self.reference_pressure_for_max_speed.get::<psi>().sqrt()
         } else {
-            AngularVelocity::default()
+            (0.04 * context.ground_speed().get::<knot>().abs().sqrt()).clamp(0., 1.)
+                * self.nominal_speed
         })
         .min(self.nominal_speed)
     }
@@ -296,7 +304,7 @@ mod tests {
 
     use super::*;
 
-    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
+    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
     use uom::si::{angle::degree, pressure::psi};
@@ -586,7 +594,7 @@ mod tests {
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
 
-        test_bed.run_multiple_frames(Duration::from_secs(3));
+        test_bed.run_multiple_frames(Duration::from_secs(5));
 
         assert!(is_equal_angle(
             test_bed.query(|a| a.steering_actuator.position_feedback()),
@@ -674,14 +682,52 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn steering_returns_neutral_if_ground_speed_but_no_hydraulics() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
+
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        assert!(is_equal_angle(
+            test_bed.query(|a| a.steering_actuator.position_feedback()),
+            Angle::new::<degree>(20.)
+        ));
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(0.)));
+        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(0.)));
+
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+
+        assert!(is_equal_angle(
+            test_bed.query(|a| a.steering_actuator.position_feedback()),
+            Angle::new::<degree>(20.)
+        ));
+
+        test_bed.write_by_name("GPS GROUND SPEED", 20.);
+
+        test_bed.run_multiple_frames(Duration::from_secs(8));
+
+        assert!(
+            test_bed
+                .query(|a| a.steering_actuator.position_feedback())
+                .abs()
+                < Angle::new::<degree>(0.1)
+        );
+    }
+
     fn steering_actuator(context: &mut InitContext) -> SteeringActuator {
         SteeringActuator::new(
             context,
+            "NOSE_WHEEL",
             Angle::new::<degree>(75.),
             AngularVelocity::new::<radian_per_second>(0.35),
             Length::new::<meter>(0.05),
             Ratio::new::<ratio>(0.15),
             Pressure::new::<psi>(2000.),
+            true,
         )
     }
 

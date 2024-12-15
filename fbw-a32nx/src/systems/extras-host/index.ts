@@ -6,14 +6,24 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { NotificationManager } from '@flybywiresim/fbw-sdk';
-import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
+import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import {
+  ExtrasSimVarPublisher,
+  FlightDeckBounds,
+  GPUManagement,
+  GroundSupportPublisher,
+  MsfsElectricsPublisher,
+  MsfsFlightModelPublisher,
+  MsfsMiscPublisher,
+  NotificationManager,
+  PilotSeatManager,
+} from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
+import { LightSync } from 'extras-host/modules/light_sync/LightSync';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -22,24 +32,48 @@ import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
  *
  * Usage:
  *  - Add new modules as private readonly members of this class.
- *  - Add the modules to the constructor.
- *  - Add the modules to the connectedCallback() method.
- *  - Add the modules to the Update() method.
+ *  - Add the modules to the constructor if not constructed in the definition.
+ *  - If the modules do implement Instrument or Publisher (preferred):
+ *    - Add the modules to the backplane, init and update will be taken care of by the backplane.
+ *  - If the modules do not implement Instrument or Publisher:
+ *    - Add the modules to the connectedCallback() method.
+ *    - Add the modules to the Update() method.
  *
- * Each module must implement the following methods:
+ * Each module not on the backplane must implement the following methods:
  * - `constructor` to get access to the system-wide EventBus
  * - `connectedCallback` which is called after the simulator set up everything. These functions will also add the subscribtion to special events.
  * - `startPublish` which is called as soon as the simulator starts running. It will also start publishing the simulator variables onto the EventBus
  * - `update` is called in every update call of the simulator, but only after `startPublish` is called
  */
 class ExtrasHost extends BaseInstrument {
-  private readonly bus: EventBus;
+  private static readonly flightDeckBounds: FlightDeckBounds = {
+    minX: -0.79,
+    maxX: 0.79,
+    minY: 1.0,
+    maxY: 2.8,
+    minZ: 9.7,
+    maxZ: 11.8,
+  };
+
+  private readonly bus = new EventBus();
+
+  private readonly backplane = new InstrumentBackplane();
+
+  private readonly clock = new Clock(this.bus);
 
   private readonly notificationManager: NotificationManager;
 
   private readonly hEventPublisher: HEventPublisher;
 
   private readonly simVarPublisher: ExtrasSimVarPublisher;
+
+  private readonly msfsElectricsPublisher: MsfsElectricsPublisher;
+
+  private readonly msfsFlightModelPublisher: MsfsFlightModelPublisher;
+
+  private readonly msfsMiscPublisher: MsfsMiscPublisher;
+
+  private readonly groundSupportPublisher: GroundSupportPublisher;
 
   private readonly pushbuttonCheck: PushbuttonCheck;
 
@@ -51,7 +85,13 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly aircraftSync: AircraftSync;
 
+  private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
+
   public readonly xmlConfig: Document;
+  /**interactionpoint 8 is GPU connection and 1 GPU in total */
+  private readonly gpuManagement = new GPUManagement(this.bus, 8, 1);
+
+  private readonly lightSync: LightSync = new LightSync(this.bus);
 
   /**
    * "mainmenu" = 0
@@ -64,11 +104,14 @@ class ExtrasHost extends BaseInstrument {
   constructor() {
     super();
 
-    this.bus = new EventBus();
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
+    this.msfsElectricsPublisher = new MsfsElectricsPublisher(this.bus);
+    this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
+    this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
+    this.groundSupportPublisher = new GroundSupportPublisher(this.bus);
 
-    this.notificationManager = new NotificationManager();
+    this.notificationManager = new NotificationManager(this.bus);
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
@@ -76,6 +119,17 @@ class ExtrasHost extends BaseInstrument {
 
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+
+    this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
+    this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
+    this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
+    this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+    this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+
+    this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
+    this.backplane.addInstrument('GPUManagement', this.gpuManagement);
+    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addInstrument('LightSync', this.lightSync);
 
     console.log('A32NX_EXTRASHOST: Created');
   }
@@ -100,6 +154,8 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor.connectedCallback();
     this.flightPlanAsoboSync.connectedCallback();
     this.aircraftSync.connectedCallback();
+
+    this.backplane.init();
   }
 
   public parseXMLConfig(): void {
@@ -116,18 +172,17 @@ class ExtrasHost extends BaseInstrument {
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
-        this.simVarPublisher.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
       }
       this.gameState = gs;
-    } else {
-      this.simVarPublisher.onUpdate();
     }
 
     this.versionCheck.update();
     this.keyInterceptor.update();
     this.aircraftSync.update();
+
+    this.backplane.onUpdate();
   }
 }
 

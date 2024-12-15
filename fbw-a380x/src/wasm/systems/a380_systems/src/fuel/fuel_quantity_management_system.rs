@@ -2,6 +2,7 @@ use std::{collections::HashMap, time::Duration};
 
 use crate::systems::simulation::SimulationElement;
 use nalgebra::Vector3;
+use serde::Deserialize;
 use systems::{
     fuel::{self, FuelInfo, FuelSystem, FuelTank, RefuelRate},
     pneumatic::EngineState,
@@ -19,6 +20,8 @@ use uom::si::{
 
 use super::A380FuelTankType;
 
+use serde_with::{serde_as, DisplayFromStr};
+
 #[derive(Clone, Copy)]
 enum ModeSelect {
     AutoRefuel,
@@ -26,6 +29,31 @@ enum ModeSelect {
     _ManualRefuel,
     _Defuel,
     _Transfer,
+}
+
+#[derive(Deserialize)]
+struct ZfwParams {
+    target_zfw_cg: Vec<u32>,
+    target_zfw: Vec<ZfwRange>,
+}
+
+#[derive(Deserialize)]
+struct ZfwRange {
+    start: u32,
+    end: u32,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+struct TrimTankTables {
+    #[serde_as(as = "Vec<HashMap<DisplayFromStr, _>>")]
+    tables: Vec<HashMap<u32, Vec<u32>>>,
+}
+
+#[derive(Deserialize)]
+struct TrimTankMapping {
+    params: ZfwParams,
+    trim_tank_targets: TrimTankTables,
 }
 
 pub struct RefuelPanelInput {
@@ -38,14 +66,15 @@ pub struct RefuelPanelInput {
     refuel_rate_setting: RefuelRate,
     refuel_rate_setting_id: VariableIdentifier,
 
-    ground_speed_id: VariableIdentifier,
-    ground_speed: Velocity,
-
-    is_on_ground_id: VariableIdentifier,
-    is_on_ground: bool,
-
     engine_state_ids: [VariableIdentifier; 4],
     engine_states: [EngineState; 4],
+
+    // TODO: Replace when proper implementation is done
+    target_zero_fuel_weight: Mass,
+    target_zero_fuel_weight_id: VariableIdentifier,
+
+    target_zero_fuel_weight_cg_mac: f64,
+    target_zero_fuel_weight_cg_mac_id: VariableIdentifier,
 }
 impl RefuelPanelInput {
     pub fn new(context: &mut InitContext) -> Self {
@@ -58,14 +87,17 @@ impl RefuelPanelInput {
 
             refuel_rate_setting_id: context.get_identifier("EFB_REFUEL_RATE_SETTING".to_owned()),
             refuel_rate_setting: RefuelRate::Real,
-            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
-            ground_speed: Velocity::default(),
-            is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
-            is_on_ground: false,
 
             engine_state_ids: [1, 2, 3, 4]
                 .map(|id| context.get_identifier(format!("ENGINE_STATE:{id}"))),
             engine_states: [EngineState::Off; 4],
+
+            target_zero_fuel_weight: Mass::new::<kilogram>(300000.),
+            target_zero_fuel_weight_id: context.get_identifier("AIRFRAME_ZFW_DESIRED".to_owned()),
+
+            target_zero_fuel_weight_cg_mac: 36.5,
+            target_zero_fuel_weight_cg_mac_id: context
+                .get_identifier("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED".to_owned()),
         }
     }
 
@@ -89,14 +121,23 @@ impl RefuelPanelInput {
         self.refuel_rate_setting
     }
 
-    fn refuel_is_enabled(&self) -> bool {
+    fn refuel_is_enabled(&self, context: &UpdateContext) -> bool {
+        // TODO: Should this be if two engines are running instead of just one?
         self.refuel_status
             && self
                 .engine_states
                 .iter()
-                .all(|state| *state == EngineState::Off)
-            && self.is_on_ground
-            && self.ground_speed < Velocity::new::<knot>(0.1)
+                .all(|state| *state == EngineState::Off || *state == EngineState::Shutting)
+            && context.is_on_ground()
+            && context.ground_speed() < Velocity::new::<knot>(0.1)
+    }
+
+    fn target_zero_fuel_weight(&self) -> Mass {
+        self.target_zero_fuel_weight
+    }
+
+    fn target_zero_fuel_weight_cg_mac(&self) -> f64 {
+        self.target_zero_fuel_weight_cg_mac
     }
 }
 impl SimulationElement for RefuelPanelInput {
@@ -105,8 +146,7 @@ impl SimulationElement for RefuelPanelInput {
             Mass::new::<kilogram>(reader.read(&self.total_desired_fuel_id));
         self.refuel_status = reader.read(&self.refuel_status_id);
         self.refuel_rate_setting = reader.read(&self.refuel_rate_setting_id);
-        self.ground_speed = reader.read(&self.ground_speed_id);
-        self.is_on_ground = reader.read(&self.is_on_ground_id);
+
         for (id, state) in self
             .engine_state_ids
             .iter()
@@ -114,6 +154,9 @@ impl SimulationElement for RefuelPanelInput {
         {
             *state = reader.read(id);
         }
+        self.target_zero_fuel_weight =
+            Mass::new::<kilogram>(reader.read(&self.target_zero_fuel_weight_id));
+        self.target_zero_fuel_weight_cg_mac = reader.read(&self.target_zero_fuel_weight_cg_mac_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -162,8 +205,16 @@ impl IntegratedRefuelPanel {
         self.input.refuel_rate()
     }
 
-    fn refuel_is_enabled(&self) -> bool {
-        self.input.refuel_is_enabled()
+    fn refuel_is_enabled(&self, context: &UpdateContext) -> bool {
+        self.input.refuel_is_enabled(context)
+    }
+
+    fn target_zero_fuel_weight(&self) -> Mass {
+        self.input.target_zero_fuel_weight()
+    }
+
+    fn target_zero_fuel_weight_cg_mac(&self) -> f64 {
+        self.input.target_zero_fuel_weight_cg_mac()
     }
 }
 impl SimulationElement for IntegratedRefuelPanel {
@@ -177,13 +228,17 @@ impl SimulationElement for IntegratedRefuelPanel {
     }
 }
 
+const TRIM_TANK_TOML: &str = include_str!("./trim_tank_targets.toml");
 pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
+    trim_tank_map: TrimTankMapping,
 }
 impl RefuelApplication {
     pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
         Self {
             refuel_driver: RefuelDriver::new(),
+            trim_tank_map: toml::from_str(TRIM_TANK_TOML)
+                .expect("Failed to parse trim tank TOML file"),
         }
     }
 
@@ -194,17 +249,20 @@ impl RefuelApplication {
         refuel_panel_input: &mut IntegratedRefuelPanel,
     ) {
         // Automatic Refueling
-        let desired_quantities =
-            self.calculate_auto_refuel(refuel_panel_input.total_desired_fuel());
+        let desired_quantities = self.calculate_auto_refuel(
+            refuel_panel_input.total_desired_fuel(),
+            // TODO FIXME: Add values from either MFD (or EFB)
+            refuel_panel_input.target_zero_fuel_weight(),
+            refuel_panel_input.target_zero_fuel_weight_cg_mac(),
+        );
 
-        // TODO: Uncomment when IS_SIM_READY variable is implemented
-        // if !context.is_sim_ready() {
-        //    refuel_panel_input.set_fuel_desired(fuel_system.total_load());
-        //}
+        if !context.is_sim_ready() {
+            refuel_panel_input.set_fuel_desired(fuel_system.total_load());
+        }
 
         match refuel_panel_input.refuel_rate() {
             RefuelRate::Real => {
-                if refuel_panel_input.refuel_is_enabled() {
+                if refuel_panel_input.refuel_is_enabled(context) {
                     self.refuel_driver.execute_timed_refuel(
                         context.delta(),
                         false,
@@ -215,7 +273,7 @@ impl RefuelApplication {
                 }
             }
             RefuelRate::Fast => {
-                if refuel_panel_input.refuel_is_enabled() {
+                if refuel_panel_input.refuel_is_enabled(context) {
                     self.refuel_driver.execute_timed_refuel(
                         context.delta(),
                         true,
@@ -237,10 +295,73 @@ impl RefuelApplication {
         }
     }
 
+    fn lookup_trim_fuel_from_target_fuel_range(
+        target_zfw_cg_keys: &[u32],
+        target_fuel_range: &[u32],
+        zero_fuel_weight_cg_rounded: u32,
+    ) -> Mass {
+        let cg_index = target_zfw_cg_keys
+            .iter()
+            .position(|&x| x == zero_fuel_weight_cg_rounded)
+            .unwrap_or_default();
+        Mass::new::<kilogram>(target_fuel_range[cg_index] as f64)
+    }
+
+    fn get_target_fuel_range(
+        zfw_category: &HashMap<u32, Vec<u32>>,
+        total_desired_fuel_rounded: u32,
+    ) -> &Vec<u32> {
+        let min_fuel_desired = *zfw_category.keys().min().unwrap();
+        let max_fuel_desired = *zfw_category.keys().max().unwrap();
+
+        zfw_category
+            .get(&total_desired_fuel_rounded.clamp(min_fuel_desired, max_fuel_desired))
+            .unwrap()
+    }
+
+    fn calculate_trim_fuel(
+        &mut self,
+        total_desired_fuel: Mass,
+        zero_fuel_weight: Mass,
+        zero_fuel_weight_cg_percent_mac: f64,
+    ) -> Mass {
+        // Init Inputs
+        let total_desired_fuel_rounded =
+            ((total_desired_fuel.get::<kilogram>() / 1000.0).floor() * 1000.0) as u32;
+        let zero_fuel_weight_cg_rounded = (zero_fuel_weight_cg_percent_mac).floor() as u32;
+        let target_zfw = &self.trim_tank_map.params.target_zfw;
+        let trim_tank_tables = &self.trim_tank_map.trim_tank_targets.tables;
+
+        // Find the correct table to use based on ZFW
+        for (range, zfw_category) in target_zfw.iter().zip(trim_tank_tables) {
+            if (range.start as f64..=range.end as f64).contains(&zero_fuel_weight.get::<kilogram>())
+            {
+                // Fetch 1) Possible ZFWCG% column values and 2) The target fuel row values
+                let target_zfw_cg_keys = &self.trim_tank_map.params.target_zfw_cg;
+                let target_fuel_range =
+                    Self::get_target_fuel_range(zfw_category, total_desired_fuel_rounded);
+
+                // Then, given the current target fuel (row). Shift this value depending on ZFWCG% (column) to find trim fuel value.
+                return Self::lookup_trim_fuel_from_target_fuel_range(
+                    target_zfw_cg_keys,
+                    target_fuel_range,
+                    zero_fuel_weight_cg_rounded,
+                );
+            }
+        }
+        Mass::default()
+    }
+
     pub fn calculate_auto_refuel(
         &mut self,
         total_desired_fuel: Mass,
+        zero_fuel_weight: Mass,
+        zero_fuel_weight_cg_percent_mac: f64,
     ) -> HashMap<A380FuelTankType, Mass> {
+        // Note: Does not account for unusable fuel, or non-fixed H-ARM
+
+        // TODO FIXME: If no input is provided from the MFD, The default values are ZFW = 300 000 kg (661 386 lb), and ZFCG = 36.5 %RC.
+
         let a = Mass::new::<kilogram>(18000.);
         let b = Mass::new::<kilogram>(26000.);
         let c = Mass::new::<kilogram>(36000.);
@@ -250,20 +371,11 @@ impl RefuelApplication {
         let g = Mass::new::<kilogram>(215702.);
         let h = Mass::new::<kilogram>(223028.);
 
-        let trim_1 = Mass::new::<kilogram>(4000.);
-        let trim_2 = Mass::new::<kilogram>(8000.);
-        let trim_max = Mass::new::<kilogram>(19026.);
-
-        // TODO: Trim tank logic
-        let trim_fuel = match total_desired_fuel {
-            x if x <= f => Mass::default(),
-            x if x <= f + trim_1 => x - f,
-            x if x <= g => trim_1,
-            x if x <= g + trim_2 => trim_1 + total_desired_fuel - g,
-            x if x <= h => trim_2,
-            x if x <= h + (trim_max - trim_2) => trim_2 + total_desired_fuel - h,
-            _ => trim_max,
-        };
+        let trim_fuel = self.calculate_trim_fuel(
+            total_desired_fuel,
+            zero_fuel_weight,
+            zero_fuel_weight_cg_percent_mac,
+        );
 
         let wing_fuel = total_desired_fuel - trim_fuel;
 
@@ -324,7 +436,6 @@ impl RefuelApplication {
             x if x <= h => mid_tank_f,
             _ => mid_tank_f + (wing_fuel - h) / 10.,
         };
-        // TODO: maximum amount per tick and use efb refueling rate
 
         [
             (A380FuelTankType::LeftOuter, outer_tank),
@@ -367,6 +478,10 @@ impl RefuelDriver {
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
+        // TODO: Proper fuel transfer logic from proper fuel ports into the correct fuel tanks (LMID/LINNER RMID/RINNER). Replace naive method below.
+        // TODO: Deprecating this realistically timed refueling function from refuel driver, which will only be used for instant refueling, into a proper FQMS implementation.
+        // TODO: Account for AGT (Auto Ground Transfer) logic, disable when 2 engines are running (only when realistic setting is used)
+
         let speed_multi = if is_fast { Self::FAST_SPEED_FACTOR } else { 1. };
 
         let t = delta_time.as_secs_f64();

@@ -6,6 +6,7 @@ import {
   AircraftConfig,
   EngineModelParameters,
   FlightModelParameters,
+  FMSymbolsConfig,
   LnavConfig,
   VnavConfig,
   VnavDescentMode,
@@ -50,9 +51,14 @@ const engineModelParams: EngineModelParameters = {
   fuelBurnFactor: 1.0,
 };
 
+const fmsSymbolConfig: FMSymbolsConfig = {
+  publishDepartureIdent: false,
+};
+
 export const A320AircraftConfig: AircraftConfig = {
   lnavConfig,
   vnavConfig,
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
+  fmSymbolConfig: fmsSymbolConfig,
 };

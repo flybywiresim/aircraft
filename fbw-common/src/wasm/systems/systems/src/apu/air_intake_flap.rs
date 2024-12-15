@@ -76,7 +76,11 @@ impl AirIntakeFlap {
     }
 
     fn get_flap_change_for_delta(&self, context: &UpdateContext) -> f64 {
-        100. * (context.delta_as_secs_f64() / self.travel_time.as_secs_f64())
+        if context.aircraft_preset_quick_mode() {
+            100.
+        } else {
+            100. * (context.delta_as_secs_f64() / self.travel_time.as_secs_f64())
+        }
     }
 
     pub fn open_amount(&self) -> Ratio {

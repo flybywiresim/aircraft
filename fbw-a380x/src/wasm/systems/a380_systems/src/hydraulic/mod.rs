@@ -3,13 +3,14 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     angle::degree,
-    angular_velocity::{radian_per_second, revolution_per_minute},
+    angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
-    length::meter,
+    length::{inch, meter},
     mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
     velocity::knot,
     volume::{cubic_inch, gallon, liter},
     volume_rate::gallon_per_second,
@@ -20,6 +21,7 @@ use systems::{
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
+        brake::{BrakeAssembly, BrakeProperties},
         brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
@@ -48,9 +50,10 @@ use systems::{
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
         AdirsMeasurementOutputs, AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked,
-        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
+        ControllerSignal, DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle,
+        LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        SurfacesPositions,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -67,6 +70,8 @@ use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod autobrakes;
 use autobrakes::A380AutobrakeController;
 mod gear_secondary_doors;
+mod heading_control_steering;
+use heading_control_steering::HeadingControlFunction;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
@@ -76,38 +81,66 @@ const AC_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentNamed
 struct A380TiltingGearsFactory {}
 impl A380TiltingGearsFactory {
     fn new_a380_body_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
-        let mut x_offset_meters = 2.85569;
-        let y_offset_meters = -5.04847;
-        let z_offset_meters = -0.235999;
+        let mut x_offset = Length::new::<meter>(2.85569);
+        let y_offset = Length::new::<meter>(-5.04847);
+        let z_offset = Length::new::<meter>(-0.235999);
+        let distance_offset_fwd_to_aft_wheel = Length::new::<meter>(3.5);
+        let low_to_up_height = Length::new::<meter>(0.280065);
 
         if is_left {
-            x_offset_meters *= -1.;
+            x_offset *= -1.;
         }
 
         TiltingGear::new(
             context,
-            Length::new::<meter>(0.280065),
+            low_to_up_height,
             if is_left { 1 } else { 2 },
-            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset.get::<meter>(),
+                y_offset.get::<meter>(),
+                z_offset.get::<meter>(),
+            ),
+            // Aft wheel as an offset aft, and height when aft wheel is down is same as fwd wheel down + down to up length
+            // Note this only works if bogey tilt axis is in the middle
+            Vector3::new(
+                x_offset.get::<meter>(),
+                (y_offset + low_to_up_height).get::<meter>(),
+                (z_offset - distance_offset_fwd_to_aft_wheel).get::<meter>(),
+            ),
             Angle::new::<degree>(9.89),
+            Length::new::<meter>(0.711),
         )
     }
 
     fn new_a380_wing_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
-        let mut x_offset_meters = 6.18848;
-        let y_offset_meters = -4.86875;
-        let z_offset_meters = 2.6551;
+        let mut x_offset = Length::new::<meter>(6.18848);
+        let y_offset = Length::new::<meter>(-4.86875);
+        let z_offset = Length::new::<meter>(2.6551);
+        let distance_offset_fwd_to_aft_wheel = Length::new::<meter>(2.0);
+        let low_to_up_height = Length::new::<meter>(0.134608);
 
         if is_left {
-            x_offset_meters *= -1.;
+            x_offset *= -1.;
         }
 
         TiltingGear::new(
             context,
-            Length::new::<meter>(0.134608),
+            low_to_up_height,
             if is_left { 3 } else { 4 },
-            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Vector3::new(
+                x_offset.get::<meter>(),
+                y_offset.get::<meter>(),
+                z_offset.get::<meter>(),
+            ),
+            // Aft wheel as an offset aft, and height when aft wheel is down is same as fwd wheel down + down to up length
+            // Note this only works if bogey tilt axis is in the middle
+            Vector3::new(
+                x_offset.get::<meter>(),
+                (y_offset + low_to_up_height).get::<meter>(),
+                (z_offset - distance_offset_fwd_to_aft_wheel).get::<meter>(),
+            ),
             Angle::new::<degree>(9.),
+            Length::new::<meter>(0.711),
         )
     }
 
@@ -1226,11 +1259,17 @@ impl A380GearDoorFactory {
             GearWheel::NOSE => Self::a380_nose_gear_door_body(),
             GearWheel::LEFT => Self::a380_left_gear_door_body(),
             GearWheel::RIGHT => Self::a380_right_gear_door_body(),
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+            }
         };
         let gear_door_actuator = match wheel_id {
             GearWheel::NOSE => Self::a380_nose_gear_door_actuator(context, &gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a380_main_gear_door_actuator(context, &gear_door_body)
+            }
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
             }
         };
 
@@ -1450,6 +1489,10 @@ impl A380GearFactory {
             GearWheel::LEFT => Self::a380_left_gear_body(init_downlocked),
 
             GearWheel::RIGHT => Self::a380_right_gear_body(init_downlocked),
+
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+            }
         };
 
         let gear_actuator = match wheel_id {
@@ -1457,6 +1500,10 @@ impl A380GearFactory {
 
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a380_main_gear_actuator(context, &gear_body)
+            }
+
+            GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
             }
         };
 
@@ -1498,8 +1545,69 @@ impl A380GearSystemFactory {
     }
 }
 
+// FIXME Placeholder logic to remove when eha inhibit is handled on flight computer side
+struct A380EhaInhibitPlaceholder {
+    general_eng_1_starter_active_id: VariableIdentifier,
+    general_eng_2_starter_active_id: VariableIdentifier,
+    general_eng_3_starter_active_id: VariableIdentifier,
+    general_eng_4_starter_active_id: VariableIdentifier,
+
+    any_engine_master_on: bool,
+    elec_backup_allowed: bool,
+
+    on_ground_delay: DelayedTrueLogicGate,
+}
+impl A380EhaInhibitPlaceholder {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            general_eng_1_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:1".to_owned()),
+            general_eng_2_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:2".to_owned()),
+            general_eng_3_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:3".to_owned()),
+            general_eng_4_starter_active_id: context
+                .get_identifier("GENERAL ENG STARTER ACTIVE:4".to_owned()),
+
+            any_engine_master_on: false,
+            elec_backup_allowed: false,
+
+            on_ground_delay: DelayedTrueLogicGate::new(Duration::from_secs(120)).starting_as(true),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        lgciu1: &impl LgciuWeightOnWheels,
+        lgciu2: &impl LgciuWeightOnWheels,
+    ) {
+        let is_on_ground = lgciu1.left_and_right_gear_compressed(true)
+            || lgciu2.left_and_right_gear_compressed(true);
+
+        self.on_ground_delay.update(context, is_on_ground);
+
+        self.elec_backup_allowed = !self.on_ground_delay.output() || self.any_engine_master_on;
+    }
+
+    fn is_allowed(&self) -> bool {
+        self.elec_backup_allowed
+    }
+}
+impl SimulationElement for A380EhaInhibitPlaceholder {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.any_engine_master_on = reader.read(&self.general_eng_1_starter_active_id)
+            || reader.read(&self.general_eng_2_starter_active_id)
+            || reader.read(&self.general_eng_3_starter_active_id)
+            || reader.read(&self.general_eng_4_starter_active_id);
+    }
+}
+
 pub(super) struct A380Hydraulic {
+    eha_backup_inhibit_logic: A380EhaInhibitPlaceholder,
     nose_steering: SteeringActuator,
+    body_wheel_steering_left: SteeringActuator,
+    body_wheel_steering_right: SteeringActuator,
 
     core_hydraulic_updater: MaxStepLoop,
 
@@ -1582,6 +1690,14 @@ pub(super) struct A380Hydraulic {
     gear_system_gravity_extension_controller: A380GravityExtension,
     gear_system_hydraulic_controller: A380GearHydraulicController,
     gear_system: HydraulicGearSystem,
+    brake_properties: BrakeProperties,
+    left_wing_brake_assembly: BrakeAssembly<4>,
+    right_wing_brake_assembly: BrakeAssembly<4>,
+    left_body_brake_assembly: BrakeAssembly<4>,
+    right_body_brake_assembly: BrakeAssembly<4>,
+
+    // FIXME: remove when CPIOM G is implemented
+    brake_temperature_ids: [VariableIdentifier; 16],
 
     ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController,
     ths: TrimmableHorizontalStabilizerActuator,
@@ -1638,13 +1754,38 @@ impl A380Hydraulic {
         );
 
         A380Hydraulic {
+            eha_backup_inhibit_logic: A380EhaInhibitPlaceholder::new(context),
             nose_steering: SteeringActuator::new(
                 context,
+                "NOSE_WHEEL",
                 Angle::new::<degree>(75.),
-                AngularVelocity::new::<radian_per_second>(0.35),
+                AngularVelocity::new::<degree_per_second>(15.), // Reference is 15 deg/s
                 Length::new::<meter>(0.11), // Diameter of 0.11 gives correct A380 flow of around 35 lpm at full speed
                 Ratio::new::<ratio>(0.18),
                 Pressure::new::<psi>(4000.),
+                true,
+            ),
+
+            body_wheel_steering_left: SteeringActuator::new(
+                context,
+                "LEFT_BODY_STEERING",
+                Angle::new::<degree>(15.),
+                AngularVelocity::new::<degree_per_second>(4.5), // Reference is 4.5 deg/s
+                Length::new::<meter>(0.11),                     // TODO
+                Ratio::new::<ratio>(0.18),                      // TODO
+                Pressure::new::<psi>(4000.),
+                false,
+            ),
+
+            body_wheel_steering_right: SteeringActuator::new(
+                context,
+                "RIGHT_BODY_STEERING",
+                Angle::new::<degree>(15.),
+                AngularVelocity::new::<degree_per_second>(4.5), // Reference is 4.5 deg/s
+                Length::new::<meter>(0.11),                     // TODO
+                Ratio::new::<ratio>(0.18),                      // TODO
+                Pressure::new::<psi>(4000.),
+                false,
             ),
 
             core_hydraulic_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
@@ -1891,7 +2032,46 @@ impl A380Hydraulic {
             gear_system_gravity_extension_controller: A380GravityExtension::new(context),
             gear_system_hydraulic_controller: A380GearHydraulicController::new(),
             gear_system: A380GearSystemFactory::a380_gear_system(context),
+            brake_properties: BrakeProperties::new(
+                // TODO: find more accurate numbers
+                Length::new::<inch>(26.),
+                Length::new::<inch>(20.),
+                Mass::new::<kilogram>(110.),
+            ),
+            left_wing_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:1".to_owned(), // Should be "WHEEL RPM:3" but MSFS has weird definitions...
+                [1, 2, 5, 6],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            right_wing_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(), // Should be "WHEEL RPM:4" but MSFS has weird definitions...
+                [3, 4, 7, 8],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            left_body_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:1".to_owned(),
+                [9, 10, 13, 14],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
+            right_body_brake_assembly: BrakeAssembly::new(
+                context,
+                "WHEEL RPM:2".to_owned(),
+                [11, 12, 15, 16],
+                [ElectricalBusType::DirectCurrent(1); 4], // TODO
+                None,
+            ),
 
+            brake_temperature_ids: (1..=16)
+                .map(|index| context.get_identifier(format!("REPORTED_BRAKE_TEMPERATURE_{index}")))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
             ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController::new(
                 context,
             ),
@@ -2180,12 +2360,14 @@ impl A380Hydraulic {
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            &self.eha_backup_inhibit_logic,
         );
 
         self.right_spoilers.update(
             context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            &self.eha_backup_inhibit_logic,
         );
 
         self.gear_system.update(
@@ -2208,16 +2390,22 @@ impl A380Hydraulic {
         adirs: &impl AdirsMeasurementOutputs,
         lgcius: &LandingGearControlInterfaceUnitSet,
     ) {
+        self.eha_backup_inhibit_logic
+            .update(context, lgciu1, lgciu2);
+
         self.gear_system_gravity_extension_controller
             .update(context);
 
-        self.aileron_system_controller.update();
+        self.aileron_system_controller
+            .update(&self.eha_backup_inhibit_logic);
 
-        self.elevator_system_controller.update();
+        self.elevator_system_controller
+            .update(&self.eha_backup_inhibit_logic);
 
         self.ths_system_controller.update();
 
-        self.rudder_system_controller.update();
+        self.rudder_system_controller
+            .update(&self.eha_backup_inhibit_logic);
 
         self.tilting_gears.update(context);
 
@@ -2225,6 +2413,21 @@ impl A380Hydraulic {
             context,
             self.yellow_circuit.system_section(),
             &self.brake_steer_computer,
+            &self.pushback_tug,
+            &self.bypass_pin,
+        );
+
+        self.body_wheel_steering_left.update(
+            context,
+            self.yellow_circuit.system_section(),
+            self.brake_steer_computer.left_body_steering_controller(),
+            &self.pushback_tug,
+            &self.bypass_pin,
+        );
+        self.body_wheel_steering_right.update(
+            context,
+            self.yellow_circuit.system_section(),
+            self.brake_steer_computer.right_body_steering_controller(),
             &self.pushback_tug,
             &self.bypass_pin,
         );
@@ -2242,10 +2445,46 @@ impl A380Hydraulic {
             adirs,
             self.left_spoilers.ground_spoilers_are_requested()
                 && self.right_spoilers.ground_spoilers_are_requested(),
+            self.nose_steering.position_feedback(),
         );
 
         self.pushback_tug.update(context);
         self.bypass_pin.update(&self.pushback_tug);
+
+        for (brake_assembly, braking_pressure_norm, braking_pressure_altn, gear_position) in [
+            (
+                &mut self.left_wing_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.left_body_brake_assembly,
+                self.braking_circuit_norm.left_brake_pressure(),
+                self.braking_circuit_altn.left_brake_pressure(),
+                self.gear_system.left_gear_position(),
+            ),
+            (
+                &mut self.right_body_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+            (
+                &mut self.right_wing_brake_assembly,
+                self.braking_circuit_norm.right_brake_pressure(),
+                self.braking_circuit_altn.right_brake_pressure(),
+                self.gear_system.right_gear_position(),
+            ),
+        ] {
+            brake_assembly.update(
+                context,
+                &self.brake_properties,
+                braking_pressure_norm.max(braking_pressure_altn),
+                false,
+                gear_position.get::<ratio>() > 0.25,
+            );
+        }
 
         self.braking_force.update_forces(
             context,
@@ -2294,7 +2533,8 @@ impl A380Hydraulic {
             context,
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
-            &self.bypass_pin,
+            self.brake_steer_computer
+                .should_pressurise_for_body_steering(),
             overhead_panel,
         );
 
@@ -2476,6 +2716,12 @@ impl A380Hydraulic {
 
         self.yellow_circuit
             .update_system_actuator_volumes(&mut self.nose_steering);
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(&mut self.body_wheel_steering_left);
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(&mut self.body_wheel_steering_right);
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.right_elevator.actuator(
@@ -2879,6 +3125,8 @@ impl CargoDoorLocked for A380Hydraulic {
 
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.eha_backup_inhibit_logic.accept(visitor);
+
         self.engine_driven_pump_1a.accept(visitor);
         self.engine_driven_pump_1a_controller.accept(visitor);
 
@@ -2936,6 +3184,9 @@ impl SimulationElement for A380Hydraulic {
         self.braking_force.accept(visitor);
 
         self.nose_steering.accept(visitor);
+        self.body_wheel_steering_left.accept(visitor);
+        self.body_wheel_steering_right.accept(visitor);
+
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
         self.slat_system.accept(visitor);
@@ -2956,6 +3207,10 @@ impl SimulationElement for A380Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+        self.left_wing_brake_assembly.accept(visitor);
+        self.right_wing_brake_assembly.accept(visitor);
+        self.left_body_brake_assembly.accept(visitor);
+        self.right_body_brake_assembly.accept(visitor);
 
         self.ths_system_controller.accept(visitor);
         self.ths.accept(visitor);
@@ -2965,6 +3220,35 @@ impl SimulationElement for A380Hydraulic {
         self.aux_gear_doors.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let left_wing_brake_temperatures =
+            self.left_wing_brake_assembly.brake_temperature_sensors();
+        let right_wing_brake_temperatures =
+            self.right_wing_brake_assembly.brake_temperature_sensors();
+        let left_body_brake_temperatures =
+            self.left_body_brake_assembly.brake_temperature_sensors();
+        let right_body_brake_temperatures =
+            self.right_body_brake_assembly.brake_temperature_sensors();
+        let brake_temp_sensors = left_wing_brake_temperatures[..2]
+            .iter()
+            .chain(&right_wing_brake_temperatures[..2])
+            .chain(&left_wing_brake_temperatures[2..])
+            .chain(&right_wing_brake_temperatures[2..])
+            .chain(&left_body_brake_temperatures[..2])
+            .chain(&right_body_brake_temperatures[..2])
+            .chain(&left_body_brake_temperatures[2..])
+            .chain(&right_body_brake_temperatures[2..]);
+        for (temp_sensor, id) in brake_temp_sensors.zip(&self.brake_temperature_ids) {
+            writer.write(
+                id,
+                temp_sensor
+                    .signal()
+                    .unwrap_or_default()
+                    .get::<degree_celsius>() as u32,
+            );
+        }
     }
 }
 
@@ -3022,8 +3306,7 @@ impl A380GearHydraulicController {
         lgciu1: &(impl LgciuWeightOnWheels + LandingGearHandle),
         lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        let speed_condition =
-            !adirs.low_speed_warning_4_260kts(1) || !adirs.low_speed_warning_4_260kts(3);
+        let speed_condition = adirs.low_speed_warning_4(1) || adirs.low_speed_warning_4(3);
 
         let on_ground_condition = lgciu1.left_and_right_gear_compressed(true)
             || lgciu2.left_and_right_gear_compressed(true);
@@ -3450,7 +3733,7 @@ impl A380ElectricPumpAutoLogic {
         Duration::from_secs(20);
 
     const DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION: Duration =
-        Duration::from_secs(5);
+        Duration::from_secs(30);
     fn new(
         green_a_pump_powered_by: ElectricalBusType,
         green_b_pump_powered_by: ElectricalBusType,
@@ -3488,14 +3771,14 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        bypass_pin: &BypassPin,
+        is_body_steering_active: bool,
         overhead: &A380HydraulicOverheadPanel,
     ) {
         self.update_auto_run_logic(
             context,
             forward_cargo_door_controller,
             aft_cargo_door_controller,
-            bypass_pin,
+            is_body_steering_active,
         );
 
         self.select_pump_in_use(overhead);
@@ -3506,7 +3789,7 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        bypass_pin: &BypassPin,
+        is_body_steering_active: bool,
     ) {
         self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
 
@@ -3520,7 +3803,7 @@ impl A380ElectricPumpAutoLogic {
             self.is_required_for_body_steering_operation.output();
 
         self.is_required_for_body_steering_operation
-            .update(context, bypass_pin.is_nose_wheel_steering_pin_inserted());
+            .update(context, is_body_steering_active);
     }
 
     fn select_pump_in_use(&mut self, overhead: &A380HydraulicOverheadPanel) {
@@ -3824,14 +4107,143 @@ impl BrakeCircuitController for A380BrakeSystemOutputs {
     }
 }
 
+struct BodyWheelSteeringController {
+    requested_position: Angle,
+    is_left_side: bool,
+}
+impl BodyWheelSteeringController {
+    const NOSE_ANGLE_INPUT_DEGREES: [f64; 4] = [-70., -20., 20., 70.];
+    const BODY_STEERING_DEMAND_DEGREES: [f64; 4] = [15., 0., 0., -11.];
+
+    const MAX_BODY_STEERING_SPEED_ENABLING_KNOT: f64 = 30.;
+
+    fn new(is_left_side: bool) -> Self {
+        Self {
+            requested_position: Angle::default(),
+            is_left_side,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, nose_steering_angle: Angle) {
+        if context.ground_speed().get::<knot>() < Self::MAX_BODY_STEERING_SPEED_ENABLING_KNOT {
+            self.requested_position = if self.is_left_side {
+                Angle::new::<degree>(interpolation(
+                    &Self::NOSE_ANGLE_INPUT_DEGREES,
+                    &Self::BODY_STEERING_DEMAND_DEGREES,
+                    nose_steering_angle.get::<degree>(),
+                ))
+            } else {
+                -Angle::new::<degree>(interpolation(
+                    &Self::NOSE_ANGLE_INPUT_DEGREES,
+                    &Self::BODY_STEERING_DEMAND_DEGREES,
+                    -nose_steering_angle.get::<degree>(),
+                ))
+            };
+        } else {
+            self.requested_position = Angle::default();
+        }
+    }
+}
+impl SteeringController for BodyWheelSteeringController {
+    fn requested_position(&self) -> Angle {
+        self.requested_position
+    }
+}
+
+struct BodyWheelSteeringControl {
+    left_controller: BodyWheelSteeringController,
+    right_controller: BodyWheelSteeringController,
+}
+impl BodyWheelSteeringControl {
+    fn default() -> Self {
+        Self {
+            left_controller: BodyWheelSteeringController::new(true),
+            right_controller: BodyWheelSteeringController::new(false),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, nose_steering_feedback: Angle) {
+        self.left_controller.update(context, nose_steering_feedback);
+        self.right_controller
+            .update(context, nose_steering_feedback);
+    }
+
+    fn left_controller(&self) -> &impl SteeringController {
+        &self.left_controller
+    }
+
+    fn right_controller(&self) -> &impl SteeringController {
+        &self.right_controller
+    }
+
+    fn is_requesting_steering(&self) -> bool {
+        self.left_controller
+            .requested_position()
+            .get::<degree>()
+            .abs()
+            > 0.1
+            || self
+                .right_controller
+                .requested_position()
+                .get::<degree>()
+                .abs()
+                > 0.1
+    }
+}
+
+struct PedalSteeringDynamicLimiter {
+    pedal_steering_limiter_landing: SteeringAngleLimiter<5>,
+    pedal_steering_limiter_takeoff: SteeringAngleLimiter<5>,
+    is_landing_mode: bool,
+}
+impl PedalSteeringDynamicLimiter {
+    const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 100., 150., 1500.0, 2800.0];
+    const STEERING_ANGLE_FOR_PEDAL_ACTION_TAKEOFF_RATIO: [f64; 5] = [1., 1., 0.333, 0.333, 0.333]; // Used in takeoff mode only
+    const STEERING_ANGLE_FOR_PEDAL_ACTION_LANDING_RATIO: [f64; 5] = [1., 1., 0., 0., 0.]; // Used in landing mode only
+    const SPEED_TO_SWITCH_TAKEOFF_MODE_KNOT: f64 = 100.;
+
+    fn default() -> Self {
+        Self {
+            pedal_steering_limiter_landing: SteeringAngleLimiter::new(
+                Self::SPEED_MAP_FOR_PEDAL_ACTION_KNOT,
+                Self::STEERING_ANGLE_FOR_PEDAL_ACTION_LANDING_RATIO,
+            ),
+            pedal_steering_limiter_takeoff: SteeringAngleLimiter::new(
+                Self::SPEED_MAP_FOR_PEDAL_ACTION_KNOT,
+                Self::STEERING_ANGLE_FOR_PEDAL_ACTION_TAKEOFF_RATIO,
+            ),
+            is_landing_mode: false,
+        }
+    }
+
+    fn update(&mut self, ground_speed: Velocity, lgciu: &impl LgciuWeightOnWheels) {
+        if !lgciu.left_and_right_gear_compressed(false) {
+            self.is_landing_mode = true;
+        }
+        if ground_speed.get::<knot>() < Self::SPEED_TO_SWITCH_TAKEOFF_MODE_KNOT
+            && lgciu.left_and_right_gear_compressed(false)
+        {
+            self.is_landing_mode = false;
+        }
+    }
+
+    fn angle_from_speed(&self, speed: Velocity, angle_demand: Angle) -> Angle {
+        if self.is_landing_mode {
+            self.pedal_steering_limiter_landing
+                .angle_from_speed(speed, angle_demand)
+        } else {
+            self.pedal_steering_limiter_takeoff
+                .angle_from_speed(speed, angle_demand)
+        }
+    }
+}
+
 struct A380HydraulicBrakeSteerComputerUnit {
     park_brake_lever_pos_id: VariableIdentifier,
 
     antiskid_brakes_active_id: VariableIdentifier,
     left_brake_pedal_input_id: VariableIdentifier,
     right_brake_pedal_input_id: VariableIdentifier,
-
-    ground_speed_id: VariableIdentifier,
 
     rudder_pedal_input_id: VariableIdentifier,
     tiller_handle_input_id: VariableIdentifier,
@@ -3856,13 +4268,15 @@ struct A380HydraulicBrakeSteerComputerUnit {
     rudder_pedal_position: Ratio,
     autopilot_nosewheel_demand: Ratio,
 
-    pedal_steering_limiter: SteeringAngleLimiter<5>,
+    pedal_steering_limiter: PedalSteeringDynamicLimiter,
     pedal_input_map: SteeringRatioToAngle<6>,
     tiller_steering_limiter: SteeringAngleLimiter<5>,
     tiller_input_map: SteeringRatioToAngle<6>,
     final_steering_position_request: Angle,
 
-    ground_speed: Velocity,
+    body_wheel_steering_control: BodyWheelSteeringControl,
+
+    heading_control_function: HeadingControlFunction,
 }
 impl A380HydraulicBrakeSteerComputerUnit {
     const RUDDER_PEDAL_INPUT_GAIN: f64 = 32.;
@@ -3870,19 +4284,16 @@ impl A380HydraulicBrakeSteerComputerUnit {
     const RUDDER_PEDAL_INPUT_CURVE_MAP: [f64; 6] = [0., 0., 2., 6.4, 6.4, 6.4];
     const MAX_RUDDER_INPUT_INCLUDING_AUTOPILOT_DEGREE: f64 = 6.;
 
-    const SPEED_MAP_FOR_PEDAL_ACTION_KNOT: [f64; 5] = [0., 40., 130., 1500.0, 2800.0];
-    const STEERING_ANGLE_FOR_PEDAL_ACTION_DEGREE: [f64; 5] = [1., 1., 0., 0., 0.];
-
     const TILLER_INPUT_GAIN: f64 = 75.;
     const TILLER_INPUT_MAP: [f64; 6] = [0., 1., 20., 40., 66., 75.];
     const TILLER_INPUT_CURVE_MAP: [f64; 6] = [0., 0., 4., 15., 45., 74.];
 
     const AUTOPILOT_STEERING_INPUT_GAIN: f64 = 6.;
 
-    const SPEED_MAP_FOR_TILLER_ACTION_KNOT: [f64; 5] = [0., 20., 70., 1500.0, 2800.0];
-    const STEERING_ANGLE_FOR_TILLER_ACTION_DEGREE: [f64; 5] = [1., 1., 0., 0., 0.];
+    const SPEED_MAP_FOR_TILLER_ACTION_KNOT: [f64; 5] = [0., 40., 100., 1500.0, 2800.0];
+    const STEERING_ANGLE_FOR_TILLER_ACTION_RATIO: [f64; 5] = [1., 1., 0., 0., 0.];
 
-    const MAX_STEERING_ANGLE_DEMAND_DEGREES: f64 = 74.;
+    const MAX_STEERING_ANGLE_DEMAND_DEGREES: f64 = 70.;
 
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
@@ -3905,7 +4316,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
             right_brake_pedal_input_id: context
                 .get_identifier("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
 
-            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION_RATIO".to_owned()),
             tiller_handle_input_id: context.get_identifier("TILLER_HANDLE_POSITION".to_owned()),
             tiller_pedal_disconnect_id: context
@@ -3931,10 +4341,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             rudder_pedal_position: Ratio::new::<ratio>(0.),
             autopilot_nosewheel_demand: Ratio::new::<ratio>(0.),
 
-            pedal_steering_limiter: SteeringAngleLimiter::new(
-                Self::SPEED_MAP_FOR_PEDAL_ACTION_KNOT,
-                Self::STEERING_ANGLE_FOR_PEDAL_ACTION_DEGREE,
-            ),
+            pedal_steering_limiter: PedalSteeringDynamicLimiter::default(),
             pedal_input_map: SteeringRatioToAngle::new(
                 Ratio::new::<ratio>(Self::RUDDER_PEDAL_INPUT_GAIN),
                 Self::RUDDER_PEDAL_INPUT_MAP,
@@ -3942,7 +4349,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
             ),
             tiller_steering_limiter: SteeringAngleLimiter::new(
                 Self::SPEED_MAP_FOR_TILLER_ACTION_KNOT,
-                Self::STEERING_ANGLE_FOR_TILLER_ACTION_DEGREE,
+                Self::STEERING_ANGLE_FOR_TILLER_ACTION_RATIO,
             ),
             tiller_input_map: SteeringRatioToAngle::new(
                 Ratio::new::<ratio>(Self::TILLER_INPUT_GAIN),
@@ -3951,7 +4358,9 @@ impl A380HydraulicBrakeSteerComputerUnit {
             ),
             final_steering_position_request: Angle::new::<degree>(0.),
 
-            ground_speed: Velocity::new::<knot>(0.),
+            body_wheel_steering_control: BodyWheelSteeringControl::default(),
+
+            heading_control_function: HeadingControlFunction::default(),
         }
     }
 
@@ -4017,8 +4426,19 @@ impl A380HydraulicBrakeSteerComputerUnit {
         engine2: &impl Engine,
         adirs: &impl AdirsMeasurementOutputs,
         placeholder_ground_spoilers_out: bool,
+        nose_steering_feedback: Angle,
     ) {
-        self.update_steering_demands(lgciu1, engine1, engine2);
+        // TODO split steering part from braking part in two different computers instances
+        self.update_steering_demands(
+            context,
+            adirs,
+            lgciu1,
+            engine1,
+            engine2,
+            nose_steering_feedback,
+        );
+        self.body_wheel_steering_control
+            .update(context, nose_steering_feedback);
 
         self.update_normal_braking_availability(current_pressure.pressure());
         self.update_brake_pressure_limitation();
@@ -4032,7 +4452,6 @@ impl A380HydraulicBrakeSteerComputerUnit {
             lgciu1,
             lgciu2,
             placeholder_ground_spoilers_out,
-            self.ground_speed,
         );
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
@@ -4098,10 +4517,16 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
     fn update_steering_demands(
         &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsMeasurementOutputs,
         lgciu1: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        nose_steering_feedback: Angle,
     ) {
+        self.pedal_steering_limiter
+            .update(context.ground_speed(), lgciu1); // TODO check which lgciu input is used for mode determination
+
         let steer_angle_from_autopilot = Angle::new::<degree>(
             self.autopilot_nosewheel_demand.get::<ratio>() * Self::AUTOPILOT_STEERING_INPUT_GAIN,
         );
@@ -4115,7 +4540,7 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
         // TODO Here ground speed would be probably computed from wheel sensor logic
         let final_steer_rudder_plus_autopilot = self.pedal_steering_limiter.angle_from_speed(
-            self.ground_speed,
+            context.ground_speed(),
             (steer_angle_from_pedals + steer_angle_from_autopilot)
                 .min(Angle::new::<degree>(
                     Self::MAX_RUDDER_INPUT_INCLUDING_AUTOPILOT_DEGREE,
@@ -4126,9 +4551,22 @@ impl A380HydraulicBrakeSteerComputerUnit {
         );
 
         let steer_angle_from_tiller = self.tiller_steering_limiter.angle_from_speed(
-            self.ground_speed,
+            context.ground_speed(),
             self.tiller_input_map
                 .angle_demand_from_input_demand(self.tiller_handle_position),
+        );
+
+        let any_steering_demand_active = steer_angle_from_autopilot.abs()
+            > Angle::new::<degree>(0.)
+            || steer_angle_from_pedals.abs() > Angle::new::<degree>(0.1)
+            || steer_angle_from_tiller.abs() > Angle::new::<degree>(0.1);
+
+        self.heading_control_function.update(
+            context,
+            1,
+            adirs,
+            any_steering_demand_active,
+            nose_steering_feedback,
         );
 
         let is_both_engine_low_oil_pressure =
@@ -4138,13 +4576,15 @@ impl A380HydraulicBrakeSteerComputerUnit {
             && self.anti_skid_activated
             && lgciu1.nose_gear_compressed(false)
         {
-            (final_steer_rudder_plus_autopilot + steer_angle_from_tiller)
-                .min(Angle::new::<degree>(
-                    Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
-                ))
-                .max(Angle::new::<degree>(
-                    -Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
-                ))
+            (final_steer_rudder_plus_autopilot
+                + steer_angle_from_tiller
+                + self.heading_control_function.steering_output())
+            .min(Angle::new::<degree>(
+                Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
+            ))
+            .max(Angle::new::<degree>(
+                -Self::MAX_STEERING_ANGLE_DEMAND_DEGREES,
+            ))
         } else {
             Angle::new::<degree>(0.)
         };
@@ -4156,6 +4596,18 @@ impl A380HydraulicBrakeSteerComputerUnit {
 
     fn alternate_controller(&self) -> &impl BrakeCircuitController {
         &self.alternate_brake_outputs
+    }
+
+    fn left_body_steering_controller(&self) -> &impl SteeringController {
+        self.body_wheel_steering_control.left_controller()
+    }
+
+    fn right_body_steering_controller(&self) -> &impl SteeringController {
+        self.body_wheel_steering_control.right_controller()
+    }
+
+    fn should_pressurise_for_body_steering(&self) -> bool {
+        self.body_wheel_steering_control.is_requesting_steering()
     }
 }
 impl SimulationElement for A380HydraulicBrakeSteerComputerUnit {
@@ -4177,7 +4629,6 @@ impl SimulationElement for A380HydraulicBrakeSteerComputerUnit {
             Ratio::new::<ratio>(reader.read(&self.tiller_handle_input_id));
         self.rudder_pedal_position = Ratio::new::<ratio>(reader.read(&self.rudder_pedal_input_id));
         self.tiller_pedal_disconnect = reader.read(&self.tiller_pedal_disconnect_id);
-        self.ground_speed = reader.read(&self.ground_speed_id);
 
         self.autopilot_nosewheel_demand =
             Ratio::new::<ratio>(reader.read(&self.autopilot_nosewheel_demand_id));
@@ -4653,6 +5104,8 @@ struct AileronSystemHydraulicController {
 
     left_aileron_controllers: [[AileronController; 2]; 3],
     right_aileron_controllers: [[AileronController; 2]; 3],
+
+    eha_backup_allowed: bool,
 }
 impl AileronSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
@@ -4723,6 +5176,8 @@ impl AileronSystemHydraulicController {
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
             right_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -4740,9 +5195,12 @@ impl AileronSystemHydraulicController {
         &self.right_aileron_controllers[panel as usize][..]
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, eha_backup_placeholder: &A380EhaInhibitPlaceholder) {
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
+
         self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
+        self.filter_dual_control();
     }
 
     fn update_aileron_controllers_positions(&mut self) {
@@ -4823,6 +5281,36 @@ impl AileronSystemHydraulicController {
                 self.right_inboard_position_requests_from_fbw
                     [AileronActuatorPosition::Inward as usize],
             );
+    }
+
+    // FIXME  We don't allow dual control for now as this causes issues in actuator solver
+    // To remove if actuator solver can handle this case or flight control never request it by design
+    fn filter_dual_control(&mut self) {
+        for controller in &mut self.left_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
+
+        for controller in &mut self.right_aileron_controllers {
+            if controller[AileronActuatorPosition::Outward as usize].mode
+                == LinearActuatorMode::PositionControl
+                && controller[AileronActuatorPosition::Inward as usize].mode
+                    == LinearActuatorMode::PositionControl
+            {
+                controller[AileronActuatorPosition::Outward as usize].mode =
+                    LinearActuatorMode::PositionControl;
+                controller[AileronActuatorPosition::Inward as usize].mode =
+                    LinearActuatorMode::ActiveDamping;
+            }
+        }
     }
 
     /// Will drive mode from solenoid state
@@ -5007,7 +5495,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.left_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_inboard_aileron_green_actuator_solenoid_id),
-            reader.read(&self.left_inboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.left_inboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.left_midboard_position_requests_from_fbw = [
@@ -5020,7 +5509,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.left_midboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_midboard_aileron_yellow_actuator_solenoid_id),
-            reader.read(&self.left_midboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.left_midboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.left_outboard_position_requests_from_fbw = [
@@ -5046,7 +5536,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.right_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_inboard_aileron_green_actuator_solenoid_id),
-            reader.read(&self.right_inboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.right_inboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_midboard_position_requests_from_fbw = [
@@ -5059,7 +5550,8 @@ impl SimulationElement for AileronSystemHydraulicController {
         ];
         self.right_midboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_midboard_aileron_yellow_actuator_solenoid_id),
-            reader.read(&self.right_midboard_aileron_eha_actuator_solenoid_id),
+            reader.read(&self.right_midboard_aileron_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_outboard_position_requests_from_fbw = [
@@ -5107,6 +5599,8 @@ struct ElevatorSystemHydraulicController {
 
     left_controllers: [[AileronController; 2]; 2],
     right_controllers: [[AileronController; 2]; 2],
+
+    eha_backup_allowed: bool,
 }
 impl ElevatorSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
@@ -5157,6 +5651,8 @@ impl ElevatorSystemHydraulicController {
             // Controllers are in outboard->inboard order
             left_controllers: [[AileronController::new(), AileronController::new()]; 2],
             right_controllers: [[AileronController::new(), AileronController::new()]; 2],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -5174,7 +5670,9 @@ impl ElevatorSystemHydraulicController {
         &self.right_controllers[panel as usize][..]
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, eha_backup_placeholder: &A380EhaInhibitPlaceholder) {
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
+
         self.update_elevator_controllers_positions();
         self.update_elevator_controllers_solenoids();
     }
@@ -5351,7 +5849,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.left_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_inboard_elevator_green_actuator_solenoid_id),
-            reader.read(&self.left_inboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.left_inboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.left_outboard_position_requests_from_fbw = [
@@ -5364,7 +5863,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.left_outboard_solenoid_energized_from_fbw = [
             reader.read(&self.left_outboard_elevator_green_actuator_solenoid_id),
-            reader.read(&self.left_outboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.left_outboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_inboard_position_requests_from_fbw = [
@@ -5377,7 +5877,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.right_inboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_inboard_elevator_yellow_actuator_solenoid_id),
-            reader.read(&self.right_inboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.right_inboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.right_outboard_position_requests_from_fbw = [
@@ -5390,7 +5891,8 @@ impl SimulationElement for ElevatorSystemHydraulicController {
         ];
         self.right_outboard_solenoid_energized_from_fbw = [
             reader.read(&self.right_outboard_elevator_yellow_actuator_solenoid_id),
-            reader.read(&self.right_outboard_elevator_eha_actuator_solenoid_id),
+            reader.read(&self.right_outboard_elevator_eha_actuator_solenoid_id)
+                && self.eha_backup_allowed,
         ];
     }
 }
@@ -5588,6 +6090,8 @@ struct RudderSystemHydraulicController {
     lower_electric_mode_solenoid_energized_from_fbw: [bool; 2],
 
     rudder_controllers: [[RudderController; 2]; 2],
+
+    eha_backup_allowed: bool,
 }
 impl RudderSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
@@ -5635,6 +6139,8 @@ impl RudderSystemHydraulicController {
 
             // Controllers are in Upper -> Lower order
             rudder_controllers: [[RudderController::new(), RudderController::new()]; 2],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -5645,7 +6151,8 @@ impl RudderSystemHydraulicController {
         &self.rudder_controllers[panel as usize][..]
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, eha_backup_placeholder: &A380EhaInhibitPlaceholder) {
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
         self.update_rudder_controllers_positions();
         self.update_rudder_controllers_solenoids();
     }
@@ -5779,8 +6286,10 @@ impl SimulationElement for RudderSystemHydraulicController {
             reader.read(&self.upper_rudder_green_actuator_hydraulic_solenoid_id),
         ];
         self.upper_electric_mode_solenoid_energized_from_fbw = [
-            reader.read(&self.upper_rudder_yellow_actuator_electric_solenoid_id),
-            reader.read(&self.upper_rudder_green_actuator_electric_solenoid_id),
+            reader.read(&self.upper_rudder_yellow_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
+            reader.read(&self.upper_rudder_green_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
         ];
 
         self.lower_position_requests_from_fbw = [
@@ -5796,8 +6305,10 @@ impl SimulationElement for RudderSystemHydraulicController {
             reader.read(&self.lower_rudder_yellow_actuator_hydraulic_solenoid_id),
         ];
         self.lower_electric_mode_solenoid_energized_from_fbw = [
-            reader.read(&self.lower_rudder_green_actuator_electric_solenoid_id),
-            reader.read(&self.lower_rudder_yellow_actuator_electric_solenoid_id),
+            reader.read(&self.lower_rudder_green_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
+            reader.read(&self.lower_rudder_yellow_actuator_electric_solenoid_id)
+                && self.eha_backup_allowed,
         ];
     }
 }
@@ -5954,6 +6465,17 @@ impl SimulationElement for AileronAssembly {
         writer.write(&self.position_out_id, self.positions[0]);
         writer.write(&self.position_mid_id, self.positions[1]);
         writer.write(&self.position_in_id, self.positions[2]);
+    }
+}
+impl Debug for AileronAssembly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nAILERON ASSEMBLY => \nAIL OUT {:?}\nAIL MID {:?}\nAIL IN {:?}",
+            self.hydraulic_assemblies[0],
+            self.hydraulic_assemblies[1],
+            self.hydraulic_assemblies[2],
+        )
     }
 }
 
@@ -6236,6 +6758,8 @@ struct SpoilerGroup {
     spoilers: [SpoilerElement; 8],
     hydraulic_controllers: [SpoilerController; 8],
     spoiler_positions: [f64; 8],
+
+    eha_backup_allowed: bool,
 }
 impl SpoilerGroup {
     const PLACE_HOLDER_POSITION_DEMAND_THRESHOLD_TO_DECLARE_GROUND_SPOILER_RATIO: f64 = 0.55;
@@ -6254,6 +6778,8 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 8),
             ],
             spoiler_positions: [0.; 8],
+
+            eha_backup_allowed: false,
         }
     }
 
@@ -6262,7 +6788,12 @@ impl SpoilerGroup {
         context: &UpdateContext,
         green_section: &impl SectionPressure,
         yellow_section: &impl SectionPressure,
+        eha_backup_placeholder: &A380EhaInhibitPlaceholder,
     ) {
+        // FIXME REMOVE elec backup inhibit once handles from flight computers
+        self.eha_backup_allowed = eha_backup_placeholder.is_allowed();
+        self.hydraulic_controllers[5].set_elec_backup_allowed(self.eha_backup_allowed);
+
         self.spoilers[0].update(
             context,
             &self.hydraulic_controllers[0],
@@ -6355,6 +6886,8 @@ struct SpoilerController {
     electrical_mode_ena_id: Option<VariableIdentifier>,
     requested_position: Ratio,
     elec_backup_active: bool,
+
+    elec_backup_allowed: bool,
 }
 impl SpoilerController {
     fn new(context: &mut InitContext, spoiler_side: &str, spoiler_id_number: usize) -> Self {
@@ -6376,7 +6909,13 @@ impl SpoilerController {
 
             requested_position: Ratio::new::<ratio>(0.),
             elec_backup_active: false,
+
+            elec_backup_allowed: false,
         }
+    }
+
+    fn set_elec_backup_allowed(&mut self, elec_backup_allowed: bool) {
+        self.elec_backup_allowed = elec_backup_allowed;
     }
 
     fn spoiler_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
@@ -6415,7 +6954,7 @@ impl SimulationElement for SpoilerController {
 impl HydraulicLocking for SpoilerController {}
 impl ElectroHydrostaticPowered for SpoilerController {
     fn should_activate_electrical_mode(&self) -> bool {
-        self.elec_backup_active
+        self.elec_backup_active && self.elec_backup_allowed
     }
 }
 
@@ -6554,7 +7093,7 @@ mod tests {
         };
 
         use uom::si::{
-            angle::{degree, radian},
+            angle::degree,
             electric_potential::volt,
             length::foot,
             ratio::{percent, ratio},
@@ -6581,20 +7120,20 @@ mod tests {
             }
         }
         impl AdirsDiscreteOutputs for A380TestAdirus {
-            fn low_speed_warning_1_104kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 104.
+            fn low_speed_warning_1(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 50.
             }
 
-            fn low_speed_warning_2_54kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 54.
-            }
-
-            fn low_speed_warning_3_159kts(&self, _: usize) -> bool {
-                self.airspeed.get::<knot>() > 159.
-            }
-
-            fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
+            fn low_speed_warning_2(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 260.
+            }
+
+            fn low_speed_warning_3(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() > 100.
+            }
+
+            fn low_speed_warning_4(&self, _: usize) -> bool {
+                self.airspeed.get::<knot>() < 260.
             }
         }
         impl AdirsMeasurementOutputs for A380TestAdirus {
@@ -6743,7 +7282,7 @@ mod tests {
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: A380AutobrakePanel::new(context),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
-                    landing_gear: LandingGear::new(context),
+                    landing_gear: LandingGear::new(context, true),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
                         context,
                         ElectricalBusType::DirectCurrentEssential,
@@ -7278,8 +7817,21 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_RUD_DEFLECTION"))
             }
 
+            fn set_rudder_input(mut self, steer_ratio: Ratio) -> Self {
+                self.write_by_name("RUDDER_PEDAL_POSITION_RATIO", steer_ratio.get::<ratio>());
+                self
+            }
+
             fn get_nose_steering_ratio(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
+            }
+
+            fn get_left_body_steering_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("LEFT_BODY_STEERING_POSITION_RATIO"))
+            }
+
+            fn get_right_body_steering_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("RIGHT_BODY_STEERING_POSITION_RATIO"))
             }
 
             fn _is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -7301,7 +7853,7 @@ mod tests {
             }
 
             fn external_power(mut self, is_connected: bool) -> Self {
-                self.write_by_name("EXTERNAL POWER AVAILABLE:1", is_connected);
+                self.write_by_name("EXT_PWR_AVAIL:1", is_connected);
 
                 if is_connected {
                     self = self.on_the_ground();
@@ -7337,13 +7889,20 @@ mod tests {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
+
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
                     .start_eng3(Ratio::new::<percent>(80.))
                     .start_eng4(Ratio::new::<percent>(80.))
+                    .set_ground_speed(Velocity::new::<knot>(180.))
                     .set_gear_lever_up()
                     .set_park_brake(false)
                     .external_power(false)
+            }
+
+            fn set_ground_speed(mut self, ground_speed: Velocity) -> Self {
+                self.write_by_name("GPS GROUND SPEED", ground_speed.get::<knot>());
+                self
             }
 
             fn adirs_not_aligned(mut self) -> Self {
@@ -7405,8 +7964,10 @@ mod tests {
                 self
             }
 
-            fn set_pushback_angle(mut self, angle: Angle) -> Self {
-                self.write_by_name("PUSHBACK ANGLE", angle.get::<radian>());
+            fn set_pushback_angle(mut self, angle: AngularVelocity) -> Self {
+                self.write_by_name("ROTATION VELOCITY BODY Y", angle.get::<degree_per_second>());
+                self.write_by_name("VELOCITY BODY Z", -1.);
+
                 self
             }
 
@@ -7586,6 +8147,9 @@ mod tests {
                     GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_RIGHT_POSITION"),
+                    GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                        panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+                    }
                 }
             }
 
@@ -7594,6 +8158,9 @@ mod tests {
                     GearWheel::NOSE => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_DOOR_RIGHT_POSITION"),
+                    GearWheel::WINGLEFT | GearWheel::WINGRIGHT => {
+                        panic!("TODO WING GEARS HYD NOT IMPLEMENTED YET ON 380")
+                    }
                 }
             }
 
@@ -8487,6 +9054,9 @@ mod tests {
                 )
                 .run_waiting_for(Duration::from_secs(1));
 
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
+
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
@@ -8535,6 +9105,9 @@ mod tests {
                     AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -8699,6 +9272,9 @@ mod tests {
                     < 0.1
             );
 
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
+
             test_bed = test_bed
                 .reset_all_aileron_commands()
                 .ac_eha_active()
@@ -8737,6 +9313,9 @@ mod tests {
                     AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -8925,6 +9504,9 @@ mod tests {
                 .set_left_spoilers_out()
                 .set_right_spoilers_out()
                 .run_waiting_for(Duration::from_secs(5));
+
+            // Artificially set plane not on ground to allow EHA activation
+            test_bed.set_on_ground(false);
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
@@ -10319,16 +10901,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(80.))
-                .run_waiting_for(Duration::from_secs_f64(0.5));
-
-            // Do not turn instantly in 0.5s
-            assert!(
-                test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.)
-                    && test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(0.5)
-            );
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(-5.))
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
             // Has turned fully after 5s
             assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.9));
@@ -10336,12 +10910,8 @@ mod tests {
             // Going left
             test_bed = test_bed
                 .set_pushback_state(true)
-                .set_pushback_angle(Angle::new::<degree>(-80.))
-                .run_waiting_for(Duration::from_secs_f64(0.5));
-
-            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.2));
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
             // Has turned fully left after 5s
             assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
@@ -10534,7 +11104,7 @@ mod tests {
         }
 
         #[test]
-        fn yellow_epump_buildup_system_section_when_pushback() {
+        fn yellow_epump_buildup_system_section_when_pushback_turns_nose_more_than_20_degrees() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -10543,7 +11113,8 @@ mod tests {
 
             test_bed = test_bed
                 .set_pushback_state(true)
-                .run_waiting_for(Duration::from_secs(5));
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
+                .run_waiting_for(Duration::from_secs(6));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() <= Pressure::new::<psi>(50.));
@@ -10635,6 +11206,136 @@ mod tests {
 
             assert!(test_bed.is_cargo_fwd_door_locked_up());
             assert!(test_bed.is_cargo_aft_door_locked_up());
+        }
+
+        #[test]
+        fn pushback_steering_full_left_turns_body_steering() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(5.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Left BWS should be at max right steer (15°) for left turn
+            assert!(
+                test_bed
+                    .get_left_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    >= 0.97
+            );
+
+            // Right BWS should be at (11°) right steer for left turn
+            let expected_right_angle = 11. / 15.;
+            assert!(
+                test_bed
+                    .get_right_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    < 0.9
+            );
+            assert!(
+                test_bed
+                    .get_right_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    > expected_right_angle - 0.05
+            );
+        }
+
+        #[test]
+        fn pushback_steering_full_right_turns_body_steering() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(AngularVelocity::new::<degree_per_second>(-5.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Right BWS should be at max left steer (15°) for right turn
+            assert!(
+                test_bed
+                    .get_right_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    <= -0.97
+            );
+
+            // Left BWS should be at (11°) left steer for right turn
+            let expected_right_angle = -11. / 15.;
+            assert!(
+                test_bed
+                    .get_left_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    > -0.9
+            );
+            assert!(
+                test_bed
+                    .get_left_body_steering_steering_ratio()
+                    .get::<ratio>()
+                    < expected_right_angle + 0.05
+            );
+        }
+
+        #[test]
+        fn takeoff_mode_limits_nose_steering_to_2_degrees_after_150_knot() {
+            let mut test_bed = test_bed_on_ground_with()
+                .start_eng1(Ratio::new::<percent>(95.))
+                .start_eng2(Ratio::new::<percent>(95.))
+                .start_eng3(Ratio::new::<percent>(95.))
+                .start_eng4(Ratio::new::<percent>(95.))
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(15.))
+                .set_rudder_input(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Expecting around 6 degrees, so ratio with 0.5 margin should be 5.5/75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() >= 5.5 / 75.);
+
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(155.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Expecting around 2 degrees, so ratio with 0.5 margin should be 2.5/75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() <= 2.5 / 75.);
+        }
+
+        #[test]
+        fn landing_mode_limits_nose_steering_to_0_degrees_after_150_knot() {
+            let mut test_bed = test_bed_on_ground_with()
+                .start_eng1(Ratio::new::<percent>(95.))
+                .start_eng2(Ratio::new::<percent>(95.))
+                .start_eng3(Ratio::new::<percent>(95.))
+                .start_eng4(Ratio::new::<percent>(95.))
+                .in_flight()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(160.))
+                .on_the_ground()
+                .set_rudder_input(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Expecting  0 degrees, so ratio with 0.5 margin should be 0.5/75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() < 0.5 / 75.);
+
+            // At lower speed in landing mode should get 6 degrees range
+            test_bed = test_bed
+                .set_ground_speed(Velocity::new::<knot>(100.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Expecting around 6 degrees, so ratio with .5 margin should be 5./75
+            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() > 5.5 / 75.);
         }
     }
 }

@@ -10,7 +10,26 @@ use crate::{
         Write,
     },
 };
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum CpiomId {
+    B1,
+    B2,
+    B3,
+    B4,
+}
+
+impl Display for CpiomId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CpiomId::B1 => write!(f, "B1"),
+            CpiomId::B2 => write!(f, "B2"),
+            CpiomId::B3 => write!(f, "B3"),
+            CpiomId::B4 => write!(f, "B4"),
+        }
+    }
+}
 
 pub struct CoreProcessingInputOutputModule<MessageData: Clone + Eq + PartialEq> {
     power_supply: ElectricalBusType,

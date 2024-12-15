@@ -27,7 +27,7 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
 import './style.scss';
-import { PitchTrimIndicator } from 'instruments/src/PFD/PitchTrimIndicator';
+import { PitchTrimDisplay } from 'instruments/src/PFD/PitchTrimDisplay';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -89,7 +89,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
       this.pitchTrimIndicatorVisible.set(false);
     } else if (gs < 30) {
       this.pitchTrimIndicatorVisible.set(true);
-    } else if (gs < 80 && (this.spoilersArmed.get() === true || flapsRetracted === true || this.thrustTla.get() > 5)) {
+    } else if (gs < 80 && (this.spoilersArmed.get() === false || flapsRetracted === true || this.thrustTla.get() > 5)) {
       // FIXME add "flight crew presses pitch trim switches"
       this.pitchTrimIndicatorVisible.set(true);
     }
@@ -175,7 +175,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     return (
       <CdsDisplayUnit
         bus={this.props.bus}
-        displayUnitId={DisplayUnitID.CaptPfd}
+        displayUnitId={getDisplayIndex() === 1 ? DisplayUnitID.CaptPfd : DisplayUnitID.FoPfd}
         test={Subject.create(-1)}
         failed={Subject.create(false)}
       >
@@ -228,7 +228,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
           <LowerArea bus={this.props.bus} pitchTrimIndicatorVisible={this.pitchTrimIndicatorVisible} />
         </svg>
-        <PitchTrimIndicator bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
+        <PitchTrimDisplay bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
       </CdsDisplayUnit>
     );
   }

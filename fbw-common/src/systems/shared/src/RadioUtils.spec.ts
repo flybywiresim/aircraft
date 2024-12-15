@@ -20,10 +20,27 @@ describe('RadioUtils.packBcd32', () => {
   });
 });
 
+describe('RadioUtils.unpackBcd16', () => {
+  it('correctly unpacks bcd16', () => {
+    expect(RadioUtils.unpackBcd16(0x1850)).toBe(118_500_000);
+    expect(RadioUtils.unpackBcd16(0x2225)).toBe(122_250_000);
+    expect(RadioUtils.unpackBcd16(0x3697)).toBe(136_970_000);
+  });
+});
+
+describe('RadioUtils.unpackBcd32', () => {
+  it('correctly unpacks bcd32', () => {
+    expect(RadioUtils.unpackBcd32(0x118_500_0)).toBe(118_500_000);
+    expect(RadioUtils.unpackBcd32(0x122_250_0)).toBe(122_250_000);
+    expect(RadioUtils.unpackBcd32(0x136_975_0)).toBe(136_975_000);
+  });
+});
+
 describe('RadioUtils.unpackVhfComFrequencyFromArincToHz', () => {
   it('correctly unpacks arinc BCD to Hz', () => {
     expect(RadioUtils.unpackVhfComFrequencyFromArincToHz(0x18_500)).toBe(118_500_000);
     expect(RadioUtils.unpackVhfComFrequencyFromArincToHz(0x22_250)).toBe(122_250_000);
+    expect(RadioUtils.unpackVhfComFrequencyFromArincToHz(0x26_425)).toBe(126_425_000);
     expect(RadioUtils.unpackVhfComFrequencyFromArincToHz(0x36_975)).toBe(136_975_000);
   });
 });
@@ -32,7 +49,17 @@ describe('RadioUtils.packBcd32VhfComFrequencyToArinc', () => {
   it('correctly translates to ARINC VHF COM format', () => {
     expect(RadioUtils.packBcd32VhfComFrequencyToArinc(0x118_500_0)).toBe(0x18_500);
     expect(RadioUtils.packBcd32VhfComFrequencyToArinc(0x122_250_0)).toBe(0x22_250);
+    expect(RadioUtils.packBcd32VhfComFrequencyToArinc(0x126_425_0)).toBe(0x26_425);
     expect(RadioUtils.packBcd32VhfComFrequencyToArinc(0x136_975_0)).toBe(0x36_975);
+  });
+});
+
+describe('RadioUtils.packVhfComFrequencyToArinc', () => {
+  it('correctly translates to ARINC VHF COM format', () => {
+    expect(RadioUtils.packVhfComFrequencyToArinc(118_500_000)).toBe(0x18_500);
+    expect(RadioUtils.packVhfComFrequencyToArinc(122_250_000)).toBe(0x22_250);
+    expect(RadioUtils.packVhfComFrequencyToArinc(126_425_000)).toBe(0x26_425);
+    expect(RadioUtils.packVhfComFrequencyToArinc(136_975_000)).toBe(0x36_975);
   });
 });
 
@@ -49,6 +76,7 @@ describe('RadioUtils.unpackVhfComFrequencyFromArincToBcd32', () => {
   it('correctly translates from ARINC VHF COM format', () => {
     expect(RadioUtils.unpackVhfComFrequencyFromArincToBcd32(0x18_500)).toBe(0x118_500_0);
     expect(RadioUtils.unpackVhfComFrequencyFromArincToBcd32(0x22_250)).toBe(0x122_250_0);
+    expect(RadioUtils.unpackVhfComFrequencyFromArincToBcd32(0x26_425)).toBe(0x126_425_0);
     expect(RadioUtils.unpackVhfComFrequencyFromArincToBcd32(0x36_975)).toBe(0x136_975_0);
   });
 });

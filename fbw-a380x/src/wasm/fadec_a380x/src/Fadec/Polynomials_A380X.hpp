@@ -382,7 +382,7 @@ class Polynomial_A380X {
                     + (c_Flow[20] * (std::pow)(alt, 3));        //
 
     // TODO: Adjust the corrected fuel flow to account for the A380 double fuel flow. Will have to be taken care of.
-    return 2.4 * outCFF;
+    return 2.8 * outCFF;
   }
 
   /**

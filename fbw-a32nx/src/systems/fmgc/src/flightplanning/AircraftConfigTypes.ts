@@ -13,6 +13,7 @@ export interface AircraftConfig {
   vnavConfig: VnavConfig;
   engineModelParameters: EngineModelParameters;
   flightModelParameters: FlightModelParameters;
+  fmSymbolConfig: FMSymbolsConfig;
 }
 
 export interface VnavConfig {
@@ -127,4 +128,8 @@ export interface FlightModelParameters {
 
   /** Drag coefficient factor for tuning */
   dragCoeffFactor: number;
+}
+
+export interface FMSymbolsConfig {
+  publishDepartureIdent: boolean;
 }

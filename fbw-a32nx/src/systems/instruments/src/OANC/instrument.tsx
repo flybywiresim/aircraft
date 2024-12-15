@@ -19,11 +19,10 @@ import {
   ZOOM_TRANSITION_TIME_MS,
   a320EfisZoomRangeSettings,
 } from '@flybywiresim/oanc';
-import { EfisSide } from '@flybywiresim/fbw-sdk';
+import { EfisSide, FcuBusPublisher } from '@flybywiresim/fbw-sdk';
 import { ContextMenu } from './Components/ContextMenu';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { ControlPanel } from './Components/ControlPanel';
-import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './styles.scss';
 
@@ -88,8 +87,6 @@ class A32NX_OANC extends BaseInstrument {
 
   private readonly controlPanelVisible = Subject.create(false);
 
-  private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
-
   constructor() {
     super();
     this.efisSide = getDisplayIndex() === 1 ? 'L' : 'R';
@@ -123,9 +120,6 @@ class A32NX_OANC extends BaseInstrument {
         class="oanc-container"
         style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}
       >
-        <div ref={this.waitScreenRef} class="oanc-waiting-screen">
-          PLEASE WAIT
-        </div>
         <Oanc
           bus={this.bus}
           side={this.efisSide}
@@ -134,7 +128,6 @@ class A32NX_OANC extends BaseInstrument {
           contextMenuItems={this.contextMenuItems}
           contextMenuX={this.contextMenuX}
           contextMenuY={this.contextMenuY}
-          waitScreenRef={this.waitScreenRef}
           zoomValues={a320EfisZoomRangeSettings}
         />
         <ControlPanel

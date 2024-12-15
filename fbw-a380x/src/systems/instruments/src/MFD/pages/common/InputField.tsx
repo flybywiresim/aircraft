@@ -14,10 +14,6 @@ import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryForma
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
 
-// eslint-disable-next-line max-len
-export const emptyMandatoryCharacter = (selected: boolean) =>
-  `<svg width="16" height="23" viewBox="1 1 13 23"><polyline points="2,2 2,22 13,22 13,2 2,2" fill="none" stroke=${selected ? 'black' : '#e68000'} stroke-width="2" /></svg>`;
-
 interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;
   /** Renders empty values with orange rectangles */
@@ -171,10 +167,16 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   }
 
   private onKeyDown(ev: KeyboardEvent) {
+    if (!this.isFocused.get()) {
+      return;
+    }
+
     if (ev.keyCode === KeyCode.KEY_BACK_SPACE) {
       this.handleBackspace();
     }
   }
+
+  private onKeyDownHandler = this.onKeyDown.bind(this);
 
   private handleBackspace() {
     if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get()) {
@@ -188,20 +190,33 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.onInput();
   }
 
-  private onKeyPress(ev: KeyboardEvent) {
+  private onKeyPress = (ev: KeyboardEvent) => {
+    if (!this.isFocused.get()) {
+      return;
+    }
+
     // Un-select the text
     this.textInputRef.instance.classList.remove('valueSelected');
+
     // ev.key is undefined, so we have to use the deprecated keyCode here
     const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
-    if (ev.keyCode !== KeyCode.KEY_ENTER) {
-      this.handleKeyInput(key);
-    } else {
+    if (ev.keyCode === KeyCode.KEY_ENTER) {
       this.handleEnter();
     }
-  }
 
-  private handleKeyInput(key: string) {
+    if (key.match(/^[A-Z0-9/.+\- ]$/)) {
+      this.handleKeyInput(key);
+    }
+
+    if (key === ',') {
+      this.handleKeyInput('.');
+    }
+  };
+
+  private onKeyPressHandler = this.onKeyPress.bind(this);
+
+  private handleKeyInput = (key: string) => {
     if (this.modifiedFieldValue.get() === null) {
       this.modifiedFieldValue.set('');
       this.spanningDivRef.instance.style.justifyContent = 'flex-start';
@@ -213,7 +228,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     this.onInput();
-  }
+  };
 
   private handleEnter() {
     if (this.props.handleFocusBlurExternally) {
@@ -235,12 +250,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
       this.isFocused.set(true);
 
-      // After 30s, unfocus field, if some other weird focus error happens
+      // After 20s, unfocus field, if some other weird focus error happens
       setTimeout(() => {
         if (this.isFocused.get()) {
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
         }
-      }, 30_000);
+      }, 20_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
       if (this.props.mandatory?.get()) {
@@ -251,6 +266,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.updateDisplayElement();
     }
   }
+
+  private onFocusHandler = this.onFocus.bind(this);
 
   public async onBlur(validateAndUpdate: boolean = true) {
     if (!this.props.disabled?.get() && !this.props.inactive?.get() && this.isFocused.get()) {
@@ -274,7 +291,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (!this.props.value.get() && this.props.mandatory?.get()) {
+      if (this.props.value.get() === null && this.props.mandatory?.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -289,8 +306,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.trailingUnit.set(unitTrailing ?? '');
 
     if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
-      this.textInputRef.instance.innerHTML =
-        formatted?.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get())) ?? '';
+      this.textInputRef.instance.innerHTML = formatted?.replace(/-/gi, '\u25AF') ?? '';
     } else {
       this.textInputRef.instance.innerText = formatted ?? '';
     }
@@ -342,6 +358,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.modifiedFieldValue.set(null);
     this.isValidating.set(false);
   }
+
+  private onFocusTextInput() {
+    this.textInputRef.instance.focus();
+  }
+
+  private onFocusTextInputHandler = this.onFocusTextInput.bind(this);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -396,7 +418,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     this.subs.push(
       this.props.mandatory.sub((val) => {
-        if (val && !this.props.value.get()) {
+        if (val && this.props.value.get() === null) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
@@ -432,7 +454,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
-            if (this.props.mandatory?.get() && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.props.value.get() === null) {
               this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
@@ -440,7 +462,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.containerRef.instance.classList.remove('disabled');
             this.textInputRef.instance.classList.remove('disabled');
 
-            if (this.props.mandatory?.get() && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.props.value.get() === null) {
               this.textInputRef.instance.classList.add('mandatory');
             }
           }
@@ -473,23 +495,15 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
 
-    this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
-    this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
+    this.textInputRef.instance.addEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.instance.addEventListener('keydown', this.onKeyDownHandler);
 
     if (!this.props.handleFocusBlurExternally) {
-      this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
-      this.textInputRef.instance.addEventListener('blur', () => {
-        this.onBlur();
-      });
-      this.spanningDivRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.leadingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.trailingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
+      this.textInputRef.instance.addEventListener('focus', this.onFocusHandler);
+      this.textInputRef.instance.addEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.instance.addEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
     }
 
     this.props.hEventConsumer.handle((key) => {
@@ -556,6 +570,24 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 }
             }));
         } */
+  }
+
+  destroy(): void {
+    // Destroy all subscriptions to remove all references to this instance.
+    this.subs.forEach((x) => x.destroy());
+
+    this.textInputRef.getOrDefault()?.removeEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.getOrDefault()?.removeEventListener('keydown', this.onKeyDownHandler);
+
+    if (!this.props.handleFocusBlurExternally) {
+      this.textInputRef.getOrDefault()?.removeEventListener('focus', this.onFocusHandler);
+      this.textInputRef.getOrDefault()?.removeEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+    }
+
+    super.destroy();
   }
 
   render(): VNode {

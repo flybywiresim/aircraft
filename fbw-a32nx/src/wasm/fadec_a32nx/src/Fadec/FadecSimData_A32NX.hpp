@@ -74,13 +74,27 @@ class FadecSimData_A32NX {
   DataDefinitionVector oilTempE2DataDef = { {"GENERAL ENG OIL TEMPERATURE", 2, UNITS.Celsius}  };
   DataDefinitionVariablePtr<OliTempData> oilTempDataPtr[2];
 
-// Oil Psi Data in separate Data Definitions as they are updated separately
+  // Oil Psi Data in separate Data Definitions as they are updated separately
   struct OilPsiData {
     FLOAT64 oilPsi; // Psi
   };
   DataDefinitionVector oilPsiE1DataDef = { {"GENERAL ENG OIL PRESSURE", 1, UNITS.Psi} };
   DataDefinitionVector oilPsiE2DataDef = { {"GENERAL ENG OIL PRESSURE", 2, UNITS.Psi} };
   DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[2];
+
+  struct CorrectedN1Data {
+    FLOAT64 correctedN1;  // Percent
+  };
+  DataDefinitionVector correctedN1E1DataDef = { {"TURB ENG CORRECTED N1", 1, UNITS.Percent}} ;
+  DataDefinitionVector correctedN1E2DataDef = { {"TURB ENG CORRECTED N1", 2, UNITS.Percent}} ;
+  DataDefinitionVariablePtr<CorrectedN1Data> correctedN1DataPtr[2];
+
+  struct CorrectedN2Data {
+    FLOAT64 correctedN2;  // Percent
+  };
+  DataDefinitionVector correctedN2E1DataDef = { {"TURB ENG CORRECTED N2", 1, UNITS.Percent} };
+  DataDefinitionVector correctedN2E2DataDef = { {"TURB ENG CORRECTED N2", 2, UNITS.Percent} };
+  DataDefinitionVariablePtr<CorrectedN2Data> correctedN2DataPtr[2];
   // clang-format on
 
   // Various simvars we require each tick
@@ -91,8 +105,6 @@ class FadecSimData_A32NX {
     FLOAT64 animationDeltaTime;        // Seconds
     FLOAT64 apuFuelConsumption;        // Gallons per hour
     FLOAT64 engineAntiIce[2];          // Bool
-    FLOAT64 engineCorrectedN1[2];      // Percent
-    FLOAT64 engineCorrectedN2[2];      // Percent
     FLOAT64 engineFuelValveOpen[2];    // Number
     FLOAT64 engineIgniter[2];          // Number
     FLOAT64 engineStarter[2];          // Bool
@@ -116,51 +128,47 @@ class FadecSimData_A32NX {
     FLOAT64 xfrValveOuter2[2];         // Number
   };
   DataDefinitionVector simVarsDataDef = {
-      {"AIRSPEED MACH",                0,  UNITS.Mach     }, //
-      {"AMBIENT PRESSURE",             0,  UNITS.Millibars}, //
-      {"AMBIENT TEMPERATURE",          0,  UNITS.Celsius  }, //
-      {"ANIMATION DELTA TIME",         0,  UNITS.Seconds  }, //
-      {"FUELSYSTEM LINE FUEL FLOW",    18, UNITS.Gph      }, //
-      {"ENG ANTI ICE",                 1,  UNITS.Bool     }, //
-      {"ENG ANTI ICE",                 2,  UNITS.Bool     }, //
-      {"TURB ENG CORRECTED N1",        1,  UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        2,  UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N2",        1,  UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N2",        2,  UNITS.Percent  }, //
-      {"FUELSYSTEM VALVE OPEN",        1,  UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        2,  UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 1,  UNITS.Number   }, //
-      {"TURB ENG IGNITION SWITCH EX1", 2,  UNITS.Number   }, //
-      {"GENERAL ENG STARTER",          1,  UNITS.Bool     }, //
-      {"GENERAL ENG STARTER",          2,  UNITS.Bool     }, //
-      {"FUELSYSTEM PUMP ACTIVE",       2,  UNITS.Number   }, //
-      {"FUELSYSTEM PUMP ACTIVE",       3,  UNITS.Number   }, //
-      {"FUELSYSTEM PUMP ACTIVE",       5,  UNITS.Number   }, //
-      {"FUELSYSTEM PUMP ACTIVE",       6,  UNITS.Number   }, //
-      {"FUELSYSTEM TANK QUANTITY",     1,  UNITS.Gallons  }, //
-      {"FUELSYSTEM TANK QUANTITY",     2,  UNITS.Gallons  }, //
-      {"FUELSYSTEM TANK QUANTITY",     4,  UNITS.Gallons  }, //
-      {"FUELSYSTEM TANK QUANTITY",     3,  UNITS.Gallons  }, //
-      {"FUELSYSTEM TANK QUANTITY",     5,  UNITS.Gallons  }, //
-      {"FUEL WEIGHT PER GALLON",       0,  UNITS.Pounds   }, //
-      {"FUELSYSTEM LINE FUEL FLOW",    27, UNITS.Gph      }, //
-      {"FUELSYSTEM LINE FUEL FLOW",    28, UNITS.Gph      }, //
-      {"PRESSURE ALTITUDE",            0,  UNITS.Feet     }, //
-      {"TURB ENG N1",                  1,  UNITS.Percent  }, //
-      {"TURB ENG N1",                  2,  UNITS.Percent  }, //
-      {"TURB ENG N2",                  1,  UNITS.Percent  }, //
-      {"TURB ENG N2",                  2,  UNITS.Percent  }, //
-      {"FUELSYSTEM VALVE OPEN",        3,  UNITS.Number   }, //
-      {"FUELSYSTEM JUNCTION SETTING",  4,  UNITS.Number   }, //
-      {"FUELSYSTEM JUNCTION SETTING",  5,  UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        11, UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        12, UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        9,  UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        10, UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        6,  UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        7,  UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        4,  UNITS.Number   }, //
-      {"FUELSYSTEM VALVE OPEN",        5,  UNITS.Number   }, //
+      {"AIRSPEED MACH",                0,  UNITS.Mach     }, // airSpeedMach
+      {"AMBIENT PRESSURE",             0,  UNITS.Millibars}, // ambientPressure
+      {"AMBIENT TEMPERATURE",          0,  UNITS.Celsius  }, // ambientTemperature
+      {"ANIMATION DELTA TIME",         0,  UNITS.Seconds  }, // animationDeltaTime
+      {"FUELSYSTEM LINE FUEL FLOW",    18, UNITS.Gph      }, // apuFuelConsumption
+      {"ENG ANTI ICE",                 1,  UNITS.Bool     }, // engineAntiIce[0]
+      {"ENG ANTI ICE",                 2,  UNITS.Bool     }, // engineAntiIce[1]
+      {"FUELSYSTEM VALVE OPEN",        1,  UNITS.Number   }, // engineFuelValveOpen[0]
+      {"FUELSYSTEM VALVE OPEN",        2,  UNITS.Number   }, // engineFuelValveOpen[1]
+      {"TURB ENG IGNITION SWITCH EX1", 1,  UNITS.Number   }, // engineIgniter[0]
+      {"TURB ENG IGNITION SWITCH EX1", 2,  UNITS.Number   }, // engineIgniter[1]
+      {"GENERAL ENG STARTER",          1,  UNITS.Bool     }, // engineStarter[0]
+      {"GENERAL ENG STARTER",          2,  UNITS.Bool     }, // engineStarter[1]
+      {"FUELSYSTEM PUMP ACTIVE",       2,  UNITS.Number   }, // fuelPump1[0]
+      {"FUELSYSTEM PUMP ACTIVE",       3,  UNITS.Number   }, // fuelPump1[1]
+      {"FUELSYSTEM PUMP ACTIVE",       5,  UNITS.Number   }, // fuelPump2[0]
+      {"FUELSYSTEM PUMP ACTIVE",       6,  UNITS.Number   }, // fuelPump2[1]
+      {"FUELSYSTEM TANK QUANTITY",     1,  UNITS.Gallons  }, // fuelTankQuantityCenter
+      {"FUELSYSTEM TANK QUANTITY",     2,  UNITS.Gallons  }, // fuelTankQuantityLeft
+      {"FUELSYSTEM TANK QUANTITY",     4,  UNITS.Gallons  }, // fuelTankQuantityLeftAux
+      {"FUELSYSTEM TANK QUANTITY",     3,  UNITS.Gallons  }, // fuelTankQuantityRight
+      {"FUELSYSTEM TANK QUANTITY",     5,  UNITS.Gallons  }, // fuelTankQuantityRightAux
+      {"FUEL WEIGHT PER GALLON",       0,  UNITS.Pounds   }, // fuelWeightPerGallon
+      {"FUELSYSTEM LINE FUEL FLOW",    27, UNITS.Gph      }, // lineToCenterFlow[0]
+      {"FUELSYSTEM LINE FUEL FLOW",    28, UNITS.Gph      }, // lineToCenterFlow[1]
+      {"PRESSURE ALTITUDE",            0,  UNITS.Feet     }, // pressureAltitude
+      {"TURB ENG N1",                  1,  UNITS.Percent  }, // simEngineN1[0]
+      {"TURB ENG N1",                  2,  UNITS.Percent  }, // simEngineN1[1]
+      {"TURB ENG N2",                  1,  UNITS.Percent  }, // simEngineN2[0]
+      {"TURB ENG N2",                  2,  UNITS.Percent  }, // simEngineN2[1]
+      {"FUELSYSTEM VALVE OPEN",        3,  UNITS.Number   }, // xFeedValve
+      {"FUELSYSTEM JUNCTION SETTING",  4,  UNITS.Number   }, // xfrCenterManual[0]
+      {"FUELSYSTEM JUNCTION SETTING",  5,  UNITS.Number   }, // xfrCenterManual[1]
+      {"FUELSYSTEM VALVE OPEN",        11, UNITS.Number   }, // xfrValveCenterAuto[0]
+      {"FUELSYSTEM VALVE OPEN",        12, UNITS.Number   }, // xfrValveCenterAuto[1]
+      {"FUELSYSTEM VALVE OPEN",        9,  UNITS.Number   }, // xfrValveCenterOpen[0]
+      {"FUELSYSTEM VALVE OPEN",        10, UNITS.Number   }, // xfrValveCenterOpen[1]
+      {"FUELSYSTEM VALVE OPEN",        6,  UNITS.Number   }, // xfrValveOuter1[0]
+      {"FUELSYSTEM VALVE OPEN",        7,  UNITS.Number   }, // xfrValveOuter1[1]
+      {"FUELSYSTEM VALVE OPEN",        4,  UNITS.Number   }, // xfrValveOuter2[0]
+      {"FUELSYSTEM VALVE OPEN",        5,  UNITS.Number   }, // xfrValveOuter2[1]
   };
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 
@@ -213,6 +221,8 @@ class FadecSimData_A32NX {
   NamedVariablePtr thrustLimitType;
   NamedVariablePtr wingAntiIce;
 
+  NamedVariablePtr aircraftPresetQuickMode;  // 0 or 1
+
   // ===============================================================================================
 
   /**
@@ -237,7 +247,18 @@ class FadecSimData_A32NX {
     oilPsiDataPtr[L]    = dm->make_datadefinition_var<OilPsiData>("OIL PSI LEFT DATA", oilPsiE1DataDef, NO_AUTO_UPDATE);
     oilPsiDataPtr[R]    = dm->make_datadefinition_var<OilPsiData>("OIL PSI RIGHT DATA", oilPsiE2DataDef, NO_AUTO_UPDATE);
 
+    correctedN1DataPtr[L] = dm->make_datadefinition_var<CorrectedN1Data>("CORRECTED N1 LEFT DATA", correctedN1E1DataDef, NO_AUTO_UPDATE);
+    correctedN1DataPtr[L]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    correctedN1DataPtr[R] = dm->make_datadefinition_var<CorrectedN1Data>("CORRECTED N1 RIGHT DATA", correctedN1E2DataDef, NO_AUTO_UPDATE);
+    correctedN1DataPtr[R]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    correctedN2DataPtr[L] = dm->make_datadefinition_var<CorrectedN2Data>("CORRECTED N2 LEFT DATA", correctedN2E1DataDef, NO_AUTO_UPDATE);
+    correctedN2DataPtr[L]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    correctedN2DataPtr[R] = dm->make_datadefinition_var<CorrectedN2Data>("CORRECTED N2 RIGHT DATA", correctedN2E2DataDef, NO_AUTO_UPDATE);
+    correctedN2DataPtr[R]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
+    simVarsDataPtr->setSkipChangeCheck(true);  // we don't need to check for changes as this basically always changes
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
   }
 
@@ -267,6 +288,7 @@ class FadecSimData_A32NX {
 
   void initLvars(DataManager* dm) {
     // TODO: consider DataDefinition for the groups tha are read/write each tick
+
     startState = dm->make_named_var("A32NX_START_STATE", UNITS.Number, NO_AUTO_UPDATE);
 
     engineEgt[L] = dm->make_named_var("A32NX_ENGINE_EGT:1", UNITS.Number, AUTO_READ_WRITE);
@@ -330,10 +352,13 @@ class FadecSimData_A32NX {
     wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
     refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
-    airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
+    airlinerToFlexTemp  = dm->make_named_var("A32NX_AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
 
+    aircraftPresetQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
+
     // reset LVars to 0
+    aircraftPresetQuickMode->setAndWriteToSim(0);
     engineEgt[L]->setAndWriteToSim(0);
     engineEgt[R]->setAndWriteToSim(0);
     engineFF[L]->setAndWriteToSim(0);

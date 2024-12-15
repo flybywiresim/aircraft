@@ -54,7 +54,7 @@
 
     <Template Name="FBW_A380X_Components_MIP">
         <DefaultTemplateParameters>
-            <BACKLIGHT_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
             <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
         </DefaultTemplateParameters>
 
@@ -123,23 +123,46 @@
             <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                 <NODE_ID>GRVTY_LDG_LOCK1</NODE_ID>
                 <ANIM_NAME>GRVTY_LDG_LOCK1</ANIM_NAME>
-            </UseTemplate>
-
-            <UseTemplate Name="ASOBO_GT_Switch_Dummy">
-                <NODE_ID>GRVTY_LDG_LOCK2</NODE_ID>
-                <ANIM_NAME>GRVTY_LDG_LOCK2</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_LG_GRVTY_SWITCH_GUARD_1) ! (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_1)
+                    (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD) ! (&gt;L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_GT_Switch_Dummy">
-                <NODE_ID>GRVTY_LDG_LOCK3</NODE_ID>
-                <ANIM_NAME>GRVTY_LDG_LOCK3</ANIM_NAME>
-                <LEFT_SINGLE_CODE>
-                    (L:A32NX_LG_GRVTY_SWITCH_GUARD_2) ! (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_2)
-                </LEFT_SINGLE_CODE>
-            </UseTemplate>
+            <Component ID="GRVTY_LDG_LOCK2" Node="GRVTY_LDG_LOCK2">
+                <UseTemplate Name="ASOBO_GT_Switch_2States">
+                    <NODE_ID>GRVTY_LDG_LOCK2</NODE_ID>
+                    <ANIM_NAME>GRVTY_LDG_LOCK2</ANIM_NAME>
+                    <START_STATE>0</START_STATE>
+                    <CODE_POS_0>0 (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_1)</CODE_POS_0>
+                    <CODE_POS_1>1 (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_1)</CODE_POS_1>
+                    <CODE_POS_0_VERIF>
+                        (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
+                    </CODE_POS_0_VERIF>
+                    <CODE_POS_1_VERIF>
+                        (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
+                    </CODE_POS_1_VERIF>
+                    <STATE0_TEST>(L:A32NX_LG_GRVTY_SWITCH_GUARD_1) 0 ==</STATE0_TEST>
+                    <STATE1_TEST>(L:A32NX_LG_GRVTY_SWITCH_GUARD_1) 1 ==</STATE1_TEST>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="GRVTY_LDG_LOCK3" Node="GRVTY_LDG_LOCK3">
+                <UseTemplate Name="ASOBO_GT_Switch_2States">
+                    <NODE_ID>GRVTY_LDG_LOCK3</NODE_ID>
+                    <ANIM_NAME>GRVTY_LDG_LOCK3</ANIM_NAME>
+                    <START_STATE>0</START_STATE>
+                    <CODE_POS_0>0 (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_2)</CODE_POS_0>
+                    <CODE_POS_1>1 (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_2)</CODE_POS_1>
+                    <CODE_POS_0_VERIF>
+                        (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
+                    </CODE_POS_0_VERIF>
+                    <CODE_POS_1_VERIF>
+                        (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
+                    </CODE_POS_1_VERIF>
+                    <STATE0_TEST>(L:A32NX_LG_GRVTY_SWITCH_GUARD_2) 0 ==</STATE0_TEST>
+                    <STATE1_TEST>(L:A32NX_LG_GRVTY_SWITCH_GUARD_2) 1 ==</STATE1_TEST>
+                </UseTemplate>
+            </Component>
 
             <Component ID="GRVTY_LDG" Node="GRVTY_LDG">
                 <UseTemplate Name="ASOBO_GT_Switch_3States">
@@ -147,10 +170,16 @@
                     <ANIM_NAME>GRVTY_LDG</ANIM_NAME>
                     <START_STATE>1</START_STATE>
                     <CODE_POS_0>0 (&gt;L:A32NX_LG_GRVTY_SWITCH_POS)</CODE_POS_0>
+                    <CODE_POS_0_VERIF>
+                        (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
+                    </CODE_POS_0_VERIF>
                     <CODE_POS_1>1 (&gt;L:A32NX_LG_GRVTY_SWITCH_POS)</CODE_POS_1>
+                    <CODE_POS_1_VERIF>
+                        (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD)
+                    </CODE_POS_1_VERIF>
                     <CODE_POS_2>2 (&gt;L:A32NX_LG_GRVTY_SWITCH_POS)</CODE_POS_2>
                     <CODE_POS_2_VERIF>
-                        (L:A32NX_LG_GRVTY_SWITCH_GUARD_1) (L:A32NX_LG_GRVTY_SWITCH_GUARD_2) and
+                        (L:A32NX_LG_GRVTY_SWITCH_GUARD_1) (L:A32NX_LG_GRVTY_SWITCH_GUARD_2) and (L:A32NX_LG_GRVTY_MASTER_SWITCH_GUARD) and
                     </CODE_POS_2_VERIF>
                     <STATE0_TEST>(L:A32NX_LG_GRVTY_SWITCH_POS) 0 ==</STATE0_TEST>
                     <STATE1_TEST>(L:A32NX_LG_GRVTY_SWITCH_POS) 1 ==</STATE1_TEST>

@@ -22,6 +22,7 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
   isActive: Subscribable<boolean>;
   idPrefix: string;
   containerStyle?: string;
+  labelStyle?: string;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -37,32 +38,44 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
   private dropdownIsOpened = Subject.create(false);
 
+  private onMenuItemClick(val: PageSelectorMenuItem) {
+    if (!val.disabled) {
+      val.action();
+      this.dropdownIsOpened.set(false);
+    }
+  }
+
+  private onClickedOutside = (e: MouseEvent) => {
+    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
+      this.dropdownIsOpened.set(false);
+    }
+  };
+
+  private onClickedOutsideHandler = this.onClickedOutside.bind(this);
+
+  private onOpenCloseDropdown() {
+    if (this.props.menuItems.length > 1) {
+      this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+    } else if (this.props.menuItems.length === 1) {
+      this.props.menuItems[0].action();
+    }
+  }
+
+  private onOpenCloseDropdownHandler = this.onOpenCloseDropdown.bind(this);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.props.menuItems.forEach((val, i) => {
-      document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
-        if (!val.disabled) {
-          val.action();
-          this.dropdownIsOpened.set(false);
-        }
-      });
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.addEventListener('click', this.onMenuItemClick.bind(this, val));
     });
 
     // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', (e) => {
-      if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
-        this.dropdownIsOpened.set(false);
-      }
-    });
+    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onClickedOutsideHandler);
 
-    this.dropdownSelectorRef.instance.addEventListener('click', () => {
-      if (this.props.menuItems.length > 1) {
-        this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
-      } else if (this.props.menuItems.length === 1) {
-        this.props.menuItems[0].action();
-      }
-    });
+    this.dropdownSelectorRef.instance.addEventListener('click', this.onOpenCloseDropdownHandler);
 
     this.subs.push(
       this.dropdownIsOpened.sub((val) => {
@@ -80,6 +93,14 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
+    this.props.menuItems.forEach((val, i) => {
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.removeEventListener('click', this.onMenuItemClick.bind(this, val));
+    });
+    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
+    this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseDropdownHandler);
+
     super.destroy();
   }
 
@@ -88,7 +109,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
       <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
         <div class="mfd-page-selector-outer" ref={this.dropdownSelectorRef}>
           <div class="mfd-page-selector-label-container">
-            <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef}>
+            <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef} style={this.props.labelStyle}>
               {this.props.label}
             </span>
           </div>

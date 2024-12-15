@@ -15,31 +15,35 @@ NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationData
 FlightPlanService.createFlightPlans();
 
 if (renderTarget) {
-    let displayUnitID = DisplayUnitID.CaptMfd;
+  let displayUnitID = DisplayUnitID.CaptMfd;
 
-    const url = getRootElement().getAttribute('url');
+  const url = getRootElement().getAttribute('url');
 
-    if (url) {
-        const parsedUrl = new URL(url);
+  if (url) {
+    const parsedUrl = new URL(url);
 
-        if (parsedUrl) {
-            const idString = new URLSearchParams(parsedUrl.search).get('duID');
+    if (parsedUrl) {
+      const idString = new URLSearchParams(parsedUrl.search).get('duID');
 
-            if (idString) {
-                const numID = parseInt(idString);
+      if (idString) {
+        const numID = parseInt(idString);
 
-                if (!Number.isNaN(numID)) {
-                    displayUnitID = numID as DisplayUnitID;
-                }
-            }
+        if (!Number.isNaN(numID)) {
+          displayUnitID = numID as DisplayUnitID;
         }
+      }
     }
+  }
 
-    console.log(`Initializing as DU#: ${displayUnitID} (${DisplayUnitID[displayUnitID]})`);
+  console.log(`Initializing as DU#: ${displayUnitID} (${DisplayUnitID[displayUnitID]})`);
 
-    render(<Router><MultiFunctionDisplay displayUnitID={displayUnitID} /></Router>);
+  render(
+    <Router>
+      <MultiFunctionDisplay displayUnitID={displayUnitID} />
+    </Router>,
+  );
 }
 
 getRootElement().addEventListener('unload', () => {
-    ReactDOM.unmountComponentAtNode(renderTarget ?? document.body);
+  ReactDOM.unmountComponentAtNode(renderTarget ?? document.body);
 });

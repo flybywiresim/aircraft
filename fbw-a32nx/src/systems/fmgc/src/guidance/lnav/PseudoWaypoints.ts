@@ -85,14 +85,14 @@ export class PseudoWaypoints implements GuidanceComponent {
   ) {}
 
   acceptVerticalProfile() {
-    if (DEBUG) {
+    if (VnavConfig.DEBUG_PROFILE) {
       console.log('[FMS/PWP] Computed new pseudo waypoints because of new vertical profile.');
     }
     this.recompute();
   }
 
   acceptMultipleLegGeometry(_geometry: Geometry) {
-    if (DEBUG) {
+    if (VnavConfig.DEBUG_PROFILE) {
       console.log('[FMS/PWP] Computed new pseudo waypoints because of new lateral geometry.');
     }
     this.recompute();
@@ -220,7 +220,7 @@ export class PseudoWaypoints implements GuidanceComponent {
    * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
    */
   sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
-    if (DEBUG) {
+    if (VnavConfig.DEBUG_GUIDANCE) {
       console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
     }
 
@@ -265,7 +265,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       return undefined;
     }
 
-    if (DEBUG) {
+    if (VnavConfig.DEBUG_PROFILE) {
       console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
     }
 
@@ -296,7 +296,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         let lla: Coordinates | undefined;
         if (distanceFromEndOfLeg > totalLegPathLength) {
           // PWP in disco
-          if (DEBUG) {
+          if (VnavConfig.DEBUG_PROFILE) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' in discontinuity before leg #${i} (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
             );
@@ -307,7 +307,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in outbound transition segment
           const distanceBeforeTerminator = distanceFromEndOfLeg;
 
-          if (DEBUG) {
+          if (VnavConfig.DEBUG_PROFILE) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
             );
@@ -321,7 +321,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in leg segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength;
 
-          if (DEBUG) {
+          if (VnavConfig.DEBUG_PROFILE) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} leg segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );
@@ -332,7 +332,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in inbound transition segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
 
-          if (DEBUG) {
+          if (VnavConfig.DEBUG_PROFILE) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} inbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );

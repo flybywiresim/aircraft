@@ -211,7 +211,7 @@ class DataDefinitionVariable : public SimObjectBase {
     LOG_TRACE("DataDefinitionVariable: Received client data: " + name);
     const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
 
-    // if not required then skip the rather expensive check for change
+    // if not required, then skip the rather expensive check for change
     if (skipChangeCheckFlag || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       LOG_TRACE("DataDefinitionVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pSimobjectData->dwData, sizeof(T));

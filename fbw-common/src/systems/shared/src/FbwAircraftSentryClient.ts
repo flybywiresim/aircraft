@@ -162,7 +162,7 @@ export class FbwAircraftSentryClient {
 
     return new Promise<boolean>((resolve) => {
       popup.showPopUp(
-        'A32NX - ERROR REPORTING',
+        'AIRCRAFT - ERROR REPORTING',
         'Are you willing to help FlyByWire Simulations by enabling anonymous reporting of errors that may occur in the future? ' +
           'This is 100% optional and we will never collect your personal data, but it will help us diagnose issues quickly.',
         'normal',

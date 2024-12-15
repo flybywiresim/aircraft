@@ -9,7 +9,6 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
-  NodeReference,
   SimVarValueType,
   Subject,
   Subscribable,
@@ -30,6 +29,10 @@ import {
   EfisNdMode,
   MapParameters,
   EfisSide,
+  FmsOansData,
+  FcuSimVars,
+  GenericAdirsEvents,
+  Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 import {
   BBox,
@@ -50,10 +53,8 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 
 import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FcuSimVars } from './FcuBusPublisher';
-import { FmsOansData } from './FmsOansPublisher';
 import { FmsDataStore } from './OancControlPanelUtils';
-import { BrakeToVacateUtils } from './BrakeToVacateUtils';
+import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
@@ -141,11 +142,14 @@ export interface OancProps<T extends number> extends ComponentProps {
   contextMenuX?: Subject<number>;
   contextMenuY?: Subject<number>;
   contextMenuItems?: ContextMenuItemData[];
-  waitScreenRef: NodeReference<HTMLDivElement>;
   zoomValues: T[];
 }
 
 export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
+  private readonly sub = this.props.bus.getSubscriber<
+    FcuSimVars & OansControlEvents & FmsOansData & GenericAdirsEvents
+  >();
+
   private readonly animationContainerRef = [
     FSComponent.createRef<HTMLDivElement>(),
     FSComponent.createRef<HTMLDivElement>(),
@@ -177,13 +181,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public labelContainerRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly positionTextRef = FSComponent.createRef<HTMLSpanElement>();
-
   public data: AmdbFeatureCollection | undefined;
 
   private dataBbox: BBox | undefined;
 
-  private arpCoordinates: Coordinates | undefined;
+  private arpCoordinates: Subject<Coordinates | undefined> = Subject.create(undefined);
 
   private canvasCenterCoordinates: Coordinates | undefined;
 
@@ -268,9 +270,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private canvasCentreY = Subject.create(0);
 
-  public readonly ppos: Coordinates = { lat: 0, long: 0 };
+  // TODO: Should be using GPS position interpolated with IRS velocity data
+  private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
 
-  public readonly referencePos: Coordinates = { lat: 0, long: 0 };
+  private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
+
+  public readonly ppos = MappedSubject.create(
+    ([latWord, longWord]) => ({ lat: latWord.value, long: longWord.value }) as Coordinates,
+    this.pposLatWord,
+    this.pposLongWord,
+  );
+
+  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
+
+  public referencePos: Coordinates = { lat: 0, long: 0 };
 
   public readonly aircraftWithinAirport = Subject.create(false);
 
@@ -278,11 +291,19 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly airportBearing = Subject.create(0);
 
-  public readonly projectedPpos: Position = [0, 0];
+  public readonly projectedPpos = MappedSubject.create(
+    ([ppos, arpCoordinates], previous: Position) => {
+      if (arpCoordinates) {
+        return globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
+      }
+
+      return previous;
+    },
+    this.ppos,
+    this.arpCoordinates,
+  );
 
   private readonly aircraftOnGround = Subject.create(true);
-
-  private readonly planeTrueHeading = Subject.create(0);
 
   private readonly mapHeading = Subject.create(0);
 
@@ -296,6 +317,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public readonly arpReferencedMapParams = new MapParameters();
 
+  private readonly oansVisible = ConsumerSubject.create<boolean>(null, false);
+
   private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
   private readonly efisOansRangeSub = ConsumerSubject.create<number>(null, 4);
@@ -306,7 +329,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
-  private readonly btvUtils = new BrakeToVacateUtils<T>(
+  private readonly btvUtils = new OansBrakeToVacateSelection<T>(
     this.props.bus,
     this.labelManager,
     this.aircraftOnGround,
@@ -327,6 +350,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.fmsDataStore.alternate,
   );
 
+  private readonly pposNotAvailable = MappedSubject.create(
+    ([lat, long, trueHeading]) =>
+      !lat.isNormalOperation() || !long.isNormalOperation() || !trueHeading.isNormalOperation(),
+    this.pposLatWord,
+    this.pposLongWord,
+    this.trueHeadingWord,
+  );
+
   // eslint-disable-next-line arrow-body-style
   public usingPposAsReference = MappedSubject.create(
     ([overlayNDMode, aircraftOnGround, aircraftWithinAirport]) => {
@@ -338,7 +369,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   );
 
   // eslint-disable-next-line arrow-body-style
-  private readonly showAircraft = this.usingPposAsReference;
+  private readonly showAircraft = MappedSubject.create(
+    ([icao, pposRef]) => icao !== '' && pposRef,
+    this.dataAirportIcao,
+    this.usingPposAsReference,
+  );
 
   private readonly aircraftX = Subject.create(0);
 
@@ -347,6 +382,28 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   private readonly aircraftRotation = Subject.create(0);
 
   private readonly zoomLevelScales: number[] = this.props.zoomValues.map((it) => 1 / ((it * 2) / DEFAULT_SCALE_NM));
+
+  private readonly airportLoading = Subject.create(false);
+
+  private readonly arptNavPosLostFlagVisible = MappedSubject.create(
+    ([pposNotAvailable, efisNDModeSub]) => pposNotAvailable && efisNDModeSub !== EfisNdMode.PLAN,
+    this.pposNotAvailable,
+    this.overlayNDModeSub,
+  );
+
+  private readonly pleaseWaitFlagVisible = MappedSubject.create(
+    ([arptNavPosLostFlagVisible, airportLoading]) => !arptNavPosLostFlagVisible && airportLoading,
+    this.arptNavPosLostFlagVisible,
+    this.airportLoading,
+  );
+
+  private readonly oansNotAvailable = ConsumerSubject.create(null, false);
+
+  private readonly anyFlagVisible = MappedSubject.create(
+    ([arptNavPosLostFlagVisible, pleaseWaitFlagVisible]) => arptNavPosLostFlagVisible || pleaseWaitFlagVisible,
+    this.arptNavPosLostFlagVisible,
+    this.pleaseWaitFlagVisible,
+  );
 
   public getZoomLevelInverseScale() {
     const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
@@ -361,20 +418,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelContainerRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
     this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-    const sub = this.props.bus.getSubscriber<FcuSimVars & OansControlEvents & FmsOansData>();
-
-    this.efisNDModeSub.setConsumer(sub.on('ndMode'));
+    this.oansVisible.setConsumer(this.sub.on('ndShowOans'));
+    this.oansNotAvailable.setConsumer(this.sub.on('oansNotAvail'));
+    this.efisNDModeSub.setConsumer(this.sub.on('ndMode'));
 
     this.efisNDModeSub.sub((mode) => {
       this.handleNDModeChange(mode);
       this.handleLabelFilter();
     }, true);
 
-    this.efisOansRangeSub.setConsumer(sub.on('oansRange'));
+    this.efisOansRangeSub.setConsumer(this.sub.on('oansRange'));
 
     this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range), true);
 
-    sub
+    this.sub
       .on('oansDisplayAirport')
       .whenChanged()
       .handle((airport) => {
@@ -451,10 +508,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.modeAnimationOffsetX,
       this.modeAnimationOffsetY,
     );
-
-    this.positionVisible.sub(
-      (visible) => (this.positionTextRef.instance.style.visibility = visible ? 'inherit' : 'hidden'),
-    );
   }
 
   private handleLabelFilter() {
@@ -492,9 +545,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   public async loadAirportMap(icao: string) {
     this.dataLoading = true;
 
-    if (this.props.waitScreenRef.getOrDefault()) {
-      this.props.waitScreenRef.instance.style.visibility = 'visible';
-    }
+    this.airportLoading.set(true);
 
     this.clearData();
     this.clearMap();
@@ -546,7 +597,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       );
       return;
     }
-    this.arpCoordinates = { lat: refPointLat, long: refPointLong };
+    this.arpCoordinates.set({ lat: refPointLat, long: refPointLong });
 
     this.data = airportMap;
 
@@ -557,8 +608,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     // Figure out the boundaries of the map data
     const dataBbox = bbox(airportMap);
 
-    this.updatePosition();
-    this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos, bboxPolygon(dataBbox)));
+    if (!this.pposNotAvailable.get()) {
+      this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(dataBbox)));
+    } else {
+      this.aircraftWithinAirport.set(false);
+    }
 
     const width = (dataBbox[2] - dataBbox[0]) * 1;
     const height = (dataBbox[3] - dataBbox[1]) * 1;
@@ -593,7 +647,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ) + 90,
     );
 
-    return placeBearingDistance(this.arpCoordinates, reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
+    return placeBearingDistance(this.arpCoordinates.get(), reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
   }
 
   private createLabelElement(label: Label): HTMLDivElement {
@@ -884,53 +938,73 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private lastTime = 0;
 
-  private projectCoordinates(coordinates: Coordinates): [number, number] {
-    return globalToAirportCoordinates(this.arpCoordinates, coordinates);
-  }
-
   public Update() {
     const now = Date.now();
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
 
-    this.updatePosition();
+    if (!this.data || this.dataLoading) return;
 
     this.aircraftOnGround.set(
-      ![5, 6, 7].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
+      ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
-    const distToArpt = this.ppos && this.arpCoordinates ? distanceTo(this.ppos, this.arpCoordinates) : 9999;
+    // This will always be false without ppos, otherwise it will be updated below
+    let airportTooFarAwayAndInArcMode = false;
 
-    // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
-    const airportTooFarAwayAndInArcMode = this.usingPposAsReference.get() && distToArpt > 30;
+    if (!this.pposNotAvailable.get()) {
+      this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(bbox(this.data))));
 
-    if (this.arpCoordinates) {
-      this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
-      this.airportBearing.set(bearingTo(this.ppos, this.arpCoordinates));
-    }
+      const distToArpt = this.arpCoordinates.get() ? distanceTo(this.ppos.get(), this.arpCoordinates.get()) : 9999;
 
-    if (this.usingPposAsReference.get() || !this.arpCoordinates) {
-      this.referencePos.lat = this.ppos.lat;
-      this.referencePos.long = this.ppos.long;
+      // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
+      airportTooFarAwayAndInArcMode = this.usingPposAsReference.get() && distToArpt > 30;
+
+      if (this.arpCoordinates.get()) {
+        this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
+        this.airportBearing.set(bearingTo(this.ppos.get(), this.arpCoordinates.get()));
+      } else {
+        this.airportWithinRange.set(true);
+        this.airportBearing.set(0);
+      }
     } else {
-      this.referencePos.lat = this.arpCoordinates.lat;
-      this.referencePos.long = this.arpCoordinates.long;
+      this.aircraftWithinAirport.set(false);
+      this.airportWithinRange.set(true);
     }
 
-    if (!this.data || this.dataLoading) {
-      return;
+    if (this.usingPposAsReference.get() || !this.arpCoordinates.get()) {
+      this.referencePos = this.ppos.get();
+    } else {
+      this.referencePos = this.arpCoordinates.get();
     }
 
-    const position = this.positionComputer.computePosition();
+    if (!this.pposNotAvailable.get()) {
+      const position = this.positionComputer.computePosition();
 
-    if (position) {
-      this.positionVisible.set(true);
-      this.positionString.set(position);
+      if (position) {
+        this.positionVisible.set(true);
+        this.positionString.set(position);
+      } else {
+        this.positionVisible.set(false);
+      }
+
+      this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
+      this.btvUtils.updateRwyAheadAdvisory(
+        this.ppos.get(),
+        this.arpCoordinates.get(),
+        this.trueHeadingWord.get().value,
+        this.layerFeatures[2],
+      );
     } else {
       this.positionVisible.set(false);
     }
 
-    const mapTargetHeading = this.modeAnimationMapNorthUp.get() ? 0 : this.planeTrueHeading.get();
+    // If OANS is not visible on this side (i.e. range selector is not on ZOOM), don't continue here to save runtime
+    if (!this.oansVisible.get()) {
+      return;
+    }
+
+    const mapTargetHeading = this.modeAnimationMapNorthUp.get() ? 0 : this.trueHeadingWord.get().value;
     this.mapHeading.set(mapTargetHeading);
 
     const interpolatedMapHeading = this.interpolatedMapHeading.get();
@@ -956,7 +1030,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const mapCurrentHeading = this.interpolatedMapHeading.get();
 
     this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
-    this.arpReferencedMapParams.compute(this.arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+    this.arpReferencedMapParams.compute(this.arpCoordinates.get(), 0, 0.539957, 1_000, mapCurrentHeading);
 
     let [offsetX, offsetY]: [number, number] = [0, 0];
     if (airportTooFarAwayAndInArcMode) {
@@ -964,18 +1038,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       [offsetX, offsetY] = [shiftBy, shiftBy];
     } else {
       [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.referencePos);
-    }
-
-    [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
-
-    if (this.props.side === 'L') {
-      this.btvUtils.updateRemainingDistances(this.projectedPpos);
-      this.btvUtils.updateRwyAheadAdvisory(
-        this.ppos,
-        this.arpCoordinates,
-        this.planeTrueHeading.get(),
-        this.layerFeatures[2],
-      );
     }
 
     // TODO figure out how to not need this
@@ -1009,7 +1071,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     // Transform airplane
     this.aircraftX.set(384);
     this.aircraftY.set(384);
-    this.aircraftRotation.set(this.planeTrueHeading.get() - mapCurrentHeading);
+    this.aircraftRotation.set(this.trueHeadingWord.get().value - mapCurrentHeading);
 
     // FIXME Use this to update pan offset when zooming
     /* if (this.previousZoomLevelIndex.get() !== this.zoomLevelIndex.get()) {
@@ -1024,9 +1086,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     if (this.lastLayerDrawnIndex > this.layerCanvasRefs.length - 1) {
       this.doneDrawing = true;
 
-      if (this.props.waitScreenRef.getOrDefault()) {
-        this.props.waitScreenRef.instance.style.visibility = 'hidden';
-      }
+      this.airportLoading.set(false);
 
       this.labelManager.reflowLabels(
         this.fmsDataStore.departureRunway.get(),
@@ -1054,16 +1114,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     } else {
       this.lastLayerDrawnIndex++;
       this.lastFeatureDrawnIndex = 0;
-    }
-  }
-
-  private updatePosition(): void {
-    this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-    this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
-    this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
-
-    if (this.arpCoordinates) {
-      [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
     }
   }
 
@@ -1194,9 +1244,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   public handleCursorPanStart(event: MouseEvent): void {
-    this.isPanningArmed = true;
-    this.panArmedX.set(event.screenX);
-    this.panArmedY.set(event.screenY);
+    if (this.dataAirportIcao.get()) {
+      this.isPanningArmed = true;
+      this.panArmedX.set(event.screenX);
+      this.panArmedY.set(event.screenY);
+    }
   }
 
   public handleCursorPanMove(event: MouseEvent): void {
@@ -1265,163 +1317,192 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   render(): VNode | null {
     return (
       <>
-        <svg viewBox="0 0 768 768" style="position: absolute;">
-          <defs>
-            <clipPath id="rose-mode-map-clip">
-              <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
-            </clipPath>
-            <clipPath id="rose-mode-wx-terr-clip">
-              <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,384 L45,384 L45,155" />
-            </clipPath>
-            <clipPath id="rose-mode-tcas-clip">
-              <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
-            </clipPath>
-            <clipPath id="arc-mode-map-clip">
-              <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
-            </clipPath>
-            <clipPath id="arc-mode-wx-terr-clip">
-              <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L0,625 L0,312" />
-            </clipPath>
-            <clipPath id="arc-mode-tcas-clip">
-              <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
-            </clipPath>
-            <clipPath id="arc-mode-overlay-clip-4">
-              <path d="m 6 0 h 756 v 768 h -756 z" />
-            </clipPath>
-            <clipPath id="arc-mode-overlay-clip-3">
-              <path d="m 0 564 l 384 145 l 384 -145 v -564 h -768 z" />
-            </clipPath>
-            <clipPath id="arc-mode-overlay-clip-2">
-              <path d="m 0 532 l 384 155 l 384 -146 v -512 h -768 z" />
-            </clipPath>
-            <clipPath id="arc-mode-overlay-clip-1">
-              <path d="m 0 519 l 384 145 l 384 -86 v -580 h -768 z" />
-            </clipPath>
-          </defs>
-        </svg>
-
         <div
-          ref={this.animationContainerRef[0]}
-          style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+          class="oanc-flag-container FontSmall"
+          style={{ visibility: this.pleaseWaitFlagVisible.map((v) => (v ? 'inherit' : 'hidden')) }}
         >
-          <div ref={this.panContainerRef[0]} style="position: absolute;">
-            <div
-              ref={this.layerCanvasScaleContainerRefs[0]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[0]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[1]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[1]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[2]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[2]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[3]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[3]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[4]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[4]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[5]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[5]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[6]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-            <div
-              ref={this.layerCanvasScaleContainerRefs[7]}
-              style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-            >
-              <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
-            </div>
-
-            <OancAircraftIcon
-              isVisible={this.showAircraft}
-              x={this.aircraftX}
-              y={this.aircraftY}
-              rotation={this.aircraftRotation}
-            />
-          </div>
+          PLEASE WAIT
+        </div>
+        <div
+          class="oanc-flag-container amber FontLarge"
+          style={{ visibility: this.arptNavPosLostFlagVisible.map((v) => (v ? 'inherit' : 'hidden')) }}
+        >
+          ARPT NAV POS LOST
         </div>
 
-        <div
-          ref={this.labelContainerRef}
-          style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`}
-        />
+        <div style={{ display: this.anyFlagVisible.map((v) => (v ? 'none' : 'block')) }}>
+          <svg viewBox="0 0 768 768" style="position: absolute;">
+            <defs>
+              <clipPath id="rose-mode-map-clip">
+                <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
+              </clipPath>
+              <clipPath id="rose-mode-wx-terr-clip">
+                <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,384 L45,384 L45,155" />
+              </clipPath>
+              <clipPath id="rose-mode-tcas-clip">
+                <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
+              </clipPath>
+              <clipPath id="arc-mode-map-clip">
+                <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
+              </clipPath>
+              <clipPath id="arc-mode-wx-terr-clip">
+                <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L0,625 L0,312" />
+              </clipPath>
+              <clipPath id="arc-mode-tcas-clip">
+                <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
+              </clipPath>
+              <clipPath id="arc-mode-overlay-clip-4">
+                <path d="m 6 0 h 756 v 768 h -756 z" />
+              </clipPath>
+              <clipPath id="arc-mode-overlay-clip-3">
+                <path d="m 0 564 l 384 145 l 384 -145 v -564 h -768 z" />
+              </clipPath>
+              <clipPath id="arc-mode-overlay-clip-2">
+                <path d="m 0 532 l 384 155 l 384 -146 v -512 h -768 z" />
+              </clipPath>
+              <clipPath id="arc-mode-overlay-clip-1">
+                <path d="m 0 519 l 384 145 l 384 -86 v -580 h -768 z" />
+              </clipPath>
+            </defs>
+          </svg>
 
-        <div
-          ref={this.animationContainerRef[1]}
-          style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}
-        >
-          <div ref={this.panContainerRef[1]} style="position: absolute;">
-            <OancMovingModeOverlay
-              bus={this.props.bus}
-              oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-              ndMode={this.overlayNDModeSub}
-              rotation={this.interpolatedMapHeading}
-              isMapPanned={this.isMapPanned}
-              airportWithinRange={this.airportWithinRange}
-              airportBearing={this.airportBearing}
-              airportIcao={this.dataAirportIcao}
-            />
+          <div
+            ref={this.animationContainerRef[0]}
+            style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+          >
+            <div ref={this.panContainerRef[0]} style="position: absolute;">
+              <div
+                ref={this.layerCanvasScaleContainerRefs[0]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[0]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[1]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[1]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[2]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[2]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[3]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[3]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[4]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[4]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[5]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[5]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[6]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[7]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+
+              <OancAircraftIcon
+                isVisible={this.showAircraft}
+                x={this.aircraftX}
+                y={this.aircraftY}
+                rotation={this.aircraftRotation}
+              />
+            </div>
           </div>
-        </div>
 
-        <div
-          style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
-        >
-          <div class="oanc-top-mask" />
-          <div class="oanc-bottom-mask">
-            <span ref={this.positionTextRef} class="oanc-position">
-              {this.positionString}
+          <div
+            ref={this.labelContainerRef}
+            style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`}
+          />
+
+          <div
+            ref={this.animationContainerRef[1]}
+            style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}
+          >
+            <div ref={this.panContainerRef[1]} style="position: absolute;">
+              <OancMovingModeOverlay
+                bus={this.props.bus}
+                oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+                ndMode={this.overlayNDModeSub}
+                rotation={this.interpolatedMapHeading}
+                isMapPanned={this.isMapPanned}
+                airportWithinRange={this.airportWithinRange}
+                airportBearing={this.airportBearing}
+                airportIcao={this.dataAirportIcao}
+              />
+            </div>
+          </div>
+
+          <div
+            style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
+          >
+            <div class="oanc-top-mask" />
+            <div class="oanc-bottom-mask">
+              <span
+                class="oanc-position"
+                style={{
+                  display: this.positionVisible.map((it) => (it ? 'block' : 'none')),
+                }}
+              >
+                {this.positionString}
+              </span>
+
+              <span
+                class="oanc-bottom-flag FontSmall"
+                style={{
+                  display: this.pposNotAvailable.map((it) => (it ? 'block' : 'none')),
+                }}
+              >
+                ARPT NAV POS LOST
+              </span>
+            </div>
+
+            <span class="oanc-airport-info" id="oanc-airport-info-line1">
+              {this.airportInfoLine1}
+            </span>
+            <span class="oanc-airport-info" id="oanc-airport-info-line2">
+              {this.airportInfoLine2}
+            </span>
+            <span
+              class="oanc-airport-not-in-active-fpln"
+              style={{ display: this.airportNotInActiveFpln.map((it) => (it ? 'inherit' : 'none')) }}
+            >
+              ARPT NOT IN
+              <br />
+              ACTIVE F/PLN
             </span>
           </div>
 
-          <span class="oanc-airport-info" id="oanc-airport-info-line1">
-            {this.airportInfoLine1}
-          </span>
-          <span class="oanc-airport-info" id="oanc-airport-info-line2">
-            {this.airportInfoLine2}
-          </span>
-          <span
-            class="oanc-airport-not-in-active-fpln"
-            style={{ display: this.airportNotInActiveFpln.map((it) => (it ? 'inherit' : 'none')) }}
-          >
-            ARPT NOT IN
-            <br />
-            ACTIVE F/PLN
-          </span>
+          <OancStaticModeOverlay
+            bus={this.props.bus}
+            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+            ndMode={this.overlayNDModeSub}
+            rotation={this.interpolatedMapHeading}
+            isMapPanned={this.isMapPanned}
+            airportWithinRange={this.airportWithinRange}
+            airportBearing={this.airportBearing}
+            airportIcao={this.dataAirportIcao}
+          />
         </div>
-
-        <OancStaticModeOverlay
-          bus={this.props.bus}
-          oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-          ndMode={this.overlayNDModeSub}
-          rotation={this.interpolatedMapHeading}
-          isMapPanned={this.isMapPanned}
-          airportWithinRange={this.airportWithinRange}
-          airportBearing={this.airportBearing}
-          airportIcao={this.dataAirportIcao}
-        />
       </>
     );
   }

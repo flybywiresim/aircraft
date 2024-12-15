@@ -17,3 +17,11 @@ export interface IlsNavaid extends DatabaseItem<SectionCode.Airport> {
    */
   stationDeclination: Degrees;
 }
+
+export function isIlsNavaid(o: any): o is IlsNavaid {
+  return (
+    typeof o === 'object' &&
+    o.sectionCode === SectionCode.Airport &&
+    o.subSectionCode === AirportSubsectionCode.LocalizerGlideSlope
+  );
+}

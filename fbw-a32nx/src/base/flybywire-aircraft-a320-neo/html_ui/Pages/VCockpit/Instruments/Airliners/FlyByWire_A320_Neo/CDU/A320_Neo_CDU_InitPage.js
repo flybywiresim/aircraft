@@ -365,12 +365,13 @@ class CDUInitPage {
         }
     }
     static fuelPredConditionsMet(mcdu) {
-        return isFinite(mcdu.blockFuel) &&
-            isFinite(mcdu.zeroFuelWeightMassCenter) &&
-            isFinite(mcdu.zeroFuelWeight) &&
+        const fob = mcdu.getFOB();
+
+        return Number.isFinite(fob) &&
+            Number.isFinite(mcdu.zeroFuelWeightMassCenter) &&
+            Number.isFinite(mcdu.zeroFuelWeight) &&
             mcdu.flightPlanService.active && mcdu.flightPlanService.active.legCount > 0 &&
-            mcdu._zeroFuelWeightZFWCGEntered &&
-            (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
+            mcdu._zeroFuelWeightZFWCGEntered;
     }
     static trySetFuelPred(mcdu, forPlan) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {

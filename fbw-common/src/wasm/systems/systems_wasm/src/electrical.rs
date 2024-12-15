@@ -1,9 +1,14 @@
 #[cfg(not(target_arch = "wasm32"))]
-use crate::msfs::legacy::execute_calculator_code;
+use crate::msfs::{legacy::execute_calculator_code, legacy::trigger_key_event};
+
 #[cfg(target_arch = "wasm32")]
-use msfs::legacy::execute_calculator_code;
+use msfs::{legacy::execute_calculator_code, legacy::trigger_key_event};
 
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
+use msfs::sys::{
+    KEY_APU_BLEED_AIR_SOURCE_SET, KEY_APU_OFF_SWITCH, KEY_APU_STARTER, KEY_FUELSYSTEM_PUMP_OFF,
+    KEY_FUELSYSTEM_PUMP_ON, KEY_FUELSYSTEM_VALVE_CLOSE, KEY_FUELSYSTEM_VALVE_OPEN,
+};
 use std::error::Error;
 use systems::shared::{to_bool, ElectricalBusType};
 
@@ -83,28 +88,25 @@ pub(super) fn auxiliary_power_unit(
 }
 
 fn set_fuel_valve_and_pump(fuel_valve_number: u8, fuel_pump_number: u8, on: bool) {
-    let actions = if on { ("OPEN", "ON") } else { ("CLOSE", "OFF") };
-    execute_calculator_code::<()>(&format!(
-        "{} (>K:FUELSYSTEM_VALVE_{})",
-        fuel_valve_number, actions.0
-    ));
-    execute_calculator_code::<()>(&format!(
-        "{} (>K:FUELSYSTEM_PUMP_{})",
-        fuel_pump_number, actions.1
-    ));
+    if on {
+        trigger_key_event(KEY_FUELSYSTEM_VALVE_OPEN, fuel_valve_number.into());
+        trigger_key_event(KEY_FUELSYSTEM_PUMP_ON, fuel_pump_number.into());
+    } else {
+        trigger_key_event(KEY_FUELSYSTEM_VALVE_CLOSE, fuel_valve_number.into());
+        trigger_key_event(KEY_FUELSYSTEM_PUMP_OFF, fuel_pump_number.into());
+    }
 }
 
 fn start_apu() {
     // In the systems.cfg, the `apu_pct_rpm_per_second` setting
     // is set to 1000, meaning the MSFS APU starts in 1 millisecond.
-    execute_calculator_code::<()>("1 (>K:APU_STARTER, Number)");
+    trigger_key_event(KEY_APU_STARTER, 1);
 }
 
 fn stop_apu() {
-    execute_calculator_code::<()>("1 (>K:APU_OFF_SWITCH, Number)");
+    trigger_key_event(KEY_APU_OFF_SWITCH, 1);
 }
 
 fn supply_bleed(on: bool) {
-    let action = if on { "1" } else { "0" };
-    execute_calculator_code::<()>(&format!("{} (>K:APU_BLEED_AIR_SOURCE_SET, Bool)", action));
+    trigger_key_event(KEY_APU_BLEED_AIR_SOURCE_SET, on.into());
 }

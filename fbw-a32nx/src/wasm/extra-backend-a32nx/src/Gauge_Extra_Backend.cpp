@@ -20,7 +20,6 @@
 #include "Example/ExampleModule.h"
 #endif
 
-#include "AircraftPresets/AircraftPresetProcedures_A32NX.h"
 #include "AircraftPresets/AircraftPresets.h"
 #include "LightingPresets/LightingPresets_A32NX.h"
 #include "Pushback/Pushback_A32NX.h"
@@ -34,7 +33,7 @@ ExampleModule exampleModule(msfsHandler);
 // This is the only place these have to be added - everything else is handled automatically
 LightingPresets_A32NX lightingPresets(msfsHandler);
 Pushback_A32NX        pushback(msfsHandler);
-AircraftPresets       aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
+AircraftPresets       aircraftPresets(msfsHandler, "./config/a32nx/a320-251n/aircraft_preset_procedures.xml");
 
 /**
  * Gauge Callback

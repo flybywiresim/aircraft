@@ -75,6 +75,13 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_ALTITUDE`,
   );
 
+  private computedAirspeed: number | null = null;
+
+  private static readonly computedAirspeedVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_COMPUTED_AIRSPEED`,
+  );
+
   private readonly navaidSelectionManager: NavaidSelectionManager;
 
   private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
@@ -112,6 +119,7 @@ export class Navigation implements NavigationProvider {
     this.updateRadioHeight();
     this.updateBaroAltitude();
     this.updatePressureAltitude();
+    this.updateComputedAirspeed();
 
     NearbyFacilities.getInstance().update(deltaTime);
 
@@ -177,6 +185,10 @@ export class Navigation implements NavigationProvider {
     this.pressureAltitude = this.getAdiruValue(Navigation.pressureAltitudeVars);
   }
 
+  private updateComputedAirspeed(): void {
+    this.computedAirspeed = this.getAdiruValue(Navigation.computedAirspeedVars);
+  }
+
   private updatePosition(): void {
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -201,6 +213,10 @@ export class Navigation implements NavigationProvider {
 
   public getPressureAltitude(): number | null {
     return this.pressureAltitude;
+  }
+
+  public getComputedAirspeed(): number | null {
+    return this.computedAirspeed;
   }
 
   public getRadioHeight(): number | null {

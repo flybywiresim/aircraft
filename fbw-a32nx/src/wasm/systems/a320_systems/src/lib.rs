@@ -22,11 +22,11 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
-use navigation::A320RadioAltimeters;
+use navigation::{A320AirDataInertialReferenceSystemBuilder, A320RadioAltimeters};
 use power_consumption::A320PowerConsumption;
-use systems::simulation::InitContext;
-use systems::{enhanced_gpwc::EnhancedGroundProximityWarningComputer, shared::MachNumber};
-use uom::si::{f64::Length, length::nautical_mile, quantities::Velocity, velocity::knot};
+use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
+use systems::{hydraulic::brake::BrakeFanPanel, simulation::InitContext};
+use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     air_starter_unit::AirStarterUnit,
@@ -70,6 +70,7 @@ pub struct A320 {
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
+    brake_fan_panel: BrakeFanPanel,
     landing_gear: LandingGear,
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
@@ -79,11 +80,7 @@ pub struct A320 {
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
         A320 {
-            adirs: AirDataInertialReferenceSystem::new(
-                context,
-                Velocity::new::<knot>(350.),
-                MachNumber(0.82),
-            ),
+            adirs: A320AirDataInertialReferenceSystemBuilder::build(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A320AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
@@ -116,7 +113,8 @@ impl A320 {
             hydraulic: A320Hydraulic::new(context),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
+            brake_fan_panel: BrakeFanPanel::new(context),
+            landing_gear: LandingGear::new(context, false),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
@@ -170,6 +168,7 @@ impl Aircraft for A320 {
             [&self.engine_1, &self.engine_2],
             &self.hydraulic,
             self.lgcius.lgciu1(),
+            &self.adirs,
         );
 
         self.electrical_overhead
@@ -205,6 +204,7 @@ impl Aircraft for A320 {
             &self.engine_2,
             &self.hydraulic_overhead,
             &self.autobrake_panel,
+            &self.brake_fan_panel,
             &self.engine_fire_overhead,
             &self.lgcius,
             &self.emergency_electrical_overhead,
@@ -226,6 +226,7 @@ impl Aircraft for A320 {
         );
 
         self.hydraulic_overhead.update(&self.hydraulic);
+        self.brake_fan_panel.update(self.hydraulic.brakes_hot());
 
         self.adirs.update(context, &self.adirs_overhead);
         self.adirs_overhead.update(context, &self.adirs);
@@ -281,6 +282,7 @@ impl SimulationElement for A320 {
         self.lgcius.accept(visitor);
         self.radio_altimeters.accept(visitor);
         self.autobrake_panel.accept(visitor);
+        self.brake_fan_panel.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);

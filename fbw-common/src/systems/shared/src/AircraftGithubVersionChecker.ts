@@ -5,7 +5,7 @@
 /* eslint-disable no-underscore-dangle */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 /**
  * Contains the ${aircraft}_build_info.json file's information in a structured way.
@@ -43,8 +43,6 @@ export enum KnowBranchNames {
  *  published GitHub version
  */
 export class AircraftGithubVersionChecker {
-  private static notification: NotificationManager;
-
   private static versionChecked = false;
 
   private static releaseInfo: ReleaseInfo[];
@@ -63,8 +61,6 @@ export class AircraftGithubVersionChecker {
   public static async checkVersion(aircraft: string): Promise<boolean> {
     console.log(`Checking aircraft version for A/C project: ${aircraft}`);
 
-    this.notification = new NotificationManager();
-
     // reset previous check data
     this.versionChecked = false;
     this.setOutdatedVersionFlag(false);
@@ -79,7 +75,7 @@ export class AircraftGithubVersionChecker {
     }
 
     try {
-      const versionInfo = this.getVersionInfo(this.buildInfo.version);
+      const versionInfo = this.getVersionInfo(aircraft, this.buildInfo.version);
       if (this.checkOutdated(versionInfo)) {
         this.setOutdatedVersionFlag(true);
         console.log(`Aircraft ${aircraft} - version outdated`);
@@ -133,8 +129,8 @@ export class AircraftGithubVersionChecker {
    * @param versionString as provided by the ${aircraft}_build_info.json file.
    * @throws Error if the version string is not in the correct format.
    */
-  public static getVersionInfo(versionString: string): VersionInfoData {
-    const matchBuildInfo = versionString.match(/^v?((\d+)\.(\d+)\.(\d+))-(.*)\.(.{7})$/);
+  public static getVersionInfo(aircraft: string, versionString: string): VersionInfoData {
+    const matchBuildInfo = versionString.match(new RegExp(`^${aircraft}-v?((\\d+)\\.(\\d+)\\.(\\d+))-(.*)\\.(.{7})$`));
     if (matchBuildInfo) {
       return {
         version: matchBuildInfo[1],

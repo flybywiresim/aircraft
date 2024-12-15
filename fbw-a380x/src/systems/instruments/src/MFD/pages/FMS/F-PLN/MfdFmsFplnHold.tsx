@@ -42,8 +42,6 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    console.time('HOLD:onNewData');
-
     const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
     if (this.props.fmcService.master?.revisedWaypoint() && revWptIdx) {
       const leg = this.loadedFlightPlan?.legElementAt(revWptIdx);
@@ -71,8 +69,6 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         this.lastExitEfob.set('--');
       }
     }
-
-    console.timeEnd('HOLD:onNewData');
   }
 
   private async modifyHold() {

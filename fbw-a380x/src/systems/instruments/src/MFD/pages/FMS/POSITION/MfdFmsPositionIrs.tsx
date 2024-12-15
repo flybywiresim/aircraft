@@ -100,11 +100,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
 
   private irsAreAlignedOnRefPos = Subject.create<boolean>(false);
 
-  protected onNewData() {
-    console.time('POSITION/IRS:onNewData');
-
-    console.timeEnd('POSITION/IRS:onNewData');
-  }
+  protected onNewData() {}
 
   private changeIrsData(showDataFor: IrsDataFor) {
     this.irs1DataVisible.set(showDataFor === IrsDataFor.IRS_1);
