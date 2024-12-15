@@ -465,7 +465,7 @@ export class LnavDriver implements GuidanceComponent {
     this.flightPlanService.active.sequence();
 
     let secIndex = 1;
-    while (this.flightPlanService.hasSecondary(secIndex)) {
+    while (this.flightPlanService.hasSecondary(secIndex) && secIndex < 100) {
       this.trySequenceSecondaryPlan(secIndex++);
     }
 
