@@ -23,15 +23,7 @@ pub(super) fn electrical_buses<const N: usize>(
             const INFINITELY_POWERED_BUS_IDENTIFIER: u32 = 1;
             let variable = Variable::named(&format!("ELEC_{}_BUS_IS_POWERED", bus.0));
 
-            // MSFS' starting state has all buses connected, let's disconnect them initially
-            trigger_key_event_ex1(
-                KEY_ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE,
-                INFINITELY_POWERED_BUS_IDENTIFIER,
-                bus.1,
-                0,
-                0,
-                0,
-            );
+            builder.init_variable(variable.clone(), 1.);
 
             builder.on_change(
                 ExecuteOn::PostTick,

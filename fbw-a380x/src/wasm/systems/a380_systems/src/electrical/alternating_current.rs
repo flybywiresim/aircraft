@@ -276,10 +276,6 @@ impl SimulationElement for A380AlternatingCurrentElectrical {
         self.ac_emer_bus.accept(visitor);
         self.ac_eha_bus.accept(visitor);
 
-        self.ac_gnd_flt_service_bus.accept(visitor);
-        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
-            .accept(visitor);
-
         visitor.visit(self);
     }
 }
