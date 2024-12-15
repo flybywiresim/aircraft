@@ -13,6 +13,7 @@ import './MfdFmsPerf.scss';
 import {
   AltitudeFormat,
   AltitudeOrFlightLevelFormat,
+  RadioAltitudeFormat,
   CostIndexFormat,
   DescentRateFormat,
   FlightLevelFormat,
@@ -399,6 +400,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprLandingWeight = Subject.create<number | null>(null);
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
+
+  private apprRadioInputText = Subject.create<string | number | null>(null);
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
@@ -2505,9 +2508,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">BARO</span>
                         <InputField<number>
-                          dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                          dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                           dataHandlerDuringValidation={async (v) => {
-                            SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            if (v === null) {
+                              SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
+                            } else {
+                              SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            }
                           }}
                           mandatory={Subject.create(false)}
                           value={this.props.fmcService.master.fmgc.data.approachBaroMinimum}
@@ -2523,19 +2530,33 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <ConditionalComponent
                           condition={this.precisionApproachSelected}
                           componentIfTrue={
-                            <InputField<number>
-                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                            <InputField<string | number>
+                              dataEntryFormat={
+                                new RadioAltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))
+                              }
                               dataHandlerDuringValidation={async (v) => {
                                 if (v === undefined) {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                                } else if (v === null) {
+                                } else if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH' || v === null) {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
                                 } else {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
                                 }
                               }}
                               mandatory={Subject.create(false)}
-                              value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
+                              value={this.apprRadioInputText}
+                              onModified={(v) => {
+                                if (v === null) {
+                                  this.apprRadioInputText.set(null);
+                                  this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(null);
+                                } else if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH') {
+                                  this.apprRadioInputText.set(v);
+                                  this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(null);
+                                } else {
+                                  this.apprRadioInputText.set(Number(v));
+                                  this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(Number(v));
+                                }
+                              }}
                               containerStyle="width: 150px;"
                               alignText="flex-end"
                               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
