@@ -95,6 +95,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async secondaryInit(index: number) {
     if (this.flightPlanManager.has(FlightPlanIndex.FirstSecondary + index - 1)) {
+      console.error('[FMS/FPS] Cannot create secondary flight plan if one already exists');
       return;
     }
 
