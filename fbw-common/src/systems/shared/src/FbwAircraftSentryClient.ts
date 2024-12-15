@@ -5,9 +5,6 @@
 /* eslint-disable no-console */
 
 import * as Sentry from '@sentry/browser';
-import { BrowserTracing } from '@sentry/tracing';
-import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integrations';
-import { Integration } from '@sentry/types';
 import { NXDataStore } from './persistence';
 import { PopUpDialog } from './popup';
 
@@ -216,10 +213,10 @@ export class FbwAircraftSentryClient {
       );
     }
 
-    const integrations: Integration[] = [new CaptureConsoleIntegration({ levels: ['error'] })];
+    const integrations = [Sentry.captureConsoleIntegration({ levels: ['error'] })];
 
     if (config.enableTracing) {
-      integrations.push(new BrowserTracing());
+      integrations.push(Sentry.browserTracingIntegration());
     }
 
     Sentry.init({
