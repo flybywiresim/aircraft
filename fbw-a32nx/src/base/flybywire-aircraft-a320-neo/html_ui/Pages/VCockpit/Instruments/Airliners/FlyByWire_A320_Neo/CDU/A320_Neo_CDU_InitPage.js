@@ -71,7 +71,7 @@ class CDUInitPage {
         let requestButtonLabel = "INIT";
         let requestEnable = true;
 
-        if (mcdu.simbriefOfpState === "Requested") {
+        if (mcdu.simbriefOfpState === SimbriefOfpState.Requested) {
             requestEnable = false;
             requestButton = "REQUEST ";
         }
@@ -85,7 +85,7 @@ class CDUInitPage {
 
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
-                if (mcdu.simbriefOfpState !== "Loaded" ||
+                if (mcdu.simbriefOfpState !== SimbriefOfpState.Loaded ||
                     (mcdu.simbriefOfp.origin.icao === origin.ident && mcdu.simbriefOfp.destination.icao === dest.ident)) {
                     requestEnable = false;
                     requestButtonLabel = "";

@@ -77,8 +77,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._EfobBelowMinClr = undefined;
         /** @type {ISimbriefData|undefined} */
         this.simbriefOfp = undefined;
-        /** @type {"NotLoaded"|"Requested"|"Loaded"} */
-        this.simbriefOfpState = "NotLoaded";
+        /** @type {SimbriefOfpState.NotLoaded|SimbriefOfpState.Requested|SimbriefOfpState.Loaded} */
+        this.simbriefOfpState = SimbriefOfpState.NotLoaded;
         this.simbrief = undefined;
         this.aocWeight = undefined;
         this.aocTimes = undefined;
@@ -5144,6 +5144,12 @@ FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
+});
+
+const SimbriefOfpState = Object.freeze({
+    NotLoaded: 0,
+    Requested: 1,
+    Loaded: 2,
 });
 
 const DefaultPerformanceData = Object.freeze({
