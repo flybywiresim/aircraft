@@ -42,7 +42,7 @@ class CDUSecFplnMain {
         }
 
         // *ACTIVATE SEC
-        if (hasSecondary && canCopyOrSwapSec) {
+        if (canCopyOrSwapSec) {
             activateSecColumn.update("*ACTIVATE SEC");
 
             mcdu.onLeftInput[3] = () => {
