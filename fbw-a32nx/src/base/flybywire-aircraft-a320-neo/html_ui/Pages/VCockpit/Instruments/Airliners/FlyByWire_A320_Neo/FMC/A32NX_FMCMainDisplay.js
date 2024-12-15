@@ -1946,7 +1946,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (tropo === FMCMainDisplay.clrValue) {
             if (plan.performanceData.tropopause) {
-                this.currFlightPlanService.setPerformanceData('tropopause', undefined, forPlan);
+                this.currFlightPlanService.setPerformanceData('tropopause', null, forPlan);
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
