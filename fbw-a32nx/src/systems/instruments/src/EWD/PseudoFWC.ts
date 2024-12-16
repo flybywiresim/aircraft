@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -16,6 +16,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import {
+  AirDataSwitchingKnob,
   Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429RegisterSubject,
@@ -31,6 +32,9 @@ import {
 import { VerticalMode } from '@shared/autopilot';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { A32NXAdrBusEvents } from '../../../shared/src/publishers/A32NXAdrBusPublisher';
+import { A32NXDisplayManagementEvents } from '../../../shared/src/publishers/A32NXDisplayManagementPublisher';
+import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -73,8 +77,14 @@ enum FwcAuralWarning {
 }
 
 export class PseudoFWC {
-  private readonly sub = this.bus.getSubscriber<A32NXFcuBusEvents & EwdSimvars & StallWarningEvents>();
-
+  private readonly sub = this.bus.getSubscriber<
+    A32NXAdrBusEvents &
+      A32NXDisplayManagementEvents &
+      A32NXElectricalSystemEvents &
+      A32NXFcuBusEvents &
+      EwdSimvars &
+      StallWarningEvents
+  >();
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
 
@@ -151,6 +161,8 @@ export class PseudoFWC {
     this.auralCrcActive,
     this.fireActive,
   );
+
+  private readonly fwcOut124 = Arinc429RegisterSubject.createEmpty();
 
   private readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
@@ -301,15 +313,15 @@ export class PseudoFWC {
 
   /* 24 - ELECTRICAL */
 
-  private readonly ac1BusPowered = Subject.create(false);
+  private readonly ac1BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_1_bus_is_powered'), false);
 
-  private readonly ac2BusPowered = Subject.create(false);
+  private readonly ac2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_2_bus_is_powered'), false);
 
-  private readonly acESSBusPowered = Subject.create(false);
+  private readonly acESSBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_ess_bus_is_powered'), false);
 
-  private readonly dcESSBusPowered = Subject.create(false);
+  private readonly dcESSBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_ess_bus_is_powered'), false);
 
-  private readonly dc2BusPowered = Subject.create(false);
+  private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_2_bus_is_powered'), false);
 
   /* 27 - FLIGHT CONTROLS */
 
@@ -614,6 +626,16 @@ export class PseudoFWC {
 
   private readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
 
+  /** 31 - EIS */
+  private readonly dmcLeftDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_350_left'),
+  );
+  private readonly dmcRightDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_350_right'),
+  );
+  private readonly dmcLeftAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_dmc_altitude_left'));
+  private readonly dmcRightAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_dmc_altitude_right'));
+
   /* LANDING GEAR AND LIGHTS */
 
   private readonly aircraftOnGround = Subject.create(false);
@@ -688,13 +710,29 @@ export class PseudoFWC {
 
   private readonly adiru3State = Subject.create(0);
 
-  private readonly adr1Cas = Subject.create(Arinc429Word.empty());
+  private readonly adr1Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_1'));
 
-  private readonly adr2Cas = Arinc429Register.empty();
+  private readonly adr2Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_2'));
 
-  private readonly adr3Cas = Arinc429Register.empty();
+  private readonly adr3Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_3'));
 
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
+
+  private readonly adr1CorrectedAltLeft = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_baro_corrected_altitude_left_1'),
+  );
+  private readonly adr3CorrectedAltLeft = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_baro_corrected_altitude_left_3'),
+  );
+  private readonly adr2CorrectedAltRight = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_baro_corrected_altitude_right_2'),
+  );
+  private readonly adr3CorrectedAltRight = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_baro_corrected_altitude_right_3'),
+  );
+  private readonly adr1PressureAlt = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_altitude_1'));
+  private readonly adr2PressureAlt = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_altitude_2'));
+  private readonly adr3PressureAlt = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_altitude_3'));
 
   private readonly height1Failed = Subject.create(false);
 
@@ -707,6 +745,20 @@ export class PseudoFWC {
   private readonly flapsIndex = Subject.create(0);
 
   private stallWarningRaw = ConsumerValue.create(this.sub.on('stall_warning_on'), false);
+
+  private readonly baroRefDiscrepancyConf1 = new NXLogicConfirmNode(10, true);
+  private readonly baroRefDiscrepancyConf2 = new NXLogicConfirmNode(20, true);
+  private readonly baroRefDiscrepancy = Subject.create(false);
+
+  private readonly altiDiscrepancyConf1 = new NXLogicConfirmNode(5, true);
+  private readonly altiDiscrepancyConf2 = new NXLogicConfirmNode(5, true);
+  private readonly altiStdDiscrepancy = Subject.create(false);
+  private readonly altiBaroDiscrepancy = Subject.create(false);
+  private readonly altiDiscrepancy = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.altiBaroDiscrepancy,
+    this.altiStdDiscrepancy,
+  );
 
   /** ENGINE AND THROTTLE */
 
@@ -968,6 +1020,13 @@ export class PseudoFWC {
       SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
     }, true);
 
+    this.altiBaroDiscrepancy.sub((v) => this.fwcOut124.setBitValue(25, v));
+    this.altiStdDiscrepancy.sub((v) => this.fwcOut124.setBitValue(24, v));
+    this.fwcOut124.sub((v) => {
+      v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_124');
+      v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_124');
+    }, true);
+
     this.stallWarning.sub((v) => {
       this.fwcOut126.setBitValue(17, v);
       // set the sound on/off
@@ -976,8 +1035,8 @@ export class PseudoFWC {
     this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v));
 
     this.fwcOut126.sub((v) => {
-      Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
-      Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
+      v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
+      v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126');
     }, true);
 
     // FIXME depend on FWC state
@@ -1153,20 +1212,9 @@ export class PseudoFWC {
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
-    this.adr1Cas.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
-    this.adr2Cas.setFromSimVar('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED');
-    this.adr3Cas.setFromSimVar('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED');
-
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
-
-    /* ELECTRICAL acquisition */
-    this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
-    this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
-    this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
-    this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
-    this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
 
     /* ENGINE AND THROTTLE acquisition */
 
@@ -1236,9 +1284,9 @@ export class PseudoFWC {
 
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
-    const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
-    const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
-    const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+    const adr1PressureAltitude = this.adr1PressureAlt.get();
+    const adr2PressureAltitude = this.adr2PressureAlt.get();
+    const adr3PressureAltitude = this.adr3PressureAlt.get();
     // TODO use GPS alt if ADRs not available
     const pressureAltitude =
       adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
@@ -1372,11 +1420,12 @@ export class PseudoFWC {
       this.toConfigCheckedInPhase2Or3 = true;
     }
 
+    const adr3Cas = this.adr3Cas.get();
     let overspeedWarning = this.adr3OverspeedWarning.write(
-      this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && this.adr3Cas.value > adr3MaxCas.value + 8,
+      adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation() && adr3Cas.value > adr3MaxCas.value + 8,
       this.aircraftOnGround.get() ||
-        !(this.adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
-        this.adr3Cas.value < adr3MaxCas.value + 4,
+        !(adr3Cas.isNormalOperation() && adr3MaxCas.isNormalOperation()) ||
+        adr3Cas.value < adr3MaxCas.value + 4,
     );
     if (
       !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
@@ -2098,7 +2147,7 @@ export class PseudoFWC {
     const isNormalLaw = fcdc1DiscreteWord1.bitValue(11) || fcdc2DiscreteWord1.bitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
-      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.valueOr(0) > 60 || this.adr3Cas.valueOr(0) > 60;
+      this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.get().valueOr(0) > 60 || adr3Cas.valueOr(0) > 60;
     this.stallWarning.set(
       !isNormalLaw &&
         isCasAbove60 &&
@@ -2163,6 +2212,70 @@ export class PseudoFWC {
     this.iceNotDetTimer2Status.set(
       this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime),
     );
+
+    /* NAV logic */
+    const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
+    const dmcLQnhBit = this.dmcLeftDiscreteWord.get().bitValueOr(12, false) && fcu1Healthy;
+    const dmcLIsQnh = dmcLQnhBit && !dmcLStdBit;
+    const dmcLIsStd = dmcLStdBit && !dmcLQnhBit;
+    const dmcLIsQfe = !dmcLQnhBit && !dmcLStdBit && fcu1Healthy;
+
+    const dmcRStdBit = this.dmcRightDiscreteWord.get().bitValueOr(11, false) && fcu2Healthy;
+    const dmcRQnhBit = this.dmcRightDiscreteWord.get().bitValueOr(12, false) && fcu2Healthy;
+    const dmcRIsQnh = dmcRQnhBit && !dmcRStdBit;
+    const dmcRIsStd = dmcRStdBit && !dmcRQnhBit;
+    const dmcRIsQfe = !dmcRQnhBit && !dmcRStdBit && fcu2Healthy;
+
+    this.baroRefDiscrepancyConf1.write((dmcLIsQnh && dmcRIsQfe) || (dmcLIsQfe && dmcRIsQnh), deltaTime);
+    this.baroRefDiscrepancyConf2.write(
+      ((dmcRIsQfe || dmcRIsQnh) && dmcLIsStd) || ((dmcLIsQfe || dmcLIsQnh) && dmcRIsStd),
+      deltaTime,
+    );
+    this.baroRefDiscrepancy.set(this.baroRefDiscrepancyConf1.read() || this.baroRefDiscrepancyConf2.read());
+
+    const leftAdrCorrectedAlt =
+      this.airKnob.get() === AirDataSwitchingKnob.Capt
+        ? this.adr3CorrectedAltLeft.get()
+        : this.adr1CorrectedAltLeft.get();
+    const leftAdrPressureAlt =
+      this.airKnob.get() === AirDataSwitchingKnob.Capt ? this.adr3PressureAlt.get() : this.adr1PressureAlt.get();
+    const leftDmcAlt = this.dmcLeftAltitude.get();
+    const rightAdrCorrectedAlt =
+      this.airKnob.get() === AirDataSwitchingKnob.Fo
+        ? this.adr3CorrectedAltRight.get()
+        : this.adr2CorrectedAltRight.get();
+    const rightAdrPressureAlt =
+      this.airKnob.get() === AirDataSwitchingKnob.Fo ? this.adr3PressureAlt.get() : this.adr2PressureAlt.get();
+    const rightDmcAlt = this.dmcRightAltitude.get();
+
+    const baroAltDiscrepancy =
+      (((leftAdrCorrectedAlt.isNormalOperation() || leftAdrCorrectedAlt.isFunctionalTest()) &&
+        (rightDmcAlt.isNormalOperation() || rightDmcAlt.isFunctionalTest()) &&
+        Math.abs(leftAdrCorrectedAlt.value - rightDmcAlt.value) > 250) ||
+        ((rightAdrCorrectedAlt.isNormalOperation() || rightAdrCorrectedAlt.isFunctionalTest()) &&
+          (leftDmcAlt.isNormalOperation() || leftDmcAlt.isFunctionalTest()) &&
+          Math.abs(rightAdrCorrectedAlt.value - leftDmcAlt.value) > 250)) &&
+      ((dmcLIsQnh && dmcRIsQnh) || (dmcLIsQfe && dmcRIsQfe));
+    this.altiDiscrepancyConf1.write(baroAltDiscrepancy, deltaTime);
+
+    const pressureAltDiscrepancy =
+      (((leftAdrPressureAlt.isNormalOperation() || leftAdrPressureAlt.isFunctionalTest()) &&
+        (rightDmcAlt.isNormalOperation() || rightDmcAlt.isFunctionalTest()) &&
+        Math.abs(leftAdrPressureAlt.value - rightDmcAlt.value) > 250) ||
+        ((rightAdrPressureAlt.isNormalOperation() || rightAdrPressureAlt.isFunctionalTest()) &&
+          (leftDmcAlt.isNormalOperation() || leftDmcAlt.isFunctionalTest()) &&
+          Math.abs(rightAdrPressureAlt.value - leftDmcAlt.value) > 250)) &&
+      dmcLIsStd &&
+      dmcRIsStd;
+    this.altiDiscrepancyConf2.write(pressureAltDiscrepancy, deltaTime);
+
+    const altiDiscrepancyInhibit =
+      this.adr1PressureAlt.get().isFailureWarning() ||
+      this.adr2PressureAlt.get().isFailureWarning() ||
+      this.adr3PressureAlt.get().isFailureWarning();
+
+    this.altiBaroDiscrepancy.set(!altiDiscrepancyInhibit && this.altiDiscrepancyConf1.read());
+    this.altiStdDiscrepancy.set(!altiDiscrepancyInhibit && this.altiDiscrepancyConf2.read());
 
     /* SETTINGS */
 
@@ -2609,6 +2722,28 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     // 34 - NAVIGATION & SURVEILLANCE
+    3400100: {
+      // BARO REF DISCREPANCY
+      flightPhaseInhib: [3, 4, 8],
+      simVarIsActive: this.baroRefDiscrepancy,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['340010001', '340010002'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400105: {
+      // ALTI DISCREPANCY
+      flightPhaseInhib: [4, 5, 8],
+      simVarIsActive: this.altiDiscrepancy,
+      whichCodeToReturn: () => [0, 1, 2],
+      codesToReturn: ['340010501', '340010502', '340010503'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
     3400170: {
       // OVER SPEED VMO/MMO
       flightPhaseInhib: [2, 3, 4, 8, 9, 10],

@@ -19,11 +19,13 @@ import { AltitudeManager } from './Managers/AltitudeManager';
 import { AutopilotManager } from './Managers/AutopilotManager';
 import { BaroManager } from './Managers/BaroManager';
 import { HeadingManager } from './Managers/HeadingManager';
+import { MsfsBaroManager } from './Managers/MsfsBaroManager';
 import { SpeedManager } from './Managers/SpeedManager';
 import { VerticalSpeedManager } from './Managers/VerticalSpeedManager';
 import { FcuPublisher } from './Publishers/FcuPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { OverheadPublisher } from '../MsfsAvionicsCommon/providers/OverheadPublisher';
+import { OutputBusManager } from 'instruments/src/FCU/Managers/OutputBusManager';
 
 import './style.scss';
 
@@ -37,6 +39,23 @@ export class FcuFsInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
   private readonly clock = new Clock(this.bus);
   private readonly hEventPublisher = new HEventPublisher(this.bus);
+
+  private readonly baroManager1 = new BaroManager(this.bus, 1);
+  private readonly baroManager2 = new BaroManager(this.bus, 2);
+  private readonly msfsBaroManager = new MsfsBaroManager(this.bus, {
+    baros: [
+      {
+        manager: this.baroManager1,
+        msfsAltimeter: 1,
+        index: 1,
+      },
+      {
+        manager: this.baroManager2,
+        msfsAltimeter: 2,
+        index: 2,
+      },
+    ],
+  });
 
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
@@ -62,10 +81,13 @@ export class FcuFsInstrument implements FsInstrument {
 
     this.backplane.addInstrument('AltitudeManager', new AltitudeManager(this.bus));
     this.backplane.addInstrument('AutopilotManager', new AutopilotManager(this.bus));
-    this.backplane.addInstrument('BaroManager1', new BaroManager(this.bus, 1), true);
+    this.backplane.addInstrument('BaroManager1', this.baroManager1, true);
+    this.backplane.addInstrument('BaroManager2', this.baroManager2, true);
+    this.backplane.addInstrument('MsfsBaroManager', this.msfsBaroManager);
     this.backplane.addInstrument('HeadingManager', new HeadingManager(this.bus));
     this.backplane.addInstrument('SpeedManager', new SpeedManager(this.bus));
     this.backplane.addInstrument('VerticalSpeedManager', new VerticalSpeedManager(this.bus));
+    this.backplane.addInstrument('OoutputBusManager', new OutputBusManager(this.bus, this.isOperating));
 
     this.backplane.addPublisher('FcuPublisher', new FcuPublisher(this.bus));
     this.backplane.addPublisher('FgBusPublisher', new FGDataPublisher(this.bus));

@@ -142,8 +142,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     });
 
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
-    sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
+    sub.on('altitudeAr').handle((v) => this.altitude.setWord(v.rawWord));
   }
 
   render(): VNode {

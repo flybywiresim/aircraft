@@ -1,8 +1,9 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429Word, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Accessible } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import {
   FmgcFlightPhase,
@@ -14,6 +15,7 @@ import {
 } from '@shared/flightphase';
 
 export abstract class Phase {
+  constructor(protected readonly pressureAltitude: Accessible<number | null>) {}
   // eslint-disable-next-line no-empty-function
   init(): void {
     /* prototype function */
@@ -68,8 +70,13 @@ export class ClimbPhase extends Phase {
   }
 
   shouldActivateNextPhase(_deltaTime) {
+    const pressureAltitude = this.pressureAltitude.get();
+    if (pressureAltitude === null) {
+      return;
+    }
+
     const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
-    const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    const fl = Math.round(pressureAltitude / 100);
 
     // If no cruise alt has been entered, cruiseFl is 0. We don't want to switch to cruise phase in that case
     return cruiseFl > 0 && fl >= cruiseFl;
@@ -93,11 +100,12 @@ export class DescentPhase extends Phase {
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    const pressureAltitude = this.pressureAltitude.get();
+    const fl = pressureAltitude === null ? null : Math.round(pressureAltitude / 100);
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
     const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
-    if (fl === cruiseFl && fcuSelFl === fl) {
+    if (fl !== null && fl === cruiseFl && fcuSelFl === fl) {
       this.nextPhase = FmgcFlightPhase.Cruise;
       return true;
     }

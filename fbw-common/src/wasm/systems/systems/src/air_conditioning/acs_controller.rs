@@ -2564,7 +2564,7 @@ mod acs_controller_tests {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
             };
             test_bed.command_ground_speed(Velocity::new::<knot>(0.));
-            test_bed.set_indicated_altitude(Length::new::<foot>(0.));
+            test_bed.set_pressure_altitude(Length::default());
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_pax_quantity(0);
             test_bed.command_pack_flow_selector_position(1.);

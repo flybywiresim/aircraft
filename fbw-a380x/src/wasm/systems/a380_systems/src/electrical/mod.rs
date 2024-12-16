@@ -3631,7 +3631,7 @@ mod a380_electrical_circuit_tests {
         }
 
         fn on_the_ground(mut self) -> Self {
-            self.set_indicated_altitude(Length::new::<foot>(0.));
+            self.set_pressure_altitude(Length::new::<foot>(0.));
             self.set_on_ground(true);
             self
         }

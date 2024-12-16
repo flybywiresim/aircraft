@@ -16,7 +16,8 @@ import {
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
-import { EventBus, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus, Subject } from '@microsoft/msfs-sdk';
+import { NavigationEvents } from '@fmgc/navigation/Navigation';
 
 export interface FlightPhaseManagerEvents {
   /** The FMGC flight phase. */
@@ -36,19 +37,23 @@ function canInitiateDes(distanceToDestination: number): boolean {
 }
 
 export class FlightPhaseManager {
+  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
+
+  private readonly pressureAltitude = ConsumerValue.create(this.sub.on('fms_nav_pressure_altitude'), null);
+
   private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
 
   private readonly activePhase = Subject.create(this.initialPhase || FmgcFlightPhase.Preflight);
 
   private phases: { [key in FmgcFlightPhase]: Phase } = {
-    [FmgcFlightPhase.Preflight]: new PreFlightPhase(),
-    [FmgcFlightPhase.Takeoff]: new TakeOffPhase(),
-    [FmgcFlightPhase.Climb]: new ClimbPhase(),
-    [FmgcFlightPhase.Cruise]: new CruisePhase(),
-    [FmgcFlightPhase.Descent]: new DescentPhase(),
-    [FmgcFlightPhase.Approach]: new ApproachPhase(),
-    [FmgcFlightPhase.GoAround]: new GoAroundPhase(),
-    [FmgcFlightPhase.Done]: new DonePhase(),
+    [FmgcFlightPhase.Preflight]: new PreFlightPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Takeoff]: new TakeOffPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Climb]: new ClimbPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Cruise]: new CruisePhase(this.pressureAltitude),
+    [FmgcFlightPhase.Descent]: new DescentPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Approach]: new ApproachPhase(this.pressureAltitude),
+    [FmgcFlightPhase.GoAround]: new GoAroundPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Done]: new DonePhase(this.pressureAltitude),
   };
 
   private phaseChangeListeners: Array<(prev: FmgcFlightPhase, next: FmgcFlightPhase) => void> = [];
@@ -146,12 +151,19 @@ export class FlightPhaseManager {
   }
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
-    const currentFlightLevel = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    const pressureAltitude = this.pressureAltitude.get();
+    const currentFlightLevel = pressureAltitude === null ? null : Math.round(pressureAltitude / 100);
+
     if (this.phase === FmgcFlightPhase.Approach) {
       this.changePhase(FmgcFlightPhase.Climb);
-    } else if (currentFlightLevel < newCruiseFlightLevel && this.phase === FmgcFlightPhase.Descent) {
+    } else if (
+      currentFlightLevel !== null &&
+      currentFlightLevel < newCruiseFlightLevel &&
+      this.phase === FmgcFlightPhase.Descent
+    ) {
       this.changePhase(FmgcFlightPhase.Climb);
     } else if (
+      currentFlightLevel !== null &&
       currentFlightLevel > newCruiseFlightLevel &&
       (this.phase === FmgcFlightPhase.Climb || this.phase === FmgcFlightPhase.Descent)
     ) {

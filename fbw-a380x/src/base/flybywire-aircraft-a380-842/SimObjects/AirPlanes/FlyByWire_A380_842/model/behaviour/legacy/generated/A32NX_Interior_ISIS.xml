@@ -30,7 +30,10 @@
     </Template>
 
     <Template Name="FBW_ISIS_Knob_SubTemplate1">
-        <DefaultTemplateParameters>
+        <Parameters Type="Default">
+            <ALTIMETER_INDEX>#ID#</ALTIMETER_INDEX>
+        </Parameters>
+        <Parameters Type="Default">
             <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
             <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
             <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
@@ -41,12 +44,12 @@
             <MODE_STD>1</MODE_STD>
             <!-- this can't be represented in RNP (yet...?), so we use this escape hatch -->
             <SET_QNH_CODE>
-                2 (O:A32NX_ISIS_BARO_SAVED, number) (&gt;K:2:KOHLSMAN_SET)
+                #ALTIMETER_INDEX# (O:A32NX_ISIS_BARO_SAVED, number) (&gt;K:2:KOHLSMAN_SET)
             </SET_QNH_CODE>
             <SET_STD_CODE>
-                2 16211 (&gt;K:2:KOHLSMAN_SET)
+                #ALTIMETER_INDEX# 16211 (&gt;K:2:KOHLSMAN_SET)
             </SET_STD_CODE>
-        </DefaultTemplateParameters>
+        </Parameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
                 <ANTICLOCKWISE_CONDITION>1</ANTICLOCKWISE_CONDITION>
@@ -56,9 +59,9 @@
                     } els{
                         (L:A32NX_ISIS_BARO_MODE, enum) #MODE_STD# != if{
                             (L:A32NX_ISIS_BARO_UNIT_INHG, enum) if{
-                                2 (&gt;K:KOHLSMAN_DEC)
+                                #ALTIMETER_INDEX# (&gt;K:KOHLSMAN_DEC)
                             } els{
-                                2 (A:KOHLSMAN SETTING MB:2, millibars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
+                                #ALTIMETER_INDEX# (A:KOHLSMAN SETTING MB:#ALTIMETER_INDEX#, millibars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
                             }
                         }
                     }
@@ -70,20 +73,20 @@
                     } els{
                         (L:A32NX_ISIS_BARO_MODE, enum) #MODE_STD# != if{
                             (L:A32NX_ISIS_BARO_UNIT_INHG, enum) if{
-                                2 (&gt;K:KOHLSMAN_INC)
+                                #ALTIMETER_INDEX# (&gt;K:KOHLSMAN_INC)
                             } els{
-                                2 (A:KOHLSMAN SETTING MB:2, millibars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
+                                #ALTIMETER_INDEX# (A:KOHLSMAN SETTING MB:#ALTIMETER_INDEX#, millibars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
                             }
                         }
                     }
                 </CLOCKWISE_CODE>
-                <LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE type="rnp">
                     (L:A32NX_ISIS_BUGS_ACTIVE, bool) if{
                       0 (&gt;H:A32NX_ISIS_KNOB_PRESSED, number)
                     } els{
                       (L:A32NX_ISIS_BARO_MODE, enum) #MODE_QNH# == if{
                         #MODE_STD# (&gt;L:A32NX_ISIS_BARO_MODE, enum)
-                        (A:KOHLSMAN SETTING MB:2, bars) 16000 * (&gt;O:A32NX_ISIS_BARO_SAVED, number)
+                        (A:KOHLSMAN SETTING MB:#ALTIMETER_INDEX#, bars) 16000 * (&gt;O:A32NX_ISIS_BARO_SAVED, number)
                         #SET_STD_CODE#
                       } els{
                         #MODE_QNH# (&gt;L:A32NX_ISIS_BARO_MODE, enum)

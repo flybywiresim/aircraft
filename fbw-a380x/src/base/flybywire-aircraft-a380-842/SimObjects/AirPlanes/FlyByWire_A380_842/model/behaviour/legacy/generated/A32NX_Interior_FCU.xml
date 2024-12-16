@@ -34,11 +34,7 @@
             <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
             <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-            <BARO_ID>#ID#</BARO_ID>
-            <MODE_QFE>0</MODE_QFE>
-            <MODE_QNH>1</MODE_QNH>
-            <MODE_STD_QFE>2</MODE_STD_QFE>
-            <MODE_STD_QNH>3</MODE_STD_QNH>
+            <ALTIMETER_INDEX>#ID#</ALTIMETER_INDEX>
             <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
             <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
         </DefaultTemplateParameters>
@@ -46,45 +42,22 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <ANTICLOCKWISE_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
-                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
-                        } els{
-                            #BARO_ID# (&gt;K:KOHLSMAN_DEC)
-                        }
-                    } els{
-                        (&gt;H:A380X_FCU_BARO_PRESEL_DEC)
-                    }
+                    #ALTIMETER_INDEX# (&gt;K:KOHLSMAN_DEC)
                 </ANTICLOCKWISE_CODE>
 
                 <CLOCKWISE_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
-                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
-                        } els{
-                            #BARO_ID# (&gt;K:KOHLSMAN_INC)
-                        }
-                    } els{
-                        (&gt;H:A380X_FCU_BARO_PRESEL_INC)
-                    }
+                    #ALTIMETER_INDEX# (&gt;K:KOHLSMAN_INC)
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
-                    #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    (&gt;H:A380X_EFIS_CP_BARO_PULL_#ALTIMETER_INDEX#)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    (&gt;H:A380X_EFIS_CP_BARO_PUSH_#ALTIMETER_INDEX#)
                 </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <COUNT>36</COUNT>
-                <OVERRIDE_PUSH_ANIM_CODE>
-                    0 100
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QFE# ==
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == or ?
-                    50
-                        (O:_PushAnimVar) ?
-                </OVERRIDE_PUSH_ANIM_CODE>
                 <WWISE_EVENT>QNHknob</WWISE_EVENT>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
                 <WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
