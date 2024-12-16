@@ -113,7 +113,7 @@ struct SimData {
   double kohlsmanSetting_1;
   double kohlsmanSetting_2;
   /// @deprecated Should use ADR pressure altitude
-  unsigned long long kohlsmanSettingStd_4;
+  unsigned long long kohlsmanSettingStd;
   double cameraState;
   double altitude_m;
   double nav_loc_magvar_deg;
@@ -210,7 +210,7 @@ struct SimOutputSpoilers {
 };
 
 struct SimOutputAltimeter {
-  unsigned long long kohlsmanSettingStd_4;
+  unsigned long long kohlsmanSettingStd;
 };
 
 struct ClientDataAutopilotStateMachine {

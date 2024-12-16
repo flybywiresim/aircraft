@@ -2782,7 +2782,7 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
 
   // determine if change is needed
-  if (simData.kohlsmanSettingStd_4 == 0) {
+  if (simData.kohlsmanSettingStd == 0) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }
