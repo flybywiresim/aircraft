@@ -189,7 +189,7 @@ export class RequestMenuButton extends DisplayComponent<RequestMenuButtonProps> 
               <span class="mfd-fms-fpln-button-dropdown-arrow">
                 <TriangleLeft color={this.props.disabled?.get() ? 'grey' : 'white'} />
               </span>
-              <span class="mfd-fms-fpln-button-dropdown-label">{val}</span>
+              <span class="mfd-atccom-request-button-dropdown-label">{val}</span>
             </div>
           );
           FSComponent.render(n, this.buttonRef.instance);
@@ -268,7 +268,7 @@ export class RequestMenuButton extends DisplayComponent<RequestMenuButtonProps> 
         />
         <div
           ref={this.dropdownMenuRef}
-          class="mfd-dropdown-menu"
+          class="mfd-atccom-request-button-dropdown-menu"
           style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}
         />
       </div>

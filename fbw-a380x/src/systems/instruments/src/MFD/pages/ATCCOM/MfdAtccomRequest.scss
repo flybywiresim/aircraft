@@ -17,6 +17,7 @@
 
 .mfd-atccom-request-footer {
   position: relative;
+  display: flex;
   flex-flow: row;
   padding: 3px 0;
   min-height: 64px;
@@ -60,4 +61,22 @@
     border-top: 2px solid #fff;
     flex: 0 1 15%;
   }
+}
+
+.mfd-atccom-request-button-dropdown-label {
+  flex-grow: 1;
+  text-align: right;
+  vertical-align: center;
+  padding-left: 10px;
+  padding-right: 5px;
+}
+
+.mfd-atccom-request-button-dropdown-menu {
+  background-color: $display-mfd-darker-grey;
+  min-width: 100%;
+  position: absolute;
+  z-index: 60;
+  overflow: auto;
+  display: none;
+  border: 2px outset $display-light-grey;
 }
