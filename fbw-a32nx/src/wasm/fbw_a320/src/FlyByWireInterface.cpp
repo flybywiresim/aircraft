@@ -2409,8 +2409,10 @@ bool FlyByWireInterface::updateFcuShim() {
                                    Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_left_hpa, 1013) * 16, 1);
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_right_hpa, 1013) * 16, 2);
-  SimOutputAltimeter altiOutput = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
-  simConnectInterface.sendData(altiOutput, false);
+  SimOutputAltimeter stdOutputLeft = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
+  simConnectInterface.sendData(stdOutputLeft, 1);
+  SimOutputAltimeter stdOutputRight = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 28, true)};
+  simConnectInterface.sendData(stdOutputRight, 2);
   idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true),
                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 29, false)));
 

@@ -486,6 +486,7 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:4", "BOOL");
 
   result &= addDataDefinition(hSimConnect, 8, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:1", "BOOL");
+  result &= addDataDefinition(hSimConnect, 9, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:2", "BOOL");
 
   return result;
 }
@@ -1067,9 +1068,23 @@ bool SimConnectInterface::sendData(SimOutputAltimeter output) {
   return sendData(7, sizeof(output), &output);
 }
 
-bool SimConnectInterface::sendData(SimOutputAltimeter output, bool altimeter3) {
+bool SimConnectInterface::sendData(SimOutputAltimeter output, int altimeterIndex) {
   // write data and return result
-  return sendData(altimeter3 ? 7 : 8, sizeof(output), &output);
+  SIMCONNECT_DATA_DEFINITION_ID dataDefId;
+  switch (altimeterIndex) {
+    case 1:
+      dataDefId = 8;
+      break;
+    case 2:
+      dataDefId = 9;
+      break;
+    case 4:
+      dataDefId = 7;
+      break;
+    default:
+      return false;
+  }
+  return sendData(dataDefId, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId) {
