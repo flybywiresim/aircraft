@@ -757,30 +757,30 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FcuBus & FgBus>();
 
-  private fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
-  private fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
+  private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
 
-  private fmgcDiscreteWord2 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'), Arinc429Word.empty());
+  private readonly fmgcDiscreteWord2 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'), Arinc429Word.empty());
 
-  private fmgcDiscreteWord4 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'), Arinc429Word.empty());
+  private readonly fmgcDiscreteWord4 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'), Arinc429Word.empty());
 
-  private landModeArmedOrActive = MappedSubject.create(
+  private readonly landModeArmedOrActive = MappedSubject.create(
     ([fmgcDiscreteWord2, fmgcDiscreteWord4]) =>
       fmgcDiscreteWord4.bitValueOr(14, false) || fmgcDiscreteWord2.bitValueOr(20, false),
     this.fmgcDiscreteWord2,
     this.fmgcDiscreteWord4,
   );
 
-  private fcuEisDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
+  private readonly fcuEisDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
 
-  private lsPushed = this.fcuEisDiscreteWord2.map((w) => w.bitValueOr(22, false));
+  private readonly lsPushed = this.fcuEisDiscreteWord2.map((w) => w.bitValueOr(22, false));
 
-  private hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
 
-  private hasGlide = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+  private readonly hasGlide = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
 
-  private lsReminderVisible = MappedSubject.create(
+  private readonly lsReminderVisible = MappedSubject.create(
     ([fwcPhase, fmgcPhase, landModeArmedOrActive, lsPushed, hasLoc, hasGlide]) => {
       return (
         landModeArmedOrActive &&
