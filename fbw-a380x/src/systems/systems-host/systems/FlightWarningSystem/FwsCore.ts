@@ -467,12 +467,15 @@ export class FwsCore {
   /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
   public readonly autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec = new NXLogicTriggeredMonostableNode(1.9, true);
 
+  /** Prohibits that CRC can be cancelled before even hearing it */
+  public readonly autoPilotFirstCavalryStillWithinFirst0p3s = new NXLogicTriggeredMonostableNode(0.3, true);
+
   public readonly autoPilotInstinctiveDiscPressedPulse = new NXLogicPulseNode(true);
 
   /** Stay in first warning stage for 1.8s. Raised to 1.9s to allow for triple click to finish */
   public readonly autoPilotOffVoluntaryEndAfter1p9s = new NXLogicTriggeredMonostableNode(1.9, true);
 
-  public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
+  public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.9, true);
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActivePulse = new NXLogicPulseNode(false);
 
@@ -2443,6 +2446,11 @@ export class FwsCore {
       deltaTime,
     );
 
+    this.autoPilotFirstCavalryStillWithinFirst0p3s.write(
+      this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
+      deltaTime,
+    );
+
     this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.write(
       this.autoPilotInstinctiveDiscPressedPulse.read() &&
         (this.autoPilotInstinctiveDiscCountSinceLastFwsCycle > 1 || apDiscPressedInLast1p8SecBeforeThisCycle),
@@ -2452,7 +2460,8 @@ export class FwsCore {
     this.autoPilotOffVoluntaryMemory.write(
       this.autoPilotOffVoluntaryDiscPulse.read(),
       apEngaged ||
-        this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.read() ||
+        (this.autoPilotInstinctiveDiscPressedTwiceInLast1p9Sec.read() &&
+          !this.autoPilotFirstCavalryStillWithinFirst0p3s.read()) ||
         !this.autoPilotOffVoluntaryEndAfter1p9s.read(),
     );
 
