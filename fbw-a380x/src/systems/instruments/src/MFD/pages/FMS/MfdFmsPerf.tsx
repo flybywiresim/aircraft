@@ -2517,7 +2517,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             }
                           }}
                           mandatory={Subject.create(false)}
-                          value={this.props.fmcService.master.fmgc.data.approachBaroMinimum}
+                          value={this.props.fmcService.master?.fmgc.data.approachBaroMinimum}
                           onModified={(v) => {
                             if (!this.props.fmcService.master?.fmgc.data.approachRadioMinimum.get()) {
                               this.props.fmcService.master?.fmgc.data.approachBaroMinimum.set(v);
@@ -2541,16 +2541,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               }
                               dataHandlerDuringValidation={async (v) => {
                                 if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
-                                  if (v === undefined) {
-                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                                  } else if (
-                                    v === 'NONE' ||
-                                    v === 'NO' ||
-                                    v === 'NO DH' ||
-                                    v === 'NODH' ||
-                                    v === null
-                                  ) {
+                                  if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH' || v === null) {
                                     SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                  } else if (v === undefined) {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
                                   } else {
                                     SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
                                   }
@@ -2560,9 +2554,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               value={this.props.fmcService.master?.fmgc.data.approachRadioMinimum}
                               onModified={(v) => {
                                 if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
-                                  if (v === null) {
-                                    this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(null);
-                                  } else if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH') {
+                                  if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH' || v === null) {
                                     this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(v);
                                   } else {
                                     this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(Number(v));
