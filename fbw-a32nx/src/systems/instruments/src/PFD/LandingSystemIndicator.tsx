@@ -15,13 +15,22 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject, MathUtils } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429RegisterSubject,
+  MathUtils,
+  Arinc429ConsumerSubject,
+  Arinc429Word,
+} from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { FgBus } from './shared/FgBusProvider';
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
@@ -91,6 +100,9 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
             }}
             d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
           />
+        </g>
+        <g>
+          <LsReminderIndicator bus={this.props.bus} />
         </g>
         <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
           <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
@@ -738,6 +750,68 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">
         {this.markerText}
       </text>
+    );
+  }
+}
+
+class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FcuBus & FgBus>();
+
+  private fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  private fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
+
+  private fmgcDiscreteWord2 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'), Arinc429Word.empty());
+
+  private fmgcDiscreteWord4 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'), Arinc429Word.empty());
+
+  private landModeArmedOrActive = MappedSubject.create(
+    ([fmgcDiscreteWord2, fmgcDiscreteWord4]) =>
+      fmgcDiscreteWord4.bitValueOr(14, false) || fmgcDiscreteWord2.bitValueOr(20, false),
+    this.fmgcDiscreteWord2,
+    this.fmgcDiscreteWord4,
+  );
+
+  private fcuEisDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
+
+  private lsPushed = this.fcuEisDiscreteWord2.map((w) => w.bitValueOr(22, false));
+
+  private hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
+
+  private hasGlide = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+
+  private lsReminderVisible = MappedSubject.create(
+    ([fwcPhase, fmgcPhase, landModeArmedOrActive, lsPushed, hasLoc, hasGlide]) => {
+      return (
+        landModeArmedOrActive &&
+        fmgcPhase === FmgcFlightPhase.Approach &&
+        !lsPushed &&
+        hasGlide &&
+        hasLoc &&
+        fwcPhase !== 8 &&
+        fwcPhase !== 9 &&
+        fwcPhase !== 10
+      );
+    },
+    this.fwcFlightPhase,
+    this.fmgcFlightPhase,
+    this.landModeArmedOrActive,
+    this.lsPushed,
+    this.hasLoc,
+    this.hasGlide,
+  );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+  }
+
+  render(): VNode {
+    return (
+      <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
+        <text class="FontLarge Amber" x="98.339211" y="125.12898">
+          LS
+        </text>
+      </FlashOneHertz>
     );
   }
 }
