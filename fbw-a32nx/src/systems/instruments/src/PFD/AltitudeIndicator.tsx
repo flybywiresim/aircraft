@@ -4,6 +4,7 @@
 
 import {
   ClockEvents,
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -27,6 +28,7 @@ import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { A32NXFwcBusEvents } from '@shared/publishers/A32NXFwcBusPublisher';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -310,16 +312,18 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     this.sub.on('a32nx_fwc_discrete_word_124_2'),
   );
 
-  private isCheckAltHidden = MappedSubject.create(
+  private isCheckAltVisible = MappedSubject.create(
     ([fwc1Word, fwc2Word]) =>
-      !(fwc1Word.bitValue(24) || fwc1Word.bitValue(25) || fwc2Word.bitValue(24) || fwc2Word.bitValue(25)),
+      fwc1Word.bitValue(24) || fwc1Word.bitValue(25) || fwc2Word.bitValue(24) || fwc2Word.bitValue(25),
     this.fwc1DiscreteWord,
     this.fwc2DiscreteWord,
   );
 
   private abnormal = FSComponent.createRef<SVGGElement>();
 
-  private tcasFailed = FSComponent.createRef<SVGGElement>();
+  private readonly altFlagVisible = Subject.create(false);
+
+  private readonly tcasFailed = ConsumerSubject.create(null, false);
 
   private normal = FSComponent.createRef<SVGGElement>();
 
@@ -351,18 +355,10 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
         this.abnormal.instance.style.display = 'none';
         this.normal.instance.removeAttribute('style');
       }
+      this.altFlagVisible.set(!altitude.isNormalOperation());
     });
 
-    sub
-      .on('tcasFail')
-      .whenChanged()
-      .handle((tcasFailed) => {
-        if (tcasFailed) {
-          this.tcasFailed.instance.style.display = 'inline';
-        } else {
-          this.tcasFailed.instance.style.display = 'none';
-        }
-      });
+    this.tcasFailed.setConsumer(sub.on('tcasFail'));
 
     sub
       .on('fmgcDiscreteWord1')
@@ -403,58 +399,60 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
         <g ref={this.abnormal} style="display: none">
           <path id="AltTapeOutline" class="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
           <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
-          <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">
-            ALT
-          </text>
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.altFlagVisible}>
+            <text id="AltFailText" class="FontLargest Red EndAlign" x="131.16769" y="83.433167">
+              ALT
+            </text>
+          </FlashOneHertz>
         </g>
-        <g ref={this.tcasFailed} style="display: none">
-          <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="100">
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasFailed}>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="100">
             T
           </text>
-          <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="105">
+          <text class="FontMedium Amber EndAlign" x="141.5" y="105">
             C
           </text>
-          <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="110">
+          <text class="FontMedium Amber EndAlign" x="141.5" y="110">
             A
           </text>
-          <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="115">
+          <text class="FontMedium Amber EndAlign" x="141.5" y="115">
             S
           </text>
-        </g>
-        <g
-          id="CheckAltWarning"
-          class={{
-            HiddenElement: this.isCheckAltHidden,
-            Blink9Seconds: true,
-            FontSmall: true,
-            MiddleAlign: true,
-          }}
-        >
-          <text class="Amber" x="133.7" y="43.6">
-            C
-          </text>
-          <text class="Amber" x="133.7" y="47.85">
-            H
-          </text>
-          <text class="Amber" x="133.7" y="52.1">
-            E
-          </text>
-          <text class="Amber" x="133.7" y="56.35">
-            C
-          </text>
-          <text class="Amber" x="133.7" y="60.6">
-            K
-          </text>
-          <text class="Amber" x="137.8" y="64.3">
-            A
-          </text>
-          <text class="Amber" x="137.8" y="68.55">
-            L
-          </text>
-          <text class="Amber" x="137.8" y="72.8">
-            T
-          </text>
-        </g>
+        </FlashOneHertz>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.isCheckAltVisible}>
+          <g
+            id="CheckAltWarning"
+            class={{
+              FontSmall: true,
+              MiddleAlign: true,
+            }}
+          >
+            <text class="Amber" x="133.7" y="43.6">
+              C
+            </text>
+            <text class="Amber" x="133.7" y="47.85">
+              H
+            </text>
+            <text class="Amber" x="133.7" y="52.1">
+              E
+            </text>
+            <text class="Amber" x="133.7" y="56.35">
+              C
+            </text>
+            <text class="Amber" x="133.7" y="60.6">
+              K
+            </text>
+            <text class="Amber" x="137.8" y="64.3">
+              A
+            </text>
+            <text class="Amber" x="137.8" y="68.55">
+              L
+            </text>
+            <text class="Amber" x="137.8" y="72.8">
+              T
+            </text>
+          </g>
+        </FlashOneHertz>
         <g ref={this.normal} style="display: none">
           <path
             id="AltTapeOutline"
@@ -528,7 +526,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
   private selectedAltUpperGroupRef = FSComponent.createRef<SVGGElement>();
 
-  private selectedAltFailText = FSComponent.createRef<SVGTextElement>();
+  private readonly selectedAltFailed = Subject.create(false);
 
   private targetGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -618,22 +616,22 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'none';
-      this.selectedAltFailText.instance.style.display = 'block';
+      this.selectedAltFailed.set(true);
     } else if (this.altitude.value - this.shownTargetAltitude.value > DisplayRange) {
       this.selectedAltLowerGroupRef.instance.style.display = 'block';
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'none';
-      this.selectedAltFailText.instance.style.display = 'none';
+      this.selectedAltFailed.set(false);
     } else if (this.altitude.value - this.shownTargetAltitude.value < -DisplayRange) {
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltUpperGroupRef.instance.style.display = 'block';
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
-      this.selectedAltFailText.instance.style.display = 'none';
+      this.selectedAltFailed.set(false);
     } else {
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'inline';
-      this.selectedAltFailText.instance.style.display = 'none';
+      this.selectedAltFailed.set(false);
     }
   }
 
@@ -720,15 +718,11 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             {this.textSub}
           </text>
         </g>
-        <text
-          id="SelectedAltUpperText"
-          ref={this.selectedAltFailText}
-          class="FontSmall EndAlign Red Blink9Seconds"
-          x="136.22987"
-          y="37.250134"
-        >
-          ALT SEL
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.selectedAltFailed}>
+          <text id="SelectedAltUpperText" class="FontSmall EndAlign Red" x="136.22987" y="37.250134">
+            ALT SEL
+          </text>
+        </FlashOneHertz>
       </>
     );
   }
@@ -743,6 +737,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private mode = Subject.create('');
 
   private text = Subject.create('');
+
+  private readonly shouldFlash = Subject.create(false);
 
   private baroInhg = new Arinc429Word(0);
 
@@ -760,11 +756,11 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private flightPhase = 0;
 
-  private stdGroup = FSComponent.createRef<SVGGElement>();
+  private stdVisible = Subject.create(false);
 
-  private qfeGroup = FSComponent.createRef<SVGGElement>();
+  private altiSettingVisible = Subject.create(false);
 
-  private qfeBorder = FSComponent.createRef<SVGGElement>();
+  private qfeBorderHidden = Subject.create(true);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -847,38 +843,33 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.transLvlAr.isNormalOperation() &&
         100 * this.transLvlAr.value > this.props.altitude.get()
       ) {
-        this.stdGroup.instance.classList.add('BlinkInfinite');
+        this.shouldFlash.set(true);
       } else {
-        this.stdGroup.instance.classList.remove('BlinkInfinite');
+        this.shouldFlash.set(false);
       }
     } else if (
       this.flightPhase <= 3 &&
       this.transAltAr.isNormalOperation() &&
       this.transAltAr.value < this.props.altitude.get()
     ) {
-      this.qfeGroup.instance.classList.add('BlinkInfinite');
+      this.shouldFlash.set(true);
     } else {
-      this.qfeGroup.instance.classList.remove('BlinkInfinite');
+      this.shouldFlash.set(false);
     }
   }
 
   private getText() {
     if (this.baroInStd) {
       this.mode.set('STD');
-      this.stdGroup.instance.classList.remove('HiddenElement');
-      this.qfeGroup.instance.classList.add('HiddenElement');
-      this.qfeBorder.instance.classList.add('HiddenElement');
     } else if (this.baroInQnh) {
       this.mode.set('QNH');
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.remove('HiddenElement');
-      this.qfeBorder.instance.classList.add('HiddenElement');
     } else {
       this.mode.set('QFE');
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.remove('HiddenElement');
-      this.qfeBorder.instance.classList.remove('HiddenElement');
     }
+
+    this.stdVisible.set(this.baroInStd);
+    this.altiSettingVisible.set(!this.baroInStd);
+    this.qfeBorderHidden.set(this.baroInStd || this.baroInQnh);
 
     if (!this.baroInInhg) {
       this.text.set(Math.round(this.baroHpa.value).toString());
@@ -890,17 +881,33 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   render(): VNode {
     return (
       <>
-        <g ref={this.stdGroup} id="STDAltimeterModeGroup">
-          <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
-          <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
-            STD
-          </text>
-        </g>
-        <g id="AltimeterGroup">
-          <g ref={this.qfeGroup} id="QFEGroup">
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.stdVisible}
+        >
+          <g id="STDAltimeterModeGroup">
+            <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
+            <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
+              STD
+            </text>
+          </g>
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.altiSettingVisible}
+        >
+          <g id="AltimeterGroup">
             <path
-              ref={this.qfeBorder}
-              class="NormalStroke White"
+              class={{
+                NormalStroke: true,
+                White: true,
+                HiddenElement: this.qfeBorderHidden,
+              }}
               d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
             />
             <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">
@@ -910,7 +917,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
               {this.text}
             </text>
           </g>
-        </g>
+        </FlashOneHertz>
       </>
     );
   }

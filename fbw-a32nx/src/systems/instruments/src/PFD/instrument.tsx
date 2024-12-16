@@ -8,6 +8,7 @@ import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-c
 
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
 import { FcuBusProvider } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBusProvider } from 'instruments/src/PFD/shared/FgBusProvider';
 import { getDisplayIndex, PFDComponent } from './PFD';
@@ -58,6 +59,8 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly pseudoDmc = new PseudoDmc(this.bus, this);
 
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -82,6 +85,7 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('ElectricalSystem', this.elecSystemPublisher);
     this.backplane.addPublisher('FwcBus', this.fwcBusPublisher);
     this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
+    this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
   }
 
   get templateID(): string {
