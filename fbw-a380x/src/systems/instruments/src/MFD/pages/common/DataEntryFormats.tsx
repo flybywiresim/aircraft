@@ -3,6 +3,7 @@ import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
+type RadioMinimumEntry = 'NONE' | 'NO' | 'NO DH' | 'NODH' | number;
 export interface DataEntryFormat<T> {
   placeholder: string;
   maxDigits: number;
@@ -217,7 +218,7 @@ export class RadioMinimumFormat implements DataEntryFormat<string | number> {
     maxValue.sub((val) => (this.maxValue = val), true);
   }
 
-  public format(value: string | number) {
+  public format(value: RadioMinimumEntry) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     } else if (value === 'NONE' || value === 'NO' || value === 'NO DH' || value === 'NODH') {
