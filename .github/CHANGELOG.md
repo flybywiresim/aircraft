@@ -92,6 +92,7 @@
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWC] Add FCU faults - @tracernz (Mike)
+1. [A380X/MFD] Fix PERF APPR minimums input logic - @Pruznak (Pruznak)
 
 ## 0.12.0
 
