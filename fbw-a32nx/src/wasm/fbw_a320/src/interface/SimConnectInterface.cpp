@@ -390,9 +390,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_HOLD, "AP_VS_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ATT_HOLD, "AP_ATT_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_HOLD, "AP_MACH_HOLD", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_INC, "KOHLSMAN_INC", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_DEC, "KOHLSMAN_DEC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMAN_SET, "KOHLSMAN_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMAN_INC, "KOHLSMAN_INC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMAN_DEC, "KOHLSMAN_DEC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC_STD_PRESSURE, "BAROMETRIC_STD_PRESSURE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC, "BAROMETRIC", true);
 
@@ -2065,7 +2065,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    case Events::KOHLSMANN_INC: {
+    case Events::KOHLSMAN_INC: {
       // Match the MSFS behaviour here; 0 only sets altimeter 1
       const DWORD altimeterIndex = data0 == 0 ? 1 : data0;
       if (altimeterIndex == 1) {
@@ -2073,9 +2073,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       } else if (altimeterIndex == 2) {
         processEvent(A32NX_FCU_EFIS_R_BARO_INC, 0, 0);
       } else {
-        sendEventEx1(KOHLSMANN_INC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+        sendEventEx1(KOHLSMAN_INC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_INC, index " << altimeterIndex << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMAN_INC, index " << altimeterIndex << std::endl;
       break;
     }
     case Events::A32NX_FCU_EFIS_L_BARO_INC: {
@@ -2085,7 +2085,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    case Events::KOHLSMANN_DEC: {
+    case Events::KOHLSMAN_DEC: {
       // Match the MSFS behaviour here; 0 only sets altimeter 1
       const DWORD altimeterIndex = data0 == 0 ? 1 : data0;
       if (altimeterIndex == 1) {
@@ -2093,9 +2093,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       } else if (altimeterIndex == 2) {
         processEvent(A32NX_FCU_EFIS_R_BARO_DEC, 0, 0);
       } else {
-        sendEventEx1(KOHLSMANN_DEC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+        sendEventEx1(KOHLSMAN_DEC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_DEC, index " << altimeterIndex << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMAN_DEC, index " << altimeterIndex << std::endl;
       break;
     }
     case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
@@ -2105,7 +2105,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    case Events::KOHLSMANN_SET: {
+    case Events::KOHLSMAN_SET: {
       const DWORD kohlsmanValue = data0;
       const DWORD altimeterIndex = data1;
       if (altimeterIndex == 0 || altimeterIndex == 2) {
@@ -2115,9 +2115,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
         processEvent(A32NX_FCU_EFIS_L_BARO_SET, kohlsmanValue, 0);
       }
       if (altimeterIndex != 1 && altimeterIndex != 2) {
-        sendEventEx1(KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+        sendEventEx1(KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_SET, index " << altimeterIndex << "value" << kohlsmanValue << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMAN_SET, index " << altimeterIndex << "value" << kohlsmanValue << std::endl;
       break;
     }
 
