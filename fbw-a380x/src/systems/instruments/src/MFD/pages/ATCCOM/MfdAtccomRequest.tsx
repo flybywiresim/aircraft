@@ -40,8 +40,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
             <div id="atccom-request-menu">
               <RequestMenuButton
                 label="VERTICAL"
+                idPrefix="Request_Vertical_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'CLIMB TO', action: () => {} },
                   { label: 'DESCEND TO', action: () => {} },
@@ -53,8 +54,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               />
               <RequestMenuButton
                 label="LATERAL"
+                idPrefix="Request_Lateral_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'DIRECT TO', action: () => {} },
                   { label: 'OFFSET', action: () => {} },
@@ -68,8 +70,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               />
               <RequestMenuButton
                 label="SPEED"
+                idPrefix="Request_Speed_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'SPEED', action: () => {} },
                   { label: 'SPEED RANGE', action: () => {} },
@@ -77,8 +80,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               />
               <RequestMenuButton
                 label="CLEARANCE"
+                idPrefix="Request_Clearance_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'DEPARTURE', action: () => {} },
                   { label: 'OCEANIC', action: () => {} },
@@ -87,8 +91,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               />
               <RequestMenuButton
                 label="WHEN CAN<br />WE EXPECT"
+                idPrefix="Request_WhenCanWeExpect_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'HIGHER LEVEL', action: () => {} },
                   { label: 'LOWER LEVEL', action: () => {} },
@@ -102,8 +107,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               />
               <RequestMenuButton
                 label="OTHER"
+                idPrefix="Request_Other_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'FREETEXT', action: () => {} },
                   { label: 'VOICE CONTACT', action: () => {} },
@@ -114,8 +120,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               <br />
               <RequestMenuButton
                 label="ADD TEXT"
+                idPrefix="Request_AddText_Menu"
                 onClick={() => {}}
-                buttonStyle="width:180px"
+                buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'DUE TO WEATHER', action: () => {} },
                   { label: 'DUE TO A/C PERFORMANCE', action: () => {} },
@@ -137,7 +144,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                 buttonStyle="width: 190px; height:64px;"
               />
             </div>
-            <div style="position:absolute; top: 0px; right:0px">
+            <div style="position:absolute; right:0px">
               <Button
                 label="XFR<br /> TO MAILBOX"
                 disabled={Subject.create(false)}
