@@ -13,7 +13,7 @@ import './MfdFmsPerf.scss';
 import {
   AltitudeFormat,
   AltitudeOrFlightLevelFormat,
-  RadioAltitudeFormat,
+  RadioMinimumFormat,
   CostIndexFormat,
   DescentRateFormat,
   FlightLevelFormat,
@@ -400,8 +400,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprLandingWeight = Subject.create<number | null>(null);
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
-
-  private apprRadioInputText = Subject.create<string | number | null>(null);
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
@@ -2510,14 +2508,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number>
                           dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                           dataHandlerDuringValidation={async (v) => {
-                            if (v === null) {
-                              SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
-                            } else {
-                              SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            if (!this.props.fmcService.master?.fmgc.data.approachRadioMinimum.get()) {
+                              if (v === null) {
+                                SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
+                              } else {
+                                SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                              }
                             }
                           }}
                           mandatory={Subject.create(false)}
                           value={this.props.fmcService.master.fmgc.data.approachBaroMinimum}
+                          onModified={(v) => {
+                            if (!this.props.fmcService.master?.fmgc.data.approachRadioMinimum.get()) {
+                              this.props.fmcService.master?.fmgc.data.approachBaroMinimum.set(v);
+                            }
+                          }}
                           containerStyle="width: 150px;"
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2532,29 +2537,36 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           componentIfTrue={
                             <InputField<string | number>
                               dataEntryFormat={
-                                new RadioAltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))
+                                new RadioMinimumFormat(Subject.create(1), Subject.create(maxCertifiedAlt))
                               }
                               dataHandlerDuringValidation={async (v) => {
-                                if (v === undefined) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                                } else if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH' || v === null) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
-                                } else {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
+                                  if (v === undefined) {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
+                                  } else if (
+                                    v === 'NONE' ||
+                                    v === 'NO' ||
+                                    v === 'NO DH' ||
+                                    v === 'NODH' ||
+                                    v === null
+                                  ) {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                  } else {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                  }
                                 }
                               }}
                               mandatory={Subject.create(false)}
-                              value={this.apprRadioInputText}
+                              value={this.props.fmcService.master?.fmgc.data.approachRadioMinimum}
                               onModified={(v) => {
-                                if (v === null) {
-                                  this.apprRadioInputText.set(null);
-                                  this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(null);
-                                } else if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH') {
-                                  this.apprRadioInputText.set(v);
-                                  this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(null);
-                                } else {
-                                  this.apprRadioInputText.set(Number(v));
-                                  this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(Number(v));
+                                if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
+                                  if (v === null) {
+                                    this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(null);
+                                  } else if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH') {
+                                    this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(v);
+                                  } else {
+                                    this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(Number(v));
+                                  }
                                 }
                               }}
                               containerStyle="width: 150px;"

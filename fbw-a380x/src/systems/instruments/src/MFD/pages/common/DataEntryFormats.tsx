@@ -200,7 +200,7 @@ export class AltitudeFormat implements DataEntryFormat<number> {
   }
 }
 
-export class RadioAltitudeFormat implements DataEntryFormat<string | number> {
+export class RadioMinimumFormat implements DataEntryFormat<string | number> {
   public placeholder = '-----';
 
   public maxDigits = 5;

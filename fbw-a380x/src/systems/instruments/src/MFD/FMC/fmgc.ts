@@ -291,7 +291,7 @@ export class FmgcData {
   public readonly approachBaroMinimum = Subject.create<number | null>(null);
 
   /** in feet. null if not set. */
-  public readonly approachRadioMinimum = Subject.create<number | null>(null);
+  public readonly approachRadioMinimum = Subject.create<string | number | null>(null);
 
   public readonly approachVref = Subject.create<Knots>(129);
 
