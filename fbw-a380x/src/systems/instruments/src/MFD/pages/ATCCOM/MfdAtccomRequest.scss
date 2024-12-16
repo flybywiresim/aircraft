@@ -1,0 +1,63 @@
+﻿@import '../../../MsfsAvionicsCommon/definitions';
+
+#atccom-request-container {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+#atccom-request-body {
+  width: 580px;
+}
+
+#atccom-request-menu {
+  width: 180px;
+  margin: 10px;
+}
+
+.mfd-atccom-request-footer {
+  position: relative;
+  flex-flow: row;
+  padding: 3px 0;
+  min-height: 64px;
+}
+
+.request-block {
+  font-size: 22px;
+  border: 2px solid #fff;
+  border-top: transparent;
+  margin: 30px 10px;
+  position: relative;
+
+  .request-block-title {
+    text-align: center;
+    transform: translateY(-40%);
+  }
+  .request-block-body {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+  }
+  .request-block-input-label {
+    width: 200px;
+    font-size: 22px;
+    margin: auto 0;
+    margin-right: 20px;
+    text-align: right;
+  }
+  .request-block-line {
+    display: flex;
+    padding: 5px 0;
+  }
+}
+
+.request-block-header {
+  display: flex;
+  justify-content: space-between;
+
+  .left,
+  .right {
+    border-top: 2px solid #fff;
+    flex: 0 1 15%;
+  }
+}
