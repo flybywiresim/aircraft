@@ -645,43 +645,33 @@
             <FREQUENCY>15</FREQUENCY>
             <UPDATE_CODE>
                 <!-- NOTE TO THE NEXT DEVELOPER SEEING THIS CODE -->
-
                 <!-- Need to add (L:XMLVAR_COM_3_VHF_L_Switch_Down) to make the overhead audio panel work in the future -->
-                <!--
-                    (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) (L:XMLVAR_COM_3_VHF_L_Switch_Down) or or (&gt;K:COM1_RECEIVE_SELECT)
-                    (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) (L:XMLVAR_COM_3_VHF_C_Switch_Down) or or (&gt;K:COM2_RECEIVE_SELECT)
-                    (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) (L:XMLVAR_COM_3_VHF_R_Switch_Down) or or (&gt;K:COM3_RECEIVE_SELECT)
-                -->
-
-                <!-- For the first condition.... -->
-                <!-- As COM1 is difficult to disable on reception, I chose to force the condition instead of using (A:COM RECEIVE:1, Bool)
-
-                DO NOT SET  0 (&gt;K:COM3_VOLUME_SET) AS vPilot WOULD NOT BE WORKING ANYMORE
-
-                -->
 
                 (I:XMLVAR_COM_UpdateReceivers) if{
                     (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) or (&gt;K:COM1_RECEIVE_SELECT)
                     (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) or (&gt;K:COM2_RECEIVE_SELECT)
+                    (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) or (&gt;K:COM3_RECEIVE_SELECT)
                     0 (&gt;I:XMLVAR_COM_UpdateReceivers)
                 }
 
-                (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) or if{
-                    (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) and if{
-                        (L:XMLVAR_COM_1_Volume_VHF_L) (L:XMLVAR_COM_2_Volume_VHF_L) max max 100 * (&gt;K:COM1_VOLUME_SET)
-                    } els{
-                        1 (L:XMLVAR_COM_1_VHF_L_Switch_Down) == if{
-                            (L:XMLVAR_COM_1_Volume_VHF_L) 100 * (&gt;K:COM1_VOLUME_SET)
+                (A:COM RECEIVE EX1:1, Bool) if{
+                    (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) or if{
+                        (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) and if{
+                            (L:XMLVAR_COM_1_Volume_VHF_L) (L:XMLVAR_COM_2_Volume_VHF_L) max max 100 * (&gt;K:COM1_VOLUME_SET)
                         } els{
-                            (L:XMLVAR_COM_2_Volume_VHF_L) 100 * (&gt;K:COM1_VOLUME_SET)
+                            1 (L:XMLVAR_COM_1_VHF_L_Switch_Down) == if{
+                                (L:XMLVAR_COM_1_Volume_VHF_L) 100 * (&gt;K:COM1_VOLUME_SET)
+                            } els{
+                                (L:XMLVAR_COM_2_Volume_VHF_L) 100 * (&gt;K:COM1_VOLUME_SET)
 
+                            }
                         }
                     }
                 } els{
                     0 (&gt;K:COM1_VOLUME_SET)
                 }
 
-                (A:COM RECEIVE:2, Bool) if{
+                (A:COM RECEIVE EX1:2, Bool) if{
                     (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) or if{
                         (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) and if{
                             (L:XMLVAR_COM_1_Volume_VHF_C) (L:XMLVAR_COM_2_Volume_VHF_C) max max 100 * (&gt;K:COM2_VOLUME_SET)
@@ -697,7 +687,7 @@
                     0 (&gt;K:COM2_VOLUME_SET)
                 }
 
-                (A:COM RECEIVE:3, Bool) if{
+                (A:COM RECEIVE EX1:3, Bool) if{
                     (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) or if{
                         (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) and if{
                             (L:XMLVAR_COM_1_Volume_VHF_R) (L:XMLVAR_COM_2_Volume_VHF_R) max max 100 * (&gt;K:COM3_VOLUME_SET)
@@ -709,6 +699,8 @@
                             }
                         }
                     }
+                } els{
+                    0 (&gt;K:COM3_VOLUME_SET)
                 }
             </UPDATE_CODE>
         </UseTemplate>
