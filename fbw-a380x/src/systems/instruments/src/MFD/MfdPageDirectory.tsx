@@ -22,6 +22,7 @@ import { MfdAtccomMsgRecordMonitored } from './pages/ATCCOM/MfdAtccomMsgRecordMo
 import { MfdAtccomMsgRecordExpand } from './pages/ATCCOM/MfdAtccomMsgRecordExpand';
 import { MfdAtccomDAtis } from './pages/ATCCOM/MfdAtccomDAtis';
 import { MfdAtccomDAtisReceived } from './pages/ATCCOM/MfdAtccomDAtisReceived';
+import { MfdAtccomRequest } from './pages/ATCCOM/MfdAtccomRequest';
 
 // Header imports
 import { AtccomHeader } from './pages/common/AtccomHeader';
@@ -333,6 +334,8 @@ export function pageForUrl(
       return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} atcService={atcService} />;
     case 'atccom/d-atis/received':
       return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} atcService={atcService} />;
+    case 'atccom/request':
+      return <MfdAtccomRequest pageTitle="REQUEST" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:
       return (
