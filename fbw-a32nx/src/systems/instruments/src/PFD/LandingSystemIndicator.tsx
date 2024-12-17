@@ -772,18 +772,12 @@ class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly lsPushed = this.fcuEisDiscreteWord2.map((w) => w.bitValueOr(22, false));
 
-  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
-
-  private readonly hasGlide = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
-
   private readonly lsReminderVisible = MappedSubject.create(
-    ([fwcPhase, fmgcPhase, landModeArmedOrActive, lsPushed, hasLoc, hasGlide]) => {
+    ([fwcPhase, fmgcPhase, landModeArmedOrActive, lsPushed]) => {
       return (
         landModeArmedOrActive &&
         fmgcPhase === FmgcFlightPhase.Approach &&
-        !lsPushed &&
-        hasGlide &&
-        hasLoc &&
+        !lsPushed && // TODO Check if LOC or G/S scales are invalid
         fwcPhase !== 8 &&
         fwcPhase !== 9 &&
         fwcPhase !== 10
@@ -793,8 +787,6 @@ class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     this.fmgcFlightPhase,
     this.landModeArmedOrActive,
     this.lsPushed,
-    this.hasLoc,
-    this.hasGlide,
   );
 
   onAfterRender(node: VNode): void {
@@ -804,7 +796,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
-        <text class="FontLarge Amber" x="98.339211" y="125.12898">
+        <text class="FontLargest Amber" x="99.33" y="124.8">
           {this.glsMlsFlsOrLocVnavInstalled.map((v) => (v ? 'LS' : 'ILS'))}
         </text>
       </FlashOneHertz>
