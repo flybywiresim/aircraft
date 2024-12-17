@@ -93,6 +93,7 @@
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWC] Add FCU faults - @tracernz (Mike)
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
+1. [PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
