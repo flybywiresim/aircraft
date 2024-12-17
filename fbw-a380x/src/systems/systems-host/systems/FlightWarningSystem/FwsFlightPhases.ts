@@ -1,6 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
-import { NXLogicConfirmNode, NXLogicMemoryNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429Register,
+  Arinc429RegisterSubject,
+  NXLogicConfirmNode,
+  NXLogicMemoryNode,
+  NXLogicTriggeredMonostableNode,
+} from '@flybywiresim/fbw-sdk';
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
@@ -95,6 +101,8 @@ export class FwsFlightPhases {
   _wasReach200ft: boolean;
 
   aircraft: Aircraft;
+
+  private readonly adrAltitude = Arinc429Register.empty();
 
   constructor(private fws: FwsCore) {
     // momentary
@@ -464,12 +472,11 @@ export class FwsFlightPhases {
     }
 
     // FIXME better altitude selection
-    const adrAltitude = SimVar.GetSimVarValue(
-      `L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_${this.fws.fwsNumber}`,
-      SimVarValueType.Number,
-    );
-    this.fws.fwsNumber;
-    const delta = Math.abs(adrAltitude - targetAltitude);
+    this.adrAltitude.setFromSimVar(`L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_${this.fws.fwsNumber}`);
+    if (!this.adrAltitude.isNormalOperation()) {
+      return;
+    }
+    const delta = Math.abs(this.adrAltitude.value - targetAltitude);
 
     if (delta < 200) {
       this._wasBellowThreshold = true;
@@ -499,7 +506,7 @@ export class FwsFlightPhases {
         this.fws.soundManager.enqueueSound('cChordOnce');
       }
     } else if (delta > 750 && this._wasInRange && !this._wasReach200ft) {
-      if (delta >= 750) {
+      if (delta > 750) {
         this.fws.soundManager.enqueueSound('cChordCont');
       } else {
         this.fws.soundManager.dequeueSound('cChordCont');
