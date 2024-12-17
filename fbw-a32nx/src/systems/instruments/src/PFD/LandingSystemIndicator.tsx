@@ -15,13 +15,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import {
-  ArincEventBus,
-  Arinc429RegisterSubject,
-  MathUtils,
-  Arinc429ConsumerSubject,
-  Arinc429Word,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, MathUtils, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
@@ -757,13 +751,15 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FcuBus & FgBus>();
 
+  private readonly glsMlsFlsOrLocVnavInstalled = Subject.create(false);
+
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
 
-  private readonly fmgcDiscreteWord2 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'), Arinc429Word.empty());
+  private readonly fmgcDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'));
 
-  private readonly fmgcDiscreteWord4 = ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'), Arinc429Word.empty());
+  private readonly fmgcDiscreteWord4 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'));
 
   private readonly landModeArmedOrActive = MappedSubject.create(
     ([fmgcDiscreteWord2, fmgcDiscreteWord4]) =>
@@ -809,7 +805,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
         <text class="FontLarge Amber" x="98.339211" y="125.12898">
-          LS
+          {this.glsMlsFlsOrLocVnavInstalled.map((v) => (v ? 'LS' : 'ILS'))}
         </text>
       </FlashOneHertz>
     );
