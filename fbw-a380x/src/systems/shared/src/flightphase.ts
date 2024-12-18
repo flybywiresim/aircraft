@@ -1,4 +1,5 @@
 import { VerticalMode } from '@shared/autopilot';
+import { getStartupState, StartupState } from '../../../../../fbw-common/src/systems/shared/src';
 
 export enum FmgcFlightPhase {
   Preflight,
@@ -12,7 +13,7 @@ export enum FmgcFlightPhase {
 }
 
 export function isReady(): boolean {
-  return SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') === 1;
+  return getStartupState() >= StartupState.InstrumentsInitialized;
 }
 
 export function isSlewActive(): boolean {

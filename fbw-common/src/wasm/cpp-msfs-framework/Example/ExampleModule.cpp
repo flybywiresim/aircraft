@@ -338,7 +338,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
 
-    LOG_DEBUG("A32NX_IS_READY = " + std::string(msfsHandler.getAircraftIsReadyVar() ? "true" : "false") +
+    LOG_DEBUG("A32NX_STARTUP_STATE = " + std::string(msfsHandler.getAircraftIsReadyVar()) +
               " A32NX_DEVELOPER_STATE = " + std::to_string(msfsHandler.getAircraftDevelopmentStateVar()));
 
 #ifdef CUSTOM_EVENT_EXAMPLE

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { getStartupState, StartupState } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 
 export enum FmgcFlightPhase {
@@ -16,7 +17,7 @@ export enum FmgcFlightPhase {
 }
 
 export function isReady(): boolean {
-  return SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') === 1;
+  return getStartupState() >= StartupState.InstrumentsInitialized;
 }
 
 export function isSlewActive(): boolean {
