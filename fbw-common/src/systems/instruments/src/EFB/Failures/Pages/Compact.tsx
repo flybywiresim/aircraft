@@ -15,7 +15,7 @@ interface FailureGroupProps {
 }
 
 const FailureGroup = ({ title, failures }: FailureGroupProps) => {
-  const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
+  const { activeFailures, activate, deactivate } = useFailuresOrchestrator();
   const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
   const getHighlightedTerm = (failureName: string) => {
@@ -44,7 +44,6 @@ const FailureGroup = ({ title, failures }: FailureGroupProps) => {
             key={failure.identifier}
             name={failure.name}
             isActive={activeFailures.has(failure.identifier)}
-            isChanging={changingFailures.has(failure.identifier)}
             highlightedTerm={getHighlightedTerm(failure.name)}
             onClick={() => handleFailureButtonClick(failure.identifier)}
             className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}

@@ -1,10 +1,9 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { AtaChapterNumber } from '../ata';
-import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
-import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
+import { GenericDataListenerSync } from '../GenericDataListenerSync';
 
 export interface Failure {
   ata: AtaChapterNumber;
@@ -20,23 +19,20 @@ export type FailureDefinition = [AtaChapterNumber, number, string];
  * Only a single instance of the orchestrator should exist within the whole application.
  */
 export class FailuresOrchestrator {
+  // FIXME replace with EventBus once EFB and RMP ported to avionics framework
+  // we can also then use SetSubject to simplify the rest of the code a bit
+  private readonly genericDataListener = new GenericDataListenerSync(
+    this.onDataListenerMessage.bind(this),
+    'FBW_FAILURE_REQUEST',
+  );
+
   private failures: Failure[] = [];
 
   private activeFailures = new Set<number>();
 
-  private changingFailures = new Set<number>();
+  private needSendFailures = true;
 
-  private activateFailureQueue: QueuedSimVarWriter;
-
-  private deactivateFailureQueue: QueuedSimVarWriter;
-
-  constructor(simVarPrefix: string, failures: FailureDefinition[]) {
-    this.activateFailureQueue = new QueuedSimVarWriter(
-      new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)),
-    );
-    this.deactivateFailureQueue = new QueuedSimVarWriter(
-      new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)),
-    );
+  constructor(failures: FailureDefinition[]) {
     failures.forEach((failure) => {
       this.failures.push({
         ata: failure[0],
@@ -44,31 +40,55 @@ export class FailuresOrchestrator {
         name: failure[2],
       });
     });
+
+    RegisterViewListener(
+      'JS_LISTENER_COMM_BUS',
+      (listener) => {
+        listener.on('FBW_FAILURE_REQUEST', () => (this.needSendFailures = true));
+        // better send in case we missed a request from a wasm consumer
+        this.needSendFailures = true;
+      },
+      true,
+    );
+  }
+
+  private sendFailuresToWasm(activeFailures: number[]): void {
+    Coherent.call('COMM_BUS_WASM_CALLBACK', 'FBW_FAILURE_UPDATE', JSON.stringify(activeFailures));
+  }
+
+  private sendFailuresToJs(activeFailures: number[]): void {
+    this.genericDataListener.sendEvent('FBW_FAILURE_UPDATE', activeFailures);
+  }
+
+  private onDataListenerMessage(topic: string): void {
+    if (topic === 'FBW_FAILURE_REQUEST') {
+      this.needSendFailures = true;
+    }
   }
 
   update() {
-    this.activateFailureQueue.update();
-    this.deactivateFailureQueue.update();
+    if (this.needSendFailures) {
+      this.needSendFailures = false;
+      const failures = Array.from(this.activeFailures);
+      this.sendFailuresToWasm(failures);
+      this.sendFailuresToJs(failures);
+    }
   }
 
   /**
    * Activates the failure with the given identifier.
    */
   async activate(identifier: number): Promise<void> {
-    this.changingFailures.add(identifier);
-    await this.activateFailureQueue.write(identifier);
-    this.changingFailures.delete(identifier);
     this.activeFailures.add(identifier);
+    this.needSendFailures = true;
   }
 
   /**
    * Deactivates the failure with the given identifier.
    */
   async deactivate(identifier: number): Promise<void> {
-    this.changingFailures.add(identifier);
-    await this.deactivateFailureQueue.write(identifier);
-    this.changingFailures.delete(identifier);
     this.activeFailures.delete(identifier);
+    this.needSendFailures = true;
   }
 
   /**
@@ -78,23 +98,11 @@ export class FailuresOrchestrator {
     return this.activeFailures.has(identifier);
   }
 
-  /**
-   * Determines whether or not the failure with the given identifier is currently
-   * changing its state between active and inactive.
-   */
-  isChanging(identifier: number): boolean {
-    return this.changingFailures.has(identifier);
-  }
-
   getAllFailures(): Readonly<Readonly<Failure>[]> {
     return this.failures;
   }
 
   getActiveFailures(): Set<number> {
     return new Set(this.activeFailures);
-  }
-
-  getChangingFailures(): Set<number> {
-    return new Set(this.changingFailures);
   }
 }

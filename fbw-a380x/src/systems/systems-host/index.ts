@@ -46,7 +46,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly hEventPublisher: HEventPublisher;
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   // TODO: Migrate PowerSupplyBusses, if needed
 
