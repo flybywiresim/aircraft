@@ -46,7 +46,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   // load has priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
     if (readIniFile) {
-      LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " is being loaded.");
+      LOG_INFO(fmt::format("LightingPresets_A32NX: Lighting Preset: {} is being loaded.", presetRequest));
     }
     // loading a preset happens over a number of frames to allow the animation to keep up
     // loadLightingPreset() returns true when the preset is fully loaded
@@ -54,7 +54,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     if (loadLightingPreset(presetRequest)) {
       readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
-      LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " successfully loaded.");
+      LOG_INFO(fmt::format("LightingPresets_A32NX: Lighting Preset: {} successfully loaded.", presetRequest));
     }
   } else if (saveLightingPresetRequest->getAsBool()) {
     saveLightingPreset(saveLightingPresetRequest->getAsInt64());
@@ -94,7 +94,7 @@ bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
     applyToAircraft();
     return finished;
   }
-  LOG_WARN("LightingPresets_A32NX: Loading Lighting Preset: " + std::to_string(loadPresetRequest) + " failed.");
+  LOG_WARN(fmt::format("LightingPresets_A32NX: Loading Lighting Preset: {} failed.", loadPresetRequest));
   return true;
 }
 
@@ -102,10 +102,10 @@ void LightingPresets::saveLightingPreset(INT64 savePresetRequest) {
   std::cout << "LightingPresets_A32NX: Save to Lighting Preset: " << savePresetRequest << std::endl;
   readFromAircraft();
   if (saveToStore(savePresetRequest)) {
-    LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(savePresetRequest) + " successfully saved.");
+    LOG_INFO(fmt::format("LightingPresets_A32NX: Lighting Preset: {} successfully saved.", savePresetRequest));
     return;
   }
-  LOG_WARN("LightingPresets_A32NX: Saving Lighting Preset: " + std::to_string(savePresetRequest) + " failed.");
+  LOG_WARN(fmt::format("LightingPresets_A32NX: Saving Lighting Preset: {} failed.", savePresetRequest));
 }
 
 bool LightingPresets::readFromStore(INT64 presetNr) {
@@ -117,13 +117,13 @@ bool LightingPresets::readFromStore(INT64 presetNr) {
     };
     readIniFile = false;
   }
-  loadFromIni(ini, "preset " + std::to_string(presetNr));
+  loadFromIni(ini, fmt::format("preset {}", presetNr));
   return true;
 }
 
 bool LightingPresets::saveToStore(INT64 presetNr) {
   // add/update iniSectionName
-  const std::string iniSectionName = "preset " + std::to_string(presetNr);
+  const std::string iniSectionName = fmt::format("preset {}", presetNr);
   saveToIni(ini, iniSectionName);
   return iniFile.write(ini, true);
 }
@@ -143,7 +143,7 @@ FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
     if (double result; input >> result) {
       return result;
     }
-    LOG_WARN("LightingPresets: reading ini value for [" + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
+    LOG_WARN(fmt::format("LightingPresets: reading ini value for [{}] {} = {} failed.", section, key, ini.get(section).get(key)));
   }
   return defaultValue;
 }
