@@ -94,6 +94,7 @@
 1. [A32NX/FWC] Add FCU faults - @tracernz (Mike)
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
+1. [A380X/MFD] Fix PERF APPR minimums input logic - @Pruznak (Pruznak)
 
 ## 0.12.0
 
