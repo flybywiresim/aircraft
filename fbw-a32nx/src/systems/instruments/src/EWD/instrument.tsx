@@ -14,6 +14,7 @@ import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/provider
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
+import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { PseudoFWC } from './PseudoFWC';
 
 import './style.scss';
@@ -35,6 +36,8 @@ class A32NX_EWD extends BaseInstrument {
 
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
+  private readonly a32nxFcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+
   private readonly pseudoFwc = new PseudoFWC(this.bus, this);
 
   constructor() {
@@ -45,6 +48,8 @@ class A32NX_EWD extends BaseInstrument {
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('adc', this.adcPublisher);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
+    this.backplane.addPublisher('A32NXFcuBus', this.a32nxFcuBusPublisher);
+
     this.backplane.addInstrument('Fwc', this.pseudoFwc);
   }
 

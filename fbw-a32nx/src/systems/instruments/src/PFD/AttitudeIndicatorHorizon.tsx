@@ -23,6 +23,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -443,11 +444,13 @@ class RadioAltAndDH extends DisplayComponent<{
 
   private altitude = new Arinc429Word(0);
 
-  private attDhText = FSComponent.createRef<SVGTextElement>();
+  private readonly attDhTextVisible = Subject.create(false);
 
   private radioAltText = Subject.create('0');
 
-  private radioAlt = FSComponent.createRef<SVGTextElement>();
+  private readonly radioAltVisible = Subject.create(true);
+
+  private readonly raFlagFlashing = Subject.create(false);
 
   private classSub = Subject.create('');
 
@@ -488,7 +491,7 @@ class RadioAltAndDH extends DisplayComponent<{
     sub.on('chosenRa').handle((ra) => {
       if (!this.props.attExcessive.get()) {
         this.radioAltitude = ra;
-        const raFailed = !this.radioAltitude.isFailureWarning();
+        const raNotFailed = !this.radioAltitude.isFailureWarning();
         const raHasData = !this.radioAltitude.isNoComputedData();
         const raValue = this.filteredRadioAltitude;
         const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
@@ -506,7 +509,7 @@ class RadioAltAndDH extends DisplayComponent<{
         let color = 'Amber';
 
         if (raHasData) {
-          if (raFailed) {
+          if (raNotFailed) {
             if (raValue < 2500) {
               if (raValue > 400 || (raValue > dh.value + 100 && DHValid)) {
                 color = 'Green';
@@ -523,16 +526,18 @@ class RadioAltAndDH extends DisplayComponent<{
               }
             }
           } else {
-            color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
+            color = 'Red';
             text = 'RA';
           }
         }
 
+        this.raFlagFlashing.set(!raNotFailed && belowTransitionAltitude);
+
         this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
-        if (raFailed && DHValid && raValue <= dh.value) {
-          this.attDhText.instance.style.visibility = 'visible';
+        if (raNotFailed && DHValid && raValue <= dh.value) {
+          this.attDhTextVisible.set(true);
         } else {
-          this.attDhText.instance.style.visibility = 'hidden';
+          this.attDhTextVisible.set(false);
         }
         this.radioAltText.set(text);
         this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
@@ -545,9 +550,9 @@ class RadioAltAndDH extends DisplayComponent<{
 
     this.props.attExcessive.sub((ae) => {
       if (ae) {
-        this.radioAlt.instance.style.visibility = 'hidden';
+        this.radioAltVisible.set(false);
       } else {
-        this.radioAlt.instance.style.visibility = 'visible';
+        this.radioAltVisible.set(true);
       }
     });
 
@@ -557,18 +562,22 @@ class RadioAltAndDH extends DisplayComponent<{
   render(): VNode {
     return (
       <g ref={this.daRaGroup} id="DHAndRAGroup">
-        <text
-          ref={this.attDhText}
-          id="AttDHText"
-          x="73.511879"
-          y="113.19068"
-          class="FontLargest Amber EndAlign Blink9Seconds TextOutline"
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.attDhTextVisible}>
+          <text id="AttDHText" x="73.511879" y="113.19068" class="FontLargest Amber EndAlign TextOutline">
+            DH
+          </text>
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={9}
+          visible={this.radioAltVisible}
+          flashing={this.raFlagFlashing}
         >
-          DH
-        </text>
-        <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub}>
-          {this.radioAltText}
-        </text>
+          <text id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub}>
+            {this.radioAltText}
+          </text>
+        </FlashOneHertz>
       </g>
     );
   }
@@ -590,7 +599,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   private slideSlip = FSComponent.createRef<SVGPathElement>();
 
-  private siFailFlag = FSComponent.createRef<SVGPathElement>();
+  private readonly siFlagVisible = Subject.create(false);
 
   private onGround = true;
 
@@ -684,10 +693,10 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
       (!this.onGround && this.latAcc.isFailureWarning() && this.beta.isFailureWarning())
     ) {
       this.slideSlip.instance.style.visibility = 'hidden';
-      this.siFailFlag.instance.style.display = 'block';
+      this.siFlagVisible.set(true);
     } else {
       this.slideSlip.instance.style.visibility = 'visible';
-      this.siFailFlag.instance.style.display = 'none';
+      this.siFlagVisible.set(false);
     }
 
     if (
@@ -720,15 +729,11 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
           class={this.classNameSub}
           d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
         />
-        <text
-          id="SIFailText"
-          ref={this.siFailFlag}
-          x="72.315376"
-          y="48.116844"
-          class="FontSmall Red Blink9Seconds EndAlign"
-        >
-          SI
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.siFlagVisible}>
+          <text id="SIFailText" x="72.315376" y="48.116844" class="FontSmall Red EndAlign">
+            SI
+          </text>
+        </FlashOneHertz>
       </g>
     );
   }
