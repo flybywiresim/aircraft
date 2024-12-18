@@ -2,12 +2,10 @@
 /* eslint-disable camelcase */
 import {
   Arinc429Register,
-  Arinc429RegisterSubject,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
-import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export enum FwcFlightPhase {
@@ -92,13 +90,15 @@ export class FwsFlightPhases {
 
   previousTargetAltitude: number;
 
-  _wasBellowThreshold: boolean;
+  _wasBelowThreshold: boolean;
 
   _wasAboveThreshold: boolean;
 
   _wasInRange: boolean;
 
   _wasReach200ft: boolean;
+
+  _cChordShortWasTriggered: boolean;
 
   aircraft: Aircraft;
 
@@ -152,7 +152,7 @@ export class FwsFlightPhases {
 
     // altitude warning
     this.previousTargetAltitude = NaN;
-    this._wasBellowThreshold = false;
+    this._wasBelowThreshold = false;
     this._wasAboveThreshold = false;
     this._wasInRange = false;
     this._wasReach200ft = false;
@@ -418,16 +418,16 @@ export class FwsFlightPhases {
       !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
       !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
     if (warningPressed === true) {
-      this._wasBellowThreshold = false;
+      this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;
+      this._cChordShortWasTriggered = false;
       this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
       return;
     }
 
     if (Simplane.getIsGrounded()) {
-      this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
     }
 
@@ -440,10 +440,11 @@ export class FwsFlightPhases {
     // Exit when selected altitude is being changed
     if (this.previousTargetAltitude !== targetAltitude) {
       this.previousTargetAltitude = targetAltitude;
-      this._wasBellowThreshold = false;
+      this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;
       this._wasReach200ft = false;
+      this._cChordShortWasTriggered = false;
       this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
       return;
@@ -462,10 +463,11 @@ export class FwsFlightPhases {
     const landingGearIsLockedDown = SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') > 0.9;
     const isTcasResolutionAdvisoryActive = SimVar.GetSimVarValue('L:A32NX_TCAS_STATE', 'Enum') > 1;
     if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown || isTcasResolutionAdvisoryActive) {
-      this._wasBellowThreshold = false;
+      this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;
       this._wasReach200ft = false;
+      this._cChordShortWasTriggered = false;
       this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
       return;
@@ -479,32 +481,38 @@ export class FwsFlightPhases {
     const delta = Math.abs(this.adrAltitude.value - targetAltitude);
 
     if (delta < 200) {
-      this._wasBellowThreshold = true;
+      this._wasBelowThreshold = true;
       this._wasAboveThreshold = false;
       this._wasReach200ft = true;
     }
     if (delta > 750) {
       this._wasAboveThreshold = true;
-      this._wasBellowThreshold = false;
+      this._wasBelowThreshold = false;
+      this._cChordShortWasTriggered = false;
     }
     if (delta >= 200 && delta <= 750) {
       this._wasInRange = true;
     }
 
-    if (this._wasBellowThreshold && this._wasReach200ft) {
+    const apEngaged =
+      SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_1_ACTIVE', 'Bool') ||
+      SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_2_ACTIVE', 'Bool');
+    if (this._wasBelowThreshold && this._wasReach200ft) {
       if (delta >= 200) {
         this.fws.soundManager.enqueueSound('cChordCont');
       } else {
         this.fws.soundManager.dequeueSound('cChordCont');
       }
-    } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
-      if (
-        !SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_1_ACTIVE', 'Bool') &&
-        !SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_2_ACTIVE', 'Bool')
-      ) {
-        this.fws.soundManager.dequeueSound('cChordCont');
-        this.fws.soundManager.enqueueSound('cChordOnce');
-      }
+    } else if (
+      this._wasAboveThreshold &&
+      delta <= 750 &&
+      !this._wasReach200ft &&
+      !this._cChordShortWasTriggered &&
+      !apEngaged
+    ) {
+      this._cChordShortWasTriggered = true;
+      this.fws.soundManager.dequeueSound('cChordCont');
+      this.fws.soundManager.enqueueSound('cChordOnce');
     } else if (delta > 750 && this._wasInRange && !this._wasReach200ft) {
       if (delta > 750) {
         this.fws.soundManager.enqueueSound('cChordCont');
