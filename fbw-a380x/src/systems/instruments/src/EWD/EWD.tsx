@@ -20,23 +20,26 @@ import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
+import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
+
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
-    ConsumerSubject.create(null, 0),
-    ConsumerSubject.create(null, 0),
-    ConsumerSubject.create(null, 0),
-    ConsumerSubject.create(null, 0),
+    ConsumerSubject.create(this.sub.on('engine_state_1'), 0),
+    ConsumerSubject.create(this.sub.on('engine_state_2'), 0),
+    ConsumerSubject.create(this.sub.on('engine_state_3'), 0),
+    ConsumerSubject.create(this.sub.on('engine_state_4'), 0),
   ];
 
   private readonly reverserSubs: ConsumerSubject<boolean>[] = [
-    ConsumerSubject.create(null, false),
-    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(this.sub.on('thrust_reverse_2'), false),
+    ConsumerSubject.create(this.sub.on('thrust_reverse_3'), false),
   ];
 
   private readonly reverserSelected = MappedSubject.create(SubscribableMapFunctions.or(), ...this.reverserSubs);
 
-  private readonly engSelectorPosition = ConsumerSubject.create(null, 0);
+  private readonly engSelectorPosition = ConsumerSubject.create(this.sub.on('eng_selector_position'), 0);
 
   private readonly engineRunningOrIgnitionOn = MappedSubject.create(
     ([eng1, eng2, eng3, eng4, engSelectorPosition]) => {
@@ -55,50 +58,38 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     Subject.create(false),
   ];
 
-  private readonly normalChecklistsVisible = ConsumerSubject.create(null, false);
+  private readonly normalChecklistsVisible = ConsumerSubject.create(this.sub.on('fws_show_normal_checklists'), false);
 
-  private readonly abnormalSensedVisible = ConsumerSubject.create(null, false);
+  private readonly abnormalSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_sensed'), false);
+
+  private readonly abnormalNonSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_non_sensed'), false);
 
   // Todo: This logic should be handled by the FADEC
   private readonly engFirePb: ConsumerSubject<boolean>[] = [
-    ConsumerSubject.create(null, false),
-    ConsumerSubject.create(null, false),
-    ConsumerSubject.create(null, false),
-    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_1'), false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_2'), false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_3'), false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_4'), false),
   ];
 
   private readonly memosLimitationVisible = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.normalChecklistsVisible,
     this.abnormalSensedVisible,
+    this.abnormalNonSensedVisible,
   );
 
-  private readonly abnormalDebugLine = ConsumerSubject.create(null, 0);
+  private readonly failurePendingIndicationRequested = ConsumerSubject.create(
+    this.sub.on('fws_show_failure_pending'),
+    false,
+  );
+
+  private readonly stsIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_sts_indication'), false);
+
+  private readonly advIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_adv_indication'), false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
-
-    this.engineStateSubs[0].setConsumer(sub.on('engine_state_1').whenChanged());
-    this.engineStateSubs[1].setConsumer(sub.on('engine_state_2').whenChanged());
-    this.engineStateSubs[2].setConsumer(sub.on('engine_state_3').whenChanged());
-    this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
-
-    this.engFirePb[0].setConsumer(sub.on('engine_fire_pb_1'));
-    this.engFirePb[1].setConsumer(sub.on('engine_fire_pb_2'));
-    this.engFirePb[2].setConsumer(sub.on('engine_fire_pb_3'));
-    this.engFirePb[3].setConsumer(sub.on('engine_fire_pb_4'));
-
-    this.reverserSubs[0].setConsumer(sub.on('thrust_reverse_2').whenChanged());
-    this.reverserSubs[1].setConsumer(sub.on('thrust_reverse_3').whenChanged());
-
-    this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
-
-    this.normalChecklistsVisible.setConsumer(sub.on('fws_show_normal_checklists').whenChanged());
-    this.abnormalSensedVisible.setConsumer(sub.on('fws_show_abn_sensed').whenChanged());
-
-    this.abnormalDebugLine.setConsumer(sub.on('abnormal_debug_line').whenChanged());
   }
 
   render(): VNode {
@@ -248,8 +239,31 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} abnormal={false} />
             <WdAbnormalSensedProcedures bus={this.props.bus} visible={this.abnormalSensedVisible} abnormal={true} />
-            <div class="StsArea" />
-            {/* Reserved for STS */}
+            <WdAbnormalNonSensedProcedures
+              bus={this.props.bus}
+              visible={this.abnormalNonSensedVisible}
+              abnormal={true}
+            />
+            <div class="StsArea">
+              <div
+                class="FailurePendingBox"
+                style={{ visibility: this.failurePendingIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+              >
+                FAILURE PENDING
+              </div>
+              <div
+                class="StsBox"
+                style={{ visibility: this.stsIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+              >
+                STS
+              </div>
+              <div
+                class="AdvBox"
+                style={{ visibility: this.advIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+              >
+                ADV
+              </div>
+            </div>
           </div>
         </div>
       </CdsDisplayUnit>

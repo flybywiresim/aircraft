@@ -11,7 +11,8 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -822,5 +823,15 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mENG\x1bm TYPE DISAGREE',
     sensed: true,
     items: [],
+  },
+  700900001: {
+    title: '\x1b<4m\x1b4mENG\x1bm RELIGHT IN FLIGHT',
+    sensed: false,
+    items: [], // TODO
+  },
+  700900002: {
+    title: '\x1b<4m\x1b4mENG\x1bm TAIL PIPE FIRE',
+    sensed: false,
+    items: [], // TODO
   },
 };
