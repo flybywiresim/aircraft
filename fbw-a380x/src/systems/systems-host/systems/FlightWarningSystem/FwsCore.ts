@@ -3914,13 +3914,14 @@ export class FwsCore {
               this.activeDeferredProceduresList.setValue(deferredKey, {
                 id: deferredKey,
                 procedureCompleted: false,
+                procedureActivated: false,
 
                 itemsChecked: deferredValue.whichItemsChecked
                   ? deferredValue.whichItemsChecked()
                   : Array(deferredValue.whichItemsChecked().length).fill(true),
                 itemsActive: deferredValue.whichItemsActive
                   ? deferredValue.whichItemsActive()
-                  : Array(deferredValue.whichItemsChecked().length).fill(true),
+                  : Array(deferredValue.whichItemsChecked().length).fill(false),
                 itemsToShow: deferredValue.whichItemsToShow
                   ? deferredValue.whichItemsToShow()
                   : Array(deferredValue.whichItemsChecked().length).fill(true),

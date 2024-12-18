@@ -118,6 +118,11 @@ export class ProcedureLinesGenerator {
   }
 
   moveUp() {
+    if (!this.checklistState.procedureActivated) {
+      this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
+      return;
+    }
+
     const selectable = this.selectableItems(true);
 
     if (selectable.length === 0) {
@@ -128,7 +133,6 @@ export class ProcedureLinesGenerator {
       this.selectedItemIndex.set(SPECIAL_INDEX_NORMAL_CL_COMPLETE);
     } else if (
       sii === SPECIAL_INDEX_DEFERRED_PROC_COMPLETE ||
-      sii === SPECIAL_INDEX_DEFERRED_PROC_RECALL ||
       sii === SPECIAL_INDEX_NORMAL_CL_COMPLETE ||
       sii === SPECIAL_INDEX_CLEAR
     ) {
@@ -151,6 +155,11 @@ export class ProcedureLinesGenerator {
   }
 
   moveDown(skipCompletedSensed = true) {
+    if (!this.checklistState.procedureActivated) {
+      this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
+      return;
+    }
+
     const numItems = this.checklistState.itemsToShow.length;
     const selectable = this.selectableItems(skipCompletedSensed);
     if (selectable.length == 0 || this.selectedItemIndex.get() >= selectable[selectable.length - 1]) {
@@ -161,9 +170,9 @@ export class ProcedureLinesGenerator {
         this.selectedItemIndex.set(SPECIAL_INDEX_CLEAR);
       } else if (this.type === ProcedureType.Deferred) {
         this.selectedItemIndex.set(
-          !this.checklistState.procedureCompleted || !this.checklistState.procedureActivated
-            ? SPECIAL_INDEX_DEFERRED_PROC_COMPLETE
-            : SPECIAL_INDEX_DEFERRED_PROC_RECALL,
+          this.checklistState.procedureCompleted
+            ? SPECIAL_INDEX_DEFERRED_PROC_RECALL
+            : SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
         );
       }
     } else {
@@ -213,11 +222,31 @@ export class ProcedureLinesGenerator {
       clState.itemsChecked = clState.itemsChecked.map((val, index) => (this.items[index].sensed ? val : false));
       this.procedureClearedOrResetCallback(clState);
       this.selectFirst();
+    } else if (this.sii === SPECIAL_INDEX_ACTIVATE) {
+      clState.procedureActivated = true;
+      this.procedureClearedOrResetCallback(clState);
+      this.selectFirst();
+    } else if (this.sii === SPECIAL_INDEX_DEFERRED_PROC_COMPLETE) {
+      clState.procedureCompleted = true;
+      this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_RECALL);
+      this.procedureClearedOrResetCallback(clState);
+    } else if (this.sii === SPECIAL_INDEX_DEFERRED_PROC_RECALL) {
+      clState.procedureCompleted = false;
+      this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_COMPLETE);
+      this.procedureClearedOrResetCallback(clState);
     }
     this.checklistState = clState;
   }
 
   selectFirst() {
+    if (!this.checklistState.procedureActivated) {
+      this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
+      return;
+    } else if (this.type === ProcedureType.Deferred && this.checklistState.procedureCompleted) {
+      this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_RECALL);
+      return;
+    }
+
     const selectableAndNotChecked = this.selectableItems(false);
     this.selectedItemIndex.set(
       selectableAndNotChecked[0] !== undefined
@@ -229,7 +258,7 @@ export class ProcedureLinesGenerator {
 
   private selectableItems(skipCompletedSensed: boolean) {
     return this.procedure.items
-      .map((_, index) => (this.itemIsSelectable(index, skipCompletedSensed) ? index : null))
+      .map((_, index: number) => (this.itemIsSelectable(index, skipCompletedSensed) ? index : null))
       .filter((v) => v !== null);
   }
 
@@ -297,7 +326,7 @@ export class ProcedureLinesGenerator {
         });
       }
 
-      if (isDeferred) {
+      if (isDeferred && !this.checklistState.procedureCompleted) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: true,
@@ -307,12 +336,15 @@ export class ProcedureLinesGenerator {
           style: ChecklistLineStyle.ChecklistItem,
           firstLine: false,
           lastLine: false,
-          originalItemIndex: -1,
+          originalItemIndex: SPECIAL_INDEX_ACTIVATE,
         });
       }
 
       this.items.forEach((item, itemIndex) => {
-        if (isAbnormal && !this.checklistState.itemsToShow[itemIndex]) {
+        if (
+          (isAbnormal && !this.checklistState.itemsToShow[itemIndex]) ||
+          (isDeferred && this.checklistState.procedureCompleted)
+        ) {
           return;
         }
 
@@ -414,18 +446,7 @@ export class ProcedureLinesGenerator {
           originalItemIndex: SPECIAL_INDEX_NORMAL_RESET,
         });
       } else if (isDeferred) {
-        if (!this.checklistState.procedureCompleted || !this.checklistState.procedureActivated) {
-          lineData.push({
-            activeProcedure: true,
-            sensed: false,
-            checked: this.checklistState.procedureCompleted ?? false,
-            text: `${'\xa0'.repeat(17)}DEFERRED PROC COMPLETE`,
-            style: ChecklistLineStyle.ChecklistItem,
-            firstLine: false,
-            lastLine: true,
-            originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
-          });
-        } else {
+        if (this.checklistState.procedureCompleted) {
           lineData.push({
             activeProcedure: true,
             sensed: false,
@@ -435,6 +456,19 @@ export class ProcedureLinesGenerator {
             firstLine: false,
             lastLine: true,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_RECALL,
+          });
+        } else {
+          lineData.push({
+            activeProcedure: true,
+            sensed: false,
+            checked: this.checklistState.procedureCompleted ?? false,
+            text: `${'\xa0'.repeat(17)}DEFERRED PROC COMPLETE`,
+            style: this.checklistState.procedureActivated
+              ? ChecklistLineStyle.ChecklistItem
+              : ChecklistLineStyle.ChecklistItemInactive,
+            firstLine: false,
+            lastLine: true,
+            originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
           });
         }
       }

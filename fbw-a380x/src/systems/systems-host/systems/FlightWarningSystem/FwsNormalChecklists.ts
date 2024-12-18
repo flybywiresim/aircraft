@@ -114,6 +114,12 @@ export class FwsNormalChecklists {
             (newState) => {
               this.fws.activeDeferredProceduresList.setValue(key, newState);
             },
+            (newState) => {
+              this.fws.activeDeferredProceduresList.setValue(key, newState);
+            },
+            (newState) => {
+              this.fws.activeDeferredProceduresList.setValue(key, newState);
+            },
           );
           this.deferredProcedures.push(procGen);
         });

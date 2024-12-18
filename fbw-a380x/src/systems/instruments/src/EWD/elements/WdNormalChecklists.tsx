@@ -130,7 +130,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         abnormalProcedure: true,
         sensed: true,
         checked: false,
-        text: `\x1b4m${clState.procedureCompleted ? '\x1b<4m' : ''}${EcamNormalProcedures[parseInt(clState.id)].title} \x1bm`,
+        text: `\x1b4m${clState.procedureCompleted ? '' : '\x1b<4m'}${EcamNormalProcedures[parseInt(clState.id)].title} \x1bm`,
         style: ChecklistLineStyle.Headline,
         firstLine: true,
         lastLine: false,
