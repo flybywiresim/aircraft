@@ -658,8 +658,6 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
 
-  private readonly glsMlsFlsOrLocVnavInstalled = Subject.create(true);
-
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
@@ -700,7 +698,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
   render(): VNode {
     return (
       <text class="FontLargest Amber Blink9Seconds" x="104.33" y="124.8" ref={this.lsReminder}>
-        {this.glsMlsFlsOrLocVnavInstalled.map((v) => (v ? 'LS' : 'ILS'))}
+        LS
       </text>
     );
   }
