@@ -26,8 +26,9 @@ impl BypassPin {
         }
     }
     pub fn update(&mut self, fbw_tug: &impl Pushback) {
-        self.bypass_pin_inserted =
-            fbw_tug.is_nose_wheel_steering_pin_inserted() || self.gsx_pin_inserted || self.siai_pin_inserted;
+        self.bypass_pin_inserted = fbw_tug.is_nose_wheel_steering_pin_inserted()
+            || self.gsx_pin_inserted
+            || self.siai_pin_inserted;
     }
 
     pub fn is_nose_wheel_steering_pin_inserted(&self) -> bool {
