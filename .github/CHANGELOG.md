@@ -82,6 +82,7 @@
 1. [A32NX] Fixed appearance of FCU decals on MSFS2024 - @tracernz (Mike)
 1. [FMS] Fixed issue with airport loading timing out on MSFS2024 - @tracernz (Mike)
 1. [A32NX] Fixed APU fire detection - @tracernz (Mike)
+1. [MSFS2024] Fix systems initialization behavior for MSFS2024 - @flogross89 (floridude)
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 1. [A32NX/EWD] Corrected fuel flow step to 20kg/40lbs per hour - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)

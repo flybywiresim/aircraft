@@ -35,9 +35,16 @@
 
 ## Uncategorized
 
-- A32NX_IS_READY
+- A32NX_STARTUP_STATE
     - Bool
-    - Indicates that the JavaScript part is ready
+    - Indicates the startup state of the aircraft systems
+    - State | Value
+            --- | ---
+      Uninitialized | 0
+      FltFileLoaded | 1
+      ExtrasHostInitialized | 2
+      InstrumentsInitialized | 3
+      WasmInitialized | 4
 
 - A32NX_IS_STATIONARY
     - Bool
@@ -48,19 +55,19 @@
     - Bool
     - Indicates if any GND equipment is visible or not
 
-- A32NX_START_STATE
+- A32NX_FLT_INIT_STATE
     - Enum
     - Indicates the state in which MSFS started
     - State | Value
             --- | ---
-      Hangar | 1
-      Apron | 2
-      Taxi | 3
-      Runway | 4
-      Climb | 5
-      Cruise | 6
-      Approach | 7
-      Final | 8
+      Hangar | 0
+      Apron | 1
+      Taxi | 2
+      Runway | 3
+      Climb | 4
+      Cruise | 5
+      Approach | 6
+      Final | 7
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM

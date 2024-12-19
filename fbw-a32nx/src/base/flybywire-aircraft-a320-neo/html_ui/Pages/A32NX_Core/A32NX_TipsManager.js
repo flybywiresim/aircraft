@@ -52,7 +52,7 @@ class A32NX_TipsManager {
 
     checkAssistenceConfiguration() {
         // only check when actually flying, otherwise return
-        if (SimVar.GetSimVarValue("L:A32NX_IS_READY", "Number") !== 1) {
+        if (SimVar.GetSimVarValue('L:A32NX_STARTUP_STATE', 'number') >= 3) {
             this.wasAnyAssistanceActive = false;
             return;
         }

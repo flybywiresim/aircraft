@@ -136,9 +136,7 @@ impl HeadingControlFunction {
     }
 
     fn should_reset(&self, context: &UpdateContext) -> bool {
-        !self.heading_refresh_is_valid()
-            || context.is_sim_initialiazing()
-            || !context.is_sim_ready()
+        !self.heading_refresh_is_valid() || context.is_sim_initializing() || !context.is_sim_ready()
     }
 
     pub fn update(
