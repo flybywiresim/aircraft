@@ -73,6 +73,9 @@
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
+1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
+1. [A380X/FWS] Improve landing capability downgrade triple click logic (#9008) - @flogross89 (floridude)
+1. [A32NX/FWS] Add "auto brake off" callout, improve AP/ATHR disconnect aural alert logic - @flogross89 (floridude)
 1. [A32NX/FCU] The FCU LCD is now still visible with ambient light when the backlight is off @tracernz (Mike)
 1. [A380X/FMC] Fix reset of perf data on done phase or database swap - @tracernz (Mike)
 1. [A32NX/ATC] Fixed ATC/TCAS power supply - @tracernz (Mike)
@@ -94,6 +97,7 @@
 1. [A32NX/FWC] Add FCU faults - @tracernz (Mike)
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
+1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
 1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
 
 ## 0.12.0
