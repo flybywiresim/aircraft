@@ -116,6 +116,7 @@ export class SimBriefUplinkAdapter {
   static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
     fms: DataInterface & DisplayInterface,
     flightPlanService: FlightPlanService<P>,
+    intoPlan: number,
     ofp: ISimbriefData,
     options: SimBriefUplinkOptions,
   ) {
@@ -470,7 +471,7 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {

@@ -93,11 +93,13 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
     await this.flightPlan.flushOperationQueue();
   }
 
-  clone(forPlan: BaseFlightPlan): DepartureSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): DepartureSegment {
     const newSegment = new DepartureSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.originDeparture = this.originDeparture;
 
     return newSegment;
