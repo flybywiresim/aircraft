@@ -98,6 +98,7 @@
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
 1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
 
 ## 0.12.0
 
