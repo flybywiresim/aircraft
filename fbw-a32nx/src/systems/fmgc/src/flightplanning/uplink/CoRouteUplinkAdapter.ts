@@ -10,9 +10,9 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix, Airway } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
-import { DataInterface } from '../interface/DataInterface';
+import { FmsDataInterface } from '../interface/FmsDataInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 
 export interface OfpRoute {
@@ -104,7 +104,7 @@ type CoRoute = {
 
 export class CoRouteUplinkAdapter {
   static async uplinkFlightPlanFromCoRoute(
-    fms: DataInterface & DisplayInterface,
+    fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService,
     ofp: CoRoute,
   ) {
