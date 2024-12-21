@@ -1353,6 +1353,7 @@ const getBC3Message = (
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
+  const isVerticalModeVsFpa = activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA;
 
   let text: string;
   let className: string;
@@ -1391,20 +1392,12 @@ const getBC3Message = (
   } else if (false) {
     text = 'EXIT MISSED';
     className = 'White';
-  } else if (
-    (activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA) &&
-    (selectedFpa > 0 || selectedVs > 0) &&
-    selectedAltitude < baroCorrectedAltitude
-  ) {
+  } else if (isVerticalModeVsFpa && (selectedFpa > 0 || selectedVs > 0) && selectedAltitude < baroCorrectedAltitude) {
     text = 'FCU ALT BELOW A/C';
     className = 'FontMediumSmaller  White';
-  } else if (
-    (activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA) &&
-    (selectedFpa < 0 || selectedVs < 0) &&
-    selectedAltitude > baroCorrectedAltitude
-  ) {
+  } else if (isVerticalModeVsFpa && (selectedFpa < 0 || selectedVs < 0) && selectedAltitude > baroCorrectedAltitude) {
     text = 'FCU ALT ABOVE A/C';
-    className = 'FontMediumSmaller DisappearAfter10Seconds White';
+    className = 'DisappearAfter10Seconds FontMediumSmaller White';
   } else {
     return [null, null];
   }
