@@ -12,6 +12,7 @@ import {
 import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
@@ -63,6 +64,14 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private trkFpaDeselected = Subject.create(false);
 
+  private baroCorrectedAltitude = Subject.create(0);
+
+  private selectedFpa = Subject.create(0);
+
+  private selectedVs = Subject.create(0);
+
+  private selectedAltitude = Subject.create(0);
+
   private firstBorderRef = FSComponent.createRef<SVGPathElement>();
 
   private secondBorderRef = FSComponent.createRef<SVGPathElement>();
@@ -83,6 +92,11 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
         this.tdReached,
+        this.baroCorrectedAltitude.get(),
+        this.selectedFpa.get(),
+        this.selectedVs.get(),
+        this.selectedAltitude.get(),
+        this.activeVerticalMode,
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -115,7 +129,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -173,6 +187,39 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       .whenChanged()
       .handle((tdr) => {
         this.tdReached = tdr;
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('altitudeAr')
+      .whenChanged()
+      .handle((alt) => {
+        this.baroCorrectedAltitude.set(alt.value);
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('selectedFpa')
+      .whenChanged()
+      .withPrecision(1)
+      .handle((fpa) => {
+        this.selectedFpa.set(fpa);
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('selectedVs')
+      .whenChanged()
+      .handle((vs) => {
+        this.selectedVs.set(vs);
+        this.handleFMABorders();
+      });
+
+    sub
+      .on('selectedAltitude')
+      .whenChanged()
+      .handle((selAlt) => {
+        this.selectedAltitude.set(selAlt);
         this.handleFMABorders();
       });
   }
@@ -916,7 +963,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       });
 
     sub
-      .on('apVsSelected')
+      .on('selectedVs')
       .whenChanged()
       .handle((svs) => {
         this.selectedVS = svs;
@@ -1298,6 +1345,11 @@ const getBC3Message = (
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
   tdReached: boolean,
+  baroCorrectedAltitude: number,
+  selectedFpa: number,
+  selectedVs: number,
+  selectedAltitude: number,
+  activeVerticalMode: number,
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
@@ -1339,6 +1391,20 @@ const getBC3Message = (
   } else if (false) {
     text = 'EXIT MISSED';
     className = 'White';
+  } else if (
+    (activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA) &&
+    (selectedFpa > 0 || selectedVs > 0) &&
+    selectedAltitude < baroCorrectedAltitude
+  ) {
+    text = 'FCU ALT BELOW A/C';
+    className = 'FontMedium  White';
+  } else if (
+    (activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA) &&
+    (selectedFpa < 0 || selectedVs < 0) &&
+    selectedAltitude > baroCorrectedAltitude
+  ) {
+    text = 'FCU ALT ABOVE A/C';
+    className = 'FontMedium DisappearAfter10Seconds White';
   } else {
     return [null, null];
   }
@@ -1363,6 +1429,16 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private tdReached = false;
 
+  private baroCorrectedAltitude = 0;
+
+  private selectedFpa = 0;
+
+  private selectedVs = 0;
+
+  private selectedAltitude = 0;
+
+  private activeVerticalMode = 0;
+
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
       this.isAttExcessive,
@@ -1371,6 +1447,11 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
+      this.baroCorrectedAltitude,
+      this.selectedFpa,
+      this.selectedVs,
+      this.selectedAltitude,
+      this.activeVerticalMode,
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1383,7 +1464,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
     this.props.isAttExcessive.sub((e) => {
       this.isAttExcessive = e;
@@ -1428,6 +1509,43 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       .handle((tdr) => {
         this.tdReached = tdr;
         this.fillBC3Cell();
+      });
+
+    sub
+      .on('altitudeAr')
+      .whenChanged()
+      .handle((alt) => {
+        this.baroCorrectedAltitude = alt.value;
+        this.fillBC3Cell();
+      });
+
+    sub
+      .on('selectedFpa')
+      .whenChanged()
+      .withPrecision(1)
+      .handle((fpa) => {
+        this.selectedFpa = fpa;
+      });
+
+    sub
+      .on('selectedVs')
+      .whenChanged()
+      .handle((vs) => {
+        this.selectedVs = vs;
+      });
+
+    sub
+      .on('selectedAltitude')
+      .whenChanged()
+      .handle((selAlt) => {
+        this.selectedAltitude = selAlt;
+      });
+
+    sub
+      .on('activeVerticalMode')
+      .whenChanged()
+      .handle((mode) => {
+        this.activeVerticalMode = mode;
       });
   }
 
