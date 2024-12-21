@@ -94,8 +94,8 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [86_850, 2918],
     [89_000, 3000],
     [90_700, 3180],
-    [98_900, 3800],
-    [107_000, 5000],
+    [101_700, 3800],
+    [108_000, 5000],
   ]);
 
   /** CONF 2 runway limited weights at sea level/ISA/0 slope/no bleed/fwd cg/no wind/dry, MTOW [kg], runway length [metres] => lookup key = (runway length) */
@@ -109,10 +109,10 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [85_500, 2459],
     [87_300, 2709],
     [88_000, 2879],
-    [90_000, 3180],
-    [92_900, 3600],
-    [96_600, 3800],
-    [97_500, 3900],
+    [88_120, 2987],
+    [95_600, 3600],
+    [97_200, 3800],
+    [97_900, 3900],
     [106_000, 5000],
   ]);
 
@@ -122,13 +122,13 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
     [60_200, 1219],
     [72_600, 1604],
     [79_900, 1959],
-    [82_200, 2134],
-    [83_200, 2239],
+    [83_200, 2134],
+    [83_500, 2239],
     [85_100, 2459],
-    [86_800, 2709],
-    [87_400, 2839],
-    [91_300, 3180],
-    [97_800, 3800],
+    [87_800, 2709],
+    [88_800, 2839],
+    [91_700, 3180],
+    [97_600, 3800],
     [105_000, 5000],
   ]);
 
@@ -150,7 +150,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly runwayTemperatureFactor: Record<number, [number, number, number, number, number, number]> = {
     1: [0.00001, 0.095175, 0.000207, 0.040242, 0.00024, 0.066189],
     2: [-0.00001, 0.131948, 0.000155, 0.162938, 0.000225, 0.150363],
-    3: [-0.0000438, 0.198845, 0.000188, 0.14547, 0.000247, 0.143393],
+    3: [-0.0000438, 0.198845, 0.000188, 0.14547, 0.0002, 0.232529],
   };
 
   /** Headwind factors for each takeoff config. */
@@ -164,7 +164,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly runwayTailWindFactor: Record<number, [number, number, number, number]> = {
     1: [0.000065, -0.684701, 0.00498, 0.0808],
     2: [0.000198, -1.017, 0.00711, 0.009],
-    3: [0.000271, -1.1506, 0.0078, 0.00875],
+    3: [0.000271, -1.11506, 0.0078, 0.00875],
   };
 
   /** Segment segment weight factors for each takeoff config. */
@@ -195,7 +195,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   > = {
     1: [0.000025, 0.001, 0.000155, 0.211445, 0.000071, 0.556741],
     2: [0.0000121, 0.042153, 0.0001256, 0.325925, 0.000082, 0.546259],
-    3: [-0.0000294, 0.13903, 0.0000693, 0.480536, 0.000103, 0.499618],
+    3: [-0.0000294, 0.13903, 0.0000693, 0.480536, 0.000133, 0.480536],
   };
 
   /** Headwind factors for each takeoff config. */
@@ -249,14 +249,14 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Tailwind factors for each takeoff config. */
   private static readonly brakeEnergyTailWindFactor: Record<number, [number, number, number, number]> = {
-    1: [0.00117, -0.8024, 0.0117879, 0.006667],
-    2: [-0.000157, 0.849, 0.0066818, 0.006667],
-    3: [-0.00013, 0.6946, 0.0068333, 0.006667],
+    1: [0.000117, -0.8024, 0.0117879, 0.006667],
+    2: [0.000157, -0.849, 0.0066818, 0.006667],
+    3: [0.00013, -0.6946, 0.0068333, 0.006667],
   };
 
   /** Segment segment weight factors for each takeoff config. */
   private static readonly vmcgBaseFactor: Record<number, [number, number]> = {
-    1: [0.06722, -23.463],
+    1: [0.0644, -19.526],
     2: [0.082005, -39.27],
     3: [0.0704, -25.6868],
   };
@@ -270,14 +270,14 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Pressure altitude factors for each takeoff config. */
   private static readonly vmcgPressureAltFactor: Record<number, [number, number]> = {
-    1: [1.123e-6, 0.000136],
+    1: [-8.35e-7, 0.00589],
     2: [-7.58e-7, 0.00703],
-    3: [1.95e-7, 0.000266],
+    3: [1.95e-7, 0.00266],
   };
 
   /** Temperature factors for each takeoff config. */
   private static readonly vmcgTemperatureFactor: Record<number, [number, number, number, number, number, number]> = {
-    1: [-0.0016, 2.489, 0.000699, -0.128144, -0.000718, 1.8103],
+    1: [-0.00133, 2.104, 0.000699, -0.128144, -0.000718, 1.8103],
     2: [-0.00097, 1.613, 0.000242, 0.462005, -0.000547, 1.603],
     3: [-0.000923, 1.6087, 0.00061, 0.002239, -0.000335, 1.2716],
   };
@@ -294,7 +294,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** Tailwind factors for each takeoff config. */
   private static readonly vmcgTailWindFactor: Record<number, [number, number, number, number, number, number]> = {
-    1: [0.00161, -4.7535, -0.000106, 0.145473, 0.031431, -0.0356],
+    1: [0.00218, -5.489, -0.000106, 0.145473, 0.031431, -0.0356],
     2: [0.001892, -5.646, -0.000059, 0.079539, 0.009948, -0.010763],
     3: [0.000613, -3.165, -0.000022, 0.020622, 0.049286, -0.0396],
   };
@@ -916,7 +916,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
     1: [-0.009368, 186.79],
     2: [0.02346, 68.33],
-    3: [0.015504, 101.09],
+    3: [0.022112, 83.141],
   };
 
   private static readonly v2SecondSegBrakeBaseTable1: Record<number, [number, number]> = {
@@ -928,7 +928,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly v2SecondSegBrakeBaseTable2: Record<number, [number, number]> = {
     1: [0.63964, 102.127],
     2: [0.692636, 92.9863],
-    3: [0.9379, 75.879],
+    3: [0.859926, 82.4377],
   };
 
   private static readonly v2SecondSegBrakeRunwayTable1: Record<number, [number, number]> = {

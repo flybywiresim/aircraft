@@ -112,7 +112,7 @@ class Polynomial_A32NX {
    */
   static double startFF(double fbwN2, double idleN2, double idleFF) {
     const double normalN2 = fbwN2 / idleN2;
-    double normalFF = 0;
+    double       normalFF = 0;
 
     // If the normalized N2 percentage is less than or equal to 0.37, the FF is 0.
     if (normalN2 <= 0.37) {
@@ -152,7 +152,6 @@ class Polynomial_A32NX {
   static double startEGT(double fbwN2, double idleN2, double ambientTemp, double idleEGT) {
     // Normalize the current N2 percentage by dividing it with the idle N2 percentage.
     const double normalizedN2 = fbwN2 / idleN2;
-
 
     // Calculate the normalized EGT value based on the normalized N2 value
     double normalizedEGT;
@@ -255,8 +254,8 @@ class Polynomial_A32NX {
     // data or a mathematical model of the engine's behavior.
     // The choice to use different decay rates and steady state temperatures based on the previous
     // EGT suggests that the engine's shutdown behavior changes at this threshold.
-    double threshold = ambientTemp + 140;
-    double decayRate = previousEGT > threshold ? 0.0257743 : 0.00072756;
+    double threshold       = ambientTemp + 140;
+    double decayRate       = previousEGT > threshold ? 0.0257743 : 0.00072756;
     double steadyStateTemp = previousEGT > threshold ? 135 + ambientTemp : 30 + ambientTemp;
     return steadyStateTemp + (previousEGT - steadyStateTemp) * exp(-decayRate * deltaTime);
   }
@@ -380,9 +379,9 @@ class Polynomial_A32NX {
   static double oilTemperature(double thermalEnergy, double previousOilTemp, double maxOilTemperature, double deltaTime) {
     // these constants are likely derived from empirical data or a mathematical model of the engine's behavior
     // they were not documented in the original code, and their names here are inferred from their usage
-    const double heatTransferCoefficient = 0.001;
-    const double energyScalingFactor = 0.002;
-    const double temperatureThreshold = 10;
+    const double heatTransferCoefficient  = 0.001;
+    const double energyScalingFactor      = 0.002;
+    const double temperatureThreshold     = 10;
     const double temperatureScalingFactor = 0.999997;
 
     const double changeInThermalEnergy = thermalEnergy * deltaTime * energyScalingFactor;

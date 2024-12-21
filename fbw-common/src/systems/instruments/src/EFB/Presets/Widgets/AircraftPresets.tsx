@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
-import { Toggle, t, ScrollableContainer, PromptModal, useModals } from '@flybywiresim/flypad';
+import { PromptModal, ScrollableContainer, t, Toggle, useModals } from '@flybywiresim/flypad';
 
 import { useViewListenerEvent } from '../../Utils/listener';
 
@@ -69,6 +69,15 @@ export const AircraftPresets = () => {
     setLoadPresetVar(0);
   };
 
+  useEffect(() => {
+    setLoadPresetProgress(0.0);
+    if (loadPresetVar === 0) {
+      console.log('AircraftPresets: Loading preset finished or cancelled');
+    } else {
+      console.log(`AircraftPresets: Loading preset: ${loadPresetVar} ${AircraftPresetsList[loadPresetVar - 1].name}`);
+    }
+  }, [loadPresetVar]);
+
   return (
     <div className="mt-4 h-content-section-reduced space-y-4 rounded-lg border-2 border-theme-accent p-4">
       <div className="flex h-20 flex-row items-center justify-center space-x-2 rounded-md border-2 border-theme-accent p-2">
@@ -76,7 +85,7 @@ export const AircraftPresets = () => {
           <>
             <div className="h-full w-full content-center justify-center overflow-hidden rounded-md bg-theme-accent">
               <span className="h-1/2 pl-3 pt-1 text-xl">
-                {t('Presets.AircraftStates.CurrentProcedureStep')}: {currentStepDescription}
+                {t('Presets.AircraftStates.CurrentProcedureStep')} : {currentStepDescription}
               </span>
               <div
                 className="h-1/2 bg-theme-highlight"

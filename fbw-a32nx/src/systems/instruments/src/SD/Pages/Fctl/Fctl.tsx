@@ -151,7 +151,7 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
   const hydraulicAvailableClass =
     thsPositionToUse.isNormalOperation() && (hydraulics.G.available || hydraulics.Y.available) ? 'Green' : 'Amber';
 
-  const thsJam = fcdcDiscreteWord2.getBitValueOr(27, false);
+  const thsJam = fcdcDiscreteWord2.bitValueOr(27, false);
 
   return (
     <SvgGroup x={x} y={y}>
@@ -234,12 +234,12 @@ const RudderTrim = () => {
   const fac2DiscreteWord2 = useArinc429Var('L:A32NX_FAC_2_DISCRETE_WORD_2');
 
   const anyTrimEngaged =
-    fac1DiscreteWord2.getBitValueOr(13, false) ||
-    fac1DiscreteWord2.getBitValueOr(14, false) ||
-    fac2DiscreteWord2.getBitValueOr(13, false) ||
-    fac2DiscreteWord2.getBitValueOr(14, false);
+    fac1DiscreteWord2.bitValueOr(13, false) ||
+    fac1DiscreteWord2.bitValueOr(14, false) ||
+    fac2DiscreteWord2.bitValueOr(13, false) ||
+    fac2DiscreteWord2.bitValueOr(14, false);
 
-  const facSourceForTrim = fac2DiscreteWord2.getBitValueOr(13, false) ? 2 : 1;
+  const facSourceForTrim = fac2DiscreteWord2.bitValueOr(13, false) ? 2 : 1;
   const trimPosWord = useArinc429Var(`L:A32NX_FAC_${facSourceForTrim}_RUDDER_TRIM_POS`);
 
   return (
@@ -269,12 +269,12 @@ const RudderTravelLimit = () => {
   const fac2DiscreteWord2 = useArinc429Var('L:A32NX_FAC_2_DISCRETE_WORD_2');
 
   const anyTluEngaged =
-    fac1DiscreteWord2.getBitValueOr(15, false) ||
-    fac1DiscreteWord2.getBitValueOr(16, false) ||
-    fac2DiscreteWord2.getBitValueOr(15, false) ||
-    fac2DiscreteWord2.getBitValueOr(16, false);
+    fac1DiscreteWord2.bitValueOr(15, false) ||
+    fac1DiscreteWord2.bitValueOr(16, false) ||
+    fac2DiscreteWord2.bitValueOr(15, false) ||
+    fac2DiscreteWord2.bitValueOr(16, false);
 
-  const facSourceForTlu = fac2DiscreteWord2.getBitValueOr(15, false) ? 2 : 1;
+  const facSourceForTlu = fac2DiscreteWord2.bitValueOr(15, false) ? 2 : 1;
   const rtluPosWord = useArinc429Var(`L:A32NX_FAC_${facSourceForTlu}_RUDDER_TRAVEL_LIMIT_COMMAND`);
   const rtluDisplayAngle = rtluPosWord.value + 2;
 
@@ -333,13 +333,13 @@ const Aileron = ({
   const cursorPath = `M0 57 l${side === 'right' ? '-' : ''}15 -9 l0 18Z`;
 
   const aileronDeflectPctNormalized = (aileronDeflection.valueOr(0) * 68.5) / 25;
-  const servcontrol1Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 11 : 13);
-  const servcontrol2Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 12 : 14);
+  const servcontrol1Avail = fcdcDiscreteWord3.bitValue(side === 'left' ? 11 : 13);
+  const servcontrol2Avail = fcdcDiscreteWord3.bitValue(side === 'left' ? 12 : 14);
   const cursorClassName = servcontrol1Avail || servcontrol2Avail ? 'GreenLine' : 'AmberLine';
   const aileronPositionValid = aileronDeflection.isNormalOperation();
 
-  const servcontrol1Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 11 : 13, false);
-  const servcontrol2Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 12 : 14, false);
+  const servcontrol1Fault = fcdcDiscreteWord2.bitValueOr(side === 'left' ? 11 : 13, false);
+  const servcontrol2Fault = fcdcDiscreteWord2.bitValueOr(side === 'left' ? 12 : 14, false);
 
   return (
     <SvgGroup x={x} y={y}>
@@ -380,13 +380,13 @@ interface ElacSecProps extends ComponentPositionProps {
 
 const Elac = ({ x, y, num, fcdcDiscreteWord1 }: ElacSecProps) => {
   const infoAvailable = !fcdcDiscreteWord1.isFailureWarning();
-  const computerFailed = fcdcDiscreteWord1.getBitValueOr(22 + num, false);
+  const computerFailed = fcdcDiscreteWord1.bitValueOr(22 + num, false);
   return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerFailed={computerFailed} />;
 };
 
 const Sec = ({ x, y, num, fcdcDiscreteWord1 }: ElacSecProps) => {
   const infoAvailable = !fcdcDiscreteWord1.isFailureWarning();
-  const computerFailed = fcdcDiscreteWord1.getBitValueOr(num === 3 ? 29 : 24 + num, false);
+  const computerFailed = fcdcDiscreteWord1.bitValueOr(num === 3 ? 29 : 24 + num, false);
 
   return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerFailed={computerFailed} />;
 };
@@ -450,12 +450,12 @@ const Elevator = ({
   // Need to scale the "nose down" elevator position up, since the current elevator limits are wrong.
   const elevatorDeflectPctNormalized = (elevatorDeflection.value * 90) / 30;
 
-  const servcontrolLeftAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 18);
-  const servcontrolRightAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 17);
+  const servcontrolLeftAvail = fcdcDiscreteWord3.bitValue(side === 'left' ? 15 : 18);
+  const servcontrolRightAvail = fcdcDiscreteWord3.bitValue(side === 'left' ? 16 : 17);
   const cursorClassName = servcontrolLeftAvail || servcontrolRightAvail ? 'GreenLine' : 'AmberLine';
 
-  const servcontrolLeftFault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 15 : 18, false);
-  const servcontrolRightFault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 16 : 17, false);
+  const servcontrolLeftFault = fcdcDiscreteWord2.bitValueOr(side === 'left' ? 15 : 18, false);
+  const servcontrolRightFault = fcdcDiscreteWord2.bitValueOr(side === 'left' ? 16 : 17, false);
 
   return (
     <SvgGroup x={x} y={y}>

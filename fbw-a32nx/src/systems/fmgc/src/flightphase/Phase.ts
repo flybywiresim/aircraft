@@ -68,7 +68,7 @@ export class ClimbPhase extends Phase {
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+    const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
     const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
 
     // If no cruise alt has been entered, cruiseFl is 0. We don't want to switch to cruise phase in that case
@@ -95,7 +95,7 @@ export class DescentPhase extends Phase {
   shouldActivateNextPhase(_deltaTime) {
     const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
-    const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+    const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
     if (fl === cruiseFl && fcuSelFl === fl) {
       this.nextPhase = FmgcFlightPhase.Cruise;
@@ -111,7 +111,7 @@ export class ApproachPhase extends Phase {
   landingConfirmation = new ConfirmationNode(30 * 1000);
 
   init() {
-    SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
+    SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0);
     this.nextPhase = FmgcFlightPhase.Done;
   }
 
@@ -129,7 +129,7 @@ export class ApproachPhase extends Phase {
 
 export class GoAroundPhase extends Phase {
   init() {
-    SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
+    SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0);
     this.nextPhase = FmgcFlightPhase.GoAround;
   }
 
@@ -141,7 +141,7 @@ export class GoAroundPhase extends Phase {
 
 export class DonePhase extends Phase {
   init() {
-    SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
+    SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0);
     this.nextPhase = FmgcFlightPhase.Done;
   }
 

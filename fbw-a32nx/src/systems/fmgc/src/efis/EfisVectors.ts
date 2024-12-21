@@ -12,8 +12,9 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 const UPDATE_TIMER = 2_500;
 
@@ -24,7 +25,13 @@ export class EfisVectors {
 
   private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
 
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
     private guidanceController: GuidanceController,
     private efisInterfaces: Record<EfisSide, EfisInterface>,
@@ -128,7 +135,7 @@ export class EfisVectors {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
-        const flightPhase = getFlightPhaseManager().phase;
+        const flightPhase = this.flightPhase.get();
 
         // FIXME implement
         const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;

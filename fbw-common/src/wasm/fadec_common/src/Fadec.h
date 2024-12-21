@@ -11,7 +11,6 @@
 
 class MsfsHandler;
 
-
 class Fadec : public Module {
  public:
   static constexpr double LBS_TO_KGS = 0.4535934;
@@ -26,14 +25,13 @@ class Fadec : public Module {
    */
   explicit Fadec(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
 
-  virtual bool initialize() override = 0;
-  virtual bool preUpdate(sGaugeDrawData* pData) override = 0;
-  virtual bool update(sGaugeDrawData* pData) override = 0;
+  virtual bool initialize() override                      = 0;
+  virtual bool preUpdate(sGaugeDrawData* pData) override  = 0;
+  virtual bool update(sGaugeDrawData* pData) override     = 0;
   virtual bool postUpdate(sGaugeDrawData* pData) override = 0;
-  virtual bool shutdown() override = 0;
+  virtual bool shutdown() override                        = 0;
 
  public:
-
   /**
    * @brief Interpolates a value using linear interpolation.
    *

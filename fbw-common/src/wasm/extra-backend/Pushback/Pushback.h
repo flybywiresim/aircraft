@@ -4,9 +4,9 @@
 #ifndef FLYBYWIRE_PUSHBACK_H
 #define FLYBYWIRE_PUSHBACK_H
 
+#include "DampingController.hpp"
 #include "DataManager.h"
 #include "Module.h"
-#include "Pushback/InertialDampener.hpp"
 
 #ifdef __cpp_lib_math_constants
 #include <numbers>
@@ -38,8 +38,8 @@ class Pushback : public Module {
   DataManager* dataManager = nullptr;
 
   // Used to smoothen acceleration and deceleration
-  InertialDampener speedDampener{0.0, 0.15, 0.1};
-  InertialDampener turnDampener{0.0, 0.01, 0.001};
+  DampingController speedDampener{0.0, 0.15, 0.1};
+  DampingController turnDampener{0.0, 0.01, 0.001};
 
   // LVARs
   NamedVariablePtr tugCommandedSpeedFactor;

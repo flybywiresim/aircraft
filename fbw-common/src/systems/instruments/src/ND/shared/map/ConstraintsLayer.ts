@@ -17,15 +17,11 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
-      if (!symbol.constraints || !(symbol.type & NdSymbolTypeFlags.Constraint)) {
-        continue;
-      }
-
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
 
-      this.paintConstraintCircle(true, context, rx, ry, symbol);
+      this.paintConstraintCircle(false, context, rx, ry, symbol);
     }
   }
 

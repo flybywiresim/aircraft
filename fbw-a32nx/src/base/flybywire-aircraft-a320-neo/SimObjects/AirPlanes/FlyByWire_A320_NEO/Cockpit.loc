@@ -64,7 +64,7 @@
         },
         "Languages": {
           "en-US": {
-            "Text": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+            "Text": "Adjust selected heading to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
             "LocalizationStatus": "TranslationNeeded"
           },
           "fr-FR": {

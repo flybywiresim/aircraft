@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
@@ -22,9 +24,9 @@ interface FlightPathVectorData {
 export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
   private bird = FSComponent.createRef<SVGGElement>();
 
-  private fpvFlag = FSComponent.createRef<SVGGElement>();
+  private readonly fpvFlagVisible = Subject.create(false);
 
-  private isTrkFpaActive = false;
+  private fcuDiscreteWord1 = new Arinc429Word(0);
 
   private data: FlightPathVectorData = {
     roll: new Arinc429Word(0),
@@ -38,19 +40,14 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents & FcuBus>();
 
     sub
-      .on('trkFpaActive')
+      .on('fcuDiscreteWord1')
       .whenChanged()
       .handle((a) => {
-        this.isTrkFpaActive = a;
-        if (this.isTrkFpaActive) {
-          this.moveBird();
-          this.bird.instance.classList.remove('HiddenElement');
-        } else {
-          this.bird.instance.classList.add('HiddenElement');
-        }
+        this.fcuDiscreteWord1 = a;
+        this.needsUpdate = true;
       });
 
     sub.on('fpa').handle((fpa) => {
@@ -77,13 +74,17 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
       if (this.needsUpdate) {
         this.needsUpdate = false;
 
+        const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, true);
         const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-        if (this.isTrkFpaActive && daAndFpaValid) {
-          this.fpvFlag.instance.style.visibility = 'hidden';
+        if (trkFpaActive && daAndFpaValid) {
+          this.fpvFlagVisible.set(false);
           this.bird.instance.classList.remove('HiddenElement');
           this.moveBird();
-        } else if (this.isTrkFpaActive && this.data.pitch.isNormalOperation() && this.data.roll.isNormalOperation()) {
-          this.fpvFlag.instance.style.visibility = 'visible';
+        } else if (!trkFpaActive) {
+          this.fpvFlagVisible.set(false);
+          this.bird.instance.classList.add('HiddenElement');
+        } else if (trkFpaActive && this.data.pitch.isNormalOperation() && this.data.roll.isNormalOperation()) {
+          this.fpvFlagVisible.set(true);
           this.bird.instance.classList.add('HiddenElement');
         }
       }
@@ -132,16 +133,11 @@ export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
             </g>
           </svg>
         </g>
-        <text
-          ref={this.fpvFlag}
-          style="visibility:hidden"
-          id="FPVFlag"
-          x="62.987099"
-          y="89.42025"
-          class="Blink9Seconds FontLargest Red EndAlign"
-        >
-          FPV
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fpvFlagVisible}>
+          <text style="visibility:hidden" id="FPVFlag" x="62.987099" y="89.42025" class="FontLargest Red EndAlign">
+            FPV
+          </text>
+        </FlashOneHertz>
       </>
     );
   }

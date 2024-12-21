@@ -55,6 +55,7 @@ import {
   JS_FacilityIntersection,
   JS_FacilityNDB,
   JS_FacilityVOR,
+  JS_ILSFrequency,
   JS_Leg,
   JS_Procedure,
   JS_Runway,
@@ -87,7 +88,9 @@ type FacilityType<T> = T extends JS_FacilityIntersection
       : never;
 
 export class MsfsMapping {
-  private static letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  private static readonly letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  private static readonly ILS_CAT_REGEX = /CAT\W?(1|2|3|I{1,3})/;
 
   // eslint-disable-next-line no-useless-constructor
   constructor(
@@ -198,9 +201,10 @@ export class MsfsMapping {
             this.approachHasLandingSystem(appr),
         );
         const lsIdent = lsAppr ? FacilityCache.ident(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao) : '';
+        // FIXME need to return an IlsNavaid for ILS
         const lsFrequencyChannel = lsAppr
-          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz ?? 0
-          : 0;
+          ? navaids.get(lsAppr.finalLegs[lsAppr.finalLegs.length - 1].originIcao)?.freqMHz
+          : undefined;
 
         runways.push({
           sectionCode: SectionCode.Airport,
@@ -403,6 +407,21 @@ export class MsfsMapping {
       .map(([appr, _]) => appr);
   }
 
+  private mapIlsCatString(cat: string): LsCategory {
+    switch (cat) {
+      case '1':
+      case 'I':
+        return LsCategory.Category1;
+      case '2':
+      case 'II':
+        return LsCategory.Category2;
+      case '3':
+      case 'III':
+        return LsCategory.Category3;
+    }
+    return LsCategory.None;
+  }
+
   private async mapLandingSystem(
     ls: JS_FacilityVOR,
     airport: JS_FacilityAirport,
@@ -414,7 +433,27 @@ export class MsfsMapping {
     let locBearing = -1;
     let runwayIdent = '';
     let gsSlope = undefined;
-    if (approach) {
+    let category = LsCategory.None;
+
+    let jsFrequency: JS_ILSFrequency | null = null;
+    for (const r of airport.runways) {
+      if (r.primaryILSFrequency.icao === ls.icao) {
+        jsFrequency = r.primaryILSFrequency;
+        runwayIdent = `${airportIdent}${r.designation.split('-')[0].padStart(2, '0')}${this.mapRunwayDesignator(r.designatorCharPrimary)}`;
+      } else if (r.secondaryILSFrequency.icao === ls.icao) {
+        jsFrequency = r.secondaryILSFrequency;
+        runwayIdent = `${airportIdent}${r.designation.split('-')[1].padStart(2, '0')}${this.mapRunwayDesignator(r.designatorCharSecondary)}`;
+      }
+    }
+
+    if (jsFrequency !== null) {
+      const nameMatch = jsFrequency.name.match(MsfsMapping.ILS_CAT_REGEX);
+      if (nameMatch !== null) {
+        category = this.mapIlsCatString(nameMatch[1]);
+      }
+      locBearing = jsFrequency.localizerCourse;
+      gsSlope = jsFrequency.hasGlideslope ? jsFrequency.glideslopeAngle : undefined;
+    } else if (approach) {
       runwayIdent = `${airportIdent}${approach.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
       gsSlope = this.approachHasGlideslope(approach)
         ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360
@@ -423,6 +462,13 @@ export class MsfsMapping {
       const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(airport, approach);
       if (bearing !== undefined) {
         locBearing = bearingIsTrue ? this.trueToMagnetic(bearing, -ls.magneticVariation) : bearing;
+      }
+
+      if (ls.name.length > 0) {
+        const nameMatch = ls.name.match(MsfsMapping.ILS_CAT_REGEX);
+        if (nameMatch !== null) {
+          category = this.mapIlsCatString(nameMatch[1]);
+        }
       }
     }
 
@@ -433,12 +479,11 @@ export class MsfsMapping {
       icaoCode,
       ident: FacilityCache.ident(ls.icao),
       frequency: ls.freqMHz,
-      // TODO try guess cat from runway frequencies
-      category: LsCategory.None,
+      category,
       runwayIdent,
       locLocation: { lat: ls.lat, long: ls.lon },
       locBearing,
-      stationDeclination: ls.magneticVariation,
+      stationDeclination: MathUtils.normalise180(360 - ls.magneticVariation),
       gsSlope,
     };
   }
@@ -571,9 +616,10 @@ export class MsfsMapping {
         .filter((approach) => approach.runwayNumber !== 0)
         .map((approach) => {
           const approachName = this.mapApproachName(approach);
+          const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
           // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-          const authorisationRequired = approach.rnavTypeFlags === 0;
+          const authorisationRequired = approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
           const rnp = authorisationRequired ? 0.3 : undefined;
 
           const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
@@ -588,16 +634,19 @@ export class MsfsMapping {
             databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
             icaoCode,
             ident: approachName,
+            suffix,
             runwayIdent,
             multipleIndicator: approach.approachSuffix,
             type: this.mapApproachType(approach.approachType),
             authorisationRequired,
             levelOfService,
             transitions,
-            legs: approach.finalLegs.map((leg) =>
-              this.mapLeg(leg, facilities, msAirport, approachName, approach.approachType, rnp),
+            legs: approach.finalLegs.map((leg, legIndex) =>
+              this.mapLeg(leg, legIndex, facilities, msAirport, approachName, approach.approachType, rnp),
             ),
-            missedLegs: approach.missedLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, approachName)),
+            missedLegs: approach.missedLegs.map((leg, legIndex) =>
+              this.mapLeg(leg, legIndex, facilities, msAirport, approachName),
+            ),
           };
         })
     );
@@ -615,7 +664,9 @@ export class MsfsMapping {
       databaseId: `P${icaoCode}${airportIdent}${arrival.name}`,
       icaoCode,
       ident: arrival.name,
-      commonLegs: arrival.commonLegs.map((leg) => this.mapLeg(leg, facilities, msAirport, arrival.name)),
+      commonLegs: arrival.commonLegs.map((leg, legIndex) =>
+        this.mapLeg(leg, legIndex, facilities, msAirport, arrival.name),
+      ),
       enrouteTransitions: arrival.enRouteTransitions.map((trans, idx) =>
         this.mapEnrouteTransition(trans, facilities, msAirport, arrival.name, arrival.name + idx),
       ),
@@ -646,8 +697,8 @@ export class MsfsMapping {
         icaoCode,
         ident: departure.name,
         authorisationRequired,
-        commonLegs: departure.commonLegs.map((leg) =>
-          this.mapLeg(leg, facilities, msAirport, departure.name, undefined, commonLegsRnp),
+        commonLegs: departure.commonLegs.map((leg, legIndex) =>
+          this.mapLeg(leg, legIndex, facilities, msAirport, departure.name, undefined, commonLegsRnp),
         ),
         engineOutLegs: [],
         enrouteTransitions: departure.enRouteTransitions.map((trans, idx) =>
@@ -812,7 +863,7 @@ export class MsfsMapping {
     return {
       databaseId,
       ident: trans.name,
-      legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent)),
+      legs: trans.legs.map((leg, legIndex) => this.mapLeg(leg, legIndex, facilities, airport, procedureIdent)),
     };
   }
 
@@ -827,7 +878,9 @@ export class MsfsMapping {
     return {
       databaseId,
       ident: trans.name,
-      legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, undefined, rnp)),
+      legs: trans.legs.map((leg, legIndex) =>
+        this.mapLeg(leg, legIndex, facilities, airport, procedureIdent, undefined, rnp),
+      ),
     };
   }
 
@@ -846,12 +899,15 @@ export class MsfsMapping {
     return {
       databaseId,
       ident,
-      legs: trans.legs.map((leg) => this.mapLeg(leg, facilities, airport, procedureIdent, undefined, rnp)),
+      legs: trans.legs.map((leg, legIndex) =>
+        this.mapLeg(leg, legIndex, facilities, airport, procedureIdent, undefined, rnp),
+      ),
     };
   }
 
   private mapLeg(
     leg: JS_Leg,
+    legIndex: number,
     facilities: Map<string, JS_Facility>,
     airport: JS_FacilityAirport,
     procedureIdent: string,
@@ -884,6 +940,9 @@ export class MsfsMapping {
       arcRadius = distanceTo(arcCentreFix.location, waypoint.location);
     }
 
+    const approachWaypointDescriptor =
+      approachType !== undefined ? this.mapMsLegToApproachWaypointDescriptor(leg, legIndex, approachType) : undefined;
+
     // TODO for approach, pass approach type to mapMsAltDesc
     return {
       procedureIdent,
@@ -897,7 +956,7 @@ export class MsfsMapping {
       arcRadius,
       length: leg.distanceMinutes ? undefined : leg.distance / 1852,
       lengthTime: leg.distanceMinutes ? leg.distance : undefined,
-      altitudeDescriptor: this.mapMsAltDesc(leg.altDesc, leg.fixTypeFlags, approachType),
+      altitudeDescriptor: this.mapMsAltDesc(leg.altDesc, leg.fixTypeFlags, approachType, approachWaypointDescriptor),
       altitude1: Math.round(leg.altitude1 / 0.3048),
       altitude2: Math.round(leg.altitude2 / 0.3048),
       speed: leg.speedRestriction > 0 ? leg.speedRestriction : undefined,
@@ -905,8 +964,7 @@ export class MsfsMapping {
       turnDirection: this.mapMsTurnDirection(leg.turnDirection),
       magneticCourse: leg.course, // TODO check magnetic/true
       waypointDescriptor: this.mapMsIcaoToWaypointDescriptor(leg.fixIcao),
-      approachWaypointDescriptor:
-        approachType !== undefined ? this.mapMsLegToApproachWaypointDescriptor(leg) : undefined,
+      approachWaypointDescriptor,
       verticalAngle: Math.abs(leg.verticalAngle) > Number.EPSILON ? leg.verticalAngle - 360 : undefined,
       rnp,
     };
@@ -1119,6 +1177,7 @@ export class MsfsMapping {
     altDesc: MSAltitudeDescriptor,
     fixTypeFlags: FixTypeFlags,
     approachType?: MSApproachType,
+    approachWaypointDescriptor?: ApproachWaypointDescriptor,
   ): AltitudeDescriptor | undefined {
     // TODO can we do more of these for other approach types?
     if (approachType === MSApproachType.Ils) {
@@ -1130,8 +1189,7 @@ export class MsfsMapping {
           return AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2;
         }
       }
-      if (fixTypeFlags & FixTypeFlags.IF) {
-        // FACF
+      if (approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix) {
         if (altDesc === MSAltitudeDescriptor.At) {
           return AltitudeDescriptor.AtAlt1GsIntcptAlt2;
         }
@@ -1187,7 +1245,30 @@ export class MsfsMapping {
     }
   }
 
-  private mapMsLegToApproachWaypointDescriptor(leg: JS_Leg): ApproachWaypointDescriptor {
+  private isLocBasedApproach(approachType?: MSApproachType): boolean {
+    // Localizer based approaches according to ARINC 424 6.4.1
+    switch (approachType) {
+      // IGS
+      case MSApproachType.Ils:
+      case MSApproachType.Lda:
+      case MSApproachType.Loc:
+      case MSApproachType.Sdf:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private mapMsLegToApproachWaypointDescriptor(
+    leg: JS_Leg,
+    legIndex: number,
+    approachType?: MSApproachType,
+  ): ApproachWaypointDescriptor {
+    // All localiser based approaches start with FACF (ARINC 424 6.4.1.1)
+    if (legIndex === 0 && this.isLocBasedApproach(approachType)) {
+      return ApproachWaypointDescriptor.FinalApproachCourseFix;
+    }
+
     if ((leg.fixTypeFlags & FixTypeFlags.FAF) > 0) {
       return ApproachWaypointDescriptor.FinalApproachFix;
     }
@@ -1368,7 +1449,12 @@ export class MsfsMapping {
       // eslint-disable-next-line prefer-destructuring
       let nextIcao: string | undefined = route.nextIcao;
 
+      let iterationCount = 0;
+
       while (previousIcao?.trim() || nextIcao?.trim()) {
+        if (++iterationCount > 250) {
+          throw new Error(`(getAirways) Too many iterations while getting airways: ${previousIcao} ${nextIcao}`);
+        }
         if (previousIcao?.trim()) {
           const fac: JS_FacilityIntersection | undefined = await this.cache.getFacility(
             previousIcao,

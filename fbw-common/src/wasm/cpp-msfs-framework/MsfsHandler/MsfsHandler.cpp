@@ -51,12 +51,14 @@ bool MsfsHandler::initialize() {
   // Register as key event handler
   register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);
 
-  // base sim data mainly for pause detection
-  std::vector<DataDefinition> baseDataDef = {{"SIMULATION TIME", 0, UNITS.Number},
-                                             {"SIMULATION RATE", 0, UNITS.Number},
-                                             {"SIM ON GROUND", 0, UNITS.Bool},
-                                             {"L:" + NamedVariable::getAircraftPrefix() + "IS_READY", 0, UNITS.Number},
-                                             {"L:" + NamedVariable::getAircraftPrefix() + "DEVELOPER_STATE", 0, UNITS.Number}};
+  // base sim data commonly used by many modules
+  std::vector<DataDefinition> baseDataDef = {
+      {"SIMULATION TIME",                                             0, UNITS.Number},
+      {"SIMULATION RATE",                                             0, UNITS.Number},
+      {"SIM ON GROUND",                                               0, UNITS.Bool  },
+      {"L:" + NamedVariable::getAircraftPrefix() + "IS_READY",        0, UNITS.Number},
+      {"L:" + NamedVariable::getAircraftPrefix() + "DEVELOPER_STATE", 0, UNITS.Number}
+  };
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
   if (!SUCCEEDED(baseSimData->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME))) {
     LOG_ERROR(simConnectName + ": Failed to request periodic data for base sim data");
@@ -123,8 +125,8 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 
   // read and update base data from sim
   FLOAT64 previousTimeStamp = timeStamp;
-  timeStamp = baseSimData->data().simulationTime;
-  simulationDeltaTime = std::max(0., timeStamp - previousTimeStamp);
+  timeStamp                 = baseSimData->data().simulationTime;
+  simulationDeltaTime       = std::max(0., timeStamp - previousTimeStamp);
   tickCounter++;
 
   // Call preUpdate(), update() and postUpdate() for all modules
@@ -190,4 +192,3 @@ bool MsfsHandler::shutdown() {
   unregister_all_named_vars();
   return result;
 }
-

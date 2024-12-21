@@ -13,7 +13,6 @@
 
 #include <MSFS/Legacy/gauges.h>
 #include <MSFS/MSFS.h>
-#include <MSFS/MSFS_Render.h>
 
 #include "MsfsHandler.h"
 
@@ -21,7 +20,6 @@
 #include "Example/ExampleModule.h"
 #endif
 
-#include "AircraftPresets/AircraftPresetProcedures_A32NX.h"
 #include "AircraftPresets/AircraftPresets.h"
 #include "LightingPresets/LightingPresets_A32NX.h"
 #include "Pushback/Pushback_A32NX.h"
@@ -34,8 +32,8 @@ ExampleModule exampleModule(msfsHandler);
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically
 LightingPresets_A32NX lightingPresets(msfsHandler);
-Pushback_A32NX pushback(msfsHandler);
-AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
+Pushback_A32NX        pushback(msfsHandler);
+AircraftPresets       aircraftPresets(msfsHandler, "./config/a32nx/a320-251n/aircraft_preset_procedures.xml");
 
 /**
  * Gauge Callback
@@ -49,7 +47,7 @@ AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::air
  * https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback
  */
 extern "C" {
-[[maybe_unused]] MSFS_CALLBACK bool Gauge_Extra_Backend_gauge_callback([[maybe_unused]] FsContext ctx, int svcId, void* pData) {
+MSFS_CALLBACK bool Gauge_Extra_Backend_gauge_callback([[maybe_unused]] FsContext ctx, int svcId, void* pData) {
   switch (svcId) {
     case PANEL_SERVICE_PRE_INSTALL: {
       return msfsHandler.initialize();

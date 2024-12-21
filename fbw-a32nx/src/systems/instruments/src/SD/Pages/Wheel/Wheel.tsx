@@ -17,19 +17,18 @@ const roundTemperature = (rawTemp: number): number => Math.min(995, Math.max(0, 
 const maxStaleness = 300;
 
 export const WheelPage = () => {
-  const [rawTempBrake1] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', 'celsius', maxStaleness);
-  const [rawTempBrake2] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', 'celsius', maxStaleness);
-  const [rawTempBrake3] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', 'celsius', maxStaleness);
-  const [rawTempBrake4] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', 'celsius', maxStaleness);
+  const tempBrake1 = useArinc429Var('L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', maxStaleness);
+  const tempBrake2 = useArinc429Var('L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', maxStaleness);
+  const tempBrake3 = useArinc429Var('L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', maxStaleness);
+  const tempBrake4 = useArinc429Var('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', maxStaleness);
 
-  const roundedTemperatures = [
-    roundTemperature(rawTempBrake1),
-    roundTemperature(rawTempBrake2),
-    roundTemperature(rawTempBrake3),
-    roundTemperature(rawTempBrake4),
-  ];
-
-  const maxTemperature = roundedTemperatures.reduce((maxTemp, element) => Math.max(maxTemp, element), 0);
+  const roundedTemperatures = [tempBrake1, tempBrake2, tempBrake3, tempBrake4].map((temp) =>
+    temp.isNormalOperation() ? roundTemperature(temp.value) : null,
+  );
+  const maxTemperature = roundedTemperatures
+    .filter((temp) => temp !== null)
+    .reduce((maxTemp, element) => Math.max(maxTemp, element), 0);
+  const isHottest = roundedTemperatures.map((temp) => temp !== null && temp == maxTemperature);
 
   const lgciu1DiscreteWord1 = useArinc429Var('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
   const lgciu2DiscreteWord1 = useArinc429Var('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
@@ -78,8 +77,8 @@ export const WheelPage = () => {
       <Wheels
         x={36}
         y={431}
-        left={{ number: 1, temperature: rawTempBrake1, hottest: maxTemperature === roundedTemperatures[0] }}
-        right={{ number: 2, temperature: rawTempBrake2, hottest: maxTemperature === roundedTemperatures[1] }}
+        left={{ number: 1, temperature: tempBrake1, hottest: isHottest[0] }}
+        right={{ number: 2, temperature: tempBrake2, hottest: isHottest[1] }}
       />
 
       <Gear
@@ -106,8 +105,8 @@ export const WheelPage = () => {
       <Wheels
         x={551}
         y={431}
-        left={{ number: 3, temperature: rawTempBrake3, hottest: maxTemperature === roundedTemperatures[2] }}
-        right={{ number: 4, temperature: rawTempBrake4, hottest: maxTemperature === roundedTemperatures[3] }}
+        left={{ number: 3, temperature: tempBrake3, hottest: isHottest[2] }}
+        right={{ number: 4, temperature: tempBrake4, hottest: isHottest[3] }}
       />
     </svg>
   );
@@ -159,19 +158,16 @@ interface LandingGearCtlProps extends ComponentPositionProps {
 const LandingGearCtl = ({ x, y, lgciu1DiscreteWord1, lgciu2DiscreteWord1 }: LandingGearCtlProps) => {
   const anyLgciuValid = lgciu1DiscreteWord1.isNormalOperation() || lgciu2DiscreteWord1.isNormalOperation();
 
-  const leftMainGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(14) || lgciu2DiscreteWord1.getBitValue(14);
+  const leftMainGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.bitValue(14) || lgciu2DiscreteWord1.bitValue(14);
   const rightMainGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(15) || lgciu2DiscreteWord1.getBitValue(15);
-  const noseGearNotDownlockedAndSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(16) || lgciu2DiscreteWord1.getBitValue(16);
+    lgciu1DiscreteWord1.bitValue(15) || lgciu2DiscreteWord1.bitValue(15);
+  const noseGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.bitValue(16) || lgciu2DiscreteWord1.bitValue(16);
 
   const leftMainGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(11) || lgciu2DiscreteWord1.getBitValue(11);
+    lgciu1DiscreteWord1.bitValue(11) || lgciu2DiscreteWord1.bitValue(11);
   const rightMainGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(12) || lgciu2DiscreteWord1.getBitValue(12);
-  const noseGearNotUplockedAndNotSelectedDown =
-    lgciu1DiscreteWord1.getBitValue(13) || lgciu2DiscreteWord1.getBitValue(13);
+    lgciu1DiscreteWord1.bitValue(12) || lgciu2DiscreteWord1.bitValue(12);
+  const noseGearNotUplockedAndNotSelectedDown = lgciu1DiscreteWord1.bitValue(13) || lgciu2DiscreteWord1.bitValue(13);
 
   const landingGearInTransit =
     anyLgciuValid &&
@@ -285,9 +281,9 @@ const GearDoor = ({
   const anyLgciuValid = lgciu1DiscreteWord1.isNormalOperation() || lgciu2DiscreteWord1.isNormalOperation();
 
   if (location === 'center') {
-    const leftDoorFullyOpen = lgciu1DiscreteWord3.getBitValue(27) || lgciu2DiscreteWord3.getBitValue(27);
-    const rightDoorFullyOpen = lgciu1DiscreteWord3.getBitValue(28) || lgciu2DiscreteWord3.getBitValue(28);
-    const doorNotLockedUp = lgciu1DiscreteWord1.getBitValue(19) || lgciu2DiscreteWord1.getBitValue(19);
+    const leftDoorFullyOpen = lgciu1DiscreteWord3.bitValue(27) || lgciu2DiscreteWord3.bitValue(27);
+    const rightDoorFullyOpen = lgciu1DiscreteWord3.bitValue(28) || lgciu2DiscreteWord3.bitValue(28);
+    const doorNotLockedUp = lgciu1DiscreteWord1.bitValue(19) || lgciu2DiscreteWord1.bitValue(19);
 
     let leftGearDoorSymbol: JSX.Element | null;
     let rightGearDoorSymbol: JSX.Element | null;
@@ -339,11 +335,11 @@ const GearDoor = ({
   let doorFullyOpen: boolean;
   let doorNotLockedUp: boolean;
   if (location === 'left') {
-    doorFullyOpen = lgciu1DiscreteWord3.getBitValue(25) || lgciu2DiscreteWord3.getBitValue(25);
-    doorNotLockedUp = lgciu1DiscreteWord1.getBitValue(17) || lgciu2DiscreteWord1.getBitValue(17);
+    doorFullyOpen = lgciu1DiscreteWord3.bitValue(25) || lgciu2DiscreteWord3.bitValue(25);
+    doorNotLockedUp = lgciu1DiscreteWord1.bitValue(17) || lgciu2DiscreteWord1.bitValue(17);
   } else {
-    doorFullyOpen = lgciu1DiscreteWord3.getBitValue(26) || lgciu2DiscreteWord3.getBitValue(26);
-    doorNotLockedUp = lgciu1DiscreteWord1.getBitValue(18) || lgciu2DiscreteWord1.getBitValue(18);
+    doorFullyOpen = lgciu1DiscreteWord3.bitValue(26) || lgciu2DiscreteWord3.bitValue(26);
+    doorNotLockedUp = lgciu1DiscreteWord1.bitValue(18) || lgciu2DiscreteWord1.bitValue(18);
   }
 
   let gearDoorSymbol: JSX.Element | null;
@@ -417,23 +413,23 @@ const LandingGearPositionIndicators = ({
   let lgciu2GearDownlocked: boolean;
   let upLockFlagShown = lgciu1DataValid && lgciu2DataValid;
   if (location === 'left') {
-    lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(11);
-    lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(11);
-    lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(23);
-    lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(23);
-    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(20) && lgciu2DiscreteWord1.getBitValue(20);
+    lgciu1GearNotUplocked = lgciu1DiscreteWord3.bitValue(11);
+    lgciu2GearNotUplocked = lgciu2DiscreteWord3.bitValue(11);
+    lgciu1GearDownlocked = lgciu1DiscreteWord1.bitValue(23);
+    lgciu2GearDownlocked = lgciu2DiscreteWord1.bitValue(23);
+    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.bitValue(20) && lgciu2DiscreteWord1.bitValue(20);
   } else if (location === 'right') {
-    lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(12);
-    lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(12);
-    lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(24);
-    lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(24);
-    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(21) && lgciu2DiscreteWord1.getBitValue(21);
+    lgciu1GearNotUplocked = lgciu1DiscreteWord3.bitValue(12);
+    lgciu2GearNotUplocked = lgciu2DiscreteWord3.bitValue(12);
+    lgciu1GearDownlocked = lgciu1DiscreteWord1.bitValue(24);
+    lgciu2GearDownlocked = lgciu2DiscreteWord1.bitValue(24);
+    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.bitValue(21) && lgciu2DiscreteWord1.bitValue(21);
   } else {
-    lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(13);
-    lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(13);
-    lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(25);
-    lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(25);
-    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(22) && lgciu2DiscreteWord1.getBitValue(22);
+    lgciu1GearNotUplocked = lgciu1DiscreteWord3.bitValue(13);
+    lgciu2GearNotUplocked = lgciu2DiscreteWord3.bitValue(13);
+    lgciu1GearDownlocked = lgciu1DiscreteWord1.bitValue(25);
+    lgciu2GearDownlocked = lgciu2DiscreteWord1.bitValue(25);
+    upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.bitValue(22) && lgciu2DiscreteWord1.bitValue(22);
   }
 
   let lgciu1Color = '';
@@ -556,7 +552,7 @@ const WheelArch = ({ x, y, type, green, amber }: WheelArchProps) => {
 
 interface Brake {
   number: number;
-  temperature: number;
+  temperature: Arinc429Word;
   hottest: boolean;
 }
 
@@ -568,26 +564,27 @@ interface WheelsProps extends ComponentPositionProps {
 const Wheels = ({ x, y, left, right }: WheelsProps) => {
   const brakeAmberThreshold = 300;
 
+  const leftTemperature = left.temperature.valueOr(NaN);
+  const rightTemperature = right.temperature.valueOr(NaN);
+
   return (
     <SvgGroup x={x} y={y}>
       <WheelArch
         x={0}
         y={0}
         type="top"
-        green={left.hottest && left.temperature > 100}
-        amber={left.hottest && left.temperature > 300}
+        green={left.hottest && leftTemperature > 100}
+        amber={left.hottest && leftTemperature > 300}
       />
       <WheelArch
         x={124}
         y={0}
         type="top"
-        green={right.hottest && right.temperature > 100}
-        amber={right.hottest && right.temperature > 300}
+        green={right.hottest && rightTemperature > 100}
+        amber={right.hottest && rightTemperature > 300}
       />
-
       <WheelArch x={0} y={103} type="bottom" />
       <WheelArch x={124} y={103} type="bottom" />
-
       <text className="Cyan Standard" x={73} y={32}>
         °C
       </text>
@@ -595,11 +592,19 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
         REL
       </text>
 
-      <text className={`${left.temperature > brakeAmberThreshold ? 'Amber' : 'Green'} Large End`} x={57} y={33}>
-        {roundTemperature(left.temperature)}
+      <text
+        className={`${!left.temperature.isNormalOperation() || left.temperature.value > brakeAmberThreshold ? 'Amber' : 'Green'} Large End`}
+        x={57}
+        y={33}
+      >
+        {left.temperature.isNormalOperation() ? roundTemperature(left.temperature.value) : 'XX'}
       </text>
-      <text className={`${right.temperature > brakeAmberThreshold ? 'Amber' : 'Green'} Large End`} x={181} y={33}>
-        {roundTemperature(right.temperature)}
+      <text
+        className={`${!right.temperature.isNormalOperation() || right.temperature.value > brakeAmberThreshold ? 'Amber' : 'Green'} Large End`}
+        x={181}
+        y={33}
+      >
+        {right.temperature.isNormalOperation() ? roundTemperature(right.temperature.value) : 'XX'}
       </text>
 
       <text className="Large" x={22} y={66}>

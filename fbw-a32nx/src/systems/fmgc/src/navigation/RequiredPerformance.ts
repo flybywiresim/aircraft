@@ -1,9 +1,11 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanService, getFlightPhaseManager } from '@fmgc/index';
+import { EventBus, FlightPlanService } from '@fmgc/index';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightArea } from './FlightArea';
+import { ConsumerValue } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 const rnpDefaults: Record<FlightArea, number> = {
   [FlightArea.Takeoff]: 1,
@@ -25,7 +27,15 @@ export class RequiredPerformance {
 
   manualRnp = false;
 
-  constructor(private flightPlanService: FlightPlanService) {}
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
+  constructor(
+    private readonly bus: EventBus,
+    private flightPlanService: FlightPlanService,
+  ) {}
 
   update(_deltaTime: number): void {
     this.updateAutoRnp();
@@ -81,7 +91,7 @@ export class RequiredPerformance {
       area !== FlightArea.Enroute &&
       area !== FlightArea.Oceanic &&
       this.activeRnp < 0.305 &&
-      getFlightPhaseManager().phase >= FmgcFlightPhase.Takeoff;
+      this.flightPhase.get() >= FmgcFlightPhase.Takeoff;
     if (ldev !== this.requestLDev) {
       this.requestLDev = ldev;
       SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);

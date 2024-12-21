@@ -6,8 +6,8 @@ import { Clock, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
-import './style.scss';
 import '../index.scss';
+import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
@@ -31,6 +31,10 @@ class A380X_EWD extends BaseInstrument {
 
   get templateID(): string {
     return 'A380X_EWD';
+  }
+
+  public get isInteractive(): boolean {
+    return true;
   }
 
   public connectedCallback(): void {

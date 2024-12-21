@@ -8,7 +8,7 @@ use systems_wasm::{
 pub(super) fn cargo_doors(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.map(
         ExecuteOn::PreTick,
-        Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),
+        Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 16),
         |value| if value > 0. { 1. } else { 0. },
         Variable::aspect("FWD_DOOR_CARGO_OPEN_REQ"),
     );
@@ -17,8 +17,8 @@ pub(super) fn cargo_doors(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn
     builder.map_many(
         ExecuteOn::PreTick,
         vec![
-            Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),
-            Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 4),
+            Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 16),
+            Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 17),
         ],
         |values| {
             if values[0] > 0. || values[1] > 0. {

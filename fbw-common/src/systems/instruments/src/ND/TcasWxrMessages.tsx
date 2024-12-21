@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,7 +13,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { EfisNdMode, TcasWxrMessage } from '@flybywiresim/fbw-sdk';
-import { Layer } from './Layer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { GenericTcasEvents } from './types/GenericTcasEvents';
 
 export interface TcasWXMessagesProps {

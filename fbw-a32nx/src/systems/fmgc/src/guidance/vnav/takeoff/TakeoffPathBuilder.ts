@@ -28,8 +28,8 @@ export class TakeoffPathBuilder {
 
     profile.checkpoints.push({
       reason: VerticalCheckpointReason.Liftoff,
-      distanceFromStart: 0.6,
-      secondsFromPresent: 20,
+      distanceFromStart: 0,
+      secondsFromPresent: 0,
       altitude: departureElevation,
       remainingFuelOnBoard: fuelOnBoard,
       speed: v2Speed + 10,

@@ -28,6 +28,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeReservedPercent = undefined;
         this.takeOffWeight = undefined;
         this.landingWeight = undefined;
+        // +ve for tailwind, -ve for headwind
         this.averageWind = undefined;
         this.perfApprQNH = undefined;
         this.perfApprTemp = undefined;
@@ -44,11 +45,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprFlaps3 = undefined;
         this._debug = undefined;
         this._checkFlightPlan = undefined;
-        this._windDirections = undefined;
         this._fuelPlanningPhases = undefined;
         this._zeroFuelWeightZFWCGEntered = undefined;
         this._taxiEntered = undefined;
-        this._windDir = undefined;
         this._DistanceToAlt = undefined;
         this._routeAltFuelWeight = undefined;
         this._routeAltFuelTime = undefined;
@@ -101,12 +100,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedCrzSpeed = undefined;
         this.managedSpeedTarget = undefined;
         this.managedSpeedTargetIsMach = undefined;
-        this.climbSpeedLimit = undefined;
-        this.climbSpeedLimitAlt = undefined;
-        this.climbSpeedLimitPilot = undefined;
-        this.descentSpeedLimit = undefined;
-        this.descentSpeedLimitAlt = undefined;
-        this.descentSpeedLimitPilot = undefined;
         this.managedSpeedClimb = undefined;
         this.managedSpeedClimbIsPilotEntered = undefined;
         this.managedSpeedClimbMach = undefined;
@@ -222,9 +215,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new Fmgc.DataManager(this);
 
         this.efisInterfaces = { L: new Fmgc.EfisInterface('L', this.currFlightPlanService), R: new Fmgc.EfisInterface('R', this.currFlightPlanService) };
-        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings, Fmgc.A320AircraftConfig);
-        this.navigation = new Fmgc.Navigation(this.currFlightPlanService, this.facilityLoader);
+        this.guidanceController = new Fmgc.GuidanceController(this.bus, this, this.currFlightPlanService, this.efisInterfaces, Fmgc.a320EfisRangeSettings, Fmgc.A320AircraftConfig);
+        this.navigation = new Fmgc.Navigation(this.bus, this.currFlightPlanService);
         this.efisSymbols = new Fmgc.EfisSymbols(
+            this.bus,
             this.guidanceController,
             this.currFlightPlanService,
             this.navigation.getNavaidTuner(),
@@ -286,7 +280,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.machToCasManualCrossoverCurve.add(0.8, 300);
         this.machToCasManualCrossoverCurve.add(0.82, 350);
 
-        this.updateFuelVars();
         this.updatePerfSpeeds();
 
         this.flightPhaseManager.init();
@@ -332,6 +325,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeReservedPercent = 5;
         this.takeOffWeight = NaN;
         this.landingWeight = NaN;
+        // +ve for tailwind, -ve for headwind
         this.averageWind = 0;
         this.perfApprQNH = NaN;
         this.perfApprTemp = NaN;
@@ -348,10 +342,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprFlaps3 = false;
         this._debug = 0;
         this._checkFlightPlan = 0;
-        this._windDirections = {
-            TAILWIND: "TL",
-            HEADWIND: "HD",
-        };
         this._fuelPlanningPhases = {
             PLANNING: 1,
             IN_PROGRESS: 2,
@@ -359,7 +349,6 @@ class FMCMainDisplay extends BaseAirliners {
         };
         this._zeroFuelWeightZFWCGEntered = false;
         this._taxiEntered = false;
-        this._windDir = this._windDirections.HEADWIND;
         this._DistanceToAlt = 0;
         this._routeAltFuelWeight = 0;
         this._routeAltFuelTime = 0;
@@ -455,12 +444,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedCrzSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
-        this.climbSpeedLimit = 250;
-        this.climbSpeedLimitAlt = 10000;
-        this.climbSpeedLimitPilot = false;
-        this.descentSpeedLimit = 250;
-        this.descentSpeedLimitAlt = 10000;
-        this.descentSpeedLimitPilot = false;
         this.managedSpeedClimb = 290;
         this.managedSpeedClimbIsPilotEntered = false;
         this.managedSpeedClimbMach = 0.78;
@@ -952,11 +935,11 @@ class FMCMainDisplay extends BaseAirliners {
 
         // apply speed limit/alt
         if (this.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE) {
-            if (this.climbSpeedLimit !== undefined && alt <= this.climbSpeedLimitAlt) {
+            if (this.climbSpeedLimit !== null && alt <= this.climbSpeedLimitAlt) {
                 kcas = Math.min(this.climbSpeedLimit, kcas);
             }
         } else if (this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
-            if (this.descentSpeedLimit !== undefined && alt <= this.descentSpeedLimitAlt) {
+            if (this.descentSpeedLimit !== null && alt <= this.descentSpeedLimitAlt) {
                 kcas = Math.min(this.descentSpeedLimit, kcas);
             }
         }
@@ -1205,15 +1188,18 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.isAirspeedManaged()) {
             Coherent.call("AP_SPD_VAR_SET", 0, Vtap).catch(console.error);
         }
+
+        // Reset V1/R/2 speed after the TAKEOFF phase
+        if (this.flightPhaseManager.phase > FmgcFlightPhases.TAKEOFF) {
+            this.v1Speed = null;
+            this.vrSpeed = null;
+            this.v2Speed = null;
+        }
     }
 
     activatePreSelSpeedMach(preSel) {
         if (preSel) {
-            if (preSel < 1) {
-                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_MACH", "number", 1);
-            } else {
-                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_SPEED", "number", 1);
-            }
+            SimVar.SetSimVarValue("K:A32NX.FMS_PRESET_SPD_ACTIVATE", "number", 1);
         }
     }
 
@@ -2066,7 +2052,11 @@ class FMCMainDisplay extends BaseAirliners {
 
     // only used by trySetRouteAlternateFuel
     isAltFuelInRange(fuel) {
-        return 0 < fuel && fuel < (this.blockFuel - this._routeTripFuelWeight);
+        if (Number.isFinite(this.blockFuel)) {
+            return 0 < fuel && fuel < (this.blockFuel - this._routeTripFuelWeight);
+        }
+
+        return 0 < fuel;
     }
 
     async trySetRouteAlternateFuel(altFuel) {
@@ -2163,12 +2153,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelTime = 0;
         } else {
             const placeholderFl = 120;
-            let airDistance = 0;
-            if (this._windDir === this._windDirections.TAILWIND) {
-                airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), this.averageWind);
-            } else if (this._windDir === this._windDirections.HEADWIND) {
-                airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), -this.averageWind);
-            }
+            const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), this.averageWind);
 
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
             if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
@@ -2184,14 +2169,9 @@ class FMCMainDisplay extends BaseAirliners {
      * won't be updated.
      */
     tryUpdateRouteTrip(dynamic = false) {
-        let airDistance = 0;
         // TODO Use static distance for `dynamic = false` (fms-v2)
         const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-        if (this._windDir === this._windDirections.TAILWIND) {
-            airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
-        } else if (this._windDir === this._windDirections.HEADWIND) {
-            airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, -this.averageWind);
-        }
+        const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
 
         let altToUse = this.cruiseLevel;
         // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
@@ -2270,27 +2250,22 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 
-    updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
+    async updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsu.connectToNetworks(flightNo)
-                .then((code) => {
-                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
-                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
-                        this.addNewAtsuMessage(code);
-                        this.flightNo = "";
-                        return callback(false);
-                    }
+        this.flightNumber = flightNo;
+        await SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC");
 
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
-                    this.flightNumber = flightNo;
-                    return callback(true);
-                });
-        });
+        // FIXME move ATSU code to ATSU
+        const code = await this.atsu.connectToNetworks(flightNo);
+        if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
+            this.addNewAtsuMessage(code);
+        }
+
+        return callback(true);
     }
 
     async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
@@ -2566,11 +2541,16 @@ class FMCMainDisplay extends BaseAirliners {
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             const oldCostIndex = this.costIndex;
-            const oldDestination = this.currFlightPlanService.active.destinationAirport.ident;
+            const oldDestination = this.currFlightPlanService.active.destinationAirport
+                ? this.currFlightPlanService.active.destinationAirport.ident
+                : undefined;
             const oldCruiseLevel = this.cruiseLevel;
             this.flightPlanService.temporaryInsert();
             this.checkCostIndex(oldCostIndex);
-            this.checkDestination(oldDestination);
+            // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+            if (oldDestination !== undefined) {
+                this.checkDestination(oldDestination);
+            }
             this.checkCruiseLevel(oldCruiseLevel);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
@@ -2600,7 +2580,7 @@ class FMCMainDisplay extends BaseAirliners {
         const newLevel = this.cruiseLevel;
         // Keep simvar in sync for the flight phase manager
         if (newLevel !== oldCruiseLevel) {
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(newLevel * 100) ? newLevel * 100 : 0);
         }
     }
 
@@ -2670,13 +2650,13 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number | null} gross weight in tons or null if not available.
      */
     getGrossWeight() {
-        const useFqi = this.isAnEngineOn();
+        const fob = this.getFOB();
 
-        if (this.zeroFuelWeight === undefined || (!useFqi && this.blockFuel === undefined)) {
+        if (this.zeroFuelWeight === undefined || fob === undefined) {
             return null;
         }
 
-        return this.zeroFuelWeight + (useFqi ? this.getFOB() : this.blockFuel);
+        return this.zeroFuelWeight + fob;
     }
 
     getToSpeedsTooLow() {
@@ -3132,7 +3112,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             // In future we probably want a better way of checking this, as 0 is
             // in the valid flex temperature range (-99 to 99).
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
+            SimVar.SetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
         let value = parseInt(s);
@@ -3151,7 +3131,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = 0.1;
         }
         this.perfTOTemp = value;
-        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
+        SimVar.SetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "Number", value);
         return true;
     }
 
@@ -3565,7 +3545,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    async trySetAverageWind(s) {
+    trySetAverageWind(s) {
         const validDelims = ["TL", "T", "+", "HD", "H", "-"];
         const matchedIndex = validDelims.findIndex(element => s.startsWith(element));
         const digits = matchedIndex >= 0 ? s.replace(validDelims[matchedIndex], "") : s;
@@ -3575,12 +3555,11 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const wind = parseInt(digits);
-        this._windDir = matchedIndex <= 2 ? this._windDirections.TAILWIND : this._windDirections.HEADWIND;
         if (wind > 250) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.averageWind = wind;
+        this.averageWind = matchedIndex <= 2 ? wind : -wind;
         return true;
     }
 
@@ -3982,10 +3961,6 @@ class FMCMainDisplay extends BaseAirliners {
     getSelectedNavaids() {
         // FIXME 2 when serving CDU 2
         return this.navigation.getSelectedNavaids(1);
-    }
-
-    updateFuelVars() {
-        this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
     }
 
     /**
@@ -4550,30 +4525,30 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     * Retrieves current fuel on boad in tons.
      *
-     * @returns {*}
+     * @returns {number | undefined} current fuel on board in tons, or undefined if fuel readings are not available.
      */
     //TODO: Can this be util?
     getFOB() {
-        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
+        const useFqi = this.isAnEngineOn();
+
+        // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
+        return useFqi ? (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000 : this.blockFuel;
     }
 
     /**
-     * retrieves GW in Tons
+     * retrieves gross weight in tons or 0 if not available
      * @returns {number}
+     * @deprecated use getGrossWeight() instead
      */
     //TODO: Can this be util?
     getGW() {
-        let fmGW = 0;
-        if (this.isAnEngineOn() && isFinite(this.zeroFuelWeight)) {
-            fmGW = (this.getFOB() + this.zeroFuelWeight);
-        } else if (isFinite(this.blockFuel) && isFinite(this.zeroFuelWeight)) {
-            fmGW = (this.blockFuel + this.zeroFuelWeight);
-        } else {
-            fmGW = 0;
-        }
-        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
-        return fmGW;
+        const fmGwOrNull = this.getGrossWeight();
+        const fmGw = fmGwOrNull !== null ? fmGwOrNull : 0;
+
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGw);
+        return fmGw;
     }
 
     //TODO: Can this be util?
@@ -4608,8 +4583,12 @@ class FMCMainDisplay extends BaseAirliners {
         return /^[+-]?\d*(?:\.\d+)?$/.test(str);
     }
 
+    /**
+     * Gets the entered zero fuel weight, or undefined if not entered
+     * @returns {number | undefined} the zero fuel weight in tonnes or undefined
+     */
     getZeroFuelWeight() {
-        return this.zeroFuelWeight * 2204.625;
+        return this.zeroFuelWeight;
     }
 
     getV2Speed() {
@@ -4692,7 +4671,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (plan) {
             this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level);
             // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
         }
     }
 
@@ -4771,6 +4750,62 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    /**
+     * The maximum speed imposed by the climb speed limit in the active flight plan or null if it is not set.
+     * @returns {number | null}
+     */
+    get climbSpeedLimit() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitSpeed : DefaultPerformanceData.ClimbSpeedLimitSpeed;
+    }
+
+    /**
+     * The altitude below which the climb speed limit of the active flight plan applies or null if not set.
+     * @returns {number | null}
+     */
+    get climbSpeedLimitAlt() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitAltitude : DefaultPerformanceData.ClimbSpeedLimitAltitude;
+    }
+
+    get climbSpeedLimitPilot() {
+        const plan = this.currFlightPlanService.active;
+
+        return plan ? plan.performanceData.isClimbSpeedLimitPilotEntered : false;
+    }
+
+    /**
+     * The maximum speed imposed by the descent speed limit in the active flight plan or null if it is not set.
+     * @returns {number | null}
+     */
+    get descentSpeedLimit() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitSpeed : DefaultPerformanceData.DescentSpeedLimitSpeed;
+    }
+
+    /**
+     * The altitude below which the descent speed limit of the active flight plan applies or null if not set.
+     * @returns {number | null}
+     */
+    get descentSpeedLimitAlt() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitAltitude : DefaultPerformanceData.DescentSpeedLimitAltitude;
+    }
+
+    get descentSpeedLimitPilot() {
+        const plan = this.currFlightPlanService.active;
+
+        return plan ? plan.performanceData.isDescentSpeedLimitPilotEntered : false;
+    }
+
     getFlightPhase() {
         return this.flightPhaseManager.phase;
     }
@@ -4826,7 +4861,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getTripWind() {
-        return this.averageWind;
+        // FIXME convert vnav to use +ve for tailwind, -ve for headwind, it's the other way around at the moment
+        return -this.averageWind;
     }
 
     getWinds() {
@@ -5084,6 +5120,13 @@ FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
+});
+
+const DefaultPerformanceData = Object.freeze({
+    ClimbSpeedLimitSpeed: 250,
+    ClimbSpeedLimitAltitude: 10000,
+    DescentSpeedLimitSpeed: 250,
+    DescentSpeedLimitAltitude: 10000,
 });
 
 class FmArinc429OutputWord extends Arinc429Word {

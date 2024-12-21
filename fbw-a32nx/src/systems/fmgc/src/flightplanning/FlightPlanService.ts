@@ -4,12 +4,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -23,13 +23,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
 
-  private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
-
   navigationDatabase: NavigationDatabase;
 
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
+    private config = FpmConfigs.A320_HONEYWELL_H3,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
       this.bus,
@@ -122,13 +121,36 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       temporaryPlan.alternateFlightPlan.pendingAirways.finalize();
     }
 
-    const fromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
+    const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
+
+    const directToInTmpy =
+      tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
+
+    const directToBeingInserted =
+      directToInTmpy && BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.PendingDirectToTurningPoint);
 
     // Update T-P
-    if (fromLeg?.isDiscontinuity === false && fromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint) {
-      // TODO fm pos
-      fromLeg.definition.waypoint.location.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-      fromLeg.definition.waypoint.location.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+    if (directToBeingInserted) {
+      temporaryPlan.editLegFlags(
+        temporaryPlan.activeLegIndex - 1,
+        (tmpyFromLeg.flags &= ~FlightPlanLegFlags.PendingDirectToTurningPoint),
+      );
+
+      const magneticCourse: number = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'Degrees');
+      const lat: number = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
+      const long: number = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+
+      temporaryPlan.editLegDefinition(temporaryPlan.activeLegIndex - 1, {
+        magneticCourse,
+        waypoint: {
+          ...tmpyFromLeg.definition.waypoint,
+          location: {
+            // TODO fm pos
+            lat,
+            long,
+          },
+        },
+      });
     }
 
     this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -11,7 +11,7 @@ import {
   MathUtils,
 } from '@flybywiresim/fbw-sdk';
 
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { NDSimvars } from '../../NDSimvarPublisher';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../utils/MapParameters';
 import { PaintUtils } from './PaintUtils';

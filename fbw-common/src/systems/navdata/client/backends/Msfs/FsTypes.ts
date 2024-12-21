@@ -175,8 +175,7 @@ export interface JS_FacilityVOR {
 
 export type JS_Facility = JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB | JS_FacilityVOR;
 
-export interface JS_Frequency {
-  __Type: 'JS_Frequency';
+interface JS_FrequencyBase {
   freqBCD16: number;
   freqMHz: number;
   /** icao of the associated navaid, or empty string */
@@ -185,6 +184,18 @@ export interface JS_Frequency {
   name: string;
   /** 0 for non-com frequencies e.g. ILS */
   type: FrequencyType;
+}
+
+export interface JS_Frequency extends JS_FrequencyBase {
+  __Type: 'JS_Frequency';
+}
+
+export interface JS_ILSFrequency extends JS_FrequencyBase {
+  __Type: 'JS_ILSFrequency';
+  hasGlideslope: number;
+  glideslopeAngle: number;
+  localizerCourse: number;
+  magvar: number;
 }
 
 export interface JS_Gate {
@@ -273,13 +284,13 @@ export interface JS_Runway {
   /** primary elevation in metres... not sure if threshold or end */
   primaryElevation: number;
   /** ils frequency for the primary end... not always filled */
-  primaryILSFrequency: JS_Frequency;
+  primaryILSFrequency: JS_ILSFrequency;
   /** offset of the primary end threshold in metres */
   primaryThresholdLength: number;
   /** secondary elevation in metres... not sure if threshold or end */
   secondaryElevation: number;
   /** ils frequency for the secondary end... not always filled */
-  secondaryILSFrequency: JS_Frequency;
+  secondaryILSFrequency: JS_ILSFrequency;
   /** offset of the secondary end threshold in metres */
   secondaryThresholdLength: number;
   surface: RunwaySurface;

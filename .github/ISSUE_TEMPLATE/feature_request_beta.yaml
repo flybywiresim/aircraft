@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a new feature for the aircraft
-labels: [Request]
+labels: ["Request"]
 body:
 - type: markdown
   attributes:
@@ -41,6 +41,6 @@ body:
   attributes:
     label: Discord Username (optional)
     description: You may optionally provide your discord username, so that we may contact you directly about the issue.
-    placeholder: ex. username#1234
+    placeholder: ex. username
   validations:
     required: false

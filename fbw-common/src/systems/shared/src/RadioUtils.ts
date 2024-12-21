@@ -12,6 +12,8 @@ export enum RadioChannelType {
   VhfCom8_33_25,
   /** 50 kHz channels. */
   VhfNavaid50,
+  /** 50 kHz ILS channels. */
+  IlsNavaid50,
 }
 
 interface ChannelParameters {
@@ -26,6 +28,11 @@ interface ChannelParameters {
 }
 
 export class RadioUtils {
+  /**
+   * @deprecated Channel types for easier use with legacy JS. For TS use {@link RadioChannelType} directly.
+   */
+  public static readonly RadioChannelType = RadioChannelType;
+
   /** The channel spacings in kHz for each frequency spacing. */
   public static readonly CHANNEL_TYPES: Record<RadioChannelType, ChannelParameters> = {
     [RadioChannelType.VhfCom8_33]: {
@@ -53,6 +60,12 @@ export class RadioUtils {
       channels: [0, 0x500],
       min: 0x1080000,
       max: 0x1179500,
+    },
+    [RadioChannelType.IlsNavaid50]: {
+      channelMask: 0xfff,
+      channels: [0, 0x500],
+      min: 0x1080000,
+      max: 0x1119500,
     },
     [RadioChannelType.Hf1]: {
       channelMask: 0xff,
@@ -168,6 +181,42 @@ export class RadioUtils {
   }
 
   /**
+   * Converts MSFS BCD16 to BCD32.
+   * @param bcd16 The frequency in BCD16 format.
+   * @returns The frequency in BCD32 format.
+   */
+  public static bcd16ToBcd32(bcd16: number): number {
+    return 0x100_000_0 | (bcd16 << 8);
+  }
+
+  /**
+   * Unpacks a frequency from MSFS BCD32 format into hertz.
+   * Primarily useful for debugging (use BCD encoding for systems code).
+   * @param bcd32 The freqeuncy in BCD32 format.
+   * @returns Frequency in hertz.
+   */
+  public static unpackBcd32(bcd32: number): number {
+    return (
+      100_000_000 * ((bcd32 >>> 24) & 0xf) +
+      10_000_000 * ((bcd32 >>> 20) & 0xf) +
+      1_000_000 * ((bcd32 >>> 16) & 0xf) +
+      100_000 * ((bcd32 >>> 12) & 0xf) +
+      10_000 * ((bcd32 >>> 8) & 0xf) +
+      1_000 * ((bcd32 >>> 4) & 0xf)
+    );
+  }
+
+  /**
+   * Unpacks a frequency from MSFS BCD16 format into hertz.
+   * Primarily useful for debugging (use BCD encoding for systems code).
+   * @param frequency Frequency in hertz, with precision of 10 kHz max.
+   * @returns Frequency in hertz.
+   */
+  public static unpackBcd16(frequency: number): number {
+    return this.unpackBcd32(RadioUtils.bcd16ToBcd32(frequency));
+  }
+
+  /**
    * Formats an MSFS BCD32 VHF freqeuncy into the format nnn.nnn
    * @param bcd32 The freqeuncy in BCD32 format.
    * @returns The formatted string.
@@ -188,21 +237,32 @@ export class RadioUtils {
   }
 
   /**
-   * Validates that a VHF COM frequency lies in the range 118.000MHz to 136.975MHz
+   * Validates that a radio frequency lies in the the valid range, and channel spacing.
    * @param bcd32 The frequency in MSFS BCD32 format.
    * @param type The channel type.
    * @returns whether the freqeuncy is valid.
    */
   public static isValidFrequency(bcd32: number, type = RadioChannelType.VhfCom8_33_25): boolean {
-    const channelInfo = RadioUtils.CHANNEL_TYPES[type];
-
-    if (bcd32 < channelInfo.min || bcd32 > channelInfo.max) {
-      return false;
-    }
-
-    return RadioUtils.isValidSpacing(bcd32, type);
+    return RadioUtils.isValidRange(bcd32, type) && RadioUtils.isValidSpacing(bcd32, type);
   }
 
+  /**
+   * Checks that a radio frequency is in the valid frequency range.
+   * @param bcd32 The frequency in MSFS BCD32 format.
+   * @param type The channel type.
+   * @returns whether the frequency is in range.
+   */
+  public static isValidRange(bcd32: number, type: RadioChannelType): boolean {
+    const channelInfo = RadioUtils.CHANNEL_TYPES[type];
+    return bcd32 >= channelInfo.min && bcd32 <= channelInfo.max;
+  }
+
+  /**
+   * Checks that a radio frequency has valid channel spacing.
+   * @param bcd32 The frequency in MSFS BCD32 format.
+   * @param type The channel type.
+   * @returns whether the frequency is a valid channel.
+   */
   public static isValidSpacing(bcd32: number, type: RadioChannelType): boolean {
     const channelInfo = RadioUtils.CHANNEL_TYPES[type];
     return channelInfo.channels.includes(bcd32 & channelInfo.channelMask);

@@ -4,7 +4,7 @@
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/FBW-Display-EIS-A380.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -123,6 +123,10 @@
   font-size: 4.5px;
 }
 
+.FontTinyToSmallest {
+  font-size: 4.3px;
+}
+
 .FontTiny {
   font-size: 4px;
 }
@@ -147,6 +151,13 @@
 text.Magenta {
   fill: $display-magenta;
   stroke: none;
+}
+tspan.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+.Fill.Magenta {
+  fill: $display-magenta;
 }
 
 .Cyan {
@@ -187,6 +198,31 @@ text.White {
   fill: $display-white;
   stroke: none;
 }
+tspan.White {
+  fill: $display-white;
+  stroke: none;
+}
+
+.Black {
+  fill: none;
+  stroke: $display-background;
+}
+.Black.Fill {
+  fill: $display-background;
+  stroke: none;
+}
+.Black.Fill.Stroke {
+  fill: $display-background;
+  stroke: $display-background;
+}
+text.Black {
+  fill: $display-background;
+  stroke: none;
+}
+tspan.Black {
+  fill: $display-background;
+  stroke: none;
+}
 
 .Green {
   stroke: $display-green;
@@ -202,12 +238,20 @@ text.Green {
   fill: $display-green;
   stroke: none;
 }
+tspan.Green {
+  fill: $display-green;
+  stroke: none;
+}
 
 .Amber {
   stroke: $display-amber;
   fill: none;
 }
 text.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+tspan.Amber {
   fill: $display-amber;
   stroke: none;
 }
@@ -224,6 +268,10 @@ text.Yellow {
   fill: $display-yellow;
   stroke: none;
 }
+tspan.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
 
 .Red {
   stroke: $display-red;
@@ -234,6 +282,10 @@ text.Yellow {
   stroke: none;
 }
 text.Red {
+  fill: $display-red;
+  stroke: none;
+}
+tspan.Red {
   fill: $display-red;
   stroke: none;
 }

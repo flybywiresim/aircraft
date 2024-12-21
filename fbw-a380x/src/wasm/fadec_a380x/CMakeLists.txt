@@ -14,7 +14,7 @@ include_directories(
 # define the source files
 set(SOURCE_FILES
     ${FBW_COMMON}/fadec_common/src/Fadec.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec_v2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Fadec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/Fadec_A380X.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/EngineControl_A380X.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fadec/FuelConfiguration_A380X.cpp

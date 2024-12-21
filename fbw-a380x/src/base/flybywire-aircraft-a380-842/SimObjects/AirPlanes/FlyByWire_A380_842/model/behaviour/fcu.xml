@@ -34,7 +34,7 @@
             <INDICATOR_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) or</INDICATOR_POWERED>
 
             <!-- Defined from FCU channel A and B -->
-            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) or</BACKLIGHT_POWERED>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
             <BACKLIGHT_POTENTIOMETER>84</BACKLIGHT_POTENTIOMETER>
         </DefaultTemplateParameters>
 
@@ -133,6 +133,17 @@
             <NODE_IS_INDICATOR />
         </UseTemplate>
 
+        <!-- Metric altitude pushbutton -->
+        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
+            <NODE_ID>PUSH_FCU_METER</NODE_ID>
+            <TOOLTIPID>%((L:A32NX_METRIC_ALT_TOGGLE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_METRIC_ALT_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_METRIC_ALT_TURN_ON%{end}</TOOLTIPID>
+
+            <NO_INDICATOR>True</NO_INDICATOR>
+            <NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+
+            <LEFT_SINGLE_CODE>#INDICATOR_POWERED# if{ (L:A32NX_METRIC_ALT_TOGGLE, bool) ! (&gt;L:A32NX_METRIC_ALT_TOGGLE, bool) }</LEFT_SINGLE_CODE>
+        </UseTemplate>
+
         <!-- ALT KNOB -->
         <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
             <NODE_ID>KNOB_FCU_ALT</NODE_ID>
@@ -162,7 +173,7 @@
         <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
             <NODE_ID>PUSH_FCU_ALT</NODE_ID>
             <INDICATOR_CODE>0</INDICATOR_CODE>
-            <TOOLTIPID>AMONG US SUSSY IMPOSTER</TOOLTIPID> <!-- TODO actually put something useful here -->
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID> <!-- FIXME: Add localisation TT when button is functional-->
 
             <BUTTON_CODE />
 

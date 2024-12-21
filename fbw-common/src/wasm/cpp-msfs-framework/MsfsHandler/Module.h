@@ -34,10 +34,10 @@ class Module {
   bool _isInitialized = false;
 
  public:
-  Module() = delete;                          // no default constructor
-  Module(const Module&) = delete;             // no copy constructor
+  Module()                         = delete;  // no default constructor
+  Module(const Module&)            = delete;  // no copy constructor
   Module& operator=(const Module&) = delete;  // no copy assignment
-  virtual ~Module() = default;
+  virtual ~Module()                = default;
 
   /**
    * Creates a new module and takes a reference to the MsfsHandler instance.

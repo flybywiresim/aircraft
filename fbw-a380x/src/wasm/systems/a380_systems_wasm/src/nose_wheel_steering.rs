@@ -1,5 +1,5 @@
 use std::error::Error;
-use systems::shared::to_bool;
+use systems::shared::{normalise_angle, to_bool};
 use systems_wasm::aspects::{
     EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariableToEventMapping,
     VariableToEventWriteOn,
@@ -229,14 +229,4 @@ fn steering_max_demand_to_msfs_from_steering_angle(nose_wheel_position: f64) -> 
         / MAX_MSFS_STEERING_ANGLE_DEGREES
         / 2.
         + 0.5
-}
-
-fn normalise_angle(angle: f64) -> f64 {
-    let raw = angle % 360.;
-
-    if raw > 0. {
-        raw
-    } else {
-        raw + 360.
-    }
 }

@@ -6,6 +6,7 @@ import {
   AircraftConfig,
   EngineModelParameters,
   FlightModelParameters,
+  FMSymbolsConfig,
   LnavConfig,
   VnavConfig,
   VnavDescentMode,
@@ -24,7 +25,7 @@ const vnavConfig: VnavConfig = {
   DEBUG_GUIDANCE: false,
   ALLOW_DEBUG_PARAMETER_INJECTION: false,
   VNAV_USE_LATCHED_DESCENT_MODE: false,
-  IDLE_N1_MARGIN: 2,
+  IDLE_N1_MARGIN: 3,
   MAXIMUM_FUEL_ESTIMATE: 250_000,
 };
 
@@ -46,7 +47,11 @@ const flightModelParams: FlightModelParameters = {
 const engineModelParams: EngineModelParameters = {
   maxThrust: 80_213,
   numberOfEngines: 4,
-  fuelBurnFactor: 2.73,
+  fuelBurnFactor: 1.33,
+};
+
+const fmsSymbolConfig: FMSymbolsConfig = {
+  publishDepartureIdent: true,
 };
 
 export const A380AircraftConfig: AircraftConfig = {
@@ -54,4 +59,5 @@ export const A380AircraftConfig: AircraftConfig = {
   vnavConfig,
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
+  fmSymbolConfig: fmsSymbolConfig,
 };

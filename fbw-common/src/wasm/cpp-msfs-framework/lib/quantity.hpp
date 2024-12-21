@@ -1,7 +1,8 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#pragma once
+#ifndef FBW_COMMON_SRC_WASM_CPP_MSFS_FRAMEWORK_LIB_QUANTITY_HPP
+#define FBW_COMMON_SRC_WASM_CPP_MSFS_FRAMEWORK_LIB_QUANTITY_HPP
 
 #include <cmath>
 #include <ratio>
@@ -34,7 +35,7 @@ class Quantity {
   }
 
   [[nodiscard]] constexpr float value() const { return this->m_value; }
-  constexpr void setValue(float value) { this->m_value = value; }
+  constexpr void                setValue(float value) { this->m_value = value; }
   [[nodiscard]] constexpr float convert(const Quantity& rhs) const { return this->m_value / rhs.m_value; }
   [[nodiscard]] constexpr Quantity<std::ratio_divide<M, std::ratio<2>>,
                                    std::ratio_divide<L, std::ratio<2>>,
@@ -42,7 +43,7 @@ class Quantity {
                                    std::ratio_divide<A, std::ratio<2>>>
   sqrt() const {
     return Quantity<std::ratio_divide<M, std::ratio<2>>, std::ratio_divide<L, std::ratio<2>>, std::ratio_divide<T, std::ratio<2>>,
-                    std::ratio_divide<A, std::ratio<2>>>(std::sqrtf(this->m_value));
+                    std::ratio_divide<A, std::ratio<2>>>(std::sqrt(this->m_value));
   }
   [[nodiscard]] constexpr Quantity<M, L, T, A> abs() const { return Quantity<M, L, T, A>(std::abs(this->m_value)); }
 };
@@ -201,8 +202,8 @@ constexpr Mass operator"" _lbs(unsigned long long int value) {
 }
 
 constexpr Length metre(1.0f);
-constexpr Length feet = 0.3048f * metre;
-constexpr Length kilometre = 1000.0f * metre;
+constexpr Length feet       = 0.3048f * metre;
+constexpr Length kilometre  = 1000.0f * metre;
 constexpr Length nauticmile = 1852.0f * metre;
 constexpr Length operator"" _m(long double value) {
   return Length(static_cast<float>(value));
@@ -231,8 +232,8 @@ constexpr Length operator"" _nm(unsigned long long int value) {
 
 constexpr Time second(1.0f);
 constexpr Time millisecond = second / 1000.0f;
-constexpr Time minute = 60.0f * second;
-constexpr Time hour = 60.0f * minute;
+constexpr Time minute      = 60.0f * second;
+constexpr Time hour        = 60.0f * minute;
 constexpr Time operator"" _ms(long double value) {
   return static_cast<float>(value) * millisecond;
 }
@@ -280,7 +281,7 @@ constexpr Angle operator"" _deg(unsigned long long int value) {
   return static_cast<float>(value) * degree;
 }
 
-constexpr Velocity knot = 0.51444f * metre / second;
+constexpr Velocity knot   = 0.51444f * metre / second;
 constexpr Velocity ftpmin = feet / minute;
 constexpr Velocity operator"" _mps(long double value) {
   return Velocity(static_cast<float>(value));
@@ -347,4 +348,4 @@ constexpr AngularAcceleration operator"" _degps2(unsigned long long int value) {
   return static_cast<float>(value) * degree / (second * second);
 }
 
-#pragma clang diagnostic pop
+#endif  // FBW_COMMON_SRC_WASM_CPP_MSFS_FRAMEWORK_LIB_QUANTITY_HPP

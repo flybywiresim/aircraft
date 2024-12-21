@@ -19,7 +19,3 @@ declare class Facilities {
 type SimVarTypes = 'string' | 'number' | 'boolean';
 
 type SimVarType<T> = T extends 'string' ? string : T extends 'number' ? number : T extends 'boolean' ? boolean : any;
-
-declare class SimVar {
-  public static GetGameVarValue<T extends SimVarTypes>(name: string, type: T): SimVarType<T>;
-}

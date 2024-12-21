@@ -67,6 +67,21 @@ export enum RaType {
   CORRECT = 0,
   PREVENT = 1,
 }
+export enum RaType2 {
+  NONE = 0,
+  CROSSING = 1,
+  REVERSAL = 2,
+  INCREASE = 3,
+  MAINTAIN = 4,
+}
+export enum UpDownAdvisoryStatus {
+  NO_ADVISORY = 0,
+  CLIMB_DESCEND = 1,
+  DONT_CLIMB_DONT_DESCEND = 2,
+  DONT_CLIMB_DONT_DESCEND_GREATER_500 = 3,
+  DONT_CLIMB_DONT_DESCEND_GREATER_1000 = 4,
+  DONT_CLIMB_DONT_DESCEND_GREATER_2000 = 5,
+}
 export enum Limits {
   MIN = 0,
   MAX = 1,
@@ -131,7 +146,11 @@ export interface RaParams {
   callout: RaCallout;
   sense: RaSense;
   type: RaType;
+  type2: RaType2;
   vs: VerticalSpeedLimits;
+  rateToMaintain: number;
+  upAdvisory: UpDownAdvisoryStatus;
+  downAdvisory: UpDownAdvisoryStatus;
 }
 
 interface VerticalSpeedLimits {
@@ -475,74 +494,106 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.UP,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [0, MAX_VS],
       red: [MIN_VS, 0],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   monitor_vs_climb_500: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.UP,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [-500, MAX_VS],
       red: [MIN_VS, -500],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND_GREATER_500,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   monitor_vs_climb_1000: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.UP,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [-1000, MAX_VS],
       red: [MIN_VS, -1000],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND_GREATER_1000,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   monitor_vs_climb_2000: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.UP,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [-2000, MAX_VS],
       red: [MIN_VS, -2000],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND_GREATER_2000,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
 
   monitor_vs_descend_0: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.DOWN,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [MIN_VS, 0],
       red: [0, MAX_VS],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND,
   },
   monitor_vs_descend_500: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.DOWN,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [MIN_VS, 500],
       red: [500, MAX_VS],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND_GREATER_500,
   },
   monitor_vs_descend_1000: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.DOWN,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [MIN_VS, 1000],
       red: [1000, MAX_VS],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND_GREATER_1000,
   },
   monitor_vs_descend_2000: {
     callout: CALLOUTS.monitor_vs,
     sense: RaSense.DOWN,
     type: RaType.PREVENT,
+    type2: RaType2.NONE,
     vs: {
       green: [MIN_VS, 2000],
       red: [2000, MAX_VS],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND_GREATER_2000,
   },
   // CORRECTIVE RA's
   // CLIMB
@@ -550,37 +601,53 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
     callout: CALLOUTS.climb,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.NONE,
     vs: {
       green: [1500, 2000],
       red: [MIN_VS, 1500],
     },
+    rateToMaintain: 1500,
+    upAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   climb_cross: {
     callout: CALLOUTS.climb_cross,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.CROSSING,
     vs: {
       green: [1500, 2000],
       red: [MIN_VS, 1500],
     },
+    rateToMaintain: 1500,
+    upAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   climb_increase: {
     callout: CALLOUTS.climb_increase,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.INCREASE,
     vs: {
       green: [2500, 4400],
       red: [MIN_VS, 2500],
     },
+    rateToMaintain: 2500,
+    upAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   climb_now: {
     callout: CALLOUTS.climb_now,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.REVERSAL,
     vs: {
       green: [1500, 2000],
       red: [MIN_VS, 1500],
     },
+    rateToMaintain: 1500,
+    upAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   // CORRECTIVE RA's
   // DESCEND
@@ -588,37 +655,53 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
     callout: CALLOUTS.descend,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.NONE,
     vs: {
       green: [-2000, -1500],
       red: [-1500, MAX_VS],
     },
+    rateToMaintain: -1500,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
   },
   descend_cross: {
     callout: CALLOUTS.descend_cross,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.CROSSING,
     vs: {
       green: [-2000, -1500],
       red: [-1500, MAX_VS],
     },
+    rateToMaintain: -1500,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
   },
   descend_increase: {
     callout: CALLOUTS.descend_increase,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.INCREASE,
     vs: {
       green: [-4400, -2500],
       red: [-2500, MAX_VS],
     },
+    rateToMaintain: -2500,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
   },
   descend_now: {
     callout: CALLOUTS.descend_now,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.REVERSAL,
     vs: {
       green: [-2000, -1500],
       red: [-1500, MAX_VS],
     },
+    rateToMaintain: -1500,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
   },
   // CORRECTIVE RA's
   // LEVEL OFF
@@ -629,6 +712,7 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
   //     callout: CALLOUTS.level_off,
   //     sense: RaSense.UP,
   //     type: RaType.CORRECT,
+  //     type2: RaType2.NONE,
   //     vs: {
   //         green: [-250, 250],
   //         red: [
@@ -636,24 +720,35 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
   //             [250, MAX_VS]
   //         ]
   //     }
+  //     rateToMaintain: 0,
+  //     upAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND,
+  //     downAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND,
   // },
   level_off_300_below: {
     callout: CALLOUTS.level_off,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.NONE,
     vs: {
       green: [-400, 0],
       red: [0, MAX_VS],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND,
   },
   level_off_300_above: {
     callout: CALLOUTS.level_off,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.NONE,
     vs: {
       green: [0, 400],
       red: [MIN_VS, 0],
     },
+    rateToMaintain: 0,
+    upAdvisory: UpDownAdvisoryStatus.DONT_CLIMB_DONT_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   // CORRECTIVE RA's
   // MAINTAIN VS, CLIMB
@@ -661,19 +756,27 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
     callout: CALLOUTS.maintain_vs,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.MAINTAIN,
     vs: {
       green: [1500, 4400],
       red: [MIN_VS, 1500],
     },
+    rateToMaintain: 1500,
+    upAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   climb_maintain_vs_crossing: {
     callout: CALLOUTS.maintain_vs,
     sense: RaSense.UP,
     type: RaType.CORRECT,
+    type2: RaType2.MAINTAIN,
     vs: {
       green: [1500, 4400],
       red: [MIN_VS, 1500],
     },
+    rateToMaintain: 1500,
+    upAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
+    downAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
   },
   // CORRECTIVE RA's
   // MAINTAIN VS, DESCEND
@@ -681,19 +784,27 @@ const RA_VARIANTS: { [key: string]: RaParams } = {
     callout: CALLOUTS.maintain_vs,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.MAINTAIN,
     vs: {
       green: [-4400, -1500],
       red: [-1500, MAX_VS],
     },
+    rateToMaintain: -1500,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
   },
   descend_maintain_vs_crossing: {
     callout: CALLOUTS.maintain_vs,
     sense: RaSense.DOWN,
     type: RaType.CORRECT,
+    type2: RaType2.MAINTAIN,
     vs: {
       green: [-4400, -1500],
       red: [-1500, MAX_VS],
     },
+    rateToMaintain: -1500,
+    upAdvisory: UpDownAdvisoryStatus.NO_ADVISORY,
+    downAdvisory: UpDownAdvisoryStatus.CLIMB_DESCEND,
   },
 } as const;
 

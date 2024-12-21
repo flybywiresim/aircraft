@@ -32,7 +32,6 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
-import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
@@ -40,6 +39,13 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+
+/**
+ * A map edit area in nautical miles, [ahead, behind, beside].
+ */
+type EditArea = [number, number, number];
 
 export class EfisSymbols<T extends number> {
   private blockUpdate = false;
@@ -82,7 +88,13 @@ export class EfisSymbols<T extends number> {
     R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LONG'),
   };
 
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
   constructor(
+    private readonly bus: EventBus,
     guidanceController: GuidanceController,
     private readonly flightPlanService: FlightPlanService,
     private readonly navaidTuner: NavaidTuner,
@@ -95,6 +107,31 @@ export class EfisSymbols<T extends number> {
 
   init(): void {
     this.nearby.init();
+  }
+
+  /**
+   *
+   * @param ll The latitude/longitude to check.
+   * @param mrp The map reference point. If not defined nothing can be in the edit area as it is undefined.
+   * @param mapOrientation The direction of the top of the map in true degrees.
+   * @param editArea The map edit area in nautical miles, [ahead, behind, beside].
+   * @returns true if {@link ll} lies within the edit area.
+   */
+  private isWithinEditArea(
+    ll: Coordinates,
+    mrp: Coordinates | null,
+    mapOrientation: number,
+    editArea: EditArea,
+  ): boolean {
+    if (!mrp) {
+      return false;
+    }
+
+    const dist = distanceTo(mrp, ll);
+    const bearing = MathUtils.normalise360(bearingTo(mrp, ll) - mapOrientation) * MathUtils.DEGREES_TO_RADIANS;
+    const dx = dist * Math.sin(bearing);
+    const dy = dist * Math.cos(bearing);
+    return Math.abs(dx) < editArea[2] && dy > -editArea[1] && dy < editArea[0];
   }
 
   async update(deltaTime: number): Promise<void> {
@@ -164,8 +201,7 @@ export class EfisSymbols<T extends number> {
       this.lastMode[side] = mode;
       const efisOptionChange = this.lastEfisOption[side] !== efisOption;
       this.lastEfisOption[side] = efisOption;
-      const nearbyOverlayChanged =
-        efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
+      const nearbyOverlayChanged = (efisOption & ~EfisOption.Constraints) > 0 && nearbyFacilitiesChanged;
       const efisInterfaceChanged = this.lastEfisInterfaceVersions[side] !== this.efisInterfaces[side].version;
       this.lastEfisInterfaceVersions[side] = this.efisInterfaces[side].version;
 
@@ -184,53 +220,38 @@ export class EfisSymbols<T extends number> {
         continue;
       }
 
-      const termination = this.findPlanCentreCoordinates(side);
-      if (termination) {
+      const mapReferencePoint = mode === EfisNdMode.PLAN ? this.findPlanCentreCoordinates(side) : ppos;
+      if (mapReferencePoint) {
         this.mapReferenceLatitude[side].setBnrValue(
-          termination.lat,
+          mapReferencePoint.lat,
           Arinc429SignStatusMatrix.NormalOperation,
           20,
           90,
           -90,
         );
         this.mapReferenceLongitude[side].setBnrValue(
-          termination.long,
+          mapReferencePoint.long,
           Arinc429SignStatusMatrix.NormalOperation,
           20,
           180,
           -180,
         );
       } else {
-        this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 90, -90);
-        this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.FailureWarning, 20, 180, -180);
+        this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 90, -90);
+        this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 180, -180);
       }
 
       this.mapReferenceLatitude[side].writeToSimVarIfDirty();
       this.mapReferenceLongitude[side].writeToSimVarIfDirty();
 
-      if (mode === EfisNdMode.PLAN && !termination) {
+      if (mode === EfisNdMode.PLAN && !mapReferencePoint) {
         this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
         return;
       }
 
-      const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
-
-      // eslint-disable-next-line no-loop-func
-      const withinEditArea = (ll): boolean => {
-        if (!termination) {
-          return true;
-        }
-
-        const dist = distanceTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
-        let bearing = bearingTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
-        if (mode !== EfisNdMode.PLAN) {
-          bearing = MathUtils.normalise360(bearing - trueHeading);
-        }
-        bearing = (bearing * Math.PI) / 180;
-        const dx = dist * Math.sin(bearing);
-        const dy = dist * Math.cos(bearing);
-        return Math.abs(dx) < editBeside && dy > -editBehind && dy < editAhead;
-      };
+      /** True bearing of the up direction of the map in degrees. */
+      const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
+      const editArea = this.calculateEditArea(range, mode);
 
       const symbols: NdSymbol[] = [];
 
@@ -238,9 +259,6 @@ export class EfisSymbols<T extends number> {
       // we reverse the array at the end to make sure symbols are drawn in the correct order
       // eslint-disable-next-line no-loop-func
       const upsertSymbol = (symbol: NdSymbol): void => {
-        if (DEBUG) {
-          console.time(`upsert symbol ${symbol.databaseId}`);
-        }
         // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
         const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
         if (symbolIdx !== -1) {
@@ -269,13 +287,13 @@ export class EfisSymbols<T extends number> {
       };
 
       // TODO ADIRs aligned (except in plan mode...?)
-      if (efisOption === EfisOption.VorDmes) {
+      if ((efisOption & EfisOption.VorDmes) > 0) {
         for (const vor of this.nearby.getVhfNavaids()) {
           const symbolType = this.vorDmeTypeFlag(vor.type);
           if (symbolType === 0) {
             continue;
           }
-          if (withinEditArea(vor.location)) {
+          if (this.isWithinEditArea(vor.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
               databaseId: vor.databaseId,
               ident: vor.ident,
@@ -284,9 +302,10 @@ export class EfisSymbols<T extends number> {
             });
           }
         }
-      } else if (efisOption === EfisOption.Ndbs) {
+      }
+      if ((efisOption & EfisOption.Ndbs) > 0) {
         for (const ndb of this.nearby.getNdbNavaids()) {
-          if (withinEditArea(ndb.location)) {
+          if (this.isWithinEditArea(ndb.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
               databaseId: ndb.databaseId,
               ident: ndb.ident,
@@ -295,9 +314,13 @@ export class EfisSymbols<T extends number> {
             });
           }
         }
-      } else if (efisOption === EfisOption.Airports) {
+      }
+      if ((efisOption & EfisOption.Airports) > 0) {
         for (const ap of this.nearby.getAirports()) {
-          if (withinEditArea(ap.location) && hasSuitableRunway(ap)) {
+          if (
+            this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) &&
+            hasSuitableRunway(ap)
+          ) {
             upsertSymbol({
               databaseId: ap.databaseId,
               ident: ap.ident,
@@ -306,9 +329,10 @@ export class EfisSymbols<T extends number> {
             });
           }
         }
-      } else if (efisOption === EfisOption.Waypoints) {
+      }
+      if ((efisOption & EfisOption.Waypoints) > 0) {
         for (const wp of this.nearby.getWaypoints()) {
-          if (withinEditArea(wp.location)) {
+          if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
             upsertSymbol({
               databaseId: wp.databaseId,
               ident: wp.ident,
@@ -353,7 +377,9 @@ export class EfisSymbols<T extends number> {
           efisOption,
           mode,
           side,
-          () => true,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
         );
@@ -376,7 +402,9 @@ export class EfisSymbols<T extends number> {
             efisOption,
             mode,
             side,
-            () => true,
+            mapReferencePoint,
+            mapOrientation,
+            editArea,
             formatConstraintAlt,
             formatConstraintSpeed,
           );
@@ -400,7 +428,9 @@ export class EfisSymbols<T extends number> {
           efisOption,
           mode,
           side,
-          () => true,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
         );
@@ -424,7 +454,9 @@ export class EfisSymbols<T extends number> {
           efisOption,
           mode,
           side,
-          () => true,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
         );
@@ -447,7 +479,9 @@ export class EfisSymbols<T extends number> {
             efisOption,
             mode,
             side,
-            () => true,
+            mapReferencePoint,
+            mapOrientation,
+            editArea,
             formatConstraintAlt,
             formatConstraintSpeed,
           );
@@ -516,7 +550,9 @@ export class EfisSymbols<T extends number> {
     efisOption: EfisOption,
     mode: EfisNdMode,
     side: EfisSide,
-    withinEditArea: (ll) => boolean,
+    mapReferencePoint: Coordinates | null,
+    mapOrientation: number,
+    editArea: EditArea,
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
   ): NdSymbol[] {
@@ -524,7 +560,7 @@ export class EfisSymbols<T extends number> {
     const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
     const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
     const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
-    const flightPhase = getFlightPhaseManager().phase;
+    const flightPhase = this.flightPhase.get();
 
     const isPlanMode = mode === EfisNdMode.PLAN;
 
@@ -599,7 +635,7 @@ export class EfisSymbols<T extends number> {
         continue;
       }
 
-      if (!withinEditArea(location)) {
+      if (!this.isWithinEditArea(location, mapReferencePoint, mapOrientation, editArea)) {
         continue;
       }
 
@@ -637,7 +673,8 @@ export class EfisSymbols<T extends number> {
         !isBeforeActiveLeg &&
         altConstraint &&
         shouldShowConstraintCircleInPhase(flightPhase, leg) &&
-        !isAlternate
+        !isAlternate &&
+        !leg.isXA()
       ) {
         if (!isSelectedVerticalModeActive) {
           type |= NdSymbolTypeFlags.Constraint;
@@ -654,33 +691,35 @@ export class EfisSymbols<T extends number> {
         }
       }
 
-      if (efisOption === EfisOption.Constraints && !isBeforeActiveLeg) {
-        const descent = leg.constraintType === WaypointConstraintType.DES;
-        switch (altConstraint?.altitudeDescriptor) {
-          case AltitudeDescriptor.AtAlt1:
-          case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
-          case AltitudeDescriptor.AtAlt1AngleAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
-            break;
-          case AltitudeDescriptor.AtOrAboveAlt1:
-          case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
-          case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
-            break;
-          case AltitudeDescriptor.AtOrBelowAlt1:
-          case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
-            break;
-          case AltitudeDescriptor.BetweenAlt1Alt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
-            constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
-            break;
-          case AltitudeDescriptor.AtOrAboveAlt2:
-            constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
-            break;
-          default:
-            // No constraint
-            break;
+      if ((efisOption & EfisOption.Constraints) > 0 && !isBeforeActiveLeg) {
+        if (!leg.isXA()) {
+          const descent = leg.constraintType === WaypointConstraintType.DES;
+          switch (altConstraint?.altitudeDescriptor) {
+            case AltitudeDescriptor.AtAlt1:
+            case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+            case AltitudeDescriptor.AtAlt1AngleAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
+              break;
+            case AltitudeDescriptor.AtOrAboveAlt1:
+            case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+            case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
+              break;
+            case AltitudeDescriptor.AtOrBelowAlt1:
+            case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+              break;
+            case AltitudeDescriptor.BetweenAlt1Alt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+              constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              break;
+            case AltitudeDescriptor.AtOrAboveAlt2:
+              constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              break;
+            default:
+              // No constraint
+              break;
+          }
         }
 
         const speedConstraint = leg.speedConstraint;
@@ -740,7 +779,7 @@ export class EfisSymbols<T extends number> {
       const databaseId = `A${airport.ident}${planAltnStr}${planIndexStr}${runwayIdentStr}`;
 
       if (runway) {
-        if (withinEditArea(runway.startLocation)) {
+        if (this.isWithinEditArea(runway.startLocation, mapReferencePoint, mapOrientation, editArea)) {
           ret.push({
             databaseId,
             ident: runway.ident,
@@ -750,7 +789,7 @@ export class EfisSymbols<T extends number> {
             type: NdSymbolTypeFlags.Runway,
           });
         }
-      } else if (withinEditArea(airport.location)) {
+      } else if (this.isWithinEditArea(airport.location, mapReferencePoint, mapOrientation, editArea)) {
         ret.push({
           databaseId,
           ident: airport.ident,

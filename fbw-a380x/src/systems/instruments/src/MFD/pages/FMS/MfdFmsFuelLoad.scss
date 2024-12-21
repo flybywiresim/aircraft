@@ -1,0 +1,49 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.mfd-label.fuelLoad {
+  width: 175px;
+  text-align: right;
+}
+
+.mfd-label.middleGrid {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.mfd-fms-fuel-load-block-line {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid $display-light-grey;
+  align-items: center;
+}
+
+.mfd-fms-fuel-load-middle-grid {
+  display: grid;
+  grid-template-columns: 125px 155px 145px 150px auto;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  padding-bottom: 5px;
+  align-items: center;
+  border-bottom: 1px solid $display-light-grey;
+}
+
+.mfd-fms-fuel-load-dest-grid-top-cell {
+  text-align: center;
+  border-bottom: 1px solid $display-light-grey;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.mfd-fms-fuel-load-dest-grid-middle-cell {
+  text-align: center;
+  align-self: center;
+  margin-bottom: 10px;
+}
+
+.mfd-fms-fuel-load-dest-grid-efob-cell {
+  align-self: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}

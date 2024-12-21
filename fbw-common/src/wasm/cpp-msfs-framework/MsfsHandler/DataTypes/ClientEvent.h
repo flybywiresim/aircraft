@@ -89,14 +89,14 @@ class ClientEvent {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientEventToSimEvent.htm
    */
-  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, std::string  clientEventName);
+  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, std::string clientEventName);
 
  public:
-  ClientEvent() = delete;                               // no default constructor
-  ClientEvent(const ClientEvent&) = delete;             // no copy constructor
+  ClientEvent()                              = delete;  // no default constructor
+  ClientEvent(const ClientEvent&)            = delete;  // no copy constructor
   ClientEvent& operator=(const ClientEvent&) = delete;  // no copy assignment
-  ClientEvent(ClientEvent&&) = delete;                  // no move constructor
-  ClientEvent& operator=(ClientEvent&&) = delete;       // no move assignment
+  ClientEvent(ClientEvent&&)                 = delete;  // no move constructor
+  ClientEvent& operator=(ClientEvent&&)      = delete;  // no move assignment
   ~ClientEvent();
 
   // =================================================================================================
@@ -263,11 +263,11 @@ class ClientEvent {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
-  void mapInputDownUpEvent(const std::string& inputDefinition,
+  void mapInputDownUpEvent(const std::string&        inputDefinition,
                            SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
-                           DWORD downValue = 0,
-                           DWORD upValue = 0,
-                           bool maskable = false);
+                           DWORD                     downValue    = 0,
+                           DWORD                     upValue      = 0,
+                           bool                      maskable     = false);
 
   /**
    * Adds an down input event to this client event and add it to an input group.<br/>
@@ -286,10 +286,10 @@ class ClientEvent {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
-  void mapInputDownEvent(const std::string& inputDefinition,
+  void mapInputDownEvent(const std::string&        inputDefinition,
                          SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
-                         DWORD downValue = 0,
-                         bool maskable = false) const;
+                         DWORD                     downValue    = 0,
+                         bool                      maskable     = false) const;
 
   /**
    * Adds an up input event to this client event and add it to an input group.<br/>
@@ -308,10 +308,10 @@ class ClientEvent {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
-  void mapInputUpEvent(const std::string& inputDefinition,
+  void mapInputUpEvent(const std::string&        inputDefinition,
                        SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
-                       DWORD upValue = 0,
-                       bool maskable = false) const;
+                       DWORD                     upValue      = 0,
+                       bool                      maskable     = false) const;
 
   /**
    * Removes down and up input events from the event input group and unmaps them from the event.

@@ -88,15 +88,19 @@ class CDUNavRadioPage {
                 return;
             }
         } else if (input.match(/^\d{3}(\.\d{1,2})?$/) !== null) {
-            const freq = parseFloat(input);
-            // 108.00 - 117.95 with some tolerance for FP precision
-            if (freq <= 107.975 || freq >= 117.975 || !RadioNav.isHz50Compliant(freq)) {
+            const freq = parseInt(input.replace('.', '').padEnd(5, '0'), 16) << 8;
+
+            if (!Fmgc.RadioUtils.isValidRange(freq, Fmgc.RadioUtils.RadioChannelType.VhfNavaid50)) {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                scratchpadCallback();
+                return false;
+            } else if (!Fmgc.RadioUtils.isValidSpacing(freq, Fmgc.RadioUtils.RadioChannelType.VhfNavaid50)) {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return false;
             }
 
-            mcdu.setManualVor(receiverIndex, freq);
+            mcdu.setManualVor(receiverIndex, Fmgc.RadioUtils.unpackBcd32(freq) / 1e6);
         } else if (input.length >= 1 && input.length <= 4) {
             // ident
             mcdu.getOrSelectVORsByIdent(input, (navaid) => {
@@ -198,15 +202,19 @@ class CDUNavRadioPage {
                 return;
             }
         } else if (input.match(/^\d{3}(\.\d{1,2})?$/) !== null) {
-            const freq = parseFloat(input);
-            // 108.00 - 111.95 with some tolerance for FP precision
-            if (freq <= 107.975 || freq >= 111.975 || !RadioNav.isHz50Compliant(freq)) {
+            const freq = parseInt(input.replace('.', '').padEnd(5, '0'), 16) << 8;
+
+            if (!Fmgc.RadioUtils.isValidRange(freq, Fmgc.RadioUtils.RadioChannelType.IlsNavaid50)) {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                scratchpadCallback();
+                return false;
+            } else if (!Fmgc.RadioUtils.isValidSpacing(freq, Fmgc.RadioUtils.RadioChannelType.IlsNavaid50)) {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return false;
             }
 
-            mcdu.setManualIls(freq).then(onDone);
+            mcdu.setManualIls(Fmgc.RadioUtils.unpackBcd32(freq) / 1e6).then(onDone);
         } else if (input.length >= 1 && input.length <= 4) {
             // ident
             mcdu.getOrSelectILSsByIdent(input, (navaid) => {

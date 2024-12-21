@@ -203,6 +203,7 @@ pub struct UpdateContext {
     ambient_temperature_id: VariableIdentifier,
     indicated_airspeed_id: VariableIdentifier,
     true_airspeed_id: VariableIdentifier,
+    ground_speed_id: VariableIdentifier,
     indicated_altitude_id: VariableIdentifier,
     pressure_altitude_id: VariableIdentifier,
     is_on_ground_id: VariableIdentifier,
@@ -226,6 +227,7 @@ pub struct UpdateContext {
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
+    total_pitch_inertia_id: VariableIdentifier,
     precipitation_rate_id: VariableIdentifier,
     in_cloud_id: VariableIdentifier,
     surface_id: VariableIdentifier,
@@ -235,12 +237,14 @@ pub struct UpdateContext {
     rotation_vel_x_id: VariableIdentifier,
     rotation_vel_y_id: VariableIdentifier,
     rotation_vel_z_id: VariableIdentifier,
+    aircraft_preset_quick_mode_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
     is_ready: bool,
     indicated_airspeed: Velocity,
     true_airspeed: Velocity,
+    ground_speed: Velocity,
     indicated_altitude: Length,
     pressure_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
@@ -264,6 +268,7 @@ pub struct UpdateContext {
 
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
+    total_pitch_inertia_slug_foot_squared: f64,
 
     // From msfs in millimeters
     precipitation_rate: Length,
@@ -274,8 +279,14 @@ pub struct UpdateContext {
 
     rotation_accel: Vector3<AngularAcceleration>,
     rotation_vel: Vector3<AngularVelocity>,
+
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
+    /// In the context of the apu this means quick startup or shutdown of the apu, and no cooldown
+    /// after using Bleed Air.
+    aircraft_preset_quick_mode: bool,
 }
 impl UpdateContext {
+    pub(crate) const GROUND_SPEED_KEY: &'static str = "GPS GROUND SPEED";
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
     pub(crate) const IN_CLOUD_KEY: &'static str = "AMBIENT IN CLOUD";
@@ -308,6 +319,7 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
+    pub(crate) const TOTAL_PITCH_INERTIA: &'static str = "TOTAL WEIGHT PITCH MOI";
     pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
     pub(crate) const ROTATION_ACCEL_X_KEY: &'static str = "ROTATION ACCELERATION BODY X";
     pub(crate) const ROTATION_ACCEL_Y_KEY: &'static str = "ROTATION ACCELERATION BODY Y";
@@ -315,6 +327,7 @@ impl UpdateContext {
     pub(crate) const ROTATION_VEL_X_KEY: &'static str = "ROTATION VELOCITY BODY X";
     pub(crate) const ROTATION_VEL_Y_KEY: &'static str = "ROTATION VELOCITY BODY Y";
     pub(crate) const ROTATION_VEL_Z_KEY: &'static str = "ROTATION VELOCITY BODY Z";
+    pub(crate) const AIRCRAFT_PRESET_QUICK_MODE_KEY: &'static str = "AIRCRAFT_PRESET_QUICK_MODE";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -332,6 +345,7 @@ impl UpdateContext {
         simulation_time: f64,
         indicated_airspeed: Velocity,
         true_airspeed: Velocity,
+        ground_speed: Velocity,
         indicated_altitude: Length,
         pressure_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
@@ -350,6 +364,7 @@ impl UpdateContext {
                 .get_identifier(Self::AMBIENT_TEMPERATURE_KEY.to_owned()),
             indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED_KEY.to_owned()),
+            ground_speed_id: context.get_identifier(Self::GROUND_SPEED_KEY.to_owned()),
             indicated_altitude_id: context.get_identifier(Self::INDICATED_ALTITUDE_KEY.to_owned()),
             pressure_altitude_id: context.get_identifier(Self::PRESSURE_ALTITUDE_KEY.to_owned()),
             is_on_ground_id: context.get_identifier(Self::IS_ON_GROUND_KEY.to_owned()),
@@ -376,6 +391,8 @@ impl UpdateContext {
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
+            total_pitch_inertia_id: context.get_identifier(Self::TOTAL_PITCH_INERTIA.to_owned()),
+
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
             in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
 
@@ -387,11 +404,15 @@ impl UpdateContext {
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
 
+            aircraft_preset_quick_mode_id: context
+                .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
+
             delta: delta.into(),
             simulation_time,
             is_ready: true,
             indicated_airspeed,
             true_airspeed,
+            ground_speed,
             indicated_altitude,
             pressure_altitude,
             ambient_temperature,
@@ -433,6 +454,7 @@ impl UpdateContext {
             latitude,
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 10.,
+            total_pitch_inertia_slug_foot_squared: 10.,
             precipitation_rate: Length::default(),
             in_cloud: false,
 
@@ -440,6 +462,8 @@ impl UpdateContext {
 
             rotation_accel: Vector3::default(),
             rotation_vel: Vector3::default(),
+
+            aircraft_preset_quick_mode: false,
         }
     }
 
@@ -449,6 +473,7 @@ impl UpdateContext {
             ambient_temperature_id: context.get_identifier("AMBIENT TEMPERATURE".to_owned()),
             indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
             true_airspeed_id: context.get_identifier("AIRSPEED TRUE".to_owned()),
+            ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
             indicated_altitude_id: context.get_identifier("INDICATED ALTITUDE".to_owned()),
             pressure_altitude_id: context.get_identifier("PRESSURE ALTITUDE".to_owned()),
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
@@ -472,6 +497,7 @@ impl UpdateContext {
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
+            total_pitch_inertia_id: context.get_identifier("TOTAL WEIGHT PITCH MOI".to_owned()),
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
             in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
 
@@ -484,11 +510,15 @@ impl UpdateContext {
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
 
+            aircraft_preset_quick_mode_id: context
+                .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
+
             delta: Default::default(),
             simulation_time: Default::default(),
             is_ready: Default::default(),
             indicated_airspeed: Default::default(),
             true_airspeed: Default::default(),
+            ground_speed: Default::default(),
             indicated_altitude: Default::default(),
             pressure_altitude: Default::default(),
             ambient_temperature: Default::default(),
@@ -526,6 +556,7 @@ impl UpdateContext {
             latitude: Default::default(),
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 1.,
+            total_pitch_inertia_slug_foot_squared: 1.,
             precipitation_rate: Length::default(),
             in_cloud: false,
 
@@ -533,6 +564,8 @@ impl UpdateContext {
 
             rotation_accel: Vector3::default(),
             rotation_vel: Vector3::default(),
+
+            aircraft_preset_quick_mode: false,
         }
     }
 
@@ -546,6 +579,7 @@ impl UpdateContext {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
         self.true_airspeed = reader.read(&self.true_airspeed_id);
+        self.ground_speed = reader.read(&self.ground_speed_id);
         self.indicated_altitude = reader.read(&self.indicated_altitude_id);
         self.pressure_altitude = reader.read(&self.pressure_altitude_id);
         self.is_on_ground = reader.read(&self.is_on_ground_id);
@@ -594,6 +628,7 @@ impl UpdateContext {
         self.total_weight = reader.read(&self.total_weight_id);
 
         self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
+        self.total_pitch_inertia_slug_foot_squared = reader.read(&self.total_pitch_inertia_id);
 
         let precipitation_height_millimeter = reader.read(&self.precipitation_rate_id);
         self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
@@ -620,6 +655,8 @@ impl UpdateContext {
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_y_id)),
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
+
+        self.aircraft_preset_quick_mode = reader.read(&self.aircraft_preset_quick_mode_id);
 
         self.update_relative_wind();
 
@@ -714,6 +751,10 @@ impl UpdateContext {
 
     pub fn true_airspeed(&self) -> Velocity {
         self.true_airspeed
+    }
+
+    pub fn ground_speed(&self) -> Velocity {
+        self.ground_speed
     }
 
     pub fn indicated_altitude(&self) -> Length {
@@ -830,6 +871,11 @@ impl UpdateContext {
             * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
     }
 
+    pub fn total_pitch_inertia_kg_m2(&self) -> f64 {
+        self.total_pitch_inertia_slug_foot_squared
+            * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
+    }
+
     pub fn rotation_acceleration_rad_s2(&self) -> Vector3<f64> {
         Vector3::new(
             self.rotation_accel[0].get::<radian_per_second_squared>(),
@@ -844,6 +890,12 @@ impl UpdateContext {
             self.rotation_vel[1].get::<radian_per_second>(),
             self.rotation_vel[2].get::<radian_per_second>(),
         )
+    }
+
+    /// This is set by the Aircraft Presets to facilitate quick startup or shutdown of the aircraft.
+    /// In the context of the apu this means quick startup or shutdown of the apu, and no cooldown
+    pub fn aircraft_preset_quick_mode(&self) -> bool {
+        self.aircraft_preset_quick_mode
     }
 }
 

@@ -34,6 +34,8 @@ module.exports = {
     msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('Clock'),
+    msfsAvionicsInstrument('OANC'),
+    msfsAvionicsInstrument('FCU'),
 
     reactInstrument('SD'),
     reactInstrument('DCDU'),
@@ -46,10 +48,10 @@ module.exports = {
   ],
 };
 
-function msfsAvionicsInstrument(name, folder = name) {
+function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
   return {
     name,
-    index: `src/systems/instruments/src/${folder}/instrument.tsx`,
+    index: `src/systems/instruments/src/${name}/${index}`,
     simulatorPackage: {
       type: 'baseInstrument',
       templateId: `A32NX_${name}`,

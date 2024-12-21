@@ -338,12 +338,13 @@ class CDUInitPage {
         }
     }
     static fuelPredConditionsMet(mcdu) {
-        return isFinite(mcdu.blockFuel) &&
-            isFinite(mcdu.zeroFuelWeightMassCenter) &&
-            isFinite(mcdu.zeroFuelWeight) &&
+        const fob = mcdu.getFOB();
+
+        return Number.isFinite(fob) &&
+            Number.isFinite(mcdu.zeroFuelWeightMassCenter) &&
+            Number.isFinite(mcdu.zeroFuelWeight) &&
             mcdu.flightPlanService.active && mcdu.flightPlanService.active.legCount > 0 &&
-            mcdu._zeroFuelWeightZFWCGEntered &&
-            (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
+            mcdu._zeroFuelWeightZFWCGEntered;
     }
     static trySetFuelPred(mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
@@ -544,11 +545,11 @@ class CDUInitPage {
         const tripWindAvgCell = new Column(21, "---");
 
         if (mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport) {
-            tripWindDirCell.update(mcdu._windDir, Column.cyan, Column.small);
-            tripWindAvgCell.update(mcdu.averageWind.toFixed(0).padStart(3, "0"), Column.cyan);
+            tripWindDirCell.update(CDUInitPage.formatWindDirection(mcdu.averageWind), Column.cyan, Column.small);
+            tripWindAvgCell.update(CDUInitPage.formatWindComponent(mcdu.averageWind), Column.cyan);
 
-            mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
-                if (await mcdu.trySetAverageWind(value)) {
+            mcdu.onRightInput[4] = (value, scratchpadCallback) => {
+                if (mcdu.trySetAverageWind(value)) {
                     CDUInitPage.ShowPage2(mcdu);
                 } else {
                     scratchpadCallback();
@@ -670,16 +671,14 @@ class CDUInitPage {
                 lwCell.update(NXUnits.kgToUser(mcdu.landingWeight).toFixed(1), Column.green, Column.small);
                 towLwCellDivider.updateAttributes(Column.green, Column.small);
 
-                tripWindDirCell.update(mcdu._windDir, Column.small);
-                tripWindAvgCell.update("000", Column.small);
+                const windComponent = Number.isFinite(mcdu.averageWind) ? mcdu.averageWind : 0;
 
-                if (isFinite(mcdu.averageWind)) {
-                    tripWindDirCell.update(mcdu._windDir, Column.small);
-                    tripWindAvgCell.update(mcdu.averageWind.toFixed(0).padStart(3, "0"), Column.big);
-                }
+                tripWindDirCell.update(CDUInitPage.formatWindDirection(windComponent), Column.small);
+                tripWindAvgCell.update(CDUInitPage.formatWindComponent(windComponent), Column.big);
+
                 mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
-                    setTimeout(async () => {
-                        if (await mcdu.trySetAverageWind(value)) {
+                    setTimeout(() => {
+                        if (mcdu.trySetAverageWind(value)) {
                             if (mcdu.page.Current === mcdu.page.InitPageB) {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
@@ -814,5 +813,13 @@ class CDUInitPage {
             min : Math.abs(0 | M / 1e7),
             sec : Math.abs((0 | M / 1e6 % 1 * 6e4) / 100)
         };
+    }
+
+    static formatWindDirection(tailwindComponent) {
+        return Math.round(tailwindComponent) > 0 ? "TL" : "HD";
+    }
+
+    static formatWindComponent(tailwindComponent) {
+        return Math.round(Math.abs(tailwindComponent)).toFixed(0).padStart(3, "0");
     }
 }

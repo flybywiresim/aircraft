@@ -3,6 +3,6 @@
   "isInteractive": false,
   "extraDeps": [
     "../MsfsAvionicsCommon",
-    "fbw-common/src/systems/instruments/src/PFD"
+    "/fbw-common/src/systems/instruments/src/PFD"
   ]
 }

@@ -1,13 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPhaseManager } from './FlightPhaseManager';
-
-const flightPhaseManager = new FlightPhaseManager();
-
-export { FlightPhaseManager };
-
-export function getFlightPhaseManager(): FlightPhaseManager {
-  return flightPhaseManager;
-}
+export { FlightPhaseManager, FlightPhaseManagerEvents } from './FlightPhaseManager';

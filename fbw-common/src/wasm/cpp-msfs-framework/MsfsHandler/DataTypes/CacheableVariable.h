@@ -81,11 +81,11 @@ class CacheableVariable : public ManagedDataObjectBase {
       : ManagedDataObjectBase(varName, updateMode, maxAgeTime, maxAgeTicks), unit(unit) {}
 
  public:
-  CacheableVariable() = delete;                                     // no default constructor
-  CacheableVariable(const CacheableVariable&) = delete;             // no copy constructor
+  CacheableVariable()                                    = delete;  // no default constructor
+  CacheableVariable(const CacheableVariable&)            = delete;  // no copy constructor
   CacheableVariable& operator=(const CacheableVariable&) = delete;  // no copy assignment
-  CacheableVariable(CacheableVariable&&) = delete;                  // no move constructor
-  CacheableVariable& operator=(CacheableVariable&&) = delete;       // no move assignment
+  CacheableVariable(CacheableVariable&&)                 = delete;  // no move constructor
+  CacheableVariable& operator=(CacheableVariable&&)      = delete;  // no move assignment
 
   /**
    * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.<p/>
@@ -93,14 +93,14 @@ class CacheableVariable : public ManagedDataObjectBase {
    * Prints an error to std::cerr if the cache is empty.<p/>
    *
    * If the value has been set by the set() method since the last read from the sim (is dirty)
-   * but has not been written to the sim yet an error message is printed to std::cerr.
-   * (MSFS does not allow exceptions)
+   * but has not been written to the sim yet an error message is printed to std::cerr if warnIfDirty
+   * is true. (MSFS does not allow exceptions)
    * @return cached value or default value
    */
   [[nodiscard]] FLOAT64 get() const;
 
   /**
-   * Reads the value from the sim if the cached value is older than the max age (time and ticks).<p/>
+   * Reads the value from the sim if the cached value is older than the max age (time or ticks).<p/>
    *
    * If a value has already been read during one tick it will therefore not be read again as the
    * variable's timeStamp and tickStamp will not be older than the current time and tick.<p/>

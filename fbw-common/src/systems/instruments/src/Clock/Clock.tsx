@@ -4,8 +4,6 @@ import { Chrono } from './Components/Chrono';
 import { Clock } from './Components/Clock';
 import { ElapsedTime } from './Components/ElapsedTime';
 
-import './style.scss';
-
 interface ClockProps extends ComponentProps {
   bus: EventBus;
 }

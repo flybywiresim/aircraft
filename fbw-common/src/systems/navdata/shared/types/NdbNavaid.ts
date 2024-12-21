@@ -1,7 +1,7 @@
 import { NauticalMiles } from 'msfs-geo';
 import { BaseFix } from '..';
 import { KiloHertz } from './Common';
-import { NavaidSubsectionCode, SectionCode } from './SectionCode';
+import { AirportSubsectionCode, NavaidSubsectionCode, SectionCode } from './SectionCode';
 
 export interface NdbNavaid extends BaseFix<SectionCode.Navaid> {
   subSectionCode: NavaidSubsectionCode.NdbNavaid;
@@ -18,6 +18,14 @@ export interface NdbNavaid extends BaseFix<SectionCode.Navaid> {
    * Distance from centre location for nearby airport query
    */
   distance?: NauticalMiles;
+}
+
+export function isNdbNavaid(o: any): o is NdbNavaid {
+  return (
+    typeof o === 'object' &&
+    ((o.sectionCode === SectionCode.Navaid && o.subSectionCode === NavaidSubsectionCode.NdbNavaid) ||
+      (o.sectionCode === SectionCode.Airport && o.subSectionCode === AirportSubsectionCode.TerminalNdb))
+  );
 }
 
 export enum NdbClass {

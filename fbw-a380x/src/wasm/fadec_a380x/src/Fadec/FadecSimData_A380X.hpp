@@ -38,7 +38,7 @@ class FadecSimData_A380X {
     char atcID[32];
   };
   DataDefinitionVector atcIdDataDef = {
-  // MSFS docs say this is max 10 chars - we use 32 for safety
+      // MSFS docs say this is max 10 chars - we use 32 for safety
       {"ATC ID", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING32}  //
   };
   /**
@@ -110,7 +110,18 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<OilPsiData> oilPsiDataPtr[4];
   // clang-format on
 
-  // Corrected N3 Data in separate Data Definitions as they are updated separately
+  // Corrected N1 Data in separate Data Definitions as they are updated separately
+  // clang-format off
+  struct CorrectedN1Data {
+    FLOAT64 correctedN1; // in Percent
+  };
+  DataDefinitionVector engine1CN1DataDef = { {"TURB ENG CORRECTED N1", 1, UNITS.Percent} };
+  DataDefinitionVector engine2CN1DataDef = { {"TURB ENG CORRECTED N1", 2, UNITS.Percent} };
+  DataDefinitionVector engine3CN1DataDef = { {"TURB ENG CORRECTED N1", 3, UNITS.Percent} };
+  DataDefinitionVector engine4CN1DataDef = { {"TURB ENG CORRECTED N1", 4, UNITS.Percent} };
+  DataDefinitionVariablePtr<CorrectedN1Data> engineCorrectedN1DataPtr[4];
+
+// Corrected N3 Data in separate Data Definitions as they are updated separately
   // Note: the sim does not have a direct N3 value, so we use N2 as a proxy
   // clang-format off
   struct CorrectedN3Data {
@@ -125,18 +136,17 @@ class FadecSimData_A380X {
 
   // SimVars Data in one Data Definition as they are read together and never updated
   struct SimVarsData {
-    FLOAT64 animationDeltaTime;       // in Seconds
-    FLOAT64 airSpeedMach;             // in Mach
-    FLOAT64 ambientPressure;          // in Millibars
-    FLOAT64 ambientTemperature;       // in Celsius
-    FLOAT64 pressureAltitude;         // in Feet
-    FLOAT64 fuelWeightLbsPerGallon;   // in Pounds
-    FLOAT64 engineAntiIce[4];         // 0 or 1
-    FLOAT64 engineIgniter[4];         // 0 or 1
-    FLOAT64 engineStarter[4];         // 0 or 1
-    FLOAT64 simEngineCorrectedN1[4];  // in Percent
-    FLOAT64 simEngineN1[4];           // in Percent
-    FLOAT64 simEngineN2[4];           // in Percent
+    FLOAT64 animationDeltaTime;      // in Seconds
+    FLOAT64 airSpeedMach;            // in Mach
+    FLOAT64 ambientPressure;         // in Millibars
+    FLOAT64 ambientTemperature;      // in Celsius
+    FLOAT64 pressureAltitude;        // in Feet
+    FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
+    FLOAT64 engineAntiIce[4];        // 0 or 1
+    FLOAT64 engineIgniter[4];        // 0 or 1
+    FLOAT64 engineStarter[4];        // 0 or 1
+    FLOAT64 simEngineN1[4];          // in Percent
+    FLOAT64 simEngineN2[4];          // in Percent
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -149,18 +159,14 @@ class FadecSimData_A380X {
       {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Enum     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Enum     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Enum     }, //
-      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Enum     }, //
+      {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
+      {"TURB ENG IGNITION SWITCH EX1", 4, UNITS.Number   }, //
       {"GENERAL ENG STARTER",          1, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          2, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          3, UNITS.Bool     }, //
       {"GENERAL ENG STARTER",          4, UNITS.Bool     }, //
-      {"TURB ENG CORRECTED N1",        1, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        2, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        3, UNITS.Percent  }, //
-      {"TURB ENG CORRECTED N1",        4, UNITS.Percent  }, //
       {"TURB ENG N1",                  1, UNITS.Percent  }, //
       {"TURB ENG N1",                  2, UNITS.Percent  }, //
       {"TURB ENG N1",                  3, UNITS.Percent  }, //
@@ -231,6 +237,8 @@ class FadecSimData_A380X {
   NamedVariablePtr thrustLimitType;
   NamedVariablePtr wingAntiIce;
 
+  NamedVariablePtr fadecQuickMode;  // 0 or 1
+
   // ===============================================================================================
 
   /**
@@ -269,8 +277,22 @@ class FadecSimData_A380X {
     engineCorrectedN3DataPtr[E2] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 2", engine2CN3DataDef, NO_AUTO_UPDATE);
     engineCorrectedN3DataPtr[E3] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 3", engine3CN3DataDef, NO_AUTO_UPDATE);
     engineCorrectedN3DataPtr[E4] = dm->make_datadefinition_var<CorrectedN3Data>("TURB ENG CN2 4", engine4CN3DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN3DataPtr[E1]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN3DataPtr[E2]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN3DataPtr[E3]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN3DataPtr[E4]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+
+    engineCorrectedN1DataPtr[E1] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 1", engine1CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E2] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 2", engine2CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E3] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 3", engine3CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E4] = dm->make_datadefinition_var<CorrectedN1Data>("TURB ENG CN1 4", engine4CN1DataDef, NO_AUTO_UPDATE);
+    engineCorrectedN1DataPtr[E1]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN1DataPtr[E2]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN1DataPtr[E3]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    engineCorrectedN1DataPtr[E4]->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     simVarsDataPtr = dm->make_datadefinition_var<SimVarsData>("SIMVARS DATA", simVarsDataDef);
+    simVarsDataPtr->setSkipChangeCheck(true);  // we don't need to check for changes as this basically always changes
     simVarsDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
   }
 
@@ -403,8 +425,11 @@ class FadecSimData_A380X {
     wingAntiIce         = dm->make_named_var("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON", UNITS.Number, AUTO_READ);
     refuelRate          = dm->make_named_var("A32NX_EFB_REFUEL_RATE_SETTING", UNITS.Number, AUTO_READ);
     refuelStartedByUser = dm->make_named_var("A32NX_REFUEL_STARTED_BY_USR", UNITS.Number, AUTO_READ);
-    airlinerToFlexTemp  = dm->make_named_var("AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
+    airlinerToFlexTemp  = dm->make_named_var("A32NX_AIRLINER_TO_FLEX_TEMP", UNITS.Number, AUTO_READ);
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
+
+    fadecQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
+    fadecQuickMode->set(0);
 
     // reset LVars to 0
     engineEgt[E1]->setAndWriteToSim(0);

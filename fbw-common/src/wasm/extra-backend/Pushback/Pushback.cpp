@@ -35,58 +35,78 @@ bool Pushback::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // LVARs - will be updated every tick if the pushback system is enabled and the tug connected
-  tugCommandedSpeedFactor = dataManager->make_named_var("PUSHBACK_SPD_FACTOR");
+  tugCommandedSpeedFactor   = dataManager->make_named_var("PUSHBACK_SPD_FACTOR");
   tugCommandedHeadingFactor = dataManager->make_named_var("PUSHBACK_HDG_FACTOR");
 
   // Aircraft configuration
   //  update frequency can be lower as this is only used for tuning and therefore not critical
   //  (e.g. 0.5 Hz or every 30 ticks is enough)
-  aircraftParkingBrakeFactor = dataManager->make_named_var("PUSHBACK_AIRCRAFT_PARKBRAKE_FACTOR", UNITS.Number, UpdateMode::NO_AUTO_UPDATE, 0.5, 30.0);
+  aircraftParkingBrakeFactor =
+      dataManager->make_named_var("PUSHBACK_AIRCRAFT_PARKBRAKE_FACTOR", UNITS.Number, UpdateMode::NO_AUTO_UPDATE, 0.5, 30.0);
   aircraftSpeedFactor = dataManager->make_named_var("PUSHBACK_AIRCRAFT_SPEED_FACTOR", UNITS.Number, UpdateMode::NO_AUTO_UPDATE, 0.5, 30.0);
-  aircraftTurnSpeedFactor = dataManager->make_named_var("PUSHBACK_AIRCRAFT_TURN_SPEED_FACTOR", UNITS.Number, UpdateMode::NO_AUTO_UPDATE, 0.5, 30.0);
+  aircraftTurnSpeedFactor =
+      dataManager->make_named_var("PUSHBACK_AIRCRAFT_TURN_SPEED_FACTOR", UNITS.Number, UpdateMode::NO_AUTO_UPDATE, 0.5, 30.0);
   aircraftParkingBrakeFactor->setAndWriteToSim(this->getParkBrakeFactor());
   aircraftSpeedFactor->setAndWriteToSim(this->getSpeedFactor());
   aircraftTurnSpeedFactor->setAndWriteToSim(this->getTurnSpeedFactor());
 
   // Pushback Base Data
   //  will be updated every visual frame
-  DataDefinitionVector pushbackBaseDataDef = {{"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool},
-                                       {"L:A32NX_PARK_BRAKE_LEVER_POS", 0, UNITS.Bool},
-                                       {"PUSHBACK ATTACHED", 0, UNITS.Bool},
-                                       {"PLANE HEADING DEGREES TRUE", 0, UNITS.degrees},
-                                       {"RELATIVE WIND VELOCITY BODY Z", 0, UNITS.FeetSec}};
+  DataDefinitionVector pushbackBaseDataDef = {
+      {"L:A32NX_PUSHBACK_SYSTEM_ENABLED", 0, UNITS.Bool   },
+      {"L:A32NX_PARK_BRAKE_LEVER_POS",    0, UNITS.Bool   },
+      {"PUSHBACK ATTACHED",               0, UNITS.Bool   },
+      {"PLANE HEADING DEGREES TRUE",      0, UNITS.degrees},
+      {"RELATIVE WIND VELOCITY BODY Z",   0, UNITS.FeetSec}
+  };
   pushbackBaseInfoPtr = dataManager->make_datadefinition_var<PushbackBaseInfo>("PUSHBACK BASE DATA", pushbackBaseDataDef);
+  if (pushbackBaseInfoPtr == nullptr) {
+    LOG_ERROR("Failed to create PushbackBaseInfo data definition");
+    return false;
+  }
   pushbackBaseInfoPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   // Data definitions for PushbackDataID
   //  Will only be written to sim if the pushback system is enabled and the tug connected
-  DataDefinitionVector pushBackDataDef = {{"PUSHBACK WAIT", 0, UNITS.Bool},
-                                   {"VELOCITY BODY X", 0, UNITS.FeetSec},
-                                   {"VELOCITY BODY Y", 0, UNITS.FeetSec},
-                                   {"VELOCITY BODY Z", 0, UNITS.FeetSec},
-                                   {"ROTATION VELOCITY BODY X", 0, UNITS.FeetSec},
-                                   {"ROTATION VELOCITY BODY Y", 0, UNITS.FeetSec},
-                                   {"ROTATION VELOCITY BODY Z", 0, UNITS.FeetSec},
-                                   {"ROTATION ACCELERATION BODY X", 0, UNITS.FeetSecSquared},
-                                   {"ROTATION ACCELERATION BODY Y", 0, UNITS.FeetSecSquared},
-                                   {"ROTATION ACCELERATION BODY Z", 0, UNITS.FeetSecSquared}};
+  DataDefinitionVector pushBackDataDef = {
+      {"PUSHBACK WAIT",                0, UNITS.Bool          },
+      {"VELOCITY BODY X",              0, UNITS.FeetSec       },
+      {"VELOCITY BODY Y",              0, UNITS.FeetSec       },
+      {"VELOCITY BODY Z",              0, UNITS.FeetSec       },
+      {"ROTATION VELOCITY BODY X",     0, UNITS.FeetSec       },
+      {"ROTATION VELOCITY BODY Y",     0, UNITS.FeetSec       },
+      {"ROTATION VELOCITY BODY Z",     0, UNITS.FeetSec       },
+      {"ROTATION ACCELERATION BODY X", 0, UNITS.FeetSecSquared},
+      {"ROTATION ACCELERATION BODY Y", 0, UNITS.FeetSecSquared},
+      {"ROTATION ACCELERATION BODY Z", 0, UNITS.FeetSecSquared}
+  };
   pushbackDataPtr = dataManager->make_datadefinition_var<PushbackData>("PUSHBACK DATA", pushBackDataDef);
+  if (pushbackDataPtr == nullptr) {
+    LOG_ERROR("Failed to create PushbackData data definition");
+    return false;
+  }
 
   // Events
   // Normally "KEY_..." events can't be treated like normal events, but in this case there is no
-  // normal event (e.g. TUG_HEADING) that we can use. So we use the "KEY_..." events instead and
-  // surprisingly the sim accepts them. This seems to be an inconsistency in the sim.
+  // normal event (e.g., TUG_HEADING) that we can use. So we use the "KEY_..." events instead and
+  // surprisingly, the sim accepts them. This seems to be an inconsistency in the sim.
   tugHeadingEvent = dataManager->make_sim_event("KEY_TUG_HEADING", NOTIFICATION_GROUP_1);
-  tugSpeedEvent = dataManager->make_sim_event("KEY_TUG_SPEED", NOTIFICATION_GROUP_1);
+  tugSpeedEvent   = dataManager->make_sim_event("KEY_TUG_SPEED", NOTIFICATION_GROUP_1);
 
   // debug purposes
-  pushbackDebug = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
-  DataDefinitionVector pushbackDebugDataDef = {{"L:A32NX_PUSHBACK_UPDT_DELTA", 0, UNITS.Number},
-                                        {"L:A32NX_PUSHBACK_SPD", 0, UNITS.FeetSec},
-                                        {"L:A32NX_PUSHBACK_HDG", 0, UNITS.degrees},
-                                        {"L:A32NX_PUSHBACK_INERTIA_SPD", 0, UNITS.FeetSec},
-                                        {"L:A32NX_PUSHBACK_R_X_OUT", 0, UNITS.FeetSecSquared}};
+  pushbackDebug                             = dataManager->make_named_var("PUSHBACK_DEBUG", UNITS.Bool, UpdateMode::AUTO_READ);
+  DataDefinitionVector pushbackDebugDataDef = {
+      {"L:A32NX_PUSHBACK_UPDT_DELTA",  0, UNITS.Number        },
+      {"L:A32NX_PUSHBACK_SPD",         0, UNITS.FeetSec       },
+      {"L:A32NX_PUSHBACK_HDG",         0, UNITS.degrees       },
+      {"L:A32NX_PUSHBACK_INERTIA_SPD", 0, UNITS.FeetSec       },
+      {"L:A32NX_PUSHBACK_R_X_OUT",     0, UNITS.FeetSecSquared}
+  };
   pushbackDebugPtr = dataManager->make_datadefinition_var<PushbackDebug>("PUSHBACK DEBUG DATA", pushbackDebugDataDef);
+  if (pushbackDebugPtr == nullptr) {
+    LOG_ERROR("Failed to create PushbackDebug data definition");
+    return false;
+  }
 
   _isInitialized = true;
   LOG_INFO("Pushback initialized");
@@ -112,8 +132,8 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   //  profiler.start();
 
-  const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
-  const UINT64 tickCounter = msfsHandler.getTickCounter();
+  const FLOAT64 timeStamp   = msfsHandler.getTimeStamp();
+  const UINT64  tickCounter = msfsHandler.getTickCounter();
 
   // pushbackBaseInfoPtr is updated at every tick, so we can simply use it here
   const bool parkingBrakeEngaged = static_cast<bool>(pushbackBaseInfoPtr->data().parkingBrakeEngaged);
@@ -129,15 +149,15 @@ bool Pushback::update(sGaugeDrawData* pData) {
   // the inertia speed (current actual speed) is calculated in ft/sec.
   const double speedFactor =
       parkingBrakeEngaged ? (aircraftSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftSpeedFactor->get();
-  const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * speedFactor;
-  const FLOAT64 inertiaSpeed = speedDampener.updateSpeed(tugCmdSpd);
+  const FLOAT64 tugCmdSpd    = tugCommandedSpeedFactor->get() * speedFactor;
+  const FLOAT64 inertiaSpeed = speedDampener.updateTargetValue(tugCmdSpd);
 
   // Based on an aircraft-specific turn speed factor and the user input (0.0-1.0),
   // the rotation velocity is calculated in ft/sec.
   const double turnSpeedHdgFactor =
       parkingBrakeEngaged ? (aircraftTurnSpeedFactor->get() / aircraftParkingBrakeFactor->get()) : aircraftTurnSpeedFactor->get();
-  const FLOAT64 computedRotationVelocity = turnDampener.updateSpeed(
-      (inertiaSpeed / aircraftSpeedFactor->get()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor);
+  const FLOAT64 computedRotationVelocity =
+      turnDampener.updateTargetValue((inertiaSpeed / aircraftSpeedFactor->get()) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor);
 
   // The heading of the tug is calculated based on the aircraft heading and the user input (0.0-1.0).
   const FLOAT64 computedTugHdg =
@@ -164,13 +184,13 @@ bool Pushback::update(sGaugeDrawData* pData) {
   // The sim will update these values based on physics like wind, ground friction, weights, inertia, etc.
   // Therefore, we need to add the "counter rotation acceleration" to the "rotation acceleration"
   // on the pitch axis to keep the aircraft stable.
-  pushbackDataPtr->data().pushbackWait = helper::Math::almostEqual(inertiaSpeed, 0.0) ? 1 : 0;
-  pushbackDataPtr->data().velBodyX = 0;
-  pushbackDataPtr->data().velBodyY = 0;
-  pushbackDataPtr->data().velBodyZ = inertiaSpeed;
-  pushbackDataPtr->data().rotVelBodyX = 0;
-  pushbackDataPtr->data().rotVelBodyY = computedRotationVelocity;
-  pushbackDataPtr->data().rotVelBodyZ = 0;
+  pushbackDataPtr->data().pushbackWait  = helper::Math::almostEqual(inertiaSpeed, 0.0) ? 1 : 0;
+  pushbackDataPtr->data().velBodyX      = 0;
+  pushbackDataPtr->data().velBodyY      = 0;
+  pushbackDataPtr->data().velBodyZ      = inertiaSpeed;
+  pushbackDataPtr->data().rotVelBodyX   = 0;
+  pushbackDataPtr->data().rotVelBodyY   = computedRotationVelocity;
+  pushbackDataPtr->data().rotVelBodyZ   = 0;
   pushbackDataPtr->data().rotAccelBodyX = counterRotationAcceleration;
   pushbackDataPtr->data().rotAccelBodyY = 0;
   pushbackDataPtr->data().rotAccelBodyZ = 0;
@@ -178,11 +198,11 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   // send as LVARs for debugging in the flyPad
   if (pushbackDebug->getAsBool()) {
-    pushbackDebugPtr->data().updateDelta = pData->dt;
-    pushbackDebugPtr->data().tugCommandedSpeed = tugCmdSpd;
+    pushbackDebugPtr->data().updateDelta         = pData->dt;
+    pushbackDebugPtr->data().tugCommandedSpeed   = tugCmdSpd;
     pushbackDebugPtr->data().tugCommandedHeading = computedTugHdg;
-    pushbackDebugPtr->data().tugInertiaSpeed = inertiaSpeed;
-    pushbackDebugPtr->data().rotXOut = counterRotationAcceleration;
+    pushbackDebugPtr->data().tugInertiaSpeed     = inertiaSpeed;
+    pushbackDebugPtr->data().rotXOut             = counterRotationAcceleration;
     pushbackDebugPtr->writeDataToSim();
   }
 

@@ -12,7 +12,14 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429WordData,
+  Arinc429RegisterSubject,
+  EfisNdMode,
+  MathUtils,
+  GenericAdirsEvents,
+} from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from './LsCourseBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
@@ -20,7 +27,6 @@ import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 
 export interface ArcModePageProps<T extends number> extends ComponentProps {
   bus: ArincEventBus;
@@ -228,7 +234,7 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
         <path
           name="arc-mode-top-map-area"
           d="M0,0 L0,312 a492,492 0 0 1 768,0 L768,0 L0,0"
-          class="nd-inverted-map-area"
+          class="nd-inverted-map-area a380xInvisible"
         />
 
         <ArcModeUnderlay

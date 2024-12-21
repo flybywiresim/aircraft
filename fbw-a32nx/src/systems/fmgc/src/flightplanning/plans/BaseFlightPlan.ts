@@ -7,6 +7,7 @@ import {
   Airport,
   AltitudeDescriptor,
   Approach,
+  ApproachType,
   ApproachWaypointDescriptor,
   Arrival,
   Departure,
@@ -39,7 +40,7 @@ import {
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -119,6 +120,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           this.incrementVersion();
 
           flightPlanEventsPub.pub('flightPlan.setSegmentLegs', event);
+        }
+      }),
+    );
+
+    this.subscriptions.push(
+      subs.on('SYNC_flightPlan.legFlagsEdit').handle((event) => {
+        if (!this.ignoreSync) {
+          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+            return;
+          }
+
+          const element = this.legElementAt(event.atIndex);
+
+          element.flags = event.newFlags;
+
+          this.incrementVersion();
+
+          flightPlanEventsPub.pub('flightPlan.legFlagsEdit', event);
         }
       }),
     );
@@ -227,6 +246,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     return -1;
+  }
+
+  get isDepartureProcedureActive(): boolean {
+    return (
+      this.departureSegment.procedure !== undefined &&
+      ((this.departureRunwayTransitionSegment.legCount > 0 && this.activeLegIndex < this.findLastDepartureLeg()[2]) ||
+        this.isProcedureBeingFlownInSegment(this.departureSegment.procedure.ident, this.enrouteSegment)) // legs of departure are moved to enroute after direct
+    );
   }
 
   get isApproachActive(): boolean {
@@ -441,6 +468,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
 
     this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: false, segmentIndex, legs });
+  }
+
+  syncLegFlagsChange(atIndex: number) {
+    const leg = this.elementAt(atIndex);
+
+    if (leg.isDiscontinuity === false) {
+      this.sendEvent('flightPlan.legFlagsEdit', {
+        planIndex: this.index,
+        atIndex,
+        forAlternate: this instanceof AlternateFlightPlan,
+        newFlags: leg.flags,
+      });
+    }
   }
 
   syncLegDefinitionChange(atIndex: number) {
@@ -1035,14 +1075,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   glideslopeIntercept(): number | undefined {
-    for (const leg of this.approachSegment.allLegs) {
-      if (
-        leg.isDiscontinuity === false &&
-        leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix &&
-        (leg.definition.altitudeDescriptor === AltitudeDescriptor.AtAlt1GsMslAlt2 ||
-          leg.definition.altitudeDescriptor === AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2)
-      ) {
-        return leg.definition.altitude2;
+    // On ILS approaches altitude2 on the FACF is the GS intercept alt,
+    // even when there is no descriptor (i.e. there's no alt constraint) - ARINC 424 5.29.
+    if (this.approach.type === ApproachType.Ils) {
+      for (const leg of this.approachSegment.allLegs) {
+        if (
+          leg.isDiscontinuity === false &&
+          leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix &&
+          leg.definition.altitude2 > 0
+        ) {
+          return leg.definition.altitude2;
+        }
       }
     }
 
@@ -1366,6 +1409,16 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.adjustIFLegs();
 
     this.incrementVersion();
+  }
+
+  editLegFlags(index: number, flags: number, notify = true): void {
+    const leg = this.legElementAt(index);
+
+    leg.flags = flags;
+
+    if (notify) {
+      this.syncLegFlagsChange(index);
+    }
   }
 
   editLegDefinition(index: number, changes: Partial<FlightPlanLegDefinition>, notify = true): void {
@@ -1950,6 +2003,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
               lastLegInFirst.annotation,
             );
 
+            this.mergeConstraints(element, lastLegInFirst);
+
             if (LnavConfig.VERBOSE_FPM_LOG) {
               console.trace('[fpm] stringSegmentsForwards - popping legs of first');
             }
@@ -2091,7 +2146,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       if (bothXf) {
         if (element.terminatesWithWaypoint(firstLegInSecond.terminationWaypoint())) {
-          // Use leg from the first segment, do not transfer any information from the second segment, see FBW-22-08
+          // Use leg from the first segment for annotation and ident, see FBW-22-08,
+          // but merge constraints
+          this.mergeConstraints(element, firstLegInSecond);
+
           second.allLegs.shift();
           second.flightPlan.syncSegmentLegsChange(first);
           cutBefore = i;
@@ -2224,6 +2282,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
+  private isProcedureBeingFlownInSegment(ident: string, segment: FlightPlanSegment): boolean {
+    return (
+      segment.allLegs.filter(
+        (el, idx) => idx >= this.activeLegIndex && el.isDiscontinuity === false && el.annotation === ident,
+      ).length > 0
+    );
+  }
+
   private findLastDepartureLeg(): [FlightPlanSegment, number, number] {
     for (let segment = this.previousSegment(this.enrouteSegment); segment; segment = this.previousSegment(segment)) {
       const lastLegIndex = segment.lastLegIndex;
@@ -2270,6 +2336,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           continue;
         }
 
+        // TODO sync
         if (element.definition.type === LegType.IF && element.ident !== 'T-P') {
           element.type = LegType.TF;
         } else {
@@ -2279,7 +2346,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       // XX -> IF if no element, or discontinuity before, or 0th leg
       if (element && element.isDiscontinuity === false && element.type !== LegType.IF) {
-        if (!prevElement || (prevElement && prevElement.isDiscontinuity === true) || i === 0) {
+        // T-P legs need to always be CF so they can create a direct-to-fix transition outbound of them
+        const isLegTurningPoint = BitFlags.isAny(element.flags, FlightPlanLegFlags.DirectToTurningPoint);
+
+        // TODO sync
+        if (!isLegTurningPoint && (!prevElement || (prevElement && prevElement.isDiscontinuity === true) || i === 0)) {
           element.type = LegType.IF;
         }
       }

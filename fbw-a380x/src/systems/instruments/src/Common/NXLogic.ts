@@ -10,49 +10,51 @@
  * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
  */
 export class NXLogicTriggeredMonostableNode {
-        t: number;
+  t: number;
 
-        risingEdge: boolean;
+  risingEdge: boolean;
 
-        timer: number;
+  timer: number;
 
-        previousValue: any;
+  previousValue: any;
 
-        constructor(t, risingEdge = true) {
-            this.t = t;
-            this.risingEdge = risingEdge;
-            this.timer = 0;
-            this.previousValue = null;
-        }
+  constructor(t, risingEdge = true) {
+    this.t = t;
+    this.risingEdge = risingEdge;
+    this.timer = 0;
+    this.previousValue = null;
+  }
 
-        write(value, _deltaTime) {
-            if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
-                this.previousValue = value;
-            }
-            if (this.risingEdge) {
-                if (this.timer > 0) {
-                    this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-                    this.previousValue = value;
-                    return true;
-                } if (!this.previousValue && value) {
-                    this.timer = this.t;
-                    this.previousValue = value;
-                    return true;
-                }
-            } else {
-                if (this.timer > 0) {
-                    this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-                    this.previousValue = value;
-                    return true;
-                } if (this.previousValue && !value) {
-                    this.timer = this.t;
-                    this.previousValue = value;
-                    return true;
-                }
-            }
-            this.previousValue = value;
-            return false;
-        }
+  write(value, _deltaTime) {
+    if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
+      this.previousValue = value;
+    }
+    if (this.risingEdge) {
+      if (this.timer > 0) {
+        this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
+        this.previousValue = value;
+        return true;
+      }
+      if (!this.previousValue && value) {
+        this.timer = this.t;
+        this.previousValue = value;
+        return true;
+      }
+    } else {
+      if (this.timer > 0) {
+        this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
+        this.previousValue = value;
+        return true;
+      }
+      if (this.previousValue && !value) {
+        this.timer = this.t;
+        this.previousValue = value;
+        return true;
+      }
+    }
+    this.previousValue = value;
+    return false;
+  }
 }
 
 /**
@@ -63,64 +65,64 @@ export class NXLogicTriggeredMonostableNode {
  * and the original signal will be emitted again.
  */
 export class NXLogicConfirmNode {
-    t: number;
+  t: number;
 
-    risingEdge: boolean;
+  risingEdge: boolean;
 
-    timer: number;
+  timer: number;
 
-    previousInput: any;
+  previousInput: any;
 
-    previousOutput: any;
+  previousOutput: any;
 
-    constructor(t, risingEdge = true) {
-        this.t = t;
-        this.risingEdge = risingEdge;
+  constructor(t, risingEdge = true) {
+    this.t = t;
+    this.risingEdge = risingEdge;
+    this.timer = 0;
+    this.previousInput = null;
+    this.previousOutput = null;
+  }
+
+  write(value, deltaTime) {
+    if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
+      this.previousInput = value;
+      this.previousOutput = value;
+    }
+    if (this.risingEdge) {
+      if (!value) {
         this.timer = 0;
-        this.previousInput = null;
-        this.previousOutput = null;
-    }
-
-    write(value, deltaTime) {
-        if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
-            this.previousInput = value;
-            this.previousOutput = value;
-        }
-        if (this.risingEdge) {
-            if (!value) {
-                this.timer = 0;
-            } else if (this.timer > 0) {
-                this.timer = Math.max(this.timer - deltaTime / 1000, 0);
-                this.previousInput = value;
-                this.previousOutput = !value;
-                return !value;
-            } else if (!this.previousInput && value) {
-                this.timer = this.t;
-                this.previousInput = value;
-                this.previousOutput = !value;
-                return !value;
-            }
-        } else if (value) {
-            this.timer = 0;
-        } else if (this.timer > 0) {
-            this.timer = Math.max(this.timer - deltaTime / 1000, 0);
-            this.previousInput = value;
-            this.previousOutput = !value;
-            return !value;
-        } else if (this.previousInput && !value) {
-            this.timer = this.t;
-            this.previousInput = value;
-            this.previousOutput = !value;
-            return !value;
-        }
+      } else if (this.timer > 0) {
+        this.timer = Math.max(this.timer - deltaTime / 1000, 0);
         this.previousInput = value;
-        this.previousOutput = value;
-        return value;
+        this.previousOutput = !value;
+        return !value;
+      } else if (!this.previousInput && value) {
+        this.timer = this.t;
+        this.previousInput = value;
+        this.previousOutput = !value;
+        return !value;
+      }
+    } else if (value) {
+      this.timer = 0;
+    } else if (this.timer > 0) {
+      this.timer = Math.max(this.timer - deltaTime / 1000, 0);
+      this.previousInput = value;
+      this.previousOutput = !value;
+      return !value;
+    } else if (this.previousInput && !value) {
+      this.timer = this.t;
+      this.previousInput = value;
+      this.previousOutput = !value;
+      return !value;
     }
+    this.previousInput = value;
+    this.previousOutput = value;
+    return value;
+  }
 
-    read() {
-        return this.previousOutput;
-    }
+  read() {
+    return this.previousOutput;
+  }
 }
 
 /**
@@ -134,37 +136,37 @@ export class NXLogicConfirmNode {
  * value will persist even when power is lost and subsequently restored.
  */
 export class NXLogicMemoryNode {
-    /**
-     * @param setStar Whether set has precedence over reset if both are applied simultaneously.
-     * @param nvm Whether the is non-volatile and will be kept even when power is lost.
-     */
+  /**
+   * @param setStar Whether set has precedence over reset if both are applied simultaneously.
+   * @param nvm Whether the is non-volatile and will be kept even when power is lost.
+   */
 
-    setStar: boolean;
+  setStar: boolean;
 
-    nvm: boolean;
+  nvm: boolean;
 
-    value:boolean;
+  value: boolean;
 
-    constructor(setStar = true, nvm = false) {
-        this.setStar = setStar;
-        this.nvm = nvm; // TODO in future, reset non-nvm on power cycle
-        this.value = false;
+  constructor(setStar = true, nvm = false) {
+    this.setStar = setStar;
+    this.nvm = nvm; // TODO in future, reset non-nvm on power cycle
+    this.value = false;
+  }
+
+  write(set, reset) {
+    if (set && reset) {
+      this.value = this.setStar;
+    } else if (set && !this.value) {
+      this.value = true;
+    } else if (reset && this.value) {
+      this.value = false;
     }
+    return this.value;
+  }
 
-    write(set, reset) {
-        if (set && reset) {
-            this.value = this.setStar;
-        } else if (set && !this.value) {
-            this.value = true;
-        } else if (reset && this.value) {
-            this.value = false;
-        }
-        return this.value;
-    }
-
-    read() {
-        return this.value;
-    }
+  read() {
+    return this.value;
+  }
 }
 
 /**
@@ -173,52 +175,54 @@ export class NXLogicMemoryNode {
  *
  */
 export class NXLogicClockNode {
-    /**
-     * @param from Starting time (in seconds)
-     * @param to End time (in seconds)
-     * @param inc Increment time (in seconds)
-     * @param dir Direction of increment (UP/DOWN)
-     */
+  /**
+   * @param from Starting time (in seconds)
+   * @param to End time (in seconds)
+   * @param inc Increment time (in seconds)
+   * @param dir Direction of increment (UP/DOWN)
+   */
 
-    from: number;
+  from: number;
 
-    to: number;
+  to: number;
 
-    inc:number;
+  inc: number;
 
-    dir: string;
+  dir: string;
 
-    timer: number;
+  timer: number;
 
-    flag: boolean;
+  flag: boolean;
 
-    output: number;
+  output: number;
 
-    constructor(from, to, inc = 1, dir = 'DN') {
-        this.from = from;
-        this.to = to;
-        this.inc = inc;
-        this.dir = dir;
-        this.output = 0;
-        this.flag = false;
+  constructor(from, to, inc = 1, dir = 'DN') {
+    this.from = from;
+    this.to = to;
+    this.inc = inc;
+    this.dir = dir;
+    this.output = 0;
+    this.flag = false;
+  }
+
+  write(value, deltaTime) {
+    if (!value) {
+      this.timer = 0;
+      this.flag = false;
+      this.output = 0;
     }
-
-    write(value, deltaTime) {
-        if (!value) {
-            this.timer = 0;
-            this.flag = false;
-            this.output = 0;
-        } if (!this.flag) {
-            this.flag = true;
-            this.timer = this.from;
-        } else if (this.flag) {
-            this.timer = this.dir === 'DN' ? Math.max(this.timer - deltaTime / 1000, 0) : Math.max(this.timer + deltaTime / 1000, 0);
-            this.output = this.timer === this.to ? 2 : 1;
-        }
-        return this.output;
+    if (!this.flag) {
+      this.flag = true;
+      this.timer = this.from;
+    } else if (this.flag) {
+      this.timer =
+        this.dir === 'DN' ? Math.max(this.timer - deltaTime / 1000, 0) : Math.max(this.timer + deltaTime / 1000, 0);
+      this.output = this.timer === this.to ? 2 : 1;
     }
+    return this.output;
+  }
 
-    read() {
-        return this.output;
-    }
+  read() {
+    return this.output;
+  }
 }

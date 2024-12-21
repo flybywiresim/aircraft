@@ -3,9 +3,9 @@ import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
-import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -82,11 +82,12 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
         this.ILSCourse.set(n);
       });
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        this.lsPressed.set(!this.lsPressed.get());
-      }
-    });
+    sub
+      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
+      .whenChanged()
+      .handle((lsButton) => {
+        this.lsPressed.set(lsButton);
+      });
   }
 
   render(): VNode {

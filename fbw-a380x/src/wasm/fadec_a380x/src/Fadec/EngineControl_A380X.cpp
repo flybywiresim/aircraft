@@ -71,7 +71,7 @@ void EngineControl_A380X::update() {
 
     const bool   simOnGround   = msfsHandlerPtr->getSimOnGround();
     const double engineTimer   = simData.engineTimer[engineIdx]->get();
-    const double simCN1        = simData.simVarsDataPtr->data().simEngineCorrectedN1[engineIdx];
+    const double simCN1        = simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1;
     const double simN1         = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
     const double simN3         = simData.simVarsDataPtr->data().simEngineN2[engineIdx];  // as the sim does not have N3, we use N2
     prevSimEngineN3[engineIdx] = simN3;
@@ -385,8 +385,22 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
   const double idleFF  = simData.engineIdleFF->get();
   const double idleEGT = simData.engineIdleEGT->get();
 
+  // Quick Start for expedited engine start for Aircraft Presets
+  if (simData.fadecQuickMode->getAsBool() && simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 < idleN3) {
+    LOG_INFO("Fadec::EngineControl_A380X::engineStartProcedure() - Quick Start");
+    simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = idleN3;
+    simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
+    simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1 = idleN1;
+    simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN3[engineIdx]->set(idleN3);
+    simData.engineN1[engineIdx]->set(idleN1);
+    simData.engineFF[engineIdx]->set(idleFF);
+    simData.engineEgt[engineIdx]->set(idleEGT);
+    simData.engineState[engineIdx]->set(ON);
+    return;
+  }
   // delay to simulate the delay between master-switch setting and actual engine start
-  if (engineTimer < 1.7) {
+  else if (engineTimer < 1.7) {
     if (msfsHandlerPtr->getSimOnGround()) {
       simData.engineFuelUsed[engineIdx]->set(0);
     }
@@ -407,12 +421,12 @@ void EngineControl_A380X::engineStartProcedure(int         engine,
     const double shutdownEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
 
     simData.engineN3[engineIdx]->set(newN3Fbw);
-    simData.engineN2[engineIdx]->set(newN3Fbw + 0.7);  // 0.7 seems to be an arbitrary offset to get N2 from N3
+    simData.engineN2[engineIdx]->set(newN3Fbw == 0 ? 0 : newN3Fbw + 0.7);  // 0.7 seems to be an arbitrary offset to get N2 from N3
     simData.engineN1[engineIdx]->set(startN1Fbw);
     simData.engineFF[engineIdx]->set(startFfFbw);
 
     if (engineState == RESTARTING) {
-      if ((std::abs)(startEgtFbw - preEgtFbw) <= 1.5) {
+      if (std::abs(startEgtFbw - preEgtFbw) <= 1.5) {
         simData.engineEgt[engineIdx]->set(startEgtFbw);
         simData.engineState[engineIdx]->set(STARTING);
       } else if (startEgtFbw > preEgtFbw) {
@@ -446,8 +460,23 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
 
   const int engineIdx = engine - 1;
 
+  // Quick Shutdown for expedited engine shutdown for Aircraft Presets
+  if (simData.fadecQuickMode->getAsBool() && simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 > 0.0) {
+    LOG_INFO("Fadec::EngineControl_A380X::engineShutdownProcedure() - Quick Shutdown");
+    simData.engineCorrectedN3DataPtr[engineIdx]->data().correctedN3 = 0;
+    simData.engineCorrectedN3DataPtr[engineIdx]->writeDataToSim();
+    simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1 = 0;
+    simData.engineCorrectedN1DataPtr[engineIdx]->writeDataToSim();
+    simData.engineN1[engineIdx]->set(0.0);
+    simData.engineN2[engineIdx]->set(0.0);
+    simData.engineN3[engineIdx]->set(0.0);
+    simData.engineFF[engineIdx]->set(0.0);
+    simData.engineEgt[engineIdx]->set(ambientTemperature);
+    simData.engineTimer[engineIdx]->set(2.0);  // to skip the delay further down
+    return;
+  }
   // delay to simulate the delay between master-switch setting and actual engine shutdown
-  if (engineTimer < 1.8) {
+  else if (engineTimer < 1.8) {
     simData.engineTimer[engineIdx]->set(engineTimer + deltaTime);
   } else {
     const double preN1Fbw  = simData.engineN1[engineIdx]->get();
@@ -462,7 +491,7 @@ void EngineControl_A380X::engineShutdownProcedure(int    engine,
     const double newEgtFbw = Polynomial_A380X::shutdownEGT(preEgtFbw, ambientTemperature, deltaTime);
 
     simData.engineN1[engineIdx]->set(newN1Fbw);
-    simData.engineN2[engineIdx]->set(newN3Fbw + 0.7);
+    simData.engineN2[engineIdx]->set(newN3Fbw == 0 ? 0 : newN3Fbw + 0.7);
     simData.engineN3[engineIdx]->set(newN3Fbw);
     simData.engineEgt[engineIdx]->set(newEgtFbw);
   }
@@ -488,8 +517,8 @@ int EngineControl_A380X::updateFF(int    engine,
   double outFlow = 0;  // kg/hour
   if (correctedFuelFlow >= 1) {
     outFlow = std::max(0.0,                                                                                  //
-                         (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
-                          * (std::sqrt)(EngineRatios::theta2(mach, ambientTemperature))));
+                       (correctedFuelFlow * Fadec::LBS_TO_KGS * EngineRatios::delta2(mach, ambientPressure)  //
+                        * std::sqrt(EngineRatios::theta2(mach, ambientTemperature))));
   }
   simData.engineFF[engine - 1]->set(outFlow);
 
@@ -537,7 +566,7 @@ void EngineControl_A380X::updateEGT(int          engine,
     const double correctedEGT    = Polynomial_A380X::correctedEGT(simCN1, correctedFuelFlow, mach, pressureAltitude);
     const double egtFbwPrevious  = simData.engineEgt[engineIdx]->get();
     double       egtFbwActualEng = (correctedEGT * EngineRatios::theta2(mach, ambientTemperature));
-    egtFbwActualEng              = egtFbwActualEng + (egtFbwPrevious - egtFbwActualEng) * (std::exp)(-0.1 * deltaTime);
+    egtFbwActualEng              = egtFbwActualEng + (egtFbwPrevious - egtFbwActualEng) * std::exp(-0.1 * deltaTime);
     simData.engineEgt[engineIdx]->set(egtFbwActualEng);
   }
 
@@ -594,7 +623,7 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
                                  rightMidQty + feedFourQty + rightOuterQty + trimQty;  // Pounds
   const double fuelTotalPre = fuelLeftOuterPre + fuelFeedOnePre + fuelLeftMidPre + fuelLeftInnerPre + fuelFeedTwoPre + fuelFeedThreePre +
                               fuelRightInnerPre + fuelRightMidPre + fuelFeedFourPre + fuelRightOuterPre + fuelTrimPre;  // Pounds
-  const double deltaFuelRate = (std::abs)(fuelTotalActual - fuelTotalPre) / (weightLbsPerGallon * deltaTimeSeconds);    // Pounds/ sec
+  const double deltaFuelRate = std::abs(fuelTotalActual - fuelTotalPre) / (weightLbsPerGallon * deltaTimeSeconds);      // Pounds/ sec
 
   const EngineState engine1State = static_cast<EngineState>(simData.engineState[E1]->get());
   const EngineState engine2State = static_cast<EngineState>(simData.engineState[E2]->get());
@@ -790,7 +819,7 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
         if (aircraftDevelopmentStateVar != 2) {
           fuelFlowRateChange   = (*engineFF[i] - *enginePreFF[i]) / deltaTimeHours;
           previousFuelFlowRate = *enginePreFF[i];
-          *fuelBurn[i]         = (fuelFlowRateChange * (std::pow)(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
+          *fuelBurn[i]         = (fuelFlowRateChange * std::pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
         }
         // Fuel Used Accumulators
         *fuelUsedEngine[i] += *fuelBurn[i];
@@ -800,10 +829,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
       }
     }
 
-    const double fuelFeedOne   = fuelFeedOnePre - (fuelBurn1 * Fadec::KGS_TO_LBS);    // Pounds
-    const double fuelFeedTwo   = fuelFeedTwoPre - (fuelBurn2 * Fadec::KGS_TO_LBS);    // Pounds
-    const double fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * Fadec::KGS_TO_LBS);  // Pounds
-    const double fuelFeedFour  = fuelFeedFourPre - (fuelBurn4 * Fadec::KGS_TO_LBS);   // Pounds
+    const double fuelFeedOne   = std::max(feedOneQty - (fuelBurn1 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
+    const double fuelFeedTwo   = std::max(feedTwoQty - (fuelBurn2 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
+    const double fuelFeedThree = std::max(feedThreeQty - (fuelBurn3 * Fadec::KGS_TO_LBS), 0.0);  // Pounds
+    const double fuelFeedFour  = std::max(feedFourQty - (fuelBurn4 * Fadec::KGS_TO_LBS), 0.0);   // Pounds
 
     // Setting new pre-cycle conditions
     simData.enginePreFF[E1]->set(engine1FF);
@@ -880,7 +909,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
 
   // Write all N1 Limits
-  const double altitude = (std::min)(16600.0, pressAltitude);
+  const double altitude = std::min(16600.0, pressAltitude);
   const double to       = ThrustLimits_A380X::limitN1(0, altitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   const double ga       = ThrustLimits_A380X::limitN1(1, altitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   double       flex_to  = 0;
@@ -893,7 +922,7 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   double mct = ThrustLimits_A380X::limitN1(3, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
 
   // transition between TO and GA limit -----------------------------------------------------------------------------
-  const double machFactorLow = (std::max)(0.0, (std::min)(1.0, (mach - 0.04) / 0.04));
+  const double machFactorLow = std::max(0.0, std::min(1.0, (mach - 0.04) / 0.04));
   const double flex          = flex_to + (flex_ga - flex_to) * machFactorLow;
   double       toga          = to + (ga - to) * machFactorLow;
 
@@ -918,13 +947,13 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
 
   double deltaThrust = 0;
   if (isTransitionActive) {
-    double timeDifference = (std::max)(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
+    double timeDifference = std::max(0.0, (simulationTime - transitionStartTime) - TRANSITION_WAIT_TIME);
     if (timeDifference > 0 && clb > flex) {
       wasFlexActive = false;
     }
   }
   if (wasFlexActive) {
-    clb = (std::min)(clb, flex) + deltaThrust;
+    clb = std::min(clb, flex) + deltaThrust;
   }
 
   prevThrustLimitType = thrustLimitType;
@@ -933,20 +962,20 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 
   // get factors
-  const double machFactor         = (std::max)(0.0, (std::min)(1.0, ((mach - 0.37) / 0.05)));
-  const double altitudeFactorLow  = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 16600) / 500)));
-  const double altitudeFactorHigh = (std::max)(0.0, (std::min)(1.0, ((pressureAltitude - 25000) / 500)));
+  const double machFactor         = std::max(0.0, std::min(1.0, ((mach - 0.37) / 0.05)));
+  const double altitudeFactorLow  = std::max(0.0, std::min(1.0, ((pressureAltitude - 16600) / 500)));
+  const double altitudeFactorHigh = std::max(0.0, std::min(1.0, ((pressureAltitude - 25000) / 500)));
 
   // adapt thrust limits
   if (pressureAltitude >= 25000) {
-    mct  = (std::max)(clb, mct + (clb - mct) * altitudeFactorHigh);
+    mct  = std::max(clb, mct + (clb - mct) * altitudeFactorHigh);
     toga = mct;
   } else {
     if (mct > toga) {
-      mct  = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
+      mct  = toga + (mct - toga) * std::min(1.0, altitudeFactorLow + machFactor);
       toga = mct;
     } else {
-      toga = toga + (mct - toga) * (std::min)(1.0, altitudeFactorLow + machFactor);
+      toga = toga + (mct - toga) * std::min(1.0, altitudeFactorLow + machFactor);
     }
   }
 
@@ -957,10 +986,10 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   simData.thrustLimitClimb->set(clb);
   simData.thrustLimitMct->set(mct);
 
-  #ifdef PROFILING
-    profilerUpdateThrustLimits.stop();
-  #endif
-  }
+#ifdef PROFILING
+  profilerUpdateThrustLimits.stop();
+#endif
+}
 
 /*
  * Previous code - call to it was already commented out and this function was not in use.

@@ -27,11 +27,11 @@ export enum EfisNdMode {
 
 export enum EfisOption {
   None = 0,
-  Constraints = 1,
-  VorDmes = 2,
-  Waypoints = 3,
-  Ndbs = 4,
-  Airports = 5,
+  Constraints = 1 << 0,
+  VorDmes = 1 << 1,
+  Waypoints = 1 << 2,
+  Ndbs = 1 << 3,
+  Airports = 1 << 4,
 }
 
 export enum NdSymbolTypeFlags {

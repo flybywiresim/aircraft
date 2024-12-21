@@ -41,8 +41,8 @@ class CDUAvailableDeparturesPage {
         const selectedSid = targetPlan.originDeparture;
         const selectedTransition = targetPlan.departureEnrouteTransition;
 
-        /** @type {RawDeparture} */
-        /** @type {RawEnRouteTransition} */
+        /** @type {Departure} */
+        /** @type {ProcedureTransition} */
         const showEosid = selectedRunway && sidSelection;
 
         /** @type {import('msfs-navdata').Runway[]} */
@@ -314,8 +314,8 @@ class CDUAvailableDeparturesPage {
 
 /**
  * Check if a runway transition matches with a runway
- * @param {OneWayRunway} runway
- * @param {RawRunwayTransition} transition
+ * @param {Runway} runway
+ * @param {ProcedureTransition} transition
  * @returns {number} -1 if not found, else index of the transition
  */
 function findRunwayTransitionIndex(runway, transitions) {

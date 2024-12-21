@@ -1,4 +1,4 @@
-import { GenericAdirsEvents } from './types/GenericAdirsEvents';
+import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 import { GenericSwitchingPanelEvents } from './types/GenericSwitchingPanelEvents';
 
 export type NDSimvars = GenericAdirsEvents &
@@ -10,7 +10,5 @@ export type NDSimvars = GenericAdirsEvents &
     ilsCourse: number;
     selectedHeading: Degrees;
     showSelectedHeading: boolean;
-    pposLat: Degrees;
-    pposLong: Degrees;
     absoluteTime: Seconds;
   };

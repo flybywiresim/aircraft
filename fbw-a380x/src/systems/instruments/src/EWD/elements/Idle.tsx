@@ -27,7 +27,7 @@ export class Idle extends DisplayComponent<IdleProps> {
     ([e1, e2, e3, e4, fp, as, idle]) => {
       const idleBuf = idle + 2;
       const enginesIdle = [e1 <= idleBuf, e2 <= idleBuf, e3 <= idleBuf, e4 <= idleBuf];
-      return enginesIdle.filter(Boolean).length >= 3 && fp >= 5 && fp <= 7 && as !== 0 ? 'inherit' : 'hidden';
+      return enginesIdle.filter(Boolean).length >= 3 && fp >= 6 && fp <= 9 && as !== 0 ? 'inherit' : 'hidden';
     },
     this.n1[0],
     this.n1[1],

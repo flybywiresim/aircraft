@@ -427,10 +427,10 @@ void A380PitchAlternateLaw::reset(void)
   A380PitchAlternateLaw_DWork.icLoad = true;
   A380PitchAlternateLaw_DWork.is_active_c9_A380PitchAlternateLaw = 0U;
   A380PitchAlternateLaw_DWork.is_c9_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
-  A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw = 0U;
-  A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
   rtb_nz_limit_up_g = 0.0;
   rtb_nz_limit_lo_g = 0.0;
+  A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw = 0U;
+  A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
   A380PitchAlternateLaw_RateLimiter_Reset(&A380PitchAlternateLaw_DWork.sf_RateLimiter);
   A380PitchAlternateLaw_LagFilter_Reset(&A380PitchAlternateLaw_DWork.sf_LagFilter_g3);
   A380PitchAlternateLaw_WashoutFilter_Reset(&A380PitchAlternateLaw_DWork.sf_WashoutFilter_c);
@@ -480,7 +480,7 @@ void A380PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu
   real_T y_0;
   int32_T tmp;
   boolean_T rtb_eta_trim_deg_should_freeze;
-  if (A380PitchAlternateLaw_DWork.is_active_c9_A380PitchAlternateLaw == 0U) {
+  if (A380PitchAlternateLaw_DWork.is_active_c9_A380PitchAlternateLaw == 0) {
     A380PitchAlternateLaw_DWork.is_active_c9_A380PitchAlternateLaw = 1U;
     A380PitchAlternateLaw_DWork.is_c9_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_running;
     rtb_eta_trim_deg_should_freeze = false;
@@ -518,7 +518,7 @@ void A380PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu
   }
 
   rtb_Gain5 = A380PitchAlternateLaw_rtP.Gain5_Gain * rtb_Switch_c;
-  if (A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw == 0U) {
+  if (A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw == 0) {
     A380PitchAlternateLaw_DWork.is_active_c1_A380PitchAlternateLaw = 1U;
     A380PitchAlternateLaw_DWork.is_c1_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_ground;
     rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
@@ -834,7 +834,7 @@ void A380PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu
     &A380PitchAlternateLaw_DWork.sf_RateLimiter_b);
   *rty_Out_eta_trim_limit_up = A380PitchAlternateLaw_rtP.Constant2_Value;
   *rty_Out_eta_trim_limit_lo = A380PitchAlternateLaw_rtP.Constant3_Value_j;
-  if (A380PitchAlternateLaw_DWork.is_active_c8_A380PitchAlternateLaw == 0U) {
+  if (A380PitchAlternateLaw_DWork.is_active_c8_A380PitchAlternateLaw == 0) {
     A380PitchAlternateLaw_DWork.is_active_c8_A380PitchAlternateLaw = 1U;
     A380PitchAlternateLaw_DWork.is_c8_A380PitchAlternateLaw = A380PitchAlternateLaw_IN_manual;
   } else {

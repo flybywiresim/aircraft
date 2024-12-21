@@ -19,25 +19,31 @@
                     <RMP_SCREEN_POT>80</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
-                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
+                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
                     <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_1</INPUT_EVENT_ID_SOURCE>
+                    <AUDIO_SYNC_RMP_ID_1>2</AUDIO_SYNC_RMP_ID_1>
+                    <AUDIO_SYNC_RMP_ID_2>3</AUDIO_SYNC_RMP_ID_2>
                 </Case>
                 <Case Value="2">
                     <RMP_SCREEN_POT>81</RMP_SCREEN_POT>
                     <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
-                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
+                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
                     <INPUT_EVENT_ID_SOURCE>A380X_PED_RMP_2</INPUT_EVENT_ID_SOURCE>
+                    <AUDIO_SYNC_RMP_ID_1>1</AUDIO_SYNC_RMP_ID_1>
+                    <AUDIO_SYNC_RMP_ID_2>3</AUDIO_SYNC_RMP_ID_2>
                 </Case>
                 <Case Value="3">
                     <RMP_SCREEN_POT>82</RMP_SCREEN_POT>
-                    <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
-                    <!-- TODO find a pot for this and check elec supply -->
+                    <RMP_MAIN_ELEC>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</RMP_MAIN_ELEC>
                     <RMP_INTEG_POT>85</RMP_INTEG_POT>
-                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
+                    <RMP_INTEG_ELEC>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</RMP_INTEG_ELEC>
                     <INPUT_EVENT_ID_SOURCE>A380X_OVHD_RMP_3</INPUT_EVENT_ID_SOURCE>
+                    <AUDIO_SYNC_RMP_ID_1>1</AUDIO_SYNC_RMP_ID_1>
+                    <AUDIO_SYNC_RMP_ID_2>2</AUDIO_SYNC_RMP_ID_2>
                 </Case>
             </Switch>
+            <SYNC_AUDIO_CONFIG_VAR>(L:A32NX_FO_SYNC_EFIS_ENABLED, Bool)</SYNC_AUDIO_CONFIG_VAR>
         </Parameters>
         <Component ID="RMP_#RMP_ID#">
             <Component ID="PAGE_KEYS">
@@ -156,6 +162,9 @@
             </Component>
 
             <Component ID="AUDIO_CONTROL">
+                <Parameters Type="Default">
+                    <SYNC>True</SYNC>
+                </Parameters>
                 <UseTemplate Name="FBW_A380X_RMP_Recursive_Button">
                     <BUTTON_NAME>VHF_CALL</BUTTON_NAME>
                     <FIRST_ID>1</FIRST_ID>
@@ -511,6 +520,10 @@
                     <RX_LOCAL_VAR>A380X_RMP_#RMP_ID#_#KNOB_NAME#_RX_SWITCH_#ID#</RX_LOCAL_VAR>
                     <RX_LED_LOCAL_VAR>A380X_RMP_#RMP_ID#_#KNOB_NAME#_RX_#ID#</RX_LED_LOCAL_VAR>
                     <RX_IE_NAME>#KNOB_NAME#_#ID#_PUSH</RX_IE_NAME>
+                    <VOLUME_SYNC_LOCAL_VAR_1>A380X_RMP_#AUDIO_SYNC_RMP_ID_1#_#KNOB_NAME#_#ID#</VOLUME_SYNC_LOCAL_VAR_1>
+                    <VOLUME_SYNC_LOCAL_VAR_2>A380X_RMP_#AUDIO_SYNC_RMP_ID_2#_#KNOB_NAME#_#ID#</VOLUME_SYNC_LOCAL_VAR_2>
+                    <RX_SYNC_LOCAL_VAR_1>A380X_RMP_#AUDIO_SYNC_RMP_ID_1#_#KNOB_NAME#_RX_SWITCH_#ID#</RX_SYNC_LOCAL_VAR_1>
+                    <RX_SYNC_LOCAL_VAR_2>A380X_RMP_#AUDIO_SYNC_RMP_ID_2#_#KNOB_NAME#_RX_SWITCH_#ID#</RX_SYNC_LOCAL_VAR_2>
                 </True>
                 <False>
                     <IE_NAME>#KNOB_NAME#_KNOB</IE_NAME>
@@ -519,6 +532,10 @@
                     <RX_LOCAL_VAR>A380X_RMP_#RMP_ID#_#KNOB_NAME#_RX_SWITCH</RX_LOCAL_VAR>
                     <RX_LED_LOCAL_VAR>A380X_RMP_#RMP_ID#_#KNOB_NAME#_RX</RX_LED_LOCAL_VAR>
                     <RX_IE_NAME>#KNOB_NAME#_PUSH</RX_IE_NAME>
+                    <VOLUME_SYNC_LOCAL_VAR_1>A380X_RMP_#AUDIO_SYNC_RMP_ID_1#_#KNOB_NAME#</VOLUME_SYNC_LOCAL_VAR_1>
+                    <VOLUME_SYNC_LOCAL_VAR_2>A380X_RMP_#AUDIO_SYNC_RMP_ID_2#_#KNOB_NAME#</VOLUME_SYNC_LOCAL_VAR_2>
+                    <RX_SYNC_LOCAL_VAR_1>A380X_RMP_#AUDIO_SYNC_RMP_ID_1#_#KNOB_NAME#_RX_SWITCH</RX_SYNC_LOCAL_VAR_1>
+                    <RX_SYNC_LOCAL_VAR_2>A380X_RMP_#AUDIO_SYNC_RMP_ID_2#_#KNOB_NAME#_RX_SWITCH</RX_SYNC_LOCAL_VAR_2>
                 </False>
             </Condition>
         </Parameters>
@@ -537,10 +554,26 @@
             <ANIM_NAME_KNOB>#NODE_ID#_ROTATE_ANIM</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#NODE_ID#_PUSH_ANIM</ANIM_NAME_SWITCH>
         </Parameters>
+        <Parameters Type="Override">
+            <Condition Valid="SYNC">
+                <True>
+                    <SYNC_ENABLED>#SYNC_AUDIO_CONFIG_VAR#</SYNC_ENABLED>
+                </True>
+                <False>
+                    <SYNC_ENABLED>0</SYNC_ENABLED>
+                </False>
+            </Condition>
+        </Parameters>
         <UseTemplate Name="ASOBO_Interaction_Push_Event_Base_Template">
             <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
             <IE_NAME>#RX_IE_NAME#</IE_NAME>
-            <SET_STATE_EXTERNAL>p0 (&gt;L:#RX_LOCAL_VAR#)</SET_STATE_EXTERNAL>
+            <SET_STATE_EXTERNAL>
+                p0 (&gt;L:#RX_LOCAL_VAR#)
+                #SYNC_ENABLED# if{
+                    p0 (&gt;L:#RX_SYNC_LOCAL_VAR_1#)
+                    p0 (&gt;L:#RX_SYNC_LOCAL_VAR_2#)
+                }
+            </SET_STATE_EXTERNAL>
             <GET_STATE_EXTERNAL>(L:#RX_LOCAL_VAR#) sp0</GET_STATE_EXTERNAL>
             <LOCAL_VAR_TO_WATCH_0>#RX_LOCAL_VAR#</LOCAL_VAR_TO_WATCH_0>
             <TT_DESCRIPTION_ID>#TT_PUSH_DESCRIPTION_ID#</TT_DESCRIPTION_ID>
@@ -551,7 +584,13 @@
             <TEMPLATE_VARIANT>Switch</TEMPLATE_VARIANT>
             <IE_ID_EXTERNAL_0>#RX_IE_NAME#</IE_ID_EXTERNAL_0>
             <GET_STATE_EXTERNAL>(L:#VOLUME_LOCAL_VAR#)</GET_STATE_EXTERNAL>
-            <SET_STATE_EXTERNAL>p0 100 min 0 max (&gt;L:#VOLUME_LOCAL_VAR#)</SET_STATE_EXTERNAL>
+            <SET_STATE_EXTERNAL>
+                p0 100 min 0 max (&gt;L:#VOLUME_LOCAL_VAR#)
+                #SYNC_ENABLED# if{
+                    p0 100 min 0 max (&gt;L:#VOLUME_SYNC_LOCAL_VAR_1#)
+                    p0 100 min 0 max (&gt;L:#VOLUME_SYNC_LOCAL_VAR_2#)
+                }
+            </SET_STATE_EXTERNAL>
             <LOCAL_VAR_TO_WATCH_0>#VOLUME_LOCAL_VAR#</LOCAL_VAR_TO_WATCH_0>
             <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
             <ANIM_CODE_SWITCH>(B:#INPUT_EVENT_ID_SOURCE#_#RX_IE_NAME#) 100 *</ANIM_CODE_SWITCH>
@@ -587,10 +626,22 @@
         <Parameters Type="Default">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <LOCAL_VAR>A380X_RMP_#RMP_ID#_NAV_SEL</LOCAL_VAR>
+            <SYNC_LOCAL_VAR_1>A380X_RMP_#AUDIO_SYNC_RMP_ID_1#_NAV_SEL</SYNC_LOCAL_VAR_1>
+            <SYNC_LOCAL_VAR_2>A380X_RMP_#AUDIO_SYNC_RMP_ID_2#_NAV_SEL</SYNC_LOCAL_VAR_2>
             <IE_NAME>NAV_SEL_KNOB</IE_NAME>
             <ANIM_LAG>1200</ANIM_LAG>
             <TOOLTIP_TITLE>A380X.TOOLTIPS.RMP_NAV_SEL_TITLE</TOOLTIP_TITLE>
             <TT_DESCRIPTION_ID>A380X.TOOLTIPS.RMP_NAV_SEL_ACTION</TT_DESCRIPTION_ID>
+        </Parameters>
+        <Parameters Type="Override">
+            <Condition Valid="SYNC">
+                <True>
+                    <SYNC_ENABLED>#SYNC_AUDIO_CONFIG_VAR#</SYNC_ENABLED>
+                </True>
+                <False>
+                    <SYNC_ENABLED>0</SYNC_ENABLED>
+                </False>
+            </Condition>
         </Parameters>
         <UseTemplate Name="ASOBO_Interaction_Base_Template">
             <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
@@ -598,7 +649,13 @@
             <KNOB_TYPE>X_STATES</KNOB_TYPE>
             <NUM_STATES>6</NUM_STATES>
             <GET_STATE_EXTERNAL>(L:#LOCAL_VAR#)</GET_STATE_EXTERNAL>
-            <SET_STATE_EXTERNAL>p0 (&gt;L:#LOCAL_VAR#)</SET_STATE_EXTERNAL>
+            <SET_STATE_EXTERNAL>
+                p0 (&gt;L:#LOCAL_VAR#)
+                #SYNC_ENABLED# if{
+                    p0 (&gt;L:#SYNC_LOCAL_VAR_1#)
+                    p0 (&gt;L:#SYNC_LOCAL_VAR_2#)
+                }
+            </SET_STATE_EXTERNAL>
             <LOCAL_VAR_TO_WATCH_0>#LOCAL_VAR#</LOCAL_VAR_TO_WATCH_0>
             <TT_VALUE_0>A380X.TOOLTIPS.RMP_NAV_SEL_ADF_1</TT_VALUE_0>
             <STR_STATE_0>ADF_1</STR_STATE_0>
@@ -619,11 +676,23 @@
         <Parameters Type="Default">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <LOCAL_VAR>A380X_RMP_#RMP_ID#_INT_RAD</LOCAL_VAR>
+            <SYNC_LOCAL_VAR_1>A380X_RMP_#AUDIO_SYNC_RMP_ID_1#_INT_RAD</SYNC_LOCAL_VAR_1>
+            <SYNC_LOCAL_VAR_2>A380X_RMP_#AUDIO_SYNC_RMP_ID_2#_INT_RAD</SYNC_LOCAL_VAR_2>
             <IE_NAME>INT_RAD_SELECTOR</IE_NAME>
             <ANIM_LAG>1200</ANIM_LAG>
             <TOOLTIP_TITLE>A380X.TOOLTIPS.RMP_INT_RAD_TITLE</TOOLTIP_TITLE>
             <TT_DESCRIPTION_ID>A380X.TOOLTIPS.RMP_INT_RAD_ACTION</TT_DESCRIPTION_ID>
             <INTERACTION_AXIS>Y</INTERACTION_AXIS>
+        </Parameters>
+        <Parameters Type="Override">
+            <Condition Valid="SYNC">
+                <True>
+                    <SYNC_ENABLED>#SYNC_AUDIO_CONFIG_VAR#</SYNC_ENABLED>
+                </True>
+                <False>
+                    <SYNC_ENABLED>0</SYNC_ENABLED>
+                </False>
+            </Condition>
         </Parameters>
         <UseTemplate Name="ASOBO_Interaction_Base_Template">
             <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
@@ -631,7 +700,13 @@
             <KNOB_TYPE>X_STATES</KNOB_TYPE>
             <NUM_STATES>3</NUM_STATES>
             <GET_STATE_EXTERNAL>(L:#LOCAL_VAR#)</GET_STATE_EXTERNAL>
-            <SET_STATE_EXTERNAL>(&gt;L:#LOCAL_VAR#)</SET_STATE_EXTERNAL>
+            <SET_STATE_EXTERNAL>
+                p0 (&gt;L:#LOCAL_VAR#)
+                #SYNC_ENABLED# if{
+                    p0 (&gt;L:#SYNC_LOCAL_VAR_1#)
+                    p0 (&gt;L:#SYNC_LOCAL_VAR_2#)
+                }
+            </SET_STATE_EXTERNAL>
             <LOCAL_VAR_TO_WATCH_0>#LOCAL_VAR#</LOCAL_VAR_TO_WATCH_0>
             <TT_VALUE_0>A380X.TOOLTIPS.RMP_INT_RAD_RAD</TT_VALUE_0>
             <STR_STATE_0>RAD</STR_STATE_0>

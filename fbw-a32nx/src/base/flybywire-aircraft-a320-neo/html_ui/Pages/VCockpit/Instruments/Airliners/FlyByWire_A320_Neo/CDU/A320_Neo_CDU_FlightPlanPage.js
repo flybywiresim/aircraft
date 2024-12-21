@@ -1044,7 +1044,7 @@ function formatMachNumber(rawNumber) {
  * @return {boolean}
  */
 function legHasAltConstraint(leg) {
-    return leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint();
+    return !leg.isXA() && (leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint());
 }
 
 /**

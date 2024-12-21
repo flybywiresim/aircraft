@@ -29,6 +29,12 @@ export interface VhfNavaid extends BaseFix<SectionCode.Navaid> {
   distance?: NauticalMiles;
 }
 
+export function isVhfNavaid(o: any): o is VhfNavaid {
+  return (
+    typeof o === 'object' && o.sectionCode === SectionCode.Navaid && o.subSectionCode === NavaidSubsectionCode.VhfNavaid
+  );
+}
+
 // TODO enum
 export type FigureOfMerit = 0 | 1 | 2 | 3 | 7 | 9;
 

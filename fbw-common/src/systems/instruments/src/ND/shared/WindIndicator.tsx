@@ -1,13 +1,12 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
-import { GenericAdirsEvents } from '../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
-import { Layer } from '../Layer';
+import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 

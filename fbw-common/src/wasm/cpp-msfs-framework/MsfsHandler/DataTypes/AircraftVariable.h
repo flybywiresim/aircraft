@@ -62,12 +62,12 @@ class AircraftVariable : public CacheableVariable {
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
    */
   explicit AircraftVariable(const std::string& varName,
-                            int varIndex = 0,
-                            std::string setterEventName = "",
-                            SimUnit unit = UNITS.Number,
-                            UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                            FLOAT64 maxAgeTime = 0.0,
-                            UINT64 maxAgeTicks = 0)
+                            int                varIndex        = 0,
+                            std::string        setterEventName = "",
+                            SimUnit            unit            = UNITS.Number,
+                            UpdateMode         updateMode      = UpdateMode::NO_AUTO_UPDATE,
+                            FLOAT64            maxAgeTime      = 0.0,
+                            UINT64             maxAgeTicks     = 0)
       : CacheableVariable(varName, unit, updateMode, maxAgeTime, maxAgeTicks),
         index(varIndex),
         setterEventName(std::move(setterEventName)),
@@ -90,13 +90,13 @@ class AircraftVariable : public CacheableVariable {
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
    * @param setterEventName The calculator code to write to the variable.
    */
-  explicit AircraftVariable(const std::string& varName,
-                            int varIndex = 0,
+  explicit AircraftVariable(const std::string&                  varName,
+                            int                                 varIndex    = 0,
                             const std::shared_ptr<ClientEvent>& setterEvent = nullptr,
-                            SimUnit unit = UNITS.Number,
-                            UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                            FLOAT64 maxAgeTime = 0.0,
-                            UINT64 maxAgeTicks = 0)
+                            SimUnit                             unit        = UNITS.Number,
+                            UpdateMode                          updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                            FLOAT64                             maxAgeTime  = 0.0,
+                            UINT64                              maxAgeTicks = 0)
       : CacheableVariable(varName, unit, updateMode, maxAgeTime, maxAgeTicks), index(varIndex), setterEvent(setterEvent) {
     dataID = get_aircraft_var_enum(varName.c_str());
     if (dataID == -1) {  // cannot throw an exception in MSFS
@@ -105,16 +105,16 @@ class AircraftVariable : public CacheableVariable {
   }
 
  public:
-  AircraftVariable() = delete;                                    // no default constructor
-  AircraftVariable(const AircraftVariable&) = delete;             // no copy constructor
+  AircraftVariable()                                   = delete;  // no default constructor
+  AircraftVariable(const AircraftVariable&)            = delete;  // no copy constructor
   AircraftVariable& operator=(const AircraftVariable&) = delete;  // no copy assignment
-  AircraftVariable(AircraftVariable&&) = delete;                  // move constructor
-  AircraftVariable& operator=(AircraftVariable&&) = delete;       // move assignment
+  AircraftVariable(AircraftVariable&&)                 = delete;  // move constructor
+  AircraftVariable& operator=(AircraftVariable&&)      = delete;  // move assignment
 
   [[nodiscard]] FLOAT64 rawReadFromSim() const override;
-  void rawWriteToSim() override;
-  void setAutoWrite(bool autoWriting) override;
-  void set(FLOAT64 value) override;
+  void                  rawWriteToSim() override;
+  void                  setAutoWrite(bool autoWriting) override;
+  void                  set(FLOAT64 value) override;
 
   [[nodiscard]] std::string str() const override;
 

@@ -50,12 +50,13 @@ class CDUAocInit {
         if (mcdu.simbrief.ete) {
             ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
-
-        const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-        if (currentFob) {
-            fob = `{small}${currentFob}{end}[color]green`;
+        if (mcdu.isAnEngineOn()) {
+            // should only get if an engine running
+            const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+            if (currentFob) {
+                fob = `{small}${currentFob}{end}[color]green`;
+            }
         }
-
         mcdu.setTemplate([
             ["INIT/REVIEW", "1", "2", "AOC"],
             ["\xa0FMC FLT NO", "GMT\xa0"],
@@ -102,9 +103,6 @@ class CDUAocInit {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
-
-        const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-
         /**
             GMT: is the current zulu time
             FLT time: is wheels up to wheels down... so basically shows 0000 as soon as you are wheels up, counts up and then stops timing once you are weight on wheels again
@@ -126,9 +124,11 @@ class CDUAocInit {
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
-
-        if (currentFob) {
-            fob = `{small}${currentFob}{end}[color]green`;
+        if (mcdu.isAnEngineOn()) {
+            currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+            if (currentFob) {
+                fob = `{small}${currentFob}{end}[color]green`;
+            }
         }
         if (mcdu.aocTimes.out) {
             outTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
