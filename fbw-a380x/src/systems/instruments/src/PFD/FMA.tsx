@@ -1397,14 +1397,14 @@ const getBC3Message = (
     selectedAltitude < baroCorrectedAltitude
   ) {
     text = 'FCU ALT BELOW A/C';
-    className = 'FontMedium  White';
+    className = 'FontMediumSmaller  White';
   } else if (
     (activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA) &&
     (selectedFpa < 0 || selectedVs < 0) &&
     selectedAltitude > baroCorrectedAltitude
   ) {
     text = 'FCU ALT ABOVE A/C';
-    className = 'FontMedium DisappearAfter10Seconds White';
+    className = 'FontMediumSmaller DisappearAfter10Seconds White';
   } else {
     return [null, null];
   }
