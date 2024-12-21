@@ -1,12 +1,12 @@
 import { ConsumerSubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import {
   ChecklistLineStyle,
-  EcamAbnormalNonSensedProcedures,
   EcamAbnormalSensedProcedures,
   EcamAbNormalSensedSubMenuVector,
   isChecklistAction,
   isChecklistCondition,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
 
 function removeUnderline(text: string): string {
@@ -34,10 +34,10 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
       });
 
       const numItems =
-        EcamAbnormalNonSensedProcedures.filter((v) => v.category === null).length +
+        AbnormalNonSensedProceduresOverview.filter((v) => v.category === null).length +
         EcamAbNormalSensedSubMenuVector.length;
 
-      EcamAbnormalNonSensedProcedures.forEach((proc, index) => {
+      AbnormalNonSensedProceduresOverview.forEach((proc, index) => {
         if (proc.category === null) {
           this.lineData.push({
             activeProcedure: true,
@@ -63,7 +63,7 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
           style: ChecklistLineStyle.Headline,
           firstLine: false,
           lastLine: index === EcamAbNormalSensedSubMenuVector.length - 1,
-          originalItemIndex: index + EcamAbnormalNonSensedProcedures.filter((v) => v.category === null).length,
+          originalItemIndex: index + AbnormalNonSensedProceduresOverview.filter((v) => v.category === null).length,
         });
       });
     } else if (this.checklistId.get() > 0 && this.checklistId.get() <= 10) {
@@ -92,8 +92,8 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
         lastLine: false,
       });
 
-      const numItems = EcamAbnormalNonSensedProcedures.filter((v) => v.category === category).length;
-      EcamAbnormalNonSensedProcedures.filter((v) => v.category === category).forEach((proc, index) => {
+      const numItems = AbnormalNonSensedProceduresOverview.filter((v) => v.category === category).length;
+      AbnormalNonSensedProceduresOverview.filter((v) => v.category === category).forEach((proc, index) => {
         this.lineData.push({
           activeProcedure: true,
           abnormalProcedure: true,

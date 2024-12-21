@@ -126,6 +126,7 @@ export class ProcedureLinesGenerator {
     const selectable = this.selectableItems(true);
 
     if (selectable.length === 0) {
+      this.selectFirst();
       return;
     }
     const sii = this.selectedItemIndex.get();
@@ -225,11 +226,9 @@ export class ProcedureLinesGenerator {
       clState.procedureCompleted = false;
       clState.itemsChecked = clState.itemsChecked.map((val, index) => (this.items[index].sensed ? val : false));
       this.procedureClearedOrResetCallback(clState);
-      this.selectFirst();
     } else if (this.sii === SPECIAL_INDEX_ACTIVATE) {
       clState.procedureActivated = true;
       this.procedureClearedOrResetCallback(clState);
-      this.selectFirst();
     } else if (this.sii === SPECIAL_INDEX_DEFERRED_PROC_COMPLETE) {
       clState.procedureCompleted = true;
       this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_RECALL);
@@ -240,6 +239,10 @@ export class ProcedureLinesGenerator {
       this.procedureClearedOrResetCallback(clState);
     }
     this.checklistState = clState;
+
+    if (this.sii === SPECIAL_INDEX_NORMAL_RESET || this.sii === SPECIAL_INDEX_ACTIVATE) {
+      this.selectFirst();
+    }
   }
 
   selectFirst() {
@@ -335,7 +338,7 @@ export class ProcedureLinesGenerator {
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: true,
           sensed: false,
-          checked: this.checklistState.procedureCompleted ?? false,
+          checked: this.checklistState.procedureActivated ?? false,
           text: `${'\xa0'.repeat(31)}ACTIVATE`,
           style: ChecklistLineStyle.ChecklistItem,
           firstLine: false,
