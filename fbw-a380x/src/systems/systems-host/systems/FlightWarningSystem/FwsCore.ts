@@ -36,16 +36,21 @@ import { VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import {
-  AbnormalProcedure,
-  EcamAbnormalSensedProcedures,
+  EcamAbnormalProcedures,
+  EcamDeferredProcedures,
   EcamMemos,
   pfdMemoDisplay,
-} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
-import { FwsEwdAbnormalSensedEntry } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
 import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
-import { EwdAbnormalItem, FwsAbnormalSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
+import {
+  EwdAbnormalDict,
+  EwdAbnormalItem,
+  FwsAbnormalSensed,
+} from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { FwsAbnormalNonSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalNonSensed';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
@@ -204,6 +209,7 @@ export class FwsCore {
   public readonly clCheckInputBuffer = new NXLogicMemoryNode(false);
   public readonly clUpInputBuffer = new NXLogicMemoryNode(false);
   public readonly clDownInputBuffer = new NXLogicMemoryNode(false);
+  public readonly abnProcInputBuffer = new NXLogicMemoryNode(false);
   public readonly aThrDiscInputBuffer = new NXLogicMemoryNode(false);
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
 
@@ -215,8 +221,20 @@ export class FwsCore {
   /** Keys/IDs of only the failures which are currently presented on the EWD */
   public readonly presentedFailures: string[] = [];
 
+  /** Keys/IDs of the active abnormal non-sensed procedures */
+  public readonly activeAbnormalNonSensedKeys: number[] = [];
+
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalSensedList = MapSubject.create<string, FwsEwdAbnormalSensedEntry>();
+  public readonly activeAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
+
+  /** Map to hold all deferred procs which are currently active */
+  public readonly activeDeferredProceduresList = MapSubject.create<string, ChecklistState>();
+
+  /** Indices of items which were updated */
+  public readonly abnormalUpdatedItems = new Map<string, number[]>();
+
+  /** Indices of items which were updated */
+  public readonly deferredUpdatedItems = new Map<string, number[]>();
 
   public recallFailures: string[] = [];
 
@@ -263,6 +281,10 @@ export class FwsCore {
   );
 
   public readonly ecamStsNormal = Subject.create(true);
+
+  public readonly ecamEwdShowStsIndication = Subject.create(false);
+
+  public readonly ecamEwdShowFailurePendingIndication = Subject.create(false);
 
   public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
@@ -794,6 +816,8 @@ export class FwsCore {
 
   public readonly rudderTrimNotToWarning = Subject.create(false);
 
+  public readonly rudderTrimPosition = Subject.create(0);
+
   public readonly flapsLeverNotZeroWarning = Subject.create(false);
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
@@ -1075,6 +1099,8 @@ export class FwsCore {
   public readonly clUpPulseNode = new NXLogicPulseNode();
 
   public readonly clDownPulseNode = new NXLogicPulseNode();
+
+  public readonly abnProcPulseNode = new NXLogicPulseNode();
 
   public readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
@@ -1469,13 +1495,20 @@ export class FwsCore {
 
   public readonly memos = new FwsMemos(this);
   public readonly normalChecklists = new FwsNormalChecklists(this);
-  public readonly abnormalSensed = new FwsAbnormalSensed(this);
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
+  public readonly abnormalSensed = new FwsAbnormalSensed(this);
+  public ewdAbnormal: EwdAbnormalDict;
 
   constructor(
     public readonly fwsNumber: 1 | 2,
     public readonly bus: EventBus,
   ) {
+    this.ewdAbnormal = Object.assign(
+      {},
+      this.abnormalSensed.ewdAbnormalSensed,
+      this.abnormalNonSensed.ewdAbnormalNonSensed,
+    );
+
     this.ewdMessageLinesLeft.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
@@ -1531,6 +1564,14 @@ export class FwsCore {
     );
 
     this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s));
+
+    this.ecamEwdShowStsIndication.sub((s) =>
+      this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
+    );
+
+    this.ecamEwdShowFailurePendingIndication.sub((s) =>
+      this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+    );
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
 
@@ -1803,6 +1844,10 @@ export class FwsCore {
       this.clDownInputBuffer.write(true, false);
     }
 
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_ABNPROC', 'bool')) {
+      this.abnProcInputBuffer.write(true, false);
+    }
+
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
     if (deltaTime === -1 || _deltaTime === 0) {
       return;
@@ -1825,6 +1870,7 @@ export class FwsCore {
     this.clCheckPulseNode.write(this.clCheckInputBuffer.read(), deltaTime);
     this.clUpPulseNode.write(this.clUpInputBuffer.read(), deltaTime);
     this.clDownPulseNode.write(this.clDownInputBuffer.read(), deltaTime);
+    this.abnProcPulseNode.write(this.abnProcInputBuffer.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
     this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
 
@@ -3347,6 +3393,8 @@ export class FwsCore {
       (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
       (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
 
+    this.rudderTrimPosition.set(sec1Healthy ? sec1RudderTrimActualPos.valueOr(0) : sec3RudderTrimActualPos.valueOr(0));
+
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
       this.toConfigTestHeldMin1s5Pulse.get() && this.flightPhase1211.get() && rudderTrimConfig;
@@ -3740,8 +3788,7 @@ export class FwsCore {
     /* CLEAR AND RECALL */
     if (this.clrPulseNode.read()) {
       // delete the first failure
-      this.presentedFailures.splice(0, 1);
-      this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
+      this.abnormalSensed.clearActiveProcedure();
     }
 
     if (this.rclUpPulseNode.read()) {
@@ -3782,7 +3829,7 @@ export class FwsCore {
     const auralScKeys: string[] = [];
 
     // Update memos and failures list in case failure has been resolved
-    for (const [key, value] of Object.entries(this.abnormalSensed.ewdAbnormalSensed)) {
+    for (const [key, value] of Object.entries(this.ewdAbnormal)) {
       if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
@@ -3794,7 +3841,10 @@ export class FwsCore {
     this.nonCancellableWarningCount = 0;
 
     // Abnormal sensed procedures
-    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.abnormalSensed.ewdAbnormalSensed);
+    const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.ewdAbnormal);
+    const ewdDeferredEntries = Object.entries(this.abnormalSensed.ewdDeferredProcs);
+    this.abnormalUpdatedItems.clear();
+    this.deferredUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
@@ -3802,14 +3852,14 @@ export class FwsCore {
 
       // new warning?
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
-      const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
+      const proc = EcamAbnormalProcedures[key];
 
-      if (value.simVarIsActive.get()) {
+      if (value.simVarIsActive.get() || this.activeAbnormalNonSensedKeys.includes(parseInt(key))) {
         // Skip if other fault overrides this one
         let overridden = false;
         value.notActiveWhenFaults.forEach((val) => {
-          if (val && this.abnormalSensed.ewdAbnormalSensed[val]) {
-            const otherFault = this.abnormalSensed.ewdAbnormalSensed[val] as EwdAbnormalItem;
+          if (val && this.ewdAbnormal[val]) {
+            const otherFault = this.ewdAbnormal[val] as EwdAbnormalItem;
             if (otherFault.simVarIsActive.get()) {
               overridden = true;
             }
@@ -3818,9 +3868,10 @@ export class FwsCore {
         if (overridden) {
           continue;
         }
-        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : v));
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
+        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -3833,7 +3884,7 @@ export class FwsCore {
           }
         }
 
-        if (!this.activeAbnormalSensedList.has(key) && !this.recallFailures.includes(key)) {
+        if (!this.activeAbnormalProceduresList.has(key) && !this.recallFailures.includes(key)) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -3857,39 +3908,69 @@ export class FwsCore {
               'ECAM alert definition error: whichItemsChecked() not the same size as number of procedure items',
             );
           }
-          this.activeAbnormalSensedList.setValue(key, {
+          this.activeAbnormalProceduresList.setValue(key, {
             id: key,
+            procedureActivated: true,
+            procedureCompleted: false,
             itemsActive: itemsActive,
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
           });
-        } else if (this.activeAbnormalSensedList.has(key)) {
+
+          for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
+            if (
+              EcamDeferredProcedures[deferredKey].fromAbnormalProc === key &&
+              this.abnormalSensed.ewdDeferredProcs[deferredKey]
+            ) {
+              const deferredItemsActive = deferredValue.whichItemsActive
+                ? deferredValue.whichItemsActive()
+                : Array(deferredValue.whichItemsChecked().length).fill(false);
+              const deferredItemsChecked = deferredValue.whichItemsChecked
+                ? deferredValue.whichItemsChecked()
+                : Array(deferredValue.whichItemsChecked().length).fill(true);
+              ProcedureLinesGenerator.conditionalActiveItems(
+                EcamDeferredProcedures[deferredKey],
+                deferredItemsChecked,
+                deferredItemsActive,
+              );
+              this.activeDeferredProceduresList.setValue(deferredKey, {
+                id: deferredKey,
+                procedureCompleted: false,
+                procedureActivated: false,
+                itemsChecked: deferredItemsChecked,
+                itemsActive: deferredItemsActive,
+                itemsToShow: deferredValue.whichItemsToShow
+                  ? deferredValue.whichItemsToShow()
+                  : Array(deferredValue.whichItemsChecked().length).fill(true),
+              });
+            }
+          }
+        } else if (this.activeAbnormalProceduresList.has(key)) {
           // Update internal map
-          const prevEl = this.activeAbnormalSensedList.get().get(key);
-          const itemUpdated = proc.items.some((item, idx) => {
-            if (item.sensed === true) {
-              if (
-                prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
-                prevEl.itemsActive[idx] !== itemsActive[idx] ||
-                prevEl.itemsChecked[idx] !== itemsChecked[idx]
-              ) {
-                return true;
-              }
+          const prevEl = this.activeAbnormalProceduresList.getValue(key);
+          const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
+            proc.items[index].sensed ? itemsChecked[index] : !!val,
+          );
+          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+          this.abnormalUpdatedItems.set(key, []);
+          proc.items.forEach((item, idx) => {
+            if (
+              prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+              prevEl.itemsActive[idx] !== itemsActive[idx] ||
+              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+            ) {
+              this.abnormalUpdatedItems.get(key).push(idx);
             }
           });
 
-          if (itemUpdated) {
-            this.activeAbnormalSensedList.setValue(key, {
+          if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
+            this.activeAbnormalProceduresList.setValue(key, {
               id: key,
-              itemsChecked: [...prevEl.itemsChecked].map((val, index) =>
-                proc.items[index].sensed ? itemsChecked[index] : val,
-              ),
-              itemsActive: [...prevEl.itemsActive].map((val, index) =>
-                proc.items[index].sensed ? itemsActive[index] : val,
-              ),
-              itemsToShow: [...prevEl.itemsToShow].map((val, index) =>
-                proc.items[index].sensed ? itemsToShow[index] : val,
-              ),
+              procedureActivated: prevEl.procedureActivated,
+              procedureCompleted: prevEl.procedureCompleted,
+              itemsChecked: fusedChecked,
+              itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
+              itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
             });
           }
         }
@@ -3934,6 +4015,41 @@ export class FwsCore {
         }
       }
 
+      // Update deferred procedures
+      for (const [key, value] of Object.values(this.activeDeferredProceduresList.get())) {
+        const proc = EcamDeferredProcedures[key];
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+        const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
+        const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
+
+        const prevEl = value;
+        const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
+          proc.items[index].sensed ? itemsChecked[index] : !!val,
+        );
+        ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+        this.deferredUpdatedItems.set(key, []);
+        proc.items.forEach((item, idx) => {
+          if (
+            prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
+            prevEl.itemsActive[idx] !== itemsActive[idx] ||
+            (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+          ) {
+            this.deferredUpdatedItems.get(key).push(idx);
+          }
+        });
+
+        if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
+          value.setValue(key, {
+            id: key,
+            procedureActivated: prevEl.procedureActivated,
+            procedureCompleted: prevEl.procedureCompleted,
+            itemsChecked: fusedChecked,
+            itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
+            itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
+          });
+        }
+      }
+
       if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
           this.auralCrcActive.set(true);
@@ -3954,9 +4070,18 @@ export class FwsCore {
     }
 
     // Delete inactive failures from internal map
-    this.activeAbnormalSensedList.get().forEach((_, key) => {
-      if (!allFailureKeys.includes(key.toString()) || this.recallFailures.includes(key)) {
-        this.activeAbnormalSensedList.delete(key);
+    this.activeAbnormalProceduresList.get().forEach((_, key) => {
+      if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
+        this.activeAbnormalProceduresList.delete(key);
+      }
+
+      if (!allFailureKeys.includes(key) && !this.recallFailures.includes(key)) {
+        // Delete associated deferred procedure
+        for (const [deferredKey, _] of ewdDeferredEntries) {
+          if (EcamDeferredProcedures[deferredKey].fromAbnormalProc === key) {
+            this.activeDeferredProceduresList.delete(key);
+          }
+        }
       }
     });
 
@@ -3973,7 +4098,7 @@ export class FwsCore {
 
     const failOrder: string[] = [];
 
-    for (const [key] of Object.entries(this.abnormalSensed.ewdAbnormalSensed)) {
+    for (const [key] of Object.entries(this.ewdAbnormal)) {
       failOrder.push(...key);
     }
 
@@ -4093,6 +4218,8 @@ export class FwsCore {
         !ewdLimitationsAllPhasesKeys.length &&
         !ewdLimitationsApprLdgKeys.length,
     );
+    const sdStsShown = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Number) === 14;
+    this.ecamEwdShowStsIndication.set(!this.ecamStsNormal.get() && !sdStsShown);
 
     const chimeRequested =
       (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
@@ -4109,7 +4236,47 @@ export class FwsCore {
 
     this.normalChecklists.update();
     this.abnormalSensed.update();
+    this.abnormalNonSensed.update();
     this.updateRowRopWarnings();
+
+    // Orchestrate display of normal or abnormal proc display
+    const pub = this.bus.getPublisher<FwsEwdEvents>();
+    if (this.abnormalNonSensed.showAbnProcRequested.get()) {
+      // ABN PROC always shown
+      this.abnormalNonSensed.abnProcShown.set(true);
+      this.normalChecklists.checklistShown.set(false);
+      this.abnormalSensed.abnormalShown.set(false);
+
+      pub.pub('fws_active_item', this.abnormalNonSensed.selectedItem.get(), true);
+      pub.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
+      this.ecamEwdShowFailurePendingIndication.set(false);
+    } else if (this.normalChecklists.showChecklistRequested.get()) {
+      // ECL always shown
+      this.abnormalNonSensed.abnProcShown.set(false);
+      this.normalChecklists.checklistShown.set(true);
+      this.abnormalSensed.abnormalShown.set(false);
+
+      pub.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
+      pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
+      this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
+    } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
+      this.abnormalNonSensed.abnProcShown.set(false);
+      this.normalChecklists.checklistShown.set(false);
+      this.abnormalSensed.abnormalShown.set(true);
+
+      pub.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
+      pub.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
+      pub.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
+      this.ecamEwdShowFailurePendingIndication.set(false);
+    } else {
+      this.abnormalNonSensed.abnProcShown.set(false);
+      this.normalChecklists.checklistShown.set(false);
+      this.abnormalSensed.abnormalShown.set(false);
+      this.ecamEwdShowFailurePendingIndication.set(false);
+    }
+    pub.pub('fws_show_abn_non_sensed', this.abnormalNonSensed.abnProcShown.get(), true);
+    pub.pub('fws_show_abn_sensed', this.abnormalSensed.abnormalShown.get(), true);
+    pub.pub('fws_show_normal_checklists', this.normalChecklists.checklistShown.get(), true);
 
     // Reset all buffered inputs
     this.toConfigInputBuffer.write(false, true);
@@ -4119,6 +4286,7 @@ export class FwsCore {
     this.clCheckInputBuffer.write(false, true);
     this.clUpInputBuffer.write(false, true);
     this.clDownInputBuffer.write(false, true);
+    this.abnProcInputBuffer.write(false, true);
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;

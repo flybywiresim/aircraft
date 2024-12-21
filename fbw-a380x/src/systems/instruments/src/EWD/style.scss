@@ -290,6 +290,36 @@ text, tspan, span {
   height: 40px;
 }
 
+.FailurePendingBox {
+  display: inline;
+  position: relative;
+  left: 40px;
+  top: 0px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.StsBox {
+  display: inline;
+  position: relative;
+  left: 150px;
+  top: 0px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.AdvBox {
+  display: inline;
+  position: relative;
+  left: 360px;
+  top: 0px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
 .MemosContainer {
   display: flex;
   flex-direction: column;
@@ -389,8 +419,20 @@ text, tspan, span {
   color: $display-white;
 }
 
+.EclLine.ChecklistItemInactive {
+  color: $display-grey !important;
+}
+
 .EclLine.ChecklistCompleted {
   color: $display-grey !important;
+}
+
+.EclLine.DeferredProcedure {
+  color: $display-amber !important;
+}
+
+.EclLine.CompletedDeferredProcedure {
+  color: $display-white !important;
 }
 
 .EclLine.Green {
@@ -415,6 +457,24 @@ text, tspan, span {
   text-decoration: underline;
 }
 
+.EclLine.ChecklistCondition {
+  color: $display-white !important;
+}
+
+.EclLine.OmissionDots {
+  color: $display-cyan !important;
+}
+
+.EclLine.LandAnsa {
+  color: $display-amber !important;
+  justify-content: flex-end;
+}
+
+.EclLine.LandAsap {
+  color: $display-red !important;
+  justify-content: flex-end;
+}
+
 .EclLineCheckboxArea {
   text-align: center;
   justify-content: center;
@@ -435,6 +495,14 @@ text, tspan, span {
 
 .EclLineCheckboxArea.AbnormalItem.Checked {
   color: $display-white;
+}
+
+.EclLineCheckboxArea.ChecklistCondition {
+  color: $display-white !important;
+}
+
+.EclLineCheckboxArea.AbnormalItem.ChecklistItemInactive {
+  color: $display-grey;
 }
 
 .EclLineText {

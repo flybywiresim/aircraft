@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -11,7 +11,8 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -30,43 +31,36 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
-        level: 1,
       },
       {
         name: 'ALL FEED TKs PMPs',
         sensed: true,
         labelNotCompleted: 'ON',
-        level: 1,
       },
       {
         name: 'TRIM TK FEED', // If gravity transfer from the trim tank is in progress
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 2,
       },
       {
         name: 'OUTR TK XFR', // For transfer tanks containing fuel
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
       },
       {
         name: 'TRIM TK XFR', // If at least one trim tank pump is running
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 2,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
       },
     ],
   },
@@ -176,8 +170,8 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK',
-        sensed: true,
-        style: ChecklistLineStyle.SubHeadline,
+        sensed: false,
+        condition: true,
       },
       {
         name: 'CROSSFEED 1',
@@ -195,31 +189,31 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'TRIM TK FEED', // If gravity transfer from the trim tank is in progress
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 2,
+        level: 1,
       },
       {
         name: 'OUTR TK XFR', // For transfer tanks containing fuel:
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'TRIM TK XFR', // If at least one trim tank pump is running
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 2,
+        level: 1,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
     ],
   },
@@ -229,8 +223,8 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK',
-        sensed: true,
-        style: ChecklistLineStyle.SubHeadline,
+        sensed: false,
+        condition: true,
       },
       {
         name: 'CROSSFEED 1',
@@ -248,31 +242,31 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'TRIM TK FEED',
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 2,
+        level: 1,
       },
       {
         name: 'OUTR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'TRIM TK XFR',
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 2,
+        level: 1,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
     ],
   },
@@ -282,8 +276,8 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK',
-        sensed: true,
-        style: ChecklistLineStyle.SubHeadline,
+        sensed: false,
+        condition: true,
       },
       {
         name: 'CROSSFEED 3',
@@ -301,31 +295,31 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'TRIM TK FEED',
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 2,
+        level: 1,
       },
       {
         name: 'OUTR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'TRIM TK XFR',
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 2,
+        level: 1,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
     ],
   },
@@ -335,8 +329,8 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'IF NO FUEL LEAK',
-        sensed: true,
-        style: ChecklistLineStyle.SubHeadline,
+        sensed: false,
+        condition: true,
       },
       {
         name: 'CROSSFEED 3',
@@ -354,31 +348,31 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'TRIM TK FEED',
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 2,
+        level: 1,
       },
       {
         name: 'OUTR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'TRIM TK XFR',
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 2,
+        level: 1,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 2,
+        level: 1,
       },
     ],
   },
@@ -769,8 +763,9 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK:',
-        sensed: true,
+        name: 'NO FUEL LEAK:',
+        sensed: false,
+        condition: true,
       },
       {
         name: 'ALL CROSSFEEDs',
@@ -782,31 +777,31 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 3,
+        level: 1,
       },
       {
         name: 'OUTR TK XFR', // For transfer tanks containing fuel
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 3,
+        level: 1,
       },
       {
         name: 'TRIM TK XFR', // If at least one trim tank pump is running
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 4,
+        level: 1,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 3,
+        level: 1,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 3,
+        level: 1,
       },
     ],
   },
@@ -815,8 +810,9 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK:',
-        sensed: true,
+        name: 'NO FUEL LEAK:',
+        sensed: false,
+        condition: true,
       },
       {
         name: 'ALL CROSSFEEDs',
@@ -828,32 +824,47 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         name: 'TRIM TK FEED', // If gravity transfer from trim tank in progress
         sensed: true,
         labelNotCompleted: 'AUTO',
-        level: 3,
+        level: 1,
       },
       {
         name: 'OUTR TK XFR', // For transfer tanks containing fuel
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 3,
+        level: 1,
       },
       {
         name: 'TRIM TK XFR', // If at least one trim tank pump is running
         sensed: true,
         labelNotCompleted: 'FWD',
-        level: 4,
+        level: 1,
       },
       {
         name: 'INR TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 3,
+        level: 1,
       },
       {
         name: 'MID TK XFR',
         sensed: true,
         labelNotCompleted: 'MAN',
-        level: 3,
+        level: 1,
       },
     ],
+  },
+  280900001: {
+    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON',
+    sensed: false,
+    items: [], // TODO
+  },
+  280900002: {
+    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK',
+    sensed: false,
+    items: [], // TODO
+  },
+  280900003: {
+    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE',
+    sensed: false,
+    items: [], // TODO
   },
 };
