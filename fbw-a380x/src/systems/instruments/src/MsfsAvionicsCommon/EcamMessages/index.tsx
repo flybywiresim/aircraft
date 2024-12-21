@@ -3,7 +3,6 @@
 
 export const WD_NUM_LINES = 17;
 
-import { AbnormalNonSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import {
   EcamAbnormalSensedAta212223,
   EcamDeferredProcAta212223,
@@ -677,10 +676,8 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
   ...EcamAbnormalSensedAta80Rest,
 };
 
-/** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
-export const EcamAbnormalNonSensedProcedures = AbnormalNonSensedProcedures;
-
-export const EcamAbnormalProcedures = { ...EcamAbnormalSensedProcedures, ...EcamAbnormalNonSensedProcedures };
+// Abnormal non-sensed are also contained in EcamAbnormalSensedProcedures
+export const EcamAbnormalProcedures: { [n: string]: AbnormalProcedure } = EcamAbnormalSensedProcedures;
 
 export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
   'ENG',

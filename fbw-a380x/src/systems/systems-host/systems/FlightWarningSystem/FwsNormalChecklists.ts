@@ -71,6 +71,7 @@ export class FwsNormalChecklists {
           flattened.push({
             id: key.toString(),
             procedureCompleted: val.procedureCompleted,
+            procedureActivated: val.procedureActivated,
             itemsChecked: val.itemsChecked,
             itemsActive: val.itemsActive,
             itemsToShow: val.itemsToShow,
@@ -143,6 +144,7 @@ export class FwsNormalChecklists {
           flattened.push({
             id: key,
             procedureCompleted: val.procedureCompleted,
+            procedureActivated: val.procedureActivated,
             itemsChecked: val.itemsChecked,
             itemsActive: val.itemsActive,
             itemsToShow: val.itemsToShow,
@@ -160,6 +162,7 @@ export class FwsNormalChecklists {
       this.checklistState.setValue(k, {
         id: k.toString(),
         procedureCompleted: proc.deferred ? true : false,
+        procedureActivated: true,
         itemsChecked: Array(proc.items.length).fill(false),
         itemsActive: Array(proc.items.length).fill(true),
         itemsToShow: Array(proc.items.length).fill(true),
@@ -169,6 +172,7 @@ export class FwsNormalChecklists {
     this.checklistState.setValue(0, {
       id: '0',
       procedureCompleted: false,
+      procedureActivated: true,
       itemsChecked: Array(Object.keys(EcamNormalProcedures).length).fill(false),
       itemsActive: Array(Object.keys(EcamNormalProcedures).length).fill(true),
       itemsToShow: Array(Object.keys(EcamNormalProcedures).length).fill(true),

@@ -5,7 +5,7 @@ import { AbnormalNonSensedList } from 'instruments/src/MsfsAvionicsCommon/provid
 
 /** All normal procedures (checklists, via ECL) should be here.
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */
-export const AbnormalNonSensedProcedures: AbnormalNonSensedList[] = [
+export const AbnormalNonSensedProceduresOverview: AbnormalNonSensedList[] = [
   { id: 260900097, category: null },
   { id: 990900006, category: null },
   { id: 990900005, category: null },

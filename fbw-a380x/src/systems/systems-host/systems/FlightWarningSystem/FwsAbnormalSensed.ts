@@ -90,6 +90,8 @@ export class FwsAbnormalSensed {
         map.forEach((val, key) =>
           flattened.push({
             id: key,
+            procedureActivated: val.procedureActivated,
+            procedureCompleted: val.procedureCompleted,
             itemsChecked: val.itemsChecked,
             itemsActive: val.itemsActive,
             itemsToShow: val.itemsToShow,
@@ -165,13 +167,15 @@ export class FwsAbnormalSensed {
   }
 
   public clearActiveProcedure() {
-    this.fws.presentedFailures.splice(0, 1);
-    this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
-
     if (this.fws.activeAbnormalNonSensedKeys.includes(parseInt(this.activeProcedureId.get()))) {
       this.fws.activeAbnormalNonSensedKeys.splice(
         this.fws.activeAbnormalNonSensedKeys.indexOf(parseInt(this.activeProcedureId.get())),
         1,
+      );
+    } else {
+      this.fws.presentedFailures.splice(0, 1);
+      this.fws.recallFailures = this.fws.allCurrentFailures.filter(
+        (item) => !this.fws.presentedFailures.includes(item),
       );
     }
   }

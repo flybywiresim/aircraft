@@ -2760,8 +2760,6 @@ export class FwsCore {
     this.fmcCFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
     this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
     this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
-    this.fms1Fault.set(true);
-    this.fms2Fault.set(true);
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -3901,6 +3899,8 @@ export class FwsCore {
           }
           this.activeAbnormalProceduresList.setValue(key, {
             id: key,
+            procedureActivated: true,
+            procedureCompleted: false,
             itemsActive: itemsActive,
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
@@ -3911,17 +3911,23 @@ export class FwsCore {
               EcamDeferredProcedures[deferredKey].fromAbnormalProc === key &&
               this.abnormalSensed.ewdDeferredProcs[deferredKey]
             ) {
+              const deferredItemsActive = deferredValue.whichItemsActive
+                ? deferredValue.whichItemsActive()
+                : Array(deferredValue.whichItemsChecked().length).fill(false);
+              const deferredItemsChecked = deferredValue.whichItemsChecked
+                ? deferredValue.whichItemsChecked()
+                : Array(deferredValue.whichItemsChecked().length).fill(true);
+              ProcedureLinesGenerator.conditionalActiveItems(
+                EcamDeferredProcedures[deferredKey],
+                deferredItemsChecked,
+                deferredItemsActive,
+              );
               this.activeDeferredProceduresList.setValue(deferredKey, {
                 id: deferredKey,
                 procedureCompleted: false,
                 procedureActivated: false,
-
-                itemsChecked: deferredValue.whichItemsChecked
-                  ? deferredValue.whichItemsChecked()
-                  : Array(deferredValue.whichItemsChecked().length).fill(true),
-                itemsActive: deferredValue.whichItemsActive
-                  ? deferredValue.whichItemsActive()
-                  : Array(deferredValue.whichItemsChecked().length).fill(false),
+                itemsChecked: deferredItemsChecked,
+                itemsActive: deferredItemsActive,
                 itemsToShow: deferredValue.whichItemsToShow
                   ? deferredValue.whichItemsToShow()
                   : Array(deferredValue.whichItemsChecked().length).fill(true),
@@ -3949,6 +3955,8 @@ export class FwsCore {
           if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
             this.activeAbnormalProceduresList.setValue(key, {
               id: key,
+              procedureActivated: prevEl.procedureActivated,
+              procedureCompleted: prevEl.procedureCompleted,
               itemsChecked: fusedChecked,
               itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
               itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
@@ -4002,7 +4010,6 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
-        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         const prevEl = value;
         const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
@@ -4023,6 +4030,8 @@ export class FwsCore {
         if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
           value.setValue(key, {
             id: key,
+            procedureActivated: prevEl.procedureActivated,
+            procedureCompleted: prevEl.procedureCompleted,
             itemsChecked: fusedChecked,
             itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
             itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),

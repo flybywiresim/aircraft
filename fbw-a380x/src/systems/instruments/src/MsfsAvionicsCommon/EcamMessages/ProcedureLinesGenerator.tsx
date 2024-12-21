@@ -87,7 +87,7 @@ export class ProcedureLinesGenerator {
         if (v.level) {
           // Look for parent condition(s)
           let active = true;
-          for (let recI = i; recI > 0; recI--) {
+          for (let recI = i; recI >= 0; recI--) {
             active =
               (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
                 ? active && itemsChecked[recI]
@@ -160,7 +160,6 @@ export class ProcedureLinesGenerator {
       return;
     }
 
-    const numItems = this.checklistState.itemsToShow.length;
     const selectable = this.selectableItems(skipCompletedSensed);
     if (selectable.length == 0 || this.selectedItemIndex.get() >= selectable[selectable.length - 1]) {
       // Last element before first special line (CLEAR etc.)
@@ -183,7 +182,10 @@ export class ProcedureLinesGenerator {
         this.selectedItemIndex.set(SPECIAL_INDEX_NORMAL_RESET);
       } else if (sii > HIGHEST_SPECIAL_INDEX) {
         this.selectedItemIndex.set(
-          Math.min(selectable.find((v) => v > this.selectedItemIndex.get()) ?? numItems - 1, numItems - 1),
+          Math.min(
+            selectable.find((v) => v > this.selectedItemIndex.get()) ?? selectable[selectable.length - 1],
+            selectable[selectable.length - 1],
+          ),
         );
       }
     }
@@ -192,6 +194,8 @@ export class ProcedureLinesGenerator {
   checkSelected() {
     const clState: ChecklistState = {
       id: this.checklistState.id,
+      procedureActivated: this.checklistState.procedureActivated,
+      procedureCompleted: this.checklistState.procedureCompleted,
       itemsToShow: [...this.checklistState.itemsToShow],
       itemsChecked: [...this.checklistState.itemsChecked],
       itemsActive: [...this.checklistState.itemsActive],
@@ -396,7 +400,7 @@ export class ProcedureLinesGenerator {
 
         if (isChecklistCondition(item) && !item.sensed) {
           // Insert CONFIRM <condition>
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name}`;
+          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(2)}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get() || !isAbnormal,

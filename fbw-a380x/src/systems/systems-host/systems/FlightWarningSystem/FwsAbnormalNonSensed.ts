@@ -4,11 +4,8 @@
 import { MapSubject, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-import {
-  EcamAbnormalNonSensedProcedures,
-  EcamAbNormalSensedSubMenuVector,
-  WD_NUM_LINES,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { EwdAbnormalDict } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
 
@@ -38,13 +35,13 @@ export class FwsAbnormalNonSensed {
     if (this.checklistId.get() === 0) {
       // Overview page
       return (
-        EcamAbnormalNonSensedProcedures.map((val) => (val.category === null ? 1 : 0) as number).reduce(
+        AbnormalNonSensedProceduresOverview.map((val) => (val.category === null ? 1 : 0) as number).reduce(
           (accumulator, currentValue) => accumulator + currentValue,
         ) + EcamAbNormalSensedSubMenuVector.length
       );
     } else if (this.checklistId.get() > 0 && this.checklistId.get() <= EcamAbNormalSensedSubMenuVector.length) {
       const category = EcamAbNormalSensedSubMenuVector[this.checklistId.get() - 1];
-      return EcamAbnormalNonSensedProcedures.map((val) => (val.category === category ? 1 : 0) as number).reduce(
+      return AbnormalNonSensedProceduresOverview.map((val) => (val.category === category ? 1 : 0) as number).reduce(
         (accumulator, currentValue) => accumulator + currentValue,
       );
     }
@@ -83,7 +80,7 @@ export class FwsAbnormalNonSensed {
 
     if (this.fws.clCheckPulseNode.read()) {
       if (this.checklistId.get() === 0) {
-        const skipProcsFromTopMenu = EcamAbnormalNonSensedProcedures.map(
+        const skipProcsFromTopMenu = AbnormalNonSensedProceduresOverview.map(
           (val) => (val.category === null ? 1 : 0) as number,
         ).reduce((accumulator, currentValue) => accumulator + currentValue);
         if (
@@ -95,16 +92,16 @@ export class FwsAbnormalNonSensed {
           this.selectedItem.set(0);
         } else if (this.selectedItem.get() < skipProcsFromTopMenu) {
           // Preview non-sensed procedure
-          this.checklistId.set(EcamAbnormalNonSensedProcedures[this.selectedItem.get()]?.id ?? 0);
+          this.checklistId.set(AbnormalNonSensedProceduresOverview[this.selectedItem.get()]?.id ?? 0);
           this.selectedItem.set(-1);
         }
       } else if (this.checklistId.get() > 0 && this.checklistId.get() <= 10) {
         // Sub menu
-        const subMenuProcsStartAt = EcamAbnormalNonSensedProcedures.findIndex(
+        const subMenuProcsStartAt = AbnormalNonSensedProceduresOverview.findIndex(
           (v) => v.category === EcamAbNormalSensedSubMenuVector[this.checklistId.get() - 1],
         );
         // Preview non-sensed procedure
-        this.checklistId.set(EcamAbnormalNonSensedProcedures[subMenuProcsStartAt + this.selectedItem.get()].id);
+        this.checklistId.set(AbnormalNonSensedProceduresOverview[subMenuProcsStartAt + this.selectedItem.get()].id);
         this.selectedItem.set(-1);
       } else {
         console.log('---');
