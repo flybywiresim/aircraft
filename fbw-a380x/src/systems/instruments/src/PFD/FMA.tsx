@@ -2,9 +2,11 @@
 /* eslint-disable no-constant-condition */
 import {
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
   VNode,
@@ -13,7 +15,7 @@ import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/au
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -64,19 +66,43 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private trkFpaDeselected = Subject.create(false);
 
-  private altitude = Subject.create(0);
-
-  private selectedFpa = Subject.create(0);
-
-  private selectedVs = Subject.create(0);
-
-  private selectedAltitude = Subject.create(0);
-
   private firstBorderRef = FSComponent.createRef<SVGPathElement>();
 
   private secondBorderRef = FSComponent.createRef<SVGPathElement>();
 
   private AB3Message = Subject.create(false);
+
+  private isUnrestrictedClimbDescent: number = 0;
+
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), 0);
+
+  private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
+
+  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
+
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+
+  private readonly activeVerticalModeConsumer = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
+
+  private readonly UnrestrictedClimbDescent = MappedSubject.create(
+    ([selectedFpa, selectedVs, altitude, selectedAltitude, activeVerticalMode]) => {
+      if (activeVerticalMode === VerticalMode.FPA || activeVerticalMode === VerticalMode.VS) {
+        if ((selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude.value) {
+          return 1;
+        } else if ((selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude.value) {
+          return 2;
+        }
+      }
+      return 0;
+    },
+    this.selectedFpa,
+    this.selectedVs,
+    this.altitude,
+    this.selectedAltitude,
+    this.activeVerticalModeConsumer,
+  ) as Subscribable<number>;
 
   private handleFMABorders() {
     const sharedModeActive =
@@ -92,11 +118,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
         this.tdReached,
-        this.altitude.get(),
-        this.selectedFpa.get(),
-        this.selectedVs.get(),
-        this.selectedAltitude.get(),
-        this.activeVerticalMode,
+        this.isUnrestrictedClimbDescent,
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -129,7 +151,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -190,38 +212,10 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
-      .on('altitudeAr')
-      .whenChanged()
-      .handle((alt) => {
-        this.altitude.set(alt.value);
-        this.handleFMABorders();
-      });
-
-    sub
-      .on('selectedFpa')
-      .whenChanged()
-      .withPrecision(1)
-      .handle((fpa) => {
-        this.selectedFpa.set(fpa);
-        this.handleFMABorders();
-      });
-
-    sub
-      .on('selectedVs')
-      .whenChanged()
-      .handle((vs) => {
-        this.selectedVs.set(vs);
-        this.handleFMABorders();
-      });
-
-    sub
-      .on('selectedAltitude')
-      .whenChanged()
-      .handle((selAlt) => {
-        this.selectedAltitude.set(selAlt);
-        this.handleFMABorders();
-      });
+    this.UnrestrictedClimbDescent.sub((val) => {
+      this.isUnrestrictedClimbDescent = val;
+      this.handleFMABorders();
+    });
   }
 
   render(): VNode {
@@ -1345,15 +1339,10 @@ const getBC3Message = (
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
   tdReached: boolean,
-  altitude: number,
-  selectedFpa: number,
-  selectedVs: number,
-  selectedAltitude: number,
-  activeVerticalMode: number,
+  unrestrictedClimbDescent: number,
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
-  const isVerticalModeVsFpa = activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA;
 
   let text: string;
   let className: string;
@@ -1392,10 +1381,10 @@ const getBC3Message = (
   } else if (false) {
     text = 'EXIT MISSED';
     className = 'White';
-  } else if (isVerticalModeVsFpa && (selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude) {
+  } else if (unrestrictedClimbDescent === 1) {
     text = 'FCU ALT BELOW A/C';
     className = 'FontMediumSmaller  White';
-  } else if (isVerticalModeVsFpa && (selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude) {
+  } else if (unrestrictedClimbDescent === 2) {
     text = 'FCU ALT ABOVE A/C';
     className = 'DisappearAfter10Seconds FontMediumSmaller White';
   } else {
@@ -1422,15 +1411,37 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private tdReached = false;
 
-  private altitude = 0;
+  private isUnrestrictedClimbDescent = 0;
 
-  private selectedFpa = 0;
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
 
-  private selectedVs = 0;
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), 0);
 
-  private selectedAltitude = 0;
+  private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
 
-  private activeVerticalMode = 0;
+  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
+
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
+
+  private readonly UnrestrictedClimbDescent = MappedSubject.create(
+    ([selectedFpa, selectedVs, altitude, selectedAltitude, activeVerticalMode]) => {
+      if (activeVerticalMode === VerticalMode.FPA || activeVerticalMode === VerticalMode.VS) {
+        if ((selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude.value) {
+          return 1;
+        } else if ((selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude.value) {
+          return 2;
+        }
+      }
+      return 0;
+    },
+    this.selectedFpa,
+    this.selectedVs,
+    this.altitude,
+    this.selectedAltitude,
+    this.activeVerticalMode,
+  ) as Subscribable<number>;
 
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
@@ -1440,11 +1451,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
-      this.altitude,
-      this.selectedFpa,
-      this.selectedVs,
-      this.selectedAltitude,
-      this.activeVerticalMode,
+      this.isUnrestrictedClimbDescent,
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1504,42 +1511,10 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
-      .on('altitudeAr')
-      .whenChanged()
-      .handle((alt) => {
-        this.altitude = alt.value;
-        this.fillBC3Cell();
-      });
-
-    sub
-      .on('selectedFpa')
-      .whenChanged()
-      .withPrecision(1)
-      .handle((fpa) => {
-        this.selectedFpa = fpa;
-      });
-
-    sub
-      .on('selectedVs')
-      .whenChanged()
-      .handle((vs) => {
-        this.selectedVs = vs;
-      });
-
-    sub
-      .on('selectedAltitude')
-      .whenChanged()
-      .handle((selAlt) => {
-        this.selectedAltitude = selAlt;
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.activeVerticalMode = mode;
-      });
+    this.UnrestrictedClimbDescent.sub((val) => {
+      this.isUnrestrictedClimbDescent = val;
+      this.fillBC3Cell();
+    });
   }
 
   render(): VNode {
