@@ -166,7 +166,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   },
   1000006: {
     title: '<<DEPARTURE CHANGE>>',
-    deferred: true,
+    onlyActivatedByRequest: true,
     items: [
       {
         name: 'RWY & SID',

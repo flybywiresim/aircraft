@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import {
   AbnormalProcedure,
   ChecklistAction,
@@ -15,7 +15,6 @@ import {
   isChecklistCondition,
   NormalProcedure,
   WdLineData,
-  WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -39,6 +38,7 @@ const SPECIAL_INDEX_NORMAL_CL_COMPLETE = -5;
 const SPECIAL_INDEX_NORMAL_RESET = -6;
 const SPECIAL_INDEX_CLEAR = -7;
 const HIGHEST_SPECIAL_INDEX = SPECIAL_INDEX_ACTIVATE;
+export const SPECIAL_INDEX_DEFERRED_PAGE_CLEAR = -99;
 
 export class ProcedureLinesGenerator {
   public readonly selectedItemIndex = Subject.create(0);
@@ -48,13 +48,14 @@ export class ProcedureLinesGenerator {
 
   constructor(
     public procedureId: string,
-    public procedureIsActive: Subject<boolean>,
+    public procedureIsActive: Subscribable<boolean>,
     private type: ProcedureType,
     public checklistState: ChecklistState,
     private itemCheckedCallback?: (newState: ChecklistState) => void,
     private procedureClearedOrResetCallback?: (newState: ChecklistState) => void,
     private procedureCompletedCallback?: (newState: ChecklistState) => void,
     private recommendation?: 'LAND ASAP' | 'LAND ANSA' | undefined,
+    private isLastProcedure: boolean = false,
   ) {
     if (type === ProcedureType.Normal) {
       this.procedure = EcamNormalProcedures[procedureId];
@@ -104,7 +105,7 @@ export class ProcedureLinesGenerator {
     return this.getActualShownItems().findIndex((v) => v === this.sii);
   }
 
-  public numTotalLines(): number {
+  private numTotalLines(): number {
     return this.getActualShownItems().length;
   }
 
@@ -115,6 +116,34 @@ export class ProcedureLinesGenerator {
   /** Shorthand for this.selectedItemIndex.get() */
   private get sii() {
     return this.selectedItemIndex.get();
+  }
+
+  public firstLineIsSelected() {
+    if (this.type === ProcedureType.Deferred) {
+      return this.checklistState.procedureActivated
+        ? this.getActualShownItems()[0]
+        : this.sii === SPECIAL_INDEX_ACTIVATE;
+    } else if (this.type === ProcedureType.Abnormal) {
+      return this.checklistState.procedureActivated
+        ? this.getActualShownItems()[0]
+        : this.sii === SPECIAL_INDEX_ACTIVATE;
+    } else {
+      return false;
+    }
+  }
+
+  public lastLineIsSelected() {
+    if (this.type === ProcedureType.Deferred) {
+      return this.checklistState.procedureActivated
+        ? this.sii === SPECIAL_INDEX_DEFERRED_PROC_COMPLETE || this.sii === SPECIAL_INDEX_DEFERRED_PROC_RECALL
+        : this.sii === SPECIAL_INDEX_ACTIVATE;
+    } else if (this.type === ProcedureType.Abnormal) {
+      return this.checklistState.procedureActivated
+        ? this.sii === SPECIAL_INDEX_CLEAR
+        : this.sii === SPECIAL_INDEX_ACTIVATE;
+    } else {
+      return false;
+    }
   }
 
   moveUp() {
@@ -308,22 +337,35 @@ export class ProcedureLinesGenerator {
     const isAbnormal = this.type === ProcedureType.Abnormal;
     const isDeferred = this.type === ProcedureType.Deferred;
 
-    lineData.push({
-      abnormalProcedure: isAbnormalOrDeferred,
-      activeProcedure: this.procedureIsActive.get(),
-      sensed: true,
-      checked: false,
-      text: this.procedure.title,
-      style: ChecklistLineStyle.Headline,
-      firstLine: !isDeferred,
-      lastLine: this.procedureIsActive.get() ? false : true,
-    });
+    if (isDeferred) {
+      lineData.push({
+        abnormalProcedure: true,
+        activeProcedure: this.procedureIsActive.get(),
+        sensed: true,
+        checked: false,
+        text: `${this.checklistState.procedureCompleted ? '\x1b<7m> ' : '\x1b<4m> '}${this.procedure.title}`,
+        style: ChecklistLineStyle.Headline,
+        firstLine: false,
+        lastLine: false,
+      });
+    } else {
+      lineData.push({
+        abnormalProcedure: isAbnormalOrDeferred,
+        activeProcedure: this.procedureIsActive.get(),
+        sensed: true,
+        checked: false,
+        text: this.procedure.title,
+        style: ChecklistLineStyle.Headline,
+        firstLine: true,
+        lastLine: this.procedureIsActive.get() ? false : true,
+      });
+    }
 
     if (!isAbnormal || this.procedureIsActive.get()) {
       if (this.recommendation) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
-          activeProcedure: this.procedureIsActive.get() || !isAbnormal,
+          activeProcedure: this.procedureIsActive.get(),
           sensed: true,
           checked: false,
           text: this.recommendation,
@@ -336,7 +378,7 @@ export class ProcedureLinesGenerator {
       if (isDeferred && !this.checklistState.procedureCompleted) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
-          activeProcedure: true,
+          activeProcedure: this.procedureIsActive.get(),
           sensed: false,
           checked: this.checklistState.procedureActivated ?? false,
           text: `${'\xa0'.repeat(31)}ACTIVATE`,
@@ -391,7 +433,7 @@ export class ProcedureLinesGenerator {
 
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
-          activeProcedure: this.procedureIsActive.get() || !isAbnormal,
+          activeProcedure: this.procedureIsActive.get(),
           sensed: isChecklistCondition(item) ? true : item.sensed,
           checked: this.checklistState.itemsChecked[itemIndex],
           text: text.substring(0, 39),
@@ -406,7 +448,7 @@ export class ProcedureLinesGenerator {
           const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(2)}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
-            activeProcedure: this.procedureIsActive.get() || !isAbnormal,
+            activeProcedure: this.procedureIsActive.get(),
             sensed: item.sensed,
             checked: this.checklistState.itemsChecked[itemIndex],
             text: confirmText,
@@ -421,18 +463,18 @@ export class ProcedureLinesGenerator {
       if (isAbnormal) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
-          activeProcedure: true,
+          activeProcedure: this.procedureIsActive.get(),
           sensed: false,
           checked: false,
           text: `${'\xa0'.repeat(34)}CLEAR`,
           style: ChecklistLineStyle.ChecklistItem,
           firstLine: false,
-          lastLine: true,
+          lastLine: this.isLastProcedure,
           originalItemIndex: SPECIAL_INDEX_CLEAR,
         });
       } else if (this.type === ProcedureType.Normal) {
         lineData.push({
-          activeProcedure: true,
+          activeProcedure: this.procedureIsActive.get(),
           sensed: false,
           checked: this.checklistState.procedureCompleted ?? false,
           text: `${'\xa0'.repeat(27)}C/L COMPLETE`,
@@ -443,7 +485,7 @@ export class ProcedureLinesGenerator {
         });
 
         lineData.push({
-          activeProcedure: true,
+          activeProcedure: this.procedureIsActive.get(),
           sensed: false,
           checked: false,
           text: `${'\xa0'.repeat(34)}RESET`,
@@ -455,18 +497,18 @@ export class ProcedureLinesGenerator {
       } else if (isDeferred) {
         if (this.checklistState.procedureCompleted) {
           lineData.push({
-            activeProcedure: true,
+            activeProcedure: this.procedureIsActive.get(),
             sensed: false,
             checked: false,
-            text: `${'\xa0'.repeat(18)}DEFERRED PROC RECALL`,
+            text: `${'\xa0'.repeat(19)}DEFERRED PROC RECALL`,
             style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
-            lastLine: true,
+            lastLine: false,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_RECALL,
           });
         } else {
           lineData.push({
-            activeProcedure: true,
+            activeProcedure: this.procedureIsActive.get(),
             sensed: false,
             checked: this.checklistState.procedureCompleted ?? false,
             text: `${'\xa0'.repeat(17)}DEFERRED PROC COMPLETE`,
@@ -474,7 +516,7 @@ export class ProcedureLinesGenerator {
               ? ChecklistLineStyle.ChecklistItem
               : ChecklistLineStyle.ChecklistItemInactive,
             firstLine: false,
-            lastLine: true,
+            lastLine: false,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
           });
         }
@@ -501,9 +543,8 @@ export class ProcedureLinesGenerator {
       checked: false,
       text: '',
       style: ChecklistLineStyle.ChecklistItem,
-      firstLine: true,
-      lastLine: true,
-      specialLine: WdSpecialLine.Empty,
+      firstLine: !isDeferred,
+      lastLine: !isDeferred,
     });
 
     return lineData;

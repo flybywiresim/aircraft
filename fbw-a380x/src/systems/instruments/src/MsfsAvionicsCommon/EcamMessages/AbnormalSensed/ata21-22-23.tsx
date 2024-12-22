@@ -2127,9 +2127,43 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
 };
 
 export const EcamDeferredProcAta212223: { [n: number]: DeferredProcedure } = {
+  210700001: {
+    fromAbnormalProc: '211800021',
+    title: 'WHEN PACK OVHT OUT',
+    type: DeferredProcedureType.ALL_PHASES,
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+    ],
+  },
+  210700002: {
+    fromAbnormalProc: '211800021',
+    title: 'WHEN DIFF PR<2 PSI & FL<100/MEA-MORA',
+    type: DeferredProcedureType.ALL_PHASES,
+    items: [
+      {
+        name: 'RAM AIR',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'CABIN AIR EXTRACT',
+        sensed: true,
+        labelNotCompleted: 'OVRD',
+      },
+    ],
+  },
   221700001: {
     fromAbnormalProc: '221800006',
-    title: '\x1b<4m> LDG ELEVN',
+    title: 'LDG ELEVN',
     type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [
       {

@@ -633,8 +633,8 @@ export interface NormalProcedure {
   title: string;
   /** An array of possible checklist items.. */
   items: ChecklistAction[];
-  /** Checklist is deferred, i.e. only activated by request */
-  deferred?: boolean;
+  /** Checklist is only activated by request, deactivated per default */
+  onlyActivatedByRequest?: boolean;
 }
 
 export interface AbnormalNonSensedProcedure {
@@ -653,8 +653,8 @@ export enum DeferredProcedureType {
 export interface DeferredProcedure {
   /** Which abnormal procedure triggers this deferred procedure */
   fromAbnormalProc: string;
-  /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
-  title: string;
+  /** (optional, only used from batch 7) Title of the procedure, Accepts special formatting tokens  */
+  title?: string;
   /** An array of possible checklist items. */
   items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   type: DeferredProcedureType;

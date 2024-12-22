@@ -113,7 +113,6 @@ export const SystemDisplay = () => {
         SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', stsPrevPage);
       }
     } else {
-      setPageWhenUnselected(SdPages.Status);
       setStsPressedTimer(STS_DISPLAY_TIMER_DURATION);
     }
   };

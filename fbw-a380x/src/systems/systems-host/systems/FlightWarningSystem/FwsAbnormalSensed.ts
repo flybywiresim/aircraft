@@ -5,6 +5,7 @@
 import { EcamAbnormalSensedProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
+  SimVarValueType,
   Subject,
   Subscribable,
   SubscribableMapEventType,
@@ -105,7 +106,7 @@ export class FwsAbnormalSensed {
         if (type === SubscribableMapEventType.Added) {
           const procGen = new ProcedureLinesGenerator(
             value.id,
-            Subject.create(value.id === this.activeProcedureId.get()),
+            this.activeProcedureId.map((id) => value.id === id),
             ProcedureType.Abnormal,
             value,
             (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
@@ -149,7 +150,6 @@ export class FwsAbnormalSensed {
     this.activeProcedureId.sub((id) => {
       if (id) {
         this.procedures.forEach((val) => {
-          val.procedureIsActive.set(val.procedureId === id);
           if (val.procedureId === id) {
             this.activeProcedure = val;
             this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
@@ -167,6 +167,12 @@ export class FwsAbnormalSensed {
   }
 
   public clearActiveProcedure() {
+    const numFailures = this.fws.activeAbnormalNonSensedKeys.length + this.fws.presentedFailures.length;
+    if (numFailures === 1 && !this.fws.ecamStsNormal.get()) {
+      // Call STS page on SD
+      SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
+    }
+
     if (this.fws.activeAbnormalNonSensedKeys.includes(parseInt(this.activeProcedureId.get()))) {
       this.fws.activeAbnormalNonSensedKeys.splice(
         this.fws.activeAbnormalNonSensedKeys.indexOf(parseInt(this.activeProcedureId.get())),
@@ -3483,6 +3489,24 @@ export class FwsAbnormalSensed {
   };
 
   public ewdDeferredProcs: EwdAbnormalDict = {
+    210700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.pack1On.get(), this.fws.pack2On.get()],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    210700002: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.ramAirOn.get(), this.fws.cabinAirExtractOn.get()],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
     221700001: {
       flightPhaseInhib: [],
       simVarIsActive: Subject.create(true),

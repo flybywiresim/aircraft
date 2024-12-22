@@ -59,6 +59,11 @@ export class FwsAbnormalNonSensed {
     }
   }
 
+  navigateToParent() {
+    this.checklistId.set(0);
+    this.selectedItem.set(0);
+  }
+
   update() {
     if (this.fws.abnProcPulseNode.read()) {
       this.checklistId.set(0);

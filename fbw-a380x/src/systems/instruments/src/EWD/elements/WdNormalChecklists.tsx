@@ -12,12 +12,15 @@ import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbs
 import {
   ProcedureLinesGenerator,
   ProcedureType,
+  SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 
 export class WdNormalChecklists extends WdAbstractChecklistComponent {
   private readonly checklists = ConsumerSubject.create(this.sub.on('fws_normal_checklists'), []);
 
   private readonly checklistId = ConsumerSubject.create(this.sub.on('fws_normal_checklists_id'), 0);
+
+  private readonly activeDeferredProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
 
   private readonly deferred = ConsumerSubject.create(this.sub.on('fws_deferred_procedures'), []);
 
@@ -130,7 +133,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         abnormalProcedure: true,
         sensed: true,
         checked: false,
-        text: `\x1b4m${clState.procedureCompleted ? '' : '\x1b<4m'}${EcamNormalProcedures[parseInt(clState.id)].title} \x1bm`,
+        text: `${clState.procedureCompleted ? '\x1b<7m' : '\x1b<4m'}${EcamNormalProcedures[parseInt(clState.id)].title} \x1bm`,
         style: ChecklistLineStyle.Headline,
         firstLine: true,
         lastLine: false,
@@ -146,11 +149,41 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         lastLine: false,
       });
 
-      this.deferred.get().forEach((proc, index) => {
-        const procGen = new ProcedureLinesGenerator(proc.id, Subject.create(index === 0), ProcedureType.Deferred, proc);
+      const currentDeferredType =
+        deferredProcedureIds.indexOf(parseInt(clState.id)) !== -1
+          ? (deferredProcedureIds.indexOf(parseInt(clState.id)) as DeferredProcedureType)
+          : null;
+      const visibleDeferred = this.deferred
+        .get()
+        .filter((v) => currentDeferredType !== null && EcamDeferredProcedures[v.id].type === currentDeferredType);
+      visibleDeferred.forEach((proc, index) => {
+        const procGen = new ProcedureLinesGenerator(
+          proc.id,
+          this.activeDeferredProcedureId.map((id) => proc.id === id),
+          ProcedureType.Deferred,
+          proc,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          index === visibleDeferred.length - 1,
+        );
         this.lineData.push(...procGen.toLineData());
       });
+
+      this.lineData.push({
+        abnormalProcedure: true,
+        activeProcedure: true,
+        sensed: false,
+        checked: false,
+        text: `${'\xa0'.repeat(34)}CLEAR`,
+        style: ChecklistLineStyle.ChecklistItem,
+        firstLine: false,
+        lastLine: true,
+        originalItemIndex: SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
+      });
     }
+    console.log(this.activeDeferredProcedureId.get(), this.activeLine.get());
     super.updateChecklists();
   }
 
@@ -160,6 +193,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
     this.checklists.sub(() => this.updateChecklists(), true);
     this.checklistId.sub(() => this.updateChecklists());
     this.deferred.sub(() => this.updateChecklists(), true);
+    this.activeDeferredProcedureId.sub(() => this.updateChecklists());
   }
 
   // 17 lines

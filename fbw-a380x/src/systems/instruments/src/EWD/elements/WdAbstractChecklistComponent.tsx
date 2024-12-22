@@ -68,7 +68,9 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
       if (index >= this.showFromLine.get() && lineIdx < WD_NUM_LINES) {
         this.lineDataSubject[lineIdx].set(ld);
         this.lineSelected[lineIdx].set(
-          ld.originalItemIndex !== undefined ? ld.originalItemIndex === this.activeLine.get() : false,
+          ld.originalItemIndex !== undefined && ld.activeProcedure
+            ? ld.originalItemIndex === this.activeLine.get()
+            : false,
         );
         lineIdx++;
       }

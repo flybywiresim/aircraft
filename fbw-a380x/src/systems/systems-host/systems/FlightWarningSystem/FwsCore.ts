@@ -443,6 +443,8 @@ export class FwsCore {
 
   public readonly excessDiffPressure = Subject.create(false);
 
+  public readonly diffPressure = Arinc429Register.empty();
+
   public readonly allOutflowValvesOpen = Subject.create(false);
 
   public readonly ocsm1AutoFailure = Subject.create(false);
@@ -2973,6 +2975,8 @@ export class FwsCore {
 
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
 
+    this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
+
     const outflowValve1OpenAmount = Arinc429Register.empty();
     const outflowValve2OpenAmount = Arinc429Register.empty();
     const outflowValve3OpenAmount = Arinc429Register.empty();
@@ -3776,8 +3780,14 @@ export class FwsCore {
 
     /* CLEAR AND RECALL */
     if (this.clrPulseNode.read()) {
-      // delete the first failure
-      this.abnormalSensed.clearActiveProcedure();
+      if (this.abnormalSensed.abnormalShown.get()) {
+        // delete the first failure
+        this.abnormalSensed.clearActiveProcedure();
+      } else if (this.normalChecklists.checklistShown.get()) {
+        this.normalChecklists.navigateToParent();
+      } else if (this.abnormalNonSensed.abnProcShown.get()) {
+        this.abnormalNonSensed.navigateToParent();
+      }
     }
 
     if (this.rclUpPulseNode.read()) {
@@ -4255,6 +4265,7 @@ export class FwsCore {
       this.abnormalSensed.abnormalShown.set(false);
 
       pub.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
+      pub.pub('fws_active_procedure', this.normalChecklists.activeDeferredProcedureId.get(), true);
       pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
     } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
