@@ -17,10 +17,10 @@ import {
   ArincEventBus,
   MathUtils,
 } from '@flybywiresim/fbw-sdk';
+import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
-import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
 import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
 
 export class LowerArea extends DisplayComponent<{
@@ -689,7 +689,7 @@ class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscr
     return (
       <g visibility={this.props.visible.map((it) => (it ? 'visible' : 'hidden'))}>
         {this.limitationsLine.map((line, index) => (
-          <MemoFormatter x={70} y={165 + index * 7} message={line} />
+          <FormattedFwcText x={70} y={165 + index * 7} message={line} pfd={true} />
         ))}
       </g>
     );
@@ -714,10 +714,10 @@ class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <g>
-        <MemoFormatter x={4} y={165} message={this.memoLine1} />
-        <MemoFormatter x={4} y={172} message={this.memoLine2} />
-        <MemoFormatter x={4} y={179} message={this.memoLine3} />
+      <g id="memos">
+        <FormattedFwcText x={4} y={165} message={this.memoLine1} pfd={true} />
+        <FormattedFwcText x={4} y={172} message={this.memoLine2} pfd={true} />
+        <FormattedFwcText x={4} y={179} message={this.memoLine3} pfd={true} />
       </g>
     );
   }

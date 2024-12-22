@@ -8,6 +8,8 @@ interface FormattedFwcTextProps {
   message: Subscribable<string>;
   x: number;
   y: number;
+  /** Whether this line will be rendered in the PFD. Has impact on font-size */
+  pfd?: boolean;
 }
 export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
   private linesRef = FSComponent.createRef<SVGGElement>();
@@ -163,7 +165,10 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
       if (buffer !== '') {
         spans.push(
-          <tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>
+          <tspan
+            key={buffer}
+            class={{ [color]: true, EWDWarn: !this.props.pfd, FontIntermediate: this.props.pfd ?? false }}
+          >
             {buffer}
           </tspan>,
         );
@@ -179,7 +184,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
         this.linesRef.instance.appendChild(e);
         yOffset += LINE_SPACING;
       }
-    });
+    }, true);
   }
 
   render(): VNode {
