@@ -55,7 +55,7 @@ export class FwsMemos {
       simVarIsActive: MappedSubject.create(
         ([speedBrakeCommand, fwcFlightPhase]) => speedBrakeCommand && ![1, 8, 9, 10].includes(fwcFlightPhase),
         this.fws.speedBrakeCommand,
-        this.fws.fwcFlightPhase,
+        this.fws.flightPhase,
       ),
       whichCodeToReturn: () => [this.fws.amberSpeedBrake.get() ? 1 : 0],
       codesToReturn: ['000006001', '000006002'],
@@ -353,7 +353,7 @@ export class FwsMemos {
       // RAT OUT
       flightPhaseInhib: [],
       simVarIsActive: this.fws.ratDeployed.map((v) => v > 0),
-      whichCodeToReturn: () => [[1, 2].includes(this.fws.fwcFlightPhase.get()) ? 0 : 1],
+      whichCodeToReturn: () => [[1, 2].includes(this.fws.flightPhase.get()) ? 0 : 1],
       codesToReturn: ['242000001', '242000002'],
       memoInhibit: () => false,
       failure: 0,

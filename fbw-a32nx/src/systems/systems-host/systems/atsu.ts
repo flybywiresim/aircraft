@@ -6,10 +6,10 @@ import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
 import { Router } from '@datalink/router';
-import { EventBus, EventSubscriber } from '@microsoft/msfs-sdk';
+import { EventBus, EventSubscriber, Instrument } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 
-export class AtsuSystem {
+export class AtsuSystem implements Instrument {
   private readonly simVarHandling: SimVarHandling;
 
   private readonly powerSupply: EventSubscriber<PowerSupplyBusTypes>;
@@ -40,18 +40,15 @@ export class AtsuSystem {
     });
   }
 
-  public connectedCallback(): void {
+  public init(): void {
     this.simVarHandling.initialize();
+    this.simVarHandling.startPublish();
     this.router.initialize();
     this.atc.initialize();
     this.aoc.initialize();
   }
 
-  public startPublish(): void {
-    this.simVarHandling.startPublish();
-  }
-
-  public update(): void {
+  public onUpdate(): void {
     this.simVarHandling.update();
     this.router.update();
   }
