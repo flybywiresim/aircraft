@@ -64,7 +64,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private trkFpaDeselected = Subject.create(false);
 
-  private baroCorrectedAltitude = Subject.create(0);
+  private altitude = Subject.create(0);
 
   private selectedFpa = Subject.create(0);
 
@@ -92,7 +92,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
         this.tdReached,
-        this.baroCorrectedAltitude.get(),
+        this.altitude.get(),
         this.selectedFpa.get(),
         this.selectedVs.get(),
         this.selectedAltitude.get(),
@@ -194,7 +194,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       .on('altitudeAr')
       .whenChanged()
       .handle((alt) => {
-        this.baroCorrectedAltitude.set(alt.value);
+        this.altitude.set(alt.value);
         this.handleFMABorders();
       });
 
@@ -1345,7 +1345,7 @@ const getBC3Message = (
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
   tdReached: boolean,
-  baroCorrectedAltitude: number,
+  altitude: number,
   selectedFpa: number,
   selectedVs: number,
   selectedAltitude: number,
@@ -1392,10 +1392,10 @@ const getBC3Message = (
   } else if (false) {
     text = 'EXIT MISSED';
     className = 'White';
-  } else if (isVerticalModeVsFpa && (selectedFpa > 0 || selectedVs > 0) && selectedAltitude < baroCorrectedAltitude) {
+  } else if (isVerticalModeVsFpa && (selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude) {
     text = 'FCU ALT BELOW A/C';
     className = 'FontMediumSmaller  White';
-  } else if (isVerticalModeVsFpa && (selectedFpa < 0 || selectedVs < 0) && selectedAltitude > baroCorrectedAltitude) {
+  } else if (isVerticalModeVsFpa && (selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude) {
     text = 'FCU ALT ABOVE A/C';
     className = 'DisappearAfter10Seconds FontMediumSmaller White';
   } else {
@@ -1422,7 +1422,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private tdReached = false;
 
-  private baroCorrectedAltitude = 0;
+  private altitude = 0;
 
   private selectedFpa = 0;
 
@@ -1440,7 +1440,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
-      this.baroCorrectedAltitude,
+      this.altitude,
       this.selectedFpa,
       this.selectedVs,
       this.selectedAltitude,
@@ -1508,7 +1508,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       .on('altitudeAr')
       .whenChanged()
       .handle((alt) => {
-        this.baroCorrectedAltitude = alt.value;
+        this.altitude = alt.value;
         this.fillBC3Cell();
       });
 
