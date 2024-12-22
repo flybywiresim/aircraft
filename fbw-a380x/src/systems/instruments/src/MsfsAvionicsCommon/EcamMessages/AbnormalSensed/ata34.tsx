@@ -812,7 +812,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
 
 export const EcamDeferredProcAta34: { [n: number]: DeferredProcedure } = {
   340700001: {
-    fromAbnormalProc: '340800008',
+    fromAbnormalProcs: ['340800008'],
     title: '\x1b<4mLDG ELEVN',
     type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [],

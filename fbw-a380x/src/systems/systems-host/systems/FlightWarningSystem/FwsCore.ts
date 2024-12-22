@@ -1496,7 +1496,7 @@ export class FwsCore {
     if (val) {
       // Push only unique keys
       for (const key of val()) {
-        if (!pushTo.includes(key)) {
+        if (key && !pushTo.includes(key)) {
           pushTo.push(key);
         }
       }
@@ -3825,7 +3825,6 @@ export class FwsCore {
     let failureKeys: string[] = this.presentedFailures;
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
-    const rightFailureSystemCount = 0;
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
 
@@ -3920,7 +3919,7 @@ export class FwsCore {
 
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
             if (
-              EcamDeferredProcedures[deferredKey].fromAbnormalProc === key &&
+              EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
               this.abnormalSensed.ewdDeferredProcs[deferredKey]
             ) {
               const deferredItemsActive = deferredValue.whichItemsActive
@@ -4018,46 +4017,56 @@ export class FwsCore {
             failureSystemCount++;
           }
         }
-
-        if (value.sysPage > -1) {
-          SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
-        }
       }
 
       // Update deferred procedures
-      for (const [key, value] of Object.values(this.activeDeferredProceduresList.get())) {
+      this.activeDeferredProceduresList.get().forEach((value, key) => {
         const proc = EcamDeferredProcedures[key];
-        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
-        const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
-        const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
+        const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
+          .whichItemsChecked()
+          .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+        const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow
+          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow()
+          : Array(itemsChecked.length).fill(true);
+        const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
+          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
+          : Array(itemsChecked.length).fill(true);
 
-        const prevEl = value;
-        const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
+        const fusedChecked = [...value.itemsChecked].map((val, index) =>
           proc.items[index].sensed ? itemsChecked[index] : !!val,
         );
+
         ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
         this.deferredUpdatedItems.set(key, []);
         proc.items.forEach((item, idx) => {
           if (
-            prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
-            prevEl.itemsActive[idx] !== itemsActive[idx] ||
-            (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+            value.itemsToShow[idx] !== itemsToShow[idx] ||
+            value.itemsActive[idx] !== itemsActive[idx] ||
+            (value.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
           ) {
             this.deferredUpdatedItems.get(key).push(idx);
           }
         });
 
         if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
-          value.setValue(key, {
+          console.log('set', {
             id: key,
-            procedureActivated: prevEl.procedureActivated,
-            procedureCompleted: prevEl.procedureCompleted,
+            procedureActivated: value.procedureActivated,
+            procedureCompleted: value.procedureCompleted,
             itemsChecked: fusedChecked,
-            itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
-            itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
+            itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
+            itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
+          });
+          this.activeDeferredProceduresList.setValue(key, {
+            id: key,
+            procedureActivated: value.procedureActivated,
+            procedureCompleted: value.procedureCompleted,
+            itemsChecked: fusedChecked,
+            itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
+            itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
           });
         }
-      }
+      });
 
       if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
@@ -4087,7 +4096,7 @@ export class FwsCore {
       if (!allFailureKeys.includes(key) && !this.recallFailures.includes(key)) {
         // Delete associated deferred procedure
         for (const [deferredKey, _] of ewdDeferredEntries) {
-          if (EcamDeferredProcedures[deferredKey].fromAbnormalProc === key) {
+          if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
             this.activeDeferredProceduresList.delete(key);
           }
         }
@@ -4103,12 +4112,6 @@ export class FwsCore {
 
     if (this.auralScKeys.length === 0) {
       this.auralSingleChimePending = false;
-    }
-
-    const failOrder: string[] = [];
-
-    for (const [key] of Object.entries(this.ewdAbnormal)) {
-      failOrder.push(...key);
     }
 
     this.allCurrentFailures.length = 0;
@@ -4191,8 +4194,20 @@ export class FwsCore {
 
     this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
 
-    if (failureSystemCount + rightFailureSystemCount === 0) {
+    if (failureSystemCount === 0) {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
+    } else {
+      const sortedAbnormals = this.presentedFailures.sort((a, b) => {
+        return FwsAbnormalSensed.compareAbnormalProceduresByPriority(
+          a,
+          b,
+          this.ewdAbnormal[a].failure,
+          this.ewdAbnormal[b].failure,
+        );
+      });
+      if (sortedAbnormals.length > 0 && this.ewdAbnormal[sortedAbnormals[0]].sysPage > -1) {
+        SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', this.ewdAbnormal[sortedAbnormals[0]].sysPage);
+      }
     }
 
     this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
@@ -4379,6 +4394,9 @@ export class FwsCore {
   }
 
   messagePriority(message: string): number {
+    if (!message) {
+      return 10;
+    }
     // Highest importance: priority 0
     switch (message.trim().substring(0, 3)) {
       case '\x1b<6':

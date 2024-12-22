@@ -560,22 +560,22 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800109: {
-    title: '\x1b<4m\x1b4mENG\x1bm 1 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm1 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
   701800110: {
-    title: '\x1b<4m\x1b4mENG\x1bm 2 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm2 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
   701800111: {
-    title: '\x1b<4m\x1b4mENG\x1bm 3 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm3 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
   701800112: {
-    title: '\x1b<4m\x1b4mENG\x1bm 4 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm4 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
@@ -810,12 +810,12 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800159: {
-    title: '\x1b<4m\x1b4mENG\x1bm TWO ENG OUT ON SAME SIDE',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1bm",
     sensed: true,
     items: [],
   },
   701800160: {
-    title: '\x1b<4m\x1b4mENG\x1bm TWO ENG OUT ON OPPOSITE SIDE',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1bm",
     sensed: true,
     items: [],
   },

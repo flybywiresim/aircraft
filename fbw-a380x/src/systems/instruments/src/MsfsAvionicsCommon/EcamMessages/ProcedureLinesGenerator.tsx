@@ -83,7 +83,7 @@ export class ProcedureLinesGenerator {
     itemsActive: boolean[],
   ) {
     // Additional logic for conditions: Modify itemsActive based on condition activation status
-    if (proc.items.some((v) => isChecklistCondition(v))) {
+    if (proc.items && proc.items.some((v) => isChecklistCondition(v))) {
       proc.items.forEach((v, i) => {
         if (v.level) {
           // Look for parent condition(s)
@@ -230,9 +230,10 @@ export class ProcedureLinesGenerator {
       itemsChecked: [...this.checklistState.itemsChecked],
       itemsActive: [...this.checklistState.itemsActive],
     };
+    const lastItemIndex = this.getActualShownItems()[this.getActualShownItems().length - 1];
     if (
       this.selectedItemIndex.get() >= 0 &&
-      this.selectedItemIndex.get() < this.getActualShownItems().length &&
+      this.selectedItemIndex.get() <= lastItemIndex &&
       !this.selectedItem?.sensed
     ) {
       clState.itemsChecked[this.sii] = !clState.itemsChecked[this.sii];
@@ -261,11 +262,11 @@ export class ProcedureLinesGenerator {
     } else if (this.sii === SPECIAL_INDEX_DEFERRED_PROC_COMPLETE) {
       clState.procedureCompleted = true;
       this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_RECALL);
-      this.procedureClearedOrResetCallback(clState);
+      this.procedureCompletedCallback(clState);
     } else if (this.sii === SPECIAL_INDEX_DEFERRED_PROC_RECALL) {
       clState.procedureCompleted = false;
       this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_COMPLETE);
-      this.procedureClearedOrResetCallback(clState);
+      this.procedureCompletedCallback(clState);
     }
     this.checklistState = clState;
 
@@ -521,7 +522,7 @@ export class ProcedureLinesGenerator {
           });
         }
       }
-    } else {
+    } else if (this.items.length > 0) {
       // Only three dots for following procedures
       lineData.push({
         abnormalProcedure: isAbnormalOrDeferred,

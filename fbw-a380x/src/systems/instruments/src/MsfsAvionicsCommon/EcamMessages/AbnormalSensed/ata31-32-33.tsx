@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -1136,5 +1141,40 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE DAMAGE SUSPECTED',
     sensed: false,
     items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta313233: { [n: number]: DeferredProcedure } = {
+  320700001: {
+    fromAbnormalProcs: ['290800035', '290800036', '290800039'],
+    title: 'L/G GRVTY EXTN',
+    type: DeferredProcedureType.FOR_LANDING,
+    items: [
+      {
+        name: 'FOR L/G GRVTY EXTN: MAX SPEED 220 KT',
+        sensed: false,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'L/G GRVTY (EXTN MAX 2 MIN)',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+      },
+      {
+        name: 'WHEN L/G LOCKED DOWN OR AFTER 120S',
+        condition: true,
+        sensed: true,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+        level: 1,
+      },
+    ],
   },
 };

@@ -470,7 +470,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   290800035: {
-    title: '\x1b<4m\x1b4mHYD\x1bm G SYS PRESS LO',
+    title: "\x1b<4m\x1b4mHYD\x1bm \x1b'mG SYS PRESS LO\x1bm",
     sensed: true,
     items: [
       {
@@ -511,7 +511,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800036: {
-    title: '\x1b<4m\x1b4mHYD\x1bm Y SYS PRESS LO',
+    title: "\x1b<4m\x1b4mHYD\x1bm \x1b'mY SYS PRESS LO\x1bm",
     sensed: true,
     items: [
       {
@@ -607,7 +607,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     ],
   },
   290800039: {
-    title: '\x1b<4m\x1b4mHYD\x1bm G+Y SYS PRESS LO',
+    title: "\x1b<4m\x1b4mHYD\x1bm \x1b'mG+Y SYS PRESS LO\x1bm",
     sensed: true,
     items: [
       {

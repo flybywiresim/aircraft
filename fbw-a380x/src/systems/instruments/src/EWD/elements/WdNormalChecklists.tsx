@@ -183,7 +183,6 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         originalItemIndex: SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
       });
     }
-    console.log(this.activeDeferredProcedureId.get(), this.activeLine.get());
     super.updateChecklists();
   }
 

@@ -254,50 +254,44 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         name: 'DESCENT TO FL 100/MEA-MORA',
         sensed: false,
         labelNotCompleted: 'INITIATE',
-        level: 1,
       },
       {
         name: 'MAX FL : 100/MEA-MORA',
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
-        name: 'WHEN DIFF PRESS < 2 PSI & FL < 100/MEA-MORA :',
+        name: 'WHEN DIFF PRESS<2PSI & FL<100/MEA-MORA :',
         sensed: true,
         condition: true,
-        level: 1,
       },
       {
         name: 'RAM AIR:',
         sensed: true,
         labelNotCompleted: 'ON',
-        level: 2,
+        level: 1,
       },
       {
         name: 'CABIN AIR EXTRACT',
         sensed: true,
         labelNotCompleted: 'OVRD',
-        level: 2,
+        level: 1,
       },
       // In flight, if below FL 100
       {
         name: 'MAX FL : 100/MEA-MORA',
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'RAM AIR:',
         sensed: true,
         labelNotCompleted: 'ON',
-        level: 1,
       },
       {
         name: 'CABIN AIR EXTRACT',
         sensed: true,
         labelNotCompleted: 'OVRD',
-        level: 1,
       },
     ],
   },
@@ -2128,7 +2122,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
 
 export const EcamDeferredProcAta212223: { [n: number]: DeferredProcedure } = {
   210700001: {
-    fromAbnormalProc: '211800021',
+    fromAbnormalProcs: ['211800021'],
     title: 'WHEN PACK OVHT OUT',
     type: DeferredProcedureType.ALL_PHASES,
     items: [
@@ -2145,7 +2139,7 @@ export const EcamDeferredProcAta212223: { [n: number]: DeferredProcedure } = {
     ],
   },
   210700002: {
-    fromAbnormalProc: '211800021',
+    fromAbnormalProcs: ['211800021'],
     title: 'WHEN DIFF PR<2 PSI & FL<100/MEA-MORA',
     type: DeferredProcedureType.ALL_PHASES,
     items: [
@@ -2162,7 +2156,7 @@ export const EcamDeferredProcAta212223: { [n: number]: DeferredProcedure } = {
     ],
   },
   221700001: {
-    fromAbnormalProc: '221800006',
+    fromAbnormalProcs: ['221800006'],
     title: 'LDG ELEVN',
     type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [

@@ -37,7 +37,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800003: {
-    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 1+2 & DC BUS 1 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mAC BUS 1+2 & DC BUS 1 FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -120,7 +120,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800005: {
-    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2+3 & DC BUS 1+2 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mAC BUS 2+3 & DC BUS 1+2 FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -323,7 +323,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800006: {
-    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 2+4 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mAC BUS 2+4 FAULT\x1bm",
     sensed: true,
     items: [
       // after landing
@@ -540,7 +540,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800008: {
-    title: '\x1b<4m\x1b4mELEC\x1bm AC BUS 3+4 & DC BUS 2 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mAC BUS 3+4 & DC BUS 2 FAULT\x1bm",
     sensed: true,
     items: [
       // in flight
@@ -892,7 +892,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   240800026: {
-    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mDC BUS 1 FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -955,7 +955,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800027: {
-    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1 +2 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mDC BUS 1+2 FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -1068,7 +1068,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800028: {
-    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 1+ESS FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mDC BUS 1+ESS FAULT\x1bm",
     recommendation: 'LAND ANSA',
     sensed: true,
     items: [
@@ -1171,7 +1171,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800029: {
-    title: '\x1b<4m\x1b4mELEC\x1bm DC BUS 2 FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mDC BUS 2 FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -1237,7 +1237,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800030: {
-    title: '\x1b<4m\x1b4mELEC\x1bm DC ESS BUS FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mDC ESS BUS FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -1342,7 +1342,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     ],
   },
   240800031: {
-    title: '\x1b<4m\x1b4mELEC\x1bm DC ESS BUS PART FAULT',
+    title: "\x1b<4m\x1b4mELEC\x1bm \x1b'mDC ESS BUS PART FAULT\x1bm",
     sensed: true,
     items: [
       {
@@ -1691,7 +1691,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   240800055: {
-    title: '\x1b<2m\x1b4mELEC\x1bm EMER CONFIG',
+    title: "\x1b<2m\x1b4mELEC\x1bm \x1b'mEMER CONFIG\x1bm",
     sensed: true,
     recommendation: 'LAND ASAP',
     items: [

@@ -365,48 +365,8 @@ export class FwsNormalChecklists {
       }
     }
 
-    // Update sensed items
-    const ids = this.getNormalProceduresKeysSorted();
-
-    for (let id = 0; id < ids.length; id++) {
-      let changed = false;
-      const procId = ids[id];
-      const cl = this.checklistState.getValue(procId);
-      const proc = EcamNormalProcedures[procId];
-
-      const deferredProcIndex = deferredProcedureIds.indexOf(procId);
-      const procCompleted =
-        deferredProcIndex !== -1 ? this.deferredIsCompleted[deferredProcIndex] : cl.procedureCompleted;
-
-      const sensedResult = this.sensedItems[procId].whichItemsChecked();
-      const changedEntries = sensedResult.map((val, index) =>
-        val !== null && val !== cl.itemsChecked[index] ? index : null,
-      );
-      if (changedEntries.some((v) => v !== null) || procCompleted !== cl.procedureCompleted) {
-        changed = true;
-
-        if (changedEntries.includes(this.selectedLine.get()) && sensedResult[this.selectedLine.get()]) {
-          this.moveDown();
-        }
-      }
-
-      const clState: ChecklistState = {
-        id: procId.toString(),
-        procedureCompleted: procCompleted,
-        procedureActivated: cl.procedureActivated,
-        itemsChecked: [...cl.itemsChecked].map((val, index) =>
-          proc.items[index].sensed && sensedResult[index] != null ? sensedResult[index] : val,
-        ),
-        itemsActive: cl.itemsActive,
-        itemsToShow: cl.itemsToShow,
-      };
-      if (changed) {
-        this.checklistState.setValue(procId, clState);
-      }
-    }
-
     // Update deferred proc status
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i <= 3; i++) {
       this.hasDeferred[i] = false;
       this.deferredIsCompleted[i] = true;
     }
@@ -438,6 +398,46 @@ export class FwsNormalChecklists {
           break;
       }
     });
+
+    // Update sensed items
+    const ids = this.getNormalProceduresKeysSorted();
+
+    for (let id = 0; id < ids.length; id++) {
+      let changed = false;
+      const procId = ids[id];
+      const cl = this.checklistState.getValue(procId);
+      const proc = EcamNormalProcedures[procId];
+
+      const deferredProcIndex = deferredProcedureIds.indexOf(procId);
+      const procCompleted =
+        deferredProcIndex !== -1 ? this.deferredIsCompleted[deferredProcIndex] : cl.procedureCompleted;
+      const sensedResult = this.sensedItems[procId].whichItemsChecked();
+      const changedEntries = sensedResult.map((val, index) =>
+        val !== null && val !== cl.itemsChecked[index] ? index : null,
+      );
+      if (changedEntries.some((v) => v !== null) || procCompleted !== cl.procedureCompleted) {
+        changed = true;
+
+        if (changedEntries.includes(this.selectedLine.get()) && sensedResult[this.selectedLine.get()]) {
+          this.moveDown();
+        }
+      }
+
+      const clState: ChecklistState = {
+        id: procId.toString(),
+        procedureCompleted: procCompleted,
+        procedureActivated: cl.procedureActivated,
+        itemsChecked: [...cl.itemsChecked].map((val, index) =>
+          proc.items[index].sensed && sensedResult[index] != null ? sensedResult[index] : val,
+        ),
+        itemsActive: cl.itemsActive,
+        itemsToShow: cl.itemsToShow,
+      };
+      if (changed) {
+        this.checklistState.setValue(procId, clState);
+      }
+    }
+
     const overviewState = this.checklistState.getValue(0);
     overviewState.itemsChecked[Object.keys(EcamNormalProcedures).indexOf('1000007')] = this.deferredIsCompleted[0];
     overviewState.itemsChecked[Object.keys(EcamNormalProcedures).indexOf('1000008')] = this.deferredIsCompleted[1];
