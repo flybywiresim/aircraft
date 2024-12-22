@@ -54,18 +54,24 @@
     <Template Name="FBW_ECAM_BUTTON_SubTemplate">
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
-            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
-            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
             <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
+
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
-                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <Condition NotEmpty="SIMVAR">
                     <True>
                         <LEFT_SINGLE_CODE>
@@ -86,16 +92,6 @@
                 </Condition>
             </UseTemplate>
         </Component>
-
-        <Condition Check="POTENTIOMETER">
-            <True>
-                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
-                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
-                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
-                    </UseTemplate>
-                </Component>
-            </True>
-        </Condition>
     </Template>
 
     <Template Name="FBW_ECAM_BUTTON_Template">
@@ -112,19 +108,23 @@
         <DefaultTemplateParameters>
             <BASE_NAME>UNKNOWN</BASE_NAME>
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
-            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
-            <LED_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ2</LED_NODE_ID>
-            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
             <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
+
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:#SIMVAR#)
@@ -132,29 +132,42 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:#SIMVAR#)
                 </LEFT_LEAVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_SFAIL) -1 &gt;</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
+    </Template>
 
+    <Template Name="A32NX_ECAM_MORE_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <BASE_NAME>UNKNOWN</BASE_NAME>
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 
-        <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>
-                    (L:A32NX_ECAM_SFAIL) -1 &gt;
-                    (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) and or
-                    #SEQ1_POWERED# and
-                </EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    1 (&gt;L:#SIMVAR#)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:#SIMVAR#)
+                </LEFT_LEAVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_SD_MORE_SHOWN, Bool)</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
-
-        <Condition Check="POTENTIOMETER">
-            <True>
-                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
-                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
-                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
-                    </UseTemplate>
-                </Component>
-            </True>
-        </Condition>
     </Template>
 
     <Template Name="FBW_A380X_Components_ECAM_CP">
@@ -438,7 +451,7 @@
         <!-- ECAM MORE -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>A32NX_ECAM_MORE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>MORE</BASE_NAME>
             <PART_ID>ECAM_MORE</PART_ID>
             <TOOLTIPID>ECAM MORE...</TOOLTIPID>
