@@ -17,6 +17,7 @@ import {
   KeyEventManager,
   GameStateProvider,
   Wait,
+  SetSubject,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -225,7 +226,7 @@ export class FwsCore {
   public readonly presentedFailures: string[] = [];
 
   /** Keys/IDs of the active abnormal non-sensed procedures */
-  public readonly activeAbnormalNonSensedKeys: number[] = [];
+  public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([]);
 
   /** Map to hold all failures which are currently active */
   public readonly activeAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
@@ -3830,10 +3831,7 @@ export class FwsCore {
 
     // Update memos and failures list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
-      if (
-        (!value.simVarIsActive.get() && !this.activeAbnormalNonSensedKeys.includes(parseInt(key))) ||
-        value.flightPhaseInhib.some((e) => e === flightPhase)
-      ) {
+      if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -3857,10 +3855,7 @@ export class FwsCore {
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalProcedures[key];
 
-      if (
-        value.simVarIsActive.get() ||
-        (this.activeAbnormalNonSensedKeys.includes(parseInt(key)) && !this.recallFailures.includes(key))
-      ) {
+      if (value.simVarIsActive.get()) {
         // Skip if other fault overrides this one
         let overridden = false;
         value.notActiveWhenFaults.forEach((val) => {
@@ -3880,12 +3875,7 @@ export class FwsCore {
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
-          console.log('newwarning');
-          if (this.activeAbnormalNonSensedKeys.includes(parseInt(key))) {
-            failureKeys.unshift(key);
-          } else {
-            failureKeys.push(key);
-          }
+          failureKeys.push(key);
 
           if (value.failure === 3) {
             this.requestMasterWarningFromFaults = true;

@@ -109,9 +109,8 @@ export class FwsAbnormalNonSensed {
         this.checklistId.set(AbnormalNonSensedProceduresOverview[subMenuProcsStartAt + this.selectedItem.get()].id);
         this.selectedItem.set(-1);
       } else {
-        console.log('---');
         // Activate non-sensed procedure (add to ECAM faults) and close dialog, i.e. return to abnormal procs
-        this.fws.activeAbnormalNonSensedKeys.push(this.checklistId.get());
+        this.fws.activeAbnormalNonSensedKeys.add(this.checklistId.get());
         this.selectedItem.set(0);
         this.showAbnProcRequested.set(false);
       }
@@ -122,7 +121,7 @@ export class FwsAbnormalNonSensed {
     260900097: {
       // SMOKE / FUMES
       flightPhaseInhib: [],
-      simVarIsActive: Subject.create(false),
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(260900097)),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true, true],
       whichItemsChecked: () => [
