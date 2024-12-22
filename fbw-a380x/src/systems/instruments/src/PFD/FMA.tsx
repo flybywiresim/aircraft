@@ -149,13 +149,11 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
-
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
     });
 
-    sub
+    this.sub
       .on('fmaVerticalArmed')
       .whenChanged()
       .handle((a) => {
@@ -163,14 +161,14 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('activeLateralMode')
       .whenChanged()
       .handle((activeLateralMode) => {
         this.activeLateralMode = activeLateralMode;
         this.handleFMABorders();
       });
-    sub
+    this.sub
       .on('activeVerticalMode')
       .whenChanged()
       .handle((activeVerticalMode) => {
@@ -178,7 +176,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('setHoldSpeed')
       .whenChanged()
       .handle((shs) => {
@@ -186,7 +184,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('tcasRaInhibited')
       .whenChanged()
       .handle((tra) => {
@@ -194,7 +192,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('trkFpaDeselectedTCAS')
       .whenChanged()
       .handle((trk) => {
@@ -202,7 +200,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('tdReached')
       .whenChanged()
       .handle((tdr) => {
@@ -1459,14 +1457,12 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
-
     this.props.isAttExcessive.sub((e) => {
       this.isAttExcessive = e;
       this.fillBC3Cell();
     });
 
-    sub
+    this.sub
       .on('fmaVerticalArmed')
       .whenChanged()
       .handle((v) => {
@@ -1474,7 +1470,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('setHoldSpeed')
       .whenChanged()
       .handle((shs) => {
@@ -1482,7 +1478,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('tcasRaInhibited')
       .whenChanged()
       .handle((tra) => {
@@ -1490,7 +1486,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('trkFpaDeselectedTCAS')
       .whenChanged()
       .handle((trk) => {
@@ -1498,7 +1494,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('tdReached')
       .whenChanged()
       .handle((tdr) => {
