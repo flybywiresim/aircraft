@@ -78,9 +78,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
 
-  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
-
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+
+  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
 
   private readonly activeVerticalModeConsumer = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
@@ -225,7 +225,12 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
         <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
-        <Row3 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} AB3Message={this.AB3Message} />
+        <Row3
+          bus={this.props.bus}
+          isAttExcessive={this.props.isAttExcessive}
+          unrestrictedClimbDescent={this.unrestrictedClimbDescent}
+          AB3Message={this.AB3Message}
+        />
       </g>
     );
   }
@@ -383,6 +388,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 class Row3 extends DisplayComponent<{
   bus: EventBus;
   isAttExcessive: Subscribable<boolean>;
+  unrestrictedClimbDescent: Subscribable<number>;
   AB3Message: Subscribable<boolean>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
@@ -407,7 +413,11 @@ class Row3 extends DisplayComponent<{
           <AB3Cell bus={this.props.bus} />
           <D3Cell bus={this.props.bus} />
         </g>
-        <BC3Cell isAttExcessive={this.props.isAttExcessive} bus={this.props.bus} />
+        <BC3Cell
+          isAttExcessive={this.props.isAttExcessive}
+          unrestrictedClimbDescent={this.props.unrestrictedClimbDescent}
+          bus={this.props.bus}
+        />
         <E3Cell bus={this.props.bus} />
       </g>
     );
@@ -1389,7 +1399,11 @@ const getBC3Message = (
   return [text, className];
 };
 
-class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; bus: EventBus }> {
+class BC3Cell extends DisplayComponent<{
+  isAttExcessive: Subscribable<boolean>;
+  unrestrictedClimbDescent: Subscribable<number>;
+  bus: EventBus;
+}> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
   private classNameSub = Subject.create('');
@@ -1406,35 +1420,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private tdReached = false;
 
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
-
-  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), 0);
-
-  private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
-
-  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
-
-  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
-
-  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
-
-  private readonly unrestrictedClimbDescent = MappedSubject.create(
-    ([selectedFpa, selectedVs, altitude, selectedAltitude, activeVerticalMode]) => {
-      if (activeVerticalMode === VerticalMode.FPA || activeVerticalMode === VerticalMode.VS) {
-        if ((selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude.value) {
-          return 1;
-        } else if ((selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude.value) {
-          return 2;
-        }
-      }
-      return 0;
-    },
-    this.selectedFpa,
-    this.selectedVs,
-    this.altitude,
-    this.selectedAltitude,
-    this.activeVerticalMode,
-  );
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
@@ -1444,7 +1430,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
-      this.unrestrictedClimbDescent.get(),
+      this.props.unrestrictedClimbDescent.get(),
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1459,6 +1445,10 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
     this.props.isAttExcessive.sub((e) => {
       this.isAttExcessive = e;
+      this.fillBC3Cell();
+    });
+
+    this.props.unrestrictedClimbDescent.sub(() => {
       this.fillBC3Cell();
     });
 
@@ -1501,10 +1491,6 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.tdReached = tdr;
         this.fillBC3Cell();
       });
-
-    this.unrestrictedClimbDescent.sub(() => {
-      this.fillBC3Cell();
-    });
   }
 
   render(): VNode {
