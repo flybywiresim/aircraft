@@ -172,18 +172,8 @@ export class FwsAbnormalSensed {
       // Call STS page on SD
       SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
     }
-
-    if (this.fws.activeAbnormalNonSensedKeys.includes(parseInt(this.activeProcedureId.get()))) {
-      this.fws.activeAbnormalNonSensedKeys.splice(
-        this.fws.activeAbnormalNonSensedKeys.indexOf(parseInt(this.activeProcedureId.get())),
-        1,
-      );
-    } else {
-      this.fws.presentedFailures.splice(0, 1);
-      this.fws.recallFailures = this.fws.allCurrentFailures.filter(
-        (item) => !this.fws.presentedFailures.includes(item),
-      );
-    }
+    this.fws.presentedFailures.splice(this.fws.presentedFailures.indexOf(this.activeProcedureId.get()), 1);
+    this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
   }
 
   private scrollToSelectedLine() {

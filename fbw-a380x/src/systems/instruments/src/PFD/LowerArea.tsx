@@ -670,7 +670,7 @@ class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscr
 
   private static lineSubject(index: number, sub: EventSubscriber<FwsPfdSimvars>) {
     return ConsumerSubject.create(sub.on(`limitations_line_${index}`).whenChanged(), 0).map(
-      (it) => EcamLimitations[padMemoCode(it)] ?? '',
+      (it) => EcamLimitations[it] ?? '',
     );
   }
 

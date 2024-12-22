@@ -38,6 +38,7 @@ import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/F
 import {
   EcamAbnormalProcedures,
   EcamDeferredProcedures,
+  EcamLimitations,
   EcamMemos,
   pfdMemoDisplay,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
@@ -3829,7 +3830,10 @@ export class FwsCore {
 
     // Update memos and failures list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
-      if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+      if (
+        (!value.simVarIsActive.get() && !this.activeAbnormalNonSensedKeys.includes(parseInt(key))) ||
+        value.flightPhaseInhib.some((e) => e === flightPhase)
+      ) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -3853,7 +3857,10 @@ export class FwsCore {
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalProcedures[key];
 
-      if (value.simVarIsActive.get() || this.activeAbnormalNonSensedKeys.includes(parseInt(key))) {
+      if (
+        value.simVarIsActive.get() ||
+        (this.activeAbnormalNonSensedKeys.includes(parseInt(key)) && !this.recallFailures.includes(key))
+      ) {
         // Skip if other fault overrides this one
         let overridden = false;
         value.notActiveWhenFaults.forEach((val) => {
@@ -3873,7 +3880,12 @@ export class FwsCore {
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
-          failureKeys.push(key);
+          console.log('newwarning');
+          if (this.activeAbnormalNonSensedKeys.includes(parseInt(key))) {
+            failureKeys.unshift(key);
+          } else {
+            failureKeys.push(key);
+          }
 
           if (value.failure === 3) {
             this.requestMasterWarningFromFaults = true;
@@ -4002,6 +4014,14 @@ export class FwsCore {
         FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys);
         FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys);
         FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);
+
+        // Push LAND ASAP or LAND ANSA to limitations
+        FwsCore.pushKeyUnique(() => {
+          if (proc.recommendation) {
+            return proc.recommendation === 'LAND ANSA' ? ['2'] : ['1'];
+          }
+          return [];
+        }, ewdLimitationsAllPhasesKeys);
 
         if (!recallFailureKeys.includes(key)) {
           if (value.sysPage > -1) {
@@ -4163,7 +4183,7 @@ export class FwsCore {
 
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft);
     const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight).sort(
-      (a, b) => this.memoPriority(a) - this.memoPriority(b),
+      (a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]),
     );
 
     if (allFailureKeys.length === 0) {
@@ -4192,7 +4212,7 @@ export class FwsCore {
     // TODO order by decreasing importance
     const pfdMemos = orderedMemoArrayRight
       .filter((it) => pfdMemoDisplay.includes(it))
-      .sort((a, b) => this.memoPriority(a) - this.memoPriority(b));
+      .sort((a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]));
     this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i]));
 
     // TODO order by decreasing importance
@@ -4200,14 +4220,27 @@ export class FwsCore {
     this.sdStatusInopAllPhasesLines.forEach((l, i) => l.set(stsInopAllPhasesKeys[i]));
     this.sdStatusInopApprLdgLines.forEach((l, i) => l.set(stsInopApprLdgKeys[i]));
 
-    // TODO order by decreasing importance
-    this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(ewdLimitationsAllPhasesKeys[i]));
-    this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(ewdLimitationsApprLdgKeys[i]));
+    // TODO order by decreasing importance, only color-based for now
+    // LAND ASAP overrides/replaces LAND ANSA
+    if (ewdLimitationsAllPhasesKeys.includes('1') && ewdLimitationsAllPhasesKeys.includes('2')) {
+      ewdLimitationsAllPhasesKeys.splice(ewdLimitationsAllPhasesKeys.indexOf('2'), 1);
+    }
+    const sortedEwdLimitationsAllPhasesKeys = ewdLimitationsAllPhasesKeys.sort(
+      (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
+    );
+    const sortedEwdLimitationsApprLdgKeys = ewdLimitationsApprLdgKeys.sort(
+      (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
+    );
+    this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(sortedEwdLimitationsAllPhasesKeys[i]));
+    this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(sortedEwdLimitationsApprLdgKeys[i]));
 
-    // For now, also push EWD limitations to PFD, until EWD limitations are implemented
+    // For now, also push EWD limitations to PFD, until we find out which is displayed where
     const pfdLimitationsCombined = [
-      ...new Set(pfdLimitationsKeys.concat(ewdLimitationsAllPhasesKeys).concat(ewdLimitationsApprLdgKeys)),
-    ];
+      ...new Set(pfdLimitationsKeys.concat(sortedEwdLimitationsAllPhasesKeys).concat(sortedEwdLimitationsApprLdgKeys)),
+    ].sort((a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]));
+    if (pfdLimitationsCombined.includes('1') && pfdLimitationsCombined.includes('2')) {
+      pfdLimitationsCombined.splice(pfdLimitationsCombined.indexOf('2'), 1);
+    }
     this.pfdLimitationsLines.forEach((l, i) => l.set(pfdLimitationsCombined[i]));
 
     this.ecamStsNormal.set(
@@ -4355,10 +4388,9 @@ export class FwsCore {
     }
   }
 
-  memoPriority(memoKey: string): number {
-    const memo = EcamMemos[memoKey];
+  messagePriority(message: string): number {
     // Highest importance: priority 0
-    switch (memo.trim().substring(0, 3)) {
+    switch (message.trim().substring(0, 3)) {
       case '\x1b<6':
         return 0;
       case '\x1b<2':
