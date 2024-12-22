@@ -291,6 +291,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_SET, "AUTOPILOT_DISENGAGE_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_TOGGLE, "AUTOPILOT_DISENGAGE_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_AUTOPILOT_DISENGAGE, "A32NX.AUTOPILOT_DISENGAGE", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_2_PUSH, "A32NX.FCU_AP_2_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_DISCONNECT_PUSH, "A32NX.FCU_AP_DISCONNECT_PUSH", false);
@@ -397,6 +398,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_AUTO_THROTTLE_DISCONNECT, "A32NX.AUTO_THROTTLE_DISCONNECT", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_TO_GA, "AUTO_THROTTLE_TO_GA", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_ATHR_RESET_DISABLE, "A32NX.ATHR_RESET_DISABLE", false);
 
@@ -1810,6 +1812,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       if (static_cast<long>(data0) == 1) {
         simInputAutopilot.AP_disconnect = 1;
         std::cout << "WASM: event triggered: AUTOPILOT_DISENGAGE_SET" << std::endl;
+
+        // Re emitting masked event for autopilot disconnection
+        sendEvent(SimConnectInterface::Events::A32NX_AUTOPILOT_DISENGAGE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       }
       break;
     }
@@ -2436,6 +2441,9 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     case Events::AUTO_THROTTLE_DISCONNECT: {
       simInputThrottles.ATHR_disconnect = 1;
       std::cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << std::endl;
+
+      // Re emitting masked event
+      sendEvent(Events::A32NX_AUTO_THROTTLE_DISCONNECT, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       break;
     }
 

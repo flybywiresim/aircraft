@@ -9,13 +9,13 @@ uom = "0.36.0"
 rand = { version = "0.8.0", features = ["small_rng"] }
 rand_distr = "0.4.3"
 rand_pcg = "0.3.1"
-ntest = "0.7.2"
-num-derive = "0.3.3"
-num-traits = "0.2.14"
-nalgebra = "0.25.0"
+ntest = "0.9.3"
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+nalgebra = "0.33.0"
 bounded-vec-deque = "0.1.1"
 fxhash = "0.2.1"
 bitflags = "1.3.2"
 
 [dev-dependencies]
-rstest = "0.10.0"
+rstest = "0.12.0"

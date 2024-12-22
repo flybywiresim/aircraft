@@ -1434,7 +1434,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 10],
       simVarIsActive: this.fws.autoThrustOffInvoluntary,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true],
+      whichItemsToShow: () => [false],
       whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
       failure: 2,
       sysPage: -1,
