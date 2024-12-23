@@ -153,6 +153,10 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       this.handleFMABorders();
     });
 
+    this.unrestrictedClimbDescent.sub(() => {
+      this.handleFMABorders();
+    });
+
     this.sub
       .on('fmaVerticalArmed')
       .whenChanged()
@@ -207,10 +211,6 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.tdReached = tdr;
         this.handleFMABorders();
       });
-
-    this.unrestrictedClimbDescent.sub(() => {
-      this.handleFMABorders();
-    });
   }
 
   render(): VNode {
