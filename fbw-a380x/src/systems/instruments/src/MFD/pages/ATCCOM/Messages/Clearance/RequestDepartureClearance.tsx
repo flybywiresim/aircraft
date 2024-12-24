@@ -4,17 +4,16 @@ import {
   AircraftType,
   AirportFormat,
   AtisCode,
+  LongAlphanumericFormat,
   ShortAlphanumericFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
 
-interface RequestDepartureClearanceProps extends AbstractMfdPageProps {}
-
-export class RequestDepartureClearance extends DisplayComponent<RequestDepartureClearanceProps> {
+export class RequestDepartureClearance extends DisplayComponent<MessageVisualizationProps> {
   render(): VNode {
     return (
-      <div class="request-block">
+      <div class="request-block request-block-single">
         <div class="request-block-header">
           <div class="left"></div>
           <div class="request-block-title">
@@ -25,8 +24,8 @@ export class RequestDepartureClearance extends DisplayComponent<RequestDeparture
 
         <IconButton
           icon="trashbin"
-          onClick={() => {}}
-          disabled={Subject.create(true)}
+          onClick={this.props.onDelete}
+          disabled={Subject.create(false)}
           containerStyle="width: 40px; height: 40px; position: absolute; top: -15px; right: -15px;"
         />
 
@@ -38,7 +37,7 @@ export class RequestDepartureClearance extends DisplayComponent<RequestDeparture
             <div class="mfd-label request-block-input-label">DEPARTURE ARPT</div>
             <InputField<string>
               dataEntryFormat={new AirportFormat()}
-              value={Subject.create('WSSS')}
+              value={Subject.create('')}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -50,7 +49,7 @@ export class RequestDepartureClearance extends DisplayComponent<RequestDeparture
             <div class="mfd-label request-block-input-label">GATE</div>
             <InputField<string>
               dataEntryFormat={new ShortAlphanumericFormat()}
-              value={Subject.create('A2')}
+              value={Subject.create('')}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -62,7 +61,7 @@ export class RequestDepartureClearance extends DisplayComponent<RequestDeparture
             <div class="mfd-label request-block-input-label">D-ATIS CODE</div>
             <InputField<string>
               dataEntryFormat={new AtisCode()}
-              value={Subject.create('H')}
+              value={Subject.create('')}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -88,7 +87,7 @@ export class RequestDepartureClearance extends DisplayComponent<RequestDeparture
             <div class="mfd-label request-block-input-label">DESTINATION</div>
             <InputField<string>
               dataEntryFormat={new AirportFormat()}
-              value={Subject.create('WMKK')}
+              value={Subject.create('')}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -96,7 +95,34 @@ export class RequestDepartureClearance extends DisplayComponent<RequestDeparture
               interactionMode={this.props.mfd.interactionMode}
             />
           </div>
-          <div></div>
+          <div class="request-textbox-container">
+            <div class="request-textbox-textarea">
+              <InputField<string>
+                dataEntryFormat={new LongAlphanumericFormat()}
+                value={Subject.create('')}
+                containerStyle="width: 100%;"
+                alignText="flex-start"
+                // errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                hEventConsumer={this.props.mfd.hEventConsumer}
+                interactionMode={this.props.mfd.interactionMode}
+                canOverflow={true}
+              />
+            </div>
+            <div class="request-textbox-nav">
+              <IconButton
+                icon="ecl-single-up"
+                onClick={() => {}}
+                disabled={Subject.create(true)}
+                containerStyle="width: 40px; height: 40px;"
+              />
+              <IconButton
+                icon="ecl-single-down"
+                onClick={() => {}}
+                disabled={Subject.create(true)}
+                containerStyle="width: 40px; height: 40px;"
+              />
+            </div>
+          </div>
           <div class="request-block-line" style="justify-content: center;">
             <span>{'(NO NOTIFICATION REQUIRED)'}</span>
           </div>

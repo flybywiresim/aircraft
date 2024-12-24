@@ -8,15 +8,75 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { RequestMenuButton } from 'instruments/src/MFD/pages/common/RequestMenuButton';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-
-import { RequestDepartureClearance } from 'instruments/src/MFD/pages/ATCCOM/Messages/Clearance/RequestDepartureClearance';
+import { MaxRequestElements, MessageTable } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
 
 interface MfdAtccomRequestProps extends AbstractMfdPageProps {}
 
 export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
   private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
+  private elements: { id: string; message: undefined; readyToSend: boolean }[] = [];
+  private FanMode: string = 'A';
+
   protected onNewData() {}
+
+  private elementDelete = (elementIndex: number) => {
+    this.elements.splice(elementIndex, 1);
+    this.renderElements();
+  };
+
+  private onSelect(frameName: string): void {
+    if (!MessageTable[frameName]) {
+      return console.log('Request frame not found: ' + frameName);
+    }
+
+    if (
+      MessageTable[frameName].singleMessage ||
+      (this.elements.length !== 0 && MessageTable[this.elements[0].id].singleMessage)
+    ) {
+      this.elements = [];
+    }
+
+    // check and swap frame is frames are to be exchanged
+    if (MessageTable[frameName].exchanging !== undefined) {
+      for (let i = 0; i < this.elements.length; i++) {
+        if (MessageTable[frameName].exchanging === this.elements[i].id) {
+          this.elements.splice(i, 1, { id: frameName, message: undefined, readyToSend: false });
+          this.renderElements();
+          return;
+        }
+      }
+    }
+
+    if (this.elements.length < MaxRequestElements) {
+      this.elements.push({ id: frameName, message: undefined, readyToSend: false });
+      this.renderElements();
+    }
+  }
+
+  // Convert this to use a subscription when elements is changed
+  private renderElements(): void {
+    FSComponent.remove(document.getElementById('request-frame-0'));
+    FSComponent.remove(document.getElementById('request-frame-1'));
+    FSComponent.remove(document.getElementById('request-frame-2'));
+    FSComponent.remove(document.getElementById('request-frame-3'));
+    FSComponent.remove(document.getElementById('request-frame-4'));
+
+    this.elements.forEach((element, index) => {
+      if (MessageTable[element.id]) {
+        FSComponent.render(
+          <div id={`request-frame-${index}`} className="request-frame"></div>,
+          document.getElementById('atccom-request-body'),
+        );
+        FSComponent.render(
+          MessageTable[element.id].visualization(this.props, this.FanMode, index, this.elements, () =>
+            this.elementDelete(index),
+          ),
+          document.getElementById(`request-frame-${index}`),
+        );
+      }
+    });
+  }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -34,9 +94,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
         {/* begin page content */}
         <div class="mfd-page-container">
           <div id="atccom-request-container">
-            <div id="atccom-request-body">
-              <RequestDepartureClearance bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
-            </div>
+            <div id="atccom-request-body"></div>
             <div id="atccom-request-menu">
               <RequestMenuButton
                 label="VERTICAL"
@@ -44,8 +102,8 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                 onClick={() => {}}
                 buttonStyle="width:180px;"
                 menuItems={Subject.create([
-                  { label: 'CLIMB TO', action: () => {} },
-                  { label: 'DESCEND TO', action: () => {} },
+                  { label: 'CLIMB TO', action: () => this.onSelect('RequestClimb') },
+                  { label: 'DESCEND TO', action: () => this.onSelect('RequestDescend') },
                   { label: 'ALT/FL', action: () => {} },
                   { label: 'BLOCK ALT/FL', action: () => {} },
                   { label: 'CRUISE CLIMB', action: () => {} },
@@ -58,7 +116,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                 onClick={() => {}}
                 buttonStyle="width:180px;"
                 menuItems={Subject.create([
-                  { label: 'DIRECT TO', action: () => {} },
+                  { label: 'DIRECT TO', action: () => this.onSelect('RequestDirect') },
                   { label: 'OFFSET', action: () => {} },
                   { label: 'WX DEVIATION', action: () => {} },
                   { label: 'HEADING', action: () => {} },
@@ -84,9 +142,9 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                 onClick={() => {}}
                 buttonStyle="width:180px;"
                 menuItems={Subject.create([
-                  { label: 'DEPARTURE', action: () => {} },
-                  { label: 'OCEANIC', action: () => {} },
-                  { label: 'GENERIC', action: () => {} },
+                  { label: 'DEPARTURE', action: () => this.onSelect('RequestDepartureClearance') },
+                  { label: 'OCEANIC', action: () => this.onSelect('RequestOceanicClearance') },
+                  { label: 'GENERIC', action: () => this.onSelect('RequestGenericClearance') },
                 ])}
               />
               <RequestMenuButton
@@ -140,7 +198,10 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               <Button
                 label="CANCEL"
                 disabled={Subject.create(false)}
-                onClick={() => {}}
+                onClick={() => {
+                  this.elements = [];
+                  this.renderElements();
+                }}
                 buttonStyle="width: 190px; height:64px;"
               />
             </div>
