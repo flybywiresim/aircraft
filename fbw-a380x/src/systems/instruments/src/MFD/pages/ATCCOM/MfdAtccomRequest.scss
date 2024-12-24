@@ -8,6 +8,7 @@
 
 #atccom-request-body {
   width: 580px;
+  padding-top: 10px;
 }
 
 #atccom-request-menu {
@@ -25,9 +26,7 @@
 
 .request-block {
   font-size: 22px;
-  border: 2px solid #fff;
-  border-top: transparent;
-  margin: 30px 10px;
+  margin: 20px 10px;
   position: relative;
 
   .request-block-title {
@@ -52,13 +51,18 @@
   }
 }
 
+.request-block-single {
+  border: 2px solid #fff;
+  border-top: transparent;
+}
+
 .request-block-header {
   display: flex;
   justify-content: space-between;
 
   .left,
   .right {
-    border-top: 2px solid #fff;
+    border-top: 1px solid #fff;
     flex: 0 1 15%;
   }
 }
@@ -79,4 +83,20 @@
   overflow: auto;
   display: none;
   border: 2px outset $display-light-grey;
+}
+
+.request-textbox-container {
+  border: 2px solid #fff;
+  display: flex;
+  flex-direction: row;
+
+  .request-textbox-textarea {
+    border: 2px solid #fff;
+    width: 90%;
+  }
+
+  .request-textbox-nav {
+    padding: 5px;
+    flex-flow: column;
+  }
 }
