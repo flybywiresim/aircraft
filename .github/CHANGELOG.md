@@ -98,6 +98,7 @@
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
 1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
+1. [A380X/FCU]  Add TRUE indication on FCU when TRUE North reference is selected on AFS CP - @heclak (Heclak)
 
 ## 0.12.0
 
