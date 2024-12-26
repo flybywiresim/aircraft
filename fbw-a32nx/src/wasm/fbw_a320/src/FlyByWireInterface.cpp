@@ -1788,7 +1788,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFlightGuidanceAvailable->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = idFlightGuidanceCrossTrackError->get() < 1;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = std::abs(idFlightGuidanceCrossTrackError->get()) < 1;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_c_deg = idFlightGuidancePhiCommand->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFlightGuidanceCrossTrackError->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFlightGuidanceTrackAngleError->get();
