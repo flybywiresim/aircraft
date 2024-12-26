@@ -631,9 +631,11 @@ class FmgcComputer final
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     SignStatusMatrix EnumeratedConstant1_Value_d;
+    fmgc_approach_type EnumeratedConstant_Value_a;
+    fmgc_approach_type EnumeratedConstant_Value_f;
     fmgc_des_submode EnumeratedConstant1_Value_i;
     fmgc_flight_phase EnumeratedConstant_Value_i;
-    fmgc_flight_phase EnumeratedConstant_Value_a;
+    fmgc_flight_phase EnumeratedConstant_Value_ah;
     fmgc_flight_phase EnumeratedConstant1_Value_dg;
     fmgc_flight_phase EnumeratedConstant_Value_p;
     fmgc_flight_phase EnumeratedConstant1_Value_m;
@@ -1096,13 +1098,11 @@ class FmgcComputer final
     boolean_T Constant_Value_j;
     boolean_T Logic_table_hz[16];
     boolean_T Logic_table_d[16];
-    boolean_T Constant_Value_l;
     boolean_T Constant2_Value_p;
     boolean_T Logic_table_k[16];
     boolean_T Logic_table_p[16];
     boolean_T Logic_table_m[16];
     boolean_T Logic_table_bp[16];
-    boolean_T Constant_Value_hg;
     boolean_T Logic_table_c[16];
     boolean_T Logic_table_pl[16];
     boolean_T Logic_table_o[16];

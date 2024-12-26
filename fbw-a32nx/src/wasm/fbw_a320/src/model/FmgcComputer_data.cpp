@@ -470,6 +470,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   SignStatusMatrix::NoComputedData,
   SignStatusMatrix::NormalOperation,
   SignStatusMatrix::NormalOperation,
+  fmgc_approach_type::ILS,
+  fmgc_approach_type::RNAV,
   fmgc_des_submode::SPEED_THRUST,
   fmgc_flight_phase::Approach,
   fmgc_flight_phase::Takeoff,
@@ -4014,7 +4016,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  true,
   false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
@@ -4024,7 +4025,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
