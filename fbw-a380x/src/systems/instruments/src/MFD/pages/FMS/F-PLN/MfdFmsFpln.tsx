@@ -374,6 +374,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           leg?.calculated?.cumulativeDistanceWithTransitions ??
           lastDistanceFromStart + (this.derivedFplnLegData[i].distanceFromLastWpt ?? 0) - reduceDistanceBy;
         this.lineData.push(data);
+
+        if (leg.calculated?.endsInTooSteepPath) {
+          this.lineData.push({
+            type: FplnLineType.Special,
+            originalLegIndex: null,
+            label: 'TOO STEEP PATH',
+          });
+        }
       } else {
         const data: FplnLineSpecialDisplayData = {
           type: FplnLineType.Special,
