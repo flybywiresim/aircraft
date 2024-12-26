@@ -297,8 +297,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   18.0,
   20.0,
   29.0,
-  900.0,
-  700.0,
   20.0,
   36.7,
   36.7,
@@ -311,20 +309,9 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   36.7,
   33.3,
   0.4,
-  30.0,
-  400.0,
-  400.0,
-  50.0,
-  30.0,
-  400.0,
   36.7,
   36.7,
-  100.0,
-  30.0,
-  100.0,
-  400.0,
   0.16,
-  400.0,
   40.0,
   60.0,
   250.0,
@@ -339,7 +326,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.133,
   0.133,
   250.0,
-  30.0,
   0.0,
   0.0,
   0.0,
@@ -363,7 +349,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   34.0,
   24.0,
   24.0,
-  40.0,
   500.0,
   500.0,
   0.0,
@@ -485,7 +470,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   SignStatusMatrix::NoComputedData,
   SignStatusMatrix::NormalOperation,
   SignStatusMatrix::NormalOperation,
-  SignStatusMatrix::NoComputedData,
   fmgc_des_submode::SPEED_THRUST,
   fmgc_flight_phase::Approach,
   fmgc_flight_phase::Takeoff,
@@ -518,17 +502,32 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   { -100.0F, -20.0F, 0.0F, 10.0F, 100.0F },
 
   { 1.8F, 1.8F, 1.0F, 1.2F, 1.2F },
+  900.0F,
+  700.0F,
   -10.0F,
   22.0F,
   40.0F,
   20.0F,
+  30.0F,
+  400.0F,
+  400.0F,
+  50.0F,
+  30.0F,
+  400.0F,
+  100.0F,
+  30.0F,
+  100.0F,
+  400.0F,
   250.0F,
   40.0F,
   0.0F,
+  400.0F,
   0.0F,
   0.0F,
+  30.0F,
   24.0F,
   24.0F,
+  40.0F,
   0.0F,
   0.0F,
   0.0F,
@@ -2520,7 +2519,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
           0.0F
         }
       },
-      0.0,
+
+      {
+        {
+          0U,
+          0.0F
+        }
+      },
       false,
       false,
       false,
@@ -3330,7 +3335,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         0.0F
       }
     },
-    0.0,
+
+    {
+      {
+        0U,
+        0.0F
+      }
+    },
     false,
     false,
     false,
