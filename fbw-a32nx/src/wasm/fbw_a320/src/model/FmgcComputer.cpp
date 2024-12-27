@@ -1148,7 +1148,7 @@ void FmgcComputer::step()
       rtb_raComputationData_radio_height_ft_Data = FmgcComputer_U.in.bus_inputs.ra_own_bus.radio_height_ft.Data;
     } else {
       rtb_raComputationData_radio_height_ft_SSM = FmgcComputer_U.in.bus_inputs.ra_own_bus.radio_height_ft.SSM;
-      rtb_raComputationData_radio_height_ft_Data = 250.0F;
+      rtb_raComputationData_radio_height_ft_Data = 2500.0F;
     }
 
     raOwnInvalid = (raOwnInvalid && raOppInvalid);
