@@ -83,20 +83,21 @@ text.Label.Visible {
 
 :root text.Value {
   font-family: Digital;
-  font-size:440px;
+  font-size:550px;
   text-anchor: start;
   fill: $display-colour;
   letter-spacing: 0px;
 }
 
 :root .Baro text.Value {
-  font-size: 400px;
+  font-size: 512px;
 }
 
 :root #PreSelBaroValue {
   font-family: Digital;
   text-anchor: end;
   letter-spacing: 0px;
+  font-size: 275px;
 }
 
 :root line {
@@ -141,9 +142,9 @@ text.Label.Visible {
 }
 
 #FCU_CONTENT #Mainframe #LargeScreen #Heading {
-  width: 30%;
+  width: 50%;
   height: 100%;
-  left: 50%;
+  left: 30%;
   position: absolute;
 }
 

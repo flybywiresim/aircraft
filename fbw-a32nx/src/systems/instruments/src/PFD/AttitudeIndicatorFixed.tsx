@@ -6,6 +6,7 @@ import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@mi
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
@@ -99,7 +100,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private visibilitySub = Subject.create('hidden');
 
-  private failureVis = Subject.create('hidden');
+  private readonly attFlagVisible = Subject.create(false);
 
   private fdVisibilitySub = Subject.create('hidden');
 
@@ -112,11 +113,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       this.roll = r;
       if (!this.roll.isNormalOperation()) {
         this.visibilitySub.set('display:none');
-        this.failureVis.set('display:block');
+        this.attFlagVisible.set(true);
         this.fdVisibilitySub.set('display:none');
       } else {
         this.visibilitySub.set('display:inline');
-        this.failureVis.set('display:none');
+        this.attFlagVisible.set(false);
         if (!this.props.isAttExcessive.get()) {
           this.fdVisibilitySub.set('display:inline');
         }
@@ -128,11 +129,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
       if (!this.pitch.isNormalOperation()) {
         this.visibilitySub.set('display:none');
-        this.failureVis.set('display:block');
+        this.attFlagVisible.set(true);
         this.fdVisibilitySub.set('display:none');
       } else {
         this.visibilitySub.set('display:inline');
-        this.failureVis.set('display:none');
+        this.attFlagVisible.set(false);
         if (!this.props.isAttExcessive.get()) {
           this.fdVisibilitySub.set('display:inline');
         }
@@ -151,15 +152,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   render(): VNode {
     return (
       <>
-        <text
-          style={this.failureVis}
-          id="AttFailText"
-          class="Blink9Seconds FontLargest Red EndAlign"
-          x="75.893127"
-          y="83.136955"
-        >
-          ATT
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.attFlagVisible}>
+          <text id="AttFailText" class="FontLargest Red EndAlign" x="75.893127" y="83.136955">
+            ATT
+          </text>
+        </FlashOneHertz>
+
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
           <SidestickIndicator bus={this.props.bus} />
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
@@ -283,7 +281,15 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
-  private fdFlagVisibleSub = Subject.create('hidden');
+  private readonly fdFlagVisibleSub = Subject.create(false);
+
+  private readonly lateralShouldFlash = Subject.create(false);
+
+  private readonly longitudinalShouldFlash = Subject.create(false);
+
+  private readonly lateralVisible = Subject.create(false);
+
+  private readonly longitudinalVisible = Subject.create(false);
 
   private handleFdState() {
     const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
@@ -297,14 +303,12 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     if (showRoll) {
       const FDRollOffset = Math.min(Math.max(this.fdRollCommand.value, -45), 45) * 0.44;
 
-      this.lateralRef1.instance.setAttribute('visibility', 'visible');
+      this.lateralVisible.set(true);
       this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
 
-      this.lateralRef2.instance.setAttribute('visibility', 'visible');
       this.lateralRef2.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
     } else {
-      this.lateralRef1.instance.setAttribute('visibility', 'hidden');
-      this.lateralRef2.instance.setAttribute('visibility', 'hidden');
+      this.lateralVisible.set(false);
     }
 
     const showPitch =
@@ -313,14 +317,12 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     if (showPitch) {
       const FDPitchOffset = Math.min(Math.max(this.fdPitchCommand.value, -22.5), 22.5) * 0.89;
 
-      this.verticalRef1.instance.setAttribute('visibility', 'visible');
+      this.longitudinalVisible.set(true);
       this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
 
-      this.verticalRef2.instance.setAttribute('visibility', 'visible');
       this.verticalRef2.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
     } else {
-      this.verticalRef1.instance.setAttribute('visibility', 'hidden');
-      this.verticalRef2.instance.setAttribute('visibility', 'hidden');
+      this.longitudinalVisible.set(false);
     }
 
     const onGround = this.leftMainGearCompressed || this.rightMainGearCompressed;
@@ -331,9 +333,9 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
         this.fdPitchCommand.isFailureWarning() ||
         (this.fdYawCommand.isFailureWarning() && onGround))
     ) {
-      this.fdFlagVisibleSub.set('block');
+      this.fdFlagVisibleSub.set(true);
     } else {
-      this.fdFlagVisibleSub.set('none');
+      this.fdFlagVisibleSub.set(false);
     }
   }
 
@@ -341,21 +343,8 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
     const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
-    if (fdRollBarFlashing) {
-      this.lateralRef1.instance.classList.add('BlinkInfinite');
-      this.lateralRef2.instance.classList.add('BlinkInfinite');
-    } else {
-      this.lateralRef1.instance.classList.remove('BlinkInfinite');
-      this.lateralRef2.instance.classList.remove('BlinkInfinite');
-    }
-
-    if (fdPitchBarFlashing) {
-      this.verticalRef1.instance.classList.add('BlinkInfinite');
-      this.verticalRef2.instance.classList.add('BlinkInfinite');
-    } else {
-      this.verticalRef1.instance.classList.remove('BlinkInfinite');
-      this.verticalRef2.instance.classList.remove('BlinkInfinite');
-    }
+    this.lateralShouldFlash.set(fdRollBarFlashing);
+    this.longitudinalShouldFlash.set(fdPitchBarFlashing);
   }
 
   onAfterRender(node: VNode): void {
@@ -455,25 +444,48 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode | null {
     return (
       <g>
-        <g class="ThickOutline">
-          <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />
-
-          <path ref={this.verticalRef1} d="m49.263 80.823h39.287" />
-        </g>
-        <g class="ThickStroke Green">
-          <path ref={this.lateralRef2} id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
-
-          <path ref={this.verticalRef2} id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
-        </g>
-        <text
-          display={this.fdFlagVisibleSub}
-          id="FDFlag"
-          x="52.702862"
-          y="56.065434"
-          class="FontLargest EndAlign Red Blink9Seconds"
+        {/* These are split up in this order to prevent the shadow of one FD bar to go above the other green FD bar */}
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.lateralVisible}
+          flashing={this.lateralShouldFlash}
         >
-          FD
-        </text>
+          <path ref={this.lateralRef1} class="ThickOutline" d="m68.903 61.672v38.302" />
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.longitudinalVisible}
+          flashing={this.longitudinalShouldFlash}
+        >
+          <path ref={this.verticalRef1} class="ThickOutline" d="m49.263 80.823h39.287" />
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.lateralVisible}
+          flashing={this.lateralShouldFlash}
+        >
+          <path ref={this.lateralRef2} class="ThickStroke Green" id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.longitudinalVisible}
+          flashing={this.longitudinalShouldFlash}
+        >
+          <path ref={this.verticalRef2} class="ThickStroke Green" id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
+        </FlashOneHertz>
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fdFlagVisibleSub}>
+          <text id="FDFlag" x="52.702862" y="56.065434" class="FontLargest EndAlign Red">
+            FD
+          </text>
+        </FlashOneHertz>
       </g>
     );
   }

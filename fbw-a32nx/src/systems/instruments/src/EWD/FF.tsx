@@ -41,7 +41,7 @@ export class FF extends DisplayComponent<FFProps> {
       .atFrequency(1)
       .handle((ff) => {
         const metric = this.props.metric.get();
-        this.ff.set(fuelForDisplay(ff, metric ? '1' : '0'));
+        this.ff.set(fuelForDisplay(ff, metric ? '1' : '0', 1, 2));
       });
   }
 

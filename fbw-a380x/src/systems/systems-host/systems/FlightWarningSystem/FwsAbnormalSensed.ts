@@ -1430,7 +1430,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 10],
       simVarIsActive: this.fws.autoThrustOffInvoluntary,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true],
+      whichItemsToShow: () => [false],
       whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
       failure: 2,
       sysPage: -1,
@@ -1524,8 +1524,28 @@ export class FwsAbnormalSensed {
     },
     221800007: {
       // TO SPEEDS NOT INSERTED
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
       simVarIsActive: this.fws.toSpeedsNotInsertedWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800008: {
+      // TO SPEEDS TOO LOW
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.toSpeedsTooLowWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800009: {
+      // TO V1/VR/V2 DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.toV2VRV2DisagreeWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -2463,7 +2483,7 @@ export class FwsAbnormalSensed {
     },
     281800076: {
       // NO ZFW OR ZFWCG DATA
-      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: this.fws.fmsZfwOrZfwCgNotSet,
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [false],
