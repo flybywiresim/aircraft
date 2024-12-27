@@ -16,7 +16,7 @@ export class VerticalSpeed extends DisplayComponent<VerticalSpeedProps> {
           <text id="VS" class="Common Active" x="71%" y="20%" text-anchor="end">
             V/S
           </text>
-          <text id="Value" class="Common Value" x="15%" y="86%">
+          <text id="Value" class="Common Value" x="11%" y="97%">
             -----
           </text>
         </svg>
