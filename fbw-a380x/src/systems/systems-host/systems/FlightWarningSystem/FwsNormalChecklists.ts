@@ -77,7 +77,7 @@ export class FwsNormalChecklists {
       }
     });
 
-    this.fws.fwcFlightPhase.sub((phase) => {
+    this.fws.flightPhase.sub((phase) => {
       if (phase !== 1) {
         this.fws.manualCheckListReset.set(false);
       }

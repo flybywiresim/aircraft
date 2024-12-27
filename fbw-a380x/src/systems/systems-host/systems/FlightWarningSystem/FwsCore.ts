@@ -1863,7 +1863,7 @@ export class FwsCore {
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
 
-    this.phase12ShutdownMemoryNode.write(this.fwcFlightPhase.get() == 12, !this.phase112.get());
+    this.phase12ShutdownMemoryNode.write(this.flightPhase.get() == 12, !this.phase112.get());
 
     this.shutDownFor50MinutesCheckListReset.set(
       this.shutDownFor50MinutesClResetConfNode.write(
