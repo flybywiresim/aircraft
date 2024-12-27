@@ -147,6 +147,8 @@ export class ApproachPathBuilder {
 
   private readonly configuration = new AircraftConfigurationRegister();
 
+  private static readonly DISTANCE_EPSILON = 1e-4;
+
   constructor(
     private observer: VerticalProfileComputationParametersObserver,
     atmosphericConditions: AtmosphericConditions,
@@ -227,7 +229,7 @@ export class ApproachPathBuilder {
     }
 
     const speedTarget = speedProfile.getTarget(
-      sequence.lastCheckpoint.distanceFromStart - 1e-4,
+      sequence.lastCheckpoint.distanceFromStart - ApproachPathBuilder.DISTANCE_EPSILON,
       sequence.lastCheckpoint.altitude,
       ManagedSpeedType.Descent,
     );
@@ -347,7 +349,7 @@ export class ApproachPathBuilder {
     const finalError = distanceTraveled - desiredDistanceToCover;
 
     // Even without decelerating and only descending, we cannot make the constraint
-    if (solution < 1e-4 && finalError > 1e-4) {
+    if (MathUtils.isCloseToNegative(solution) && !MathUtils.isCloseToNegative(finalError)) {
       // Try with speedbrakes
       const solutionWithSpeedbrakes = BisectionMethod.findZero(
         (distance) => tryDecelDistance(distance, true),
@@ -360,7 +362,10 @@ export class ApproachPathBuilder {
       const distanceTraveledWithSpeedbrakes = solutionWithSpeedbrakes + -descentSegment.distanceTraveled;
       const finalErrorWithSpeedbrakes = distanceTraveledWithSpeedbrakes - desiredDistanceToCover;
 
-      if (solutionWithSpeedbrakes < 1e-4 && finalErrorWithSpeedbrakes > 1e-4) {
+      if (
+        MathUtils.isCloseToNegative(solutionWithSpeedbrakes) &&
+        !MathUtils.isCloseToNegative(finalErrorWithSpeedbrakes)
+      ) {
         // Insert TOO STEEP PATH
         const scaling = desiredDistanceToCover / -descentSegment.distanceTraveled;
         this.scaleStepBasedOnLastCheckpoint(sequence.lastCheckpoint, descentSegment, scaling);
@@ -426,12 +431,14 @@ export class ApproachPathBuilder {
 
     const isDoneDeclerating = () =>
       decelerationSequence.lastCheckpoint.reason === VerticalCheckpointReason.Decel ||
-      decelerationSequence.lastCheckpoint.distanceFromStart - targetDistanceFromStart <= 1e-4; // We really only want to prevent floating point errors here
+      MathUtils.isCloseToLessThan(decelerationSequence.lastCheckpoint.distanceFromStart, targetDistanceFromStart); // We really only want to prevent floating point errors here
 
     for (let i = 0; i < 10 && !isDoneDeclerating(); i++) {
       const { distanceFromStart, altitude, speed, remainingFuelOnBoard } = decelerationSequence.lastCheckpoint;
 
-      const speedConstraint = speedProfile.getMaxDescentSpeedConstraint(distanceFromStart - 1e-4);
+      const speedConstraint = speedProfile.getMaxDescentSpeedConstraint(
+        distanceFromStart - ApproachPathBuilder.DISTANCE_EPSILON,
+      );
       const flapTargetSpeed = FlapConfigurationProfile.findNextExtensionSpeed(speed, parameters);
 
       // This is the managed descent speed, or the speed limit speed.
@@ -477,7 +484,7 @@ export class ApproachPathBuilder {
 
         lastAccelerationCheckpointIndex = decelerationSequence.length;
 
-        if (decelerationStep.distanceTraveled < 1e-4) {
+        if (MathUtils.isCloseToNegative(decelerationStep.distanceTraveled)) {
           // We tried to declerate, but it took us beyond targetDistanceFromStart, so we scale down the step
           const scaling = Math.min(1, remainingDistance / decelerationStep.distanceTraveled);
           this.scaleStepBasedOnLastCheckpoint(decelerationSequence.lastCheckpoint, decelerationStep, scaling);

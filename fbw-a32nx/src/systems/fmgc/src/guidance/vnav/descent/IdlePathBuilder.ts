@@ -1,3 +1,4 @@
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { SpeedProfile, ManagedSpeedType } from '@fmgc/guidance/vnav/climb/SpeedProfile';
@@ -15,6 +16,12 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 
 export class IdlePathBuilder {
   private readonly idleDescentStrategy: DescentStrategy;
+
+  /**
+   * Sometimes we want to check if two distances are close enough to each other to be considered equal, or sometimes we
+   * want to use a distance "just before" or "just after" another distance.
+   */
+  private static readonly DISTANCE_EPSILON = 1e-4;
 
   constructor(
     private computationParametersObserver: VerticalProfileComputationParametersObserver,
@@ -85,8 +92,8 @@ export class IdlePathBuilder {
     for (
       let i = 0;
       i < 100 &&
-      sequence.lastCheckpoint.distanceFromStart - toDistance > 1e-4 &&
-      topOfDescentAltitude - sequence.lastCheckpoint.altitude > 1;
+      !MathUtils.isCloseToLessThan(sequence.lastCheckpoint.distanceFromStart, toDistance) &&
+      !MathUtils.isCloseToLessThan(topOfDescentAltitude, sequence.lastCheckpoint.altitude, 1);
       i++
     ) {
       const { distanceFromStart, altitude, speed, remainingFuelOnBoard } = sequence.lastCheckpoint;
@@ -94,7 +101,11 @@ export class IdlePathBuilder {
       const isUnderSpeedLimitAltitude =
         speedProfile.shouldTakeDescentSpeedLimitIntoAccount() && altitude < descentSpeedLimit.underAltitude;
 
-      const casTarget = speedProfile.getTarget(distanceFromStart - 1e-4, altitude + 1e-4, ManagedSpeedType.Descent);
+      const casTarget = speedProfile.getTarget(
+        distanceFromStart - IdlePathBuilder.DISTANCE_EPSILON,
+        altitude + IdlePathBuilder.DISTANCE_EPSILON,
+        ManagedSpeedType.Descent,
+      );
       const currentSpeedTarget = Math.min(
         casTarget,
         this.atmosphericConditions.computeCasFromMach(managedDescentSpeedMach, altitude),
@@ -237,7 +248,7 @@ export class IdlePathBuilder {
   ): Generator<MaxSpeedConstraint> {
     for (let i = constraints.length - 1; i >= 0; ) {
       // Small tolerance here, so we don't get stuck on a constraint
-      if (constraints[i].distanceFromStart - sequence.lastCheckpoint.distanceFromStart > -1e-4) {
+      if (MathUtils.isCloseToGreaterThan(constraints[i].distanceFromStart, sequence.lastCheckpoint.distanceFromStart)) {
         i--;
         continue;
       }
