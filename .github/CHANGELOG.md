@@ -7,7 +7,7 @@
 
 ## 0.13.0
 
-1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
+1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
 1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
@@ -42,7 +42,7 @@
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
-1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [FMS] Fix existing T-P moving when inserting temporary flight plan - @Benjozork (Benjamin Dupont)
 1. [GPU] Improved handling of ground power for more immersive use @Maximilian-Reuter (\_chaoz_)
 1. [OANS] Display correct flags when IRS position is not available - @Nufflee (nufflee)
 1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
@@ -98,6 +98,7 @@
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
 1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
+1. [EFB] Added fix to make sure all doors are closed when pushing back - @frankkopp (cdr_maverick)
 
 ## 0.12.0
 
