@@ -70,6 +70,8 @@ export interface NDProps<T extends number> {
   side: EfisSide;
 
   rangeValues: T[];
+
+  terrainThresholdPaddingText: string;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -463,7 +465,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               MODE CHANGE
             </Flag>
 
-            <TerrainMapThresholds bus={this.props.bus} />
+            <TerrainMapThresholds bus={this.props.bus} paddingText={this.props.terrainThresholdPaddingText} />
 
             <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
             <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />
