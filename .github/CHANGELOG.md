@@ -103,6 +103,7 @@
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENGINES] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
+1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
 
 ## 0.12.0
 
