@@ -149,7 +149,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.isAttExcessive.sub((_a) => {
+    this.props.isAttExcessive.sub(() => {
       this.handleFMABorders();
     });
 
@@ -1408,8 +1408,6 @@ class BC3Cell extends DisplayComponent<{
 
   private classNameSub = Subject.create('');
 
-  private isAttExcessive = false;
-
   private armedVerticalMode = 0;
 
   private setHoldSpeed = false;
@@ -1424,7 +1422,7 @@ class BC3Cell extends DisplayComponent<{
 
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
-      this.isAttExcessive,
+      this.props.isAttExcessive.get(),
       this.armedVerticalMode,
       this.setHoldSpeed,
       this.trkFpaDeselected,
@@ -1443,8 +1441,7 @@ class BC3Cell extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.isAttExcessive.sub((e) => {
-      this.isAttExcessive = e;
+    this.props.isAttExcessive.sub(() => {
       this.fillBC3Cell();
     });
 
