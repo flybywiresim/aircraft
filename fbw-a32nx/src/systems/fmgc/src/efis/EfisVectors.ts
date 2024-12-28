@@ -137,8 +137,7 @@ export class EfisVectors {
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
         const flightPhase = this.flightPhase.get();
 
-        // FIXME implement
-        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
+        const doesPreNavEngagePathExist = this.guidanceController.doesPreNavModeEngagementPathExist();
 
         const transmitActive =
           // In preflight phase, the flight plan line is solid even when NAV is not armed
@@ -211,9 +210,14 @@ export class EfisVectors {
 
     // ACTIVE
 
-    const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
+    const geometry = this.guidanceController.doesPreNavModeEngagementPathExist()
+      ? this.guidanceController.getPreNavModeEngagementPathGeometry()
+      : this.guidanceController.getGeometryForFlightPlan(plan.index);
+    const activeLegIndex = this.guidanceController.doesPreNavModeEngagementPathExist()
+      ? plan.activeLegIndex - 1
+      : plan.activeLegIndex;
 
-    const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
+    const vectors = geometry.getAllPathVectors(activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed
 
