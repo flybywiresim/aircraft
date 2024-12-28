@@ -344,7 +344,6 @@ mod battery_charger_rectifier_tests {
                 transformer_rectifier: BatteryChargeRectifierUnit::new(
                     context,
                     1,
-                    ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrentHot(1),
                 ),
                 bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
