@@ -1520,6 +1520,18 @@ export class FwsCore {
       this.abnormalNonSensed.ewdAbnormalNonSensed,
     );
 
+    this.startupCompleted.sub((v) => {
+      if (v) {
+        this.turnaroundReset();
+      }
+    });
+
+    this.shutDownFor50MinutesCheckListReset.sub((v) => {
+      if (v) {
+        this.turnaroundReset();
+      }
+    });
+
     this.ewdMessageLinesLeft.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
@@ -4436,9 +4448,9 @@ export class FwsCore {
   }
 
   turnaroundReset() {
-    // Reset after flight phase xx, to reset some parts during turnaround
+    // Reset some parts during turnaround
     // Resets normal checklists, resets state of abnormal sensed procedures, deactivation of deferred procedures and abormal non-sensed procedures
-    // this.normalChecklists.reset(); // Wait for BM's PR
+    this.normalChecklists.reset(null);
     this.abnormalNonSensed.reset();
     this.abnormalSensed.reset();
 

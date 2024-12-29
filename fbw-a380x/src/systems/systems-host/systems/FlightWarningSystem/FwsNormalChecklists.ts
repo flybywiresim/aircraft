@@ -195,18 +195,6 @@ export class FwsNormalChecklists {
       }
     });
 
-    this.fws.startupCompleted.sub((v) => {
-      if (v) {
-        this.reset(null);
-      }
-    });
-
-    this.fws.shutDownFor50MinutesCheckListReset.sub((v) => {
-      if (v) {
-        this.reset(null);
-      }
-    });
-
     this.fws.flightPhase.sub((phase) => {
       if (phase !== 1) {
         this.fws.manualCheckListReset.set(false);
@@ -333,11 +321,10 @@ export class FwsNormalChecklists {
   }
 
   reset(fromId: number | null) {
-    // Reset all following checklists
-    const ids = this.getNormalProceduresKeysSorted();
-
     if (fromId !== -1) {
-      for (let id = fromId + 1; id < ids.length; id++) {
+      const ids = this.getNormalProceduresKeysSorted();
+      this.fws.manualCheckListReset.set(fromId !== null);
+      for (let id = fromId === null ? 0 : fromId + 1; id < ids.length; id++) {
         const idFollowing = ids[id];
         const clFollowing = this.checklistState.getValue(idFollowing);
         const procFollowing = EcamNormalProcedures[idFollowing];
