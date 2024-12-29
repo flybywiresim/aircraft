@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { arcLength, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
+import { arcLength, getIntermediatePoint, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { bearingTo, distanceTo } from 'msfs-geo';
 
 export enum PathVectorType {
@@ -73,7 +73,7 @@ export function pathVectorValid(vector: PathVector) {
 
 export function pathVectorPoint(vector: PathVector, distanceFromEnd: NauticalMiles): Coordinates | undefined {
   if (vector.type === PathVectorType.Line) {
-    return pointOnCourseToFix(distanceFromEnd, bearingTo(vector.startPoint, vector.endPoint), vector.endPoint);
+    return getIntermediatePoint(vector.endPoint, vector.startPoint, distanceFromEnd / pathVectorLength(vector));
   }
 
   if (vector.type === PathVectorType.Arc) {

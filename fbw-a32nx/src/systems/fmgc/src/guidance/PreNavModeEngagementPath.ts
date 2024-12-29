@@ -1,4 +1,4 @@
-import { Arinc429Register, LegType, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, LegType, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { Geo } from '@fmgc/utils/Geo';
@@ -6,10 +6,14 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PointSide, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
-import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
+import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 enum State {
   NavDisarmed,
@@ -35,11 +39,26 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private register: Arinc429Register = Arinc429Register.empty();
 
+  private ppos: Coordinates | null = null;
+
+  private cachedIfLeg: IFLeg | null = null;
+
+  private static readonly ciLegMetadata: Readonly<LegMetadata> = {
+    flightPlanLegDefinition: {
+      type: LegType.CI,
+      procedureIdent: '',
+      overfly: false,
+    },
+    turnDirection: TurnDirection.Either,
+  };
+
   constructor(
     private readonly fmgcIndex: number,
     private navigation: NavigationProvider,
     private flightPlanService: FlightPlanService,
-  ) {}
+  ) {
+    this.ppos = navigation.getPpos();
+  }
 
   update(deltaTime: number, geometry: Geometry) {
     this.updateState();
@@ -149,42 +168,33 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       return;
     }
 
-    const ppos = this.navigation.getPpos();
     const trueTrack = this.navigation.getTrueTrack();
     const trueAirspeed = this.navigation.getTrueAirspeed();
     const groundSpeed = this.navigation.getGroundSpeed();
     const activeGeometryLeg = activeGeometry.legs.get(activeLegIndex);
 
     if (
-      ppos === null ||
+      this.ppos === null ||
       trueTrack === null ||
       trueAirspeed === null ||
       groundSpeed === null ||
-      activeGeometryLeg === null
+      !Number.isFinite(activeGeometryLeg?.outboundCourse)
     ) {
       this.resetPath();
       return;
     }
 
-    let intercept: Coordinates | null = null;
-    try {
-      intercept = Geo.legIntercept(ppos, trueTrack, activeGeometryLeg);
-    } catch (e) {
+    const interceptAngle = Math.min(
+      MathUtils.normalise360(trueTrack - activeGeometryLeg.outboundCourse),
+      MathUtils.normalise360(activeGeometryLeg.outboundCourse - trueTrack),
+    );
+
+    if (interceptAngle > 120) {
       this.resetPath();
       return;
     }
 
-    if (intercept === null) {
-      this.resetPath();
-      return;
-    }
-
-    // Check intercept lies on path
-    const isInterceptAhead = sideOfPointOnCourseToFix(ppos, trueTrack, intercept) === PointSide.After;
-    const dtg = activeGeometryLeg.getDistanceToGo(intercept);
-    const isOnLeg = dtg >= 0 && dtg <= activeGeometryLeg.distance;
-
-    if (!isInterceptAhead || !isOnLeg) {
+    if (this.tryUpdateIntercept(trueTrack, activeGeometryLeg)) {
       this.resetPath();
       return;
     }
@@ -195,7 +205,38 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       GeometryFactory.updateFromFlightPlan(this.geometry, activePlan, true);
     }
 
-    const distanceToIntercept = distanceTo(ppos, intercept);
+    const ifLeg = this.updateIfLeg(activeGeometryLeg);
+    const ciLeg = this.updateCiLeg(trueTrack, activeGeometryLeg);
+
+    this.geometry.legs.set(activeLegIndex - 2, ifLeg);
+    this.geometry.legs.set(activeLegIndex - 1, ciLeg);
+    this.geometry.transitions.set(activeLegIndex - 1, TransitionPicker.forLegs(ciLeg, activeGeometryLeg));
+    this.geometry.recomputeWithParameters(trueAirspeed, groundSpeed, this.ppos, trueTrack, activeLegIndex - 1, -1);
+  }
+
+  private tryUpdateIntercept(trueTrack: number, activeGeometryLeg: Leg): boolean {
+    let intercept: Coordinates | null = null;
+    try {
+      intercept = Geo.legIntercept(this.ppos, trueTrack, activeGeometryLeg) ?? null;
+    } catch (e) {
+      this.resetPath();
+      return;
+    }
+
+    if (intercept === null) {
+      return false;
+    }
+
+    // Check intercept lies on path
+    const isInterceptAhead = sideOfPointOnCourseToFix(this.ppos, trueTrack, intercept) === PointSide.After;
+    const dtg = activeGeometryLeg.getDistanceToGo(intercept);
+    const isOnLeg = dtg >= 0 && dtg <= activeGeometryLeg.distance;
+
+    if (!isInterceptAhead || !isOnLeg) {
+      return false;
+    }
+
+    const distanceToIntercept = distanceTo(this.ppos, intercept);
 
     if (this.intercept === null) {
       this.intercept = {
@@ -206,32 +247,55 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       this.intercept.location = intercept;
       this.intercept.distanceToIntercept = distanceToIntercept;
     }
-
-    const leg = new CFLeg(
-      WaypointFactory.fromLocation('INTCPT', intercept),
-      trueTrack,
-      distanceToIntercept,
-      {
-        flightPlanLegDefinition: {
-          type: LegType.CF,
-          procedureIdent: '',
-          overfly: false,
-        },
-        turnDirection: TurnDirection.Either,
-      },
-      activeGeometryLeg.segment,
-    );
-
-    this.geometry.legs.set(activeLegIndex - 1, leg);
-    this.geometry.recomputeWithParameters(trueAirspeed, groundSpeed, ppos, trueTrack, activeLegIndex - 1, -1);
   }
 
-  private updateWhileActive() {}
+  private updateIfLeg(activeGeometryLeg: Leg): IFLeg {
+    if (this.cachedIfLeg === null) {
+      this.cachedIfLeg = new IFLeg(
+        WaypointFactory.fromLocation('PPOS', this.ppos),
+        {
+          flightPlanLegDefinition: {
+            type: LegType.IF,
+            procedureIdent: '',
+            overfly: false,
+          },
+          turnDirection: TurnDirection.Either,
+        },
+        activeGeometryLeg.segment,
+      );
+    } else {
+      this.cachedIfLeg.segment = activeGeometryLeg.segment;
+    }
 
-  private shouldComputeInterceptPath(leg: FlightPlanElement): leg is FlightPlanLeg {
+    return this.cachedIfLeg;
+  }
+
+  private updateCiLeg(trueTrack: number, activeGeometryLeg: Leg): CILeg {
+    return new CILeg(
+      trueTrack,
+      activeGeometryLeg,
+      PreNavModeEngagementPathCalculation.ciLegMetadata,
+      activeGeometryLeg.segment,
+    );
+  }
+
+  private updateWhileActive() {
+    if (!this.doesExist()) {
+      return;
+    }
+
+    const crossTrackError = SimVar.GetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
+    const trackAngleError = SimVar.GetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'Degrees');
+
+    if (Math.abs(crossTrackError) < 0.2 && Math.abs(trackAngleError) < 20) {
+      this.resetPath();
+    }
+  }
+
+  private shouldComputeInterceptPath(leg?: FlightPlanElement): leg is FlightPlanLeg {
     // Possible leg types we can intercept AF, CF, DF, FA, FC, FD, FM, HA, HF, HM, PI, RF, TF
     return (
-      leg.isDiscontinuity === false &&
+      leg?.isDiscontinuity === false &&
       !leg.isVx() &&
       (!leg.isCx() || leg.type === LegType.CF) &&
       leg.type !== LegType.IF
