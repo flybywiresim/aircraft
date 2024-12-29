@@ -4412,4 +4412,18 @@ export class FwsCore {
         return 10;
     }
   }
+
+  turnaroundReset() {
+    // Reset after flight phase xx, to reset some parts during turnaround
+    // Resets normal checklists, resets state of abnormal sensed procedures, deactivation of deferred procedures and abormal non-sensed procedures
+    // this.normalChecklists.reset(); // Wait for BM's PR
+    this.abnormalNonSensed.reset();
+    this.abnormalSensed.reset();
+
+    this.activeDeferredProceduresList.clear();
+    this.activeAbnormalProceduresList.clear();
+    this.allCurrentFailures.length = 0;
+    this.presentedFailures.length = 0;
+    this.recallFailures.length = 0;
+  }
 }

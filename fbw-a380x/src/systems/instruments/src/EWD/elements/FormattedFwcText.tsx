@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subscribable, SubscribableUtils, VNode } from '@microsoft/msfs-sdk';
 
 interface FormattedFwcTextProps {
-  message: Subscribable<string>;
+  message: Subscribable<string> | string;
   x: number;
   y: number;
   /** Whether this line will be rendered in the PFD. Has impact on font-size */
@@ -16,10 +16,12 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
   private decorationRef = FSComponent.createRef<SVGGElement>();
 
+  private readonly messageSub = SubscribableUtils.toSubscribable(this.props.message, true);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.message.sub((message) => {
+    this.messageSub.sub((message) => {
       const LINE_SPACING = 30;
       const LETTER_WIDTH = 16;
 

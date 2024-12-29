@@ -320,6 +320,13 @@ text, tspan, span {
   padding: 2px;
 }
 
+.WdNotAvailArea {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
 .MemosContainer {
   display: flex;
   flex-direction: column;

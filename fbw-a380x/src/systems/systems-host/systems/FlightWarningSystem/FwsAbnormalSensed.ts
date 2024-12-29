@@ -247,6 +247,10 @@ export class FwsAbnormalSensed {
     }
   }
 
+  reset() {
+    this.showAbnormalSensedRequested.set(false);
+  }
+
   public ewdAbnormalSensed: EwdAbnormalDict = {
     // 21 - AIR CONDITIONING AND PRESSURIZATION
     211800001: {

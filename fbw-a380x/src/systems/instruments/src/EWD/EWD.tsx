@@ -3,6 +3,7 @@ import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayU
 import {
   ConsumerSubject,
   DisplayComponent,
+  EventSubscriber,
   FSComponent,
   MappedSubject,
   Subject,
@@ -21,9 +22,12 @@ import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalCheckli
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
 import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
+import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
+
+  private readonly availChecker = new FwsEwdAvailabilityChecker(this.sub);
 
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
     ConsumerSubject.create(this.sub.on('engine_state_1'), 0),
@@ -234,7 +238,10 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
               </text>
             </svg>
           </div>
-          <div class="WarningDisplayArea">
+          <div
+            class="WarningDisplayArea"
+            style={{ display: this.availChecker.fwsAvail.map((s) => (s ? 'flex' : 'none')) }}
+          >
             <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} abnormal={false} />
@@ -265,8 +272,43 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
               </div>
             </div>
           </div>
+          <div class="WdNotAvailArea" style={{ display: this.availChecker.fwsAvail.map((s) => (s ? 'none' : 'flex')) }}>
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="340" height="30">
+              <FormattedFwcText x={0} y={24} message={'\x1b<4mWD DISPLAY NOT AVAIL'} />
+            </svg>
+          </div>
         </div>
       </CdsDisplayUnit>
     );
   }
+}
+
+class FwsEwdAvailabilityChecker {
+  constructor(private sub: EventSubscriber<EwdSimvars>) {}
+
+  private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
+  private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);
+  private readonly fwsIsHealthy = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fws1IsHealthy,
+    this.fws2IsHealthy,
+  );
+
+  private readonly afdx_3_3_reachable = ConsumerSubject.create(this.sub.on('afdx_3_3_reachable'), true);
+  private readonly afdx_13_13_reachable = ConsumerSubject.create(this.sub.on('afdx_13_13_reachable'), true);
+  private readonly afdx_4_3_reachable = ConsumerSubject.create(this.sub.on('afdx_4_3_reachable'), true);
+  private readonly afdx_14_13_reachable = ConsumerSubject.create(this.sub.on('afdx_14_13_reachable'), true);
+  private readonly fwsPfdReachable = MappedSubject.create(
+    ([r_3_3, r_13_13, r_4_3, r_14_13]) => (r_3_3 && r_4_3) || (r_13_13 && r_14_13),
+    this.afdx_3_3_reachable,
+    this.afdx_13_13_reachable,
+    this.afdx_4_3_reachable,
+    this.afdx_14_13_reachable,
+  );
+
+  public readonly fwsAvail = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fwsIsHealthy,
+    this.fwsPfdReachable,
+  );
 }

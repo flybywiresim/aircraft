@@ -43,6 +43,12 @@ export interface BaseEwdSimvars {
   nose_gear_compressed: boolean;
   engine_fire_pb: boolean;
   cas: number;
+  fws1_is_healthy: boolean;
+  fws2_is_healthy: boolean;
+  afdx_3_3_reachable: boolean;
+  afdx_13_13_reachable: boolean;
+  afdx_4_3_reachable: boolean;
+  afdx_14_13_reachable: boolean;
 }
 
 type IndexedTopics =
@@ -124,6 +130,12 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ],
       ['engine_fire_pb', { name: 'L:A32NX_FIRE_BUTTON_ENG#index#', type: SimVarValueType.Bool, indexed: true }],
       ['cas', { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true }],
+      ['fws1_is_healthy', { name: 'L:A32NX_FWS1_IS_HEALTHY', type: SimVarValueType.Bool }],
+      ['fws2_is_healthy', { name: 'L:A32NX_FWS2_IS_HEALTHY', type: SimVarValueType.Bool }],
+      ['afdx_3_3_reachable', { name: 'L:A32NX_AFDX_3_3_REACHABLE', type: SimVarValueType.Bool }],
+      ['afdx_13_13_reachable', { name: 'L:A32NX_AFDX_13_13_REACHABLE', type: SimVarValueType.Bool }],
+      ['afdx_4_3_reachable', { name: 'L:A32NX_AFDX_4_3_REACHABLE', type: SimVarValueType.Bool }],
+      ['afdx_14_13_reachable', { name: 'L:A32NX_AFDX_14_13_REACHABLE', type: SimVarValueType.Bool }],
     ];
 
     super(new Map(simvars), bus, pacer);

@@ -117,6 +117,12 @@ export class FwsAbnormalNonSensed {
     }
   }
 
+  reset() {
+    this.fws.activeAbnormalNonSensedKeys.clear();
+    this.checklistState.clear();
+    this.showAbnProcRequested.set(false);
+  }
+
   public ewdAbnormalNonSensed: EwdAbnormalDict = {
     260900097: {
       // SMOKE / FUMES

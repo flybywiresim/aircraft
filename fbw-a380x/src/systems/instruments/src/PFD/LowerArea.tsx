@@ -9,6 +9,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
@@ -668,6 +669,8 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscribable<boolean> }> {
   private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
 
+  private readonly availChecker = new FwsPfdAvailabilityChecker(this.sub);
+
   private static lineSubject(index: number, sub: EventSubscriber<FwsPfdSimvars>) {
     return ConsumerSubject.create(sub.on(`limitations_line_${index}`).whenChanged(), 0).map(
       (it) => EcamLimitations[it] ?? '',
@@ -688,9 +691,14 @@ class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscr
   render(): VNode {
     return (
       <g visibility={this.props.visible.map((it) => (it ? 'visible' : 'hidden'))}>
-        {this.limitationsLine.map((line, index) => (
-          <FormattedFwcText x={70} y={165 + index * 7} message={line} pfd={true} />
-        ))}
+        <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'visible' : 'hidden'))}>
+          {this.limitationsLine.map((line, index) => (
+            <FormattedFwcText x={70} y={165 + index * 7} message={line} pfd={true} />
+          ))}
+        </g>
+        <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'visible'))}>
+          <FormattedFwcText x={78} y={186} message={'\x1b<4mLIMITATIONS NOT AVAIL'} pfd={true} />
+        </g>
       </g>
     );
   }
@@ -699,6 +707,8 @@ class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscr
 const padMemoCode = (code: number) => code.toString().padStart(9, '0');
 class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private readonly availChecker = new FwsPfdAvailabilityChecker(this.sub);
 
   private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memo_line_1').whenChanged(), 0).map(
     (it) => EcamMemos[padMemoCode(it)] ?? '',
@@ -714,11 +724,46 @@ class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <g id="memos">
-        <FormattedFwcText x={4} y={165} message={this.memoLine1} pfd={true} />
-        <FormattedFwcText x={4} y={172} message={this.memoLine2} pfd={true} />
-        <FormattedFwcText x={4} y={179} message={this.memoLine3} pfd={true} />
-      </g>
+      <>
+        <g id="memos" visibility={this.availChecker.fwsAvail.map((it) => (it ? 'visible' : 'hidden'))}>
+          <FormattedFwcText x={4} y={165} message={this.memoLine1} pfd={true} />
+          <FormattedFwcText x={4} y={172} message={this.memoLine2} pfd={true} />
+          <FormattedFwcText x={4} y={179} message={this.memoLine3} pfd={true} />
+        </g>
+        <g id="memoNotAvail" visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'visible'))}>
+          <FormattedFwcText x={8} y={172} message={'\x1b<4mMEMO NOT AVAIL'} pfd={true} />
+        </g>
+      </>
     );
   }
+}
+
+class FwsPfdAvailabilityChecker {
+  constructor(private sub: EventSubscriber<FwsPfdSimvars>) {}
+
+  private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
+  private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);
+  private readonly fwsIsHealthy = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fws1IsHealthy,
+    this.fws2IsHealthy,
+  );
+
+  private readonly afdx_3_1_reachable = ConsumerSubject.create(this.sub.on('afdx_3_1_reachable'), true);
+  private readonly afdx_13_11_reachable = ConsumerSubject.create(this.sub.on('afdx_13_11_reachable'), true);
+  private readonly afdx_4_2_reachable = ConsumerSubject.create(this.sub.on('afdx_4_2_reachable'), true);
+  private readonly afdx_14_12_reachable = ConsumerSubject.create(this.sub.on('afdx_14_12_reachable'), true);
+  private readonly fwsPfdReachable = MappedSubject.create(
+    ([r_3_1, r_13_11, r_4_2, r_14_12]) => (r_3_1 && r_4_2) || (r_13_11 && r_14_12),
+    this.afdx_3_1_reachable,
+    this.afdx_13_11_reachable,
+    this.afdx_4_2_reachable,
+    this.afdx_14_12_reachable,
+  );
+
+  public readonly fwsAvail = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fwsIsHealthy,
+    this.fwsPfdReachable,
+  );
 }

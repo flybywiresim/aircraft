@@ -12,6 +12,7 @@ import {
   SubscribableMapFunctions,
   WeightBalanceSimvarPublisher,
   StallWarningPublisher,
+  SimVarValueType,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFuel } from 'systems-host/systems/LegacyFuel';
@@ -35,11 +36,20 @@ import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import {
+  ResetPanelSimvarPublisher,
+  ResetPanelSimvars,
+} from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import {
+  CpiomAvailableSimvarPublisher,
+  CpiomAvailableSimvars,
+} from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 
+CpiomAvailableSimvarPublisher;
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
-  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes>();
+  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes & ResetPanelSimvars & CpiomAvailableSimvars>();
 
   private readonly backplane = new InstrumentBackplane();
 
@@ -50,9 +60,9 @@ class SystemsHost extends BaseInstrument {
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
   // TODO: Migrate PowerSupplyBusses, if needed
-  private gpws: LegacyGpws;
+  private gpws: LegacyGpws | undefined;
 
-  private soundManager: LegacySoundManager;
+  private soundManager: LegacySoundManager | undefined;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
@@ -99,7 +109,33 @@ class SystemsHost extends BaseInstrument {
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
-  private readonly fwsCore = new FwsCore(1, this.bus);
+  private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+
+  private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('fws1Reset'), false);
+  private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('fws2Reset'), false);
+  private readonly fwsResetStatus = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fws1ResetPbStatus,
+    this.fws2ResetPbStatus,
+  );
+
+  private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
+
+  private readonly fws1Powered = ConsumerSubject.create(this.sub.on('cpiomC1Avail'), true);
+  private readonly fws2Powered = ConsumerSubject.create(this.sub.on('cpiomC2Avail'), true);
+  private readonly bothFwsPowered = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fws1Powered,
+    this.fws2Powered,
+  );
+
+  private readonly fwsAvailable = MappedSubject.create(
+    ([reset, powered]) => !reset && powered,
+    this.fwsResetStatus,
+    this.bothFwsPowered,
+  );
+
+  private fwsCore: FwsCore | undefined = new FwsCore(1, this.bus);
 
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
@@ -133,6 +169,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
     this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
@@ -152,10 +190,27 @@ class SystemsHost extends BaseInstrument {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
 
-        this.soundManager.update(dt);
-        this.gpws.update(dt);
-        this.fwsCore.update(dt);
+        this.soundManager?.update(dt);
+        this.gpws?.update(dt);
+        this.fwsCore?.update(dt);
       });
+
+    this.fwsAvailable.sub((a) => {
+      console.log(a);
+      SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, a);
+      SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, a);
+      if (!a && this.fwsCore !== undefined) {
+        this.fwsCore = undefined;
+        this.soundManager = undefined;
+        this.gpws = undefined;
+      } else if (a && this.fwsCore === undefined) {
+        this.fwsCore = new FwsCore(1, this.bus);
+        this.soundManager = new LegacySoundManager();
+        this.gpws = new LegacyGpws(this.bus, this.soundManager);
+        this.gpws.init();
+        this.fwsCore.init();
+      }
+    }, true);
   }
 
   get templateID(): string {
