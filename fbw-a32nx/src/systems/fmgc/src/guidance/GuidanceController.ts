@@ -589,4 +589,8 @@ export class GuidanceController {
   getPreNavModeEngagementPathIntercept(): Readonly<NavModeIntercept> | null {
     return this.preNavModeEngagementPath.getIntercept();
   }
+
+  shouldShowNoNavInterceptMessage(): boolean {
+    return this.preNavModeEngagementPath.shouldShowNoNavInterceptMessage();
+  }
 }
