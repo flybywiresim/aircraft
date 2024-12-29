@@ -87,12 +87,20 @@ large-files/node_modules
 !/fbw-ingamepanels-checklist-fix/src/**
 /fbw-ingamepanels-checklist-fix/out
 
+# === ARINC LVar Bridge ===
+/fbw-arinc429-lvar-bridge/*
+!/fbw-arinc429-lvar-bridge/README.md
+!/fbw-arinc429-lvar-bridge/docs/
+!/fbw-arinc429-lvar-bridge/docs/**
+!/fbw-arinc429-lvar-bridge/src/
+!/fbw-arinc429-lvar-bridge/src/**
+/fbw-arinc429-lvar-bridge/out
+
 # === Tools ===
 !/tools/**
 /tools/fdr2csv/*.exe
 /tools/fdr2csv/build/
 /tools/fdr2csv/cmake-build*
-
 
 # Build scripts
 !/scripts/**
@@ -106,6 +114,8 @@ localazy.keys.json
 # build artifacts
 node_modules/
 target/
+out/
+build/
 obj/
 build/
 out/
