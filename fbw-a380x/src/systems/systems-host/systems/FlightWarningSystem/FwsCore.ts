@@ -18,6 +18,7 @@ import {
   GameStateProvider,
   Wait,
   SetSubject,
+  Subscribable,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -25,6 +26,7 @@ import {
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
   Arinc429Word,
+  FailuresConsumer,
   FrequencyMode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
@@ -58,6 +60,7 @@ import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdS
 import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
 import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarningSystem/FwsSoundManager';
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
+import { A380Failure } from '@failures';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -93,7 +96,11 @@ export class FwsCore {
 
   public readonly startupCompleted = Subject.create(false);
 
-  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted);
+  public readonly audioFunctionLost = Subject.create(false);
+
+  public readonly fwsEcpFailed = Subject.create(false);
+
+  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this.audioFunctionLost);
 
   private readonly flightPhases = new FwsFlightPhases(this);
 
@@ -1513,6 +1520,9 @@ export class FwsCore {
   constructor(
     public readonly fwsNumber: 1 | 2,
     public readonly bus: EventBus,
+    private readonly failuresConsumer: FailuresConsumer,
+    public readonly fws1Failed: Subscribable<boolean>,
+    public readonly fws2Failed: Subscribable<boolean>,
   ) {
     this.ewdAbnormal = Object.assign(
       {},
@@ -1837,7 +1847,7 @@ export class FwsCore {
 
     // Acquire discrete inputs at a higher frequency, buffer them until the next FWS cycle.
     // T.O CONFIG button
-    if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool')) {
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') && !this.failuresConsumer.isActive(A380Failure.FwsEcp)) {
       this.toConfigInputBuffer.write(true, false);
     }
 
@@ -1850,7 +1860,7 @@ export class FwsCore {
 
     // RCL button
     const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
-    if (recallButton) {
+    if (recallButton && !this.failuresConsumer.isActive(A380Failure.FwsEcp)) {
       this.recallButtonInputBuffer.write(true, false);
     }
 
@@ -1884,6 +1894,20 @@ export class FwsCore {
 
     // A380X hack: Inject healthy messages for some systems which are not yet implemented
     this.healthInjector();
+
+    this.audioFunctionLost.set(
+      this.failuresConsumer.isActive(A380Failure.Fws1AudioFunction) &&
+        this.failuresConsumer.isActive(A380Failure.Fws2AudioFunction),
+    );
+
+    const ecpReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
+    this.fwsEcpFailed.set(
+      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcESSBusPowered.get() || !ecpReachable,
+    );
 
     // Update flight phases
     this.flightPhases.update(deltaTime);

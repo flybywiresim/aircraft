@@ -24,6 +24,7 @@ interface WdAbstractChecklistComponentProps {
   bus: EventBus;
   visible: Subscribable<boolean>;
   abnormal: boolean;
+  fwsAvail?: Subscribable<boolean>;
 }
 
 export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChecklistComponentProps> {

@@ -140,6 +140,12 @@ export const A380Failure = Object.freeze({
   LeftPfdDisplay: 31000,
   RightPfdDisplay: 31001,
 
+  Fws1: 31100,
+  Fws2: 31101,
+  Fws1AudioFunction: 31102,
+  Fws2AudioFunction: 31103,
+  FwsEcp: 31104,
+
   LgciuPowerSupply1: 32000,
   LgciuPowerSupply2: 32001,
   LgciuInternalError1: 32002,
@@ -299,6 +305,11 @@ export const A380FailureDefinitions: FailureDefinition[] = [
 
   [31, A380Failure.LeftPfdDisplay, 'Captain PFD display'],
   [31, A380Failure.RightPfdDisplay, 'F/O PFD display'],
+  [31, A380Failure.Fws1, 'FWS 1'],
+  [31, A380Failure.Fws2, 'FWS 2'],
+  [31, A380Failure.Fws1AudioFunction, 'FWS 1 Audio Function'],
+  [31, A380Failure.Fws2AudioFunction, 'FWS 2 Audio Function'],
+  [31, A380Failure.FwsEcp, 'ECAM Control Panel'],
 
   [32, A380Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
   [32, A380Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],

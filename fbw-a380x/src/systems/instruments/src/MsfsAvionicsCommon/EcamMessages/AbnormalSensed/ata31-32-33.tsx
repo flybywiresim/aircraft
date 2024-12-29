@@ -137,7 +137,60 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
   314800004: {
     title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ECAM SD',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'OVHD PNL',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'FUNCTIONS NOT AVAIL:',
+        sensed: true,
+        style: ChecklistLineStyle.SubHeadline,
+        level: 1,
+      },
+      {
+        name: 'ECAM WARNINGS & CAUTIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'ABN PROCEDURES',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'LIMITATIONS & STATUS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'ALTITUDE ALERT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'AUTO CALLOUT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'NORM C/L & MEMO',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+    ],
   },
   314800005: {
     title: '\x1b<4m\x1b4mFWS\x1bm ATQC DATABASE REJECTED',
@@ -145,14 +198,52 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   314800006: {
-    title: '\x1b<4m\x1b4mFWS\x1bm AUDIO FUNCTION LOSS',
+    title: '\x1b<4m\x1b4mFWS\x1bm AUDIO FUNCTION LOST',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AUDIOS NOT AVAIL:',
+        style: ChecklistLineStyle.CompletedChecklist,
+        sensed: true,
+      },
+      {
+        name: 'ALTITUDE ALERT',
+        style: ChecklistLineStyle.Cyan,
+        sensed: true,
+      },
+      {
+        name: 'AUTO CALLOUT',
+        style: ChecklistLineStyle.Cyan,
+        sensed: true,
+      },
+      {
+        name: 'AURAL ATTENTION GETTERS',
+        style: ChecklistLineStyle.Cyan,
+        sensed: true,
+      },
+    ],
   },
   314800007: {
     title: '\x1b<4m\x1b4mFWS\x1bm ECP FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ECP KEYS NOT AVAIL:',
+        style: ChecklistLineStyle.Green,
+        sensed: true,
+      },
+      {
+        name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
+        style: ChecklistLineStyle.Green,
+        sensed: true,
+        level: 1,
+      },
+      {
+        name: 'FOR SYS PAGES: "ALL" AVAIL',
+        style: ChecklistLineStyle.Green,
+        sensed: true,
+      },
+    ],
   },
   314800008: {
     title: '\x1b<4m\x1b4mFWS\x1bm FWS 1 FAULT',

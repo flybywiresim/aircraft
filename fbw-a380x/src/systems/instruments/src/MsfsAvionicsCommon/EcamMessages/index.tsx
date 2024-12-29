@@ -507,6 +507,8 @@ export const EcamInopSys: { [n: string]: string } = {
   290300021: '\x1b<4mG HYD SYS',
   290300022: '\x1b<4mY HYD SYS',
   310300001: '\x1b<4mAUTO CALLOUT',
+  310300002: '\x1b<4mFWS 1',
+  310300003: '\x1b<4mFWS 2',
   320300001: '\x1b<4mA-SKID',
   320300002: '\x1b<4mAUTO BRK',
   320300003: '\x1b<4mPART A-SKID',

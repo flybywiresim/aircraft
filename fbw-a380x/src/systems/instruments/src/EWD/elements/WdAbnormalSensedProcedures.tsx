@@ -1,4 +1,4 @@
-import { ConsumerSubject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import {
   ProcedureLinesGenerator,
   ProcedureType,
@@ -6,6 +6,7 @@ import {
 
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
 import { EcamAbnormalSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly procedures = ConsumerSubject.create(this.sub.on('fws_abn_sensed_procedures'), []);
@@ -15,20 +16,39 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   public updateChecklists() {
     this.lineData.length = 0;
 
-    this.procedures.get().forEach((procState, index) => {
-      const procGen = new ProcedureLinesGenerator(
-        procState.id,
-        this.activeProcedureId.map((id) => id === procState.id),
+    if (!this.props.fwsAvail || this.props.fwsAvail.get()) {
+      this.procedures.get().forEach((procState, index) => {
+        const procGen = new ProcedureLinesGenerator(
+          procState.id,
+          this.activeProcedureId.map((id) => id === procState.id),
+          ProcedureType.Abnormal,
+          procState,
+          undefined,
+          undefined,
+          undefined,
+          EcamAbnormalSensedProcedures[procState.id].recommendation,
+          index === 0,
+        );
+        this.lineData.push(...procGen.toLineData());
+      });
+    } else {
+      // FWS 1+2 failed, show fallback
+      const fallbackClState: ChecklistState = {
+        id: '314800004',
+        procedureActivated: true,
+        procedureCompleted: false,
+        itemsActive: [true, true, true, true, true, true, true, true, true],
+        itemsChecked: [true, true, true, true, true, true, true, true, true],
+        itemsToShow: [true, true, true, true, true, true, true, true, true],
+      };
+      const procGenFallback = new ProcedureLinesGenerator(
+        '314800004',
+        Subject.create(false),
         ProcedureType.Abnormal,
-        procState,
-        undefined,
-        undefined,
-        undefined,
-        EcamAbnormalSensedProcedures[procState.id].recommendation,
-        index === 0,
+        fallbackClState,
       );
-      this.lineData.push(...procGen.toLineData());
-    });
+      this.lineData.push(...procGenFallback.toLineData());
+    }
 
     super.updateChecklists();
   }

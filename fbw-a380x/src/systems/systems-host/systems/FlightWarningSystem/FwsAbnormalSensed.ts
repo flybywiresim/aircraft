@@ -2874,6 +2874,53 @@ export class FwsAbnormalSensed {
       failure: -1,
       sysPage: -1,
     },
+    // 31 Display/Recording
+    314800006: {
+      // AUDIO FUNCTION LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
+      simVarIsActive: this.fws.audioFunctionLost,
+      whichItemsToShow: () => [true, true, true, true],
+      whichItemsChecked: () => [true, true, true, true],
+      notActiveWhenFaults: ['314800004'],
+      failure: -1,
+      sysPage: -1,
+      inopSysApprLdg: () => ['220300026', '320300007', '320300022'],
+      info: () => ['220200010'],
+    },
+    314800007: {
+      // ECP FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.fwsEcpFailed,
+      whichItemsToShow: () => [true, true, true],
+      whichItemsChecked: () => [true, true, true],
+      notActiveWhenFaults: [],
+      failure: 1,
+      sysPage: -1,
+    },
+    314800008: {
+      // FWS 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.fws1Failed,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: ['314800004'],
+      failure: 1,
+      sysPage: -1,
+      info: () => ['220200005'],
+      redundLoss: () => ['310300002'],
+    },
+    314800009: {
+      // FWS 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.fws2Failed,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: ['314800004'],
+      failure: 1,
+      sysPage: -1,
+      info: () => ['220200005'],
+      redundLoss: () => ['310300003'],
+    },
     // 32 Landing Gear & Brakes
     320800008: {
       // BRAKES A_SKID OFF
