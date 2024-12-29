@@ -37,6 +37,8 @@
 1. [A380X/FUEL] Recalibrated inital fuel settings - @sschiphorst (Yahtzee94)
 1. [A380X/ENG] Another adjustment to taxi thrust - @donstim (donbikes)
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENGINES] Another adjustment to taxi thrust - @donstim (donbikes)
+1. [A380/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENG] Improve oil pressure lookup table - @tracernz (Mike)
 1. [A380X/FADEC] Add N1 fan protection measures (METOTS, KOZ) - @flogross89 (floridude)
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
@@ -99,6 +101,10 @@
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
 1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
 1. [A380X/FWS] Add support for deferred procedures, abnormal (non-)sensed procedures - @flogross89 (floridude)
+1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
+1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
+1. [A380X/ENGINES] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
+1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
 
 ## 0.12.0
 
