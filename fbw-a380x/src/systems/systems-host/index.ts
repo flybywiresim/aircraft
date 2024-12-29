@@ -190,24 +190,18 @@ class SystemsHost extends BaseInstrument {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
 
-        this.soundManager?.update(dt);
-        this.gpws?.update(dt);
+        this.soundManager.update(dt);
+        this.gpws.update(dt);
         this.fwsCore?.update(dt);
       });
 
     this.fwsAvailable.sub((a) => {
-      console.log(a);
       SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, a);
       SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, a);
       if (!a && this.fwsCore !== undefined) {
         this.fwsCore = undefined;
-        this.soundManager = undefined;
-        this.gpws = undefined;
       } else if (a && this.fwsCore === undefined) {
         this.fwsCore = new FwsCore(1, this.bus);
-        this.soundManager = new LegacySoundManager();
-        this.gpws = new LegacyGpws(this.bus, this.soundManager);
-        this.gpws.init();
         this.fwsCore.init();
       }
     }, true);
