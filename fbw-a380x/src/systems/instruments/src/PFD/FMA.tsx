@@ -2,9 +2,11 @@
 /* eslint-disable no-constant-condition */
 import {
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
   VNode,
@@ -12,7 +14,8 @@ import {
 import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { Arinc429ConsumerSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -69,6 +72,36 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private AB3Message = Subject.create(false);
 
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), 0);
+
+  private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
+
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+
+  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
+
+  private readonly activeVerticalModeConsumer = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
+
+  private readonly unrestrictedClimbDescent = MappedSubject.create(
+    ([selectedFpa, selectedVs, altitude, selectedAltitude, activeVerticalMode]) => {
+      if (activeVerticalMode === VerticalMode.FPA || activeVerticalMode === VerticalMode.VS) {
+        if ((selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude.value) {
+          return 1;
+        } else if ((selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude.value) {
+          return 2;
+        }
+      }
+      return 0;
+    },
+    this.selectedFpa,
+    this.selectedVs,
+    this.altitude,
+    this.selectedAltitude,
+    this.activeVerticalModeConsumer,
+  );
+
   private handleFMABorders() {
     const sharedModeActive =
       this.activeLateralMode === 32 ||
@@ -83,6 +116,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
         this.tdReached,
+        this.unrestrictedClimbDescent.get(),
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -115,13 +149,15 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
-
-    this.props.isAttExcessive.sub((_a) => {
+    this.props.isAttExcessive.sub(() => {
       this.handleFMABorders();
     });
 
-    sub
+    this.unrestrictedClimbDescent.sub(() => {
+      this.handleFMABorders();
+    });
+
+    this.sub
       .on('fmaVerticalArmed')
       .whenChanged()
       .handle((a) => {
@@ -129,14 +165,14 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('activeLateralMode')
       .whenChanged()
       .handle((activeLateralMode) => {
         this.activeLateralMode = activeLateralMode;
         this.handleFMABorders();
       });
-    sub
+    this.sub
       .on('activeVerticalMode')
       .whenChanged()
       .handle((activeVerticalMode) => {
@@ -144,7 +180,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('setHoldSpeed')
       .whenChanged()
       .handle((shs) => {
@@ -152,7 +188,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('tcasRaInhibited')
       .whenChanged()
       .handle((tra) => {
@@ -160,7 +196,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('trkFpaDeselectedTCAS')
       .whenChanged()
       .handle((trk) => {
@@ -168,7 +204,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.handleFMABorders();
       });
 
-    sub
+    this.sub
       .on('tdReached')
       .whenChanged()
       .handle((tdr) => {
@@ -189,7 +225,12 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
         <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
-        <Row3 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} AB3Message={this.AB3Message} />
+        <Row3
+          bus={this.props.bus}
+          isAttExcessive={this.props.isAttExcessive}
+          unrestrictedClimbDescent={this.unrestrictedClimbDescent}
+          AB3Message={this.AB3Message}
+        />
       </g>
     );
   }
@@ -347,6 +388,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 class Row3 extends DisplayComponent<{
   bus: EventBus;
   isAttExcessive: Subscribable<boolean>;
+  unrestrictedClimbDescent: Subscribable<number>;
   AB3Message: Subscribable<boolean>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
@@ -371,7 +413,11 @@ class Row3 extends DisplayComponent<{
           <AB3Cell bus={this.props.bus} />
           <D3Cell bus={this.props.bus} />
         </g>
-        <BC3Cell isAttExcessive={this.props.isAttExcessive} bus={this.props.bus} />
+        <BC3Cell
+          isAttExcessive={this.props.isAttExcessive}
+          unrestrictedClimbDescent={this.props.unrestrictedClimbDescent}
+          bus={this.props.bus}
+        />
         <E3Cell bus={this.props.bus} />
       </g>
     );
@@ -916,7 +962,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       });
 
     sub
-      .on('apVsSelected')
+      .on('selectedVs')
       .whenChanged()
       .handle((svs) => {
         this.selectedVS = svs;
@@ -1298,6 +1344,7 @@ const getBC3Message = (
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
   tdReached: boolean,
+  unrestrictedClimbDescent: number,
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
@@ -1339,6 +1386,12 @@ const getBC3Message = (
   } else if (false) {
     text = 'EXIT MISSED';
     className = 'White';
+  } else if (unrestrictedClimbDescent === 1) {
+    text = 'FCU ALT BELOW A/C';
+    className = 'FontMediumSmaller  White';
+  } else if (unrestrictedClimbDescent === 2) {
+    text = 'FCU ALT ABOVE A/C';
+    className = 'DisappearAfter10Seconds FontMediumSmaller White';
   } else {
     return [null, null];
   }
@@ -1346,12 +1399,14 @@ const getBC3Message = (
   return [text, className];
 };
 
-class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; bus: EventBus }> {
+class BC3Cell extends DisplayComponent<{
+  isAttExcessive: Subscribable<boolean>;
+  unrestrictedClimbDescent: Subscribable<number>;
+  bus: EventBus;
+}> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
   private classNameSub = Subject.create('');
-
-  private isAttExcessive = false;
 
   private armedVerticalMode = 0;
 
@@ -1363,14 +1418,17 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
 
   private tdReached = false;
 
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
-      this.isAttExcessive,
+      this.props.isAttExcessive.get(),
       this.armedVerticalMode,
       this.setHoldSpeed,
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
+      this.props.unrestrictedClimbDescent.get(),
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1383,14 +1441,15 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    this.props.isAttExcessive.sub((e) => {
-      this.isAttExcessive = e;
+    this.props.isAttExcessive.sub(() => {
       this.fillBC3Cell();
     });
 
-    sub
+    this.props.unrestrictedClimbDescent.sub(() => {
+      this.fillBC3Cell();
+    });
+
+    this.sub
       .on('fmaVerticalArmed')
       .whenChanged()
       .handle((v) => {
@@ -1398,7 +1457,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('setHoldSpeed')
       .whenChanged()
       .handle((shs) => {
@@ -1406,7 +1465,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('tcasRaInhibited')
       .whenChanged()
       .handle((tra) => {
@@ -1414,7 +1473,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('trkFpaDeselectedTCAS')
       .whenChanged()
       .handle((trk) => {
@@ -1422,7 +1481,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>; 
         this.fillBC3Cell();
       });
 
-    sub
+    this.sub
       .on('tdReached')
       .whenChanged()
       .handle((tdr) => {
