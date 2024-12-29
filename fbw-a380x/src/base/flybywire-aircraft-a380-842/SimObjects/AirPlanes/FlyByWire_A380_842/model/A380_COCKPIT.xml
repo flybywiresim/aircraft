@@ -4981,7 +4981,7 @@
                     </UseTemplate>
                 </Component>
 
-                <Component ID="Overhead_Reset_Left">
+                <Component ID="Overhead_Reset_Panel">
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <COMPONENT>FMC_A</COMPONENT>
                     </UseTemplate>
