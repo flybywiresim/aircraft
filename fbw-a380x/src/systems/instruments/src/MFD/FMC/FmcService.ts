@@ -33,6 +33,21 @@ export class FmcService implements FmcServiceInterface {
     private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.createFmc(mfdReference);
+
+    MappedSubject.create(
+      ([power1, power2, power3, reset1, reset2, reset3]) =>
+        (!power1 && !power2 && !power3) || (reset1 && reset2 && reset3),
+      this.dcEssBusPowered,
+      this.dc1BusPowered,
+      this.dc2BusPowered,
+      this.fmcAReset,
+      this.fmcBReset,
+      this.fmcCReset,
+    ).sub((v) => {
+      if (v) {
+        this.get(FmcIndex.FmcA).reset();
+      }
+    });
   }
 
   get master() {

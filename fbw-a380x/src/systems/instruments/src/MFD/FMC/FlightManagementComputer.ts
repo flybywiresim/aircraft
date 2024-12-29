@@ -989,6 +989,10 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async swapNavDatabase(): Promise<void> {
+    await this.reset();
+  }
+
+  async reset(): Promise<void> {
     // FIXME reset ATSU when it is added to A380X
     // this.atsu.resetAtisAutoUpdate();
     await this.flightPlanService.reset();
