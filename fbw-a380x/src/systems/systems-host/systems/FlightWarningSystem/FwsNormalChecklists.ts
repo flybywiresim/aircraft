@@ -334,6 +334,18 @@ export class FwsNormalChecklists {
     this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
   }
 
+  private checkIfDeferredAutoDisplay() {
+    if (
+      this.fws.adrPressureAltitude.get() < 20_000 &&
+      this.fws.slatsAngle.get() > 0 &&
+      Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD' &&
+      !this.showChecklistRequested.get() &&
+      this.hasDeferred.some((v) => v)
+    ) {
+      this.showChecklistRequested.set(true);
+    }
+  }
+
   update() {
     if (this.fws.clPulseNode.read()) {
       this.navigateToChecklist(0);
@@ -397,6 +409,8 @@ export class FwsNormalChecklists {
           }
           break;
       }
+
+      this.checkIfDeferredAutoDisplay();
     });
 
     // Update sensed items
