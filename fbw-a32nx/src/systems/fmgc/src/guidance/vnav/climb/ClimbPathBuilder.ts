@@ -457,6 +457,13 @@ export class ClimbPathBuilder {
   ): StepResults {
     const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
+    const averageCas = (initialSpeed + speedTarget) / 2;
+    const averageClimbSpeedMach = Math.min(
+      managedClimbSpeedMach,
+      this.atmosphericConditions.computeMachFromCas(altitude, averageCas),
+    );
+    const totalAirTemperature = this.atmosphericConditions.totalAirTemperatureFromMach(altitude, averageClimbSpeedMach);
+
     return Predictions.speedChangeStep(
       config,
       0,
@@ -465,12 +472,7 @@ export class ClimbPathBuilder {
       speedTarget,
       managedClimbSpeedMach,
       managedClimbSpeedMach,
-      getClimbThrustN1Limit(
-        this.atmosphericConditions,
-        altitude,
-        (initialSpeed + speedTarget) / 2,
-        managedClimbSpeedMach,
-      ), // TOD0
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, altitude, totalAirTemperature),
       zeroFuelWeight,
       fuelWeight,
       0,
@@ -541,17 +543,4 @@ export class ClimbPathBuilder {
     step.finalAltitude = (1 - scaling) * lastCheckpoint.altitude + scaling * step.finalAltitude;
     step.speed = (1 - scaling) * lastCheckpoint.speed + scaling * step.speed;
   }
-}
-
-// TODO: Deduplicate this from here and ClimbStrategy.ts
-function getClimbThrustN1Limit(
-  atmosphericConditions: AtmosphericConditions,
-  altitude: Feet,
-  speed: Knots,
-  maxMach: Mach,
-) {
-  const climbSpeedMach = Math.min(maxMach, atmosphericConditions.computeMachFromCas(altitude, speed));
-  const estimatedTat = atmosphericConditions.totalAirTemperatureFromMach(altitude, climbSpeedMach);
-
-  return EngineModel.tableInterpolation(EngineModel.maxClimbThrustTableLeap, estimatedTat, altitude);
 }
