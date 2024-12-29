@@ -52,6 +52,8 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     turnDirection: TurnDirection.Either,
   };
 
+  private shouldInterceptPathExist: boolean = false;
+
   constructor(
     private readonly fmgcIndex: number,
     private navigation: NavigationProvider,
@@ -87,17 +89,25 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     return this.intercept;
   }
 
+  shouldShowNoNavInterceptMessage(): boolean {
+    return this.shouldInterceptPathExist && !this.doesExist();
+  }
+
   private updateState() {
     const isNavModeArmed = this.register
       .setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_3`)
       .bitValueOr(14, false);
-    const isNavModeActive = this.register
-      .setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_2`)
-      .bitValueOr(12, false);
+
+    this.register.setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_2`);
+    const isNavModeActive = this.register.bitValueOr(12, false);
+    const isHdgModeActive = this.register.bitValueOr(16, false);
+    const isTrkModeActive = this.register.bitValueOr(17, false);
+
+    const shouldComputeInterceptPath = isNavModeArmed && (isHdgModeActive || isTrkModeActive);
 
     switch (this.state) {
       case State.NavDisarmed:
-        if (isNavModeArmed) {
+        if (shouldComputeInterceptPath) {
           this.state = State.NavArmed;
           this.onNavModeArmed();
         } else if (isNavModeActive) {
@@ -109,13 +119,13 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
         if (isNavModeActive) {
           this.state = State.NavActive;
           this.onNavModeActivated();
-        } else if (!isNavModeArmed) {
+        } else if (!shouldComputeInterceptPath) {
           this.state = State.NavDisarmed;
           this.onNavModeDisarmed();
         }
         break;
       case State.NavActive:
-        if (isNavModeArmed) {
+        if (shouldComputeInterceptPath) {
           this.state = State.NavArmed;
           this.onNavModeArmed();
         } else if (!isNavModeActive) {
@@ -126,9 +136,12 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     }
   }
 
-  private onNavModeActivated() {}
+  private onNavModeActivated() {
+    this.shouldInterceptPathExist = false;
+  }
 
   private onNavModeDisengaged() {
+    this.shouldInterceptPathExist = false;
     this.resetPath();
   }
 
@@ -138,6 +151,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   }
 
   private onNavModeDisarmed() {
+    this.shouldInterceptPathExist = false;
     this.resetPath();
   }
 
@@ -154,6 +168,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private recomputeInterceptPath(activeGeometry: Geometry) {
     this.recomputationTimer = 0;
+    this.shouldInterceptPathExist = false;
 
     if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
       this.resetPath();
@@ -184,17 +199,20 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       return;
     }
 
+    this.shouldInterceptPathExist = true;
+
     const interceptAngle = Math.min(
       MathUtils.normalise360(trueTrack - activeGeometryLeg.outboundCourse),
       MathUtils.normalise360(activeGeometryLeg.outboundCourse - trueTrack),
     );
 
-    if (interceptAngle > 120) {
+    // TODO figure out if this is supposed to be 160 or 120
+    if (interceptAngle > 160) {
       this.resetPath();
       return;
     }
 
-    if (this.tryUpdateIntercept(trueTrack, activeGeometryLeg)) {
+    if (!this.tryUpdateIntercept(trueTrack, activeGeometryLeg)) {
       this.resetPath();
       return;
     }
@@ -247,6 +265,8 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       this.intercept.location = intercept;
       this.intercept.distanceToIntercept = distanceToIntercept;
     }
+
+    return true;
   }
 
   private updateIfLeg(activeGeometryLeg: Leg): IFLeg {
@@ -316,4 +336,5 @@ export interface PreNavModeEngagementPath {
   doesExist(): boolean;
   getGeometry(): Readonly<Geometry> | null;
   getIntercept(): Readonly<NavModeIntercept> | null;
+  shouldShowNoNavInterceptMessage(): boolean;
 }
