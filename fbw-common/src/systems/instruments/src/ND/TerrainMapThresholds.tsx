@@ -47,7 +47,7 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   });
 
   private readonly lowerBorder = this.minElevationSub.map((elevation) => {
-    if (elevation >= 0) {
+    if (elevation > 0) {
       return Math.floor(elevation / 100)
         .toString()
         .padStart(3, this.props.paddingText);
