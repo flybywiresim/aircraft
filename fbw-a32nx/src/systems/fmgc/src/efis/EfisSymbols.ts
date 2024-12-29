@@ -193,7 +193,9 @@ export class EfisSymbols<T extends number> {
     const intercept = this.guidanceController.getPreNavModeEngagementPathIntercept();
     const interceptChanged =
       (this.lastIntercept === null) !== (intercept === null) ||
-      distanceTo(this.lastIntercept?.location, intercept?.location) > 2;
+      (this.lastIntercept !== null &&
+        intercept === null &&
+        distanceTo(this.lastIntercept?.location, intercept?.location) > 1);
     this.lastIntercept = intercept;
 
     const hasSuitableRunway = (airport: Airport): boolean =>

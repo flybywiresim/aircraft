@@ -27,6 +27,7 @@ import { FlightPhaseManager } from '@fmgc/flightphase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -92,8 +93,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   updateTowerHeadwind(): void;
   onToRwyChanged(): void;
   setGroundTempFromOrigin(): void;
-  directToWaypoint(waypoint: Fix): Promise<void>;
-  directToLeg(legIndex: number): Promise<void>;
+  directTo(directTo: DirectTo): Promise<void>;
   toggleWaypointOverfly(index, fpIndex, forAlternate, callback?: typeof EmptyCallback.Void): void;
   insertWaypoint(
     newWaypointTo,

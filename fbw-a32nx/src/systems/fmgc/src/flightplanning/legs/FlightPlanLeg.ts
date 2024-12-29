@@ -47,7 +47,9 @@ export interface SerializedFlightPlanLeg {
 export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
   PendingDirectToTurningPoint = 1 << 1,
-  Origin = 1 << 2,
+  DirectToInBound = 1 << 2,
+  DirectToOutBound = 1 << 3,
+  Origin = 1 << 4,
 }
 
 export interface LegCalculations {
@@ -222,6 +224,30 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return legType === LegType.FM || legType === LegType.VM;
   }
 
+  isVx() {
+    const legType = this.definition.type;
+
+    return (
+      legType === LegType.VA ||
+      legType === LegType.VD ||
+      legType === LegType.VI ||
+      legType === LegType.VM ||
+      legType === LegType.VR
+    );
+  }
+
+  isCx() {
+    const legType = this.definition.type;
+
+    return (
+      legType === LegType.CA ||
+      legType === LegType.CD ||
+      legType === LegType.CF ||
+      legType === LegType.CI ||
+      legType === LegType.CR
+    );
+  }
+
   isRunway() {
     return this.definition.waypointDescriptor === WaypointDescriptor.Runway;
   }
@@ -325,17 +351,22 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
-  static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
+  static turningPoint(
+    segment: EnrouteSegment,
+    ident: 'T-P' | 'IN-BND' | 'OUT-BND',
+    location: Coordinates,
+    magneticCourse: DegreesMagnetic,
+  ): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
         procedureIdent: '',
         type: LegType.CF,
         overfly: false,
-        waypoint: WaypointFactory.fromLocation('T-P', location),
+        waypoint: WaypointFactory.fromLocation(ident, location),
         magneticCourse,
       },
-      'T-P',
+      ident,
       '',
       undefined,
     );
@@ -351,6 +382,38 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         waypoint,
       },
       waypoint.ident,
+      '',
+      undefined,
+    );
+  }
+
+  static radialInLeg(segment: EnrouteSegment, waypoint: Fix, inboundCourse: DegreesMagnetic): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.CF,
+        overfly: false,
+        waypoint,
+        magneticCourse: inboundCourse,
+      },
+      waypoint.ident,
+      '',
+      undefined,
+    );
+  }
+
+  static radialOutLeg(segment: EnrouteSegment, waypoint: Fix, outboundCourse: DegreesMagnetic): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.FM,
+        overfly: false,
+        waypoint,
+        magneticCourse: outboundCourse,
+      },
+      'MANUAL',
       '',
       undefined,
     );
