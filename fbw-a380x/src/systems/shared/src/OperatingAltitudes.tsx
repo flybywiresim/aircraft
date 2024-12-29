@@ -10,7 +10,7 @@ export class A380AltitudeUtils {
    */
   static calculateRecommendedMaxAltitude(gw: number, disa: number, round = 500) {
     return MathUtils.round(
-      54344 -
+      52442 -
         1.24194943e-2 * gw -
         3.50813174e-8 * gw ** 2 -
         53.7792269 * disa -
