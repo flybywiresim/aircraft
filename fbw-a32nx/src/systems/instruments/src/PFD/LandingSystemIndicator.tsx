@@ -796,7 +796,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
-        <text class="FontLargest Amber" x="99.33" y="124.8">
+        <text class="FontLargest Amber EndAlign" x="112.80" y="124.8">
           {this.glsMlsFlsOrLocVnavInstalled.map((v) => (v ? 'LS' : 'ILS'))}
         </text>
       </FlashOneHertz>
