@@ -1,6 +1,6 @@
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
-import { ConsumerSubject, EventBus, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, MappedSubject, SimVarValueType, Subscription } from '@microsoft/msfs-sdk';
 import { FlightManagementComputer } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FmcIndex, FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -20,12 +20,44 @@ export class FmcService implements FmcServiceInterface {
 
   private readonly dcEssBusPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
   private readonly fmcAReset = ConsumerSubject.create(this.sub.on('fmcAReset'), false);
+  private readonly fmcAFailed = MappedSubject.create(
+    ([powered, reset]) => !powered || reset,
+    this.dcEssBusPowered,
+    this.fmcAReset,
+  );
 
   private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
   private readonly fmcBReset = ConsumerSubject.create(this.sub.on('fmcBReset'), false);
+  private readonly fmcBFailed = MappedSubject.create(
+    ([powered, reset]) => !powered || reset,
+    this.dc1BusPowered,
+    this.fmcBReset,
+  );
 
   private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
   private readonly fmcCReset = ConsumerSubject.create(this.sub.on('fmcCReset'), false);
+  private readonly fmcCFailed = MappedSubject.create(
+    ([powered, reset]) => !powered || reset,
+    this.dc2BusPowered,
+    this.fmcCReset,
+  );
+
+  private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob'), 1);
+
+  private readonly fmsCaptSideFailed = MappedSubject.create(
+    ([knob, fmcAFailed, fmcBFailed, fmcCFailed]) => (knob === 0 ? fmcBFailed && fmcCFailed : fmcAFailed && fmcCFailed),
+    this.fmsDataKnob,
+    this.fmcAFailed,
+    this.fmcBFailed,
+    this.fmcCFailed,
+  );
+  private readonly fmsFoSideFailed = MappedSubject.create(
+    ([knob, fmcAFailed, fmcBFailed, fmcCFailed]) => (knob === 2 ? fmcAFailed && fmcCFailed : fmcBFailed && fmcCFailed),
+    this.fmsDataKnob,
+    this.fmcAFailed,
+    this.fmcBFailed,
+    this.fmcCFailed,
+  );
 
   constructor(
     private readonly bus: EventBus,
@@ -33,12 +65,6 @@ export class FmcService implements FmcServiceInterface {
     private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.createFmc(this.mfdReference);
-
-    MappedSubject.create(([power1, reset1]) => !power1 || reset1, this.dcEssBusPowered, this.fmcAReset).sub((v) => {
-      if (v) {
-        this.get(FmcIndex.FmcA).reset();
-      }
-    });
 
     MappedSubject.create(
       ([power1, power2, power3, reset1, reset2, reset3]) =>
@@ -56,6 +82,9 @@ export class FmcService implements FmcServiceInterface {
         this.createFmc(this.mfdReference);
       }
     });
+
+    this.fmsCaptSideFailed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FMS_L_FAILED', SimVarValueType.Bool, f));
+    this.fmsFoSideFailed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FMS_R_FAILED', SimVarValueType.Bool, f));
   }
 
   get master() {

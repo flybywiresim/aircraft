@@ -34,9 +34,9 @@ class MfdInstrument implements FsInstrument {
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
-  private mfdCaptRef = FSComponent.createRef<MfdComponent>();
+  private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
-  private mfdFoRef = FSComponent.createRef<MfdComponent>();
+  private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
 
   private readonly fmcService: FmcServiceInterface;
 

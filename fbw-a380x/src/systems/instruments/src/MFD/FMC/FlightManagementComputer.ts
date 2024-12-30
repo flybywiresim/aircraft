@@ -862,7 +862,6 @@ export class FlightManagementComputer implements FmcInterface {
         false,
       );
       this.legacyFmsIsHealthy.set(false);
-      return;
     } else {
       SimVar.SetSimVarValue(
         `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
@@ -872,8 +871,13 @@ export class FlightManagementComputer implements FmcInterface {
       this.legacyFmsIsHealthy.set(true);
     }
 
-    // Stop early, if not FmcA
-    if (this.instance !== FmcIndex.FmcA) {
+    // Stop early, if not FmcA or if all FMCs failed
+    if (
+      this.instance !== FmcIndex.FmcA ||
+      (!SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', SimVarValueType.Bool) &&
+        !SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', SimVarValueType.Bool) &&
+        !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool))
+    ) {
       return;
     }
 
