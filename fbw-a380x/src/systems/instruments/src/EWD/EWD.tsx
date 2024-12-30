@@ -309,7 +309,7 @@ class FwsEwdAvailabilityChecker {
 
   public readonly fwsAvail = MappedSubject.create(
     ([healthy1, healthy2, r_3_3, r_13_13, r_4_3, r_14_13]) =>
-      (healthy1 && r_3_3 && r_13_13) || (healthy2 && r_4_3 && r_14_13),
+      (healthy1 && (r_3_3 || r_13_13)) || (healthy2 && (r_4_3 || r_14_13)),
     this.fws1IsHealthy,
     this.fws2IsHealthy,
     this.afdx_3_3_reachable,
