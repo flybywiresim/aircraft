@@ -27,6 +27,7 @@ import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
+import { GenericFmsEvents } from '../../types/GenericFmsEvents';
 
 export interface ArcModePageProps<T extends number> extends ComponentProps {
   bus: ArincEventBus;
@@ -82,14 +83,22 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
     this.props.trackWord,
   );
 
+  private readonly fmsFailed = ConsumerSubject.create(
+    this.props.bus.getSubscriber<GenericFmsEvents>().on('fmsFailed').whenChanged(),
+    false,
+  );
+
   // TODO in the future, this should be looking at stuff like FM position invalid or not map frames transmitted
   private readonly mapFlagShown = MappedSubject.create(
-    ([headingWord, latWord, longWord]) => {
-      return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
+    ([headingWord, latWord, longWord, fmsFailed]) => {
+      return (
+        !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation() || fmsFailed
+      );
     },
     this.props.headingWord,
     this.pposLatWord,
     this.pposLonWord,
+    this.fmsFailed,
   );
 
   onShow() {

@@ -21,6 +21,7 @@ export interface FmsVars {
   apprMessage1: number;
   mrpLat: number;
   mrpLong: number;
+  fmsFailed: boolean;
 }
 
 export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R'> {
@@ -58,6 +59,7 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
         ['apprMessage1', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_1`, type: SimVarValueType.Number }],
         ['mrpLat', { name: (side) => `L:A32NX_EFIS_${side}_MRP_LAT`, type: SimVarValueType.Degree }],
         ['mrpLong', { name: (side) => `L:A32NX_EFIS_${side}_MRP_LONG`, type: SimVarValueType.Degree }],
+        ['fmsFailed', { name: (side) => `L:A32NX_FMS_${side}_FAILED`, type: SimVarValueType.Bool }],
       ]),
       stateSubject,
       bus,

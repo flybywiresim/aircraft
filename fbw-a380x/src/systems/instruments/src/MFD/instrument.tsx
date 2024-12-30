@@ -15,41 +15,40 @@ import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FmsMfdPublisher } from '../MsfsAvionicsCommon/providers/FmsMfdPublisher';
+import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
 
   private readonly backplane = new InstrumentBackplane();
 
-  private readonly simVarPublisher: MfdSimvarPublisher;
+  private readonly simVarPublisher = new MfdSimvarPublisher(this.bus);
 
-  private readonly fgDataPublisher: FGDataPublisher;
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
 
-  private readonly fmsDataPublisher: FmsMfdPublisher;
+  private readonly fmsDataPublisher = new FmsMfdPublisher(this.bus);
 
   private readonly clockPublisher = new ClockPublisher(this.bus);
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private mfdCaptRef = FSComponent.createRef<MfdComponent>();
+  private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
-  private mfdFoRef = FSComponent.createRef<MfdComponent>();
+  private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
+
+  private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
 
   private readonly fmcService: FmcServiceInterface;
 
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
   constructor(public readonly instrument: BaseInstrument) {
-    this.simVarPublisher = new MfdSimvarPublisher(this.bus);
-    this.hEventPublisher = new HEventPublisher(this.bus);
-    this.fgDataPublisher = new FGDataPublisher(this.bus);
-    this.fmsDataPublisher = new FmsMfdPublisher(this.bus);
-
     this.backplane.addPublisher('mfd', this.simVarPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('fg', this.fgDataPublisher);
     this.backplane.addPublisher('fms', this.fmsDataPublisher);
+    this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
 
     this.fmcService = new FmcService(this.bus, this.mfdCaptRef.getOrDefault(), this.failuresConsumer);
 
