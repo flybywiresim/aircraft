@@ -24,13 +24,7 @@ export class Heading extends DisplayComponent<HeadingProps> {
   private readonly trueRefActive = ConsumerSubject.create(this.sub.on('fcu_push_true_ref'), false);
 
   private readonly trueIndicatorActive = MappedSubject.create(
-    ([isLightTest, trueRef]) => {
-      if (isLightTest) {
-        return true;
-      } else {
-        return trueRef;
-      }
-    },
+    SubscribableMapFunctions.or(),
     this.isLightTestActive,
     this.trueRefActive,
   );
