@@ -38,13 +38,13 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         procedureActivated: true,
         procedureCompleted: false,
         itemsActive: [true, true, true, true, true, true, true, true, true],
-        itemsChecked: [true, true, true, true, true, true, true, true, true],
+        itemsChecked: [false, false, true, true, true, true, true, true, true],
         itemsToShow: [true, true, true, true, true, true, true, true, true],
       };
       const procGenFallback = new ProcedureLinesGenerator(
         '314800004',
         Subject.create(false),
-        ProcedureType.Abnormal,
+        ProcedureType.FwsFailedFallback,
         fallbackClState,
       );
       this.lineData.push(...procGenFallback.toLineData());

@@ -582,6 +582,7 @@ export enum ChecklistLineStyle {
   Cyan = 'Cyan',
   Green = 'Green',
   Amber = 'Amber',
+  White = 'White',
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
   SeparationLine = 'SeparationLine',

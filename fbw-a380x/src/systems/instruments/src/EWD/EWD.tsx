@@ -80,6 +80,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     this.normalChecklistsVisible,
     this.abnormalSensedVisible,
     this.abnormalNonSensedVisible,
+    this.availChecker.fwsFailed,
   );
 
   private readonly failurePendingIndicationRequested = ConsumerSubject.create(
@@ -240,20 +241,32 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
           <div class="WarningDisplayArea">
             <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
-            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} abnormal={false} />
+            <WdNormalChecklists
+              bus={this.props.bus}
+              visible={MappedSubject.create(
+                ([visible, avail]) => visible && avail,
+                this.normalChecklistsVisible,
+                this.availChecker.fwsAvail,
+              )}
+              abnormal={false}
+            />
             <WdAbnormalSensedProcedures
               bus={this.props.bus}
               visible={MappedSubject.create(
-                ([visible, avail]) => visible || !avail,
+                ([visible, fail]) => visible || fail,
                 this.abnormalSensedVisible,
-                this.availChecker.fwsAvail,
+                this.availChecker.fwsFailed,
               )}
               abnormal={true}
               fwsAvail={this.availChecker.fwsAvail}
             />
             <WdAbnormalNonSensedProcedures
               bus={this.props.bus}
-              visible={this.abnormalNonSensedVisible}
+              visible={MappedSubject.create(
+                ([visible, avail]) => visible && avail,
+                this.abnormalNonSensedVisible,
+                this.availChecker.fwsAvail,
+              )}
               abnormal={true}
             />
             <div class="StsArea">
@@ -288,27 +301,22 @@ class FwsEwdAvailabilityChecker {
 
   private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
   private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);
-  private readonly fwsIsHealthy = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.fws1IsHealthy,
-    this.fws2IsHealthy,
-  );
 
   private readonly afdx_3_3_reachable = ConsumerSubject.create(this.sub.on('afdx_3_3_reachable'), true);
   private readonly afdx_13_13_reachable = ConsumerSubject.create(this.sub.on('afdx_13_13_reachable'), true);
   private readonly afdx_4_3_reachable = ConsumerSubject.create(this.sub.on('afdx_4_3_reachable'), true);
   private readonly afdx_14_13_reachable = ConsumerSubject.create(this.sub.on('afdx_14_13_reachable'), true);
-  private readonly fwsEwdReachable = MappedSubject.create(
-    ([r_3_3, r_13_13, r_4_3, r_14_13]) => (r_3_3 && r_4_3) || (r_13_13 && r_14_13),
+
+  public readonly fwsAvail = MappedSubject.create(
+    ([healthy1, healthy2, r_3_3, r_13_13, r_4_3, r_14_13]) =>
+      (healthy1 && r_3_3 && r_13_13) || (healthy2 && r_4_3 && r_14_13),
+    this.fws1IsHealthy,
+    this.fws2IsHealthy,
     this.afdx_3_3_reachable,
     this.afdx_13_13_reachable,
     this.afdx_4_3_reachable,
     this.afdx_14_13_reachable,
   );
 
-  public readonly fwsAvail = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.fwsIsHealthy,
-    this.fwsEwdReachable,
-  );
+  public readonly fwsFailed = this.fwsAvail.map((it) => !it);
 }

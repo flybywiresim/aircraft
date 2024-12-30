@@ -1900,13 +1900,13 @@ export class FwsCore {
         this.failuresConsumer.isActive(A380Failure.Fws2AudioFunction),
     );
 
-    const ecpReachable =
+    const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
     this.fwsEcpFailed.set(
-      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcESSBusPowered.get() || !ecpReachable,
+      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcESSBusPowered.get() || ecpNotReachable,
     );
 
     // Update flight phases

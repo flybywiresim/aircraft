@@ -23,6 +23,7 @@ export enum ProcedureType {
   Normal,
   Abnormal,
   Deferred,
+  FwsFailedFallback,
 }
 
 export interface ProcedureItemInfo {
@@ -63,6 +64,8 @@ export class ProcedureLinesGenerator {
       this.procedure = EcamAbnormalProcedures[procedureId];
     } else if (type === ProcedureType.Deferred) {
       this.procedure = EcamDeferredProcedures[procedureId];
+    } else if (type === ProcedureType.FwsFailedFallback) {
+      this.procedure = EcamAbnormalProcedures[procedureId];
     }
     this.items = this.procedure.items;
   }
@@ -75,6 +78,7 @@ export class ProcedureLinesGenerator {
     ChecklistLineStyle.Amber,
     ChecklistLineStyle.Cyan,
     ChecklistLineStyle.Green,
+    ChecklistLineStyle.White,
   ];
 
   static conditionalActiveItems(
@@ -334,7 +338,10 @@ export class ProcedureLinesGenerator {
   public toLineData(): WdLineData[] {
     const lineData: WdLineData[] = [];
 
-    const isAbnormalOrDeferred = this.type === ProcedureType.Abnormal || this.type === ProcedureType.Deferred;
+    const isAbnormalOrDeferred =
+      this.type === ProcedureType.Abnormal ||
+      this.type === ProcedureType.Deferred ||
+      this.type === ProcedureType.FwsFailedFallback;
     const isAbnormal = this.type === ProcedureType.Abnormal;
     const isDeferred = this.type === ProcedureType.Deferred;
 
@@ -439,8 +446,8 @@ export class ProcedureLinesGenerator {
           checked: this.checklistState.itemsChecked[itemIndex],
           text: text.substring(0, 39),
           style: clStyle,
-          firstLine: !this.procedureIsActive.get() && isAbnormal,
-          lastLine: !this.procedureIsActive.get() && isAbnormal,
+          firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
+          lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           originalItemIndex: isChecklistCondition(item) ? undefined : itemIndex,
         });
 
@@ -522,7 +529,7 @@ export class ProcedureLinesGenerator {
           });
         }
       }
-    } else if (this.items.length > 0) {
+    } else if (this.items.length > 0 && this.type !== ProcedureType.FwsFailedFallback) {
       // Only three dots for following procedures
       lineData.push({
         abnormalProcedure: isAbnormalOrDeferred,

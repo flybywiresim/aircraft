@@ -199,8 +199,6 @@ class SystemsHost extends BaseInstrument {
       });
 
     this.fwsAvailable.sub((a) => {
-      SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, a);
-      SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, a);
       if (!a && this.fwsCore !== undefined) {
         this.fwsCore = undefined;
       } else if (a && this.fwsCore === undefined) {
@@ -208,6 +206,8 @@ class SystemsHost extends BaseInstrument {
         this.fwsCore.init();
       }
     }, true);
+    this.fws1Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !f));
+    this.fws2Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !f));
 
     this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }
@@ -256,13 +256,13 @@ class SystemsHost extends BaseInstrument {
       this.failuresConsumer.isActive(A380Failure.Fws2) || this.fws2ResetPbStatus.get() || !this.fws2Powered.get(),
     );
 
-    const ecpReachable =
+    const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
     this.fwsEcpFailed.set(
-      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcEssBusPowered.get() || !ecpReachable,
+      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcEssBusPowered.get() || ecpNotReachable,
     );
 
     if (this.gameState !== 3) {

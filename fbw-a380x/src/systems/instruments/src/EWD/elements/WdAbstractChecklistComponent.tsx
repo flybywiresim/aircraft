@@ -157,6 +157,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),
+            White: this.props.data.map((d) => d.style === ChecklistLineStyle.White),
             OmissionDots: this.props.data.map((d) => d.style === ChecklistLineStyle.OmissionDots),
             LandAnsa: this.props.data.map((d) => d.style === ChecklistLineStyle.LandAnsa),
             LandAsap: this.props.data.map((d) => d.style === ChecklistLineStyle.LandAsap),

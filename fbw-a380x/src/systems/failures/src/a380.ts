@@ -303,8 +303,8 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [29, A380Failure.EnginePump4AOHeat, 'Engine 4 pump A overheat'],
   [29, A380Failure.EnginePump4BOHeat, 'Engine 4 pump B overheat'],
 
-  [31, A380Failure.LeftPfdDisplay, 'Captain PFD display'],
-  [31, A380Failure.RightPfdDisplay, 'F/O PFD display'],
+  // [31, A380Failure.LeftPfdDisplay, 'Captain PFD display'],
+  // [31, A380Failure.RightPfdDisplay, 'F/O PFD display'],
   [31, A380Failure.Fws1, 'FWS 1'],
   [31, A380Failure.Fws2, 'FWS 2'],
   [31, A380Failure.Fws1AudioFunction, 'FWS 1 Audio Function'],

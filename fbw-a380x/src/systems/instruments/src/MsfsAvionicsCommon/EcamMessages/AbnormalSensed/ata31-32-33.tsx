@@ -151,44 +151,44 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       {
         name: 'FUNCTIONS NOT AVAIL:',
         sensed: true,
-        style: ChecklistLineStyle.SubHeadline,
-        level: 1,
+        style: ChecklistLineStyle.White,
+        level: 2,
       },
       {
         name: 'ECAM WARNINGS & CAUTIONS',
         sensed: true,
         style: ChecklistLineStyle.Amber,
-        level: 1,
+        level: 2,
       },
       {
         name: 'ABN PROCEDURES',
         sensed: true,
         style: ChecklistLineStyle.Amber,
-        level: 1,
+        level: 2,
       },
       {
         name: 'LIMITATIONS & STATUS',
         sensed: true,
         style: ChecklistLineStyle.Amber,
-        level: 1,
+        level: 2,
       },
       {
         name: 'ALTITUDE ALERT',
         sensed: true,
         style: ChecklistLineStyle.Amber,
-        level: 1,
+        level: 2,
       },
       {
         name: 'AUTO CALLOUT',
         sensed: true,
         style: ChecklistLineStyle.Amber,
-        level: 1,
+        level: 2,
       },
       {
         name: 'NORM C/L & MEMO',
         sensed: true,
         style: ChecklistLineStyle.Amber,
-        level: 1,
+        level: 2,
       },
     ],
   },
@@ -203,7 +203,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'AUDIOS NOT AVAIL:',
-        style: ChecklistLineStyle.CompletedChecklist,
+        style: ChecklistLineStyle.White,
         sensed: true,
       },
       {

@@ -41,7 +41,7 @@
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <LEFT_SINGLE_CODE>
-                (L:A32NX_FWS_ECP_FAILED, Bool) if{
+                (L:A32NX_FWS_ECP_FAILED, Bool) #STATE_ID# 14 != and if{
                     quit
                 }
 
