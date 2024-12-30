@@ -993,14 +993,16 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async reset(): Promise<void> {
-    // FIXME reset ATSU when it is added to A380X
-    // this.atsu.resetAtisAutoUpdate();
-    await this.flightPlanService.reset();
-    this.fmgc.data.reset();
-    this.initSimVars();
-    this.deleteAllStoredWaypoints();
-    this.clearLatestFmsErrorMessage();
-    this.mfdReference?.uiService.navigateTo('fms/data/status');
-    this.navigation.resetState();
+    if (this.instance === FmcIndex.FmcA) {
+      // FIXME reset ATSU when it is added to A380X
+      // this.atsu.resetAtisAutoUpdate();
+      await this.flightPlanService.reset();
+      this.fmgc.data.reset();
+      this.initSimVars();
+      this.deleteAllStoredWaypoints();
+      this.clearLatestFmsErrorMessage();
+      this.mfdReference?.uiService.navigateTo('fms/data/status');
+      this.navigation.resetState();
+    }
   }
 }

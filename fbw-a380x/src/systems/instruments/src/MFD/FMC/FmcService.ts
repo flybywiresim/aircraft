@@ -28,11 +28,17 @@ export class FmcService implements FmcServiceInterface {
   private readonly fmcCReset = ConsumerSubject.create(this.sub.on('fmcCReset'), false);
 
   constructor(
-    private bus: EventBus,
-    mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
+    private readonly bus: EventBus,
+    private readonly mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
     private readonly failuresConsumer: FailuresConsumer,
   ) {
-    this.createFmc(mfdReference);
+    this.createFmc(this.mfdReference);
+
+    MappedSubject.create(([power1, reset1]) => !power1 || reset1, this.dcEssBusPowered, this.fmcAReset).sub((v) => {
+      if (v) {
+        this.get(FmcIndex.FmcA).reset();
+      }
+    });
 
     MappedSubject.create(
       ([power1, power2, power3, reset1, reset2, reset3]) =>
@@ -45,7 +51,9 @@ export class FmcService implements FmcServiceInterface {
       this.fmcCReset,
     ).sub((v) => {
       if (v) {
-        this.get(FmcIndex.FmcA).reset();
+        // Completely destroy FMCs, might help for bugs
+        this.fmc.length = 0;
+        this.createFmc(this.mfdReference);
       }
     });
   }
