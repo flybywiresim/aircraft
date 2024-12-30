@@ -562,8 +562,6 @@ impl A380SpoilerFactory {
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
 
-    // 247XP - AC EHA
-    const SPOILER_5_EBHA_BUS: ElectricalBusType = AC_EHA_BUS;
     // 427XP - AC ESS
     const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
@@ -655,8 +653,7 @@ impl A380SpoilerFactory {
         let spoiler_2 = Self::new_a380_spoiler_element(context, id, 2, None);
         let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3, None);
         let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4, None);
-        let spoiler_5 =
-            Self::new_a380_spoiler_element(context, id, 5, Some(Self::SPOILER_5_EBHA_BUS));
+        let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5, None);
         let spoiler_6 =
             Self::new_a380_spoiler_element(context, id, 6, Some(Self::SPOILER_6_EBHA_BUS));
         let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7, None);
