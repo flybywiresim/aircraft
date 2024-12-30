@@ -107,6 +107,7 @@
 1. [A380X/ENGINES] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
 1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
