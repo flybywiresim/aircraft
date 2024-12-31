@@ -206,6 +206,7 @@ export class FwsCore {
   public readonly clDownInputBuffer = new NXLogicMemoryNode(false);
   public readonly aThrDiscInputBuffer = new NXLogicMemoryNode(false);
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
+  public readonly takeoverPbInputBuffer = new NXLogicMemoryNode(false);
 
   /* PSEUDO FWC VARIABLES */
 
@@ -1816,6 +1817,13 @@ export class FwsCore {
       this.clDownInputBuffer.write(true, false);
     }
 
+    if (
+      SimVar.GetSimVarValue('L:A32NX_PRIORITY_TAKEOVER:1', SimVarValueType.Bool) ||
+      SimVar.GetSimVarValue('L:A32NX_PRIORITY_TAKEOVER:2', SimVarValueType.Bool)
+    ) {
+      this.takeoverPbInputBuffer.write(true, false);
+    }
+
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
     if (deltaTime === -1 || _deltaTime === 0) {
       return;
@@ -1839,7 +1847,10 @@ export class FwsCore {
     this.clUpPulseNode.write(this.clUpInputBuffer.read(), deltaTime);
     this.clDownPulseNode.write(this.clDownInputBuffer.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
-    this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
+    this.autoPilotInstinctiveDiscPressedPulse.write(
+      this.apDiscInputBuffer.read() || this.takeoverPbInputBuffer.read(),
+      deltaTime,
+    );
 
     // Inputs update
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
@@ -4143,6 +4154,7 @@ export class FwsCore {
     this.clDownInputBuffer.write(false, true);
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
+    this.takeoverPbInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
   }
 
