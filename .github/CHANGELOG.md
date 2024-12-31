@@ -110,6 +110,7 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+1. [A380X/PRIM] Adapt alpha speeds to new flight model - @flogross89 (floridude)
 
 ## 0.12.0
 
