@@ -806,4 +806,32 @@
         <UseTemplate Name="#ANIM_TEMPLATE#"></UseTemplate>
     </Template>
 
+    <Template Name="FBW_Switch_Light_Strobe">
+        <Parameters Type="Default">
+            <INTERACTION_TYPE>SWITCH</INTERACTION_TYPE>
+            <LIGHT_TYPE>STROBE</LIGHT_TYPE>
+        </Parameters>
+        <Parameters Type="Override">
+            <STATE_ON_ID>0</STATE_ON_ID>
+            <STATE_X_ID>1</STATE_X_ID>
+            <STATE_X_VAR>L:#LIGHT_TYPE#_#SIMVAR_INDEX#_Auto</STATE_X_VAR>
+            <STATE_X_TT>@TT_Auto</STATE_X_TT>
+            <STATE_X_VALUE>1</STATE_X_VALUE>
+            <STATE_OFF_ID>2</STATE_OFF_ID>
+            <TYPE>OnOffX</TYPE>
+            <LIGHT_UPDATE_CODE>
+                (A:LIGHT STROBE:0, Bool) if{
+                    (L:STROBE_0_Auto) if{
+                        (A:SIM ON GROUND, Bool) ! 100 * (&gt;K:LIGHT_POTENTIOMETER_24_SET)
+                    } els{
+                        100 (&gt;K:LIGHT_POTENTIOMETER_24_SET)
+                    }
+                } els{
+                    0 (&gt;K:LIGHT_POTENTIOMETER_24_SET)
+                }
+            </LIGHT_UPDATE_CODE>
+        </Parameters>
+        <UseTemplate Name="ASOBO_LIGHTING_Light_Template" />
+    </Template>
+
 </ModelBehaviors>
