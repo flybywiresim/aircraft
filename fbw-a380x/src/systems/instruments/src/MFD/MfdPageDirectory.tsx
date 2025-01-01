@@ -16,6 +16,7 @@ import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/MfdFmsPerf';
 import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionIrs';
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
 import { MfdAtccomConnect } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomConnect';
+import { MfdFcuBkupAfs } from 'instruments/src/MFD/pages/FCUBKUP/MfdFcuBkupAfs';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
@@ -96,6 +97,8 @@ export function pageForUrl(
       return <MfdSurvControls pageTitle="CONTROLS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/status-switching':
       return <MfdSurvStatusSwitching pageTitle="STATUS & SWITCHING" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fcubkup/afs':
+      return <MfdFcuBkupAfs pageTitle="AFSCP" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'atccom/connect':
       return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
