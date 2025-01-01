@@ -105,6 +105,7 @@ type CoRoute = {
 export class CoRouteUplinkAdapter {
   static async uplinkFlightPlanFromCoRoute(
     fms: DataInterface & DisplayInterface,
+    intoPlan: number,
     flightPlanService: FlightPlanService,
     ofp: CoRoute,
   ) {
@@ -375,7 +376,7 @@ export class CoRouteUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static getRouteFromOfp(ofp: CoRoute): OfpRoute {

@@ -513,6 +513,7 @@ export class GuidanceController {
       gs,
       this.lnavDriver.ppos,
       trueTrack,
+      plan,
       plan.activeLegIndex,
       plan.activeLegIndex, // TODO active transition index for temporary plan...?
     );

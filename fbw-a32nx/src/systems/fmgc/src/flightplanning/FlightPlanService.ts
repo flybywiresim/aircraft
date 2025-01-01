@@ -41,7 +41,6 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   createFlightPlans() {
     this.flightPlanManager.create(FlightPlanIndex.Active);
     this.flightPlanManager.create(FlightPlanIndex.Uplink);
-    this.flightPlanManager.create(FlightPlanIndex.FirstSecondary);
   }
 
   get(index: number) {
@@ -94,6 +93,23 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.has(FlightPlanIndex.Uplink);
   }
 
+  async secondaryInit(index: number) {
+    if (this.flightPlanManager.has(FlightPlanIndex.FirstSecondary + index - 1)) {
+      console.error('[FMS/FPS] Cannot create secondary flight plan if one already exists');
+      return;
+    }
+
+    this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
+  }
+
+  async secondaryCopyFromActive(index: number) {
+    this.flightPlanManager.copy(
+      FlightPlanIndex.Active,
+      FlightPlanIndex.FirstSecondary + (index - 1),
+      CopyOptions.CopyPredictions,
+    );
+  }
+
   async secondaryDelete(index: number) {
     if (!this.hasSecondary(index)) {
       throw new Error('[FMS/FPS] Cannot delete secondary flight plan if none exists');
@@ -108,6 +124,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
+  }
+
+  async secondaryActivate(index: number) {
+    this.flightPlanManager.copy(FlightPlanIndex.FirstSecondary + index - 1, FlightPlanIndex.Active);
+  }
+
+  async activeAndSecondarySwap(secIndex: number): Promise<void> {
+    this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
   }
 
   async temporaryInsert(): Promise<void> {
@@ -165,12 +189,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.delete(FlightPlanIndex.Temporary);
   }
 
-  async uplinkInsert(): Promise<void> {
+  async uplinkInsert(intoPlan = FlightPlanIndex.Active): Promise<void> {
     if (!this.hasUplink) {
       throw new Error('[FMS/FPS] Cannot insert uplink flight plan if none exists');
     }
 
-    this.flightPlanManager.copy(FlightPlanIndex.Uplink, FlightPlanIndex.Active);
+    this.flightPlanManager.copy(FlightPlanIndex.Uplink, intoPlan);
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
 
     if (this.hasTemporary) {
