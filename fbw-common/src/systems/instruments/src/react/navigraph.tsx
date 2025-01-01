@@ -1,8 +1,7 @@
 import { User } from 'navigraph/auth';
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
-import { navigraphAuth } from '../navigraph';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { navigraphAuth, NXDataStore } from '@flybywiresim/fbw-sdk';
 
 interface NavigraphAuthContext {
   initialized: boolean;
