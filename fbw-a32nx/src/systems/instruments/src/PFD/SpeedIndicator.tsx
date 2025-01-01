@@ -19,6 +19,7 @@ import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -153,6 +154,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
   private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
 
+  private readonly spdFlagVisible = Subject.create(false);
+
   private showBarsRef = FSComponent.createRef<SVGGElement>();
 
   private vfeNext = FSComponent.createRef<SVGPathElement>();
@@ -183,9 +186,11 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     if (Number.isNaN(airspeedValue)) {
       this.speedTapeElements.instance.classList.add('HiddenElement');
       this.failedGroup.instance.classList.remove('HiddenElement');
+      this.spdFlagVisible.set(true);
     } else {
       this.speedTapeElements.instance.classList.remove('HiddenElement');
       this.failedGroup.instance.classList.add('HiddenElement');
+      this.spdFlagVisible.set(false);
     }
 
     const length =
@@ -252,9 +257,12 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
       <>
         <g id="FailedGroup" ref={this.failedGroup} class="HiddenElement">
           <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
-          <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">
-            SPD
-          </text>
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdFlagVisible}>
+            <text id="SpeedFailText" class="FontLargest EndAlign Red" x="17.756115" y="83.386398">
+              SPD
+            </text>
+          </FlashOneHertz>
+
           <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
         </g>
 
@@ -381,7 +389,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
   private decelRef = FSComponent.createRef<SVGTextElement>();
 
-  private spdLimFlagRef = FSComponent.createRef<SVGTextElement>();
+  private readonly spdLimFlagVisible = Subject.create(false);
 
   private onGround = true;
 
@@ -465,9 +473,9 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .whenChanged()
       .handle((a) => {
         if (a === 0) {
-          this.spdLimFlagRef.instance.style.visibility = 'visible';
+          this.spdLimFlagVisible.set(true);
         } else {
-          this.spdLimFlagRef.instance.style.visibility = 'hidden';
+          this.spdLimFlagVisible.set(false);
         }
       });
   }
@@ -491,14 +499,14 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
           />
           <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
           <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
-          <g ref={this.spdLimFlagRef}>
-            <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red Blink9Seconds">
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdLimFlagVisible}>
+            <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red">
               SPD
             </text>
-            <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMedium EndAlign Red Blink9Seconds">
+            <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMedium EndAlign Red">
               LIM
             </text>
-          </g>
+          </FlashOneHertz>
         </g>
       </>
     );
@@ -992,7 +1000,7 @@ interface SpeedStateInfo {
 }
 
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
-  private spdSelFlagRef = FSComponent.createRef<SVGTextElement>();
+  private readonly spdSelFlagVisible = Subject.create(false);
 
   private upperBoundRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1110,36 +1118,36 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.spdSelFlagRef.instance.style.display = 'block';
+      this.spdSelFlagVisible.set(true);
     } else if (spdSelNcd) {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.spdSelFlagRef.instance.style.display = 'none';
+      this.spdSelFlagVisible.set(false);
     } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.spdSelFlagRef.instance.style.display = 'none';
+      this.spdSelFlagVisible.set(false);
       this.currentVisible = this.upperBoundRef;
     } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange && !this.decelActive) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.spdSelFlagRef.instance.style.display = 'none';
+      this.spdSelFlagVisible.set(false);
       this.currentVisible = this.lowerBoundRef;
     } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'visible';
-      this.spdSelFlagRef.instance.style.display = 'none';
+      this.spdSelFlagVisible.set(false);
       this.currentVisible = this.speedTargetRef;
       inRange = true;
     } else {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.spdSelFlagRef.instance.style.display = 'none';
+      this.spdSelFlagVisible.set(false);
     }
     return inRange;
   }
@@ -1165,15 +1173,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         >
           {this.textSub}
         </text>
-        <text
-          ref={this.spdSelFlagRef}
-          id="SelectedSpeedFailText"
-          class="FontSmall EndAlign Red Blink9Seconds"
-          x="24.078989"
-          y="36.670692"
-        >
-          SPD SEL
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdSelFlagVisible}>
+          <text id="SelectedSpeedFailText" class="FontSmall EndAlign Red" x="24.078989" y="36.670692">
+            SPD SEL
+          </text>
+        </FlashOneHertz>
+
         <path
           ref={this.speedTargetRef}
           class="NormalStroke CornerRound Cyan"
@@ -1276,7 +1281,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   private machTextSub = Subject.create('');
 
-  private failedRef = FSComponent.createRef<SVGTextElement>();
+  private readonly machFlagVisible = Subject.create(false);
 
   private machHysteresis = false;
 
@@ -1306,13 +1311,13 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       lsDisplay;
 
     if (hideMachDisplay) {
-      this.failedRef.instance.style.visibility = 'hidden';
+      this.machFlagVisible.set(false);
       this.machTextSub.set('');
     } else if (!this.mach.isNormalOperation()) {
-      this.failedRef.instance.style.visibility = 'visible';
+      this.machFlagVisible.set(true);
       this.machTextSub.set('');
     } else {
-      this.failedRef.instance.style.visibility = 'hidden';
+      this.machFlagVisible.set(false);
       const machPermille = Math.round(this.mach.value * 1000);
       this.machTextSub.set(`.${machPermille}`);
     }
@@ -1361,15 +1366,12 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <>
-        <text
-          ref={this.failedRef}
-          id="MachFailText"
-          class="Blink9Seconds FontLargest StartAlign Red"
-          x="5.4257932"
-          y="136.88908"
-        >
-          MACH
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.machFlagVisible}>
+          <text id="MachFailText" class="FontLargest StartAlign Red" x="5.4257932" y="136.88908">
+            MACH
+          </text>
+        </FlashOneHertz>
+
         <text id="CurrentMachText" class="FontLargest StartAlign Green" x="5.566751" y="137.03004">
           {this.machTextSub}
         </text>
