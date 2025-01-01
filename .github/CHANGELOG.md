@@ -109,6 +109,7 @@
 1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
+1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
 
 ## 0.12.0
 
