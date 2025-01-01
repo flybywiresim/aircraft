@@ -32,7 +32,7 @@ export class FwsMemos {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.usrStartRefueling,
       whichCodeToReturn: () => [0],
-      codesToReturn: ['000005001'],
+      codesToReturn: ['000005001', '280000010'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
       failure: 0,
       sysPage: SdPages.None,

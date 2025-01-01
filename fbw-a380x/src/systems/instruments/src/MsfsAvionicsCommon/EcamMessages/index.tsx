@@ -57,7 +57,7 @@ export const EcamMemos: { [n: string]: string } = {
   '321000002': '\x1b<3mL/G GRVTY EXTN',
   '322000001': '\x1b<4mN/W STEER DISC',
   '322000002': '\x1b<3mN/W STEER DISC',
-  '000005001': '\x1b<3mREFUELG',
+  '000005001': '\x1b<3mREFUEL IN PROGRESS',
   '000005501': '\x1b<3mGND SPLRs ARMED',
   '000056101': '\x1b<3mCOMPANY ALERT',
   '000056102': '\x1b<3m\x1b)mCOMPANY ALERT',
