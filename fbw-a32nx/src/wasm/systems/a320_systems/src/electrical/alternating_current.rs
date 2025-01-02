@@ -599,14 +599,14 @@ impl A320AuxiliaryPowerSupplies {
                 context,
                 ElectricalBusType::Virtual("FUEL_PUMP_1_SUPPLY"),
             ),
-            fuel_pump_1_normal_contactor: Contactor::new(context, "17QA"), // 18QA for R WING pump
-            fuel_pump_1_standby_contactor: Contactor::new(context, "53QA"), // 54QA for R WING pump
+            fuel_pump_1_normal_contactor: Contactor::new(context, "17QA"), // 18QA for R WING pump, both have the same condition
+            fuel_pump_1_standby_contactor: Contactor::new(context, "53QA"), // 54QA for R WING pump, both have the same condition
 
             fuel_pump_2_supply: ElectricalBus::new(
                 context,
                 ElectricalBusType::Virtual("FUEL_PUMP_2_SUPPLY"),
             ),
-            fuel_pump_2_contactor: Contactor::new(context, "19QA"), // 20QA for R WING pump
+            fuel_pump_2_contactor: Contactor::new(context, "19QA"), // 20QA for R WING pump, both have the same condition
 
             apu_fuel_pump_supply: ElectricalBus::new(
                 context,
@@ -648,7 +648,7 @@ impl A320AuxiliaryPowerSupplies {
             &self.fuel_pump_1_supply,
         );
 
-        // // Contactor powered by DC 2
+        // Contactor powered by DC 2
         self.fuel_pump_2_contactor.close_when(dc_2_powered);
         electricity.flow(ac_bus_2, &self.fuel_pump_2_contactor);
         electricity.flow(&self.fuel_pump_2_contactor, &self.fuel_pump_2_supply);

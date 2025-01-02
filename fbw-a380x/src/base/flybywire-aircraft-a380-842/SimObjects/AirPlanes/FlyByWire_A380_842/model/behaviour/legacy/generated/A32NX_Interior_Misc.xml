@@ -199,9 +199,6 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>#CIRCUIT_ID# 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</LEFT_SINGLE_CODE>
 
-            <Condition Check="FUEL_LINE">
-                <SEQ1_CODE>#CIRCUIT_CONNECTED_TO_BUS# 1 == (A:FUELSYSTEM LINE FUEL PRESSURE:#FUEL_LINE#) 410 &lt; and</SEQ1_CODE>
-            </Condition>
             <SEQ2_CODE>#CIRCUIT_CONNECTED_TO_BUS# 0 ==</SEQ2_CODE>
 
             <DOWN_CODE>#CIRCUIT_CONNECTED_TO_BUS# 1 ==</DOWN_CODE>

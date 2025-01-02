@@ -196,6 +196,9 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>#ID# (&gt;K:FUELSYSTEM_PUMP_TOGGLE)</LEFT_SINGLE_CODE>
 
+            <Condition Check="FUEL_LINE">
+                <SEQ1_CODE>#CIRCUIT_CONNECTED_TO_BUS# 1 == (A:FUELSYSTEM LINE FUEL PRESSURE:#FUEL_LINE#) 410 &lt; and</SEQ1_CODE>
+            </Condition>
             <SEQ2_CODE>(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==</SEQ2_CODE>
 
             <DOWN_CODE>(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 1 ==</DOWN_CODE>
