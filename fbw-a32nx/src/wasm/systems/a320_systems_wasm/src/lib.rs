@@ -317,10 +317,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 18)?
-    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 2)?
-    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 3)?
-    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool", 5)?
-    .provides_aircraft_variable("FUELSYSTEM PUMP ACTIVE", "Bool",6)?
+    .provides_aircraft_variable_range("FUELSYSTEM PUMP ACTIVE", "Bool", 1..=7)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
