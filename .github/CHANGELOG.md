@@ -7,19 +7,9 @@
 
 ## 0.13.0
 
-1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
-1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
-1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
 1. [A380X/FCU] Added metric altitude button - @tracernz (Mike)
 1. [A380X/FCU] Baro knob now requires to be pushed to enter STD mode and pulled to enter BARO mode, as per the real thing - @danestfanous (Daniel Estfanous)
-1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
-1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
-1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
-1. [A380X/TELEX] Added popup for telex consent - @saschl (saschl) @Maximilian-Reuter (\_chaoz)
-1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
-1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
-1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
 1. [A380X/EWD] QoL: Add soft keys to EWD checklists, can be enabled via EFB - @flogross89 (floridude)
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
 1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
@@ -29,8 +19,6 @@
 1. [A380X/AP] Improved support of simulation rate 4x - @aguther (Andreas Guther)
 1. [A380X/FLIGHTMODEL] Tweaked jetway connect position - @C-Schaffhausen (Cedric)
 1. [A32NX/FANS] Restore Portuguese station codes - @tracernz (Mike)
-1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
-1. [A380X/MODEL] Optimized 4K textures - @Repsol
 1. [A380X/EFB] Moved cabin lighting from ambient light knob to EFB Quick Settings - @2hwk (2cas)
 1. [A380X/AFS] Fixed CP V/S knob push levelling off the aircraft when it should have no action - @tracernz (Mike)
 1. [A380X/MFD] MFD/SURV: Fixed TCAS not switching status when using DEFAULT SETTINGS button - @flogross89 (floridude)
@@ -110,6 +98,28 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+
+## 0.12.3
+
+1. [A380X/MFD] Fix revision of discontinuities - @Benjozork (Benjamin Dupont)
+
+## 0.12.2
+
+1. [ND] Fix memory leak when using TERR ON ND - @Nufflee (nufflee)
+1. [A380X/OVHD] Fix RCDR GND CTL button/logic - @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
+1. [A380X/MFD] Fixed DIRECT TO selection of active waypoint does nothing - @sognodelx (Sven Gross)
+1. [A380X/MODEL] Optimized 4K textures
+
+## 0.12.1
+
+1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
+1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
+1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
+1. [A380X/EFB] Fixed doors automatically opening in flight - @saschl (saschl)
+1. [A380X/FMS] Fixed layouting issue on FMS/ACTIVE/PERF/T.O page for some users - @flogross89 (floridude)
+1. [A380X/TELEX] Added popup for telex consent @saschl (saschl) @Maximilian-Reuter (\_chaoz)
+1. [A32NX/CAMERA] Improved default camera position for Virtual Reality (VR) - @aguther (Andreas Guther)
 
 ## 0.12.0
 
