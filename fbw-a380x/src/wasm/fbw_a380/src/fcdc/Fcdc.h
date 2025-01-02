@@ -17,6 +17,18 @@ struct FcdcBus {
   Arinc429DiscreteWord efcsStatus5;
 };
 
+struct FcdcDiscreteInputs {
+  bool spoilersArmed;
+
+  bool noseGearPressed;
+
+  bool primHealthy[3];
+};
+
+struct FcdcBusInputs {
+  base_prim_out_bus prims[3];
+};
+
 enum class LateralLaw {
   NormalLaw,
   DirectLaw,
@@ -37,12 +49,38 @@ class Fcdc {
  public:
   Fcdc(bool isUnit1);
 
-  FcdcBus update(base_prim_out_bus primsBusOutputs, bool spoilersArmed);
+  FcdcBus update(double deltaTime, bool faultActive, bool isPowered);
+
+  FcdcDiscreteInputs discreteInputs;
+
+  FcdcBusInputs busInputs;
 
  private:
+  void startup();
+
+  void monitorPowerSupply(double deltaTime, bool isPowered);
+
+  void monitorSelf(bool faultActive);
+
+  void updateSelfTest(double deltaTime);
+
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
 
+  // Computer monitoring and self-test vars
+
+  bool monitoringHealthy;
+
+  double powerSupplyOutageTime;
+
+  bool powerSupplyFault;
+
+  double selfTestTimer;
+
+  bool selfTestComplete;
+
   const bool isUnit1;
+
+  const double minimumPowerOutageTimeForFailure = 0.01;
 };

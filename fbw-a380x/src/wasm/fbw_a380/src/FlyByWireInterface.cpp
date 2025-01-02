@@ -489,6 +489,11 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FM_GROSS_WEIGHT");
 
+  for (int i = 0; i < 2; i++) {
+    std::string idString = std::to_string(i + 1);
+    idCpiomCxAvailable[i] = std::make_unique<LocalVariable>("A32NX_CPIOM_C" + idString + "_AVAIL");
+  }
+
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
     idRadioAltimeterHeight[i] = std::make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
@@ -1692,28 +1697,17 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
-  // Phase 1 of refactoring: Populate FCDC discrete words as per a32nx spec, disregarding the obvious differences.
-  // Target: Should behave unsuspiciously in normal ops
-  // Select master PRIM, use it for population of FCDC discrete words
-  int masterPrim = -1;
+  Failures failureIndex = fcdcIndex == 0 ? Failures::Fcdc1 : Failures::Fcdc2;
+
+  fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
+  fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
+
   for (int i = 0; i < 3; i++) {
-    if (primsDiscreteOutputs[i].prim_healthy) {
-      masterPrim = i;
-      break;
-    }
+    fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
+    fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
   }
 
-  FcdcBus output = {};
-
-  if (masterPrim == -1) {
-    output.efcsStatus1.setSsm(Arinc429SignStatus::FailureWarning);
-    output.efcsStatus2.setSsm(Arinc429SignStatus::FailureWarning);
-    output.efcsStatus3.setSsm(Arinc429SignStatus::FailureWarning);
-    output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
-    output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
-  } else {
-    output = fcdcs[fcdcIndex].update(primsBusOutputs[masterPrim], spoilersHandler->getIsArmed() ? true : false);
-  }
+  FcdcBus output = fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(failureIndex), idCpiomCxAvailable[fcdcIndex]->get());
 
   idFcdcDiscreteWord1[fcdcIndex]->set(output.efcsStatus1.toSimVar());
   idFcdcDiscreteWord2[fcdcIndex]->set(output.efcsStatus2.toSimVar());

@@ -14,7 +14,7 @@ import {
 import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -89,6 +89,10 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly approachCapability = ConsumerSubject.create(this.sub.on('approachCapability'), 0);
 
+  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
   private disconnectApForLdg = MappedSubject.create(
     ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, approachCapability]) => {
       return (
@@ -126,6 +130,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.props.isAttExcessive.get(),
         this.armedVerticalModeSub.get(),
         this.setHoldSpeed,
+        this.fcdcDiscreteWord1.get(),
+        this.fwcFlightPhase.get(),
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
         this.tdReached,
@@ -163,6 +169,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
     super.onAfterRender(node);
 
     this.disconnectApForLdg.sub(() => this.handleFMABorders());
+
+    this.fcdcDiscreteWord1.sub(() => this.handleFMABorders());
+    this.fwcFlightPhase.sub(() => this.handleFMABorders());
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -1347,11 +1356,15 @@ const getBC3Message = (
   isAttExcessive: boolean,
   armedVerticalMode: number,
   setHoldSpeed: boolean,
+  fcdcWord1: Arinc429WordData,
+  fwcFlightPhase: number,
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
   tdReached: boolean,
   disconnectApForLdg: boolean,
 ) => {
+  const flightPhaseForWarning =
+    fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
 
@@ -1359,7 +1372,7 @@ const getBC3Message = (
   let className: string;
 
   // All currently unused message are set to false
-  if (false) {
+  if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     text = 'USE MAN PITCH TRIM';
     className = 'PulseAmber9Seconds Amber';
   } else if (false) {
@@ -1425,11 +1438,17 @@ class BC3Cell extends DisplayComponent<{
 
   private tdReached = false;
 
+  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
       this.isAttExcessive,
       this.armedVerticalMode,
       this.setHoldSpeed,
+      this.fcdcDiscreteWord1.get(),
+      this.fwcFlightPhase.get(),
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
@@ -1445,6 +1464,9 @@ class BC3Cell extends DisplayComponent<{
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.fcdcDiscreteWord1.sub(() => this.fillBC3Cell());
+    this.fwcFlightPhase.sub(() => this.fillBC3Cell());
 
     this.props.isAttExcessive.sub((e) => {
       this.isAttExcessive = e;

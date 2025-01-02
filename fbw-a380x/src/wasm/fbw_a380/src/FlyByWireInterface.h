@@ -356,6 +356,9 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFmGrossWeight;
 
+  // CPIOM status
+  std::unique_ptr<LocalVariable> idCpiomCxAvailable[2];
+
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
 
