@@ -115,6 +115,8 @@ clang++ \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
+  "${DIR}/src/model/A380FacComputer_data.cpp" \
+  "${DIR}/src/model/A380FacComputer.cpp" \
   "${DIR}/src/model/A380PrimComputer_data.cpp" \
   "${DIR}/src/model/A380PrimComputer.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
@@ -124,8 +126,6 @@ clang++ \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
   "${DIR}/src/model/A380LateralNormalLaw.cpp" \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
-  "${DIR}/src/model/FacComputer_data.cpp" \
-  "${DIR}/src/model/FacComputer.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \

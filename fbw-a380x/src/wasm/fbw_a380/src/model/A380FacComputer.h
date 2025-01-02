@@ -1,46 +1,46 @@
-#ifndef FacComputer_h_
-#define FacComputer_h_
+#ifndef A380FacComputer_h_
+#define A380FacComputer_h_
 #include "rtwtypes.h"
-#include "FacComputer_types.h"
+#include "A380FacComputer_types.h"
 
-class FacComputer final
+class A380FacComputer final
 {
  public:
-  struct rtDW_LagFilter_FacComputer_T {
+  struct rtDW_LagFilter_A380FacComputer_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_RateLimiter_FacComputer_T {
+  struct rtDW_RateLimiter_A380FacComputer_T {
     real_T pY;
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_LagFilter_FacComputer_g_T {
+  struct rtDW_LagFilter_A380FacComputer_g_T {
     real32_T pY;
     real32_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_RateLimiter_FacComputer_b_T {
+  struct rtDW_RateLimiter_A380FacComputer_b_T {
     real_T pY;
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_RateLimiter_FacComputer_d_T {
+  struct rtDW_RateLimiter_A380FacComputer_d_T {
     real_T pY;
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_MATLABFunction_FacComputer_f_T {
+  struct rtDW_MATLABFunction_A380FacComputer_f_T {
     real_T timeSinceCondition;
     boolean_T output;
   };
 
-  struct D_Work_FacComputer_T {
+  struct D_Work_A380FacComputer_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_d;
     real_T Delay_DSTATE_dc;
@@ -50,8 +50,8 @@ class FacComputer final
     real_T takeoff_config_c;
     real_T takeoff_config_g;
     real_T sAlphaFloor;
-    uint8_T is_active_c15_FacComputer;
-    uint8_T is_c15_FacComputer;
+    uint8_T is_active_c15_A380FacComputer;
+    uint8_T is_c15_A380FacComputer;
     boolean_T Memory_PreviousInput;
     boolean_T icLoad;
     boolean_T pY_not_empty;
@@ -59,38 +59,38 @@ class FacComputer final
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_jf;
-    rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_a;
-    rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_p;
-    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_fu;
-    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_l;
-    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_p;
-    rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_g0;
-    rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_g;
-    rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_f;
-    rtDW_LagFilter_FacComputer_T sf_LagFilter_i;
-    rtDW_LagFilter_FacComputer_T sf_LagFilter_c;
-    rtDW_LagFilter_FacComputer_g_T sf_LagFilter_d5;
-    rtDW_LagFilter_FacComputer_T sf_LagFilter_f;
-    rtDW_LagFilter_FacComputer_g_T sf_LagFilter_k;
-    rtDW_LagFilter_FacComputer_T sf_LagFilter_d;
-    rtDW_RateLimiter_FacComputer_T sf_RateLimiter_a;
-    rtDW_RateLimiter_FacComputer_T sf_RateLimiter_n;
-    rtDW_RateLimiter_FacComputer_T sf_RateLimiter_j;
-    rtDW_RateLimiter_FacComputer_T sf_RateLimiter_c;
-    rtDW_RateLimiter_FacComputer_T sf_RateLimiter;
-    rtDW_LagFilter_FacComputer_T sf_LagFilter;
+    rtDW_MATLABFunction_A380FacComputer_f_T sf_MATLABFunction_jf;
+    rtDW_MATLABFunction_A380FacComputer_f_T sf_MATLABFunction_a;
+    rtDW_MATLABFunction_A380FacComputer_f_T sf_MATLABFunction_p;
+    rtDW_RateLimiter_A380FacComputer_d_T sf_RateLimiter_fu;
+    rtDW_RateLimiter_A380FacComputer_d_T sf_RateLimiter_l;
+    rtDW_RateLimiter_A380FacComputer_d_T sf_RateLimiter_p;
+    rtDW_RateLimiter_A380FacComputer_b_T sf_RateLimiter_g0;
+    rtDW_RateLimiter_A380FacComputer_b_T sf_RateLimiter_g;
+    rtDW_RateLimiter_A380FacComputer_b_T sf_RateLimiter_f;
+    rtDW_LagFilter_A380FacComputer_T sf_LagFilter_i;
+    rtDW_LagFilter_A380FacComputer_T sf_LagFilter_c;
+    rtDW_LagFilter_A380FacComputer_g_T sf_LagFilter_d5;
+    rtDW_LagFilter_A380FacComputer_T sf_LagFilter_f;
+    rtDW_LagFilter_A380FacComputer_g_T sf_LagFilter_k;
+    rtDW_LagFilter_A380FacComputer_T sf_LagFilter_d;
+    rtDW_RateLimiter_A380FacComputer_T sf_RateLimiter_a;
+    rtDW_RateLimiter_A380FacComputer_T sf_RateLimiter_n;
+    rtDW_RateLimiter_A380FacComputer_T sf_RateLimiter_j;
+    rtDW_RateLimiter_A380FacComputer_T sf_RateLimiter_c;
+    rtDW_RateLimiter_A380FacComputer_T sf_RateLimiter;
+    rtDW_LagFilter_A380FacComputer_T sf_LagFilter;
   };
 
-  struct ExternalInputs_FacComputer_T {
+  struct ExternalInputs_A380FacComputer_T {
     fac_inputs in;
   };
 
-  struct ExternalOutputs_FacComputer_T {
+  struct ExternalOutputs_A380FacComputer_T {
     fac_outputs out;
   };
 
-  struct Parameters_FacComputer_T {
+  struct Parameters_A380FacComputer_T {
     base_fac_analog_outputs fac_analog_output_MATLABStruct;
     base_fac_laws_outputs fac_laws_output_MATLABStruct;
     base_fac_discrete_outputs fac_discrete_output_MATLABStruct;
@@ -213,21 +213,24 @@ class FacComputer final
     real_T Saturation1_UpperSat_o;
     real_T Saturation1_LowerSat_n;
     real_T Gain_Gain_k;
-    real_T alphafloor_tableData[24];
-    real_T alphafloor_bp01Data[4];
-    real_T alphafloor_bp02Data[6];
-    real_T Gain3_Gain;
-    real_T alpha0_tableData[6];
-    real_T alpha0_bp01Data[6];
     real_T alphamax_tableData[24];
     real_T alphamax_bp01Data[4];
     real_T alphamax_bp02Data[6];
     real_T alphaprotection_tableData[24];
     real_T alphaprotection_bp01Data[4];
     real_T alphaprotection_bp02Data[6];
-    real_T alphastallwarn_tableData[24];
-    real_T alphastallwarn_bp01Data[4];
-    real_T alphastallwarn_bp02Data[6];
+    real_T Gain3_Gain;
+    real_T alpha0_tableData[6];
+    real_T alpha0_bp01Data[6];
+    real_T alphamax_tableData_b[24];
+    real_T alphamax_bp01Data_m[4];
+    real_T alphamax_bp02Data_a[6];
+    real_T alphaprotection_tableData_p[24];
+    real_T alphaprotection_bp01Data_b[4];
+    real_T alphaprotection_bp02Data_m[6];
+    real_T alphamax1_tableData[24];
+    real_T alphamax1_bp01Data[4];
+    real_T alphamax1_bp02Data[6];
     real_T Gain2_Gain_d;
     real_T uDLookupTable1_tableData[96];
     real_T uDLookupTable1_bp01Data[8];
@@ -310,10 +313,11 @@ class FacComputer final
     real32_T Constant21_Value;
     real32_T Constant4_Value_b;
     real32_T Constant26_Value;
-    uint32_T alphafloor_maxIndex[2];
     uint32_T alphamax_maxIndex[2];
     uint32_T alphaprotection_maxIndex[2];
-    uint32_T alphastallwarn_maxIndex[2];
+    uint32_T alphamax_maxIndex_g[2];
+    uint32_T alphaprotection_maxIndex_m[2];
+    uint32_T alphamax1_maxIndex[2];
     uint32_T uDLookupTable1_maxIndex[2];
     uint32_T nDLookupTable_maxIndex[3];
     uint32_T nDLookupTable_dimSizes[3];
@@ -348,55 +352,55 @@ class FacComputer final
     boolean_T Constant19_Value;
   };
 
-  FacComputer(FacComputer const&) = delete;
-  FacComputer& operator= (FacComputer const&) & = delete;
-  FacComputer(FacComputer &&) = delete;
-  FacComputer& operator= (FacComputer &&) = delete;
-  void setExternalInputs(const ExternalInputs_FacComputer_T *pExternalInputs_FacComputer_T)
+  A380FacComputer(A380FacComputer const&) = delete;
+  A380FacComputer& operator= (A380FacComputer const&) & = delete;
+  A380FacComputer(A380FacComputer &&) = delete;
+  A380FacComputer& operator= (A380FacComputer &&) = delete;
+  void setExternalInputs(const ExternalInputs_A380FacComputer_T *pExternalInputs_A380FacComputer_T)
   {
-    FacComputer_U = *pExternalInputs_FacComputer_T;
+    A380FacComputer_U = *pExternalInputs_A380FacComputer_T;
   }
 
-  const ExternalOutputs_FacComputer_T &getExternalOutputs() const
+  const ExternalOutputs_A380FacComputer_T &getExternalOutputs() const
   {
-    return FacComputer_Y;
+    return A380FacComputer_Y;
   }
 
   void initialize();
   void step();
   static void terminate();
-  FacComputer();
-  ~FacComputer();
+  A380FacComputer();
+  ~A380FacComputer();
  private:
-  ExternalInputs_FacComputer_T FacComputer_U;
-  ExternalOutputs_FacComputer_T FacComputer_Y;
-  D_Work_FacComputer_T FacComputer_DWork;
-  static Parameters_FacComputer_T FacComputer_P;
-  static void FacComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void FacComputer_MATLABFunction_g(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
-  static void FacComputer_LagFilter_Reset(rtDW_LagFilter_FacComputer_T *localDW);
-  static void FacComputer_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
-    rtDW_LagFilter_FacComputer_T *localDW);
-  static void FacComputer_RateLimiter_Reset(rtDW_RateLimiter_FacComputer_T *localDW);
-  static void FacComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T rtu_reset,
-    real_T *rty_Y, rtDW_RateLimiter_FacComputer_T *localDW);
-  static void FacComputer_CalculateV_alpha_max(real_T rtu_v_ias, real_T rtu_alpha, real_T rtu_alpha_0, real_T
+  ExternalInputs_A380FacComputer_T A380FacComputer_U;
+  ExternalOutputs_A380FacComputer_T A380FacComputer_Y;
+  D_Work_A380FacComputer_T A380FacComputer_DWork;
+  static Parameters_A380FacComputer_T A380FacComputer_P;
+  static void A380FacComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380FacComputer_MATLABFunction_g(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void A380FacComputer_LagFilter_Reset(rtDW_LagFilter_A380FacComputer_T *localDW);
+  static void A380FacComputer_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
+    rtDW_LagFilter_A380FacComputer_T *localDW);
+  static void A380FacComputer_RateLimiter_Reset(rtDW_RateLimiter_A380FacComputer_T *localDW);
+  static void A380FacComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T rtu_reset,
+    real_T *rty_Y, rtDW_RateLimiter_A380FacComputer_T *localDW);
+  static void A380FacComputer_CalculateV_alpha_max(real_T rtu_v_ias, real_T rtu_alpha, real_T rtu_alpha_0, real_T
     rtu_alpha_target, real_T *rty_V_alpha_target);
-  static void FacComputer_LagFilter_n_Reset(rtDW_LagFilter_FacComputer_g_T *localDW);
-  static void FacComputer_LagFilter_k(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
-    rtDW_LagFilter_FacComputer_g_T *localDW);
-  static void FacComputer_VS1GfromVLS(real_T rtu_vls_conf_0, real_T rtu_vls_conf_other, real_T rtu_flap_handle_index,
+  static void A380FacComputer_LagFilter_c_Reset(rtDW_LagFilter_A380FacComputer_g_T *localDW);
+  static void A380FacComputer_LagFilter_k(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
+    rtDW_LagFilter_A380FacComputer_g_T *localDW);
+  static void A380FacComputer_VS1GfromVLS(real_T rtu_vls_conf_0, real_T rtu_vls_conf_other, real_T rtu_flap_handle_index,
     real_T *rty_vs1g);
-  static void FacComputer_RateLimiter_o_Reset(rtDW_RateLimiter_FacComputer_b_T *localDW);
-  static void FacComputer_RateLimiter_f(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
-    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_FacComputer_b_T *localDW);
-  static void FacComputer_RateLimiter_ot_Reset(rtDW_RateLimiter_FacComputer_d_T *localDW);
-  static void FacComputer_RateLimiter_p(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
-    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_FacComputer_d_T *localDW);
-  static void FacComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FacComputer_f_T *localDW);
-  static void FacComputer_MATLABFunction_p(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
-    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_FacComputer_f_T *localDW);
-  static void FacComputer_MATLABFunction_g3(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void A380FacComputer_RateLimiter_o_Reset(rtDW_RateLimiter_A380FacComputer_b_T *localDW);
+  static void A380FacComputer_RateLimiter_f(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380FacComputer_b_T *localDW);
+  static void A380FacComputer_RateLimiter_h_Reset(rtDW_RateLimiter_A380FacComputer_d_T *localDW);
+  static void A380FacComputer_RateLimiter_p(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380FacComputer_d_T *localDW);
+  static void A380FacComputer_MATLABFunction_pm_Reset(rtDW_MATLABFunction_A380FacComputer_f_T *localDW);
+  static void A380FacComputer_MATLABFunction_p(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380FacComputer_f_T *localDW);
+  static void A380FacComputer_MATLABFunction_g3(const boolean_T rtu_u[19], real32_T *rty_y);
 };
 
 #endif
