@@ -49,16 +49,15 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   }
   Arinc429SignStatus ssm = allPrimsDead ? Arinc429SignStatus::FailureWarning : Arinc429SignStatus::NormalOperation;
 
-  LateralLaw systemLateralLaw = allPrimsDead == true
+  LateralLaw systemLateralLaw = allPrimsDead
                                     ? LateralLaw::DirectLaw
                                     : getLateralLawStatusFromBits(bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 19),
                                                                   bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 20));
 
-  PitchLaw systemPitchLaw = allPrimsDead == true
-                                ? PitchLaw::DirectLaw
-                                : getPitchLawStatusFromBits(bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 16),
-                                                            bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 17),
-                                                            bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 18));
+  PitchLaw systemPitchLaw = allPrimsDead ? PitchLaw::DirectLaw
+                                         : getPitchLawStatusFromBits(bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 16),
+                                                                     bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 17),
+                                                                     bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 18));
 
   output.efcsStatus1.setData(0);
   output.efcsStatus1.setSsm(Arinc429SignStatus::NormalOperation);
