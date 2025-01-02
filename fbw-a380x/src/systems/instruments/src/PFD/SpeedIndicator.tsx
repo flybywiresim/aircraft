@@ -1469,7 +1469,7 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
 
   private handleVProtBugDisplay() {
     const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
-    const offset = (-(this.Vmax.value + 6) * DistanceSpacing) / ValueSpacing;
+    const offset = (-(this.Vmax.value + 10) * DistanceSpacing) / ValueSpacing;
 
     const isNormalLawActive = this.fcdcWord1.bitValue(11) && !this.fcdcWord1.isFailureWarning();
 
