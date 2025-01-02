@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Arinc429.h"
 #include "../Arinc429Utils.h"
 #include "../model/A380PrimComputer.h"
 
@@ -42,4 +43,6 @@ class Fcdc {
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
+
+  const bool isUnit1;
 };

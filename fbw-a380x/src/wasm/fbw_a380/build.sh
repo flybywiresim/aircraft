@@ -101,6 +101,8 @@ clang++ \
   "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
+  -I "${DIR}/src/fcdc" \
+  "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
   "${DIR}/src/utils/SRFlipFLop.cpp" \

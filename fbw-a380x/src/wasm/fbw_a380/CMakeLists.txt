@@ -43,6 +43,7 @@ add_executable(flybywire-a380x-fbw
     src/SpoilersHandler.cpp
     src/fac/Fac.cpp
     src/failures/FailuresConsumer.cpp
+    src/fcdc/Fcdc.cpp
     src/interface/SimConnectInterface.cpp
     src/model/A380FacComputer_data.cpp
     src/model/A380FacComputer.cpp
