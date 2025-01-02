@@ -151,8 +151,17 @@ export class FlightManagementComputer implements FmcInterface {
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
 
-  private readonly flightPhase = ConsumerSubject.create<FmgcFlightPhase>(null, this.flightPhaseManager.phase);
-  private readonly activePage = ConsumerSubject.create<ActiveUriInformation | null>(null, null);
+  private readonly sub = this.bus.getSubscriber<FlightPhaseManagerEvents & MfdUIData>();
+
+  private readonly flightPhase = ConsumerSubject.create<FmgcFlightPhase>(
+    this.sub.on('fmgc_flight_phase'),
+    this.flightPhaseManager.phase,
+  );
+  private readonly activePage = ConsumerSubject.create<ActiveUriInformation | null>(
+    this.sub.on('mfd_active_uri'),
+    null,
+  );
+
   private readonly isReset = Subject.create(true);
 
   private readonly shouldBePreflightPhase = MappedSubject.create(
@@ -244,10 +253,6 @@ export class FlightManagementComputer implements FmcInterface {
       this.initSimVars();
 
       this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
-
-      const sub = this.bus.getSubscriber<FlightPhaseManagerEvents & MfdUIData>();
-      this.flightPhase.setConsumer(sub.on('fmgc_flight_phase'));
-      this.activePage.setConsumer(sub.on('mfd_active_uri'));
 
       this.shouldBePreflightPhase.sub((shouldBePreflight) => {
         if (shouldBePreflight) {
