@@ -7,9 +7,10 @@
 // TODO: Weight interpolation is different for the two CG extremes, one formula might be too inaccurate.
 
 import { Feet, Knots } from 'msfs-geo';
-import { VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
+import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export enum ApproachConf {
   CONF_1 = 1,
@@ -386,6 +387,31 @@ function getdiffAngle(a: number, b: number): number {
   return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
+/**
+ * Convert degrees Celsius into Kelvin
+ * @param T degrees Celsius
+ * @returns degrees Kelvin
+ */
+function convertCtoK(T: number): number {
+  return T + 273.15;
+}
+
+/**
+ * Get correct Vmax for Vmo and Mmo in knots
+ * @returns Min(Vmo, Mmo)
+ * @private
+ */
+function getVmo() {
+  return Math.min(
+    Vmo,
+    MathUtils.convertMachToKCas(
+      Mmo,
+      convertCtoK(Simplane.getAmbientTemperature()),
+      SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
+    ),
+  );
+}
+
 export class A380OperatingSpeeds {
   public vs1g: number;
 
@@ -430,7 +456,7 @@ export class A380OperatingSpeeds {
 
     if (fPos === 0) {
       this.vls = SpeedsLookupTables.VLS_CONF_0.get(altitude, m);
-      this.vmax = Vmo;
+      this.vmax = getVmo();
       this.vfeN = vfeFS[1];
     } else if (fPos === 1 && calibratedAirSpeed > 212) {
       this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1, cg, m);
