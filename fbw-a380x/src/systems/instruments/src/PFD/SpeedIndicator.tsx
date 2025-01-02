@@ -1493,6 +1493,15 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
 
         this.handleVProtBugDisplay();
       });
+    
+    sub
+      .on('fcdcDiscreteWord1')
+      .whenChanged()
+      .handle((dw) => {
+        this.fcdcWord1 = dw;
+
+        this.handleVProtBugDisplay();
+      });
   }
 
   render(): VNode {
