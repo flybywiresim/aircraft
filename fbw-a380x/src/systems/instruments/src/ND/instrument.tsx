@@ -244,7 +244,7 @@ class NDInstrument implements FsInstrument {
       <div ref={this.topRef}>
         <CdsDisplayUnit
           bus={this.bus}
-          displayUnitId={DisplayUnitID.CaptNd}
+          displayUnitId={getDisplayIndex() === 1 ? DisplayUnitID.CaptNd : DisplayUnitID.FoNd}
           test={Subject.create(-1)}
           failed={Subject.create(false)}
         >
