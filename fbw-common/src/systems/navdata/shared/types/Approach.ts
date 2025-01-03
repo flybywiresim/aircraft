@@ -60,6 +60,11 @@ export interface Approach extends DatabaseItem<SectionCode.Airport> {
   authorisationRequired: boolean;
 
   /**
+   * RNP-AR missed approach?
+   */
+  missedApproachAuthorisationRequired: boolean;
+
+  /**
    * SBAS level of service authorised bitfield
    * not available for all backends
    */

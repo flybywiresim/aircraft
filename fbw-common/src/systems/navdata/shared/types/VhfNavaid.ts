@@ -18,6 +18,8 @@ export interface VhfNavaid extends BaseFix<SectionCode.Navaid> {
    * Beware: this is NOT the same as magnetic variation
    */
   stationDeclination: Degrees;
+  /** Whether the station is true referenced (implies {@link stationDeclination} is 0 as well). */
+  trueReferenced?: boolean;
   dmeLocation?: Coordinates & { alt?: Feet };
   type: VhfNavaidType;
   class?: VorClass;
