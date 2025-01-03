@@ -91,19 +91,16 @@ impl A380DirectCurrentElectrical {
             tr_1: BatteryChargeRectifierUnit::new(
                 context,
                 1,
-                ElectricalBusType::DirectCurrent(1),
                 ElectricalBusType::DirectCurrentHot(1),
             ),
             tr_2: BatteryChargeRectifierUnit::new(
                 context,
                 2,
-                ElectricalBusType::DirectCurrent(2),
                 ElectricalBusType::DirectCurrentHot(2),
             ),
             tr_ess: BatteryChargeRectifierUnit::new(
                 context,
                 3,
-                ElectricalBusType::DirectCurrentEssential,
                 ElectricalBusType::DirectCurrentHot(3),
             ),
             tr_1_contactor: Contactor::new(context, "990PU1"),
@@ -214,7 +211,7 @@ impl A380DirectCurrentElectrical {
             && !self.tr_1.battery_nearly_empty()
             && !ac_state.any_non_essential_bus_powered(electricity)
             || rat.should_deploy();
-        self.tr_1.update(electricity, should_close_elc, false);
+        self.tr_1.update(should_close_elc);
         self.battery_1_contactor
             .close_when(self.tr_1.should_close_battery_connector());
         self.battery_1_emergency_contactor
@@ -226,20 +223,27 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.battery_1_emergency_contactor, &self.dc_ess_bus);
 
         electricity.supplied_by(&self.battery_2);
-        self.tr_2.update(electricity, false, false);
+        self.tr_2.update(false);
         self.battery_2_contactor
             .close_when(self.tr_2.should_close_battery_connector());
         electricity.flow(&self.battery_2_contactor, &self.battery_2);
         electricity.flow(&self.hot_bus_2, &self.battery_2);
         electricity.flow(&self.battery_2_contactor, &self.dc_bus_2);
 
+        // TODO: should not close when battery failed (signal from BCRU)
+        // TODO: complete logic
+        let should_close_ess_bat_lc = overhead.bat_is_auto(1)
+            && overhead.bat_is_auto(3)
+            && !self.tr_ess.battery_nearly_empty()
+            && !ac_state.any_non_essential_bus_powered(electricity)
+            || rat.should_deploy();
         let emergency_config = !electricity.is_powered(&self.dc_bus_1)
             && emergency_config.is_active()
             || rat.should_deploy();
         electricity.supplied_by(&self.battery_ess);
-        self.tr_ess.update(electricity, false, emergency_config);
+        self.tr_ess.update(emergency_config);
         self.battery_ess_contactor
-            .close_when(self.tr_ess.should_close_battery_connector());
+            .close_when(self.tr_ess.should_close_battery_connector() || should_close_ess_bat_lc);
         electricity.flow(&self.battery_ess_contactor, &self.battery_ess);
         electricity.flow(&self.hot_bus_ess, &self.battery_ess);
         electricity.flow(&self.battery_ess_contactor, &self.dc_ess_bus);
