@@ -65,7 +65,7 @@ export enum InteractionMode {
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
-  #uiService = new MfdUiService(this.props.captOrFo);
+  #uiService = new MfdUiService(this.props.captOrFo, this.props.bus);
 
   get uiService() {
     return this.#uiService;
