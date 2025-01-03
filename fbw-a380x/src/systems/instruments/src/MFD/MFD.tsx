@@ -14,7 +14,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 
@@ -55,6 +55,8 @@ export interface MfdDisplayInterface {
   interactionMode: Subscribable<InteractionMode>;
 
   openMessageList(): void;
+
+  positionMonitorFix: Fix | null;
 }
 
 export enum InteractionMode {
@@ -70,6 +72,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
   get uiService() {
     return this.#uiService;
   }
+
+  public positionMonitorFix: Fix | null = null;
 
   public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
