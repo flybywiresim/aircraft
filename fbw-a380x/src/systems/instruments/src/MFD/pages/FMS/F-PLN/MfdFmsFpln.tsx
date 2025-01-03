@@ -1446,7 +1446,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       } else if (!isBelowTransAlt) {
         altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
       } else {
-        altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
+        const roundedAltitude = Math.round(data.altitudePrediction / 10) * 10;
+        altStr = <span>{roundedAltitude}</span>;
       }
     }
     if (data.hasAltitudeConstraint && data.altitudePrediction) {

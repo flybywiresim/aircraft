@@ -110,8 +110,8 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
-
 1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
+1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 
 ## 0.12.0
 
