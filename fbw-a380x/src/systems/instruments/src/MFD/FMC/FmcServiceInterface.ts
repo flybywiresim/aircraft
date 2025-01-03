@@ -1,4 +1,4 @@
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 
@@ -30,7 +30,7 @@ export interface FmcServiceInterface {
   /**
    * Instantiate FMCs. Currently, only FMC-A is instantiated.
    */
-  createFmc(mfdReference: DisplayInterface & MfdDisplayInterface): void;
+  createFmc(mfdReference: FmsDisplayInterface & MfdDisplayInterface): void;
 
   /**
    * Check whether given FMC is instantiated
@@ -45,5 +45,5 @@ export interface FmcServiceInterface {
   /**
    * Sets mfd reference for given FMC, used for navigating to pages and opening prompts
    */
-  setMfdReference(forFmcIndex: FmcIndex, mfd: DisplayInterface & MfdDisplayInterface): void;
+  setMfdReference(forFmcIndex: FmcIndex, mfd: FmsDisplayInterface & MfdDisplayInterface): void;
 }

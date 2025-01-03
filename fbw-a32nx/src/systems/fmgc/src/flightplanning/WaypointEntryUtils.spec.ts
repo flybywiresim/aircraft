@@ -7,16 +7,16 @@ import { jest } from '@jest/globals';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/test/Database';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { Coordinates, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
-import { DataInterface } from './interface/DataInterface';
+import { FmsDataInterface } from './interface/FmsDataInterface';
 
 jest.setTimeout(120_000);
 
-const fms: DisplayInterface & DataInterface = {
+const fms: FmsDisplayInterface & FmsDataInterface = {
     showFmsErrorMessage(errorType: FmsErrorType) {
         console.error(FmsErrorType[errorType]);
     },

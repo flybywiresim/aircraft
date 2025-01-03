@@ -6,7 +6,7 @@
 import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
 
-export interface DisplayInterface {
+export interface FmsDisplayInterface {
   /**
    * Called when a flight plan uplink is in progress
    */
