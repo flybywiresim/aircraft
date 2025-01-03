@@ -8,7 +8,7 @@ import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightP
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
-import { Coordinates, Degrees, placeBearingDistance } from 'msfs-geo';
+import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
@@ -176,40 +176,40 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     let turningPoint: FlightPlanLeg = undefined;
     let turnEnd: FlightPlanLeg = undefined;
+    let legsToInsert = [];
 
     if (isDirectWithCourseIn(directTo)) {
-      const radialMagVar = A32NX_Util.getRadialMagVar(terminationWaypoint);
-      const trueOutboundCourse = A32NX_Util.magneticToTrue(directTo.courseIn, radialMagVar);
-      const location = placeBearingDistance(
-        terminationWaypoint.location,
-        trueOutboundCourse,
-        IN_BND_OUT_BND_DISTANCE_NM,
-      );
       const magneticInboundCourse = MathUtils.normalise360(directTo.courseIn + 180);
 
-      turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, 'IN-BND', location, magneticInboundCourse);
-      turnEnd = FlightPlanLeg.radialInLeg(this.enrouteSegment, terminationWaypoint, magneticInboundCourse);
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, 'IN-BND', ppos);
       turningPoint.flags |= FlightPlanLegFlags.DirectToInBound;
+
+      turnEnd = FlightPlanLeg.radialInLeg(this.enrouteSegment, terminationWaypoint, magneticInboundCourse);
+
+      legsToInsert = [turningPoint, turnEnd];
     } else if (isDirectWithCourseOut(directTo)) {
-      const location = placeBearingDistance(
-        terminationWaypoint.location,
-        directTo.courseOut,
-        IN_BND_OUT_BND_DISTANCE_NM,
-      );
-      turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, 'OUT-BND', location, directTo.courseOut);
+      const magneticOutboundCourse = MathUtils.normalise360(directTo.courseOut + 180);
+
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, 'OUT-BND', ppos);
       turningPoint.flags |= FlightPlanLegFlags.DirectToOutBound;
-      turnEnd = FlightPlanLeg.radialOutLeg(this.enrouteSegment, terminationWaypoint, directTo.courseOut);
+
+      turnEnd = FlightPlanLeg.radialOutLeg(this.enrouteSegment, terminationWaypoint);
+      const manual = FlightPlanLeg.manual(this.enrouteSegment, terminationWaypoint, magneticOutboundCourse);
+
+      legsToInsert = [turningPoint, turnEnd, manual];
     } else {
       const magVar = MagVar.get(ppos.lat, ppos.long);
       const aircraftMagneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
-      turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, 'T-P', ppos, aircraftMagneticCourse);
+      turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, aircraftMagneticCourse);
       turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
       turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, terminationWaypoint);
 
-      if (this.index === FlightPlanIndex.Temporary) {
-        turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
-      }
+      legsToInsert = [turningPoint, turnEnd];
+    }
+
+    if (this.index === FlightPlanIndex.Temporary) {
+      turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
     }
 
     if (!isToNonFlightPlanWaypoint) {
@@ -233,19 +233,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
     }
 
-    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
+    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, ...legsToInsert);
     this.incrementVersion();
 
     // In case of radial out, insert a discontinuity after the turn end
     // In case of direct to random waypoint, insert a discontinuity after the turn end
     const shouldInsertDiscontinuityAfterTurnEnd = isDirectWithCourseOut(directTo) || isToNonFlightPlanWaypoint;
 
-    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === legsToInsert[legsToInsert.length - 1]);
     if (
       shouldInsertDiscontinuityAfterTurnEnd &&
       this.maybeElementAt(turnEndLegIndexInPlan + 1)?.isDiscontinuity === false
     ) {
-      this.enrouteSegment.allLegs.splice(2, 0, { isDiscontinuity: true });
+      this.enrouteSegment.allLegs.splice(legsToInsert.length, 0, { isDiscontinuity: true });
       this.syncSegmentLegsChange(this.enrouteSegment);
       this.incrementVersion();
 
@@ -689,5 +689,3 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return false;
   }
 }
-
-const IN_BND_OUT_BND_DISTANCE_NM = 512;

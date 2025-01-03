@@ -15,7 +15,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
-import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
+import { procedureLegIdentAndAnnotation, T_P_IDENT } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
@@ -351,20 +351,30 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
-  static turningPoint(
-    segment: EnrouteSegment,
-    ident: 'T-P' | 'IN-BND' | 'OUT-BND',
-    location: Coordinates,
-    magneticCourse: DegreesMagnetic,
-  ): FlightPlanLeg {
+  static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
         procedureIdent: '',
         type: LegType.CF,
         overfly: false,
-        waypoint: WaypointFactory.fromLocation(ident, location),
+        waypoint: WaypointFactory.fromLocation(T_P_IDENT, location),
         magneticCourse,
+      },
+      T_P_IDENT,
+      '',
+      undefined,
+    );
+  }
+
+  static ppos(segment: EnrouteSegment, ident: 'PPOS' | 'IN-BND' | 'OUT-BND', ppos: Coordinates): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.IF,
+        overfly: false,
+        waypoint: WaypointFactory.fromLocation(ident, ppos),
       },
       ident,
       '',
@@ -396,6 +406,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint,
         magneticCourse: inboundCourse,
+        length: IN_BND_DISTANCE_NM,
       },
       waypoint.ident,
       '',
@@ -403,7 +414,22 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static radialOutLeg(segment: EnrouteSegment, waypoint: Fix, outboundCourse: DegreesMagnetic): FlightPlanLeg {
+  static radialOutLeg(segment: EnrouteSegment, waypoint: Fix): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.IF,
+        overfly: false,
+        waypoint,
+      },
+      waypoint.ident,
+      '',
+      undefined,
+    );
+  }
+
+  static manual(segment: EnrouteSegment, waypoint: Fix, magneticCourse: number): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -411,7 +437,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.FM,
         overfly: false,
         waypoint,
-        magneticCourse: outboundCourse,
+        magneticCourse,
       },
       'MANUAL',
       '',
@@ -571,3 +597,5 @@ export type FlightPlanElement = FlightPlanLeg | Discontinuity;
 export function isDiscontinuity(o: any): o is Discontinuity {
   return typeof o === 'object' && o.isDiscontinuity === true;
 }
+
+const IN_BND_DISTANCE_NM = 512;

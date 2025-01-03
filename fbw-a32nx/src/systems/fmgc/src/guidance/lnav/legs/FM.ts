@@ -6,19 +6,19 @@
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
 import { fixToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
+import { FXLeg } from '@fmgc/guidance/lnav/legs/FX';
 
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
  */
 const FM_LEG_SIZE = 512;
 
-export class FMLeg extends Leg {
+export class FMLeg extends FXLeg {
   predictedPath: PathVector[] = [];
 
   /**

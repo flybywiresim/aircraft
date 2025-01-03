@@ -11,6 +11,7 @@ import { distanceTo, smallCircleGreatCircleIntersection, placeBearingIntersectio
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { FXLeg } from '@fmgc/guidance/lnav/legs/FX';
 
 export class Geo {
   static computeDestinationPoint(
@@ -83,8 +84,10 @@ export class Geo {
     const intersections1 = placeBearingIntersection(
       from,
       MathUtils.normalise360(bearing),
-      leg instanceof XFLeg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
-      MathUtils.normalise360(leg.outboundCourse - 180),
+      leg instanceof XFLeg || leg instanceof FXLeg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
+      leg instanceof FXLeg
+        ? MathUtils.normalise360(leg.outboundCourse)
+        : MathUtils.normalise360(leg.outboundCourse - 180),
     );
 
     const d1 = distanceTo(from, intersections1[0]);
