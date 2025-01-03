@@ -1077,12 +1077,11 @@ export class MsfsMapping {
 
     const rnp = leg.rnp !== undefined ? (leg.rnp > 0 ? leg.rnp / 1852 : undefined) : fallbackRnp;
 
+    // speedRestrictionType is currently bugged, so ignore it for now until fixed.
     const speedDescriptor =
-      leg.speedRestrictionType !== undefined
+      /*leg.speedRestrictionType !== undefined
         ? this.mapSpeedDescriptor(leg.speedRestrictionType)
-        : leg.speedRestriction > 0
-          ? SpeedDescriptor.Maximum
-          : undefined;
+        :*/ leg.speedRestriction > 0 ? SpeedDescriptor.Maximum : undefined;
 
     // TODO for approach, pass approach type to mapMsAltDesc
     return {
