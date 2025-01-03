@@ -125,7 +125,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
 
     const directToInTmpy =
-      tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
+      tmpyFromLeg?.isDiscontinuity === false &&
+      BitFlags.isAny(
+        tmpyFromLeg.flags,
+        FlightPlanLegFlags.DirectToTurningPoint |
+          FlightPlanLegFlags.DirectToInBound |
+          FlightPlanLegFlags.DirectToOutBound,
+      );
 
     const directToBeingInserted =
       directToInTmpy && BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.PendingDirectToTurningPoint);
