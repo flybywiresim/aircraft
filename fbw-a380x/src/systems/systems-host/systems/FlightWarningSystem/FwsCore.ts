@@ -1126,6 +1126,8 @@ export class FwsCore {
 
   public readonly shutDownFor50MinutesCheckListReset = Subject.create(false);
 
+  public readonly flightPhase12Entered = Subject.create(false);
+
   /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
   public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
 
@@ -1536,7 +1538,33 @@ export class FwsCore {
 
     this.startupCompleted.sub((v) => {
       if (v) {
-        this.turnaroundReset();
+        this.normalChecklists.reset(null);
+        this.abnormalNonSensed.reset();
+        this.activeDeferredProceduresList.clear();
+        this.abnormalSensed.reset();
+        this.activeAbnormalProceduresList.clear();
+        this.allCurrentFailures.length = 0;
+        this.presentedFailures.length = 0;
+        this.recallFailures.length = 0;
+      }
+    });
+
+    // Not a lot of references on which parts of the FWS to reset when
+    this.shutDownFor50MinutesCheckListReset.sub((v) => {
+      if (v) {
+        this.normalChecklists.reset(null);
+        this.abnormalNonSensed.reset();
+        this.activeDeferredProceduresList.clear();
+      }
+    });
+
+    this.flightPhase12Entered.sub((v) => {
+      if (v) {
+        this.abnormalSensed.reset();
+        this.activeAbnormalProceduresList.clear();
+        this.allCurrentFailures.length = 0;
+        this.presentedFailures.length = 0;
+        this.recallFailures.length = 0;
       }
     });
 
@@ -1946,6 +1974,7 @@ export class FwsCore {
     this.phase112.set(flightPhase112);
 
     this.phase12ShutdownMemoryNode.write(this.flightPhase.get() == 12, !this.phase112.get());
+    this.flightPhase12Entered.set(this.flightPhase.get() === 12);
 
     this.shutDownFor50MinutesCheckListReset.set(
       this.shutDownFor50MinutesClResetConfNode.write(
@@ -1953,10 +1982,6 @@ export class FwsCore {
         deltaTime,
       ),
     );
-
-    if (this.phase12ShutdownMemoryNode.read()) {
-      this.turnaroundReset();
-    }
 
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
@@ -4473,19 +4498,5 @@ export class FwsCore {
       default:
         return 10;
     }
-  }
-
-  turnaroundReset() {
-    // Reset some parts during turnaround
-    // Resets normal checklists, resets state of abnormal sensed procedures, deactivation of deferred procedures and abormal non-sensed procedures
-    this.normalChecklists.reset(null);
-    this.abnormalNonSensed.reset();
-    this.abnormalSensed.reset();
-
-    this.activeDeferredProceduresList.clear();
-    this.activeAbnormalProceduresList.clear();
-    this.allCurrentFailures.length = 0;
-    this.presentedFailures.length = 0;
-    this.recallFailures.length = 0;
   }
 }
