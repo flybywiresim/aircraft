@@ -107,13 +107,13 @@ class Logger {
   Logger(Logger const&&)            = delete;  // move
   Logger& operator=(const Logger&&) = delete;  // move assignment
 
-  void critical(const std::string& msg) { fmt::print(stderr, "critical: {}\n", msg); }
-  void error(const std::string& msg) { fmt::print(stderr, "error: {}\n", msg); }
-  void warn(const std::string& msg) { fmt::print(stderr, "warn: {}\n", msg); }
-  void info(const std::string& msg) { fmt::print("info: {}\n", msg); }
-  void debug(const std::string& msg) { fmt::print("debug: {}\n", msg); }
-  void verbose(const std::string& msg) { fmt::print("verbose: {}\n", msg); }
-  void trace(const std::string& msg) { fmt::print("trace: {}\n", msg); }
+  static void critical(const std::string& msg) { fmt::print(stderr, "critical: {}\n", msg); }
+  static void error(const std::string& msg) { fmt::print(stderr, "error: {}\n", msg); }
+  static void warn(const std::string& msg) { fmt::print(stderr, "warn: {}\n", msg); }
+  static void info(const std::string& msg) { fmt::print("info: {}\n", msg); }
+  static void debug(const std::string& msg) { fmt::print("debug: {}\n", msg); }
+  static void verbose(const std::string& msg) { fmt::print("verbose: {}\n", msg); }
+  static void trace(const std::string& msg) { fmt::print("trace: {}\n", msg); }
 };
 
 inline Logger* logger = Logger::instance();
