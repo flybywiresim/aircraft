@@ -1482,6 +1482,10 @@ export class FwsCore {
 
   public readonly eng3Or4TakeoffPower = Subject.create(false);
 
+  /** 42 AVIONICS NETWORK */
+  public readonly cpiomC1Available = Subject.create(false);
+  public readonly cpiomC2Available = Subject.create(false);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -1531,12 +1535,6 @@ export class FwsCore {
     );
 
     this.startupCompleted.sub((v) => {
-      if (v) {
-        this.turnaroundReset();
-      }
-    });
-
-    this.shutDownFor50MinutesCheckListReset.sub((v) => {
       if (v) {
         this.turnaroundReset();
       }
@@ -1905,9 +1903,7 @@ export class FwsCore {
       !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
-    this.fwsEcpFailed.set(
-      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcESSBusPowered.get() || ecpNotReachable,
-    );
+    this.fwsEcpFailed.set(this.failuresConsumer.isActive(A380Failure.FwsEcp) || ecpNotReachable);
 
     // Update flight phases
     this.flightPhases.update(deltaTime);
@@ -1957,6 +1953,10 @@ export class FwsCore {
         deltaTime,
       ),
     );
+
+    if (this.phase12ShutdownMemoryNode.read()) {
+      this.turnaroundReset();
+    }
 
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
@@ -3764,6 +3764,10 @@ export class FwsCore {
     this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool'));
 
     this.fireTestPb.set(SimVar.GetSimVarValue('L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED', 'bool'));
+
+    /* 42 AVIONICS NETWORK */
+    this.cpiomC1Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
+    this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
 
     /* ANTI ICE */
 

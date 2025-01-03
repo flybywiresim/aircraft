@@ -2900,10 +2900,14 @@ export class FwsAbnormalSensed {
     314800008: {
       // FWS 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.fws1Failed,
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.fws1Failed,
+        this.fws.dcESSBusPowered,
+      ),
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      notActiveWhenFaults: ['314800004'],
+      notActiveWhenFaults: ['314800002', '314800003', '314800004'],
       failure: 1,
       sysPage: -1,
       info: () => ['220200005'],
@@ -2912,10 +2916,10 @@ export class FwsAbnormalSensed {
     314800009: {
       // FWS 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.fws2Failed,
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.fws2Failed, this.fws.dc2BusPowered),
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      notActiveWhenFaults: ['314800004'],
+      notActiveWhenFaults: ['314800002', '314800003', '314800004'],
       failure: 1,
       sysPage: -1,
       info: () => ['220200005'],
