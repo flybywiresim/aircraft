@@ -11,7 +11,8 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -539,5 +540,30 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mF/CTL\x1bm T.O FLAPS / FMS DISAGREE',
     sensed: true,
     items: [],
+  },
+  270900001: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900002: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900003: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900004: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900005: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
+    sensed: false,
+    items: [], // TODO
   },
 };

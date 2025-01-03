@@ -9,16 +9,23 @@ import {
   SubscribableMapEventType,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
-import { NormalProcedure, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-
-export type ChecklistState = {
-  id: number;
-  checklistCompleted: boolean;
-  itemsCompleted: boolean[];
-};
+import {
+  deferredProcedureIds,
+  EcamNormalProcedures,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
+import {
+  DeferredProcedureType,
+  EcamDeferredProcedures,
+  NormalProcedure,
+  WD_NUM_LINES,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  ProcedureLinesGenerator,
+  ProcedureType,
+  SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 
 export interface NormalEclSensedItems {
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed. If null, it's a non-sensed item */
@@ -31,7 +38,9 @@ export interface FwsNormalChecklistsDict {
 export class FwsNormalChecklists {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  public readonly showChecklist = Subject.create(false);
+  public readonly checklistShown = Subject.create(false);
+
+  public readonly showChecklistRequested = Subject.create(false);
 
   /** ID of checklist or 0 for overview */
   public readonly checklistId = Subject.create(0);
@@ -44,8 +53,23 @@ export class FwsNormalChecklists {
 
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
+  /** ALL PHASES, TOP OF DESCENT, FOR APPROACH, FOR LANDING */
+  private readonly hasDeferred = [false, false, false, false];
+
+  /** ALL PHASES, TOP OF DESCENT, FOR APPROACH, FOR LANDING */
+  private readonly deferredIsCompleted = [false, false, false, false];
+
+  /** ID of active deferred procedure. null means no procedure is selected, but CLEAR at the end of the page is */
+  public readonly activeDeferredProcedureId = Subject.create<string | null>(null);
+
+  /** IDs of all visible deferred procedures. */
+  public visibleDeferredProcedureKeys: string[] = [];
+
+  private deferredProcedures: ProcedureLinesGenerator[] = [];
+
+  private activeProcedure: ProcedureLinesGenerator;
+
   constructor(private fws: FwsCore) {
-    this.showChecklist.sub((v) => this.pub.pub('fws_show_normal_checklists', v, true), true);
     this.checklistState.sub(
       (
         map: ReadonlyMap<number, ChecklistState>,
@@ -55,25 +79,119 @@ export class FwsNormalChecklists {
       ) => {
         const flattened: ChecklistState[] = [];
         map.forEach((val, key) =>
-          flattened.push({ id: key, checklistCompleted: val.checklistCompleted, itemsCompleted: val.itemsCompleted }),
+          flattened.push({
+            id: key.toString(),
+            procedureCompleted: val.procedureCompleted,
+            procedureActivated: val.procedureActivated,
+            itemsChecked: val.itemsChecked,
+            itemsActive: val.itemsActive,
+            itemsToShow: val.itemsToShow,
+          }),
         );
         this.pub.pub('fws_normal_checklists', flattened, true);
       },
       true,
     );
-    this.checklistId.sub((id) => this.pub.pub('fws_normal_checklists_id', id, true), true);
-    this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line + 1, true), true); // Start at second line, headline not selectable
-    this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
+    this.checklistId.sub((id) => {
+      if (id !== 0 && !deferredProcedureIds.includes(id)) {
+        const clState = this.checklistState.getValue(id);
+        const procGen = new ProcedureLinesGenerator(
+          clState.id,
+          Subject.create(true),
+          ProcedureType.Normal,
+          clState,
+          (newState) => {
+            this.checklistState.setValue(this.checklistId.get(), newState);
+          },
+          (newState) => {
+            this.checklistState.setValue(this.checklistId.get(), newState);
+            this.reset(this.getNormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get()));
+          },
+          (newState) => {
+            this.checklistState.setValue(this.checklistId.get(), newState);
+            this.showChecklistRequested.set(false);
+          },
+        );
+        this.activeProcedure = procGen;
+        this.activeProcedure.selectedItemIndex.pipe(this.selectedLine);
+      } else if (deferredProcedureIds.includes(id)) {
+        this.deferredProcedures = [];
 
-    this.fws.startupCompleted.sub((v) => {
-      if (v) {
-        this.reset(null);
+        const currentDeferredType =
+          deferredProcedureIds.indexOf(id) !== -1 ? (deferredProcedureIds.indexOf(id) as DeferredProcedureType) : null;
+        this.visibleDeferredProcedureKeys = Array.from(this.fws.activeDeferredProceduresList.get().values())
+          .filter((v) => currentDeferredType !== null && EcamDeferredProcedures[v.id].type === currentDeferredType)
+          .map((v) => v.id);
+
+        if (this.visibleDeferredProcedureKeys.length === 0) {
+          this.activeDeferredProcedureId.set(null);
+          return;
+        }
+        const firstProcedureKey = this.visibleDeferredProcedureKeys[0];
+        this.activeDeferredProcedureId.set(firstProcedureKey);
+        this.visibleDeferredProcedureKeys.forEach((key) => {
+          const proc = this.fws.activeDeferredProceduresList.getValue(key);
+          const procGen = new ProcedureLinesGenerator(
+            proc.id,
+            this.activeDeferredProcedureId.map((id) => id === proc.id),
+            ProcedureType.Deferred,
+            proc,
+            (newState) => {
+              this.fws.activeDeferredProceduresList.setValue(key, newState);
+            },
+            (newState) => {
+              // Handle procedure activation/deactivation
+              const deferredItemsActive = this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsActive
+                ? this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsActive()
+                : Array(this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsChecked().length).fill(
+                    newState.procedureActivated,
+                  );
+              newState.itemsActive = deferredItemsActive;
+              this.fws.activeDeferredProceduresList.setValue(key, newState);
+            },
+            (newState) => {
+              this.fws.activeDeferredProceduresList.setValue(key, newState);
+            },
+          );
+          this.deferredProcedures.push(procGen);
+        });
+
+        this.activeProcedure = this.deferredProcedures[0];
+        this.activeProcedure.selectedItemIndex.pipe(this.selectedLine);
       }
-    });
+      this.pub.pub('fws_normal_checklists_id', id, true);
+    }, true);
 
-    this.fws.shutDownFor50MinutesCheckListReset.sub((v) => {
-      if (v) {
-        this.reset(null);
+    this.fws.activeDeferredProceduresList.sub(
+      (
+        map: ReadonlyMap<string, ChecklistState>,
+        _type: SubscribableMapEventType,
+        _key: string,
+        _value: ChecklistState,
+      ) => {
+        const flattened: ChecklistState[] = [];
+        map.forEach((val, key) =>
+          flattened.push({
+            id: key,
+            procedureCompleted: val.procedureCompleted,
+            procedureActivated: val.procedureActivated,
+            itemsChecked: val.itemsChecked,
+            itemsActive: val.itemsActive,
+            itemsToShow: val.itemsToShow,
+          }),
+        );
+        this.pub.pub('fws_deferred_procedures', flattened, true);
+      },
+      true,
+    );
+
+    this.activeDeferredProcedureId.sub((id) => {
+      if (id !== null && this.deferredProcedures.find((v) => v.procedureId === id)) {
+        this.activeProcedure = this.deferredProcedures.find((v) => v.procedureId === id);
+        this.activeProcedure.selectedItemIndex.pipe(this.selectedLine);
+        this.activeProcedure.selectFirst();
+      } else if (id === null) {
+        this.selectedLine.set(SPECIAL_INDEX_DEFERRED_PAGE_CLEAR);
       }
     });
 
@@ -98,135 +216,129 @@ export class FwsNormalChecklists {
     keys.forEach((k) => {
       const proc = EcamNormalProcedures[k] as NormalProcedure;
       this.checklistState.setValue(k, {
-        id: k,
-        checklistCompleted: proc.deferred ? true : false,
-        itemsCompleted: Array(proc.items.length).fill(false),
+        id: k.toString(),
+        procedureCompleted: proc.onlyActivatedByRequest ? true : false,
+        procedureActivated: true,
+        itemsChecked: Array(proc.items.length).fill(false),
+        itemsActive: Array(proc.items.length).fill(true),
+        itemsToShow: Array(proc.items.length).fill(true),
       });
     });
 
     this.checklistState.setValue(0, {
-      id: 0,
-      checklistCompleted: false,
-      itemsCompleted: Array(Object.keys(EcamNormalProcedures).length).fill(false),
+      id: '0',
+      procedureCompleted: false,
+      procedureActivated: true,
+      itemsChecked: Array(Object.keys(EcamNormalProcedures).length).fill(false),
+      itemsActive: Array(Object.keys(EcamNormalProcedures).length).fill(true),
+      itemsToShow: Array(Object.keys(EcamNormalProcedures).length).fill(true),
     });
+
+    this.selectedLine.sub(() => this.scrollToSelectedLine());
   }
 
-  getNormalProceduresKeysSorted() {
+  getNormalProceduresKeysSorted(onlyVisible = false) {
     return Object.keys(EcamNormalProcedures)
       .map((v) => parseInt(v))
+      .filter((v, index) => {
+        if (onlyVisible && deferredProcedureIds.includes(v) && this.checklistState.getValue(0)?.itemsToShow[index]) {
+          return false;
+        } else {
+          return true;
+        }
+      })
       .sort((a, b) => a - b);
   }
 
   selectFirst() {
     if (this.checklistId.get() === 0) {
       // Find first non-completed checklist
-      const keys = this.getNormalProceduresKeysSorted();
+      const keys = this.getNormalProceduresKeysSorted(true);
       let firstIncompleteChecklist = 0;
       keys.some((key, index) => {
-        if (!this.checklistState.getValue(key).checklistCompleted) {
+        if (!this.checklistState.getValue(key).procedureCompleted) {
           firstIncompleteChecklist = index;
           return true;
         }
       });
-      this.selectedLine.set(firstIncompleteChecklist - 1);
+      this.selectedLine.set(firstIncompleteChecklist);
     } else {
-      const clState = this.checklistState.getValue(this.checklistId.get());
-      const selectableAndNotChecked = EcamNormalProcedures[this.checklistId.get()].items
-        .map((item, index) => (item.sensed === false && clState.itemsCompleted[index] === false ? index : null))
-        .filter((v) => v !== null);
-      this.selectedLine.set(
-        selectableAndNotChecked[0] !== undefined ? selectableAndNotChecked[0] - 1 : clState.itemsCompleted.length - 1,
-      );
+      this.activeProcedure.selectFirst();
     }
-    this.moveDown();
   }
 
   moveUp() {
     if (this.checklistId.get() === 0) {
-      this.selectedLine.set(Math.max(this.selectedLine.get() - 1, 0));
-    } else {
-      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
-      const selectable = EcamNormalProcedures[this.checklistId.get()].items
-        .map((item, index) => (item.sensed === false ? index : null))
+      const shownItems = this.getNormalProceduresKeysSorted()
+        .map((_, index) => (this.checklistState.getValue(0).itemsToShow[index] ? index : null))
         .filter((v) => v !== null);
-
-      if (this.selectedLine.get() == numItems + 1) {
-        // RESET
-        this.selectedLine.set(this.selectedLine.get() - 1);
-      } else {
-        if (selectable.length === 0) {
-          return;
-        }
-        const previousElement = () => {
-          for (let i = selectable.length - 1; i >= 0; i--) {
-            if (selectable[i] < this.selectedLine.get()) {
-              return selectable[i];
-            }
+      this.selectedLine.set(Math.max(shownItems[shownItems.indexOf(this.selectedLine.get()) - 1] ?? 0, 0));
+    } else {
+      if (this.activeDeferredProcedureId.get() !== null) {
+        if (this.activeProcedure.lastLineIsSelected()) {
+          const curDefIndex = this.visibleDeferredProcedureKeys.indexOf(this.activeDeferredProcedureId.get());
+          if (curDefIndex !== -1 && curDefIndex > 0) {
+            this.activeDeferredProcedureId.set(this.visibleDeferredProcedureKeys[curDefIndex - 1]);
           }
-          return -1;
-        };
-        const pEl = previousElement();
-
-        if (pEl >= 0) {
-          this.selectedLine.set(Math.max(pEl, 0));
+        } else {
+          this.activeProcedure.moveUp();
         }
-      }
-    }
-    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
-  }
-
-  moveDown() {
-    if (this.checklistId.get() === 0) {
-      this.selectedLine.set(Math.min(this.selectedLine.get() + 1, this.getNormalProceduresKeysSorted().length - 1));
-    } else {
-      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
-      const selectable = EcamNormalProcedures[this.checklistId.get()].items
-        .map((item, index) => (item.sensed === false ? index : null))
-        .filter((v) => v !== null);
-      if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
-        // Last element before C/L complete
-        this.selectedLine.set(Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1)));
       } else {
-        this.selectedLine.set(
-          Math.min(
-            selectable.find((v) => v > this.selectedLine.get()),
-            numItems - 1,
-          ),
+        // CLEAR of page selected, select last procedure
+        this.activeDeferredProcedureId.set(
+          this.visibleDeferredProcedureKeys[this.visibleDeferredProcedureKeys.length - 1],
         );
       }
     }
-    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
   }
 
-  checkCurrentItem() {
-    const cl = this.checklistState.getValue(this.checklistId.get());
-    const clState: ChecklistState = {
-      id: cl.id,
-      checklistCompleted: cl.checklistCompleted,
-      itemsCompleted: [...cl.itemsCompleted],
-    };
-    if (this.selectedLine.get() < clState.itemsCompleted.length) {
-      clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.moveDown();
-    } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
-      // C/L complete
-      clState.checklistCompleted = true;
-      const proc = EcamNormalProcedures[this.checklistId.get()];
-      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.showChecklist.set(false);
-    } else if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
-      // RESET
-      clState.checklistCompleted = false;
-      const proc = EcamNormalProcedures[this.checklistId.get()];
-      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : false));
+  moveDown(skipCompletedSensed = true) {
+    if (this.checklistId.get() === 0) {
+      const shownItems = this.getNormalProceduresKeysSorted()
+        .map((_, index) => (this.checklistState.getValue(0).itemsToShow[index] ? index : null))
+        .filter((v) => v !== null);
+      this.selectedLine.set(
+        Math.min(
+          shownItems[shownItems.indexOf(this.selectedLine.get()) + 1] ??
+            this.getNormalProceduresKeysSorted(true).length,
+          this.getNormalProceduresKeysSorted(true).length,
+        ),
+      );
+    } else if (this.activeDeferredProcedureId.get() !== null) {
+      if (this.activeProcedure.lastLineIsSelected()) {
+        const curDefIndex = this.visibleDeferredProcedureKeys.indexOf(this.activeDeferredProcedureId.get());
+        if (curDefIndex !== -1) {
+          this.activeDeferredProcedureId.set(
+            curDefIndex < this.visibleDeferredProcedureKeys.length - 1
+              ? this.visibleDeferredProcedureKeys[curDefIndex + 1]
+              : null,
+          );
+        }
+      } else {
+        this.activeProcedure.moveDown(skipCompletedSensed);
+      }
+    }
+  }
 
-      // Reset all following checklists
-      const fromId = this.getNormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get());
-      this.reset(fromId);
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.selectFirst();
+  reset(fromId: number | null) {
+    if (fromId !== -1) {
+      const ids = this.getNormalProceduresKeysSorted();
+      this.fws.manualCheckListReset.set(fromId !== null);
+      for (let id = fromId === null ? 0 : fromId + 1; id < ids.length; id++) {
+        const idFollowing = ids[id];
+        const clFollowing = this.checklistState.getValue(idFollowing);
+        const procFollowing = EcamNormalProcedures[idFollowing];
+        const clStateFollowing: ChecklistState = {
+          id: idFollowing.toString(),
+          procedureCompleted: procFollowing.onlyActivatedByRequest ? true : false,
+          itemsChecked: [...clFollowing.itemsChecked].map((val, index) =>
+            procFollowing.items[index].sensed ? val : false,
+          ),
+          itemsActive: clFollowing.itemsActive,
+          itemsToShow: clFollowing.itemsToShow,
+        };
+        this.checklistState.setValue(idFollowing, clStateFollowing);
+      }
     }
   }
 
@@ -235,40 +347,92 @@ export class FwsNormalChecklists {
     this.selectFirst();
   }
 
+  navigateToParent() {
+    this.navigateToChecklist(0);
+  }
+
+  private scrollToSelectedLine() {
+    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
+  }
+
+  private checkIfDeferredAutoDisplay() {
+    if (
+      this.fws.adrPressureAltitude.get() < 20_000 &&
+      this.fws.slatsAngle.get() > 0 &&
+      Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD' &&
+      !this.showChecklistRequested.get() &&
+      this.hasDeferred.some((v) => v)
+    ) {
+      this.showChecklistRequested.set(true);
+    }
+  }
+
   update() {
     if (this.fws.clPulseNode.read()) {
-      if (!this.fws.abnormalSensed.showAbnormalSensed.get()) {
-        this.navigateToChecklist(0);
-        this.showChecklist.set(!this.showChecklist.get());
-      }
+      this.navigateToChecklist(0);
+      this.showChecklistRequested.set(!this.showChecklistRequested.get());
+    }
+
+    if (!this.checklistShown.get()) {
+      return;
     }
 
     if (this.fws.clDownPulseNode.read()) {
-      if (!this.showChecklist.get()) {
-        return;
-      }
       this.moveDown();
     }
 
     if (this.fws.clUpPulseNode.read()) {
-      if (!this.showChecklist.get()) {
-        return;
-      }
       this.moveUp();
     }
 
     if (this.fws.clCheckPulseNode.read()) {
-      if (!this.showChecklist.get()) {
-        return;
-      }
-
       if (this.checklistId.get() === 0) {
         // Navigate to check list
         this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
       } else {
-        this.checkCurrentItem();
+        if (deferredProcedureIds.includes(this.checklistId.get()) && this.activeDeferredProcedureId.get() === null) {
+          this.navigateToChecklist(0);
+        } else {
+          this.activeProcedure.checkSelected();
+        }
       }
     }
+
+    // Update deferred proc status
+    for (let i = 0; i <= 3; i++) {
+      this.hasDeferred[i] = false;
+      this.deferredIsCompleted[i] = true;
+    }
+    this.fws.activeDeferredProceduresList.get().forEach((val) => {
+      switch (EcamDeferredProcedures[val.id]?.type) {
+        case DeferredProcedureType.ALL_PHASES:
+          this.hasDeferred[0] = true;
+          if (!val.procedureCompleted) {
+            this.deferredIsCompleted[0] = false;
+          }
+          break;
+        case DeferredProcedureType.AT_TOP_OF_DESCENT:
+          this.hasDeferred[1] = true;
+          if (!val.procedureCompleted) {
+            this.deferredIsCompleted[1] = false;
+          }
+          break;
+        case DeferredProcedureType.FOR_APPROACH:
+          this.hasDeferred[2] = true;
+          if (!val.procedureCompleted) {
+            this.deferredIsCompleted[2] = false;
+          }
+          break;
+        case DeferredProcedureType.FOR_LANDING:
+          this.hasDeferred[3] = true;
+          if (!val.procedureCompleted) {
+            this.deferredIsCompleted[3] = false;
+          }
+          break;
+      }
+
+      this.checkIfDeferredAutoDisplay();
+    });
 
     // Update sensed items
     const ids = this.getNormalProceduresKeysSorted();
@@ -279,44 +443,47 @@ export class FwsNormalChecklists {
       const cl = this.checklistState.getValue(procId);
       const proc = EcamNormalProcedures[procId];
 
-      if (!this.sensedItems[procId]) {
-        continue;
-      }
+      const deferredProcIndex = deferredProcedureIds.indexOf(procId);
+      const procCompleted =
+        deferredProcIndex !== -1 ? this.deferredIsCompleted[deferredProcIndex] : cl.procedureCompleted;
       const sensedResult = this.sensedItems[procId].whichItemsChecked();
-      if (sensedResult.some((val, index) => val !== null && val !== cl.itemsCompleted[index])) {
+      const changedEntries = sensedResult.map((val, index) =>
+        val !== null && val !== cl.itemsChecked[index] ? index : null,
+      );
+      if (changedEntries.some((v) => v !== null) || procCompleted !== cl.procedureCompleted) {
         changed = true;
+
+        if (changedEntries.includes(this.selectedLine.get()) && sensedResult[this.selectedLine.get()]) {
+          this.moveDown();
+        }
       }
+
       const clState: ChecklistState = {
-        id: procId,
-        checklistCompleted: cl.checklistCompleted,
-        itemsCompleted: [...cl.itemsCompleted].map((val, index) =>
+        id: procId.toString(),
+        procedureCompleted: procCompleted,
+        procedureActivated: cl.procedureActivated,
+        itemsChecked: [...cl.itemsChecked].map((val, index) =>
           proc.items[index].sensed && sensedResult[index] != null ? sensedResult[index] : val,
         ),
+        itemsActive: cl.itemsActive,
+        itemsToShow: cl.itemsToShow,
       };
       if (changed) {
         this.checklistState.setValue(procId, clState);
       }
     }
-  }
 
-  private reset(fromId: number | null) {
-    if (fromId !== -1) {
-      const ids = this.getNormalProceduresKeysSorted();
-      this.fws.manualCheckListReset.set(fromId !== null);
-      for (let id = fromId === null ? 0 : fromId + 1; id < ids.length; id++) {
-        const idFollowing = ids[id];
-        const clFollowing = this.checklistState.getValue(idFollowing);
-        const procFollowing = EcamNormalProcedures[idFollowing];
-        const clStateFollowing: ChecklistState = {
-          id: idFollowing,
-          checklistCompleted: procFollowing.deferred ? true : false,
-          itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
-            procFollowing.items[index].sensed ? val : false,
-          ),
-        };
-        this.checklistState.setValue(idFollowing, clStateFollowing);
-      }
-    }
+    const overviewState = this.checklistState.getValue(0);
+    overviewState.itemsChecked[Object.keys(EcamNormalProcedures).indexOf('1000007')] = this.deferredIsCompleted[0];
+    overviewState.itemsChecked[Object.keys(EcamNormalProcedures).indexOf('1000008')] = this.deferredIsCompleted[1];
+    overviewState.itemsChecked[Object.keys(EcamNormalProcedures).indexOf('1000009')] = this.deferredIsCompleted[2];
+    overviewState.itemsChecked[Object.keys(EcamNormalProcedures).indexOf('1000011')] = this.deferredIsCompleted[3];
+    overviewState.itemsToShow[Object.keys(EcamNormalProcedures).indexOf('1000007')] = this.hasDeferred[0];
+    overviewState.itemsToShow[Object.keys(EcamNormalProcedures).indexOf('1000008')] = this.hasDeferred[1];
+    overviewState.itemsToShow[Object.keys(EcamNormalProcedures).indexOf('1000009')] = this.hasDeferred[2];
+    overviewState.itemsToShow[Object.keys(EcamNormalProcedures).indexOf('1000011')] = this.hasDeferred[3];
+
+    this.checklistState.setValue(0, overviewState);
   }
 
   public sensedItems: FwsNormalChecklistsDict = {
@@ -327,12 +494,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
     },
     1000003: {
-      whichItemsChecked: () => [
-        null,
-        !this.fws.pitchTrimNotTo.get(),
-        Math.abs(SimVar.GetSimVarValue('L:RUDDER_TRIM_1_COMMANDED_POSITION', SimVarValueType.Number)) < 0.35 &&
-          Math.abs(SimVar.GetSimVarValue('L:RUDDER_TRIM_2_COMMANDED_POSITION', SimVarValueType.Number)) < 0.35,
-      ],
+      whichItemsChecked: () => [null, !this.fws.pitchTrimNotTo.get(), this.fws.rudderTrimPosition.get() < 0.35],
     },
     1000004: {
       whichItemsChecked: () => [
@@ -354,9 +516,21 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null, null, null, null],
     },
     1000007: {
-      whichItemsChecked: () => [null, SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'), null, null],
+      whichItemsChecked: () => [null],
     },
     1000008: {
+      whichItemsChecked: () => [null],
+    },
+    1000009: {
+      whichItemsChecked: () => [null],
+    },
+    1000010: {
+      whichItemsChecked: () => [null, SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'), null, null],
+    },
+    1000011: {
+      whichItemsChecked: () => [null],
+    },
+    1000012: {
       whichItemsChecked: () => [
         false,
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
@@ -368,7 +542,7 @@ export class FwsNormalChecklists {
             SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
       ],
     },
-    1000009: {
+    1000013: {
       whichItemsChecked: () => [
         null,
         !this.fws.engine1Master.get() &&
@@ -379,7 +553,7 @@ export class FwsNormalChecklists {
         this.fws.allFuelPumpsOff.get(),
       ],
     },
-    1000010: {
+    1000014: {
       whichItemsChecked: () => [
         SimVar.GetSimVarValue('L:PUSH_OVHD_OXYGEN_CREW', 'bool'),
         SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position', 'number') === 2,

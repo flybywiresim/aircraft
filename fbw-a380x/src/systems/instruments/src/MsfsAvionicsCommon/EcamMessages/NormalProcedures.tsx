@@ -3,6 +3,8 @@
 
 import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
+export const deferredProcedureIds = [1000007, 1000008, 1000009, 1000011];
+
 /** All normal procedures (checklists, via ECL) should be here.
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */
 export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
@@ -164,7 +166,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   },
   1000006: {
     title: '<<DEPARTURE CHANGE>>',
-    deferred: true,
+    onlyActivatedByRequest: true,
     items: [
       {
         name: 'RWY & SID',
@@ -192,6 +194,18 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     ],
   },
   1000007: {
+    title: 'ALL PHASES : DEFERRED PROCEDURE',
+    items: [],
+  },
+  1000008: {
+    title: 'AT TOP OF DESCENT : DEFERRED PROCEDURE',
+    items: [],
+  },
+  1000009: {
+    title: 'FOR APPROACH : DEFERRED PROCEDURE',
+    items: [],
+  },
+  1000010: {
     title: 'APPROACH',
     items: [
       {
@@ -220,7 +234,11 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
     ],
   },
-  1000008: {
+  1000011: {
+    title: 'FOR LANDING : DEFERRED PROCEDURE',
+    items: [],
+  },
+  1000012: {
     title: 'LANDING',
     items: [
       { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: true, labelNotCompleted: '' },
@@ -249,7 +267,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
     ],
   },
-  1000009: {
+  1000013: {
     title: 'PARKING',
     items: [
       {
@@ -276,7 +294,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
     ],
   },
-  1000010: {
+  1000014: {
     title: 'SECURING THE AIRCRAFT',
     items: [
       {
