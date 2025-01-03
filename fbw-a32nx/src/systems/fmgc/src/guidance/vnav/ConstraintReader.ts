@@ -132,6 +132,7 @@ export class ConstraintReader {
               this.descentAltitudeConstraints.push({
                 distanceFromStart: legDistanceFromStart,
                 constraint: altConstraint,
+                leg,
               });
               break;
             default:

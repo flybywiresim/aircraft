@@ -9,6 +9,8 @@ const WaypointConstraintType = Object.freeze({
     DES: 2,
 });
 
+const TOO_STEEP_PATH_BEYOND_MESSAGE = "{amber}TOO STEEP PATH BEYOND{end}";
+
 class CDUVerticalRevisionPage {
     /**
      * @param mcdu
@@ -142,10 +144,12 @@ class CDUVerticalRevisionPage {
             }
         }
 
+        const tooSteepPathInfo = waypoint.calculated.endsInTooSteepPath ? TOO_STEEP_PATH_BEYOND_MESSAGE : "";
+
         mcdu.setTemplate([
             ["VERT REV {small}AT{end}{green} " + waypointIdent + "{end}"],
             [],
-            [""],
+            ["", "", tooSteepPathInfo],
             [speedLimitTitle, ""],
             [speedLimitCell, "RTA>[color]inop"],
             [l3Title, r3Title],
