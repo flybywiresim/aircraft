@@ -110,6 +110,7 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+1. [A380X/PFD] Fix font colours on metric altitude display -@MrJigs7 (MrJigs.)
 
 ## 0.12.0
 
