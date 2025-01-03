@@ -2141,8 +2141,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.AP_ENGAGE_push = simInputAutopilot.AP_engage;
     autopilotStateMachineInput.in.input.AP_1_push = simInputAutopilot.AP_1_push;
     autopilotStateMachineInput.in.input.AP_2_push = simInputAutopilot.AP_2_push;
-    autopilotStateMachineInput.in.input.AP_DISCONNECT_push = simInputAutopilot.AP_disconnect || idCaptPriorityButtonPressed->get() ||
-                                                             idFoPriorityButtonPressed->get() || wasInSlew || doDisconnect;
+    autopilotStateMachineInput.in.input.AP_DISCONNECT_push = simInputAutopilot.AP_disconnect || wasInSlew || doDisconnect;
     autopilotStateMachineInput.in.input.HDG_push = simInputAutopilot.HDG_push;
     autopilotStateMachineInput.in.input.HDG_pull = simInputAutopilot.HDG_pull;
     autopilotStateMachineInput.in.input.ALT_push = simInputAutopilot.ALT_push;

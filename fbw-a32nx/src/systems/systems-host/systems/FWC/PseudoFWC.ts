@@ -125,7 +125,6 @@ export class PseudoFWC {
   public readonly recallButtonInputBuffer = new NXLogicMemoryNode(false);
   public readonly aThrDiscInputBuffer = new NXLogicMemoryNode(false);
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
-  public readonly takeoverPbInputBuffer = new NXLogicMemoryNode(false);
 
   /* PSEUDO FWC VARIABLES */
   private readonly startupTimer = new DebounceTimer();
@@ -1264,13 +1263,6 @@ export class PseudoFWC {
       this.recallButtonInputBuffer.write(true, false);
     }
 
-    if (
-      SimVar.GetSimVarValue('L:A32NX_PRIORITY_TAKEOVER:1', SimVarValueType.Bool) ||
-      SimVar.GetSimVarValue('L:A32NX_PRIORITY_TAKEOVER:2', SimVarValueType.Bool)
-    ) {
-      this.takeoverPbInputBuffer.write(true, false);
-    }
-
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
     if (deltaTime === -1 || _deltaTime === 0) {
       return;
@@ -1285,10 +1277,7 @@ export class PseudoFWC {
     this.clr2PulseNode.write(this.clearButtonInputBuffer.read(), deltaTime);
     this.rclUpPulseNode.write(this.recallButtonInputBuffer.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
-    this.autoPilotInstinctiveDiscPressedPulse.write(
-      this.apDiscInputBuffer.read() || this.takeoverPbInputBuffer.read(),
-      deltaTime,
-    );
+    this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
 
     // Inputs update
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
@@ -2915,7 +2904,6 @@ export class PseudoFWC {
     this.recallButtonInputBuffer.write(false, true);
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
-    this.takeoverPbInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
   }
 
