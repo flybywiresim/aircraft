@@ -3767,7 +3767,7 @@ export class FwsCore {
 
     /* 42 AVIONICS NETWORK */
     this.cpiomC1Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
-    this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
+    this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool'));
 
     /* ANTI ICE */
 
