@@ -933,7 +933,7 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.metricAltTargetText.instance.classList.replace('Magenta', 'Cyan');
         }
 
-        if (this.state.altitude.value > this.state.MDA) {
+        if (this.state.altitude.value < this.state.MDA) {
           this.metricAltText.instance.classList.replace('Green', 'Amber');
         } else {
           this.metricAltText.instance.classList.replace('Amber', 'Green');
