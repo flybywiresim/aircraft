@@ -110,7 +110,7 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
-1. [A380X/PDF] Fix inverted color in the meter altitude indicator below and above the MDA - @ItzARz
+1. [A380X/PDF] Fix inverted color in the meter altitude indicator below and above the MDA - @ItzARz (Albert)
 
 ## 0.12.0
 
