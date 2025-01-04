@@ -112,6 +112,7 @@
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
 1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
+1. [A30X/MFD] Added unit conversion for lbs/ft - MikioDK (Mikio)
 
 ## 0.12.0
 

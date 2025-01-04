@@ -18,6 +18,9 @@ import {
   Subject,
   Subscribable,
   Subscription,
+  Unit,
+  UnitFamily,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
@@ -177,6 +180,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
+  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
+
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
       this.mapDataLdgShiftPanelRef.instance.style.display = 'flex';
@@ -218,6 +223,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     });
 
     NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
+
+    NXDataStore.getAndSubscribe(
+      'CONFIG_USING_METRIC_UNIT',
+      (key, value) => {
+        this.lengthUnit.set(value === '0' ? UnitType.FOOT : UnitType.METER);
+      },
+      '1',
+    );
 
     this.subs.push(
       this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'inherit' : 'hidden'), true),
@@ -595,6 +608,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       lda={this.runwayLda}
                       ldaIsReduced={Subject.create(false)}
                       coordinate={Subject.create('----')}
+                      lengthUnit={this.lengthUnit}
                     />
                   </div>
                   <div ref={this.mapDataBtvFallback} class="oans-cp-map-data-btv-fallback">
