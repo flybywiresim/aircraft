@@ -30,7 +30,7 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum AcscId {
     Acsc1(Channel),
     Acsc2(Channel),

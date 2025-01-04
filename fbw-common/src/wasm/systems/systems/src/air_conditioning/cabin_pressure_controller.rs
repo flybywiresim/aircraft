@@ -27,7 +27,7 @@ use uom::si::{
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum CpcId {
     Cpc1,
     Cpc2,
