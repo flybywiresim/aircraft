@@ -29,7 +29,7 @@ export class FwsMemos {
   ewdMemos: EwdMemoDict = {
     '0000050': {
       // REFUELING
-      flightPhaseInhib: [],
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: this.fws.usrStartRefueling,
       whichCodeToReturn: () => [0],
       codesToReturn: ['280000009', '280000010'],
