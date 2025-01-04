@@ -84,11 +84,6 @@ export const LoadSheetWidget = () => {
     }
   }
 
-  const handleScaling = (cFontSize, cImageSize) => {
-    setFontSize(String(cFontSize));
-    setImageSize(cImageSize);
-  };
-
   function handleSectionUp() {
     const currentIndex = loadsheetSections.indexOf(currentLoadsheetSection);
     if (currentIndex > 0) {
@@ -122,9 +117,7 @@ export const LoadSheetWidget = () => {
       }));
 
       return `
-          <pre>
             ${filteredAnchors.map(({ href, innerHTML }) => `<a href="${href}" target="_blank">${innerHTML}</a>`).join('\n')}
-          </pre>
         `;
     }
 
@@ -144,11 +137,16 @@ export const LoadSheetWidget = () => {
       if (filteredLoadsheet && filteredLoadsheet.length > 0) {
         return `\n<pre>${cleanStyles(filteredLoadsheet[0])}</pre>\n`;
       } else {
-        return `\n<pre>Info not available or section not enabled in Simbrief.</pre>\n`;
+        return `\nInfo not available or section not enabled in Simbrief.\n`;
       }
     }
-    return `\n<pre>${cleanStyles(loadsheet)}</pre>\n`;
+    return `\n${cleanStyles(loadsheet)}</pre>\n`;
   }
+
+  const handleScaling = (cFontSize, cImageSize) => {
+    setFontSize(String(cFontSize));
+    setImageSize(cImageSize);
+  };
 
   const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
@@ -156,6 +154,27 @@ export const LoadSheetWidget = () => {
     <div className="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
       {isSimbriefDataLoaded() ? (
         <>
+          <div className="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary">
+            <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
+              <button
+                type="button"
+                onClick={handleFontDecrease}
+                className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+              >
+                <ZoomOut size={30} />
+              </button>
+            </TooltipWrapper>
+
+            <TooltipWrapper text={t('Dispatch.Ofp.TT.IncreaseFontSize')}>
+              <button
+                type="button"
+                onClick={handleFontIncrease}
+                className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+              >
+                <ZoomIn size={30} />
+              </button>
+            </TooltipWrapper>
+          </div>
           {loadsheetSections && isSimbriefLoadsheetNavigationEnabled === 'ENABLED' && (
             <>
               <div className="relative w-60">
@@ -197,27 +216,6 @@ export const LoadSheetWidget = () => {
               </div>
             </>
           )}
-          <div className="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary">
-            <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
-              <button
-                type="button"
-                onClick={handleFontDecrease}
-                className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-              >
-                <ZoomOut size={30} />
-              </button>
-            </TooltipWrapper>
-
-            <TooltipWrapper text={t('Dispatch.Ofp.TT.IncreaseFontSize')}>
-              <button
-                type="button"
-                onClick={handleFontIncrease}
-                className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-              >
-                <ZoomIn size={30} />
-              </button>
-            </TooltipWrapper>
-          </div>
           <ScrollableContainer
             height={51}
             onScrollStop={(scroll) => dispatch(setOfpScroll(scroll))}
