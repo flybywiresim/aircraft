@@ -7,7 +7,7 @@
 
 ## 0.13.0
 
-1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (Frank Kopp)
+1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
 1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
 1. [A380X/FCU] QNH and altitude displays now correctly show "8" values during light test - @mattgogerly (Matt)
@@ -22,7 +22,7 @@
 1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
 1. [A380X/EWD] QoL: Add soft keys to EWD checklists, can be enabled via EFB - @flogross89 (floridude)
 1. [A380X/LIGHTS] Implemented LOGO LT switch funcionality - @ImenesFBW (Imenes)
-1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (Frank Kopp)
+1. [A380X/SD] Added correct ECP ALL button SD page cycling to the A380X - @frankkopp (cdr_maverick)
 1. [A380X/SURV] Fixed BTV setup from F/O side, and ROW issues at G/A with early THR RED - @flogross89 (floridude)
 1. [A380X/MFD] Limit keyboard inputs to keys present in the KCCU and remap comma to decimal dot - @beheh (Benedict Etzel)
 1. [GENERAL] Mitigated issue with pop-ups (i.e. pause on TOD notification) being unable to be dismissed while camera is in freelook + ALT-TAB - @2hwk (2cas)
@@ -44,7 +44,7 @@
 1. [A380/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/WING_FLEX] Reduced stiffness of wings for more tip up bend - @Crocket63 (crocket)
 1. [A380X/FWS] Add V1 callout - @flogross89 (floridude)
-1. [FMS] Fix existing T-P moving when inserting temporary flight plan  - @Benjozork (Benjamin Dupont)
+1. [FMS] Fix existing T-P moving when inserting temporary flight plan - @Benjozork (Benjamin Dupont)
 1. [GPU] Improved handling of ground power for more immersive use @Maximilian-Reuter (\_chaoz_)
 1. [OANS] Display correct flags when IRS position is not available - @Nufflee (nufflee)
 1. [FMS] Use station declination for PBX/PBD waypoints - @BlueberryKing (BlueberryKing)
@@ -110,6 +110,8 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
+1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 
 ## 0.12.0
 
