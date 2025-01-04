@@ -163,6 +163,6 @@ export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
       avgWindSpeed: general.avg_wind_spd,
     },
     ofpLayout: params.ofp_layout,
-    text: text.plan_html,
+    text: text.plan_html.replace(/^<div [^>]+>/, '').replace(/<\/div>$/, ''),
   };
 };

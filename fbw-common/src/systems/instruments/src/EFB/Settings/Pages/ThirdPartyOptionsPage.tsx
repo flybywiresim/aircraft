@@ -26,6 +26,10 @@ export const ThirdPartyOptionsPage = () => {
   const [overrideSimbriefUserID, setOverrideSimbriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
   const [overrideSimbriefDisplay, setOverrideSimbriefDisplay] = useState(overrideSimbriefUserID);
   const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
+  const [simbriefLoadsheetNavigationEnabled, setSimbriefLoadsheetNavigationEnabled] = usePersistentProperty(
+    'CONFIG_SIMBRIEF_LOADSHEET_NAVIGATION',
+    'ENABLED',
+  );
 
   const getSimbriefUserData = async (value: string): Promise<any> => {
     const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -182,6 +186,13 @@ export const ThirdPartyOptionsPage = () => {
               onToggle={(value) => {
                 setGsxPayloadSyncEnabled(value ? 1 : 0);
               }}
+            />
+          </SettingItem>
+
+          <SettingItem name={t('Settings.ThirdPartyOptions.SimbriefLoadsheetNavigationEnabled')}>
+            <Toggle
+              value={simbriefLoadsheetNavigationEnabled === 'ENABLED'}
+              onToggle={(toggleValue) => setSimbriefLoadsheetNavigationEnabled(toggleValue ? 'ENABLED' : 'DISABLED')}
             />
           </SettingItem>
         </SettingsPage>

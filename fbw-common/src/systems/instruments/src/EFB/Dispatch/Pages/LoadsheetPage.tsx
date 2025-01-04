@@ -5,7 +5,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
-import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
+import { ZoomIn, ZoomOut, ChevronUp, ChevronDown } from 'react-bootstrap-icons';
 
 import {
   t,
@@ -38,6 +38,8 @@ export const LoadSheetWidget = () => {
     'LOADSHEET_ACTIVE_SECTION',
     'All',
   );
+
+  const [isSimbriefLoadsheetNavigationEnabled] = usePersistentProperty('CONFIG_SIMBRIEF_LOADSHEET_NAVIGATION');
 
   useEffect(() => {
     const pImages = ref.current?.getElementsByTagName('img');
@@ -87,11 +89,25 @@ export const LoadSheetWidget = () => {
     setImageSize(cImageSize);
   };
 
+  function handleSectionUp() {
+    const currentIndex = loadsheetSections.indexOf(currentLoadsheetSection);
+    if (currentIndex > 0) {
+      const previousSection = loadsheetSections[currentIndex - 1];
+      setCurrentLoadsheetSection(previousSection);
+    }
+  }
+
+  function handleSectionDown() {
+    const currentIndex = loadsheetSections.indexOf(currentLoadsheetSection);
+    if (currentIndex < loadsheetSections.length - 1) {
+      const nextSection = loadsheetSections[currentIndex + 1];
+      setCurrentLoadsheetSection(nextSection);
+    }
+  }
+
   function filterLoadsheetSection(section) {
     const cleanStyles = (html) => {
       return html
-        .replace(/^<div [^>]+>/, '')
-        .replace(/<\/div>$/, '')
         .replace(/line-height:\s*\d+(\.\d+)?(px)?;?/g, '')
         .replace(/font-size:\s*\d+px;?/g, '')
         .replace(/font-family:\s*[^;]+;/g, '')
@@ -138,20 +154,46 @@ export const LoadSheetWidget = () => {
     <div className="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
       {isSimbriefDataLoaded() ? (
         <>
-          {loadsheetSections && (
-            <div className="relative w-60">
-              <SelectInput
-                className="w-60"
-                value={currentLoadsheetSection}
-                onChange={(value) => setCurrentLoadsheetSection(value as string)}
-                options={loadsheetSections.map((section) => ({
-                  value: section,
-                  displayValue: `${section}`,
-                  borderColor: 'text-theme-body',
-                }))}
-                maxHeight={32}
-              />
-            </div>
+          {loadsheetSections && isSimbriefLoadsheetNavigationEnabled === 'ENABLED' && (
+            <>
+              <div className="relative w-60">
+                <SelectInput
+                  className="w-60"
+                  value={currentLoadsheetSection}
+                  onChange={(value) => setCurrentLoadsheetSection(value as string)}
+                  options={loadsheetSections.map((section) => ({
+                    value: section,
+                    displayValue: `${section}`,
+                    borderColor: 'text-theme-body',
+                  }))}
+                  maxHeight={32}
+                />
+              </div>
+              <div className="absolute bottom-6 right-16 overflow-hidden rounded-md bg-theme-secondary">
+                <div className="flex flex-col">
+                  <TooltipWrapper text={t('Dispatch.Ofp.TT.PreviousLoadsheetSection')}>
+                    <button
+                      type="button"
+                      onClick={handleSectionUp}
+                      className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body disabled:pointer-events-none disabled:opacity-10"
+                      disabled={currentLoadsheetSection === 'All'}
+                    >
+                      <ChevronUp size={30} />
+                    </button>
+                  </TooltipWrapper>
+                  <TooltipWrapper text={t('Dispatch.Ofp.TT.NextLoadsheetSection')}>
+                    <button
+                      type="button"
+                      onClick={handleSectionDown}
+                      className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body disabled:pointer-events-none disabled:opacity-10"
+                      disabled={currentLoadsheetSection === loadsheetSections[loadsheetSections.length - 1]}
+                    >
+                      <ChevronDown size={30} />
+                    </button>
+                  </TooltipWrapper>
+                </div>
+              </div>
+            </>
           )}
           <div className="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary">
             <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
@@ -185,7 +227,10 @@ export const LoadSheetWidget = () => {
               className="image-theme"
               style={loadSheetStyle}
               dangerouslySetInnerHTML={{
-                __html: filterLoadsheetSection(currentLoadsheetSection),
+                __html:
+                  isSimbriefLoadsheetNavigationEnabled === 'ENABLED'
+                    ? filterLoadsheetSection(currentLoadsheetSection)
+                    : loadsheet,
               }}
             />
           </ScrollableContainer>
