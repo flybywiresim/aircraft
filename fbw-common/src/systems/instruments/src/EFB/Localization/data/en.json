@@ -99,7 +99,8 @@
         "NextLoadsheetSection": "Next loadsheet section"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data.",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief."
     },
     "Overview": {
       "ActualGW": "Actual GW",

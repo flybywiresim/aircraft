@@ -143,6 +143,8 @@ export const LoadSheetWidget = () => {
       const filteredLoadsheet = loadsheet.match(sectionMarkerPattern);
       if (filteredLoadsheet && filteredLoadsheet.length > 0) {
         return `\n<pre>${cleanStyles(filteredLoadsheet[0])}</pre>\n`;
+      } else {
+        return `\n<pre>Info not available or section not enabled in Simbrief.</pre>\n`;
       }
     }
     return `\n<pre>${cleanStyles(loadsheet)}</pre>\n`;
