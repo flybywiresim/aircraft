@@ -55,7 +55,7 @@ If you would like to contribute to the project, see [Contributing.md](.github/Co
 
 ### Known issues and bug reporting
 
-Our [known issues](https://docs.flybywiresim.com/start/reported-issues) list contains the most commonly reported issues. Should you have an issue not found on this list, then please take a look at the reported issues within the [issue tracker](https://github.com/flybywiresim/a32nx/issues) and report a new issue if your issue isn't found there. You can also use the issue tracker to request a new feature.
+Our [known issues](https://docs.flybywiresim.com/aircraft/support/known-issues/) list contains the most commonly reported issues. Should you have an issue not found on this list, then please take a look at the reported issues within the [issue tracker](https://github.com/flybywiresim/aircraft/issues/) and report a new issue if your issue isn't found there. You can also use the issue tracker to request a new feature.
 
 ## FAQ
 
@@ -64,7 +64,6 @@ Our [known issues](https://docs.flybywiresim.com/start/reported-issues) list con
 Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/). 
 
 Liveries for the A380X can be found on [Flightsim.to](https://flightsim.to/liveries/flybywire-a380x/).
-
 
 ### When is the next update?
 
